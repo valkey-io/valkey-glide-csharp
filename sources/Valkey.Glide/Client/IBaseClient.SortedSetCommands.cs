@@ -74,7 +74,7 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var members = new Dictionary&lt;ValkeyValue, double&gt; { ["alice"] = 1.0, ["bob"] = 2.0 };
+    /// SortedSetEntry[] members = [new("alice", 1.0), new("bob", 2.0)];
     /// var count = await client.SortedSetAddAsync("myzset", members);
     /// // count == 2
     /// </code>
@@ -246,7 +246,7 @@ public partial interface IBaseClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/zintercard/">Valkey commands – ZINTERCARD</seealso>
     /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
-    /// <note>Since Valkey 7.0.0 and above.</note>
+    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="keys">The keys of the sorted sets.</param>
     /// <param name="limit">If the intersection cardinality reaches this limit, the algorithm exits early. A value of <c>0</c> means no limit.</param>
     /// <returns>The number of elements in the resulting intersection.</returns>
@@ -340,6 +340,7 @@ public partial interface IBaseClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/zmpop/">Valkey commands – ZMPOP</seealso>
     /// <seealso href="https://valkey.io/commands/bzmpop/">Valkey commands – BZMPOP</seealso>
+    /// <note>Since Valkey 7.0.0.</note>
     /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
     /// <param name="keys">The keys of the sorted sets.</param>
     /// <param name="timeout">Optional timeout for blocking. If <see langword="null"/>, uses non-blocking pop.</param>
@@ -360,6 +361,7 @@ public partial interface IBaseClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/zmpop/">Valkey commands – ZMPOP</seealso>
     /// <seealso href="https://valkey.io/commands/bzmpop/">Valkey commands – BZMPOP</seealso>
+    /// <note>Since Valkey 7.0.0.</note>
     /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
     /// <param name="keys">The keys of the sorted sets.</param>
     /// <param name="timeout">Optional timeout for blocking. If <see langword="null"/>, uses non-blocking pop.</param>
@@ -380,6 +382,7 @@ public partial interface IBaseClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/zmpop/">Valkey commands – ZMPOP</seealso>
     /// <seealso href="https://valkey.io/commands/bzmpop/">Valkey commands – BZMPOP</seealso>
+    /// <note>Since Valkey 7.0.0.</note>
     /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
     /// <param name="keys">The keys of the sorted sets.</param>
     /// <param name="count">The maximum number of records to pop.</param>
@@ -402,6 +405,7 @@ public partial interface IBaseClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/zmpop/">Valkey commands – ZMPOP</seealso>
     /// <seealso href="https://valkey.io/commands/bzmpop/">Valkey commands – BZMPOP</seealso>
+    /// <note>Since Valkey 7.0.0.</note>
     /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
     /// <param name="keys">The keys of the sorted sets.</param>
     /// <param name="count">The maximum number of records to pop.</param>
@@ -423,7 +427,6 @@ public partial interface IBaseClient
     /// Returns a random member with its score from a sorted set.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/zrandmember/">Valkey commands – ZRANDMEMBER</seealso>
-    /// <note>Since Valkey 6.2.0 and above.</note>
     /// <param name="key">The sorted set key.</param>
     /// <returns>The randomly selected element with its score, or <see langword="null"/> when <paramref name="key"/> does not exist.</returns>
     /// <remarks>
@@ -441,7 +444,6 @@ public partial interface IBaseClient
     /// Returns random members with their scores from a sorted set.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/zrandmember/">Valkey commands – ZRANDMEMBER</seealso>
-    /// <note>Since Valkey 6.2.0 and above.</note>
     /// <param name="key">The sorted set key.</param>
     /// <param name="count">The number of random members to return.</param>
     /// <returns>An array of randomly selected elements with their scores, or an empty array when <paramref name="key"/> does not exist.</returns>
@@ -795,7 +797,7 @@ public partial interface IBaseClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/zrank/">Valkey commands – ZRANK</seealso>
     /// <seealso href="https://valkey.io/commands/zrevrank/">Valkey commands – ZREVRANK</seealso>
-    /// <note>Since Valkey 7.2.0 and above.</note>
+    /// <note>Since Valkey 7.2.0.</note>
     /// <param name="key">The sorted set key.</param>
     /// <param name="member">The member to get the rank and score of.</param>
     /// <param name="order">The order to sort by.</param>
@@ -970,6 +972,7 @@ public partial interface IBaseClient
     /// Blocks the connection until it pops and returns up to <paramref name="count"/> entries from the first non-empty sorted set among the given <paramref name="keys"/>.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/bzmpop/">Valkey commands – BZMPOP</seealso>
+    /// <note>Since Valkey 7.0.0.</note>
     /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
     /// <param name="keys">The keys of the sorted sets.</param>
     /// <param name="count">The maximum number of records to pop out of the sorted set.</param>

@@ -484,6 +484,7 @@ public partial interface IGlideClusterClient
     /// If the timeout is reached, the command returns even if the specified number of acknowledgments were not yet reached.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/waitaof"/>
+    /// <note>Since Valkey 7.2.0.</note>
     /// <param name="localAof">Whether to wait for the local node to acknowledge AOF sync.</param>
     /// <param name="numreplicas">The number of replica nodes to wait for AOF sync.</param>
     /// <param name="timeout">The timeout to wait.</param>

@@ -6,13 +6,13 @@ namespace Valkey.Glide;
 
 public abstract partial class BaseClient
 {
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.ClientGetNameAsync()"/>
     public abstract Task<ValkeyValue> ClientGetNameAsync();
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.ClientIdAsync()"/>
     public abstract Task<long> ClientIdAsync();
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.EchoAsync(ValkeyValue)"/>
     public abstract Task<ValkeyValue> EchoAsync(ValkeyValue message);
 
     /// <inheritdoc cref="IBaseClient.PingAsync()"/>
@@ -21,6 +21,6 @@ public abstract partial class BaseClient
     /// <inheritdoc cref="IBaseClient.PingAsync(ValkeyValue)"/>
     public abstract Task<ValkeyValue> PingAsync(ValkeyValue message);
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IConnectionManagementBaseCommands.SelectAsync(long)"/>
     public abstract Task SelectAsync(long index);
 }

@@ -20,6 +20,21 @@ public partial interface IDatabaseAsync
     /// <param name="value">The value to add to the head of the list.</param>
     /// <param name="when">Use <see cref="When.Exists"/> for LPUSHX behavior (only push if key exists).</param>
     /// <returns>The length of the list after the push operation.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// // Always push (LPUSH).
+    /// var length = await db.ListLeftPushAsync("mylist", "value", When.Always);
+    /// </code>
+    /// </example>
+    /// <example>
+    /// <code>
+    /// // Only push if the list already exists (LPUSHX).
+    /// var length = await db.ListLeftPushAsync("mylist", "value", When.Exists);
+    /// // 0 if "mylist" did not exist; otherwise the new length of the list.
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<long> ListLeftPushAsync(ValkeyKey key, ValkeyValue value, When when);
 
     /// <summary>
@@ -33,6 +48,22 @@ public partial interface IDatabaseAsync
     /// <param name="values">The elements to insert at the head of the list.</param>
     /// <param name="when">Use <see cref="When.Exists"/> for LPUSHX behavior (only push if key exists).</param>
     /// <returns>The length of the list after the push operation.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// // Always push (LPUSH, default).
+    /// var length = await db.ListLeftPushAsync("mylist", ["a", "b", "c"], When.Always);
+    /// // "mylist" is created if missing; returns the new length.
+    /// </code>
+    /// </example>
+    /// <example>
+    /// <code>
+    /// // Only push if the list already exists (LPUSHX).
+    /// var length = await db.ListLeftPushAsync("mylist", ["a", "b", "c"], When.Exists);
+    /// // 0 if "mylist" did not exist; otherwise the new length of the list.
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<long> ListLeftPushAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, When when);
 
     /// <summary>
@@ -45,6 +76,22 @@ public partial interface IDatabaseAsync
     /// <param name="value">The value to add to the tail of the list.</param>
     /// <param name="when">Use <see cref="When.Exists"/> for RPUSHX behavior (only push if key exists).</param>
     /// <returns>The length of the list after the push operation.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// // Always push (RPUSH, default).
+    /// var length = await db.ListRightPushAsync("mylist", "value", When.Always);
+    /// // "mylist" is created if missing; returns the new length.
+    /// </code>
+    /// </example>
+    /// <example>
+    /// <code>
+    /// // Only push if the list already exists (RPUSHX).
+    /// var length = await db.ListRightPushAsync("mylist", "value", When.Exists);
+    /// // 0 if "mylist" did not exist; otherwise the new length of the list.
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<long> ListRightPushAsync(ValkeyKey key, ValkeyValue value, When when);
 
     /// <summary>
@@ -58,6 +105,22 @@ public partial interface IDatabaseAsync
     /// <param name="values">The elements to insert at the tail of the list.</param>
     /// <param name="when">Use <see cref="When.Exists"/> for RPUSHX behavior (only push if key exists).</param>
     /// <returns>The length of the list after the push operation.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// // Always push (RPUSH, default).
+    /// var length = await db.ListRightPushAsync("mylist", ["a", "b", "c"], When.Always);
+    /// // "mylist" is created if missing; returns the new length.
+    /// </code>
+    /// </example>
+    /// <example>
+    /// <code>
+    /// // Only push if the list already exists (RPUSHX).
+    /// var length = await db.ListRightPushAsync("mylist", ["a", "b", "c"], When.Exists);
+    /// // 0 if "mylist" did not exist; otherwise the new length of the list.
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<long> ListRightPushAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, When when);
 
     /// <inheritdoc cref="IListBaseCommands.ListLeftPopAsync(ValkeyKey)"/>

@@ -6,7 +6,7 @@ namespace Valkey.Glide.Commands;
 // by both Valkey GLIDE clients and StackExchange.Redis databases.
 
 /// <summary>
-/// Lists commands for clients.
+/// List commands for clients.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/#list">Valkey – List Commands</seealso>
 public interface IListBaseCommands
@@ -49,6 +49,7 @@ public interface IListBaseCommands
     /// among the provided keys.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/lmpop/">Valkey commands – LMPOP</seealso>
+    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="keys">A collection of list keys.</param>
     /// <param name="count">The maximum number of elements to pop.</param>
     /// <returns>
@@ -170,6 +171,7 @@ public interface IListBaseCommands
     /// among the provided keys.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/lmpop/">Valkey commands – LMPOP</seealso>
+    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="keys">A collection of list keys.</param>
     /// <param name="count">The maximum number of elements to pop.</param>
     /// <returns>

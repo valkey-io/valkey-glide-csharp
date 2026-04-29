@@ -23,7 +23,7 @@ public abstract partial class BaseClient
     public async Task<long> GeoAddAsync(ValkeyKey key, IDictionary<ValkeyValue, GeoPosition> members, GeoAddOptions options)
         => await Command(Request.GeoAddAsync(key, members, options));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.GeoDistanceAsync(ValkeyKey, ValkeyValue, ValkeyValue, GeoUnit)"/>
     public async Task<double?> GeoDistanceAsync(ValkeyKey key, ValkeyValue member1, ValkeyValue member2, GeoUnit unit = GeoUnit.Meters)
         => await Command(Request.GeoDistanceAsync(key, member1, member2, unit));
 

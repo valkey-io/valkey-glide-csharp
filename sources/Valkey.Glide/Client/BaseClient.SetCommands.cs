@@ -24,15 +24,15 @@ public abstract partial class BaseClient
     public async Task<long> SetRemoveAsync(ValkeyKey key, IEnumerable<ValkeyValue> values)
         => await Command(Request.SetRemoveAsync(key, values));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SetMembersAsync(ValkeyKey)"/>
     public async Task<ISet<ValkeyValue>> SetMembersAsync(ValkeyKey key)
         => await Command(Request.SetMembersAsync(key));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SetCardAsync(ValkeyKey)"/>
     public async Task<long> SetCardAsync(ValkeyKey key)
         => await Command(Request.SetCardAsync(key));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SetInterCardAsync(IEnumerable{ValkeyKey}, long)"/>
     public async Task<long> SetInterCardAsync(IEnumerable<ValkeyKey> keys, long limit = 0)
         => await Command(Request.SetInterCardAsync(keys, limit));
 
@@ -44,27 +44,27 @@ public abstract partial class BaseClient
     public async Task<ISet<ValkeyValue>> SetPopAsync(ValkeyKey key, long count)
         => await Command(Request.SetPopAsync(key, count));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SetUnionAsync(IEnumerable{ValkeyKey})"/>
     public async Task<ISet<ValkeyValue>> SetUnionAsync(IEnumerable<ValkeyKey> keys)
         => await Command(Request.SetUnionAsync(keys));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SetInterAsync(IEnumerable{ValkeyKey})"/>
     public async Task<ISet<ValkeyValue>> SetInterAsync(IEnumerable<ValkeyKey> keys)
         => await Command(Request.SetInterAsync(keys));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SetDiffAsync(IEnumerable{ValkeyKey})"/>
     public async Task<ISet<ValkeyValue>> SetDiffAsync(IEnumerable<ValkeyKey> keys)
         => await Command(Request.SetDiffAsync(keys));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SetUnionStoreAsync(ValkeyKey, IEnumerable{ValkeyKey})"/>
     public async Task<long> SetUnionStoreAsync(ValkeyKey destination, IEnumerable<ValkeyKey> keys)
         => await Command(Request.SetUnionStoreAsync(destination, keys));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SetInterStoreAsync(ValkeyKey, IEnumerable{ValkeyKey})"/>
     public async Task<long> SetInterStoreAsync(ValkeyKey destination, IEnumerable<ValkeyKey> keys)
         => await Command(Request.SetInterStoreAsync(destination, keys));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SetDiffStoreAsync(ValkeyKey, IEnumerable{ValkeyKey})"/>
     public async Task<long> SetDiffStoreAsync(ValkeyKey destination, IEnumerable<ValkeyKey> keys)
         => await Command(Request.SetDiffStoreAsync(destination, keys));
 
@@ -76,20 +76,20 @@ public abstract partial class BaseClient
     public async Task<bool[]> SetIsMemberAsync(ValkeyKey key, IEnumerable<ValkeyValue> values)
         => await Command(Request.SetIsMemberAsync(key, values));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="ISetBaseCommands.SetRandomMemberAsync(ValkeyKey)"/>
     public async Task<ValkeyValue> SetRandomMemberAsync(ValkeyKey key)
         => await Command(Request.SetRandomMemberAsync(key));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="ISetBaseCommands.SetRandomMembersAsync(ValkeyKey, long)"/>
     public async Task<ValkeyValue[]> SetRandomMembersAsync(ValkeyKey key, long count)
         => await Command(Request.SetRandomMembersAsync(key, count));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="ISetBaseCommands.SetMoveAsync(ValkeyKey, ValkeyKey, ValkeyValue)"/>
     public async Task<bool> SetMoveAsync(ValkeyKey source, ValkeyKey destination, ValkeyValue value)
         => await Command(Request.SetMoveAsync(source, destination, value));
 
     // TODO #287
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SetScanAsync(ValkeyKey, ScanOptions?)"/>
     public async IAsyncEnumerable<ValkeyValue> SetScanAsync(ValkeyKey key, ScanOptions? options = null)
     {
         long currentCursor = 0;

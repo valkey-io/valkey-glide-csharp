@@ -87,6 +87,7 @@ public partial interface IDatabaseAsync
     /// <inheritdoc cref="StreamReadGroupAsync(ValkeyKey, ValkeyValue, ValkeyValue, ValkeyValue?, int?, bool, CommandFlags)" path="/*[not(self::returns)]"/>
     /// <param name="claimMinIdleTime">The minimum idle time for claiming pending entries.</param>
     /// <returns>An array of <see cref="StreamEntry"/> values read from the stream.</returns>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<StreamEntry[]> StreamReadGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, ValkeyValue? position, int? count, bool noAck, TimeSpan? claimMinIdleTime, CommandFlags flags);
 
     /// <inheritdoc cref="IBaseClient.StreamReadGroupAsync(IEnumerable{StreamPosition}, ValkeyValue, ValkeyValue)" path="/*[self::summary or self::seealso]"/>

@@ -32,6 +32,12 @@ public partial interface IBaseClient
     /// Returns the values of keys.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/mget/">Valkey commands – MGET</seealso>
+    /// <note>In cluster mode, if keys in <paramref name="keys"/> map to different hash slots, the command
+    /// will be split across these slots and executed separately for each. This means the command
+    /// is atomic only at the slot level. If one or more slot-specific requests fail, the entire
+    /// call will return the first encountered error, even though some requests may have succeeded
+    /// while others did not. If this behavior impacts your application logic, consider splitting
+    /// the request into sub-requests per slot to ensure atomicity.</note>
     /// <param name="keys">The keys to retrieve.</param>
     /// <returns>An array with the value for each key, or <see cref="ValkeyValue.Null"/> if it does not exist.
     /// </returns>
@@ -95,7 +101,7 @@ public partial interface IBaseClient
     /// <example>
     /// <code>
     /// await client.SetAsync("key", "10.5");
-    /// var decremented = await client.DecrementAsync("key", 0.5);  // 10
+    /// var decremented = await client.DecrementAsync("key", 0.5);  // 10.0
     /// </code>
     /// </example>
     /// </remarks>
@@ -132,7 +138,7 @@ public partial interface IBaseClient
     /// <example>
     /// <code>
     /// await client.SetAsync("key", "10.5");
-    /// var incremented = await client.IncrementAsync("key", 0.5);  // 11
+    /// var incremented = await client.IncrementAsync("key", 0.5);  // 11.0
     /// </code>
     /// </example>
     /// </remarks>
@@ -163,7 +169,6 @@ public partial interface IBaseClient
     /// Gets the value of a key and optionally set or remove its expiry.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/getex/">Valkey commands – GETEX</seealso>
-    /// <note>Since Valkey 6.2.0 and above.</note>
     /// <param name="key">The key to retrieve.</param>
     /// <param name="options">The expiry option to apply (expire in duration, expire at timestamp, or persist).</param>
     /// <returns>The value of <paramref name="key"/>, or <see cref="ValkeyValue.Null"/> when <paramref name="key"/> does not exist.</returns>

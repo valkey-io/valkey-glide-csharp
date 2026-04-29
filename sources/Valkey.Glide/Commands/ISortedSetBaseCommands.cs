@@ -22,8 +22,7 @@ public interface ISortedSetBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// var added = await client.SortedSetAddAsync("myzset", "member1", 1.0);
-    /// Console.WriteLine($"Added: {added}");
+    /// var added = await client.SortedSetAddAsync("myzset", "member1", 1.0);  // true
     /// </code>
     /// </example>
     /// </remarks>
@@ -39,9 +38,8 @@ public interface ISortedSetBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// var entries = new[] { new SortedSetEntry("a", 1.0), new SortedSetEntry("b", 2.0) };
-    /// var addedCount = await client.SortedSetAddAsync("myzset", entries);
-    /// Console.WriteLine($"Added: {addedCount}");
+    /// SortedSetEntry[] entries = [new("a", 1.0), new("b", 2.0)];
+    /// var addedCount = await client.SortedSetAddAsync("myzset", entries);  // 2
     /// </code>
     /// </example>
     /// </remarks>
@@ -84,7 +82,6 @@ public interface ISortedSetBaseCommands
     /// Returns a random member from a sorted set.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/zrandmember/">Valkey commands – ZRANDMEMBER</seealso>
-    /// <note>Since Valkey 6.2.0 and above.</note>
     /// <param name="key">The sorted set key.</param>
     /// <returns>The randomly selected element, or <see langword="null"/> when the key does not exist.</returns>
     /// <remarks>
@@ -101,7 +98,6 @@ public interface ISortedSetBaseCommands
     /// Returns an array of random members from a sorted set.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/zrandmember/">Valkey commands – ZRANDMEMBER</seealso>
-    /// <note>Since Valkey 6.2.0 and above.</note>
     /// <param name="key">The sorted set key.</param>
     /// <param name="count">The number of members to return.</param>
     /// <returns>An array of randomly selected elements.</returns>
@@ -135,7 +131,6 @@ public interface ISortedSetBaseCommands
     /// Returns the scores associated with the specified members in a sorted set.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/zmscore/">Valkey commands – ZMSCORE</seealso>
-    /// <note>Since Valkey 6.2.0 and above.</note>
     /// <param name="key">The sorted set key.</param>
     /// <param name="members">The members to get the scores for.</param>
     /// <returns>

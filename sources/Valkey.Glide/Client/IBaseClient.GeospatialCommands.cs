@@ -131,7 +131,6 @@ public partial interface IBaseClient
     /// Searches for geospatial members within an area centered on another geospatial member.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/geosearch/">Valkey commands – GEOSEARCH</seealso>
-    /// <note>Since Valkey 6.2.0 and above.</note>
     /// <param name="key">The sorted set key.</param>
     /// <param name="from">The member to search from.</param>
     /// <param name="shape">The search area shape.</param>
@@ -156,7 +155,6 @@ public partial interface IBaseClient
     /// Searches for geospatial members within an area centered on a geographic position.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/geosearch/">Valkey commands – GEOSEARCH</seealso>
-    /// <note>Since Valkey 6.2.0 and above.</note>
     /// <param name="key">The sorted set key.</param>
     /// <param name="from">The position to search from.</param>
     /// <param name="shape">The search area shape.</param>
@@ -183,7 +181,6 @@ public partial interface IBaseClient
     /// geospatial member and stores the results in a destination sorted set.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/geosearchstore/">Valkey commands – GEOSEARCHSTORE</seealso>
-    /// <note>Since Valkey 6.2.0 and above.</note>
     /// <param name="source">The source sorted set key.</param>
     /// <param name="destination">The destination sorted set key.</param>
     /// <param name="from">The member to search from.</param>
@@ -211,7 +208,6 @@ public partial interface IBaseClient
     /// position and stores the results in a destination sorted set.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/geosearchstore/">Valkey commands – GEOSEARCHSTORE</seealso>
-    /// <note>Since Valkey 6.2.0 and above.</note>
     /// <param name="source">The source sorted set key.</param>
     /// <param name="destination">The destination sorted set key.</param>
     /// <param name="from">The position to search from.</param>

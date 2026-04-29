@@ -67,7 +67,7 @@ internal partial class Database
         }
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IDatabaseAsync.StringGetSetAsync(ValkeyKey, ValkeyValue, CommandFlags)"/>
     public Task<ValkeyValue> StringGetSetAsync(ValkeyKey key, ValkeyValue value, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
@@ -88,28 +88,28 @@ internal partial class Database
         return GetAsync(keys);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IDatabaseAsync.StringGetRangeAsync(ValkeyKey, long, long, CommandFlags)"/>
     public Task<ValkeyValue> StringGetRangeAsync(ValkeyKey key, long start, long end, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return GetRangeAsync(key, start, end);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IDatabaseAsync.StringSetRangeAsync(ValkeyKey, long, ValkeyValue, CommandFlags)"/>
     public Task<ValkeyValue> StringSetRangeAsync(ValkeyKey key, long offset, ValkeyValue value, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return SetRangeAsync(key, offset, value);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IDatabaseAsync.StringLengthAsync(ValkeyKey, CommandFlags)"/>
     public Task<long> StringLengthAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return LengthAsync(key);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IDatabaseAsync.StringAppendAsync(ValkeyKey, ValkeyValue, CommandFlags)"/>
     public Task<long> StringAppendAsync(ValkeyKey key, ValkeyValue value, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
@@ -144,7 +144,7 @@ internal partial class Database
         return IncrementAsync(key, value);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IDatabaseAsync.StringGetDeleteAsync(ValkeyKey, CommandFlags)"/>
     public Task<ValkeyValue> StringGetDeleteAsync(ValkeyKey key, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
@@ -166,21 +166,21 @@ internal partial class Database
         return GetExpiryAsync(key, GetExpiryOptions.ExpireAt(new DateTimeOffset(expiry)));
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IDatabaseAsync.StringLongestCommonSubsequenceAsync(ValkeyKey, ValkeyKey, CommandFlags)"/>
     public Task<string?> StringLongestCommonSubsequenceAsync(ValkeyKey first, ValkeyKey second, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return Command(Request.LongestCommonSubsequence(first, second));
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IDatabaseAsync.StringLongestCommonSubsequenceLengthAsync(ValkeyKey, ValkeyKey, CommandFlags)"/>
     public Task<long> StringLongestCommonSubsequenceLengthAsync(ValkeyKey first, ValkeyKey second, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return Command(Request.LongestCommonSubsequenceLength(first, second));
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IDatabaseAsync.StringLongestCommonSubsequenceWithMatchesAsync(ValkeyKey, ValkeyKey, long, CommandFlags)"/>
     public Task<LCSMatchResult> StringLongestCommonSubsequenceWithMatchesAsync(ValkeyKey first, ValkeyKey second, long minLength = 0, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);

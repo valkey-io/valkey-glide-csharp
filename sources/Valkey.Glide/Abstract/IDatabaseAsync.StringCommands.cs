@@ -180,6 +180,7 @@ public partial interface IDatabaseAsync
     /// returning a list of all common sequences with their positions and match information.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/lcs/">Valkey commands – LCS</seealso>
+    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="first">The key that stores the first string.</param>
     /// <param name="second">The key that stores the second string.</param>
     /// <param name="minLength">Can be used to restrict the list of matches to the ones of a given minimum length. Defaults to 0.</param>

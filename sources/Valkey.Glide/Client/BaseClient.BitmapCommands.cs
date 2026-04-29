@@ -7,11 +7,11 @@ namespace Valkey.Glide;
 
 public abstract partial class BaseClient
 {
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.GetBitAsync(ValkeyKey, long)"/>
     public async Task<bool> GetBitAsync(ValkeyKey key, long offset)
         => await Command(Request.GetBitAsync(key, offset));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SetBitAsync(ValkeyKey, long, bool)"/>
     public async Task<bool> SetBitAsync(ValkeyKey key, long offset, bool value)
         => await Command(Request.SetBitAsync(key, offset, value));
 
@@ -37,7 +37,7 @@ public abstract partial class BaseClient
         return await BitPosAsync(key, bit, options.Start, options.End, options.IndexType);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.BitOpAsync(Bitwise, ValkeyKey, IEnumerable{ValkeyKey})"/>
     public async Task<long> BitOpAsync(Bitwise operation, ValkeyKey destination, IEnumerable<ValkeyKey> keys)
         => await Command(Request.BitOpAsync(operation, destination, [.. keys]));
 

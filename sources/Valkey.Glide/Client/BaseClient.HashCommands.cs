@@ -28,7 +28,7 @@ public abstract partial class BaseClient
     public async Task<bool> HashSetAsync(ValkeyKey key, ValkeyValue hashField, ValkeyValue value)
         => await Command(Request.HashSetAsync(key, hashField, value));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IHashBaseCommands.HashSetIfNotExistsAsync(ValkeyKey, ValkeyValue, ValkeyValue)"/>
     public async Task<bool> HashSetIfNotExistsAsync(ValkeyKey key, ValkeyValue hashField, ValkeyValue value)
         => await Command(Request.HashSetNotExistsAsync(key, hashField, value));
 
@@ -40,7 +40,7 @@ public abstract partial class BaseClient
     public async Task<long> HashDeleteAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields)
         => await Command(Request.HashDeleteAsync(key, [.. hashFields]));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IHashBaseCommands.HashExistsAsync(ValkeyKey, ValkeyValue)"/>
     public async Task<bool> HashExistsAsync(ValkeyKey key, ValkeyValue hashField)
         => await Command(Request.HashExistsAsync(key, hashField));
 
@@ -52,38 +52,38 @@ public abstract partial class BaseClient
     public async Task<double> HashIncrementByAsync(ValkeyKey key, ValkeyValue hashField, double value)
         => await Command(Request.HashIncrementByAsync(key, hashField, value));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.HashKeysAsync(ValkeyKey)"/>
     public async Task<ISet<ValkeyValue>> HashKeysAsync(ValkeyKey key)
         => await Command(Request.HashKeysAsync(key));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IHashBaseCommands.HashLengthAsync(ValkeyKey)"/>
     public async Task<long> HashLengthAsync(ValkeyKey key)
         => await Command(Request.HashLengthAsync(key));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IHashBaseCommands.HashStringLengthAsync(ValkeyKey, ValkeyValue)"/>
     public async Task<long> HashStringLengthAsync(ValkeyKey key, ValkeyValue hashField)
         => await Command(Request.HashStringLengthAsync(key, hashField));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.HashValuesAsync(ValkeyKey)"/>
     public async Task<ICollection<ValkeyValue>> HashValuesAsync(ValkeyKey key)
         => await Command(Request.HashValuesAsync(key));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IHashBaseCommands.HashRandomFieldAsync(ValkeyKey)"/>
     public async Task<ValkeyValue> HashRandomFieldAsync(ValkeyKey key)
         => await Command(Request.HashRandomFieldAsync(key));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IHashBaseCommands.HashRandomFieldsAsync(ValkeyKey, long)"/>
     public async Task<ValkeyValue[]> HashRandomFieldsAsync(ValkeyKey key, long count)
         => await Command(Request.HashRandomFieldsAsync(key, count));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.HashRandomFieldWithValueAsync(ValkeyKey)"/>
     public async Task<HashEntry?> HashRandomFieldWithValueAsync(ValkeyKey key)
     {
         var result = await Command(Request.HashRandomFieldWithValueAsync(key));
         return result.HasValue ? new HashEntry(result.Value.Key, result.Value.Value) : null;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IHashBaseCommands.HashRandomFieldsWithValuesAsync(ValkeyKey, long)"/>
     public async Task<HashEntry[]> HashRandomFieldsWithValuesAsync(ValkeyKey key, long count)
         => await Command(Request.HashRandomFieldsWithValuesAsync(key, count));
 

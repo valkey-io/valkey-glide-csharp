@@ -156,7 +156,7 @@ public partial interface IBaseClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/sintercard/">Valkey commands – SINTERCARD</seealso>
     /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
-    /// <note>Since Valkey 7.0.0 and above.</note>
+    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="keys">The keys of the sets to intersect.</param>
     /// <param name="limit">
     /// The maximum number of elements to count. A value of <c>0</c> means no limit.

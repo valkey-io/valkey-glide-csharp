@@ -247,7 +247,7 @@ public abstract partial class BaseClient
         _ = await Command(Request.ScriptFlushAsync(mode));
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.ScriptShowAsync(string, CancellationToken)"/>
     public async Task<string?> ScriptShowAsync(
         string sha1Hash,
         CancellationToken cancellationToken = default)
@@ -263,7 +263,7 @@ public abstract partial class BaseClient
         }
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.ScriptKillAsync(CancellationToken)"/>
     public async Task ScriptKillAsync(
         CancellationToken cancellationToken = default)
     {
@@ -310,7 +310,7 @@ public abstract partial class BaseClient
 
     // ===== Function Management =====
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.FunctionLoadAsync(string, bool, CancellationToken)"/>
     public async Task<string> FunctionLoadAsync(
         string libraryCode,
         bool replace = false,
@@ -334,7 +334,7 @@ public abstract partial class BaseClient
         _ = await Command(Request.FunctionFlushAsync(mode));
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.FunctionDeleteAsync(string, CancellationToken)"/>
     public async Task FunctionDeleteAsync(
         string libraryName,
         CancellationToken cancellationToken = default)
@@ -342,7 +342,7 @@ public abstract partial class BaseClient
         _ = await Command(Request.FunctionDeleteAsync(libraryName));
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.FunctionKillAsync(CancellationToken)"/>
     public async Task FunctionKillAsync(
         CancellationToken cancellationToken = default)
     {
@@ -351,7 +351,7 @@ public abstract partial class BaseClient
 
     // ===== Function Persistence =====
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.FunctionDumpAsync(CancellationToken)"/>
     public async Task<byte[]> FunctionDumpAsync(
         CancellationToken cancellationToken = default)
     {

@@ -6,7 +6,7 @@ namespace Valkey.Glide;
 
 internal partial class Database
 {
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IDatabaseAsync.WatchAsync(IEnumerable{ValkeyKey}, CommandFlags)"/>
     public async Task WatchAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);

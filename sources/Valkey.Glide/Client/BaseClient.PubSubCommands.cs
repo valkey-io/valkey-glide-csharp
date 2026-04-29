@@ -18,7 +18,7 @@ public abstract partial class BaseClient
 
     #region PublishCommands
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.PublishAsync(ValkeyKey, ValkeyValue)"/>
     public async Task<long> PublishAsync(ValkeyKey channel, ValkeyValue message)
         => await Command(Request.Publish(channel, message));
 
@@ -160,11 +160,11 @@ public abstract partial class BaseClient
     public async Task<Dictionary<ValkeyKey, long>> PubSubNumSubAsync(IEnumerable<ValkeyKey> channels)
         => await Command(Request.PubSubNumSub(channels.ToGlideStrings()));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.PubSubNumPatAsync()"/>
     public async Task<long> PubSubNumPatAsync()
         => await Command(Request.PubSubNumPat());
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.GetSubscriptionsAsync()"/>
     public async Task<PubSubState> GetSubscriptionsAsync()
     {
         var (desiredResponse, actualResponse) = await Command(Request.GetSubscriptions());

@@ -39,19 +39,19 @@ public abstract partial class BaseClient
     public async Task<long> ListRightPushAsync(ValkeyKey key, IEnumerable<ValkeyValue> values)
         => await Command(Request.ListRightPushAsync(key, [.. values], When.Always));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IListBaseCommands.ListLengthAsync(ValkeyKey)"/>
     public async Task<long> ListLengthAsync(ValkeyKey key)
         => await Command(Request.ListLengthAsync(key));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IListBaseCommands.ListRemoveAsync(ValkeyKey, ValkeyValue, long)"/>
     public async Task<long> ListRemoveAsync(ValkeyKey key, ValkeyValue value, long count = 0)
         => await Command(Request.ListRemoveAsync(key, value, count));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IListBaseCommands.ListTrimAsync(ValkeyKey, long, long)"/>
     public async Task ListTrimAsync(ValkeyKey key, long start = 0, long stop = -1)
         => _ = await Command(Request.ListTrimAsync(key, start, stop));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IListBaseCommands.ListRangeAsync(ValkeyKey, long, long)"/>
     public async Task<ValkeyValue[]> ListRangeAsync(ValkeyKey key, long start = 0, long stop = -1)
         => await Command(Request.ListRangeAsync(key, start, stop));
 
@@ -63,31 +63,31 @@ public abstract partial class BaseClient
     public async Task<ListPopResult> ListRightPopAsync(IEnumerable<ValkeyKey> keys, long count)
         => await Command(Request.ListRightPopAsync([.. keys], count));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.ListIndexAsync(ValkeyKey, long)"/>
     public async Task<ValkeyValue> ListIndexAsync(ValkeyKey key, long index)
         => await Command(Request.ListGetByIndexAsync(key, index));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IListBaseCommands.ListInsertAfterAsync(ValkeyKey, ValkeyValue, ValkeyValue)"/>
     public async Task<long> ListInsertAfterAsync(ValkeyKey key, ValkeyValue pivot, ValkeyValue value)
         => await Command(Request.ListInsertAfterAsync(key, pivot, value));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IListBaseCommands.ListInsertBeforeAsync(ValkeyKey, ValkeyValue, ValkeyValue)"/>
     public async Task<long> ListInsertBeforeAsync(ValkeyKey key, ValkeyValue pivot, ValkeyValue value)
         => await Command(Request.ListInsertBeforeAsync(key, pivot, value));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IListBaseCommands.ListMoveAsync(ValkeyKey, ValkeyKey, ListSide, ListSide)"/>
     public async Task<ValkeyValue> ListMoveAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, ListSide sourceSide, ListSide destinationSide)
         => await Command(Request.ListMoveAsync(sourceKey, destinationKey, sourceSide, destinationSide));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IListBaseCommands.ListPositionAsync(ValkeyKey, ValkeyValue, long, long)"/>
     public async Task<long> ListPositionAsync(ValkeyKey key, ValkeyValue element, long rank = 1, long maxLength = 0)
         => await Command(Request.ListPositionAsync(key, element, rank, maxLength));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IListBaseCommands.ListPositionsAsync(ValkeyKey, ValkeyValue, long, long, long)"/>
     public async Task<long[]> ListPositionsAsync(ValkeyKey key, ValkeyValue element, long count, long rank = 1, long maxLength = 0)
         => await Command(Request.ListPositionsAsync(key, element, count, rank, maxLength));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.ListSetAsync(ValkeyKey, long, ValkeyValue)"/>
     public async Task ListSetAsync(ValkeyKey key, long index, ValkeyValue value)
         => _ = await Command(Request.ListSetByIndexAsync(key, index, value));
 
@@ -109,7 +109,7 @@ public abstract partial class BaseClient
     public async Task<ValkeyValue[]?> ListBlockingRightPopAsync(ValkeyKey key, TimeSpan timeout)
         => await ListBlockingRightPopAsync([key], timeout);
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.ListBlockingMoveAsync(ValkeyKey, ValkeyKey, ListSide, ListSide, TimeSpan)"/>
     public async Task<ValkeyValue> ListBlockingMoveAsync(ValkeyKey source, ValkeyKey destination, ListSide sourceSide, ListSide destinationSide, TimeSpan timeout)
         => await Command(Request.ListBlockingMoveAsync(source, destination, sourceSide, destinationSide, timeout));
 

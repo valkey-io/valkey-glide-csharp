@@ -18,6 +18,16 @@ public partial interface IDatabaseAsync
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns><see langword="true"/> if the key was removed.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <remarks>
+    /// This is the blocking form of the delete operation; reclaiming memory occurs synchronously with the call.
+    /// For a non-blocking variant that reclaims memory asynchronously, see <see cref="KeyUnlinkAsync(ValkeyKey, CommandFlags)"/>.
+    /// StackExchange.Redis's <see cref="CommandFlags.FireAndForget"/> is not currently supported by GLIDE.
+    /// <example>
+    /// <code>
+    /// var removed = await db.KeyDeleteAsync("key");  // true
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<bool> KeyDeleteAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
@@ -28,6 +38,16 @@ public partial interface IDatabaseAsync
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>The number of keys that were removed.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <remarks>
+    /// This is the blocking form of the delete operation; reclaiming memory occurs synchronously with the call.
+    /// For a non-blocking variant that reclaims memory asynchronously, see <see cref="KeyUnlinkAsync(IEnumerable{ValkeyKey}, CommandFlags)"/>.
+    /// StackExchange.Redis's <see cref="CommandFlags.FireAndForget"/> is not currently supported by GLIDE.
+    /// <example>
+    /// <code>
+    /// var removed = await db.KeyDeleteAsync(["key1", "key2"]);  // 2
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<long> KeyDeleteAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
@@ -38,6 +58,16 @@ public partial interface IDatabaseAsync
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns><see langword="true"/> if the key was unlinked.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <remarks>
+    /// This is a non-blocking variant of the delete operation; reclaiming memory asynchronously on a background thread.
+    /// Use <see cref="KeyDeleteAsync(ValkeyKey, CommandFlags)"/> for the blocking form.
+    /// StackExchange.Redis's <see cref="CommandFlags.FireAndForget"/> is not currently supported by GLIDE.
+    /// <example>
+    /// <code>
+    /// var unlinked = await db.KeyUnlinkAsync("key");  // true
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<bool> KeyUnlinkAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
@@ -48,6 +78,16 @@ public partial interface IDatabaseAsync
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>The number of keys that were unlinked.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <remarks>
+    /// This is a non-blocking variant of the delete operation; reclaiming memory asynchronously on a background thread.
+    /// Use <see cref="KeyDeleteAsync(IEnumerable{ValkeyKey}, CommandFlags)"/> for the blocking form.
+    /// StackExchange.Redis's <see cref="CommandFlags.FireAndForget"/> is not currently supported by GLIDE.
+    /// <example>
+    /// <code>
+    /// var unlinked = await db.KeyUnlinkAsync(["key1", "key2"]);  // 2
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<long> KeyUnlinkAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="IBaseClient.ExistsAsync(ValkeyKey)"/>

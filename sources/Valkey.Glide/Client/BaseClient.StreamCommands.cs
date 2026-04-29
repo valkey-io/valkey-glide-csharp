@@ -78,7 +78,7 @@ public abstract partial class BaseClient
     #endregion
     #region StreamLengthAsync
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IStreamBaseCommands.StreamLengthAsync(ValkeyKey)"/>
     public Task<long> StreamLengthAsync(ValkeyKey key)
         => Command(Request.StreamLengthAsync(key));
 

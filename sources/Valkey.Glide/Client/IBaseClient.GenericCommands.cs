@@ -363,6 +363,7 @@ public partial interface IBaseClient
     /// Returns the absolute time at which a key will expire.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/pexpiretime/">Valkey commands – PEXPIRETIME</seealso>
+    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="key">The key to determine the expiration value of.</param>
     /// <returns>
     /// The expiration time as a <see cref="DateTimeOffset"/>, or <see langword="null"/> if <paramref name="key"/>
@@ -452,7 +453,6 @@ public partial interface IBaseClient
     /// if it already exists, otherwise performs no action.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/copy/">Valkey commands – COPY</seealso>
-    /// <note>Since Valkey 6.2.0 and above.</note>
     /// <note>When in cluster mode, both <paramref name="source"/> and <paramref name="destination"/> must map to the same hash slot.</note>
     /// <param name="source">The key to the source value.</param>
     /// <param name="destination">The key where the value should be copied to.</param>
@@ -505,6 +505,7 @@ public partial interface IBaseClient
     /// If the timeout is reached, the command returns even if the specified number of acknowledgments were not yet reached.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/waitaof/">Valkey commands – WAITAOF</seealso>
+    /// <note>Since Valkey 7.2.0.</note>
     /// <param name="localAof">Whether to wait for the local node to acknowledge AOF sync.</param>
     /// <param name="numreplicas">The number of replica nodes to wait for AOF sync.</param>
     /// <param name="timeout">The timeout to wait.</param>
@@ -561,7 +562,7 @@ public partial interface IBaseClient
     /// Reads-only variant of SORT that is guaranteed not to modify the database.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/sort_ro/">Valkey commands – SORT_RO</seealso>
-    /// <note>Since Valkey 7.0.0 and above.</note>
+    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="key">The key of the list, set, or sorted set to be sorted.</param>
     /// <param name="skip">The number of elements to skip.</param>
     /// <param name="take">The number of elements to take. -1 means take all.</param>
@@ -585,7 +586,7 @@ public partial interface IBaseClient
     /// Reads-only variant of SORT that is guaranteed not to modify the database.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/sort_ro/">Valkey commands – SORT_RO</seealso>
-    /// <note>Since Valkey 7.0.0 and above.</note>
+    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="key">The key of the list, set, or sorted set to be sorted.</param>
     /// <param name="options">The options for the SORT_RO command.</param>
     /// <returns>An array of sorted elements.</returns>

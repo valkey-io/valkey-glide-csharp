@@ -108,6 +108,7 @@ public partial interface IDatabaseAsync
     /// Gets the value of the specified hash field and optionally set its expiry.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hgetex/">Valkey commands – HGETEX</seealso>
+    /// <note>Since Valkey 9.0.0.</note>
     /// <param name="key">The hash key.</param>
     /// <param name="hashField">The field to get.</param>
     /// <param name="expiry">The expiry duration to set, or <see langword="null"/> to not change expiry.</param>
@@ -121,6 +122,7 @@ public partial interface IDatabaseAsync
     /// Gets the value of the specified hash field and sets its expiry to the given <see cref="DateTime"/>.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hgetex/">Valkey commands – HGETEX</seealso>
+    /// <note>Since Valkey 9.0.0.</note>
     /// <param name="key">The hash key.</param>
     /// <param name="hashField">The field to get.</param>
     /// <param name="expiry">The absolute expiry time to set.</param>
@@ -133,6 +135,7 @@ public partial interface IDatabaseAsync
     /// Gets the values of the specified hash fields and optionally set their expiry.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hgetex/">Valkey commands – HGETEX</seealso>
+    /// <note>Since Valkey 9.0.0.</note>
     /// <param name="key">The hash key.</param>
     /// <param name="hashFields">The fields to get.</param>
     /// <param name="expiry">The expiry duration to set, or <see langword="null"/> to not change expiry.</param>
@@ -146,6 +149,7 @@ public partial interface IDatabaseAsync
     /// Gets the values of the specified hash fields and sets their expiry to the given <see cref="DateTime"/>.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hgetex/">Valkey commands – HGETEX</seealso>
+    /// <note>Since Valkey 9.0.0.</note>
     /// <param name="key">The hash key.</param>
     /// <param name="hashFields">The fields to get.</param>
     /// <param name="expiry">The absolute expiry time to set.</param>
@@ -158,6 +162,7 @@ public partial interface IDatabaseAsync
     /// Sets the specified hash field and optionally set its expiry.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hsetex/">Valkey commands – HSETEX</seealso>
+    /// <note>Since Valkey 9.0.0.</note>
     /// <param name="key">The hash key.</param>
     /// <param name="hashField">The field to set.</param>
     /// <param name="value">The value to set.</param>
@@ -173,6 +178,7 @@ public partial interface IDatabaseAsync
     /// Sets the specified hash field and sets its expiry to the given <see cref="DateTime"/>.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hsetex/">Valkey commands – HSETEX</seealso>
+    /// <note>Since Valkey 9.0.0.</note>
     /// <param name="key">The hash key.</param>
     /// <param name="hashField">The field to set.</param>
     /// <param name="value">The value to set.</param>
@@ -187,6 +193,7 @@ public partial interface IDatabaseAsync
     /// Sets the specified hash fields and optionally set their expiry.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hsetex/">Valkey commands – HSETEX</seealso>
+    /// <note>Since Valkey 9.0.0.</note>
     /// <param name="key">The hash key.</param>
     /// <param name="hashFields">The field-value pairs to set.</param>
     /// <param name="expiry">The expiry duration to set, or <see langword="null"/> to not change expiry.</param>
@@ -201,6 +208,7 @@ public partial interface IDatabaseAsync
     /// Sets the specified hash fields and sets their expiry to the given <see cref="DateTime"/>.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hsetex/">Valkey commands – HSETEX</seealso>
+    /// <note>Since Valkey 9.0.0.</note>
     /// <param name="key">The hash key.</param>
     /// <param name="hashFields">The field-value pairs to set.</param>
     /// <param name="expiry">The absolute expiry time to set.</param>

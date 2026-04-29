@@ -35,7 +35,7 @@ public abstract partial class BaseClient
     public Task SetAsync(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values) =>
         Command(Request.Set([.. values]));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SetIfNotExistsAsync(IEnumerable{KeyValuePair{ValkeyKey, ValkeyValue}})"/>
     public Task<bool> SetIfNotExistsAsync(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values) =>
         Command(Request.SetIfNotExists([.. values]));
 
@@ -51,23 +51,23 @@ public abstract partial class BaseClient
     public Task<ValkeyValue> GetSetAsync(ValkeyKey key, ValkeyValue value, SetOptions options) =>
         Command(Request.GetSet(key, value, options));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.GetSetExpiryAsync(ValkeyKey, ValkeyValue, SetExpiryOptions)"/>
     public Task<ValkeyValue> GetSetExpiryAsync(ValkeyKey key, ValkeyValue value, SetExpiryOptions expiry) =>
         Command(Request.GetSet(key, value, new SetOptions { Expiry = expiry }));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.GetRangeAsync(ValkeyKey, long, long)"/>
     public Task<ValkeyValue> GetRangeAsync(ValkeyKey key, long start, long end) =>
         Command(Request.GetRange(key, start, end));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.SetRangeAsync(ValkeyKey, long, ValkeyValue)"/>
     public Task<ValkeyValue> SetRangeAsync(ValkeyKey key, long offset, ValkeyValue value) =>
         Command(Request.SetRange(key, offset, value));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.LengthAsync(ValkeyKey)"/>
     public Task<long> LengthAsync(ValkeyKey key) =>
         Command(Request.Length(key));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.AppendAsync(ValkeyKey, ValkeyValue)"/>
     public Task<long> AppendAsync(ValkeyKey key, ValkeyValue value) =>
         Command(Request.Append(key, value));
 
@@ -91,11 +91,11 @@ public abstract partial class BaseClient
     public Task<double> IncrementAsync(ValkeyKey key, double value) =>
         Command(Request.IncrementByFloat(key, value));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.GetDeleteAsync(ValkeyKey)"/>
     public Task<ValkeyValue> GetDeleteAsync(ValkeyKey key) =>
         Command(Request.GetDelete(key));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.GetExpiryAsync(ValkeyKey, GetExpiryOptions)"/>
     public Task<ValkeyValue> GetExpiryAsync(ValkeyKey key, GetExpiryOptions options) =>
         Command(Request.GetExpiry(key, options));
 

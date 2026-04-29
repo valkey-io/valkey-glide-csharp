@@ -6,7 +6,7 @@ namespace Valkey.Glide;
 
 internal partial class Database
 {
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IDatabaseAsync.PublishAsync(ValkeyChannel, ValkeyValue, CommandFlags)"/>
     public async Task<long> PublishAsync(
         ValkeyChannel channel,
         ValkeyValue message,

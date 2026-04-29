@@ -1,6 +1,8 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-namespace Valkey.Glide.Commands;
+using Valkey.Glide.Commands;
+
+namespace Valkey.Glide;
 
 /// ATTENTION: Methods should only be added to this interface if they are implemented
 /// by <see cref="IBaseClient"/> but NOT by <see cref="IDatabaseAsync"/>. Methods
@@ -23,6 +25,7 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// <example>
     /// <code>
     /// var subscriberCount = await client.PublishAsync("news", "Breaking news!");
+    /// Console.WriteLine($"Delivered message to {subscriberCount} subscriber(s)");
     /// </code>
     /// </example>
     /// </remarks>

@@ -21,7 +21,7 @@ public interface IGenericCommands
     /// should be added as a separate value in <paramref name="args" />.
     /// The command is routed automatically based on the command's default request policy.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/command/">Valkey commands – COMMAND</seealso>
+    /// <seealso href="https://valkey.io/commands/">Valkey commands</seealso>
     /// <param name="args">A list includes the command name and arguments for the custom command.</param>
     /// <returns>The returning value depends on the executed command.</returns>
     /// <remarks>
@@ -33,7 +33,6 @@ public interface IGenericCommands
     /// <example>
     /// <code>
     /// var result = await client.CustomCommand(["CLIENT", "LIST", "TYPE", "PUBSUB"]);
-    /// Console.WriteLine($"Result: {result}");
     /// </code>
     /// </example>
     /// </remarks>

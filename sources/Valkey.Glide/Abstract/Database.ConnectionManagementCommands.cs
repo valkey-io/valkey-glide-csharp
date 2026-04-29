@@ -8,7 +8,7 @@ namespace Valkey.Glide;
 
 internal partial class Database
 {
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IRedisAsync.PingAsync(CommandFlags)"/>
     public async Task<TimeSpan> PingAsync(CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);

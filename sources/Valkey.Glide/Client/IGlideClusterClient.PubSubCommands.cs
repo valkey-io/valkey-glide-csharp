@@ -16,6 +16,7 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// Publishes a message to the specified sharded channel.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/spublish/">valkey.io</seealso>
+    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="shardedChannel">The sharded channel to publish the message to.</param>
     /// <param name="message">The message to publish.</param>
     /// <returns>The number of clients that received the message.</returns>
@@ -23,8 +24,8 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// Sharded channels are specific to cluster mode and route messages to specific shards based on the channel name.
     /// <example>
     /// <code>
-    /// long subscriberCount = await clusterClient.SPublishAsync("shard-news", "Shard-specific news!");
-    /// Console.WriteLine($"Message delivered to {subscriberCount} subscribers");
+    /// long count = await clusterClient.SPublishAsync("shard-news", "Shard-specific news!");
+    /// Console.WriteLine($"Delivered message to {count} subscriber(s)");
     /// </code>
     /// </example>
     /// </remarks>
@@ -37,6 +38,7 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// Subscribes the client to the specified sharded channel and waits for server confirmation.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ssubscribe/">valkey.io</seealso>
+    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="shardedChannel">The sharded channel to subscribe to.</param>
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
@@ -47,6 +49,7 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// Subscribes the client to the specified sharded channels and waits for server confirmation.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ssubscribe/">valkey.io</seealso>
+    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="shardedChannels">A collection of sharded channels to subscribe to.</param>
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
@@ -61,6 +64,7 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// actual server subscription state.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ssubscribe/">valkey.io</seealso>
+    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="shardedChannel">The sharded channel to subscribe to.</param>
     /// <remarks>
     /// <example>
@@ -80,6 +84,7 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// actual server subscription state.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ssubscribe/">valkey.io</seealso>
+    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="shardedChannels">A collection of sharded channels to subscribe to.</param>
     /// <remarks>
     /// <example>
@@ -99,6 +104,7 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// Unsubscribes the client from all sharded channels and waits for server confirmation.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/sunsubscribe/">valkey.io</seealso>
+    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
     /// <exception cref="Errors.TimeoutException">Thrown if server confirmation is not received within the specified timeout.</exception>
@@ -108,6 +114,7 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// Unsubscribes the client from the specified sharded channel and waits for server confirmation.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/sunsubscribe/">valkey.io</seealso>
+    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="shardedChannel">The sharded channel to unsubscribe from.</param>
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
@@ -118,6 +125,7 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// Unsubscribes the client from the specified sharded channels and waits for server confirmation.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/sunsubscribe/">valkey.io</seealso>
+    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="shardedChannels">A collection of sharded channels to unsubscribe from.</param>
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if timeout is negative.</exception>
@@ -132,6 +140,7 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// actual server subscription state.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/sunsubscribe/">valkey.io</seealso>
+    /// <note>Since Valkey 7.0.0.</note>
     /// <remarks>
     /// <example>
     /// <code>
@@ -149,6 +158,7 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// Use <see cref="IBaseClient.GetSubscriptionsAsync"/> to verify the actual server subscription state.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/sunsubscribe/">valkey.io</seealso>
+    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="shardedChannel">The sharded channel to unsubscribe from.</param>
     /// <remarks>
     /// <example>
@@ -169,6 +179,7 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// If no sharded channels or <see cref="PubSub.AllShardedChannels"/> is specified, unsubscribes the client from all sharded channels.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/sunsubscribe/">valkey.io</seealso>
+    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="shardedChannels">A collection of sharded channels to unsubscribe from.</param>
     /// <remarks>
     /// <example>
@@ -194,6 +205,7 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// Lists the currently active sharded channels.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/pubsub-shardchannels/">valkey.io</seealso>
+    /// <note>Since Valkey 7.0.0.</note>
     /// <returns>A set of active sharded channel names.</returns>
     /// <remarks>
     /// <example>
@@ -209,6 +221,7 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// Lists the currently active sharded channels matching the specified pattern.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/pubsub-shardchannels/">valkey.io</seealso>
+    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="pattern">A glob-style pattern to filter sharded channel names.</param>
     /// <returns>A set of active sharded channel names matching the pattern.</returns>
     /// <remarks>
@@ -225,6 +238,7 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// Returns the number of subscribers for the specified sharded channels.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/pubsub-shardnumsub/">valkey.io</seealso>
+    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="shardedChannels">A collection of sharded channel names to query.</param>
     /// <returns>A dictionary mapping sharded channel names to their subscriber counts.</returns>
     /// <remarks>

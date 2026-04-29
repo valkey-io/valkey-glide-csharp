@@ -3,7 +3,7 @@
 namespace Valkey.Glide;
 
 /// <summary>
-/// Lists commands for Valkey GLIDE clients.
+/// List commands for Valkey GLIDE clients.
 /// </summary>
 /// <remarks>
 /// These methods use Valkey GLIDE naming conventions. For StackExchange.Redis-compatible
@@ -108,7 +108,6 @@ public partial interface IBaseClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/blmove/">Valkey commands – BLMOVE</seealso>
     /// <note>When in cluster mode, <paramref name="source"/> and <paramref name="destination"/> must map to the same hash slot.</note>
-    /// <note>Since Valkey 6.2.0 and above.</note>
     /// <param name="source">The source list key.</param>
     /// <param name="destination">The destination list key.</param>
     /// <param name="sourceSide">The side to pop from (<see cref="ListSide.Left"/> = head, <see cref="ListSide.Right"/> = tail).</param>
@@ -136,7 +135,7 @@ public partial interface IBaseClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/blmpop/">Valkey commands – BLMPOP</seealso>
     /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
-    /// <note>Since Valkey 7.0.0 and above.</note>
+    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="keys">The list keys, checked in order.</param>
     /// <param name="side">The side to pop from (<see cref="ListSide.Left"/> = head, <see cref="ListSide.Right"/> = tail).</param>
     /// <param name="timeout">The maximum time to wait. <see cref="TimeSpan.Zero"/> blocks indefinitely.</param>
@@ -161,7 +160,7 @@ public partial interface IBaseClient
     /// blocking until an element is available.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/blmpop/">Valkey commands – BLMPOP</seealso>
-    /// <note>Since Valkey 7.0.0 and above.</note>
+    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="key">The list key.</param>
     /// <param name="side">The side to pop from (<see cref="ListSide.Left"/> = head, <see cref="ListSide.Right"/> = tail).</param>
     /// <param name="timeout">The maximum time to wait. <see cref="TimeSpan.Zero"/> blocks indefinitely.</param>
@@ -187,7 +186,7 @@ public partial interface IBaseClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/blmpop/">Valkey commands – BLMPOP</seealso>
     /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
-    /// <note>Since Valkey 7.0.0 and above.</note>
+    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="keys">The list keys, checked in order.</param>
     /// <param name="side">The side to pop from (<see cref="ListSide.Left"/> = head, <see cref="ListSide.Right"/> = tail).</param>
     /// <param name="count">The maximum number of elements to pop.</param>
@@ -213,7 +212,7 @@ public partial interface IBaseClient
     /// blocking until an element is available.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/blmpop/">Valkey commands – BLMPOP</seealso>
-    /// <note>Since Valkey 7.0.0 and above.</note>
+    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="key">The list key.</param>
     /// <param name="side">The side to pop from (<see cref="ListSide.Left"/> = head, <see cref="ListSide.Right"/> = tail).</param>
     /// <param name="count">The maximum number of elements to pop.</param>
