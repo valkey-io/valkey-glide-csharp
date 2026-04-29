@@ -148,7 +148,7 @@ internal partial class Request
     private static Dictionary<string, object> ParseFtInfoResponse(object data) => data is Dictionary<GlideString, object> map
             ? map.ToDictionary(
                 kvp => kvp.Key.ToString(),
-                kvp => ConvertFtValue(kvp.Value)!)
+                kvp => ConvertFtValue(kvp.Value) ?? string.Empty)
             : [];
 
     private static object? ConvertFtValue(object? value) => value switch
