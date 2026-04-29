@@ -188,7 +188,7 @@ public sealed partial class GlideClusterClient :
         return result.HasMultiData ? result.MultiValue.Values.Sum() : result.SingleValue;
     }
 
-    /// <inheritdoc cref="IGlideClusterClient.FlushAllDatabasesAsync()"/>
+    /// <inheritdoc cref="IBaseClient.FlushAllDatabasesAsync(FlushMode)"/>
     public async Task FlushAllDatabasesAsync()
         => await FlushAllDatabasesAsync(AllPrimaries);
 
@@ -204,7 +204,7 @@ public sealed partial class GlideClusterClient :
     public async Task FlushAllDatabasesAsync(FlushMode mode, Route route)
         => _ = await Command(Request.FlushAllDatabasesAsync(mode), route);
 
-    /// <inheritdoc cref="IGlideClusterClient.FlushDatabaseAsync()"/>
+    /// <inheritdoc cref="IBaseClient.FlushDatabaseAsync(FlushMode)"/>
     public async Task FlushDatabaseAsync()
         => await FlushDatabaseAsync(AllPrimaries);
 
@@ -252,7 +252,7 @@ public sealed partial class GlideClusterClient :
     public Task<ClusterValue<DateTimeOffset>> TimeAsync(Route route)
         => Command(Request.TimeAsync().ToClusterValue(route is SingleNodeRoute), route);
 
-    /// <inheritdoc cref="IGlideClusterClient.LolwutAsync()"/>
+    /// <inheritdoc cref="IBaseClient.LolwutAsync(LolwutOptions)"/>
     public async Task<Dictionary<string, string>> LolwutAsync()
     {
         ClusterValue<string> result = await Command(Request.LolwutAsync().ToClusterValue(false), Route.Random);

@@ -33,7 +33,7 @@ public partial class GlideClusterClient
     public async Task SSubscribeLazyAsync(ValkeyKey shardedChannel)
         => await Command(Request.SSubscribe([shardedChannel]));
 
-    /// <inheritdoc cref=".Commands.IGlideClusterClient.SSubscribeLazyAsync(IEnumerable{ValkeyKey})"/>
+    /// <inheritdoc cref="Commands.IGlideClusterClient.SSubscribeLazyAsync(IEnumerable{ValkeyKey})"/>
     public async Task SSubscribeLazyAsync(IEnumerable<ValkeyKey> shardedChannels)
         => await Command(Request.SSubscribe(shardedChannels.ToGlideStrings()));
 
