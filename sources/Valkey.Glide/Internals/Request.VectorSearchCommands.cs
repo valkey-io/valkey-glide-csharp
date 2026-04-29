@@ -61,19 +61,6 @@ internal partial class Request
         return new(RequestType.FtInfo, [.. args], false, ParseFtInfoResponse);
     }
 
-    public static Cmd<string, string> FtAliasAdd(string alias, ValkeyKey indexName)
-        => Simple<string>(RequestType.FtAliasAdd, [(GlideString)alias, (GlideString)indexName]);
-
-    public static Cmd<string, string> FtAliasDel(string alias)
-        => Simple<string>(RequestType.FtAliasDel, [(GlideString)alias]);
-
-    public static Cmd<string, string> FtAliasUpdate(string alias, ValkeyKey indexName)
-        => Simple<string>(RequestType.FtAliasUpdate, [(GlideString)alias, (GlideString)indexName]);
-
-    public static Cmd<Dictionary<GlideString, object>, Dictionary<string, string>> FtAliasList()
-        => new(RequestType.FtAliasList, [], false, dict =>
-            dict.ToDictionary(kvp => kvp.Key.ToString(), kvp => ((GlideString)kvp.Value).ToString()));
-
     // --- response parsers ---
 
     private static FtSearchResult ParseFtSearchResponse(object[] data, bool withSortKeys)

@@ -523,52 +523,6 @@ public class ValkeySearchCommandTests(TestConfiguration config)
         await client.FtDropIndexAsync(idx);
     }
 
-    // ── FT.ALIAS* ─────────────────────────────────────────────────────────────
-
-    [Theory(Skip = "FT.ALIAS not supported yet")]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task FtAlias_AddUpdateDeleteList_WorksCorrectly(BaseClient client)
-    {
-        await SkipIfModuleNotAvailable(client);
-        string alias1 = "alias1-" + Guid.NewGuid();
-        string alias2 = "alias2-" + Guid.NewGuid();
-        string idx = Guid.NewGuid() + "-index";
-
-        await client.FtCreateAsync(idx,
-            [new VectorFieldFlat("vec", DistanceMetric.Euclidean, 2)]);
-
-        // AliasAdd
-        await client.FtAliasAddAsync(alias1, idx);
-
-        Dictionary<string, string> aliases = await client.FtAliasListAsync();
-        Assert.Equal(idx, aliases[alias1]);
-
-        // Duplicate alias → error
-        _ = await Assert.ThrowsAnyAsync<Exception>(() =>
-            client.FtAliasAddAsync(alias1, idx));
-
-        // AliasUpdate creates alias2
-        await client.FtAliasUpdateAsync(alias2, idx);
-
-        aliases = await client.FtAliasListAsync();
-        Assert.Equal(idx, aliases[alias1]);
-        Assert.Equal(idx, aliases[alias2]);
-
-        // AliasDel
-        await client.FtAliasDelAsync(alias2);
-        await client.FtAliasDelAsync(alias1);
-
-        // Delete non-existent → error
-        _ = await Assert.ThrowsAnyAsync<Exception>(() =>
-            client.FtAliasDelAsync(alias2));
-
-        // AliasAdd with non-existent index → error
-        _ = await Assert.ThrowsAnyAsync<Exception>(() =>
-            client.FtAliasAddAsync(alias1, "nonexistent_index"));
-
-        await client.FtDropIndexAsync(idx);
-    }
-
     // ── FT.CREATE index-level options ─────────────────────────────────────────
 
     [Theory(DisableDiscoveryEnumeration = true)]

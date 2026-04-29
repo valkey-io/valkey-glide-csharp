@@ -292,22 +292,6 @@ public class VectorSearchCommandTests
             }).GetArgs());
 
     [Fact]
-    public void ValidateFtAliasArgs_Add() =>
-        Assert.Equal(["FT.ALIASADD", "myalias", "myindex"], Request.FtAliasAdd("myalias", "myindex").GetArgs());
-
-    [Fact]
-    public void ValidateFtAliasArgs_Del() =>
-        Assert.Equal(["FT.ALIASDEL", "myalias"], Request.FtAliasDel("myalias").GetArgs());
-
-    [Fact]
-    public void ValidateFtAliasArgs_Update() =>
-        Assert.Equal(["FT.ALIASUPDATE", "myalias", "newindex"], Request.FtAliasUpdate("myalias", "newindex").GetArgs());
-
-    [Fact]
-    public void ValidateFtAliasArgs_List() =>
-        Assert.Equal(["FT._ALIASLIST"], Request.FtAliasList().GetArgs());
-
-    [Fact]
     public void ValidateFtCreateOptionsValidation() =>
         // NoStopWords and StopWords are mutually exclusive
         _ = Assert.Throws<ArgumentException>(() =>

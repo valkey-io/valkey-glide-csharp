@@ -47,19 +47,4 @@ public abstract partial class BaseClient
     public Task<Dictionary<string, object>> FtInfoAsync(ValkeyKey indexName, FtInfoOptions options)
         => Command(Request.FtInfo(indexName, options));
 
-    /// <inheritdoc/>
-    public Task FtAliasAddAsync(string alias, ValkeyKey indexName)
-        => Command(Request.FtAliasAdd(alias, indexName));
-
-    /// <inheritdoc/>
-    public Task FtAliasDelAsync(string alias)
-        => Command(Request.FtAliasDel(alias));
-
-    /// <inheritdoc/>
-    public Task FtAliasUpdateAsync(string alias, ValkeyKey indexName)
-        => Command(Request.FtAliasUpdate(alias, indexName));
-
-    /// <inheritdoc/>
-    public Task<Dictionary<string, string>> FtAliasListAsync()
-        => Command(Request.FtAliasList());
 }

@@ -11,14 +11,7 @@ exclude_path = [
 # Links to exclude from scanning.
 exclude = [
     "example\\.com",    # Example URLs
-    "file://.*example", # Example file URIs
-
-    # Valkey Search alias command pages do not exist yet on valkey.io.
-    # TODO #353: Remove these exclusions after alias command docs are published on valkey.io
-    "https://valkey\\.io/commands/ft\\.aliasadd/",
-    "https://valkey\\.io/commands/ft\\.aliasdel/",
-    "https://valkey\\.io/commands/ft\\.aliasupdate/",
-    "https://valkey\\.io/commands/ft\\._aliaslist/",
+    "file://.*example" # Example file URIs
 ]
 
 # Check links inside code blocks
