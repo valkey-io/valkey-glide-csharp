@@ -13,4 +13,15 @@ public enum StreamTrimMode
     /// entries in all consumer groups' PEL.
     /// </summary>
     KeepReferences = 0,
+
+    /// <summary>
+    /// Trims the stream according to the specified policy and removes references to trimmed
+    /// entries from all consumer groups' PEL.
+    /// </summary>
+    DeleteReferences = 1,
+
+    /// <summary>
+    /// Only trims entries that were acknowledged by all consumer groups.
+    /// </summary>
+    Acknowledged = 2,
 }

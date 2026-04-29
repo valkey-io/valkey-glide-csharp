@@ -663,27 +663,34 @@ internal partial class Request
     }
 
     // TODO SER only
-    public static Cmd<long, long> StreamTrimAsync(ValkeyKey key, long? maxLength, ValkeyValue minId, bool useApproximateMaxLength, long? limit)
+    public static Cmd<long, long> StreamTrimAsync(
+        ValkeyKey key,
+        long? maxLength,
+        ValkeyValue minId,
+        bool useApproximateMaxLength,
+        long? limit,
+        StreamTrimMode trimMode)
     {
         List<GlideString> args = [key.ToGlideString()];
 
         if (maxLength.HasValue)
         {
-            args.Add("MAXLEN");
+            args.Add(ValkeyLiterals.MAXLEN);
 
             if (useApproximateMaxLength)
             {
-                args.Add("~");
+                args.Add(ValkeyLiterals.StreamApproxTrim);
             }
 
             args.Add(maxLength.Value.ToGlideString());
         }
         else if (!minId.IsNull)
         {
-            args.Add("MINID");
+            args.Add(ValkeyLiterals.MINID);
+
             if (useApproximateMaxLength)
             {
-                args.Add("~");
+                args.Add(ValkeyLiterals.StreamApproxTrim);
             }
 
             args.Add(minId.ToGlideString());
@@ -691,8 +698,14 @@ internal partial class Request
 
         if (limit.HasValue && useApproximateMaxLength)
         {
-            args.Add("LIMIT");
+            args.Add(ValkeyLiterals.LIMIT);
             args.Add(limit.Value.ToGlideString());
+        }
+
+        GlideString? trimModeKeyword = trimMode.ToKeyword();
+        if (trimModeKeyword is not null)
+        {
+            args.Add(trimModeKeyword);
         }
 
         return new(RequestType.XTrim, [.. args], false, response => response);

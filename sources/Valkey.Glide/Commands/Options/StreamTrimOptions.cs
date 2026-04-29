@@ -22,6 +22,12 @@ public abstract class StreamTrimOptions
     /// </summary>
     public long? Limit { get; init; } = null;
 
+    /// <summary>
+    /// Controls how consumer group PEL references are handled for trimmed entries.
+    /// Requires Valkey 8.2 or later when set to a non-default value.
+    /// </summary>
+    public StreamTrimMode Mode { get; init; } = StreamTrimMode.KeepReferences;
+
     #endregion
     #region Internal Methods
 
@@ -58,6 +64,12 @@ public abstract class StreamTrimOptions
         {
             args.Add(ValkeyLiterals.LIMIT);
             args.Add(Limit.Value.ToGlideString());
+        }
+
+        GlideString? trimModeKeyword = Mode.ToKeyword();
+        if (trimModeKeyword is not null)
+        {
+            args.Add(trimModeKeyword);
         }
 
         return [.. args];
