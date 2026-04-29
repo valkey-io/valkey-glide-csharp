@@ -431,7 +431,7 @@ public sealed class FtCreateOptionsBuilder
     /// </summary>
     public FtCreateOptionsBuilder WithOffsets(bool? include = true) { _offsets = include; return this; }
 
-    /// <summary>Disables stop-word filtering. Clears any stop words set via <see cref="WithStopWords(string[])"/>.</summary>
+    /// <summary>Disables stop-word filtering. Clears any stop words set via <see cref="WithStopWords(ValkeyValue[])"/>.</summary>
     public FtCreateOptionsBuilder WithNoStopWords() { _noStopWords = true; _stopWords = null; return this; }
 
     /// <summary>

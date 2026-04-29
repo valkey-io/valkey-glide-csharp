@@ -93,18 +93,6 @@ internal partial class Request
     private static HashSet<ValkeyKey> ToValkeyKeySet(object[] objects)
         => [.. objects.Cast<GlideString>().Select(gs => (ValkeyKey)gs.Bytes)];
 
-    /// <summary>
-    /// Converts an object array of <see cref="GlideString"/> elements to a <see cref="HashSet{String}"/>.
-    /// </summary>
-    private static HashSet<string> ToStringSet(object[] objects)
-    {
-        HashSet<string> result = new(objects.Length);
-        foreach (var obj in objects)
-        {
-            _ = result.Add(((GlideString)obj).ToString());
-        }
-        return result;
-    }
 
     /// <summary>
     /// Converts a <see cref="GlideString"/>-keyed dictionary to a <see cref="ValkeyKey"/>-keyed dictionary with <see langword="long"/> values.
