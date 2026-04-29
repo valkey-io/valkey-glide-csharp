@@ -212,4 +212,4 @@ tasks:
     check-examples:
         desc: "Extract and validate C# code examples in doc comments"
         cmds:
-            - python3 scripts/check_examples.py --glide_root .
+            - python3 scripts/check_examples.py
