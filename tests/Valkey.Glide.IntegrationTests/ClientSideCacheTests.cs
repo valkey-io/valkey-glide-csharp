@@ -238,14 +238,16 @@ public class ClientSideCacheTests
     [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
     public async Task EvictionPolicyLRU(bool clusterMode)
     {
-        var cache = new ClientSideCacheConfig(1, TimeSpan.FromMinutes(1)) // 1 KB to force eviction
+        // Each entry: ~42 byte key + 1000 byte value ≈ ~1 KB with overhead.
+        // 4 KB cache fits 3 entries but not 5.
+        var cache = new ClientSideCacheConfig(4, TimeSpan.FromMinutes(10))
             .WithEvictionPolicy(EvictionPolicy.LRU)
             .WithMetrics(true);
 
         await using var client = await CreateClientWithCache(cache, clusterMode);
 
         string prefix = Guid.NewGuid().ToString();
-        string largeValue = new('x', 250); // ~250 bytes
+        string largeValue = new('x', 1000);
 
         // Set and cache 3 keys
         for (int i = 1; i <= 3; i++)
@@ -263,7 +265,7 @@ public class ClientSideCacheTests
         var retrieved = await client.GetAsync($"{prefix}_lru1");
         Assert.Equal(largeValue, retrieved.ToString());
 
-        // Add 2 more keys — should evict least recently used
+        // Add 2 more keys — should evict key2 and key3 (least recently used)
         for (int i = 4; i <= 5; i++)
         {
             await client.SetAsync($"{prefix}_lru{i}", largeValue);
@@ -271,13 +273,26 @@ public class ClientSideCacheTests
             Assert.Equal(largeValue, value.ToString());
         }
 
-        // Verify evictions occurred
+        // Verify 2 evictions occurred
         long evictions = await client.GetCacheEvictionsAsync();
         Assert.Equal(2, evictions);
 
-        // Hit rate should be > 0
+        // Verify cache is working (hit rate > 0)
         double hitRate = await client.GetCacheHitRateAsync();
         Assert.True(hitRate > 0.0);
+
+        // Check that key1 is still cached
+        retrieved = await client.GetAsync($"{prefix}_lru1");
+        Assert.Equal(largeValue, retrieved.ToString());
+        double newHitRate = await client.GetCacheHitRateAsync();
+        Assert.True(newHitRate > hitRate, "Key1 should still be in cache");
+
+        // Check that key2 and key3 are evicted (miss rate should increase)
+        double oldMissRate = await client.GetCacheMissRateAsync();
+        _ = await client.GetAsync($"{prefix}_lru2");
+        _ = await client.GetAsync($"{prefix}_lru3");
+        double newMissRate = await client.GetCacheMissRateAsync();
+        Assert.True(newMissRate > oldMissRate, "Key2 and Key3 should be evicted from cache");
     }
 
     #endregion
@@ -288,14 +303,16 @@ public class ClientSideCacheTests
     [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
     public async Task EvictionPolicyLFU(bool clusterMode)
     {
-        var cache = new ClientSideCacheConfig(1, TimeSpan.FromMinutes(1)) // 1 KB to force eviction
+        // Each entry: ~42 byte key + 1000 byte value ≈ ~1 KB with overhead.
+        // 4 KB cache fits 3 entries but not 4.
+        var cache = new ClientSideCacheConfig(4, TimeSpan.FromMinutes(10))
             .WithEvictionPolicy(EvictionPolicy.LFU)
             .WithMetrics(true);
 
         await using var client = await CreateClientWithCache(cache, clusterMode);
 
         string prefix = Guid.NewGuid().ToString();
-        string largeValue = new('x', 250);
+        string largeValue = new('x', 1000);
 
         // Set key1 and access it multiple times (high frequency)
         await client.SetAsync($"{prefix}_key1", largeValue);
@@ -304,6 +321,7 @@ public class ClientSideCacheTests
             var value = await client.GetAsync($"{prefix}_key1");
             Assert.Equal(largeValue, value.ToString());
         }
+        // key1 frequency: 5
 
         // Set key2 with medium frequency
         await client.SetAsync($"{prefix}_key2", largeValue);
@@ -312,11 +330,17 @@ public class ClientSideCacheTests
             var value = await client.GetAsync($"{prefix}_key2");
             Assert.Equal(largeValue, value.ToString());
         }
+        // key2 frequency: 2
 
         // Set key3 with low frequency
         await client.SetAsync($"{prefix}_key3", largeValue);
         var retrieved = await client.GetAsync($"{prefix}_key3");
         Assert.Equal(largeValue, retrieved.ToString());
+        // key3 frequency: 1
+
+        // Verify cache is working
+        double hitRate = await client.GetCacheHitRateAsync();
+        Assert.True(hitRate > 0.0, "Cache should have some hits");
 
         // Cache should have 3 entries
         long entryCount = await client.GetCacheEntryCountAsync();
@@ -326,17 +350,36 @@ public class ClientSideCacheTests
         await client.SetAsync($"{prefix}_key4", largeValue);
         retrieved = await client.GetAsync($"{prefix}_key4");
         Assert.Equal(largeValue, retrieved.ToString());
+        // key4 frequency: 1
+
+        // Check that cache entry count is still 3
+        entryCount = await client.GetCacheEntryCountAsync();
+        Assert.Equal(3, entryCount);
 
         // Verify 1 eviction occurred
         long evictions = await client.GetCacheEvictionsAsync();
         Assert.Equal(1, evictions);
 
-        // key1 (highest frequency) should still be cached
+        // Check that key1 (highest frequency) is still cached
         double oldHitRate = await client.GetCacheHitRateAsync();
         retrieved = await client.GetAsync($"{prefix}_key1");
         Assert.Equal(largeValue, retrieved.ToString());
         double newHitRate = await client.GetCacheHitRateAsync();
-        Assert.True(newHitRate > oldHitRate);
+        Assert.True(newHitRate > oldHitRate, "key1 (highest frequency) should still be cached");
+
+        // Check that key3 (lowest frequency) was evicted
+        double oldMissRate = await client.GetCacheMissRateAsync();
+        retrieved = await client.GetAsync($"{prefix}_key3");
+        Assert.Equal(largeValue, retrieved.ToString());
+        double newMissRate = await client.GetCacheMissRateAsync();
+        Assert.True(newMissRate > oldMissRate, "key3 (lowest frequency) should have been evicted");
+
+        // key2 (medium frequency) should still be cached
+        oldHitRate = await client.GetCacheHitRateAsync();
+        retrieved = await client.GetAsync($"{prefix}_key2");
+        Assert.Equal(largeValue, retrieved.ToString());
+        newHitRate = await client.GetCacheHitRateAsync();
+        Assert.True(newHitRate > oldHitRate, "key2 (medium frequency) should still be cached");
     }
 
     #endregion
