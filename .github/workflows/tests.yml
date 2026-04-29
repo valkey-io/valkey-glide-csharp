@@ -190,27 +190,16 @@ jobs:
                   path: rust/target
                   key: rust-x86_64-unknown-linux-gnu
 
-            - name: Run module tests against Docker standalone
+            - name: Run module tests against Docker servers
               env:
                   standalone-endpoints: "localhost:6389"
-              run: |
-                  dotnet test tests/Valkey.Glide.IntegrationTests/ \
-                    --framework net${{ matrix.dotnet }} \
-                    --filter "FullyQualifiedName~ValkeySearchCommand" \
-                    --logger "html;LogFileName=ModuleStandaloneTestReport.html" \
-                    --logger "trx;LogFileName=ModuleStandaloneTestResults.trx" \
-                    --logger "console;verbosity=detailed" \
-                    --results-directory .
-
-            - name: Run module tests against Docker cluster
-              env:
                   cluster-endpoints: "localhost:8001,localhost:8002,localhost:8003,localhost:8004,localhost:8005,localhost:8006"
               run: |
                   dotnet test tests/Valkey.Glide.IntegrationTests/ \
                     --framework net${{ matrix.dotnet }} \
                     --filter "FullyQualifiedName~ValkeySearchCommand" \
-                    --logger "html;LogFileName=ModuleClusterTestReport.html" \
-                    --logger "trx;LogFileName=ModuleClusterTestResults.trx" \
+                    --logger "html;LogFileName=ModuleTestReport.html" \
+                    --logger "trx;LogFileName=ModuleTestResults.trx" \
                     --logger "console;verbosity=detailed" \
                     --results-directory .
 
@@ -220,16 +209,13 @@ jobs:
               run: |
                   set -euo pipefail
                   SUMMARY_FILE=failures.json
-                  # Merge counts from both standalone and cluster TRX files
                   FAILED=0; PASSED=0; TOTAL=0; SKIPPED=0
-                  for trx in ModuleStandaloneTestResults.trx ModuleClusterTestResults.trx; do
-                    if [ -f "$trx" ] && command -v xmllint >/dev/null 2>&1; then
-                      FAILED=$((FAILED + $(xmllint --xpath "string(//Counters/@failed)" "$trx" 2>/dev/null || echo 0)))
-                      PASSED=$((PASSED + $(xmllint --xpath "string(//Counters/@passed)" "$trx" 2>/dev/null || echo 0)))
-                      TOTAL=$((TOTAL + $(xmllint --xpath "string(//Counters/@total)" "$trx" 2>/dev/null || echo 0)))
-                      SKIPPED=$((SKIPPED + $(xmllint --xpath "string(//Counters/@skipped)" "$trx" 2>/dev/null || echo 0)))
-                    fi
-                  done
+                  if [ -f "ModuleTestResults.trx" ] && command -v xmllint >/dev/null 2>&1; then
+                    FAILED=$(xmllint --xpath "string(//Counters/@failed)" ModuleTestResults.trx 2>/dev/null || echo 0)
+                    PASSED=$(xmllint --xpath "string(//Counters/@passed)" ModuleTestResults.trx 2>/dev/null || echo 0)
+                    TOTAL=$(xmllint --xpath "string(//Counters/@total)" ModuleTestResults.trx 2>/dev/null || echo 0)
+                    SKIPPED=$(xmllint --xpath "string(//Counters/@skipped)" ModuleTestResults.trx 2>/dev/null || echo 0)
+                  fi
                   cat > "$SUMMARY_FILE" <<EOF
                   {
                     "workflow": "C# tests",
@@ -248,10 +234,8 @@ jobs:
               with:
                   name: module-test-reports-net${{ matrix.dotnet }}
                   path: |
-                      ModuleStandaloneTestReport.html
-                      ModuleStandaloneTestResults.trx
-                      ModuleClusterTestReport.html
-                      ModuleClusterTestResults.trx
+                      ModuleTestReport.html
+                      ModuleTestResults.trx
                       failures.json
 
     get-containers:
