@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.TestUtils;
+
 namespace Valkey.Glide.IntegrationTests;
 
 /// <summary>
@@ -35,14 +37,12 @@ public class ClientSideCacheTests
         return await CreateStandaloneClientWithCache(cache);
     }
 
-    public static TheoryData<bool> ClusterModes => [false, true];
-
     #endregion
 
     #region Basic Cache Hit With Metrics
 
     [Theory]
-    [MemberData(nameof(ClusterModes))]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
     public async Task BasicCacheHitWithMetrics(bool clusterMode)
     {
         var cache = new ClientSideCacheConfig(1024, TimeSpan.FromMinutes(1))
@@ -92,7 +92,7 @@ public class ClientSideCacheTests
     #region Without Metrics
 
     [Theory]
-    [MemberData(nameof(ClusterModes))]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
     public async Task WithoutMetrics_MetricCallsFail(bool clusterMode)
     {
         var cache = new ClientSideCacheConfig(1024, TimeSpan.FromMinutes(1))
@@ -145,7 +145,7 @@ public class ClientSideCacheTests
     #region Multiple Keys
 
     [Theory]
-    [MemberData(nameof(ClusterModes))]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
     public async Task MultipleKeys(bool clusterMode)
     {
         var cache = new ClientSideCacheConfig(1024, TimeSpan.FromMinutes(1))
@@ -191,7 +191,7 @@ public class ClientSideCacheTests
     #region TTL Expiration
 
     [Theory]
-    [MemberData(nameof(ClusterModes))]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
     public async Task TTLExpiration(bool clusterMode)
     {
         var cache = new ClientSideCacheConfig(1024, TimeSpan.FromSeconds(2))
@@ -235,7 +235,7 @@ public class ClientSideCacheTests
     #region Eviction Policy LRU
 
     [Theory]
-    [MemberData(nameof(ClusterModes))]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
     public async Task EvictionPolicyLRU(bool clusterMode)
     {
         var cache = new ClientSideCacheConfig(1, TimeSpan.FromMinutes(1)) // 1 KB to force eviction
@@ -285,7 +285,7 @@ public class ClientSideCacheTests
     #region Eviction Policy LFU
 
     [Theory]
-    [MemberData(nameof(ClusterModes))]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
     public async Task EvictionPolicyLFU(bool clusterMode)
     {
         var cache = new ClientSideCacheConfig(1, TimeSpan.FromMinutes(1)) // 1 KB to force eviction

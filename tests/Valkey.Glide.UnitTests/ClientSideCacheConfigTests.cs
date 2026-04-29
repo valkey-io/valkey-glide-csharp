@@ -13,7 +13,7 @@ public class ClientSideCacheConfigTests
     [Fact]
     public void ClientSideCacheConfig_EntryTtlMustNotBeNegative()
     {
-        _ = Assert.Throws<ArgumentOutOfRangeException>(() => new ClientSideCacheConfig(1024, TimeSpan.FromMilliseconds(-1)));
+        _ = Assert.Throws<ArgumentException>(() => new ClientSideCacheConfig(1024, TimeSpan.FromMilliseconds(-1)));
     }
 
     [Fact]
@@ -53,7 +53,7 @@ public class ClientSideCacheConfigTests
 
         Assert.Equal(512UL, config.MaxCacheKb);
         Assert.Equal(TimeSpan.FromSeconds(30), config.EntryTtl);
-        Assert.Equal(EvictionPolicy.LRU, config.EvictionPolicy);
+        Assert.Null(config.EvictionPolicy);
         Assert.False(config.EnableMetrics);
     }
 }

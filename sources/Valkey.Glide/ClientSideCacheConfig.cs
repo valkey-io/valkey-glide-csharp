@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Internals;
+
 namespace Valkey.Glide;
 
 /// <summary>
@@ -60,9 +62,9 @@ public sealed class ClientSideCacheConfig
 
     /// <summary>
     /// The policy for evicting entries when the cache reaches its maximum size.
-    /// Defaults to <see cref="Valkey.Glide.EvictionPolicy.LRU"/>.
+    /// If <see langword="null"/>, the default policy (LRU) is applied by the Rust core.
     /// </summary>
-    public EvictionPolicy EvictionPolicy { get; private set; } = EvictionPolicy.LRU;
+    public EvictionPolicy? EvictionPolicy { get; private set; }
 
     /// <summary>
     /// Whether collection of cache metrics (hit/miss rates, evictions, etc.) is enabled.
@@ -74,7 +76,8 @@ public sealed class ClientSideCacheConfig
     /// </summary>
     /// <param name="maxCacheKb">Maximum size of the cache in kilobytes (KB). Must be positive.</param>
     /// <param name="entryTtl">Time-To-Live for cached entries. Use <see cref="TimeSpan.Zero"/> to disable expiration.</param>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="maxCacheKb"/> is zero or <paramref name="entryTtl"/> is negative.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="maxCacheKb"/> is zero.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="entryTtl"/> is negative.</exception>
     /// <example>
     /// <code>
     /// var cache = new ClientSideCacheConfig(1024, TimeSpan.FromMinutes(1))
@@ -94,10 +97,7 @@ public sealed class ClientSideCacheConfig
             throw new ArgumentOutOfRangeException(nameof(maxCacheKb), "maxCacheKb must be positive.");
         }
 
-        if (entryTtl < TimeSpan.Zero)
-        {
-            throw new ArgumentOutOfRangeException(nameof(entryTtl), "entryTtl must not be negative.");
-        }
+        GuardClauses.ThrowIfTimeSpanNegative(entryTtl);
 
         MaxCacheKb = maxCacheKb;
         EntryTtl = entryTtl;
@@ -131,8 +131,9 @@ public sealed class ClientSideCacheConfig
     internal Internals.FFI.ClientSideCacheConfig ToFfi() => new(
         CacheId,
         MaxCacheKb,
-        (ulong)EntryTtl.TotalMilliseconds,
-        EvictionPolicy,
+        Utils.ToMillisecondsUlong(EntryTtl),
+        EvictionPolicy.HasValue,
+        EvictionPolicy ?? default,
         EnableMetrics
     );
 }

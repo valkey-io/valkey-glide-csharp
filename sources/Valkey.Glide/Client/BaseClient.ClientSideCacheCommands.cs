@@ -26,25 +26,25 @@ public abstract partial class BaseClient
 
     /// <inheritdoc/>
     public Task<double> GetCacheHitRateAsync()
-        => GetCacheMetricAsync(CacheMetricsType.HitRate, v => Convert.ToDouble(v));
+        => GetCacheMetricAsync(CacheMetricsType.HitRate, Convert.ToDouble);
 
     /// <inheritdoc/>
     public Task<double> GetCacheMissRateAsync()
-        => GetCacheMetricAsync(CacheMetricsType.MissRate, v => Convert.ToDouble(v));
+        => GetCacheMetricAsync(CacheMetricsType.MissRate, Convert.ToDouble);
 
     /// <inheritdoc/>
     public Task<long> GetCacheEntryCountAsync()
-        => GetCacheMetricAsync(CacheMetricsType.EntryCount, v => Convert.ToInt64(v));
+        => GetCacheMetricAsync(CacheMetricsType.EntryCount, Convert.ToInt64);
 
     /// <inheritdoc/>
     public Task<long> GetCacheEvictionsAsync()
-        => GetCacheMetricAsync(CacheMetricsType.Evictions, v => Convert.ToInt64(v));
+        => GetCacheMetricAsync(CacheMetricsType.Evictions, Convert.ToInt64);
 
     /// <inheritdoc/>
     public Task<long> GetCacheExpirationsAsync()
-        => GetCacheMetricAsync(CacheMetricsType.Expirations, v => Convert.ToInt64(v));
+        => GetCacheMetricAsync(CacheMetricsType.Expirations, Convert.ToInt64);
 
     /// <inheritdoc/>
     public Task<long> GetCacheTotalLookupsAsync()
-        => GetCacheMetricAsync(CacheMetricsType.TotalLookups, v => Convert.ToInt64(v));
+        => GetCacheMetricAsync(CacheMetricsType.TotalLookups, Convert.ToInt64);
 }

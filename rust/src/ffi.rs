@@ -81,6 +81,7 @@ pub struct ClientSideCacheConfig {
     pub cache_id: *const c_char,
     pub max_cache_kb: u64,
     pub entry_ttl_ms: u64,
+    pub has_eviction_policy: bool,
     pub eviction_policy: EvictionPolicy,
     pub enable_metrics: bool,
 }
@@ -329,10 +330,14 @@ pub(crate) unsafe fn create_connection_request(
                 cache_id: unsafe { ptr_to_str(csc.cache_id) },
                 max_cache_kb: csc.max_cache_kb,
                 entry_ttl_ms: csc.entry_ttl_ms,
-                eviction_policy: Some(match csc.eviction_policy {
-                    EvictionPolicy::Lru => CoreEvictionPolicy::Lru,
-                    EvictionPolicy::Lfu => CoreEvictionPolicy::Lfu,
-                }),
+                eviction_policy: if csc.has_eviction_policy {
+                    Some(match csc.eviction_policy {
+                        EvictionPolicy::Lru => CoreEvictionPolicy::Lru,
+                        EvictionPolicy::Lfu => CoreEvictionPolicy::Lfu,
+                    })
+                } else {
+                    None
+                },
                 enable_metrics: csc.enable_metrics,
             })
         } else {

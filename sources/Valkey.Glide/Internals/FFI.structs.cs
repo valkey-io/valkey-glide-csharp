@@ -1215,6 +1215,7 @@ internal partial class FFI
         string cacheId,
         ulong maxCacheKb,
         ulong entryTtlMs,
+        bool hasEvictionPolicy,
         EvictionPolicy evictionPolicy,
         bool enableMetrics)
     {
@@ -1227,6 +1228,10 @@ internal partial class FFI
 
         /// <summary>Time-To-Live for cached entries in milliseconds (0 = no expiration).</summary>
         public readonly ulong EntryTtlMs = entryTtlMs;
+
+        /// <summary>Whether an eviction policy was explicitly specified.</summary>
+        [MarshalAs(UnmanagedType.U1)]
+        public readonly bool HasEvictionPolicy = hasEvictionPolicy;
 
         /// <summary>The eviction policy for the cache.</summary>
         public readonly EvictionPolicy EvictionPolicy = evictionPolicy;
