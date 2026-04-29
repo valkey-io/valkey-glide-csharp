@@ -2,7 +2,8 @@
     {
         "type": "valkey",
         "version": "9.0",
-        "run": "always"
+        "run": "always",
+        "smoke": true
     },
     {
         "type": "valkey",
