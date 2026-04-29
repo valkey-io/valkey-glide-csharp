@@ -312,29 +312,33 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var bytes = new byte[] { 0x00, 0x01, 0x02 };
-    /// await client.RestoreAsync("key", bytes);
+    /// await client.SetAsync("{tag}source", "value");
+    /// var serialized = await client.DumpAsync("{tag}source");
+    /// await client.RestoreAsync("{tag}restored", serialized!);
     /// </code>
     /// </example>
     /// <example>
     /// <code>
-    /// var bytes = new byte[] { 0x00, 0x01, 0x02 };
+    /// await client.SetAsync("{tag}source", "value");
+    /// var serialized = await client.DumpAsync("{tag}source");
     /// var options = new RestoreOptions { Ttl = TimeSpan.FromMinutes(5) };
-    /// await client.RestoreAsync("key", bytes, options);
+    /// await client.RestoreAsync("{tag}restored", serialized!, options);
     /// </code>
     /// </example>
     /// <example>
     /// <code>
-    /// var bytes = new byte[] { 0x00, 0x01, 0x02 };
+    /// await client.SetAsync("{tag}source", "value");
+    /// var serialized = await client.DumpAsync("{tag}source");
     /// var options = new RestoreOptions { ExpireAt = DateTimeOffset.UtcNow.AddHours(1) };
-    /// await client.RestoreAsync("key", bytes, options);
+    /// await client.RestoreAsync("{tag}restored", serialized!, options);
     /// </code>
     /// </example>
     /// <example>
     /// <code>
-    /// var bytes = new byte[] { 0x00, 0x01, 0x02 };
+    /// await client.SetAsync("{tag}existing", "old");
+    /// var serialized = (await client.DumpAsync("{tag}existing"))!;
     /// var options = new RestoreOptions { Replace = true, Ttl = TimeSpan.FromMinutes(5) };
-    /// await client.RestoreAsync("key", bytes, options);
+    /// await client.RestoreAsync("{tag}existing", serialized, options);
     /// </code>
     /// </example>
     /// </remarks>
@@ -349,7 +353,8 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var touched = await client.TouchAsync("key");
+    /// await client.SetAsync("key", "value");
+    /// var touched = await client.TouchAsync("key");  // true
     /// </code>
     /// </example>
     /// </remarks>
@@ -370,7 +375,9 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var touched = await client.TouchAsync(["key1", "key2"]);
+    /// await client.SetAsync("{tag}key1", "value1");
+    /// await client.SetAsync("{tag}key2", "value2");
+    /// var touched = await client.TouchAsync(["{tag}key1", "{tag}key2"]);  // 2
     /// </code>
     /// </example>
     /// </remarks>
@@ -413,7 +420,8 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var encoding = await client.ObjectEncodingAsync("key");
+    /// await client.SetAsync("key", "hello");
+    /// var encoding = await client.ObjectEncodingAsync("key");  // "embstr"
     /// </code>
     /// </example>
     /// </remarks>
@@ -428,7 +436,9 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
+    /// await client.SetAsync("key", "value");
     /// var frequency = await client.ObjectFrequencyAsync("key");
+    /// Console.WriteLine($"Access frequency: {frequency}");
     /// </code>
     /// </example>
     /// </remarks>
@@ -443,7 +453,9 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
+    /// await client.SetAsync("key", "value");
     /// var idleTime = await client.ObjectIdleTimeAsync("key");
+    /// Console.WriteLine($"Idle time: {idleTime}");
     /// </code>
     /// </example>
     /// </remarks>
@@ -458,7 +470,8 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var refCount = await client.ObjectRefCountAsync("key");
+    /// await client.SetAsync("key", "value");
+    /// var refCount = await client.ObjectRefCountAsync("key");  // 1
     /// </code>
     /// </example>
     /// </remarks>
@@ -478,7 +491,8 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var copied = await client.CopyAsync("source", "destination", replace: true);
+    /// await client.SetAsync("{tag}source", "value");
+    /// var copied = await client.CopyAsync("{tag}source", "{tag}destination", replace: true);  // true
     /// </code>
     /// </example>
     /// </remarks>
@@ -492,7 +506,9 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
+    /// await client.SetAsync("key", "value");
     /// var randomKey = await client.RandomKeyAsync();
+    /// Console.WriteLine($"Random key: {randomKey}");
     /// </code>
     /// </example>
     /// </remarks>
@@ -510,7 +526,9 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
+    /// await client.SetAsync("key", "value");
     /// var acknowledged = await client.WaitAsync(1, TimeSpan.FromSeconds(1));
+    /// Console.WriteLine($"Replicas acknowledged: {acknowledged}");
     /// </code>
     /// </example>
     /// </remarks>
@@ -530,7 +548,9 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
+    /// await client.SetAsync("key", "value");
     /// var acknowledged = await client.WaitAofAsync(true, 1, TimeSpan.FromSeconds(1));
+    /// Console.WriteLine($"Local: {acknowledged[0]}, Replicas: {acknowledged[1]}");
     /// </code>
     /// </example>
     /// </remarks>
@@ -566,9 +586,9 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.ListLeftPushAsync("mylist", ["3", "1", "2"]);
+    /// await client.ListLeftPushAsync("{tag}mylist", ["3", "1", "2"]);
     /// var options = new SortOptions { Order = SortOrder.Descending };
-    /// var stored = await client.SortAndStoreAsync("sorted", "mylist", options);
+    /// var stored = await client.SortAndStoreAsync("{tag}sorted", "{tag}mylist", options);  // 3
     /// </code>
     /// </example>
     /// </remarks>
