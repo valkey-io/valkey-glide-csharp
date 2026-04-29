@@ -290,9 +290,11 @@ pub(crate) unsafe fn create_connection_request(
                     }
                     CompressionBackend::Lz4 => glide_core::compression::CompressionBackendType::Lz4,
                 },
+                max_decompressed_size: None,
             },
         ),
         read_only: config.read_only,
+        node_discovery_mode: glide_core::client::NodeDiscoveryMode::Standard,
 
         // Unimplemented configuration options.
         client_cert: Vec::new(),

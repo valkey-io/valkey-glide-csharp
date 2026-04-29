@@ -9,7 +9,7 @@ namespace Valkey.Glide.ServerModules;
 /// Provides static methods to execute JSON commands on Valkey servers with the JSON module enabled.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/?group=json">Valkey JSON Commands</seealso>
-public static class GlideJson
+public static partial class GlideJson
 {
     private const string JsonPrefix = "JSON.";
 
