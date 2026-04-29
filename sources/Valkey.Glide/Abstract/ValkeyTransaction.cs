@@ -27,28 +27,33 @@ internal class ValkeyTransaction : ValkeyBatch, ITransaction
     public async Task<bool> ExecuteAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        await ExecuteImpl();
-        return _tcs.Task.Result is not null;
-    }
 
-    protected override bool PreExecCheck()
-    {
-        bool allConditionsPassed = true;
+        // Evaluate all conditions asynchronously before submitting the transaction.
+        // This replaces the former sync-over-async PreExecCheck() override in the
+        // base class, keeping transaction-specific logic here rather than leaking
+        // it into ValkeyBatch.
         foreach (ConditionResult condition in _conditions)
         {
-            // We can't access internals of batch, but we can create a transaction, "downcast" it to batch and patch it
-            ValkeyTransaction b = new(_client)
+            // Execute the condition commands in a non-atomic batch to check the
+            // current state of the watched keys.
+            ValkeyTransaction conditionBatch = new(_client)
             {
                 _isAtomic = false
             };
-            b._commands.AddRange(condition.Condition.CreateCommands());
-            b.ExecuteImpl().GetAwaiter().GetResult();
-            condition.WasSatisfied = condition.Condition.Validate(b._tcs.Task.Result);
+            conditionBatch._commands.AddRange(condition.Condition.CreateCommands());
+            await conditionBatch.ExecuteImpl();
+
+            condition.WasSatisfied = condition.Condition.Validate(conditionBatch._tcs.Task.Result);
             if (!condition.WasSatisfied)
             {
-                allConditionsPassed = false;
+                // At least one condition failed — cancel the transaction without
+                // submitting the MULTI/EXEC block.
+                _tcs.SetResult(null);
+                return false;
             }
         }
-        return allConditionsPassed;
+
+        await ExecuteImpl();
+        return _tcs.Task.Result is not null;
     }
 }

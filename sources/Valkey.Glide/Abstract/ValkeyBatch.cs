@@ -30,8 +30,6 @@ internal class ValkeyBatch(BaseClient client) : Database(false), IBatch
                 : (T)batchResult[idx]!;
     }
 
-    protected virtual bool PreExecCheck() => true;
-
     protected async Task ExecuteImpl()
     {
         if (_tcs.Task.Status == TaskStatus.RanToCompletion)
@@ -39,23 +37,16 @@ internal class ValkeyBatch(BaseClient client) : Database(false), IBatch
             // a batch is already executed
             return;
         }
-        if (PreExecCheck())
+        if (_commands.Count == 0)
         {
-            if (_commands.Count == 0)
-            {
-                _tcs.SetResult([]);
-                return;
-            }
-            Batch b = new(_isAtomic);
-            b.Commands.AddRange(_commands);
+            _tcs.SetResult([]);
+            return;
+        }
+        Batch b = new(_isAtomic);
+        b.Commands.AddRange(_commands);
 
-            object?[]? res = await _client.Batch(b, false);
-            _tcs.SetResult(res);
-        }
-        else
-        {
-            _tcs.SetResult(null);
-        }
+        object?[]? res = await _client.Batch(b, false);
+        _tcs.SetResult(res);
     }
 
     public void Execute() => ExecuteImpl().GetAwaiter().GetResult();
