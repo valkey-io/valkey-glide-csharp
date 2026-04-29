@@ -23,13 +23,13 @@ public interface IField
 /// to configure the field, or set properties directly via object initializer.
 /// </remarks>
 /// <seealso href="https://valkey.io/commands/ft.create/">valkey.io</seealso>
-public sealed class TextField(string name) : IField
+public sealed class TextField(ValkeyValue name) : IField
 {
     /// <summary>The field name.</summary>
-    public string Name { get; } = name;
+    public ValkeyValue Name { get; } = name;
 
     /// <summary>Optional alias for the field.</summary>
-    public string? Alias { get; set; }
+    public ValkeyValue? Alias { get; set; }
 
     /// <summary>Whether the field is sortable.</summary>
     public bool Sortable { get; set; }
@@ -53,7 +53,7 @@ public sealed class TextField(string name) : IField
     // ── Fluent builder methods ────────────────────────────────────────────────
 
     /// <summary>Sets the optional alias for the field.</summary>
-    public TextField WithAlias(string alias) { Alias = alias; return this; }
+    public TextField WithAlias(ValkeyValue alias) { Alias = alias; return this; }
 
     /// <summary>Marks the field as sortable.</summary>
     public TextField AsSortable() { Sortable = true; return this; }
@@ -74,11 +74,11 @@ public sealed class TextField(string name) : IField
     /// <inheritdoc/>
     public GlideString[] ToArgs()
     {
-        List<GlideString> args = [Name];
+        List<GlideString> args = [(GlideString)Name];
         if (Alias is not null)
         {
             args.Add(ValkeyLiterals.AS);
-            args.Add(Alias);
+            args.Add((GlideString)Alias.Value);
         }
 
         args.Add(FieldType.Text.ToLiteral());
@@ -120,13 +120,13 @@ public sealed class TextField(string name) : IField
 /// to configure the field, or set properties directly via object initializer.
 /// </remarks>
 /// <seealso href="https://valkey.io/commands/ft.create/">valkey.io</seealso>
-public sealed class TagField(string name) : IField
+public sealed class TagField(ValkeyValue name) : IField
 {
     /// <summary>The field name.</summary>
-    public string Name { get; } = name;
+    public ValkeyValue Name { get; } = name;
 
     /// <summary>Optional alias for the field.</summary>
-    public string? Alias { get; set; }
+    public ValkeyValue? Alias { get; set; }
 
     /// <summary>Whether the field is sortable.</summary>
     public bool Sortable { get; set; }
@@ -140,7 +140,7 @@ public sealed class TagField(string name) : IField
     // ── Fluent builder methods ────────────────────────────────────────────────
 
     /// <summary>Sets the optional alias for the field.</summary>
-    public TagField WithAlias(string alias) { Alias = alias; return this; }
+    public TagField WithAlias(ValkeyValue alias) { Alias = alias; return this; }
 
     /// <summary>Marks the field as sortable.</summary>
     public TagField AsSortable() { Sortable = true; return this; }
@@ -154,11 +154,11 @@ public sealed class TagField(string name) : IField
     /// <inheritdoc/>
     public GlideString[] ToArgs()
     {
-        List<GlideString> args = [Name];
+        List<GlideString> args = [(GlideString)Name];
         if (Alias is not null)
         {
             args.Add(ValkeyLiterals.AS);
-            args.Add(Alias);
+            args.Add((GlideString)Alias.Value);
         }
 
         args.Add(FieldType.Tag.ToLiteral());
@@ -190,13 +190,13 @@ public sealed class TagField(string name) : IField
 /// to configure the field, or set properties directly via object initializer.
 /// </remarks>
 /// <seealso href="https://valkey.io/commands/ft.create/">valkey.io</seealso>
-public sealed class NumericField(string name) : IField
+public sealed class NumericField(ValkeyValue name) : IField
 {
     /// <summary>The field name.</summary>
-    public string Name { get; } = name;
+    public ValkeyValue Name { get; } = name;
 
     /// <summary>Optional alias for the field.</summary>
-    public string? Alias { get; set; }
+    public ValkeyValue? Alias { get; set; }
 
     /// <summary>Whether the field is sortable.</summary>
     public bool Sortable { get; set; }
@@ -204,7 +204,7 @@ public sealed class NumericField(string name) : IField
     // ── Fluent builder methods ────────────────────────────────────────────────
 
     /// <summary>Sets the optional alias for the field.</summary>
-    public NumericField WithAlias(string alias) { Alias = alias; return this; }
+    public NumericField WithAlias(ValkeyValue alias) { Alias = alias; return this; }
 
     /// <summary>Marks the field as sortable.</summary>
     public NumericField AsSortable() { Sortable = true; return this; }
@@ -212,11 +212,11 @@ public sealed class NumericField(string name) : IField
     /// <inheritdoc/>
     public GlideString[] ToArgs()
     {
-        List<GlideString> args = [Name];
+        List<GlideString> args = [(GlideString)Name];
         if (Alias is not null)
         {
             args.Add(ValkeyLiterals.AS);
-            args.Add(Alias);
+            args.Add((GlideString)Alias.Value);
         }
 
         args.Add(FieldType.Numeric.ToLiteral());
@@ -233,13 +233,13 @@ public sealed class NumericField(string name) : IField
 /// Represents a vector field using the FLAT (brute force) algorithm.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/ft.create/">valkey.io</seealso>
-public sealed class VectorFieldFlat(string name, DistanceMetric distanceMetric, int dimensions) : IField
+public sealed class VectorFieldFlat(ValkeyValue name, DistanceMetric distanceMetric, int dimensions) : IField
 {
     /// <summary>The field name.</summary>
-    public string Name { get; } = name;
+    public ValkeyValue Name { get; } = name;
 
     /// <summary>Optional alias for the field.</summary>
-    public string? Alias { get; set; }
+    public ValkeyValue? Alias { get; set; }
 
     /// <summary>The distance metric used in vector similarity search.</summary>
     public DistanceMetric DistanceMetric { get; } = distanceMetric;
@@ -253,11 +253,11 @@ public sealed class VectorFieldFlat(string name, DistanceMetric distanceMetric, 
     /// <inheritdoc/>
     public GlideString[] ToArgs()
     {
-        List<GlideString> args = [Name];
+        List<GlideString> args = [(GlideString)Name];
         if (Alias is not null)
         {
             args.Add(ValkeyLiterals.AS);
-            args.Add(Alias);
+            args.Add((GlideString)Alias.Value);
         }
 
         args.Add(FieldType.Vector.ToLiteral());
@@ -285,13 +285,13 @@ public sealed class VectorFieldFlat(string name, DistanceMetric distanceMetric, 
 /// Represents a vector field using the HNSW algorithm.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/ft.create/">valkey.io</seealso>
-public sealed class VectorFieldHnsw(string name, DistanceMetric distanceMetric, int dimensions) : IField
+public sealed class VectorFieldHnsw(ValkeyValue name, DistanceMetric distanceMetric, int dimensions) : IField
 {
     /// <summary>The field name.</summary>
-    public string Name { get; } = name;
+    public ValkeyValue Name { get; } = name;
 
     /// <summary>Optional alias for the field.</summary>
-    public string? Alias { get; set; }
+    public ValkeyValue? Alias { get; set; }
 
     /// <summary>The distance metric used in vector similarity search.</summary>
     public DistanceMetric DistanceMetric { get; } = distanceMetric;
@@ -314,11 +314,11 @@ public sealed class VectorFieldHnsw(string name, DistanceMetric distanceMetric, 
     /// <inheritdoc/>
     public GlideString[] ToArgs()
     {
-        List<GlideString> args = [Name];
+        List<GlideString> args = [(GlideString)Name];
         if (Alias is not null)
         {
             args.Add(ValkeyLiterals.AS);
-            args.Add(Alias);
+            args.Add((GlideString)Alias.Value);
         }
 
         args.Add(FieldType.Vector.ToLiteral());
@@ -387,15 +387,15 @@ public sealed class VectorFieldHnsw(string name, DistanceMetric distanceMetric, 
 public sealed class FtCreateOptionsBuilder
 {
     private IndexDataType? _dataType;
-    private readonly List<string> _prefixes = [];
+    private readonly List<ValkeyValue> _prefixes = [];
     private double? _score;
     private string? _language;
     private bool _skipInitialScan;
     private int? _minStemSize;
     private bool? _offsets;
     private bool _noStopWords;
-    private string[]? _stopWords;
-    private string? _punctuation;
+    private ValkeyValue[]? _stopWords;
+    private ValkeyValue? _punctuation;
 
     /// <summary>Sets the index data type to HASH.</summary>
     public FtCreateOptionsBuilder OnHash() { _dataType = IndexDataType.Hash; return this; }
@@ -407,10 +407,10 @@ public sealed class FtCreateOptionsBuilder
     public FtCreateOptionsBuilder On(IndexDataType dataType) { _dataType = dataType; return this; }
 
     /// <summary>Adds a key prefix to index.</summary>
-    public FtCreateOptionsBuilder WithPrefix(string prefix) { _prefixes.Add(prefix); return this; }
+    public FtCreateOptionsBuilder WithPrefix(ValkeyValue prefix) { _prefixes.Add(prefix); return this; }
 
     /// <summary>Replaces the prefix list.</summary>
-    public FtCreateOptionsBuilder WithPrefixes(IEnumerable<string> prefixes) { _prefixes.Clear(); _prefixes.AddRange(prefixes); return this; }
+    public FtCreateOptionsBuilder WithPrefixes(IEnumerable<ValkeyValue> prefixes) { _prefixes.Clear(); _prefixes.AddRange(prefixes); return this; }
 
     /// <summary>Sets the default document score.</summary>
     public FtCreateOptionsBuilder WithScore(double score) { _score = score; return this; }
@@ -438,10 +438,10 @@ public sealed class FtCreateOptionsBuilder
     /// Sets a custom stop-word list. Clears the <c>NOSTOPWORDS</c> flag if
     /// <see cref="WithNoStopWords"/> was previously called.
     /// </summary>
-    public FtCreateOptionsBuilder WithStopWords(params string[] stopWords) { _noStopWords = false; _stopWords = stopWords; return this; }
+    public FtCreateOptionsBuilder WithStopWords(params ValkeyValue[] stopWords) { _noStopWords = false; _stopWords = stopWords; return this; }
 
     /// <summary>Sets custom punctuation characters for tokenization.</summary>
-    public FtCreateOptionsBuilder WithPunctuation(string punctuation) { _punctuation = punctuation; return this; }
+    public FtCreateOptionsBuilder WithPunctuation(ValkeyValue punctuation) { _punctuation = punctuation; return this; }
 
     /// <summary>
     /// Executes <paramref name="configure"/> only when <paramref name="condition"/> is
@@ -476,7 +476,7 @@ public sealed class FtCreateOptions
     public IndexDataType? DataType { get; init; }
 
     /// <summary>Key prefixes to index.</summary>
-    public string[]? Prefixes { get; init; }
+    public ValkeyValue[]? Prefixes { get; init; }
 
     /// <summary>Default score for documents in the index. Default is 1.0.</summary>
     public double? Score { get; init; }
@@ -504,10 +504,10 @@ public sealed class FtCreateOptions
     public bool NoStopWords { get; init; }
 
     /// <summary>Custom list of stop words. Mutually exclusive with <see cref="NoStopWords"/>.</summary>
-    public string[]? StopWords { get; init; }
+    public ValkeyValue[]? StopWords { get; init; }
 
     /// <summary>Custom set of punctuation characters for tokenization.</summary>
-    public string? Punctuation { get; init; }
+    public ValkeyValue? Punctuation { get; init; }
 
     /// <summary>
     /// Returns the command arguments for these options.
@@ -532,7 +532,7 @@ public sealed class FtCreateOptions
             args.Add(Prefixes.Length.ToString());
             foreach (var p in Prefixes)
             {
-                args.Add(p);
+                args.Add((GlideString)p);
             }
         }
 
@@ -578,14 +578,14 @@ public sealed class FtCreateOptions
             args.Add(StopWords.Length.ToString());
             foreach (var sw in StopWords)
             {
-                args.Add(sw);
+                args.Add((GlideString)sw);
             }
         }
 
         if (Punctuation is not null)
         {
             args.Add(ValkeyLiterals.PUNCTUATION);
-            args.Add(Punctuation);
+            args.Add((GlideString)Punctuation.Value);
         }
 
         return [.. args];

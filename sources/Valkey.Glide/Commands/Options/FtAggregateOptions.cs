@@ -14,14 +14,14 @@ public interface IFtAggregateClause
 /// <summary>
 /// Filters results using a predicate expression applied post-query.
 /// </summary>
-public sealed class FtAggregateFilter(string expression) : IFtAggregateClause
+public sealed class FtAggregateFilter(ValkeyValue expression) : IFtAggregateClause
 {
     /// <summary>
     /// The filter expression.
     /// </summary>
-    public string Expression { get; } = expression;
+    public ValkeyValue Expression { get; } = expression;
 
-    GlideString[] IFtAggregateClause.ToArgs() => [ValkeyLiterals.FILTER, Expression];
+    GlideString[] IFtAggregateClause.ToArgs() => [ValkeyLiterals.FILTER, (GlideString)Expression];
 }
 
 /// <summary>
@@ -37,25 +37,25 @@ public sealed class FtAggregateReducer(FtReducerFunction function)
     /// <summary>
     /// Arguments for the reducer function.
     /// </summary>
-    public string[] Args { get; init; } = [];
+    public ValkeyValue[] Args { get; init; } = [];
 
     /// <summary>
     /// Optional user-defined output property name.
     /// </summary>
-    public string? Name { get; init; }
+    public ValkeyValue? Name { get; init; }
 
     internal GlideString[] ToArgs()
     {
         List<GlideString> args = [ValkeyLiterals.REDUCE, Function.ToLiteral(), Args.Length.ToString()];
         foreach (var a in Args)
         {
-            args.Add(a);
+            args.Add((GlideString)a);
         }
 
         if (Name is not null)
         {
             args.Add(ValkeyLiterals.AS);
-            args.Add(Name);
+            args.Add((GlideString)Name.Value);
         }
 
         return [.. args];
@@ -65,12 +65,12 @@ public sealed class FtAggregateReducer(FtReducerFunction function)
 /// <summary>
 /// Groups pipeline results by one or more properties.
 /// </summary>
-public sealed class FtAggregateGroupBy(params string[] properties) : IFtAggregateClause
+public sealed class FtAggregateGroupBy(params ValkeyValue[] properties) : IFtAggregateClause
 {
     /// <summary>
     /// Fields to group by (e.g. "@condition").
     /// </summary>
-    public string[] Properties { get; } = properties;
+    public ValkeyValue[] Properties { get; } = properties;
 
     /// <summary>
     /// Aggregate functions applied to each group.
@@ -82,7 +82,7 @@ public sealed class FtAggregateGroupBy(params string[] properties) : IFtAggregat
         List<GlideString> args = [ValkeyLiterals.GROUPBY, Properties.Length.ToString()];
         foreach (var p in Properties)
         {
-            args.Add(p);
+            args.Add((GlideString)p);
         }
 
         foreach (var r in Reducers)
@@ -97,12 +97,12 @@ public sealed class FtAggregateGroupBy(params string[] properties) : IFtAggregat
 /// <summary>
 /// A single sort property with optional direction for <see cref="FtAggregateSortBy"/>.
 /// </summary>
-public sealed class FtAggregateSortProperty(string property, SortOrder order = SortOrder.Default)
+public sealed class FtAggregateSortProperty(ValkeyValue property, SortOrder order = SortOrder.Default)
 {
     /// <summary>
     /// The property name.
     /// </summary>
-    public string Property { get; } = property;
+    public ValkeyValue Property { get; } = property;
 
     /// <summary>
     /// The sort direction.
@@ -133,7 +133,7 @@ public sealed class FtAggregateSortBy(FtAggregateSortProperty[] properties, int?
         List<GlideString> args = [ValkeyLiterals.SORTBY, count.ToString()];
         foreach (var p in Properties)
         {
-            args.Add(p.Property);
+            args.Add((GlideString)p.Property);
             if (p.Order != SortOrder.Default)
             {
                 args.Add(p.Order.ToOrder().ToLiteral());
@@ -153,35 +153,35 @@ public sealed class FtAggregateSortBy(FtAggregateSortProperty[] properties, int?
 /// <summary>
 /// Applies a 1-to-1 transformation on properties and stores the result as a new property.
 /// </summary>
-public sealed class FtAggregateApply(string expression, string name) : IFtAggregateClause
+public sealed class FtAggregateApply(ValkeyValue expression, ValkeyValue name) : IFtAggregateClause
 {
     /// <summary>
     /// The transformation expression.
     /// </summary>
-    public string Expression { get; } = expression;
+    public ValkeyValue Expression { get; } = expression;
 
     /// <summary>
     /// The output property name.
     /// </summary>
-    public string Name { get; } = name;
+    public ValkeyValue Name { get; } = name;
 
-    GlideString[] IFtAggregateClause.ToArgs() => [ValkeyLiterals.APPLY, Expression, ValkeyLiterals.AS, Name];
+    GlideString[] IFtAggregateClause.ToArgs() => [ValkeyLiterals.APPLY, (GlideString)Expression, ValkeyLiterals.AS, (GlideString)Name];
 }
 
 /// <summary>
 /// A key/value pair passed as a query parameter for FT.AGGREGATE.
 /// </summary>
-public sealed class FtAggregateParam(string key, string value)
+public sealed class FtAggregateParam(ValkeyValue key, ValkeyValue value)
 {
     /// <summary>
     /// The parameter key.
     /// </summary>
-    public string Key { get; init; } = key;
+    public ValkeyValue Key { get; init; } = key;
 
     /// <summary>
     /// The parameter value.
     /// </summary>
-    public string Value { get; init; } = value;
+    public ValkeyValue Value { get; init; } = value;
 }
 
 /// <summary>
@@ -225,7 +225,7 @@ public sealed class FtAggregateParam(string key, string value)
 public sealed class FtAggregateOptionsBuilder
 {
     private bool _loadAll;
-    private readonly List<string> _loadFields = [];
+    private readonly List<ValkeyValue> _loadFields = [];
     private TimeSpan? _timeout;
     private readonly List<FtAggregateParam> _params = [];
     private bool _verbatim;
@@ -251,7 +251,7 @@ public sealed class FtAggregateOptionsBuilder
     /// Adds a single field to the LOAD list.
     /// Clears the LOAD * flag if <see cref="WithAllFields"/> was previously called.
     /// </summary>
-    public FtAggregateOptionsBuilder WithField(string field)
+    public FtAggregateOptionsBuilder WithField(ValkeyValue field)
     {
         _loadAll = false;
         _loadFields.Add(field);
@@ -262,7 +262,7 @@ public sealed class FtAggregateOptionsBuilder
     /// Replaces the LOAD field list with <paramref name="fields"/>.
     /// Clears the LOAD * flag if <see cref="WithAllFields"/> was previously called.
     /// </summary>
-    public FtAggregateOptionsBuilder WithFields(IEnumerable<string> fields)
+    public FtAggregateOptionsBuilder WithFields(IEnumerable<ValkeyValue> fields)
     {
         _loadAll = false;
         _loadFields.Clear();
@@ -360,7 +360,7 @@ public sealed class FtAggregateOptionsBuilder
     /// <summary>
     /// Appends a GROUPBY clause with the given properties and reducers.
     /// </summary>
-    public FtAggregateOptionsBuilder GroupBy(IEnumerable<string> properties, params FtAggregateReducer[] reducers)
+    public FtAggregateOptionsBuilder GroupBy(IEnumerable<ValkeyValue> properties, params FtAggregateReducer[] reducers)
     {
         _clauses.Add(new FtAggregateGroupBy([.. properties]) { Reducers = reducers });
         return this;
@@ -380,7 +380,7 @@ public sealed class FtAggregateOptionsBuilder
     /// <summary>
     /// Appends a FILTER clause.
     /// </summary>
-    public FtAggregateOptionsBuilder Filter(string expression)
+    public FtAggregateOptionsBuilder Filter(ValkeyValue expression)
     {
         _clauses.Add(new FtAggregateFilter(expression));
         return this;
@@ -389,7 +389,7 @@ public sealed class FtAggregateOptionsBuilder
     /// <summary>
     /// Appends an APPLY clause.
     /// </summary>
-    public FtAggregateOptionsBuilder Apply(string expression, string name)
+    public FtAggregateOptionsBuilder Apply(ValkeyValue expression, ValkeyValue name)
     {
         _clauses.Add(new FtAggregateApply(expression, name));
         return this;
@@ -444,7 +444,7 @@ public sealed class FtAggregateOptions
     /// <summary>
     /// Loads only the specified fields. Mutually exclusive with <see cref="LoadAll"/>.
     /// </summary>
-    public IEnumerable<string>? LoadFields { get; init; }
+    public IEnumerable<ValkeyValue>? LoadFields { get; init; }
 
     /// <summary>
     /// Overrides the module timeout.
@@ -486,7 +486,7 @@ public sealed class FtAggregateOptions
     /// </summary>
     internal GlideString[] ToArgs()
     {
-        string[] loadFields = LoadFields?.ToArray() ?? [];
+        ValkeyValue[] loadFields = LoadFields?.ToArray() ?? [];
 
         if (LoadAll && loadFields.Length > 0)
         {
@@ -522,7 +522,7 @@ public sealed class FtAggregateOptions
             args.Add(loadFields.Length.ToString());
             foreach (var f in loadFields)
             {
-                args.Add(f);
+                args.Add((GlideString)f);
             }
         }
 
@@ -539,8 +539,8 @@ public sealed class FtAggregateOptions
             args.Add((parameters.Length * 2).ToString());
             foreach (var p in parameters)
             {
-                args.Add(p.Key);
-                args.Add(p.Value);
+                args.Add((GlideString)p.Key);
+                args.Add((GlideString)p.Value);
             }
         }
 

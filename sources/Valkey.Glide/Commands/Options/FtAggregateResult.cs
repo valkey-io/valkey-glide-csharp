@@ -12,13 +12,13 @@ namespace Valkey.Glide.Commands.Options;
 /// </para>
 /// </summary>
 /// <seealso href="https://valkey.io/commands/ft.aggregate/">valkey.io</seealso>
-public sealed class FtAggregateRow(IReadOnlyDictionary<string, ValkeyValue> fields)
+public sealed class FtAggregateRow(IReadOnlyDictionary<ValkeyValue, ValkeyValue> fields)
 {
     /// <summary>The field/value pairs for this result row.</summary>
-    public IReadOnlyDictionary<string, ValkeyValue> Fields { get; } = fields;
+    public IReadOnlyDictionary<ValkeyValue, ValkeyValue> Fields { get; } = fields;
 
     /// <summary>
     /// Gets the value of a field by name, or <see cref="ValkeyValue.Null"/> if the field is not present.
     /// </summary>
-    public ValkeyValue this[string field] => Fields.TryGetValue(field, out ValkeyValue value) ? value : ValkeyValue.Null;
+    public ValkeyValue this[ValkeyValue field] => Fields.TryGetValue(field, out ValkeyValue value) ? value : ValkeyValue.Null;
 }

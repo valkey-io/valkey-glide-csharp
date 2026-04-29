@@ -109,13 +109,13 @@ public class ValkeySearchCommandTests(TestConfiguration config)
         string idx = Guid.NewGuid().ToString();
         await client.FtCreateAsync(idx, [new VectorFieldHnsw("vec", DistanceMetric.Euclidean, 2)]);
 
-        ISet<string> before = await client.FtListAsync();
-        Assert.Contains(idx, before);
+        ISet<ValkeyValue> before = await client.FtListAsync();
+        Assert.Contains((ValkeyValue)idx, before);
 
         await client.FtDropIndexAsync(idx);
 
-        ISet<string> after = await client.FtListAsync();
-        Assert.DoesNotContain(idx, after);
+        ISet<ValkeyValue> after = await client.FtListAsync();
+        Assert.DoesNotContain((ValkeyValue)idx, after);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -190,7 +190,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
         FtSearchResult result = await client.FtSearchAsync(idx, "*=>[KNN 2 @VEC $query_vec]",
             new FtSearchOptions
             {
-                Params = [new FtSearchParam("query_vec", System.Text.Encoding.Latin1.GetString(vec0))],
+                Params = [new FtSearchParam("query_vec", (ValkeyValue)vec0)],
                 ReturnFields = [new FtSearchReturnField("vec")],
             });
 
@@ -212,15 +212,15 @@ public class ValkeySearchCommandTests(TestConfiguration config)
             new FtCreateOptions { DataType = IndexDataType.Hash, Prefixes = [prefix] });
 
         byte[] vec0 = new byte[8];
-        _ = await client.HashSetAsync(prefix + "0", [new HashEntry("vec", System.Text.Encoding.Latin1.GetString(vec0))]);
-        _ = await client.HashSetAsync(prefix + "1", [new HashEntry("vec", System.Text.Encoding.Latin1.GetString(vec0))]);
+        _ = await client.HashSetAsync(prefix + "0", [new HashEntry("vec", (ValkeyValue)vec0)]);
+        _ = await client.HashSetAsync(prefix + "1", [new HashEntry("vec", (ValkeyValue)vec0)]);
         await Task.Delay(1000, TestContext.Current.CancellationToken);
 
         FtSearchResult result = await client.FtSearchAsync(idx, "*=>[KNN 2 @VEC $query_vec]",
             new FtSearchOptions
             {
                 NoContent = true,
-                Params = [new FtSearchParam("query_vec", System.Text.Encoding.Latin1.GetString(vec0))],
+                Params = [new FtSearchParam("query_vec", (ValkeyValue)vec0)],
             });
 
         Assert.Equal(2L, result.TotalResults);
@@ -268,7 +268,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
         Assert.Equal(3L, asc.TotalResults);
         Assert.Equal(3, asc.Documents.Count);
         var ascPrices = asc.Documents
-            .Select(d => d.Fields["price"])
+            .Select(d => d.Fields[(ValkeyValue)"price"])
             .ToList();
         Assert.Equal(["10", "20", "30"], ascPrices);
 
@@ -278,7 +278,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
         Assert.Equal(3L, desc.TotalResults);
         Assert.Equal(3, desc.Documents.Count);
         var descPrices = desc.Documents
-            .Select(d => d.Fields["price"])
+            .Select(d => d.Fields[(ValkeyValue)"price"])
             .ToList();
         Assert.Equal(["30", "20", "10"], descPrices);
 
@@ -402,11 +402,11 @@ public class ValkeySearchCommandTests(TestConfiguration config)
 
         Assert.Equal(3, result.Length);
         var condCounts = result.ToDictionary(
-            r => r["condition"].ToString(),
-            r => Convert.ToDouble(r["bicycles"]));
-        Assert.Equal(5.0, condCounts["new"]);
-        Assert.Equal(4.0, condCounts["used"]);
-        Assert.Equal(1.0, condCounts["refurbished"]);
+            r => r[(ValkeyValue)"condition"]!,
+            r => Convert.ToDouble(r[(ValkeyValue)"bicycles"]));
+        Assert.Equal(5.0, condCounts[(ValkeyValue)"new"]);
+        Assert.Equal(4.0, condCounts[(ValkeyValue)"used"]);
+        Assert.Equal(1.0, condCounts[(ValkeyValue)"refurbished"]);
 
         await client.FtDropIndexAsync(idx);
     }
@@ -446,7 +446,7 @@ public class ValkeySearchCommandTests(TestConfiguration config)
         FtAggregateRow[] r4 = await client.FtAggregateAsync(idx, "@score:[20 +inf]",
             new FtAggregateOptions { LoadAll = true });
         _ = Assert.Single(r4);
-        Assert.Equal("hello there", r4[0]["title"].ToString());
+        Assert.Equal("hello there", (string?)r4[0][(ValkeyValue)"title"]);
 
         await client.FtDropIndexAsync(idx);
     }
@@ -466,8 +466,8 @@ public class ValkeySearchCommandTests(TestConfiguration config)
             ],
             new FtCreateOptions { DataType = IndexDataType.Json, Prefixes = ["123"] });
 
-        Dictionary<string, object> info = await client.FtInfoAsync(idx);
-        Assert.Equal(idx, info["index_name"]?.ToString());
+        Dictionary<ValkeyValue, object> info = await client.FtInfoAsync(idx);
+        Assert.Equal(idx, (string?)(ValkeyValue)info[(ValkeyValue)"index_name"]!);
 
         await client.FtDropIndexAsync(idx);
     }
@@ -495,30 +495,30 @@ public class ValkeySearchCommandTests(TestConfiguration config)
         _ = await client.HashSetAsync(prefix + "1", [new HashEntry("title", "hello world")]);
         await Task.Delay(1000, TestContext.Current.CancellationToken);
 
-        Dictionary<string, object> localInfo = await client.FtInfoAsync(idx,
+        Dictionary<ValkeyValue, object> localInfo = await client.FtInfoAsync(idx,
             new FtInfoOptions { Scope = FtInfoScope.Local });
-        Assert.Equal(idx, localInfo["index_name"]?.ToString());
-        Assert.NotNull(localInfo["num_docs"]);
+        Assert.Equal(idx, (string?)(ValkeyValue)localInfo[(ValkeyValue)"index_name"]!);
+        Assert.NotNull(localInfo[(ValkeyValue)"num_docs"]);
 
         // LOCAL + ALLSHARDS + CONSISTENT
-        Dictionary<string, object> withFlags = await client.FtInfoAsync(idx,
+        Dictionary<ValkeyValue, object> withFlags = await client.FtInfoAsync(idx,
             new FtInfoOptions
             {
                 Scope = FtInfoScope.Local,
                 ShardScope = FtInfoShardScope.AllShards,
                 Consistency = FtInfoConsistencyMode.Consistent,
             });
-        Assert.Equal(idx, withFlags["index_name"]?.ToString());
+        Assert.Equal(idx, (string?)(ValkeyValue)withFlags[(ValkeyValue)"index_name"]!);
 
         // LOCAL + SOMESHARDS + INCONSISTENT
-        Dictionary<string, object> withAltFlags = await client.FtInfoAsync(idx,
+        Dictionary<ValkeyValue, object> withAltFlags = await client.FtInfoAsync(idx,
             new FtInfoOptions
             {
                 Scope = FtInfoScope.Local,
                 ShardScope = FtInfoShardScope.SomeShards,
                 Consistency = FtInfoConsistencyMode.Inconsistent,
             });
-        Assert.Equal(idx, withAltFlags["index_name"]?.ToString());
+        Assert.Equal(idx, (string?)(ValkeyValue)withAltFlags[(ValkeyValue)"index_name"]!);
 
         await client.FtDropIndexAsync(idx);
     }
@@ -632,10 +632,10 @@ public class ValkeySearchCommandTests(TestConfiguration config)
         HashSet<string> foundPrices = [];
         foreach (var doc in result.Documents)
         {
-            Assert.NotNull(doc.SortKey);
+            _ = Assert.NotNull(doc.SortKey);
             foreach (string p in new[] { "10", "20", "30" })
             {
-                if (doc.SortKey.Contains(p))
+                if (((string?)doc.SortKey.Value)?.Contains(p) == true)
                 {
                     _ = foundPrices.Add(p);
                 }
@@ -663,14 +663,14 @@ public class ValkeySearchCommandTests(TestConfiguration config)
             new FtCreateOptions { DataType = IndexDataType.Hash, Prefixes = [prefix] });
 
         byte[] vec0 = new byte[8];
-        _ = await client.HashSetAsync(prefix + "0", [new HashEntry("vec", System.Text.Encoding.Latin1.GetString(vec0))]);
+        _ = await client.HashSetAsync(prefix + "0", [new HashEntry("vec", (ValkeyValue)vec0)]);
         await Task.Delay(1000, TestContext.Current.CancellationToken);
 
         FtSearchResult result = await client.FtSearchAsync(idx, "*=>[KNN 1 @VEC $query_vec]",
             new FtSearchOptions
             {
                 Dialect = 2,
-                Params = [new FtSearchParam("query_vec", System.Text.Encoding.Latin1.GetString(vec0))],
+                Params = [new FtSearchParam("query_vec", (ValkeyValue)vec0)],
                 ReturnFields = [new FtSearchReturnField("vec")],
             });
 
@@ -918,18 +918,18 @@ public class ValkeySearchCommandTests(TestConfiguration config)
         Assert.Equal(3, result.Length);
 
         var genreMap = result.ToDictionary(
-            r => r["genre"].ToString(),
+            r => r[(ValkeyValue)"genre"]!,
             r => r);
 
-        Assert.Equal(1.0, Convert.ToDouble(genreMap["Drama"]["nb_of_movies"]));
-        Assert.Equal(1563840.0, Convert.ToDouble(genreMap["Drama"]["nb_of_votes"]));
-        Assert.Equal(10.0, Convert.ToDouble(genreMap["Drama"]["avg_rating"]));
-        Assert.Equal(2.0, Convert.ToDouble(genreMap["Action"]["nb_of_movies"]));
-        Assert.Equal(2033900.0, Convert.ToDouble(genreMap["Action"]["nb_of_votes"]));
-        Assert.Equal(9.0, Convert.ToDouble(genreMap["Action"]["avg_rating"]));
-        Assert.Equal(1.0, Convert.ToDouble(genreMap["Thriller"]["nb_of_movies"]));
-        Assert.Equal(559490.0, Convert.ToDouble(genreMap["Thriller"]["nb_of_votes"]));
-        Assert.Equal(9.0, Convert.ToDouble(genreMap["Thriller"]["avg_rating"]));
+        Assert.Equal(1.0, Convert.ToDouble(genreMap[(ValkeyValue)"Drama"][(ValkeyValue)"nb_of_movies"]));
+        Assert.Equal(1563840.0, Convert.ToDouble(genreMap[(ValkeyValue)"Drama"][(ValkeyValue)"nb_of_votes"]));
+        Assert.Equal(10.0, Convert.ToDouble(genreMap[(ValkeyValue)"Drama"][(ValkeyValue)"avg_rating"]));
+        Assert.Equal(2.0, Convert.ToDouble(genreMap[(ValkeyValue)"Action"][(ValkeyValue)"nb_of_movies"]));
+        Assert.Equal(2033900.0, Convert.ToDouble(genreMap[(ValkeyValue)"Action"][(ValkeyValue)"nb_of_votes"]));
+        Assert.Equal(9.0, Convert.ToDouble(genreMap[(ValkeyValue)"Action"][(ValkeyValue)"avg_rating"]));
+        Assert.Equal(1.0, Convert.ToDouble(genreMap[(ValkeyValue)"Thriller"][(ValkeyValue)"nb_of_movies"]));
+        Assert.Equal(559490.0, Convert.ToDouble(genreMap[(ValkeyValue)"Thriller"][(ValkeyValue)"nb_of_votes"]));
+        Assert.Equal(9.0, Convert.ToDouble(genreMap[(ValkeyValue)"Thriller"][(ValkeyValue)"avg_rating"]));
 
         await client.FtDropIndexAsync(idx);
     }
@@ -953,9 +953,9 @@ public class ValkeySearchCommandTests(TestConfiguration config)
         // PRIMARY scope — works if coordinator is enabled, otherwise rejected with specific error
         try
         {
-            Dictionary<string, object> primaryInfo = await client.FtInfoAsync(idx,
+            Dictionary<ValkeyValue, object> primaryInfo = await client.FtInfoAsync(idx,
                 new FtInfoOptions { Scope = FtInfoScope.Primary });
-            Assert.Equal(idx, primaryInfo["index_name"]?.ToString());
+            Assert.Equal(idx, (string?)(ValkeyValue)primaryInfo[(ValkeyValue)"index_name"]!);
         }
         catch (Exception ex)
         {
@@ -965,9 +965,9 @@ public class ValkeySearchCommandTests(TestConfiguration config)
         // CLUSTER scope — works if coordinator is enabled, otherwise rejected with specific error
         try
         {
-            Dictionary<string, object> clusterInfo = await client.FtInfoAsync(idx,
+            Dictionary<ValkeyValue, object> clusterInfo = await client.FtInfoAsync(idx,
                 new FtInfoOptions { Scope = FtInfoScope.Cluster });
-            Assert.Equal(idx, clusterInfo["index_name"]?.ToString());
+            Assert.Equal(idx, (string?)(ValkeyValue)clusterInfo[(ValkeyValue)"index_name"]!);
         }
         catch (Exception ex)
         {
@@ -1100,11 +1100,11 @@ public class ValkeySearchCommandTests(TestConfiguration config)
 
         Assert.Equal(3, result.Length);
         var condCounts = result.ToDictionary(
-            r => r["$.condition"].ToString(),
-            r => Convert.ToDouble(r["bicycles"]));
-        Assert.Equal(5.0, condCounts["new"]);
-        Assert.Equal(4.0, condCounts["used"]);
-        Assert.Equal(1.0, condCounts["refurbished"]);
+            r => r[(ValkeyValue)"$.condition"]!,
+            r => Convert.ToDouble(r[(ValkeyValue)"bicycles"]));
+        Assert.Equal(5.0, condCounts[(ValkeyValue)"new"]);
+        Assert.Equal(4.0, condCounts[(ValkeyValue)"used"]);
+        Assert.Equal(1.0, condCounts[(ValkeyValue)"refurbished"]);
 
         await client.FtDropIndexAsync(idx);
     }

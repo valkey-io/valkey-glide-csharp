@@ -20,7 +20,7 @@ public abstract partial class BaseClient
         => Command(Request.FtDropIndex(indexName));
 
     /// <inheritdoc/>
-    public Task<ISet<string>> FtListAsync()
+    public Task<ISet<ValkeyValue>> FtListAsync()
         => Command(Request.FtList());
 
     /// <inheritdoc/>
@@ -40,11 +40,11 @@ public abstract partial class BaseClient
         => Command(Request.FtAggregate(indexName, query, options));
 
     /// <inheritdoc/>
-    public Task<Dictionary<string, object>> FtInfoAsync(ValkeyKey indexName)
+    public Task<Dictionary<ValkeyValue, object>> FtInfoAsync(ValkeyKey indexName)
         => Command(Request.FtInfo(indexName, null));
 
     /// <inheritdoc/>
-    public Task<Dictionary<string, object>> FtInfoAsync(ValkeyKey indexName, FtInfoOptions options)
+    public Task<Dictionary<ValkeyValue, object>> FtInfoAsync(ValkeyKey indexName, FtInfoOptions options)
         => Command(Request.FtInfo(indexName, options));
 
 }

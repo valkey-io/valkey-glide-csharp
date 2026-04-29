@@ -6,34 +6,34 @@ namespace Valkey.Glide.Commands.Options;
 /// Specifies a field to return in FT.SEARCH results.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/ft.search/">valkey.io</seealso>
-public sealed class FtSearchReturnField(string fieldIdentifier, string? alias = null)
+public sealed class FtSearchReturnField(ValkeyValue fieldIdentifier, ValkeyValue? alias = null)
 {
     /// <summary>
     /// The field name to return.
     /// </summary>
-    public string FieldIdentifier { get; init; } = fieldIdentifier;
+    public ValkeyValue FieldIdentifier { get; init; } = fieldIdentifier;
 
     /// <summary>
     /// Optional alias to override the field name in the result.
     /// </summary>
-    public string? Alias { get; init; } = alias;
+    public ValkeyValue? Alias { get; init; } = alias;
 }
 
 /// <summary>
 /// A key/value pair passed as a query parameter for FT.SEARCH.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/ft.search/">valkey.io</seealso>
-public sealed class FtSearchParam(string key, string value)
+public sealed class FtSearchParam(ValkeyValue key, ValkeyValue value)
 {
     /// <summary>
     /// The parameter key.
     /// </summary>
-    public string Key { get; init; } = key;
+    public ValkeyValue Key { get; init; } = key;
 
     /// <summary>
     /// The parameter value.
     /// </summary>
-    public string Value { get; init; } = value;
+    public ValkeyValue Value { get; init; } = value;
 }
 
 /// <summary>
@@ -42,12 +42,12 @@ public sealed class FtSearchParam(string key, string value)
 /// (e.g., <c>WithSortKeys</c> without a field) are unrepresentable.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/ft.search/">valkey.io</seealso>
-public sealed class FtSearchSortBy(string fieldName, FtSearchSortOrder? order = null, bool withSortKeys = false)
+public sealed class FtSearchSortBy(ValkeyValue fieldName, FtSearchSortOrder? order = null, bool withSortKeys = false)
 {
     /// <summary>
     /// The field name to sort results by.
     /// </summary>
-    public string FieldName { get; init; } = fieldName;
+    public ValkeyValue FieldName { get; init; } = fieldName;
 
     /// <summary>
     /// Optional sort direction (ASC / DESC).
@@ -168,11 +168,11 @@ public sealed class FtSearchOptions
             List<GlideString> fieldArgs = [];
             foreach (var rf in ReturnFields)
             {
-                fieldArgs.Add(rf.FieldIdentifier);
+                fieldArgs.Add((GlideString)rf.FieldIdentifier);
                 if (rf.Alias is not null)
                 {
                     fieldArgs.Add(ValkeyLiterals.AS);
-                    fieldArgs.Add(rf.Alias);
+                    fieldArgs.Add((GlideString)rf.Alias.Value);
                 }
             }
 
@@ -184,7 +184,7 @@ public sealed class FtSearchOptions
         if (SortBy is not null)
         {
             args.Add(ValkeyLiterals.SORTBY);
-            args.Add(SortBy.FieldName);
+            args.Add((GlideString)SortBy.FieldName);
             if (SortBy.Order.HasValue)
             {
                 args.Add(SortBy.Order.Value.ToLiteral());
@@ -208,8 +208,8 @@ public sealed class FtSearchOptions
             args.Add((Params.Length * 2).ToString());
             foreach (var p in Params)
             {
-                args.Add(p.Key);
-                args.Add(p.Value);
+                args.Add((GlideString)p.Key);
+                args.Add((GlideString)p.Value);
             }
         }
 

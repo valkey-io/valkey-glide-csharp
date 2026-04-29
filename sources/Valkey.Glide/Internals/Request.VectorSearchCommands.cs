@@ -26,8 +26,18 @@ internal partial class Request
     public static Cmd<string, string> FtDropIndex(ValkeyKey indexName)
         => Simple<string>(RequestType.FtDropIndex, [(GlideString)indexName]);
 
-    public static Cmd<object[], ISet<string>> FtList()
-        => new(RequestType.FtList, [], false, ToStringSet);
+    public static Cmd<object[], ISet<ValkeyValue>> FtList()
+        => new(RequestType.FtList, [], false, ToValkeyValueSet);
+
+    private static HashSet<ValkeyValue> ToValkeyValueSet(object[] objects)
+    {
+        HashSet<ValkeyValue> result = new(objects.Length);
+        foreach (var obj in objects)
+        {
+            _ = result.Add((ValkeyValue)(GlideString)obj);
+        }
+        return result;
+    }
 
     public static Cmd<object[], FtSearchResult> FtSearch(ValkeyKey indexName, ValkeyValue query, FtSearchOptions? options)
     {
@@ -51,7 +61,7 @@ internal partial class Request
         return new(RequestType.FtAggregate, [.. args], false, ParseFtAggregateResponse);
     }
 
-    public static Cmd<object, Dictionary<string, object>> FtInfo(ValkeyKey indexName, FtInfoOptions? options)
+    public static Cmd<object, Dictionary<ValkeyValue, object>> FtInfo(ValkeyKey indexName, FtInfoOptions? options)
     {
         List<GlideString> args = [indexName];
         if (options is not null)
@@ -79,23 +89,23 @@ internal partial class Request
             foreach (var kvp in map)
             {
                 ValkeyKey key = (ValkeyKey)kvp.Key.Bytes;
-                string? sortKey = null;
-                Dictionary<string, ValkeyValue> fields = [];
+                ValkeyValue? sortKey = null;
+                Dictionary<ValkeyValue, ValkeyValue> fields = [];
 
                 if (withSortKeys && kvp.Value is object[] pair && pair.Length == 2)
                 {
-                    sortKey = pair[0] is GlideString gs ? gs.ToString() : pair[0]?.ToString();
+                    sortKey = pair[0] is GlideString gs ? (ValkeyValue)gs : ValkeyValue.Null;
                     if (pair[1] is Dictionary<GlideString, object> fieldMap)
                     {
                         fields = fieldMap.ToDictionary(
-                            f => f.Key.ToString(),
+                            f => (ValkeyValue)f.Key,
                             f => (ValkeyValue)(GlideString)f.Value);
                     }
                 }
                 else if (kvp.Value is Dictionary<GlideString, object> directFieldMap)
                 {
                     fields = directFieldMap.ToDictionary(
-                        f => f.Key.ToString(),
+                        f => (ValkeyValue)f.Key,
                         f => (ValkeyValue)(GlideString)f.Value);
                 }
 
@@ -115,7 +125,7 @@ internal partial class Request
             if (row is Dictionary<GlideString, object> map)
             {
                 results.Add(new FtAggregateRow(map.ToDictionary(
-                    kvp => kvp.Key.ToString(),
+                    kvp => (ValkeyValue)kvp.Key,
                     kvp => ToValkeyValue(kvp.Value))));
             }
         }
@@ -129,21 +139,21 @@ internal partial class Request
         long l => (ValkeyValue)l,
         double d => (ValkeyValue)d,
         bool b => (ValkeyValue)b,
-        _ => (ValkeyValue)value.ToString(),
+        _ => (ValkeyValue)(value.ToString() ?? string.Empty),
     };
 
-    private static Dictionary<string, object> ParseFtInfoResponse(object data) => data is Dictionary<GlideString, object> map
+    private static Dictionary<ValkeyValue, object> ParseFtInfoResponse(object data) => data is Dictionary<GlideString, object> map
             ? map.ToDictionary(
-                kvp => kvp.Key.ToString(),
-                kvp => ConvertFtValue(kvp.Value) ?? string.Empty)
+                kvp => (ValkeyValue)kvp.Key,
+                kvp => ConvertFtValue(kvp.Value) ?? ValkeyValue.Null)
             : [];
 
     private static object? ConvertFtValue(object? value) => value switch
     {
         null => null,
-        GlideString gs => gs.ToString(),
+        GlideString gs => (ValkeyValue)gs,
         Dictionary<GlideString, object> nested => nested.ToDictionary(
-            kvp => kvp.Key.ToString(),
+            kvp => (ValkeyValue)kvp.Key,
             kvp => ConvertFtValue(kvp.Value)),
         object[] arr => arr.Select(ConvertFtValue).ToArray(),
         _ => value,

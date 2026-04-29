@@ -66,13 +66,13 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// ISet&lt;string&gt; indexes = await client.FtListAsync();
-    /// foreach (string idx in indexes)
+    /// ISet&lt;ValkeyValue&gt; indexes = await client.FtListAsync();
+    /// foreach (ValkeyValue idx in indexes)
     ///     Console.WriteLine(idx);
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ISet<string>> FtListAsync();
+    Task<ISet<ValkeyValue>> FtListAsync();
 
     /// <summary>
     /// Executes a search query against an index.
@@ -179,12 +179,12 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// Dictionary&lt;string, object&gt; info = await client.FtInfoAsync("my-index");
+    /// Dictionary&lt;ValkeyValue, object&gt; info = await client.FtInfoAsync("my-index");
     /// Console.WriteLine(info["index_name"]); // Output: my-index
     /// </code>
     /// </example>
     /// </remarks>
-    Task<Dictionary<string, object>> FtInfoAsync(ValkeyKey indexName);
+    Task<Dictionary<ValkeyValue, object>> FtInfoAsync(ValkeyKey indexName);
 
     /// <summary>
     /// Returns information and statistics about an index with additional options.
@@ -196,12 +196,12 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// Dictionary&lt;string, object&gt; info = await client.FtInfoAsync("my-index",
+    /// Dictionary&lt;ValkeyValue, object&gt; info = await client.FtInfoAsync("my-index",
     ///     new FtInfoOptions { Scope = FtInfoScope.Local });
     /// Console.WriteLine(info["index_name"]); // Output: my-index
     /// </code>
     /// </example>
     /// </remarks>
-    Task<Dictionary<string, object>> FtInfoAsync(ValkeyKey indexName, FtInfoOptions options);
+    Task<Dictionary<ValkeyValue, object>> FtInfoAsync(ValkeyKey indexName, FtInfoOptions options);
 
 }
