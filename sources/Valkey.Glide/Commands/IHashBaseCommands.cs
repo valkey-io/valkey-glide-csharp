@@ -225,7 +225,6 @@ public interface IHashBaseCommands
     /// Gets a random field name from a hash.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hrandfield/">Valkey commands – HRANDFIELD</seealso>
-    /// <note>Since Valkey 6.2.0.</note>
     /// <param name="key">The hash key.</param>
     /// <returns>A random field name or <see cref="ValkeyValue.Null"/> if the hash does not exist.</returns>
     /// <remarks>
@@ -242,7 +241,6 @@ public interface IHashBaseCommands
     /// Gets random field names from a hash.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hrandfield/">Valkey commands – HRANDFIELD</seealso>
-    /// <note>Since Valkey 6.2.0.</note>
     /// <param name="key">The hash key.</param>
     /// <param name="count">
     /// The maximum number of field names to return.
@@ -270,7 +268,6 @@ public interface IHashBaseCommands
     /// Gets random field-value pairs from a hash.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hrandfield/">Valkey commands – HRANDFIELD</seealso>
-    /// <note>Since Valkey 6.2.0.</note>
     /// <param name="key">The hash key.</param>
     /// <param name="count">
     /// The number of field-value pairs to return.

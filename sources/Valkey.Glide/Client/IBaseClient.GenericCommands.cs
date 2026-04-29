@@ -596,7 +596,7 @@ public partial interface IBaseClient
 
     /// <summary>
     /// Sorts the elements in a list, set, or sorted set and returns the result.
-    /// Reads-only variant of SORT that is guaranteed not to modify the database.
+    /// Read-only variant of SORT that is guaranteed not to modify the database.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/sort_ro/">Valkey commands – SORT_RO</seealso>
     /// <note>Since Valkey 7.0.0.</note>
@@ -620,7 +620,7 @@ public partial interface IBaseClient
 
     /// <summary>
     /// Sorts the elements in a list, set, or sorted set and returns the result.
-    /// Reads-only variant of SORT that is guaranteed not to modify the database.
+    /// Read-only variant of SORT that is guaranteed not to modify the database.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/sort_ro/">Valkey commands – SORT_RO</seealso>
     /// <note>Since Valkey 7.0.0.</note>

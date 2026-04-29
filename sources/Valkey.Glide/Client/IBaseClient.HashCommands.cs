@@ -18,7 +18,7 @@ public partial interface IBaseClient
     /// <example>
     /// <code>
     /// await client.HashSetAsync("myhash", [new("name", "Alice"), new("age", "30")]);
-    /// var entries = await client.HashGetAsync("myhash");  // {name: "Alice", age: 30}
+    /// var entries = await client.HashGetAsync("myhash");  // {name: "Alice", age: "30"}
     /// </code>
     /// </example>
     /// </remarks>
@@ -111,7 +111,7 @@ public partial interface IBaseClient
     /// <param name="key">The hash key.</param>
     /// <param name="hashField">The field to set the expiry for.</param>
     /// <param name="expiry">The expiry duration.</param>
-    /// <param name="condition">The condition under which to set the expiry. Defaults to <see cref="ExpireCondition.Always"/>.</param>
+    /// <param name="condition">The condition under which to set the expiry.</param>
     /// <returns>A <see cref="HashExpireResult"/> for <paramref name="hashField"/>.</returns>
     /// <remarks>
     /// <example>
@@ -136,7 +136,7 @@ public partial interface IBaseClient
     /// <param name="key">The hash key.</param>
     /// <param name="hashFields">The fields to set the expiry for.</param>
     /// <param name="expiry">The expiry duration.</param>
-    /// <param name="condition">The condition under which to set the expiry. Defaults to <see cref="ExpireCondition.Always"/>.</param>
+    /// <param name="condition">The condition under which to set the expiry.</param>
     /// <returns>A <see cref="HashExpireResult"/> array with one entry per field.</returns>
     /// <remarks>
     /// <example>
@@ -161,7 +161,7 @@ public partial interface IBaseClient
     /// <param name="key">The hash key.</param>
     /// <param name="hashField">The field to set the expiry for.</param>
     /// <param name="expiry">The expiry timestamp.</param>
-    /// <param name="condition">The condition under which to set the expiry. Defaults to <see cref="ExpireCondition.Always"/>.</param>
+    /// <param name="condition">The condition under which to set the expiry.</param>
     /// <returns>A <see cref="HashExpireResult"/> for <paramref name="hashField"/>.</returns>
     /// <remarks>
     /// <example>
@@ -186,7 +186,7 @@ public partial interface IBaseClient
     /// <param name="key">The hash key.</param>
     /// <param name="hashFields">The fields to set the expiry for.</param>
     /// <param name="expiry">The expiry timestamp.</param>
-    /// <param name="condition">The condition under which to set the expiry. Defaults to <see cref="ExpireCondition.Always"/>.</param>
+    /// <param name="condition">The condition under which to set the expiry.</param>
     /// <returns>A <see cref="HashExpireResult"/> array with one entry per field.</returns>
     /// <remarks>
     /// <example>

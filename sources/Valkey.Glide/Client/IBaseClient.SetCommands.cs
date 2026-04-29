@@ -19,18 +19,20 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
+    /// await client.SetAddAsync("myset", ["a", "b", "c"]);
     /// await foreach (var member in client.SetScanAsync("myset"))
     /// {
-    ///     Console.WriteLine(member);
+    ///     Console.WriteLine(member); // "a", "b", and "c" in some order
     /// }
     /// </code>
     /// </example>
     /// <example>
     /// <code>
-    /// var options = new ScanOptions { MatchPattern = "*pattern*" };
+    /// await client.SetAddAsync("myset", ["apple", "banana", "apricot"]);
+    /// var options = new ScanOptions { MatchPattern = "ap*" };
     /// await foreach (var member in client.SetScanAsync("myset", options))
     /// {
-    ///     Console.WriteLine(member);
+    ///     Console.WriteLine(member);  // "apple" and "apricot" in some order
     /// }
     /// </code>
     /// </example>

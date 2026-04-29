@@ -55,9 +55,9 @@ public partial interface IBaseClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/bitcount/">Valkey commands – BITCOUNT</seealso>
     /// <param name="key">The key of the string.</param>
-    /// <param name="start">The start offset. Defaults to <c>0</c>.</param>
-    /// <param name="end">The end offset. Defaults to <c>-1</c> (end of string).</param>
-    /// <param name="indexType">The index type (bit or byte). Defaults to <see cref="BitmapIndexType.Byte"/>.</param>
+    /// <param name="start">The start offset.</param>
+    /// <param name="end">The end offset</param>
+    /// <param name="indexType">The index type (bit or byte).</param>
     /// <returns>The number of bits set to 1.</returns>
     /// <remarks>
     /// <example>
@@ -95,9 +95,9 @@ public partial interface IBaseClient
     /// <seealso href="https://valkey.io/commands/bitpos/">Valkey commands – BITPOS</seealso>
     /// <param name="key">The key of the string.</param>
     /// <param name="bit">The bit value to search for (<see langword="true"/> for 1, <see langword="false"/> for 0).</param>
-    /// <param name="start">The start offset. Defaults to <c>0</c>.</param>
-    /// <param name="end">The end offset. Defaults to <c>-1</c> (end of string).</param>
-    /// <param name="indexType">The index type (bit or byte). Defaults to <see cref="BitmapIndexType.Byte"/>.</param>
+    /// <param name="start">The start offset.</param>
+    /// <param name="end">The end offset</param>
+    /// <param name="indexType">The index type (bit or byte).</param>
     /// <returns>The position of the first bit matching <paramref name="bit"/>, or <c>-1</c> if not found.</returns>
     /// <remarks>
     /// <example>

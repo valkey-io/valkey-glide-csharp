@@ -21,13 +21,13 @@ public partial interface IDatabaseAsync
     Task<bool> StringSetBitAsync(ValkeyKey key, long offset, bool value, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="IBaseClient.BitCountAsync(ValkeyKey, long, long, BitmapIndexType)" path="/*[not(self::param[@name='indexType'])]"/>
-    /// <param name="indexType">The index type (bit or byte). Default is <see cref="StringIndexType.Byte"/>.</param>
+    /// <param name="indexType">The index type (bit or byte).</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<long> StringBitCountAsync(ValkeyKey key, long start = 0, long end = -1, StringIndexType indexType = StringIndexType.Byte, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="IBaseClient.BitPosAsync(ValkeyKey, bool, long, long, BitmapIndexType)" path="/*[not(self::param[@name='indexType'])]"/>
-    /// <param name="indexType">The index type (bit or byte). Default is <see cref="StringIndexType.Byte"/>.</param>
+    /// <param name="indexType">The index type (bit or byte).</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<long> StringBitPositionAsync(ValkeyKey key, bool bit, long start = 0, long end = -1, StringIndexType indexType = StringIndexType.Byte, CommandFlags flags = CommandFlags.None);

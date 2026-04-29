@@ -4,10 +4,14 @@ using Valkey.Glide.Commands;
 
 namespace Valkey.Glide;
 
-/// ATTENTION: Methods should only be added to this interface if they are implemented
-/// by <see cref="IBaseClient"/> but NOT by <see cref="IDatabaseAsync"/>. Methods
-/// implemented by both should be added to <see cref="IPubSubBaseCommands"/> instead.
-
+/// <summary>
+/// Pub/sub commands for Valkey GLIDE clients.
+/// </summary>
+/// <remarks>
+/// Methods should only be added to this interface if they are implemented by
+/// <see cref="IBaseClient"/> but NOT by <see cref="IDatabaseAsync"/>. Methods implemented
+/// by both should be added to <see cref="IPubSubBaseCommands"/> instead.
+/// </remarks>
 /// <seealso href="https://valkey.io/commands/#pubsub">Valkey – Pub/Sub Commands</seealso>
 /// <seealso href="https://glide.valkey.io/how-to/publish-and-subscribe-messages/">Valkey GLIDE – Pub/Sub Messaging</seealso>
 public partial interface IBaseClient : IPubSubBaseCommands
@@ -42,6 +46,14 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if <paramref name="timeout"/> is negative.</exception>
     /// <exception cref="Errors.TimeoutException">Thrown if server confirmation is not received within the specified <paramref name="timeout"/>.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.SubscribeAsync("news", TimeSpan.FromSeconds(5));
+    /// Console.WriteLine("Subscribed to 'news' channel");
+    /// </code>
+    /// </example>
+    /// </remarks>
     abstract Task SubscribeAsync(ValkeyKey channel, TimeSpan timeout);
 
     /// <summary>
@@ -52,6 +64,14 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if <paramref name="timeout"/> is negative.</exception>
     /// <exception cref="Errors.TimeoutException">Thrown if server confirmation is not received within the specified <paramref name="timeout"/>.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.SubscribeAsync(["news", "updates"], TimeSpan.FromSeconds(5));
+    /// Console.WriteLine("Subscribed to 'news' and 'updates' channels");
+    /// </code>
+    /// </example>
+    /// </remarks>
     abstract Task SubscribeAsync(IEnumerable<ValkeyKey> channels, TimeSpan timeout);
 
     /// <summary>
@@ -83,8 +103,7 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// See <see cref="SubscribeAsync(IEnumerable{ValkeyKey}, TimeSpan)"/> for the blocking version.
     /// <example>
     /// <code>
-    /// var channelList = new ValkeyKey[] { "news", "updates" };
-    /// await client.SubscribeLazyAsync(channelList);
+    /// await client.SubscribeLazyAsync(["news", "updates"]);
     /// Console.WriteLine("Subscribed to 'news' and 'updates' channels");
     /// </code>
     /// </example>
@@ -99,6 +118,14 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if <paramref name="timeout"/> is negative.</exception>
     /// <exception cref="Errors.TimeoutException">Thrown if server confirmation is not received within the specified <paramref name="timeout"/>.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.PSubscribeAsync("news.*", TimeSpan.FromSeconds(5));
+    /// Console.WriteLine("Subscribed to 'news.*' pattern");
+    /// </code>
+    /// </example>
+    /// </remarks>
     abstract Task PSubscribeAsync(ValkeyKey pattern, TimeSpan timeout);
 
     /// <summary>
@@ -109,6 +136,14 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if <paramref name="timeout"/> is negative.</exception>
     /// <exception cref="Errors.TimeoutException">Thrown if server confirmation is not received within the specified <paramref name="timeout"/>.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.PSubscribeAsync(["news.*", "updates.*"], TimeSpan.FromSeconds(5));
+    /// Console.WriteLine("Subscribed to 'news.*' and 'updates.*' patterns");
+    /// </code>
+    /// </example>
+    /// </remarks>
     abstract Task PSubscribeAsync(IEnumerable<ValkeyKey> patterns, TimeSpan timeout);
 
     /// <summary>
@@ -119,6 +154,7 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// <remarks>
     /// The client subscribes asynchronously in the background.
     /// Use <see cref="GetSubscriptionsAsync"/> to verify the actual server subscription state.
+    /// See <see cref="PSubscribeAsync(ValkeyKey, TimeSpan)"/> for the blocking version.
     /// <example>
     /// <code>
     /// await client.PSubscribeLazyAsync("news.*");
@@ -136,10 +172,10 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// <remarks>
     /// The client subscribes asynchronously in the background.
     /// Use <see cref="GetSubscriptionsAsync"/> to verify the actual server subscription state.
+    /// See <see cref="PSubscribeAsync(IEnumerable{ValkeyKey}, TimeSpan)"/> for the blocking version.
     /// <example>
     /// <code>
-    /// var patternList = new ValkeyKey[] { "news.*", "updates.*" };
-    /// await client.PSubscribeLazyAsync(patternList);
+    /// await client.PSubscribeLazyAsync(["news.*", "updates.*"]);
     /// Console.WriteLine("Subscribed to 'news.*' and 'updates.*' patterns");
     /// </code>
     /// </example>
@@ -156,6 +192,14 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if <paramref name="timeout"/> is negative.</exception>
     /// <exception cref="Errors.TimeoutException">Thrown if server confirmation is not received within the specified <paramref name="timeout"/>.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.UnsubscribeAsync(TimeSpan.FromSeconds(5));
+    /// Console.WriteLine("Unsubscribed from all channels");
+    /// </code>
+    /// </example>
+    /// </remarks>
     abstract Task UnsubscribeAsync(TimeSpan timeout);
 
     /// <summary>
@@ -166,6 +210,14 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if <paramref name="timeout"/> is negative.</exception>
     /// <exception cref="Errors.TimeoutException">Thrown if server confirmation is not received within the specified <paramref name="timeout"/>.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.UnsubscribeAsync("news", TimeSpan.FromSeconds(5));
+    /// Console.WriteLine("Unsubscribed from 'news' channel");
+    /// </code>
+    /// </example>
+    /// </remarks>
     abstract Task UnsubscribeAsync(ValkeyKey channel, TimeSpan timeout);
 
     /// <summary>
@@ -176,6 +228,14 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if <paramref name="timeout"/> is negative.</exception>
     /// <exception cref="Errors.TimeoutException">Thrown if server confirmation is not received within the specified <paramref name="timeout"/>.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.UnsubscribeAsync(["news", "updates"], TimeSpan.FromSeconds(5));
+    /// Console.WriteLine("Unsubscribed from 'news' and 'updates' channels");
+    /// </code>
+    /// </example>
+    /// </remarks>
     abstract Task UnsubscribeAsync(IEnumerable<ValkeyKey> channels, TimeSpan timeout);
 
     /// <summary>
@@ -185,6 +245,7 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// <remarks>
     /// The client unsubscribes asynchronously in the background.
     /// Use <see cref="GetSubscriptionsAsync"/> to verify the actual server subscription state.
+    /// See <see cref="UnsubscribeAsync(TimeSpan)"/> for the blocking version.
     /// <example>
     /// <code>
     /// await client.UnsubscribeLazyAsync();
@@ -202,6 +263,7 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// <remarks>
     /// The client unsubscribes asynchronously in the background.
     /// Use <see cref="GetSubscriptionsAsync"/> to verify the actual server subscription state.
+    /// See <see cref="UnsubscribeAsync(ValkeyKey, TimeSpan)"/> for the blocking version.
     /// <example>
     /// <code>
     /// await client.UnsubscribeLazyAsync("news");
@@ -219,10 +281,10 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// <remarks>
     /// The client unsubscribes asynchronously in the background.
     /// Use <see cref="GetSubscriptionsAsync"/> to verify the actual server subscription state.
+    /// See <see cref="UnsubscribeAsync(IEnumerable{ValkeyKey}, TimeSpan)"/> for the blocking version.
     /// <example>
     /// <code>
-    /// var channelList = new ValkeyKey[] { "news", "updates" };
-    /// await client.UnsubscribeLazyAsync(channelList);
+    /// await client.UnsubscribeLazyAsync(["news", "updates"]);
     /// Console.WriteLine("Unsubscribed from 'news' and 'updates' channels");
     /// </code>
     /// </example>
@@ -242,6 +304,14 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if <paramref name="timeout"/> is negative.</exception>
     /// <exception cref="Errors.TimeoutException">Thrown if server confirmation is not received within the specified <paramref name="timeout"/>.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.PUnsubscribeAsync(TimeSpan.FromSeconds(5));
+    /// Console.WriteLine("Unsubscribed from all patterns");
+    /// </code>
+    /// </example>
+    /// </remarks>
     abstract Task PUnsubscribeAsync(TimeSpan timeout);
 
     /// <summary>
@@ -252,6 +322,14 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if <paramref name="timeout"/> is negative.</exception>
     /// <exception cref="Errors.TimeoutException">Thrown if server confirmation is not received within the specified <paramref name="timeout"/>.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.PUnsubscribeAsync("news.*", TimeSpan.FromSeconds(5));
+    /// Console.WriteLine("Unsubscribed from 'news.*' pattern");
+    /// </code>
+    /// </example>
+    /// </remarks>
     abstract Task PUnsubscribeAsync(ValkeyKey pattern, TimeSpan timeout);
 
     /// <summary>
@@ -262,6 +340,14 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if <paramref name="timeout"/> is negative.</exception>
     /// <exception cref="Errors.TimeoutException">Thrown if server confirmation is not received within the specified <paramref name="timeout"/>.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.PUnsubscribeAsync(["news.*", "updates.*"], TimeSpan.FromSeconds(5));
+    /// Console.WriteLine("Unsubscribed from 'news.*' and 'updates.*' patterns");
+    /// </code>
+    /// </example>
+    /// </remarks>
     abstract Task PUnsubscribeAsync(IEnumerable<ValkeyKey> patterns, TimeSpan timeout);
 
     /// <summary>
@@ -271,6 +357,7 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// <remarks>
     /// The client unsubscribes asynchronously in the background.
     /// Use <see cref="GetSubscriptionsAsync"/> to verify the actual server subscription state.
+    /// See <see cref="PUnsubscribeAsync(TimeSpan)"/> for the blocking version.
     /// <example>
     /// <code>
     /// await client.PUnsubscribeLazyAsync();
@@ -288,6 +375,7 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// <remarks>
     /// The client unsubscribes asynchronously in the background.
     /// Use <see cref="GetSubscriptionsAsync"/> to verify the actual server subscription state.
+    /// See <see cref="PUnsubscribeAsync(ValkeyKey, TimeSpan)"/> for the blocking version.
     /// <example>
     /// <code>
     /// await client.PUnsubscribeLazyAsync("news.*");
@@ -305,10 +393,10 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// <remarks>
     /// The client unsubscribes asynchronously in the background.
     /// Use <see cref="GetSubscriptionsAsync"/> to verify the actual server subscription state.
+    /// See <see cref="PUnsubscribeAsync(IEnumerable{ValkeyKey}, TimeSpan)"/> for the blocking version.
     /// <example>
     /// <code>
-    /// var patternList = new ValkeyKey[] { "news.*", "updates.*" };
-    /// await client.PUnsubscribeLazyAsync(patternList);
+    /// await client.PUnsubscribeLazyAsync(["news.*", "updates.*"]);
     /// Console.WriteLine("Unsubscribed from 'news.*' and 'updates.*' patterns");
     /// </code>
     /// </example>
@@ -364,7 +452,8 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// var count = await client.PubSubNumSubAsync("news");
+    /// var subscriberCount = await client.PubSubNumSubAsync("news");
+    /// Console.WriteLine($"'news' has {subscriberCount} subscriber(s)");
     /// </code>
     /// </example>
     /// </remarks>
@@ -379,8 +468,7 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// var channelList = new ValkeyKey[] { "news", "updates" };
-    /// var subscriberCounts = await client.PubSubNumSubAsync(channelList);
+    /// var subscriberCounts = await client.PubSubNumSubAsync(["news", "updates"]);
     /// foreach (var kvp in subscriberCounts)
     /// {
     ///     Console.WriteLine($"{kvp.Key}: {kvp.Value} subscribers");
@@ -399,6 +487,7 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// <example>
     /// <code>
     /// var patternCount = await client.PubSubNumPatAsync();
+    /// Console.WriteLine($"{patternCount} active pattern subscription(s)");
     /// </code>
     /// </example>
     /// </remarks>

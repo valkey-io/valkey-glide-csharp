@@ -51,7 +51,7 @@ public partial interface IDatabaseAsync
     /// <remarks>
     /// <example>
     /// <code>
-    /// // Always push (LPUSH, default).
+    /// // Always push (LPUSH).
     /// var length = await db.ListLeftPushAsync("mylist", ["a", "b", "c"], When.Always);
     /// // "mylist" is created if missing; returns the new length.
     /// </code>
@@ -79,7 +79,7 @@ public partial interface IDatabaseAsync
     /// <remarks>
     /// <example>
     /// <code>
-    /// // Always push (RPUSH, default).
+    /// // Always push (RPUSH).
     /// var length = await db.ListRightPushAsync("mylist", "value", When.Always);
     /// // "mylist" is created if missing; returns the new length.
     /// </code>
@@ -108,7 +108,7 @@ public partial interface IDatabaseAsync
     /// <remarks>
     /// <example>
     /// <code>
-    /// // Always push (RPUSH, default).
+    /// // Always push (RPUSH).
     /// var length = await db.ListRightPushAsync("mylist", ["a", "b", "c"], When.Always);
     /// // "mylist" is created if missing; returns the new length.
     /// </code>
@@ -237,6 +237,14 @@ public partial interface IDatabaseAsync
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>The element being popped and pushed, or <see cref="ValkeyValue.Null"/> if the source list is empty.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await db.ListRightPushAsync("source", ["a", "b", "c"]);
+    /// var moved = await db.ListRightPopLeftPushAsync("source", "destination");  // "c"
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<ValkeyValue> ListRightPopLeftPushAsync(ValkeyKey source, ValkeyKey destination, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="IListBaseCommands.ListPositionAsync(ValkeyKey, ValkeyValue, long, long)"/>
@@ -262,6 +270,14 @@ public partial interface IDatabaseAsync
     /// The element at the given index.
     /// If the index is out of range or if the key does not exist, <see cref="ValkeyValue.Null"/> will be returned.
     /// </returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await db.ListRightPushAsync("mylist", ["a", "b", "c"]);
+    /// var element = await db.ListGetByIndexAsync("mylist", 0);  // "a"
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<ValkeyValue> ListGetByIndexAsync(ValkeyKey key, long index);
 
     /// <inheritdoc cref="ListGetByIndexAsync(ValkeyKey, long)"/>
@@ -279,6 +295,15 @@ public partial interface IDatabaseAsync
     /// <param name="key">The key of the list.</param>
     /// <param name="index">The index of the element in the list to set.</param>
     /// <param name="value">The new value.</param>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await db.ListRightPushAsync("mylist", ["a", "b", "c"]);
+    /// await db.ListSetByIndexAsync("mylist", 0, "x");
+    /// var element = await db.ListGetByIndexAsync("mylist", 0);  // "x"
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task ListSetByIndexAsync(ValkeyKey key, long index, ValkeyValue value);
 
     /// <inheritdoc cref="ListSetByIndexAsync(ValkeyKey, long, ValkeyValue)"/>

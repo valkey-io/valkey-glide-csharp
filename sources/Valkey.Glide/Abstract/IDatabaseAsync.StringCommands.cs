@@ -67,9 +67,10 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<ValkeyValue> StringSetAndGetAsync(ValkeyKey key, ValkeyValue value, TimeSpan? expiry, When when, CommandFlags flags = CommandFlags.None);
 
-    /// <inheritdoc cref="IBaseClient.SetAsync(IEnumerable{KeyValuePair{ValkeyKey, ValkeyValue}})"/>
+    /// <inheritdoc cref="IBaseClient.SetAsync(IEnumerable{KeyValuePair{ValkeyKey, ValkeyValue}})" path="/*[not(self::returns)]"/>
     /// <param name="when">The condition under which the keys should be set.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns><see langword="true"/> if all keys were set; <see langword="false"/> if <paramref name="when"/> is <see cref="When.NotExists"/> and at least one key already existed.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<bool> StringSetAsync(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values, When when = When.Always, CommandFlags flags = CommandFlags.None);
 
@@ -133,20 +134,42 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<ValkeyValue> StringGetDeleteAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None);
 
-    /// <inheritdoc cref="IBaseClient.GetExpiryAsync(ValkeyKey, GetExpiryOptions)" path="/*[not(self::param[@name='options']) and not(self::returns)]"/>
-    /// <param name="key">The key to be retrieved from the database.</param>
-    /// <param name="expiry">The expiry to set. <see langword="null"/> will remove expiry.</param>
+    /// <summary>
+    /// Gets the value of a key and optionally sets or removes its expiry.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/getex/">Valkey commands – GETEX</seealso>
+    /// <param name="key">The key to retrieve.</param>
+    /// <param name="expiry">The expiry to set. <see langword="null"/> removes the existing expiry.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <returns>The value of key, or <see cref="ValkeyValue.Null"/> when key does not exist.</returns>
+    /// <returns>The value of <paramref name="key"/>, or <see cref="ValkeyValue.Null"/> when <paramref name="key"/> does not exist.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await db.StringSetAsync("key", "value");
+    /// var value = await db.StringGetSetExpiryAsync("key", TimeSpan.FromSeconds(30));  // "value"
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<ValkeyValue> StringGetSetExpiryAsync(ValkeyKey key, TimeSpan? expiry, CommandFlags flags = CommandFlags.None);
 
-    /// <inheritdoc cref="IBaseClient.GetExpiryAsync(ValkeyKey, GetExpiryOptions)" path="/*[not(self::param[@name='options']) and not(self::returns)]"/>
-    /// <param name="key">The key to be retrieved from the database.</param>
-    /// <param name="expiry">The exact date and time to expire at.</param>
+    /// <summary>
+    /// Gets the value of a key and sets its expiry to the given <see cref="DateTime"/>.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/getex/">Valkey commands – GETEX</seealso>
+    /// <param name="key">The key to retrieve.</param>
+    /// <param name="expiry">The absolute expiry time to set.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <returns>The value of key, or <see cref="ValkeyValue.Null"/> when key does not exist.</returns>
+    /// <returns>The value of <paramref name="key"/>, or <see cref="ValkeyValue.Null"/> when <paramref name="key"/> does not exist.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await db.StringSetAsync("key", "value");
+    /// var value = await db.StringGetSetExpiryAsync("key", DateTime.UtcNow.AddMinutes(5));  // "value"
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<ValkeyValue> StringGetSetExpiryAsync(ValkeyKey key, DateTime expiry, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
@@ -160,6 +183,15 @@ public partial interface IDatabaseAsync
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>A string (sequence of characters) of the LCS match.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await db.StringSetAsync("key1", "ohmytext");
+    /// await db.StringSetAsync("key2", "mynewtext");
+    /// var lcs = await db.StringLongestCommonSubsequenceAsync("key1", "key2");  // "mytext"
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<string?> StringLongestCommonSubsequenceAsync(ValkeyKey first, ValkeyKey second, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
@@ -173,6 +205,15 @@ public partial interface IDatabaseAsync
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>The length of the LCS match.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await db.StringSetAsync("key1", "ohmytext");
+    /// await db.StringSetAsync("key2", "mynewtext");
+    /// var length = await db.StringLongestCommonSubsequenceLengthAsync("key1", "key2");  // 6
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<long> StringLongestCommonSubsequenceLengthAsync(ValkeyKey first, ValkeyKey second, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
@@ -183,9 +224,19 @@ public partial interface IDatabaseAsync
     /// <note>Since Valkey 7.0.0.</note>
     /// <param name="first">The key that stores the first string.</param>
     /// <param name="second">The key that stores the second string.</param>
-    /// <param name="minLength">Can be used to restrict the list of matches to the ones of a given minimum length. Defaults to 0.</param>
+    /// <param name="minLength">Can be used to restrict the list of matches to the ones of a given minimum length.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>The result of LCS algorithm, containing match positions and lengths based on the given parameters.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await db.StringSetAsync("key1", "ohmytext");
+    /// await db.StringSetAsync("key2", "mynewtext");
+    /// var matches = await db.StringLongestCommonSubsequenceWithMatchesAsync("key1", "key2", minLength: 4);
+    /// Console.WriteLine($"LCS length: {matches.LongestMatchLength}");
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<LCSMatchResult> StringLongestCommonSubsequenceWithMatchesAsync(ValkeyKey first, ValkeyKey second, long minLength = 0, CommandFlags flags = CommandFlags.None);
 }

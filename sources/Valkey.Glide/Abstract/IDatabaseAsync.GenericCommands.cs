@@ -109,6 +109,14 @@ public partial interface IDatabaseAsync
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns><see langword="true"/> if the timeout was set.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await db.StringSetAsync("key", "value");
+    /// var set = await db.KeyExpireAsync("key", TimeSpan.FromSeconds(10));  // true
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<bool> KeyExpireAsync(ValkeyKey key, TimeSpan? expiry, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="KeyExpireAsync(ValkeyKey, TimeSpan?, CommandFlags)"/>
@@ -126,6 +134,14 @@ public partial interface IDatabaseAsync
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns><see langword="true"/> if the timeout was set.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await db.StringSetAsync("key", "value");
+    /// var set = await db.KeyExpireAsync("key", DateTime.UtcNow.AddMinutes(5));  // true
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<bool> KeyExpireAsync(ValkeyKey key, DateTime? expiry, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="KeyExpireAsync(ValkeyKey, DateTime?, CommandFlags)"/>
@@ -142,6 +158,15 @@ public partial interface IDatabaseAsync
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>TTL, or <see langword="null"/> when key does not exist or key exists but has no associated expiration.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await db.StringSetAsync("key", "value");
+    /// await db.KeyExpireAsync("key", TimeSpan.FromMinutes(5));
+    /// var ttl = await db.KeyTimeToLiveAsync("key");  // ~00:05:00
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<TimeSpan?> KeyTimeToLiveAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="IBaseClient.TypeAsync(ValkeyKey)"/>
@@ -154,6 +179,14 @@ public partial interface IDatabaseAsync
     /// <param name="key">The key to rename.</param>
     /// <param name="newKey">The new name of the key.</param>
     /// <returns><see langword="true"/> if the key was renamed (always true on success, throws on failure).</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await db.StringSetAsync("oldkey", "value");
+    /// var renamed = await db.KeyRenameAsync("oldkey", "newkey");  // true
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<bool> KeyRenameAsync(ValkeyKey key, ValkeyKey newKey);
 
     /// <inheritdoc cref="IBaseClient.RenameAsync(ValkeyKey, ValkeyKey)" path="/summary"/>
@@ -165,6 +198,14 @@ public partial interface IDatabaseAsync
     /// <returns><see langword="true"/> if the key was renamed, <see langword="false"/> if newKey already exists (when <paramref name="when"/> is <see cref="When.NotExists"/>).</returns>
     /// <exception cref="ArgumentException">Thrown if <paramref name="when"/> is <see cref="When.Exists"/>.</exception>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await db.StringSetAsync("oldkey", "value");
+    /// var renamed = await db.KeyRenameAsync("oldkey", "newkey", When.NotExists);  // true
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<bool> KeyRenameAsync(ValkeyKey key, ValkeyKey newKey, When when = When.Always, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="IBaseClient.RenameIfNotExistsAsync(ValkeyKey, ValkeyKey)"/>
@@ -191,6 +232,15 @@ public partial interface IDatabaseAsync
     /// <param name="expiry">The expiry to set as a duration.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await db.StringSetAsync("{tag}source", "value");
+    /// var serialized = await db.KeyDumpAsync("{tag}source");
+    /// await db.KeyRestoreAsync("{tag}restored", serialized!, TimeSpan.FromMinutes(5));
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task KeyRestoreAsync(ValkeyKey key, byte[] value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
@@ -202,6 +252,15 @@ public partial interface IDatabaseAsync
     /// <param name="expiry">The expiry to set as an absolute timestamp.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await db.StringSetAsync("{tag}source", "value");
+    /// var serialized = await db.KeyDumpAsync("{tag}source");
+    /// await db.KeyRestoreAsync("{tag}restored", serialized!, DateTime.UtcNow.AddHours(1));
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task KeyRestoreAsync(ValkeyKey key, byte[] value, DateTime? expiry, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="IBaseClient.TouchAsync(ValkeyKey)"/>
@@ -245,11 +304,19 @@ public partial interface IDatabaseAsync
     /// <seealso href="https://valkey.io/commands/copy/">Valkey commands – COPY</seealso>
     /// <param name="sourceKey">The key to the source value.</param>
     /// <param name="destinationKey">The key where the value should be copied to.</param>
-    /// <param name="destinationDatabase">The database ID to store destinationKey in. A value of -1 means the current database.</param>
+    /// <param name="destinationDatabase">The database ID to store destinationKey in, or <c>-1</c> to use the current database.</param>
     /// <param name="replace">Whether to overwrite an existing value at destinationKey.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns><see langword="true"/> if sourceKey was copied. <see langword="false"/> if sourceKey was not copied.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await db.StringSetAsync("{tag}source", "value");
+    /// var copied = await db.KeyCopyAsync("{tag}source", "{tag}destination", replace: true);  // true
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<bool> KeyCopyAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, int destinationDatabase = -1, bool replace = false, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="IGlideClient.MoveAsync(ValkeyKey, int)"/>
@@ -264,6 +331,15 @@ public partial interface IDatabaseAsync
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>A random key, or default when the database is empty.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await db.StringSetAsync("key", "value");
+    /// var randomKey = await db.KeyRandomAsync();
+    /// Console.WriteLine($"Random key: {randomKey}");
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<ValkeyKey> KeyRandomAsync(CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="IGenericBaseCommands.SortAsync(ValkeyKey, long, long, Order, SortType, ValkeyValue, IEnumerable{ValkeyValue})"/>

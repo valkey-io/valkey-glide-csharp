@@ -138,6 +138,7 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
+    /// await client.StreamAddAsync("mystream", "sensor", "temperature");
     /// var position = new StreamPosition("mystream", StreamPosition.Beginning);
     /// var entries = await client.StreamReadAsync(position);
     /// foreach (var entry in entries)
@@ -158,6 +159,8 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
+    /// await client.StreamAddAsync("stream1", "field1", "value1");
+    /// await client.StreamAddAsync("stream2", "field2", "value2");
     /// StreamPosition[] positions = [
     ///     new("stream1", StreamPosition.Beginning),
     ///     new("stream2", StreamPosition.Beginning)
@@ -194,6 +197,7 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
+    /// await client.StreamAddAsync("mystream", "sensor", "temperature");
     /// var entries = await client.StreamRangeAsync("mystream");
     /// foreach (var entry in entries)
     /// {

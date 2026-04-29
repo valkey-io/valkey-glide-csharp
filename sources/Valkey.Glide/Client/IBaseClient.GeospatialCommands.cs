@@ -11,7 +11,7 @@ public partial interface IBaseClient
     /// <param name="key">The sorted set key.</param>
     /// <param name="member">The member name to add or update.</param>
     /// <param name="position">The geographic position of the member.</param>
-    /// <param name="condition">The condition under which to add or update the member. Defaults to <see cref="GeoAddCondition.Always"/>.</param>
+    /// <param name="condition">The condition under which to add or update the member.</param>
     /// <returns><see langword="true"/> if the member was added, <see langword="false"/> otherwise.</returns>
     /// <remarks>
     /// <example>
@@ -58,7 +58,7 @@ public partial interface IBaseClient
     /// <seealso href="https://valkey.io/commands/geoadd/">Valkey commands – GEOADD</seealso>
     /// <param name="key">The sorted set key.</param>
     /// <param name="members">A dictionary of member names and their geographic positions.</param>
-    /// <param name="condition">The condition under which to add or update members. Defaults to <see cref="GeoAddCondition.Always"/>.</param>
+    /// <param name="condition">The condition under which to add or update members.</param>
     /// <returns>The number of members added.</returns>
     /// <remarks>
     /// <example>
@@ -111,7 +111,7 @@ public partial interface IBaseClient
     /// <param name="key">The sorted set key.</param>
     /// <param name="member1">The first member.</param>
     /// <param name="member2">The second member.</param>
-    /// <param name="unit">The unit of distance measurement. Defaults to <see cref="GeoUnit.Meters"/>.</param>
+    /// <param name="unit">The unit of distance measurement.</param>
     /// <returns>The distance between the two members in the specified unit,
     /// or <see langword="null"/> if one or both members do not exist.</returns>
     /// <remarks>
@@ -167,7 +167,7 @@ public partial interface IBaseClient
     /// <code>
     /// await client.GeoAddAsync("locations", "Palermo", new GeoPosition(13.361389, 38.115556));
     /// await client.GeoAddAsync("locations", "Catania", new GeoPosition(15.087269, 37.502669));
-    /// 
+    ///
     /// var origin = new GeoPosition(15.0, 37.0);
     /// var circle = new GeoSearchCircle(200, GeoUnit.Kilometers);
     /// var results = await client.GeoSearchAsync("locations", origin, circle);  // 2 results
@@ -196,7 +196,7 @@ public partial interface IBaseClient
     /// <code>
     /// await client.GeoAddAsync("locations", "Palermo", new GeoPosition(13.361389, 38.115556));
     /// await client.GeoAddAsync("locations", "Catania", new GeoPosition(15.087269, 37.502669));
-    /// 
+    ///
     /// var circle = new GeoSearchCircle(200, GeoUnit.Kilometers);
     /// var stored = await client.GeoSearchAndStoreAsync("locations", "nearby", "Palermo", circle);  // 2
     /// </code>

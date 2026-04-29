@@ -5,10 +5,10 @@ namespace Valkey.Glide;
 public partial interface IServer
 {
     /// <inheritdoc cref="IBaseClient.PubSubChannelsAsync()"/>
-    /// <param name="pattern">A glob-style pattern to filter channels. If default, all active channels are returned.</param>
+    /// <param name="pattern">A glob-style pattern to filter channels. If not specified, all active channels are returned.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns>An array of active channel names matching <paramref name="pattern"/>.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    /// <returns>An array of active channel names matching the pattern.</returns>
     Task<ValkeyChannel[]> SubscriptionChannelsAsync(ValkeyChannel pattern = default, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="IBaseClient.PubSubNumPatAsync()"/>

@@ -19,5 +19,13 @@ public partial interface IDatabaseAsync
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>The number of clients that received the message.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var subscriberCount = await db.PublishAsync(ValkeyChannel.Literal("news"), "Breaking news!");
+    /// Console.WriteLine($"Delivered message to {subscriberCount} subscriber(s)");
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<long> PublishAsync(ValkeyChannel channel, ValkeyValue message, CommandFlags flags = CommandFlags.None);
 }

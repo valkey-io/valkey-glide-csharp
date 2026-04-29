@@ -29,7 +29,7 @@ public partial interface IBaseClient
     /// <example>
     /// <code>
     /// await client.ListRightPushAsync("list1", ["a", "b"]);
-    /// var popped = await client.ListBlockingLeftPopAsync(["list1", "list2"], TimeSpan.FromSeconds(5));
+    /// var popped = await client.ListBlockingLeftPopAsync(["list1", "list2"], TimeSpan.FromSeconds(5));  // ["list1", "a"]
     /// </code>
     /// </example>
     /// </remarks>
@@ -51,7 +51,7 @@ public partial interface IBaseClient
     /// <example>
     /// <code>
     /// await client.ListRightPushAsync("mylist", ["a", "b"]);
-    /// var popped = await client.ListBlockingLeftPopAsync("mylist", TimeSpan.FromSeconds(5));
+    /// var popped = await client.ListBlockingLeftPopAsync("mylist", TimeSpan.FromSeconds(5));  // ["mylist", "a"]
     /// </code>
     /// </example>
     /// </remarks>
@@ -74,7 +74,7 @@ public partial interface IBaseClient
     /// <example>
     /// <code>
     /// await client.ListRightPushAsync("list1", ["a", "b"]);
-    /// var popped = await client.ListBlockingRightPopAsync(["list1", "list2"], TimeSpan.FromSeconds(5));
+    /// var popped = await client.ListBlockingRightPopAsync(["list1", "list2"], TimeSpan.FromSeconds(5));  // ["list1", "b"]
     /// </code>
     /// </example>
     /// </remarks>
@@ -96,7 +96,7 @@ public partial interface IBaseClient
     /// <example>
     /// <code>
     /// await client.ListRightPushAsync("mylist", ["a", "b"]);
-    /// var popped = await client.ListBlockingRightPopAsync("mylist", TimeSpan.FromSeconds(5));
+    /// var popped = await client.ListBlockingRightPopAsync("mylist", TimeSpan.FromSeconds(5));  // popped == ["mylist", "b"]
     /// </code>
     /// </example>
     /// </remarks>

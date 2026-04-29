@@ -12,7 +12,7 @@ namespace Valkey.Glide;
 /// <seealso href="https://valkey.io/commands/#scripting">Valkey – Scripting and Function Commands</seealso>
 public partial interface IBaseClient
 {
-    // ===== Script Execution =====
+    #region Script Commands
 
     /// <summary>
     /// Executes a Lua script using EVALSHA with automatic fallback to EVAL on NOSCRIPT error.
@@ -26,7 +26,7 @@ public partial interface IBaseClient
     /// <example>
     /// <code>
     /// using var script = new Script("return 'Hello, World!'");
-    /// var scriptResult = await client.ScriptInvokeAsync(script);
+    /// var scriptResult = await client.ScriptInvokeAsync(script);  // "Hello, World!"
     /// </code>
     /// </example>
     /// </remarks>
@@ -47,8 +47,8 @@ public partial interface IBaseClient
     /// <example>
     /// <code>
     /// using var script = new Script("return KEYS[1] .. ARGV[1]");
-    /// var scriptOptions = new ScriptOptions().WithKeys("mykey").WithArgs("myvalue");
-    /// var scriptResult = await client.ScriptInvokeAsync(script, scriptOptions);
+    /// var scriptOptions = new ScriptOptions().WithKeys("Hello, ").WithArgs("World!");
+    /// var scriptResult = await client.ScriptInvokeAsync(script, scriptOptions);  // "Hello, World!"
     /// </code>
     /// </example>
     /// </remarks>
@@ -56,8 +56,6 @@ public partial interface IBaseClient
         Script script,
         ScriptOptions options,
         CancellationToken cancellationToken = default);
-
-    // ===== Script Management =====
 
     /// <summary>
     /// Checks if a script exists in the server cache by its SHA1 hash.
@@ -119,7 +117,7 @@ public partial interface IBaseClient
     /// Flushes all scripts from the server cache with the specified flush mode.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/script-flush/">Valkey commands – SCRIPT FLUSH</seealso>
-    /// <param name="mode">The flush mode (SYNC or ASYNC).</param>
+    /// <param name="mode">The flush mode.</param>
     /// <param name="cancellationToken">A token to cancel the async operation.</param>
     /// <remarks>
     /// <example>
@@ -168,7 +166,8 @@ public partial interface IBaseClient
     Task ScriptKillAsync(
         CancellationToken cancellationToken = default);
 
-    // ===== Function Execution =====
+    #endregion
+    #region Function Commands
 
     /// <summary>
     /// Executes a loaded function by name.
@@ -181,7 +180,11 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var functionResult = await client.FCallAsync("myfunction");
+    /// await client.FunctionLoadAsync("""
+    ///     #!lua name=mylib
+    ///     redis.register_function('myfunc', function() return 'Hello, World!' end)
+    ///     """);
+    /// var result = await client.FCallAsync("myfunc");  // "Hello, World!"
     /// </code>
     /// </example>
     /// </remarks>
@@ -202,7 +205,11 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var functionResult = await client.FCallAsync("myfunction", ["key1"], ["arg1", "arg2"]);
+    /// await client.FunctionLoadAsync("""
+    ///     #!lua name=mylib
+    ///     redis.register_function('myfunc', function(keys, args) return keys[1] .. args[1] end)
+    ///     """);
+    /// var result = await client.FCallAsync("myfunc", ["Hello, "], ["World!"]);  // "Hello, World!"
     /// </code>
     /// </example>
     /// </remarks>
@@ -224,7 +231,15 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var readOnlyResult = await client.FCallReadOnlyAsync("myfunction");
+    /// await client.FunctionLoadAsync("""
+    ///     #!lua name=mylib
+    ///     redis.register_function{
+    ///       function_name='myfunc',
+    ///       callback=function() return 'Hello, World!' end,
+    ///       flags={'no-writes'}
+    ///     }
+    ///     """);
+    /// var result = await client.FCallReadOnlyAsync("myfunc");  // "Hello, World!"
     /// </code>
     /// </example>
     /// </remarks>
@@ -246,7 +261,15 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var readOnlyResult = await client.FCallReadOnlyAsync("myfunction", ["key1"], ["arg1"]);
+    /// await client.FunctionLoadAsync("""
+    ///     #!lua name=mylib
+    ///     redis.register_function{
+    ///       function_name='myfunc',
+    ///       callback=function(keys, args) return keys[1] .. args[1] end,
+    ///       flags={'no-writes'}
+    ///     }
+    ///     """);
+    /// var result = await client.FCallReadOnlyAsync("myfunc", ["Hello, "], ["World!"]);  // "Hello, World!"
     /// </code>
     /// </example>
     /// </remarks>
@@ -256,24 +279,23 @@ public partial interface IBaseClient
         IEnumerable<string> args,
         CancellationToken cancellationToken = default);
 
-    // ===== Function Management =====
-
     /// <summary>
     /// Loads a function library from Lua code.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/function-load/">Valkey commands – FUNCTION LOAD</seealso>
     /// <note>Since Valkey 7.0.0.</note>
     /// <param name="libraryCode">The Lua code defining the function library.</param>
-    /// <param name="replace">Whether to replace an existing library with the same name. Defaults to <see langword="false"/>.</param>
+    /// <param name="replace">Whether to replace an existing library with the same name.</param>
     /// <param name="cancellationToken">A token to cancel the async operation.</param>
     /// <returns>The name of the loaded library.</returns>
     /// <exception cref="Errors.ValkeyServerException">Thrown if the library code is invalid or if <paramref name="replace"/> is <see langword="false"/> and the library already exists.</exception>
     /// <remarks>
     /// <example>
     /// <code>
-    /// var libraryName = await client.FunctionLoadAsync(
-    ///     "#!lua name=mylib\nredis.register_function('myfunc', function(keys, args) return 'Hello' end)",
-    ///     replace: true);  // "mylib"
+    /// var libraryName = await client.FunctionLoadAsync("""
+    ///     #!lua name=mylib
+    ///     redis.register_function('myfunc', function() return 'Hello, World!' end)
+    ///     """, replace: true);  // "mylib"
     /// </code>
     /// </example>
     /// </remarks>
@@ -305,7 +327,7 @@ public partial interface IBaseClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/function-flush/">Valkey commands – FUNCTION FLUSH</seealso>
     /// <note>Since Valkey 7.0.0.</note>
-    /// <param name="mode">The flush mode (SYNC or ASYNC).</param>
+    /// <param name="mode">The flush mode.</param>
     /// <param name="cancellationToken">A token to cancel the async operation.</param>
     /// <remarks>
     /// <example>
@@ -354,8 +376,6 @@ public partial interface IBaseClient
     Task FunctionKillAsync(
         CancellationToken cancellationToken = default);
 
-    // ===== Function Persistence =====
-
     /// <summary>
     /// Creates a binary backup of all loaded functions.
     /// </summary>
@@ -367,6 +387,7 @@ public partial interface IBaseClient
     /// <example>
     /// <code>
     /// var backup = await client.FunctionDumpAsync();
+    /// Console.WriteLine($"Dumped {backup.Length} bytes");
     /// </code>
     /// </example>
     /// </remarks>
@@ -380,9 +401,10 @@ public partial interface IBaseClient
     /// <note>Since Valkey 7.0.0.</note>
     /// <param name="payload">The binary payload from <see cref="FunctionDumpAsync"/>.</param>
     /// <param name="cancellationToken">A token to cancel the async operation.</param>
-    /// <exception cref="Errors.ValkeyServerException">Thrown if restoration fails (e.g., library conflict with default APPEND policy).</exception>
+    /// <exception cref="Errors.ValkeyServerException">Thrown if restoration fails (e.g., library conflict with the default <see cref="FunctionRestorePolicy.Append"/> policy).</exception>
     /// <remarks>
-    /// Uses the default APPEND policy. Use the overload with <see cref="FunctionRestorePolicy"/> to specify a different policy.
+    /// Uses the default <see cref="FunctionRestorePolicy.Append"/> policy. Use the overload with
+    /// <see cref="FunctionRestorePolicy"/> to specify a different policy.
     /// <example>
     /// <code>
     /// var backup = await client.FunctionDumpAsync();
@@ -400,7 +422,7 @@ public partial interface IBaseClient
     /// <seealso href="https://valkey.io/commands/function-restore/">Valkey commands – FUNCTION RESTORE</seealso>
     /// <note>Since Valkey 7.0.0.</note>
     /// <param name="payload">The binary payload from <see cref="FunctionDumpAsync"/>.</param>
-    /// <param name="policy">The restore policy (APPEND, FLUSH, or REPLACE).</param>
+    /// <param name="policy">The restore policy.</param>
     /// <param name="cancellationToken">A token to cancel the async operation.</param>
     /// <exception cref="Errors.ValkeyServerException">Thrown if restoration fails.</exception>
     /// <remarks>
@@ -415,4 +437,6 @@ public partial interface IBaseClient
         byte[] payload,
         FunctionRestorePolicy policy,
         CancellationToken cancellationToken = default);
+
+    #endregion
 }

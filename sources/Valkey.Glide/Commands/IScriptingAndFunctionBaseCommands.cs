@@ -18,8 +18,8 @@ public interface IScriptingAndFunctionBaseCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/eval/">Valkey commands – EVAL</seealso>
     /// <param name="script">The Lua script to evaluate.</param>
-    /// <param name="keys">The keys to pass to the script. Defaults to <see langword="null"/> (no keys).</param>
-    /// <param name="values">The values to pass to the script. Defaults to <see langword="null"/> (no values).</param>
+    /// <param name="keys">The keys to pass to the script.</param>
+    /// <param name="values">The values to pass to the script.</param>
     /// <returns>The result of the script execution.</returns>
     /// <remarks>
     /// For better performance with repeated executions, consider using
@@ -41,8 +41,8 @@ public interface IScriptingAndFunctionBaseCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/evalsha/">Valkey commands – EVALSHA</seealso>
     /// <param name="hash">The SHA1 hash of the script to evaluate.</param>
-    /// <param name="keys">The keys to pass to the script. Defaults to <see langword="null"/> (no keys).</param>
-    /// <param name="values">The values to pass to the script. Defaults to <see langword="null"/> (no values).</param>
+    /// <param name="keys">The keys to pass to the script.</param>
+    /// <param name="values">The values to pass to the script.</param>
     /// <returns>The result of the script execution.</returns>
     /// <remarks>
     /// If the script is not cached on the server, a <c>NOSCRIPT</c> error will be thrown.
@@ -66,7 +66,7 @@ public interface IScriptingAndFunctionBaseCommands
     /// <param name="script">The <see cref="LuaScript"/> to evaluate.</param>
     /// <param name="parameters">
     /// An object whose properties/fields supply values for named parameters in
-    /// <paramref name="script"/>. Defaults to <see langword="null"/> (no parameters).
+    /// <paramref name="script"/>.
     /// </param>
     /// <returns>The result of the script execution.</returns>
     /// <remarks>
@@ -87,7 +87,7 @@ public interface IScriptingAndFunctionBaseCommands
     /// <param name="script">The <see cref="LoadedLuaScript"/> to evaluate.</param>
     /// <param name="parameters">
     /// An object whose properties/fields supply values for named parameters in
-    /// <paramref name="script"/>. Defaults to <see langword="null"/> (no parameters).
+    /// <paramref name="script"/>.
     /// </param>
     /// <returns>The result of the script execution.</returns>
     /// <remarks>

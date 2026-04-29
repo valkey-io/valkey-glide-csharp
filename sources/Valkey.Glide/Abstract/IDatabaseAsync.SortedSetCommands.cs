@@ -30,8 +30,7 @@ public partial interface IDatabaseAsync
     Task<long> SortedSetAddAsync(ValkeyKey key, IEnumerable<SortedSetEntry> values, SortedSetWhen when, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
-    /// Update the score of a member in a sorted set. Returns <see langword="true"/> if the score changed.
-    /// Uses the ZADD command with the CH (changed) flag.
+    /// Updates the score of a member in a sorted set using the ZADD command with the CH (changed) flag.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/zadd/">Valkey commands – ZADD</seealso>
     /// <param name="key">The sorted set key.</param>
@@ -39,18 +38,19 @@ public partial interface IDatabaseAsync
     /// <param name="score">The new score.</param>
     /// <param name="when">Condition for the update.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns><see langword="true"/> if the member's score changed, <see langword="false"/> otherwise.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<bool> SortedSetUpdateAsync(ValkeyKey key, ValkeyValue member, double score, SortedSetWhen when = SortedSetWhen.Always, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
-    /// Update the scores of multiple members in a sorted set. Returns the number of members whose scores changed.
-    /// Uses the ZADD command with the CH (changed) flag.
+    /// Updates the scores of multiple members in a sorted set using the ZADD command with the CH (changed) flag.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/zadd/">Valkey commands – ZADD</seealso>
     /// <param name="key">The sorted set key.</param>
     /// <param name="values">The members and their new scores.</param>
     /// <param name="when">Condition for the update.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns>The number of members whose scores changed.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<long> SortedSetUpdateAsync(ValkeyKey key, IEnumerable<SortedSetEntry> values, SortedSetWhen when = SortedSetWhen.Always, CommandFlags flags = CommandFlags.None);
 
@@ -117,7 +117,7 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<ValkeyValue[]> SortedSetRangeByValueAsync(ValkeyKey key, ValkeyValue min, ValkeyValue max, Exclude exclude, long skip, long take = -1, CommandFlags flags = CommandFlags.None);
 
-    /// <inheritdoc cref="SortedSetRangeByValueAsync(ValkeyKey, ValkeyValue, ValkeyValue, Exclude, long, long, CommandFlags)" path="/*[not(self::param[@name='skip']) and not(self::returns)]"/>
+    /// <inheritdoc cref="SortedSetRangeByValueAsync(ValkeyKey, ValkeyValue, ValkeyValue, Exclude, long, long, CommandFlags)" path="/*[not(self::param[@name='skip']) and not(self::param[@name='flags']) and not(self::returns) and not(self::exception)]"/>
     /// <param name="order">The sort order.</param>
     /// <param name="skip">The number of elements to skip.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>

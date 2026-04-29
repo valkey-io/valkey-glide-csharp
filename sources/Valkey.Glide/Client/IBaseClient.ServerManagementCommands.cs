@@ -24,8 +24,8 @@ public partial interface IBaseClient
     /// <code>
     /// var parameters = new Dictionary&lt;ValkeyValue, ValkeyValue&gt;
     /// {
-    ///     { "maxmemory", "100mb" },
-    ///     { "maxmemory-policy", "allkeys-lru" }
+    ///     ["maxmemory"] = "100mb",
+    ///     ["maxmemory-policy"] = "allkeys-lru",
     /// };
     /// await client.ConfigSetAsync(parameters);
     /// </code>
@@ -42,8 +42,8 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var patterns = new ValkeyValue[] { "max*", "bind*" };
-    /// var config = await client.ConfigGetAsync(patterns);
+    /// ValkeyValue[] patterns = ["max*", "bind*"];
+    /// var config = await client.ConfigGetAsync(patterns);  // Patterns matching max* or bind*
     /// </code>
     /// </example>
     /// </remarks>
@@ -88,8 +88,9 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var options = new LolwutOptions { Version = 6, Parameters = new int[] { 40, 20 } };
+    /// var options = new LolwutOptions { Version = 6, Parameters = [40, 20] };
     /// var art = await client.LolwutAsync(options);
+    /// Console.WriteLine(art);  // Print art to console
     /// </code>
     /// </example>
     /// </remarks>

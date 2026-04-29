@@ -17,10 +17,11 @@ namespace Valkey.Glide;
 public partial interface IGlideClusterClient
 {
     /// <summary>
-    /// Get information and statistics about the server using <see cref="Section.DEFAULT" /> option.<br />
-    /// The command will be routed to all primary nodes.
+    /// Returns information and statistics about the server using the <see cref="Section.DEFAULT" /> option.<br />
+    /// The command is routed to all primary nodes.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/info/"/>
+    /// <seealso href="https://valkey.io/commands/info/">Valkey commands – INFO</seealso>
+    /// <returns>A dictionary mapping each node address to the information returned by that node.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -29,15 +30,16 @@ public partial interface IGlideClusterClient
     /// </code>
     /// </example>
     /// </remarks>
-    /// <returns>A <see langword="string" /> containing the information for the sections requested per cluster node.</returns>
     Task<Dictionary<string, string>> InfoAsync();
 
     /// <summary>
-    /// Get information and statistics about the server.<br />
-    /// Starting from server version 7, command supports multiple <see cref="Section" /> arguments.<br />
-    /// The command will be routed to all primary nodes.
+    /// Returns information and statistics about the server.<br />
+    /// Starting from server version 7, the command supports multiple <see cref="Section" /> arguments.<br />
+    /// The command is routed to all primary nodes.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/info/"/>
+    /// <seealso href="https://valkey.io/commands/info/">Valkey commands – INFO</seealso>
+    /// <inheritdoc cref="InfoAsync(IEnumerable{Section}, Route)" path="/param[@name='sections']" />
+    /// <returns>A dictionary mapping each node address to the information returned by that node.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -46,15 +48,16 @@ public partial interface IGlideClusterClient
     /// </code>
     /// </example>
     /// </remarks>
-    /// <inheritdoc cref="InfoAsync(IEnumerable{Section}, Route)" path="/param" />
-    /// <returns>A <see langword="string" /> containing the information for the sections requested per cluster node.</returns>
     Task<Dictionary<string, string>> InfoAsync(IEnumerable<Section> sections);
 
     /// <summary>
-    /// Get information and statistics about the server using <see cref="Section.DEFAULT" /> option.<br />
-    /// The command will be routed to all primary nodes.
+    /// Returns information and statistics about the server using the <see cref="Section.DEFAULT" /> option.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/info/"/>
+    /// <seealso href="https://valkey.io/commands/info/">Valkey commands – INFO</seealso>
+    /// <inheritdoc cref="InfoAsync(IEnumerable{Section}, Route)" path="/param[@name='route']" />
+    /// <returns>
+    /// <inheritdoc cref="InfoAsync(IEnumerable{Section}, Route)" path="/returns" />
+    /// </returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -65,18 +68,23 @@ public partial interface IGlideClusterClient
     /// </code>
     /// </example>
     /// </remarks>
-    /// <inheritdoc cref="InfoAsync(IEnumerable{Section}, Route)" path="/param" />
-    /// <returns>
-    /// <inheritdoc cref="InfoAsync(IEnumerable{Section}, Route)" />
-    /// </returns>
     Task<ClusterValue<string>> InfoAsync(Route route);
 
     /// <summary>
-    /// Get information and statistics about the server.<br />
-    /// Starting from server version 7, command supports multiple <see cref="Section" /> arguments.<br />
-    /// The command will be routed to all primary nodes.
+    /// Returns information and statistics about the server.<br />
+    /// Starting from server version 7, the command supports multiple <see cref="Section" /> arguments.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/info/"/>
+    /// <seealso href="https://valkey.io/commands/info/">Valkey commands – INFO</seealso>
+    /// <param name="sections">A list of <see cref="Section" /> values specifying which sections of information to
+    /// retrieve. When no parameter is provided, the <see cref="Section.DEFAULT" /> option is assumed.</param>
+    /// <param name="route">Specifies the routing configuration for the command. The client will route the
+    /// command to the nodes defined by <paramref name="route" />.</param>
+    /// <returns>
+    /// A <see cref="ClusterValue{T}" /> containing the information for the sections requested.<br />
+    /// When specifying a <paramref name="route" /> other than a single node, it returns a multi-value <see cref="ClusterValue{T}" />
+    /// with a <c>Dictionary&lt;string, string&gt;</c> with each address as the key and its corresponding
+    /// value is the information for the node. For a single node route it returns a <see cref="ClusterValue{T}" /> with a single value.
+    /// </returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -87,23 +95,13 @@ public partial interface IGlideClusterClient
     /// </code>
     /// </example>
     /// </remarks>
-    /// <param name="sections">A list of <see cref="Section" /> values specifying which sections of information to
-    /// retrieve. When no parameter is provided, the <see cref="Section.DEFAULT" /> option is assumed.</param>
-    /// <param name="route">Specifies the routing configuration for the command. The client will route the
-    /// command to the nodes defined by <c>route</c>.</param>
-    /// <returns>
-    /// A <see cref="ClusterValue{T}" /> containing the information for the sections requested.<br />
-    /// When specifying a <paramref name="route" /> other than a single node, it returns a multi-value <see cref="ClusterValue{T}" />
-    /// with a <c>Dictionary&lt;string, string&gt;</c> with each address as the key and its corresponding
-    /// value is the information for the node. For a single node route it returns a <see cref="ClusterValue{T}" /> with a single value.
-    /// </returns>
     Task<ClusterValue<string>> InfoAsync(IEnumerable<Section> sections, Route route);
 
     /// <summary>
     /// Gets the values of configuration parameters.<br />
-    /// The command will be routed to a random node.
+    /// The command is routed to a random node.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/config-get/"/>
+    /// <seealso href="https://valkey.io/commands/config-get/">Valkey commands – CONFIG GET</seealso>
     /// <param name="pattern">The pattern of config values to get.</param>
     /// <returns>All matching configuration parameters per cluster node.</returns>
     /// <remarks>
@@ -118,10 +116,10 @@ public partial interface IGlideClusterClient
     /// <summary>
     /// Gets the values of configuration parameters.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/config-get/"/>
+    /// <seealso href="https://valkey.io/commands/config-get/">Valkey commands – CONFIG GET</seealso>
     /// <param name="pattern">The pattern of config values to get.</param>
     /// <param name="route">Specifies the routing configuration for the command. The client will route the
-    /// command to the nodes defined by <c>route</c>.</param>
+    /// command to the nodes defined by <paramref name="route" />.</param>
     /// <returns>
     /// A <see cref="ClusterValue{T}" /> containing all matching configuration parameters.<br />
     /// When specifying a <paramref name="route" /> other than a single node, it returns a multi-value <see cref="ClusterValue{T}" />
@@ -139,9 +137,9 @@ public partial interface IGlideClusterClient
 
     /// <summary>
     /// Resets the statistics reported by the server using the INFO and LATENCY HISTOGRAM.<br />
-    /// The command will be routed to all primary nodes.
+    /// The command is routed to all primary nodes.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/config-resetstat/"/>
+    /// <seealso href="https://valkey.io/commands/config-resetstat/">Valkey commands – CONFIG RESETSTAT</seealso>
     /// <remarks>
     /// <example>
     /// <code>
@@ -154,9 +152,9 @@ public partial interface IGlideClusterClient
     /// <summary>
     /// Resets the statistics reported by the server using the INFO and LATENCY HISTOGRAM.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/config-resetstat/"/>
+    /// <seealso href="https://valkey.io/commands/config-resetstat/">Valkey commands – CONFIG RESETSTAT</seealso>
     /// <param name="route">Specifies the routing configuration for the command. The client will route the
-    /// command to the nodes defined by <c>route</c>.</param>
+    /// command to the nodes defined by <paramref name="route" />.</param>
     /// <remarks>
     /// <example>
     /// <code>
@@ -167,12 +165,12 @@ public partial interface IGlideClusterClient
     Task ConfigResetStatisticsAsync(Route route);
 
     /// <summary>
-    /// The CONFIG REWRITE command rewrites the valkey.conf file the server was started with,
-    /// applying the minimal changes needed to make it reflecting the configuration currently
-    /// used by the server, that may be different compared to the original one because of the use of the CONFIG SET command.<br />
-    /// The command will be routed to a random node.
+    /// Rewrites the <c>valkey.conf</c> file the server was started with, applying the minimal changes needed
+    /// to make it reflect the configuration currently used by the server, which may differ from the original
+    /// because of the use of the <c>CONFIG SET</c> command.<br />
+    /// The command is routed to a random node.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/config-rewrite/"/>
+    /// <seealso href="https://valkey.io/commands/config-rewrite/">Valkey commands – CONFIG REWRITE</seealso>
     /// <remarks>
     /// <example>
     /// <code>
@@ -183,13 +181,13 @@ public partial interface IGlideClusterClient
     Task ConfigRewriteAsync();
 
     /// <summary>
-    /// The CONFIG REWRITE command rewrites the valkey.conf file the server was started with,
-    /// applying the minimal changes needed to make it reflecting the configuration currently
-    /// used by the server, that may be different compared to the original one because of the use of the CONFIG SET command.
+    /// Rewrites the <c>valkey.conf</c> file the server was started with, applying the minimal changes needed
+    /// to make it reflect the configuration currently used by the server, which may differ from the original
+    /// because of the use of the <c>CONFIG SET</c> command.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/config-rewrite/"/>
+    /// <seealso href="https://valkey.io/commands/config-rewrite/">Valkey commands – CONFIG REWRITE</seealso>
     /// <param name="route">Specifies the routing configuration for the command. The client will route the
-    /// command to the nodes defined by <c>route</c>.</param>
+    /// command to the nodes defined by <paramref name="route" />.</param>
     /// <remarks>
     /// <example>
     /// <code>
@@ -200,11 +198,11 @@ public partial interface IGlideClusterClient
     Task ConfigRewriteAsync(Route route);
 
     /// <summary>
-    /// The CONFIG SET command is used in order to reconfigure the server at runtime without the need to restart Valkey.
-    /// You can change both trivial parameters or switch from one to another persistence option using this command.<br />
-    /// The command will be routed to all primary nodes.
+    /// Reconfigures the server at runtime without the need to restart Valkey. Callers can change trivial
+    /// parameters or switch from one persistence option to another using this command.<br />
+    /// The command is routed to all primary nodes.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/config-set/"/>
+    /// <seealso href="https://valkey.io/commands/config-set/">Valkey commands – CONFIG SET</seealso>
     /// <param name="setting">The setting name.</param>
     /// <param name="value">The new setting value.</param>
     /// <remarks>
@@ -217,14 +215,14 @@ public partial interface IGlideClusterClient
     Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value);
 
     /// <summary>
-    /// The CONFIG SET command is used in order to reconfigure the server at runtime without the need to restart Valkey.
-    /// You can change both trivial parameters or switch from one to another persistence option using this command.
+    /// Reconfigures the server at runtime without the need to restart Valkey. Callers can change trivial
+    /// parameters or switch from one persistence option to another using this command.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/config-set/"/>
+    /// <seealso href="https://valkey.io/commands/config-set/">Valkey commands – CONFIG SET</seealso>
     /// <param name="setting">The setting name.</param>
     /// <param name="value">The new setting value.</param>
     /// <param name="route">Specifies the routing configuration for the command. The client will route the
-    /// command to the nodes defined by <c>route</c>.</param>
+    /// command to the nodes defined by <paramref name="route" />.</param>
     /// <remarks>
     /// <example>
     /// <code>
@@ -237,7 +235,7 @@ public partial interface IGlideClusterClient
     /// <summary>
     /// Returns the number of keys in the database across all primary nodes.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/dbsize/"/>
+    /// <seealso href="https://valkey.io/commands/dbsize/">Valkey commands – DBSIZE</seealso>
     /// <returns>The number of keys in the database across all primary nodes.</returns>
     /// <remarks>
     /// <example>
@@ -251,7 +249,7 @@ public partial interface IGlideClusterClient
     /// <summary>
     /// Returns the number of keys in the database across all routed nodes.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/dbsize/"/>
+    /// <seealso href="https://valkey.io/commands/dbsize/">Valkey commands – DBSIZE</seealso>
     /// <param name="route">Specifies the routing configuration for the command.</param>
     /// <returns>The number of keys in the database across all routed nodes.</returns>
     /// <remarks>
@@ -266,7 +264,7 @@ public partial interface IGlideClusterClient
     /// <summary>
     /// Deletes all the keys of all the existing databases across all routed nodes.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/flushall/"/>
+    /// <seealso href="https://valkey.io/commands/flushall/">Valkey commands – FLUSHALL</seealso>
     /// <param name="route">Specifies the routing configuration for the command.</param>
     /// <remarks>
     /// <example>
@@ -280,7 +278,7 @@ public partial interface IGlideClusterClient
     /// <summary>
     /// Deletes all the keys in the database across all routed nodes.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/flushdb/"/>
+    /// <seealso href="https://valkey.io/commands/flushdb/">Valkey commands – FLUSHDB</seealso>
     /// <param name="route">Specifies the routing configuration for the command.</param>
     /// <remarks>
     /// <example>
@@ -292,13 +290,13 @@ public partial interface IGlideClusterClient
     Task FlushDatabaseAsync(Route route);
 
     /// <summary>
-    /// Return the time of the last DB save executed with success.
-    /// A client may check if a BGSAVE command succeeded reading the LASTSAVE value, then issuing a BGSAVE command
-    /// and checking at regular intervals every N seconds if LASTSAVE changed.<br />
+    /// Returns the time of the last DB save executed with success.
+    /// A client may check if a <c>BGSAVE</c> command succeeded by reading the <c>LASTSAVE</c> value, then
+    /// issuing a <c>BGSAVE</c> command and checking at regular intervals whether <c>LASTSAVE</c> changed.<br />
     /// The command is routed to a random node by default, which is safe for read-only commands.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/lastsave/"/>
-    /// <returns>UNIX TIME of the last DB save executed with success per cluster node.</returns>
+    /// <seealso href="https://valkey.io/commands/lastsave/">Valkey commands – LASTSAVE</seealso>
+    /// <returns>UNIX time of the last DB save executed with success per cluster node.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -309,15 +307,15 @@ public partial interface IGlideClusterClient
     Task<Dictionary<string, DateTimeOffset>> LastSaveAsync();
 
     /// <summary>
-    /// Return the time of the last DB save executed with success.
-    /// A client may check if a BGSAVE command succeeded reading the LASTSAVE value, then issuing a BGSAVE command
-    /// and checking at regular intervals every N seconds if LASTSAVE changed.
+    /// Returns the time of the last DB save executed with success.
+    /// A client may check if a <c>BGSAVE</c> command succeeded by reading the <c>LASTSAVE</c> value, then
+    /// issuing a <c>BGSAVE</c> command and checking at regular intervals whether <c>LASTSAVE</c> changed.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/lastsave/"/>
+    /// <seealso href="https://valkey.io/commands/lastsave/">Valkey commands – LASTSAVE</seealso>
     /// <param name="route">Specifies the routing configuration for the command. The client will route the
-    /// command to the nodes defined by <c>route</c>.</param>
+    /// command to the nodes defined by <paramref name="route" />.</param>
     /// <returns>
-    /// A <see cref="ClusterValue{T}" /> containing UNIX TIME of the last DB save executed with success.<br />
+    /// A <see cref="ClusterValue{T}" /> containing UNIX time of the last DB save executed with success.<br />
     /// When specifying a <paramref name="route" /> other than a single node, it returns a multi-value <see cref="ClusterValue{T}" />
     /// with a <c>Dictionary&lt;string, DateTimeOffset&gt;</c> with each address as the key and its corresponding
     /// last save time. For a single node route it returns a <see cref="ClusterValue{T}" /> with a single value.
@@ -332,11 +330,11 @@ public partial interface IGlideClusterClient
     Task<ClusterValue<DateTimeOffset>> LastSaveAsync(Route route);
 
     /// <summary>
-    /// The TIME command returns the current server time in UTC format.
+    /// Returns the current server time in UTC format.
     /// Use the <see cref="DateTimeOffset.ToLocalTime"/> method to get local time.<br />
-    /// The command will be routed to a random node.
+    /// The command is routed to a random node.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/time/"/>
+    /// <seealso href="https://valkey.io/commands/time/">Valkey commands – TIME</seealso>
     /// <returns>The server's current time per cluster node.</returns>
     /// <remarks>
     /// <example>
@@ -348,12 +346,12 @@ public partial interface IGlideClusterClient
     Task<Dictionary<string, DateTimeOffset>> TimeAsync();
 
     /// <summary>
-    /// The TIME command returns the current server time in UTC format.
+    /// Returns the current server time in UTC format.
     /// Use the <see cref="DateTimeOffset.ToLocalTime"/> method to get local time.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/time/"/>
+    /// <seealso href="https://valkey.io/commands/time/">Valkey commands – TIME</seealso>
     /// <param name="route">Specifies the routing configuration for the command. The client will route the
-    /// command to the nodes defined by <c>route</c>.</param>
+    /// command to the nodes defined by <paramref name="route" />.</param>
     /// <returns>
     /// A <see cref="ClusterValue{T}" /> containing the server's current time.<br />
     /// When specifying a <paramref name="route" /> other than a single node, it returns a multi-value <see cref="ClusterValue{T}" />
@@ -370,11 +368,11 @@ public partial interface IGlideClusterClient
     Task<ClusterValue<DateTimeOffset>> TimeAsync(Route route);
 
     /// <summary>
-    /// Displays a piece of generative computer art of the specific Valkey version and it's optional arguments.
+    /// Displays a piece of generative computer art of the specific Valkey version and its optional arguments.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/lolwut/"/>
+    /// <seealso href="https://valkey.io/commands/lolwut/">Valkey commands – LOLWUT</seealso>
     /// <param name="route">Specifies the routing configuration for the command. The client will route the
-    /// command to the nodes defined by <c>route</c>.</param>
+    /// command to the nodes defined by <paramref name="route" />.</param>
     /// <returns>
     /// A <see cref="ClusterValue{T}" /> containing the Valkey version and generative art.<br />
     /// When specifying a <paramref name="route" /> other than a single node, it returns a multi-value <see cref="ClusterValue{T}" />
@@ -391,13 +389,13 @@ public partial interface IGlideClusterClient
     Task<ClusterValue<string>> LolwutAsync(Route route);
 
     /// <summary>
-    /// The CONFIG SET command is used in order to reconfigure the server at runtime without the need to restart Valkey.
+    /// Reconfigures the server at runtime without the need to restart Valkey.
     /// This overload allows setting multiple configuration parameters in a single call.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/config-set/"/>
+    /// <seealso href="https://valkey.io/commands/config-set/">Valkey commands – CONFIG SET</seealso>
     /// <param name="parameters">A dictionary of configuration parameter names and their new values.</param>
     /// <param name="route">Specifies the routing configuration for the command. The client will route the
-    /// command to the nodes defined by <c>route</c>.</param>
+    /// command to the nodes defined by <paramref name="route" />.</param>
     /// <remarks>
     /// <example>
     /// <code>
@@ -414,7 +412,7 @@ public partial interface IGlideClusterClient
     /// <summary>
     /// Gets the values of configuration parameters matching multiple patterns.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/config-get/"/>
+    /// <seealso href="https://valkey.io/commands/config-get/">Valkey commands – CONFIG GET</seealso>
     /// <param name="patterns">The patterns of config values to get.</param>
     /// <param name="route">Specifies the routing configuration for the command.</param>
     /// <returns>All matching configuration parameters.</returns>
@@ -430,9 +428,9 @@ public partial interface IGlideClusterClient
     /// <summary>
     /// Deletes all the keys of all the existing databases across all routed nodes, with the specified flush mode.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/flushall/"/>
-    /// <param name="mode">The flush mode to use. <see cref="FlushMode.Sync"/> waits for completion,
-    /// <see cref="FlushMode.Async"/> returns immediately while flush continues in background.</param>
+    /// <seealso href="https://valkey.io/commands/flushall/">Valkey commands – FLUSHALL</seealso>
+    /// <param name="mode">The flush mode. <see cref="FlushMode.Sync"/> waits for completion,
+    /// <see cref="FlushMode.Async"/> returns immediately while the flush continues in the background.</param>
     /// <param name="route">Specifies the routing configuration for the command.</param>
     /// <remarks>
     /// <example>
@@ -446,9 +444,9 @@ public partial interface IGlideClusterClient
     /// <summary>
     /// Deletes all the keys in the database across all routed nodes, with the specified flush mode.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/flushdb/"/>
-    /// <param name="mode">The flush mode to use. <see cref="FlushMode.Sync"/> waits for completion,
-    /// <see cref="FlushMode.Async"/> returns immediately while flush continues in background.</param>
+    /// <seealso href="https://valkey.io/commands/flushdb/">Valkey commands – FLUSHDB</seealso>
+    /// <param name="mode">The flush mode. <see cref="FlushMode.Sync"/> waits for completion,
+    /// <see cref="FlushMode.Async"/> returns immediately while the flush continues in the background.</param>
     /// <param name="route">Specifies the routing configuration for the command.</param>
     /// <remarks>
     /// <example>
@@ -462,10 +460,10 @@ public partial interface IGlideClusterClient
     /// <summary>
     /// Displays a piece of generative computer art and the Valkey version.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/lolwut/"/>
+    /// <seealso href="https://valkey.io/commands/lolwut/">Valkey commands – LOLWUT</seealso>
     /// <param name="options">The LOLWUT options specifying version and/or parameters.</param>
     /// <param name="route">Specifies the routing configuration for the command. The client will route the
-    /// command to the nodes defined by <c>route</c>.</param>
+    /// command to the nodes defined by <paramref name="route" />.</param>
     /// <returns>
     /// A <see cref="ClusterValue{T}" /> containing the Valkey version and generative art.
     /// </returns>
@@ -483,7 +481,7 @@ public partial interface IGlideClusterClient
     /// by at least the specified number of local and replica AOF-synced nodes.
     /// If the timeout is reached, the command returns even if the specified number of acknowledgments were not yet reached.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/waitaof"/>
+    /// <seealso href="https://valkey.io/commands/waitaof/">Valkey commands – WAITAOF</seealso>
     /// <note>Since Valkey 7.2.0.</note>
     /// <param name="localAof">Whether to wait for the local node to acknowledge AOF sync.</param>
     /// <param name="numreplicas">The number of replica nodes to wait for AOF sync.</param>

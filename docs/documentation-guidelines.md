@@ -14,6 +14,8 @@ This document defines guidelines for documentation in the Valkey GLIDE C# client
 - Use clear, concise, simple language.
 - Describe the member's purpose or actions.
 - Avoid redundant or verbose phrases like "This method..." or "the key of the list".
+- Do not repeat information that is already available elsewhere (e.g. method signatures,
+  type definitions, or the other reference).
 - Terminate sentences with a period.
 
 ### Formatting Conventions
@@ -73,7 +75,7 @@ Guidelines for command method documentation content:
 
 4. **`<param>`** — Required for each parameter. One occurrence per parameter.
    - Document every parameter, including those with default values.
-   - Mention the default value in the description when applicable.
+   - Do not restate default values already visible in the method signature.
    - Be specific about what the parameter represents in the context of the Valkey command.
 
 5. **`<returns>`** — Required (unless the method returns `void` or `Task`). Single occurrence.

@@ -76,7 +76,7 @@ public partial interface IBaseClient
     /// <seealso href="https://valkey.io/commands/decr/">Valkey commands – DECR</seealso>
     /// <seealso href="https://valkey.io/commands/decrby/">Valkey commands – DECRBY</seealso>
     /// <param name="key">The key of the string to decrement.</param>
-    /// <param name="value">The amount to decrement by. Defaults to 1.</param>
+    /// <param name="value">The amount to decrement by.</param>
     /// <returns>The value of <paramref name="key"/> after the decrement.</returns>
     /// <remarks>
     /// <example>
@@ -114,7 +114,7 @@ public partial interface IBaseClient
     /// <seealso href="https://valkey.io/commands/incr/">Valkey commands – INCR</seealso>
     /// <seealso href="https://valkey.io/commands/incrby/">Valkey commands – INCRBY</seealso>
     /// <param name="key">The key of the string to increment.</param>
-    /// <param name="value">The amount to increment by. Defaults to 1.</param>
+    /// <param name="value">The amount to increment by.</param>
     /// <returns>The value of <paramref name="key"/> after the increment.</returns>
     /// <remarks>
     /// <example>

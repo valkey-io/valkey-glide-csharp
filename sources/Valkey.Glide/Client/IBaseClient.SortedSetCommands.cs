@@ -191,8 +191,7 @@ public partial interface IBaseClient
     /// <example>
     /// <code>
     /// await client.SortedSetAddAsync("myzset", new SortedSetEntry("alice", 1.0));
-    /// var newScore = await client.SortedSetIncrementByAsync("myzset", "alice", 2.0);
-    /// // newScore == 3
+    /// var newScore = await client.SortedSetIncrementByAsync("myzset", "alice", 2.0);  // 3.0
     /// </code>
     /// </example>
     /// </remarks>
@@ -212,8 +211,7 @@ public partial interface IBaseClient
     /// <example>
     /// <code>
     /// await client.SortedSetAddAsync("myzset", new SortedSetEntry("alice", 1.0));
-    /// var newScore = await client.SortedSetIncrementByAsync("myzset", "alice", 2.0, SortedSetAddCondition.OnlyIfExists);
-    /// // newScore == 3
+    /// var newScore = await client.SortedSetIncrementByAsync("myzset", "alice", 2.0, SortedSetAddCondition.OnlyIfExists);  // 3.0
     /// </code>
     /// </example>
     /// </remarks>
@@ -234,8 +232,7 @@ public partial interface IBaseClient
     /// <code>
     /// await client.SortedSetAddAsync("myzset", new SortedSetEntry("alice", 1.0));
     /// var options = new SortedSetAddOptions { Condition = SortedSetAddCondition.OnlyIfExists };
-    /// var newScore = await client.SortedSetIncrementByAsync("myzset", "alice", 2.0, options);
-    /// // newScore == 3
+    /// var newScore = await client.SortedSetIncrementByAsync("myzset", "alice", 2.0, options);  // 3.0
     /// </code>
     /// </example>
     /// </remarks>
@@ -340,8 +337,8 @@ public partial interface IBaseClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/zmpop/">Valkey commands – ZMPOP</seealso>
     /// <seealso href="https://valkey.io/commands/bzmpop/">Valkey commands – BZMPOP</seealso>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
+    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="keys">The keys of the sorted sets.</param>
     /// <param name="timeout">Optional timeout for blocking. If <see langword="null"/>, uses non-blocking pop.</param>
     /// <returns>The removed element, or <see langword="null"/> when no element could be popped.</returns>
@@ -361,8 +358,8 @@ public partial interface IBaseClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/zmpop/">Valkey commands – ZMPOP</seealso>
     /// <seealso href="https://valkey.io/commands/bzmpop/">Valkey commands – BZMPOP</seealso>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
+    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="keys">The keys of the sorted sets.</param>
     /// <param name="timeout">Optional timeout for blocking. If <see langword="null"/>, uses non-blocking pop.</param>
     /// <returns>The removed element, or <see langword="null"/> when no element could be popped.</returns>
@@ -382,8 +379,8 @@ public partial interface IBaseClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/zmpop/">Valkey commands – ZMPOP</seealso>
     /// <seealso href="https://valkey.io/commands/bzmpop/">Valkey commands – BZMPOP</seealso>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
+    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="keys">The keys of the sorted sets.</param>
     /// <param name="count">The maximum number of records to pop.</param>
     /// <param name="timeout">Optional timeout for blocking. If <see langword="null"/>, uses non-blocking pop.</param>
@@ -405,8 +402,8 @@ public partial interface IBaseClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/zmpop/">Valkey commands – ZMPOP</seealso>
     /// <seealso href="https://valkey.io/commands/bzmpop/">Valkey commands – BZMPOP</seealso>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
+    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="keys">The keys of the sorted sets.</param>
     /// <param name="count">The maximum number of records to pop.</param>
     /// <param name="timeout">Optional timeout for blocking. If <see langword="null"/>, uses non-blocking pop.</param>
@@ -778,7 +775,7 @@ public partial interface IBaseClient
     /// <seealso href="https://valkey.io/commands/zrevrank/">Valkey commands – ZREVRANK</seealso>
     /// <param name="key">The sorted set key.</param>
     /// <param name="member">The member to get the rank of.</param>
-    /// <param name="order">The order to sort by (defaults to ascending).</param>
+    /// <param name="order">The order to sort by.</param>
     /// <returns>The rank of the member, or <see langword="null"/> if <paramref name="member"/> or <paramref name="key"/> does not exist.</returns>
     /// <remarks>
     /// <example>
@@ -972,8 +969,8 @@ public partial interface IBaseClient
     /// Blocks the connection until it pops and returns up to <paramref name="count"/> entries from the first non-empty sorted set among the given <paramref name="keys"/>.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/bzmpop/">Valkey commands – BZMPOP</seealso>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
+    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="keys">The keys of the sorted sets.</param>
     /// <param name="count">The maximum number of records to pop out of the sorted set.</param>
     /// <param name="order">The order to sort by when popping items out of the set.</param>
