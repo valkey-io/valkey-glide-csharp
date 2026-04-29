@@ -42,7 +42,10 @@ def main():
         )
         sys.exit(1)
 
-    tmp_path = os.path.join(tempfile.gettempdir(), f"examples_{os.getpid()}.json")
+    with tempfile.NamedTemporaryFile(
+        suffix=".json", prefix="examples_", delete=False
+    ) as tmp_file:
+        tmp_path = tmp_file.name
 
     try:
         # Step 1: Extract examples

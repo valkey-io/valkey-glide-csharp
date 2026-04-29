@@ -72,10 +72,14 @@ class ExamplesExtractor:
         with open(filepath, "r", encoding="utf-8-sig") as f:
             content = f.read()
 
+        relative_filepath = os.path.relpath(filepath, _PROJECT_ROOT).replace(
+            os.sep, "/"
+        )
+
         for match in self._EXAMPLE_PATTERN.finditer(content):
             line_number = content[: match.start()].count("\n") + 1
             code = html.unescape(self._DOC_PREFIX.sub("", match.group(1)).strip())
-            source = f"{filepath}:{line_number}"
+            source = f"{relative_filepath}:{line_number}"
             results[source] = code
 
         return results
