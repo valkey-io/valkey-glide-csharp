@@ -164,6 +164,8 @@ internal static class ValkeyLiterals
         StreamMaxId = "+",
         StreamExactTrim = "=",
         StreamApproxTrim = "~",
+        StreamDeleteReferencesTrim = "DELREF",
+        StreamAcknowledgedTrim = "ACKED",
 
         // Sorted set ranges
         RangeInclusive = "[",
