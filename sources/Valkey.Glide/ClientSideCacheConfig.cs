@@ -81,7 +81,7 @@ public sealed class ClientSideCacheConfig
     ///     .WithEvictionPolicy(EvictionPolicy.LRU)
     ///     .WithMetrics(true);
     ///
-    /// var config = new StandaloneClientConfigurationBuilder()
+    /// var config = new ConnectionConfiguration.StandaloneClientConfigurationBuilder()
     ///     .WithAddress("localhost", 6379)
     ///     .WithClientSideCache(cache)
     ///     .Build();
