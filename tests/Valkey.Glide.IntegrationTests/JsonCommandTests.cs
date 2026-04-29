@@ -1735,8 +1735,7 @@ public class JsonCommandTests(TestConfiguration config)
             // Set up JSON document with boolean
             _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
 
-            // Clear the boolean - note: JSON.CLEAR only affects containers and numbers, not booleans
-            // According to Redis docs, booleans are not cleared (returns 0)
+            // Clear the boolean - Valkey JSON clears booleans to false
             cleared = await GlideJson.ClearAsync(standaloneClient, key, "$.active");
 
             // Get the result
@@ -1755,11 +1754,11 @@ public class JsonCommandTests(TestConfiguration config)
             result = await GlideJson.GetAsync(clusterClient, key, ["$.active"]);
         }
 
-        // Booleans are not clearable according to Redis JSON docs - returns 0
-        Assert.Equal(0, cleared);
+        // Valkey JSON clears booleans to false and returns 1
+        Assert.Equal(1, cleared);
         Assert.NotNull(result);
-        // Boolean should remain unchanged
-        Assert.Equal("[true]", result);
+        // Boolean should be set to false
+        Assert.Equal("[false]", result);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1778,7 +1777,7 @@ public class JsonCommandTests(TestConfiguration config)
             // Set up JSON document with string
             _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
 
-            // Clear the string - note: JSON.CLEAR only affects containers and numbers, not strings
+            // Clear the string - Valkey JSON clears strings to empty string
             cleared = await GlideJson.ClearAsync(standaloneClient, key, "$.name");
 
             // Get the result
@@ -1797,32 +1796,34 @@ public class JsonCommandTests(TestConfiguration config)
             result = await GlideJson.GetAsync(clusterClient, key, ["$.name"]);
         }
 
-        // Strings are not clearable according to Redis JSON docs - returns 0
-        Assert.Equal(0, cleared);
+        // Valkey JSON clears strings to empty string and returns 1
+        Assert.Equal(1, cleared);
         Assert.NotNull(result);
-        // String should remain unchanged
-        Assert.Equal("[\"John\"]", result);
+        // String should be cleared to empty string
+        Assert.Equal("[\"\"]", result);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task ClearAsync_NonExistentKey_ReturnsZero(BaseClient client)
+    public async Task ClearAsync_NonExistentKey_ThrowsException(BaseClient client)
     {
         await SkipIfJsonModuleNotAvailable(client);
 
         string key = GetUniqueKey("nonexistent");
 
-        long cleared;
+        // Valkey JSON throws NONEXISTENT error for non-existent keys
         if (client is GlideClient standaloneClient)
         {
-            cleared = await GlideJson.ClearAsync(standaloneClient, key);
+            var ex = await Assert.ThrowsAsync<Errors.RequestException>(
+                () => GlideJson.ClearAsync(standaloneClient, key));
+            Assert.Contains("NONEXISTENT", ex.Message);
         }
         else
         {
-            cleared = await GlideJson.ClearAsync((GlideClusterClient)client, key);
+            var ex = await Assert.ThrowsAsync<Errors.RequestException>(
+                () => GlideJson.ClearAsync((GlideClusterClient)client, key));
+            Assert.Contains("NONEXISTENT", ex.Message);
         }
-
-        Assert.Equal(0, cleared);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
