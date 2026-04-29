@@ -74,7 +74,7 @@ pub enum EvictionPolicy {
     Lfu = 1,
 }
 
-/// A mirror of [`ClientSideCache`] adopted for FFI.
+/// A mirror of [`glide_core::client::ClientSideCache`] adopted for FFI.
 #[repr(C)]
 #[derive(Debug, Clone, Copy)]
 pub struct ClientSideCacheConfig {
@@ -345,7 +345,6 @@ pub(crate) unsafe fn create_connection_request(
         tcp_nodelay: false,
         periodic_checks: None,
         inflight_requests_limit: None,
-        client_side_cache: None,
         node_discovery_mode: glide_core::client::NodeDiscoveryMode::default(),
     }
 }
