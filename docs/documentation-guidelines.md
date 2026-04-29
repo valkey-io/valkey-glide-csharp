@@ -32,9 +32,9 @@ This section covers documentation specific to methods that implement Valkey comm
 It applies to the shared (`I*Commands`), Valkey GLIDE (`IBaseClient.*`) and the
 StackExchange.Redis compatibility (`IDatabaseAsync.*`, `IServer`) interfaces.
 
-### Format
+### Template
 
-Command method documentation format:
+Command method documentation template:
 
 ```xml
 /// <summary>...</summary>

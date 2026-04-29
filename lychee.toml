@@ -10,8 +10,9 @@ exclude_path = [
 
 # Links to exclude from scanning.
 exclude = [
-    "example\\.com",    # Example URLs
-    "file://.*example"  # Example file URIs
+    "example\\.com",           # Example URLs
+    "file://.*example",        # Example file URIs
+    "%7B.*%7D",                # URLs containing template placeholders.
 ]
 
 # Check links inside code blocks
