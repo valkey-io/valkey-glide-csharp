@@ -87,7 +87,7 @@ Guidelines for command method documentation content:
    - Use `<exception cref="...">` with a description of when the exception is thrown.
 
 7. **`<remarks>` / `<example>` / `<code>`** — Required. One or more `<example>` blocks inside a single `<remarks>`.
-   - Examples should be **self-contained**:they should include any setup needed to determine the expected return
+   - Examples should be **self-contained**: they should include any setup needed to determine the expected return
    value from the example alone; this should include populating any relevant keys first (e.g., call `SetAsync` before `GetAsync`).
    - Examples should follow code format and style conventions from this project.
    - For methods with notable edge cases, include multiple `<example>` blocks.
@@ -98,7 +98,7 @@ Guidelines for command method documentation content:
      - lists/arrays: `// ["value1", "value2"]`
      - dictionaries: `// {key1: "value1", key2: "value2"}`
      - sets: `// {"value1", "value2"}`
-   - **When the return value cannot be determine** (e.g., latency, server time) or is
+   - **When the return value cannot be determined** (e.g., latency, server time) or is
      impractical to set up, use `Console.WriteLine` to show how it would be consumed —
      for example, `Console.WriteLine($"Received response after {latency.TotalSeconds} seconds")`.
    - **Be concise**: use `var`, collection expressions (`["a", "b"]`), and other modern
@@ -108,7 +108,7 @@ Guidelines for command method documentation content:
 
 `<inheritdoc>` should be used to avoid duplicating documentation across related methods.
 
-#### Prefer Explicit Referemces
+#### Prefer Explicit References
 
 Always prefer explicit `<inheritdoc cref="..."/>` over bare `<inheritdoc/>`:
 
