@@ -7,16 +7,13 @@ This document defines guidelines for documentation in the Valkey GLIDE C# client
 ### XML Documentation Requirements
 
 - All public and protected members must have XML documentation comments.
-- The compiler should produce zero XML documentation warnings (`CS1591`).
+- The compiler must produce zero XML documentation warnings (`CS1591`).
 
 ### Language and Tone
 
-- Use clear, concise, simple language.
-- Describe the member's purpose or actions.
-- Avoid redundant or verbose phrases like "This method..." or "the key of the list".
-- Do not repeat information that is already available elsewhere (e.g. method signatures,
-  type definitions, or the other reference).
-- Terminate sentences with a period.
+- Use clear, concise, simple language to escribe the member's purpose or action.
+- Avoid duplicating information that is already available elsewhere.
+- Avoid unnecessarily verbose, technical, or complex language.
 
 ### Formatting Conventions
 
@@ -24,7 +21,7 @@ This document defines guidelines for documentation in the Valkey GLIDE C# client
 - Use `<see langword="..." />` for language keywords (`true`, `false`, `null`).
 - Use `<paramref name="..." />` when referring to parameters within descriptions.
 - Use `<br/>` for line breaks within an XML element.
-- Keep line lengths reasonable (≤ 120 characters within the `///` comment block where practical).
+- Prefer reasonable line lengths (less than 120 characters).
 
 ## Command Methods
 
