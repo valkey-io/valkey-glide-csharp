@@ -105,7 +105,7 @@ public interface IHashBaseCommands
     /// <seealso href="https://valkey.io/commands/hdel/">Valkey commands – HDEL</seealso>
     /// <param name="key">The hash key.</param>
     /// <param name="hashField">The field to remove.</param>
-    /// <returns><see langword="true"/> if the field was removed from the hash.</returns>
+    /// <returns><see langword="true"/> if the field was present in the hash, <see langword="false"/> otherwise.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -126,6 +126,7 @@ public interface IHashBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
+    /// await client.HashSetAsync("myhash", [new("name", "Alice"), new("age", "30")]);
     /// var removedCount = await client.HashDeleteAsync("myhash", ["name", "age"]);  // 2
     /// </code>
     /// </example>
@@ -224,9 +225,7 @@ public interface IHashBaseCommands
     /// Gets a random field name from a hash.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hrandfield/">Valkey commands – HRANDFIELD</seealso>
-    /// <note>
-    /// Since: Valkey 6.2.0 and above.
-    /// </note>
+    /// <note>Since Valkey 6.2.0.</note>
     /// <param name="key">The hash key.</param>
     /// <returns>A random field name or <see cref="ValkeyValue.Null"/> if the hash does not exist.</returns>
     /// <remarks>
@@ -243,9 +242,7 @@ public interface IHashBaseCommands
     /// Gets random field names from a hash.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hrandfield/">Valkey commands – HRANDFIELD</seealso>
-    /// <note>
-    /// Since: Valkey 6.2.0 and above.
-    /// </note>
+    /// <note>Since Valkey 6.2.0.</note>
     /// <param name="key">The hash key.</param>
     /// <param name="count">
     /// The maximum number of field names to return.
@@ -273,6 +270,7 @@ public interface IHashBaseCommands
     /// Gets random field-value pairs from a hash.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hrandfield/">Valkey commands – HRANDFIELD</seealso>
+    /// <note>Since Valkey 6.2.0.</note>
     /// <param name="key">The hash key.</param>
     /// <param name="count">
     /// The number of field-value pairs to return.

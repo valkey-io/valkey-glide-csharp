@@ -23,6 +23,7 @@ public partial interface IBaseClient : IConnectionManagementBaseCommands
     /// <example>
     /// <code>
     /// var name = await client.ClientGetNameAsync();
+    /// Console.WriteLine($"Connection name: {name}");
     /// </code>
     /// </example>
     /// </remarks>
@@ -37,6 +38,7 @@ public partial interface IBaseClient : IConnectionManagementBaseCommands
     /// <example>
     /// <code>
     /// var id = await client.ClientIdAsync();
+    /// Console.WriteLine($"Connection ID: {id}");
     /// </code>
     /// </example>
     /// </remarks>

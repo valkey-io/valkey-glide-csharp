@@ -23,7 +23,8 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var deleted = await client.DeleteAsync("key");
+    /// await client.SetAsync("key", "value");
+    /// var deleted = await client.DeleteAsync("key");  // true
     /// </code>
     /// </example>
     /// </remarks>
@@ -44,7 +45,9 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var deleted = await client.DeleteAsync(["key1", "key2"]);
+    /// await client.SetAsync("{tag}key1", "value1");
+    /// await client.SetAsync("{tag}key2", "value2");
+    /// var deleted = await client.DeleteAsync(["{tag}key1", "{tag}key2"]);  // 2
     /// </code>
     /// </example>
     /// </remarks>
@@ -61,7 +64,8 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var unlinked = await client.UnlinkAsync("key");
+    /// await client.SetAsync("key", "value");
+    /// var unlinked = await client.UnlinkAsync("key");  // true
     /// </code>
     /// </example>
     /// </remarks>
@@ -84,7 +88,9 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var unlinked = await client.UnlinkAsync(["key1", "key2"]);
+    /// await client.SetAsync("{tag}key1", "value1");
+    /// await client.SetAsync("{tag}key2", "value2");
+    /// var unlinked = await client.UnlinkAsync(["{tag}key1", "{tag}key2"]);  // 2
     /// </code>
     /// </example>
     /// </remarks>
@@ -99,7 +105,8 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var exists = await client.ExistsAsync("key");
+    /// await client.SetAsync("key", "value");
+    /// var exists = await client.ExistsAsync("key");  // true
     /// </code>
     /// </example>
     /// </remarks>
@@ -120,7 +127,9 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var existing = await client.ExistsAsync(["key1", "key2"]);
+    /// await client.SetAsync("{tag}key1", "value1");
+    /// await client.SetAsync("{tag}key2", "value2");
+    /// var existing = await client.ExistsAsync(["{tag}key1", "{tag}key2", "{tag}missing"]);  // 2
     /// </code>
     /// </example>
     /// </remarks>
@@ -140,7 +149,8 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var set = await client.ExpireAsync("key", TimeSpan.FromSeconds(10));
+    /// await client.SetAsync("key", "value");
+    /// var set = await client.ExpireAsync("key", TimeSpan.FromSeconds(10));  // true
     /// </code>
     /// </example>
     /// </remarks>
@@ -161,7 +171,8 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var set = await client.ExpireAsync("key", DateTimeOffset.UtcNow.AddMinutes(5));
+    /// await client.SetAsync("key", "value");
+    /// var set = await client.ExpireAsync("key", DateTimeOffset.UtcNow.AddMinutes(5));  // true
     /// </code>
     /// </example>
     /// </remarks>
@@ -209,7 +220,8 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var type = await client.TypeAsync("key");
+    /// await client.SetAsync("key", "value");
+    /// var type = await client.TypeAsync("key");  // ValkeyType.String
     /// </code>
     /// </example>
     /// </remarks>
@@ -226,6 +238,7 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
+    /// await client.SetAsync("oldkey", "value");
     /// await client.RenameAsync("oldkey", "newkey");
     /// </code>
     /// </example>
@@ -243,7 +256,8 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var renamed = await client.RenameIfNotExistsAsync("oldkey", "newkey");
+    /// await client.SetAsync("oldkey", "value");
+    /// var renamed = await client.RenameIfNotExistsAsync("oldkey", "newkey");  // true
     /// </code>
     /// </example>
     /// </remarks>
@@ -259,7 +273,9 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var removed = await client.PersistAsync("key");
+    /// await client.SetAsync("key", "value");
+    /// await client.ExpireAsync("key", TimeSpan.FromSeconds(60));
+    /// var removed = await client.PersistAsync("key");  // true
     /// </code>
     /// </example>
     /// </remarks>
@@ -277,7 +293,8 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var serialized = await client.DumpAsync("key");
+    /// await client.SetAsync("key", "value");
+    /// var serialized = await client.DumpAsync("key");  // byte[] representation of the value
     /// </code>
     /// </example>
     /// </remarks>

@@ -21,21 +21,29 @@ public interface IGeospatialBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// var hash = await client.GeoHashAsync("mygeo", "member1");  // "sqc8b49rny0"
+    /// await client.GeoAddAsync("mygeo", "Palermo", new GeoPosition(13.361389, 38.115556));
+    /// var hash = await client.GeoHashAsync("mygeo", "Palermo");
+    /// Console.WriteLine($"Geohash for member1: {hash}");
     /// </code>
     /// </example>
     /// </remarks>
     Task<string?> GeoHashAsync(ValkeyKey key, ValkeyValue member);
 
-    /// <inheritdoc cref="GeoHashAsync(ValkeyKey, ValkeyValue)"/>
+    /// <summary>
+    /// Returns the geohash strings for geospatial members.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/geohash/">Valkey commands – GEOHASH</seealso>
     /// <param name="key">The sorted set key.</param>
     /// <param name="members">The members to get the geohashes for.</param>
     /// <returns>An array with one geohash string per member, or <see langword="null"/> for members that do not exist.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// var hashes = await client.GeoHashAsync("mygeo", ["member1", "member2"]);
-    /// // Output: ["sqc8b49rny0", "sqdtr74hyu0"]
+    /// await client.GeoAddAsync("mygeo", "Palermo", new GeoPosition(13.361389, 38.115556));
+    /// await client.GeoAddAsync("mygeo", "Catania", new GeoPosition(15.087269, 37.502669));
+    /// 
+    /// var hashes = await client.GeoHashAsync("mygeo", ["Palermo", "Catania"]);
+    /// Console.WriteLine($"Geohash for member2: {hashes[1]}");
     /// </code>
     /// </example>
     /// </remarks>
@@ -51,22 +59,29 @@ public interface IGeospatialBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// var position = await client.GeoPositionAsync("mygeo", "member1");
-    /// // position.Value.Longitude == 13.361, position.Value.Latitude == 38.115
+    /// await client.GeoAddAsync("mygeo", "Palermo", new GeoPosition(13.361389, 38.115556));
+    /// var position = await client.GeoPositionAsync("mygeo", "Palermo");
+    /// Console.WriteLine($"Palermo is at [{position!.Value.Latitude}, {position!.Value.Longitude}]");
     /// </code>
     /// </example>
     /// </remarks>
     Task<GeoPosition?> GeoPositionAsync(ValkeyKey key, ValkeyValue member);
 
-    /// <inheritdoc cref="GeoPositionAsync(ValkeyKey, ValkeyValue)"/>
+    /// <summary>
+    /// Returns the positions of geospatial members.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/geopos/">Valkey commands – GEOPOS</seealso>
     /// <param name="key">The sorted set key.</param>
     /// <param name="members">The members to get the positions for.</param>
     /// <returns>An array with one position per member, or <see langword="null"/> for members that do not exist.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// var positions = await client.GeoPositionAsync("mygeo", ["member1", "member2"]);
-    /// // Output: [{ Longitude: 13.361, Latitude: 38.115 }, { Longitude: 15.087, Latitude: 37.502 }]
+    /// await client.GeoAddAsync("mygeo", "Palermo", new GeoPosition(12.3, 45.6));
+    /// await client.GeoAddAsync("mygeo", "Catania", new GeoPosition(15.087269, 37.502669));
+    /// 
+    /// var positions = await client.GeoPositionAsync("mygeo", ["Palermo", "Catania"]);
+    /// Console.WriteLine($"Catania is at [{positions[1]!.Value.Latitude}, {positions[1]!.Value.Longitude}]");
     /// </code>
     /// </example>
     /// </remarks>

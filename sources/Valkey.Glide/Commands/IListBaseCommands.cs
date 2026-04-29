@@ -28,7 +28,7 @@ public interface IListBaseCommands
     Task<ValkeyValue> ListLeftPopAsync(ValkeyKey key);
 
     /// <summary>
-    /// Removes and returns up to <paramref name="count" /> elements from the head of a list.
+    /// Removes and returns up to <paramref name="count"/> elements from the head of a list.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/lpop/">Valkey commands – LPOP</seealso>
     /// <param name="key">The list key.</param>
@@ -150,7 +150,7 @@ public interface IListBaseCommands
     Task<ValkeyValue> ListRightPopAsync(ValkeyKey key);
 
     /// <summary>
-    /// Removes and returns up to <paramref name="count" /> elements from the tail of a list.
+    /// Removes and returns up to <paramref name="count"/> elements from the tail of a list.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/rpop/">Valkey commands – RPOP</seealso>
     /// <param name="key">The list key.</param>
@@ -209,16 +209,16 @@ public interface IListBaseCommands
     Task<long> ListLengthAsync(ValkeyKey key);
 
     /// <summary>
-    /// Removes the first <paramref name="count" /> occurrences of elements equal to <paramref name="value" /> from a list.
+    /// Removes the first <paramref name="count"/> occurrences of elements equal to <paramref name="value"/> from a list.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/lrem/">Valkey commands – LREM</seealso>
     /// <param name="key">The list key.</param>
     /// <param name="value">The value to remove from the list.</param>
-    /// <param name="count">The count of the occurrences of elements equal to <paramref name="value" /> to remove.
+    /// <param name="count">The count of the occurrences of elements equal to <paramref name="value"/> to remove.
     /// <list type="bullet">
-    ///     <item><paramref name="count" /> &gt; <c>0</c>: Remove elements moving from head to tail.</item>
-    ///     <item><paramref name="count" /> &lt; <c>0</c>: Remove elements moving from tail to head.</item>
-    ///     <item><paramref name="count" /> = <c>0</c>: Remove all elements equal to <paramref name="value" />.</item>
+    ///     <item><paramref name="count"/> &gt; <c>0</c>: Remove elements moving from head to tail.</item>
+    ///     <item><paramref name="count"/> &lt; <c>0</c>: Remove elements moving from tail to head.</item>
+    ///     <item><paramref name="count"/> = <c>0</c>: Remove all elements equal to <paramref name="value"/>.</item>
     /// </list>
     /// </param>
     /// <returns>
@@ -243,8 +243,8 @@ public interface IListBaseCommands
     /// <param name="start">The starting point of the range (zero-based, inclusive).</param>
     /// <param name="stop">The end of the range (zero-based, inclusive). Negative values indicate offsets from the end.</param>
     /// <remarks>
-    /// If <paramref name="start" /> exceeds the end of the list, or if <paramref name="start" /> is greater than <paramref name="stop" />, the list is emptied.
-    /// If <paramref name="stop" /> exceeds the actual end of the list, it is treated as the last element.
+    /// If <paramref name="start"/> exceeds the end of the list, or if <paramref name="start"/> is greater than <paramref name="stop"/>, the list is emptied.
+    /// If <paramref name="stop"/> exceeds the actual end of the list, it is treated as the last element.
     /// If the key does not exist, the command returns without changes.
     /// <example>
     /// <code>
@@ -384,5 +384,4 @@ public interface IListBaseCommands
     /// </example>
     /// </remarks>
     Task<long[]> ListPositionsAsync(ValkeyKey key, ValkeyValue element, long count, long rank = 1, long maxLength = 0);
-
 }

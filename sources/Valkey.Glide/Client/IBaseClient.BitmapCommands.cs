@@ -62,9 +62,9 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var totalCount = await client.BitCountAsync("mykey");  // 6
-    ///
-    /// var rangeCount = await client.BitCountAsync("mykey", 0, 1, BitmapIndexType.Byte);  // 4
+    /// await client.SetAsync("mykey", "foobar");
+    /// var totalCount = await client.BitCountAsync("mykey");  // 26
+    /// var rangeCount = await client.BitCountAsync("mykey", 0, 1, BitmapIndexType.Byte);  // 10
     /// </code>
     /// </example>
     /// </remarks>
@@ -82,7 +82,8 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var count = await client.BitCountAsync("mykey", BitOffsetOptions.InBitRange(0, 10));  // 3
+    /// await client.SetAsync("mykey", "foobar");
+    /// var count = await client.BitCountAsync("mykey", BitOffsetOptions.InBitRange(0, 10));  // 6
     /// </code>
     /// </example>
     /// </remarks>
@@ -101,8 +102,8 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var firstSet = await client.BitPosAsync("mykey", true);  // 0
-    ///
+    /// await client.SetAsync("mykey", "foobar");
+    /// var firstSet = await client.BitPosAsync("mykey", true);  // 1
     /// var firstClear = await client.BitPosAsync("mykey", false, 1, 3, BitmapIndexType.Byte);  // 8
     /// </code>
     /// </example>
@@ -122,7 +123,8 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var position = await client.BitPosAsync("mykey", true, BitOffsetOptions.InBitRange(0, 100));  // 0
+    /// await client.SetAsync("mykey", "foobar");
+    /// var position = await client.BitPosAsync("mykey", true, BitOffsetOptions.InBitRange(0, 47));  // 1
     /// </code>
     /// </example>
     /// </remarks>
@@ -142,12 +144,15 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var size = await client.BitOpAsync(Bitwise.And, "result", ["key1", "key2"]);  // 4
+    /// await client.SetAsync("key1", "abc");
+    /// await client.SetAsync("key2", "abd");
+    /// var size = await client.BitOpAsync(Bitwise.And, "result", ["key1", "key2"]);  // 3
     /// </code>
     /// </example>
     /// <example>
     /// <code>
-    /// var size = await client.BitOpAsync(Bitwise.Not, "inverted", ["key1"]);  // 4
+    /// await client.SetAsync("key1", "abc");
+    /// var size = await client.BitOpAsync(Bitwise.Not, "inverted", ["key1"]);  // 3
     /// </code>
     /// </example>
     /// </remarks>
@@ -173,7 +178,7 @@ public partial interface IBaseClient
     ///     new BitFieldOptions.BitFieldSet(BitFieldOptions.Encoding.Unsigned(4), new BitFieldOptions.BitOffset(8), 15),
     ///     new BitFieldOptions.BitFieldIncrBy(BitFieldOptions.Encoding.Signed(8), new BitFieldOptions.BitOffset(0), 1)
     /// };
-    /// var results = await client.BitFieldAsync("mykey", subCommands);
+    /// var results = await client.BitFieldAsync("mykey", subCommands);  // [0, 0, 1]
     /// </code>
     /// </example>
     /// </remarks>
@@ -217,7 +222,7 @@ public partial interface IBaseClient
     ///     new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Signed(8), new BitFieldOptions.BitOffset(0)),
     ///     new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Unsigned(16), new BitFieldOptions.BitOffset(8))
     /// };
-    /// var results = await client.BitFieldReadOnlyAsync("mykey", subCommands);
+    /// var results = await client.BitFieldReadOnlyAsync("mykey", subCommands);  // [0, 0]
     /// </code>
     /// </example>
     /// </remarks>

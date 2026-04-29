@@ -18,12 +18,13 @@ public interface IScriptingAndFunctionBaseCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/eval/">Valkey commands – EVAL</seealso>
     /// <param name="script">The Lua script to evaluate.</param>
-    /// <param name="keys">The keys to pass to the script.</param>
-    /// <param name="values">The values to pass to the script.</param>
+    /// <param name="keys">The keys to pass to the script. Defaults to <see langword="null"/> (no keys).</param>
+    /// <param name="values">The values to pass to the script. Defaults to <see langword="null"/> (no values).</param>
     /// <returns>The result of the script execution.</returns>
     /// <remarks>
     /// For better performance with repeated executions, consider using
-    /// <see cref="LuaScript"/>.Prepare() or pre-loading scripts with IServer.ScriptLoadAsync().
+    /// <see cref="LuaScript.Prepare(string)"/> or pre-loading scripts with
+    /// <see cref="IServer.ScriptLoadAsync(string, CommandFlags)"/>.
     /// <example>
     /// <code>
     /// var scriptResult = await client.ScriptEvaluateAsync("return 'hello'");  // "hello"
@@ -40,12 +41,12 @@ public interface IScriptingAndFunctionBaseCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/evalsha/">Valkey commands – EVALSHA</seealso>
     /// <param name="hash">The SHA1 hash of the script to evaluate.</param>
-    /// <param name="keys">The keys to pass to the script.</param>
-    /// <param name="values">The values to pass to the script.</param>
+    /// <param name="keys">The keys to pass to the script. Defaults to <see langword="null"/> (no keys).</param>
+    /// <param name="values">The values to pass to the script. Defaults to <see langword="null"/> (no values).</param>
     /// <returns>The result of the script execution.</returns>
     /// <remarks>
-    /// If the script is not cached on the server, a NOSCRIPT error will be thrown.
-    /// Use IServer.ScriptLoadAsync() to pre-load scripts.
+    /// If the script is not cached on the server, a <c>NOSCRIPT</c> error will be thrown.
+    /// Use <see cref="IServer.ScriptLoadAsync(string, CommandFlags)"/> to pre-load scripts.
     /// <example>
     /// <code>
     /// byte[] scriptHash = await server.ScriptLoadAsync("return 'hello'");
@@ -63,7 +64,10 @@ public interface IScriptingAndFunctionBaseCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/eval/">Valkey commands – EVAL</seealso>
     /// <param name="script">The <see cref="LuaScript"/> to evaluate.</param>
-    /// <param name="parameters">An object containing parameter values. Properties/fields should match parameter names.</param>
+    /// <param name="parameters">
+    /// An object whose properties/fields supply values for named parameters in
+    /// <paramref name="script"/>. Defaults to <see langword="null"/> (no parameters).
+    /// </param>
     /// <returns>The result of the script execution.</returns>
     /// <remarks>
     /// Parameters of type <see cref="ValkeyKey"/> are treated as keys, while other types are treated as arguments.
@@ -81,13 +85,16 @@ public interface IScriptingAndFunctionBaseCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/evalsha/">Valkey commands – EVALSHA</seealso>
     /// <param name="script">The <see cref="LoadedLuaScript"/> to evaluate.</param>
-    /// <param name="parameters">An object containing parameter values. Properties/fields should match parameter names.</param>
+    /// <param name="parameters">
+    /// An object whose properties/fields supply values for named parameters in
+    /// <paramref name="script"/>. Defaults to <see langword="null"/> (no parameters).
+    /// </param>
     /// <returns>The result of the script execution.</returns>
     /// <remarks>
-    /// If the script is not cached on the server, a NOSCRIPT error will be thrown.
+    /// If the script is not cached on the server, a <c>NOSCRIPT</c> error will be thrown.
+    /// Obtain a <see cref="LoadedLuaScript"/> via <see cref="LuaScript.LoadAsync(IServer, CommandFlags)"/>.
     /// <example>
     /// <code>
-    /// // LoadedLuaScript is obtained via LuaScript.LoadAsync(server)
     /// var luaScript = LuaScript.Prepare("return 'hello'");
     /// var loaded = await luaScript.LoadAsync(server);
     /// var scriptResult = await client.ScriptEvaluateAsync(loaded);  // "hello"

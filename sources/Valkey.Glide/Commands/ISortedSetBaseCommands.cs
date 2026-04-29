@@ -72,6 +72,8 @@ public interface ISortedSetBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
+    /// SortedSetEntry[] entries = [new("a", 1.0), new("b", 2.0), new("c", 3.0)];
+    /// await client.SortedSetAddAsync("myzset", entries);
     /// var removedCount = await client.SortedSetRemoveAsync("myzset", ["a", "b"]);  // 2
     /// </code>
     /// </example>
@@ -87,7 +89,8 @@ public interface ISortedSetBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.SortedSetAddAsync("myzset", [new SortedSetEntry("a", 1.0), new SortedSetEntry("b", 2.0)]);
+    /// SortedSetEntry[] entries = [new("a", 1.0), new("b", 2.0)];
+    /// await client.SortedSetAddAsync("myzset", entries);
     /// var member = await client.SortedSetRandomMemberAsync("myzset");  // "a" or "b"
     /// </code>
     /// </example>
@@ -104,6 +107,8 @@ public interface ISortedSetBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
+    /// SortedSetEntry[] entries = [new("a", 1.0), new("b", 2.0)];
+    /// await client.SortedSetAddAsync("myzset", entries);
     /// var members = await client.SortedSetRandomMembersAsync("myzset", 2);  // ["a", "b"]
     /// </code>
     /// </example>
@@ -140,6 +145,8 @@ public interface ISortedSetBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
+    /// SortedSetEntry[] entries = [new("a", 1.0), new("b", 2.0)];
+    /// await client.SortedSetAddAsync("myzset", entries);
     /// var scores = await client.SortedSetScoresAsync("myzset", ["a", "b", "nonexistent"]);  // [1.0, 2.0, null]
     /// </code>
     /// </example>

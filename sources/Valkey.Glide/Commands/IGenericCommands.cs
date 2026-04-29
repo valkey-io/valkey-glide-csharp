@@ -32,7 +32,8 @@ public interface IGenericCommands
     /// behavior (such as entering pub/sub mode on RESP2 connections) shouldn't be called using this function.
     /// <example>
     /// <code>
-    /// var result = await client.CustomCommand(["CLIENT", "LIST", "TYPE", "PUBSUB"]);
+    /// var response = await client.CustomCommand(["CLIENT", "LIST", "TYPE", "PUBSUB"]);
+    /// Console.WriteLine((response as GlideString)!);
     /// </code>
     /// </example>
     /// </remarks>
@@ -55,7 +56,10 @@ public interface IGenericCommands
     /// the caller to process both successful and failed commands together. In this case, error details
     /// will be provided as instances of <see cref="RequestException" />.
     /// </param>
-    /// <returns>An array of results, where each entry corresponds to a command's execution result.</returns>
+    /// <returns>
+    /// An array of results, where each entry corresponds to a command's execution result
+    /// or <see langword="null" /> if a transaction failed due to a <c>WATCH</c> command.
+    /// </returns>
     /// <remarks>
     /// <b>Atomic Batches (Transactions):</b> If a transaction fails due to a <c>WATCH</c> command,
     /// <c>Exec</c> will return <see langword="null" />.
@@ -90,25 +94,8 @@ public interface IGenericCommands
     /// <summary>
     /// Executes a batch by processing the queued commands with additional options.
     /// </summary>
-    /// <seealso href="https://valkey.io/topics/transactions/">Valkey Transactions (Atomic Batches)</seealso>
-    /// <seealso href="https://valkey.io/topics/pipelining/">Valkey Pipelines (Non-Atomic Batches)</seealso>
-    /// <param name="batch">A <see cref="Batch" /> object containing a list of commands to be executed.</param>
-    /// <param name="raiseOnError">
-    /// Determines how errors are handled within the batch response.
-    /// <para />
-    /// When set to <see langword="true" />, the first encountered error in the batch will be raised as an
-    /// exception of type <see cref="RequestException" /> after all retries and reconnections have been
-    /// executed.
-    /// <para />
-    /// When set to <see langword="false" />, errors will be included as part of the batch response, allowing
-    /// the caller to process both successful and failed commands together. In this case, error details
-    /// will be provided as instances of <see cref="RequestException" />.
-    /// </param>
+    /// <inheritdoc cref="Exec(Batch, bool)" path="/*[not(self::summary) and not(self::remarks)]"/>
     /// <param name="options">A <see cref="BatchOptions" /> object containing execution options.</param>
-    /// <returns>
-    /// An array of results, where each entry corresponds to a command's execution result
-    /// or <see langword="null" /> if a transaction failed due to a <c>WATCH</c> command.
-    /// </returns>
     /// <remarks>
     /// <b>Atomic Batches (Transactions):</b> If a transaction fails due to a <c>WATCH</c> command,
     /// <c>Exec</c> will return <see langword="null" />.

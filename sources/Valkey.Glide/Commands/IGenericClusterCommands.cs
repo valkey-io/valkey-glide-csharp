@@ -46,7 +46,7 @@ public interface IGenericClusterCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/">Valkey commands</seealso>
     /// <param name="args">A list including the command name and arguments for the custom command.</param>
-    /// <param name="route">Specifies the routing configuration for the command. The client will route the command to the nodes defined by <paramref name="route"/>.</param>
+    /// <param name="route">Specifies the routing configuration for the command. The client will route the command to the nodes defined by <c>route</c>.</param>
     /// <returns>The returning value depends on the executed command.</returns>
     /// <remarks>
     /// This API returns all <see langword="string" /> data as <see cref="GlideString" />.

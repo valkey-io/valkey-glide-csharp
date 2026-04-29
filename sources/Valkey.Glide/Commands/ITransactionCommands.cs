@@ -21,6 +21,7 @@ public interface ITransactionCommands : ITransactionBaseCommands
     /// <code>
     /// await client.WatchAsync(["sampleKey"]);
     /// await client.UnwatchAsync();
+    /// // "sampleKey" is no longer watched
     /// </code>
     /// </example>
     /// </remarks>

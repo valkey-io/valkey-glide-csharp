@@ -16,7 +16,8 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var added = await client.GeoAddAsync("locations", "Palermo", new GeoPosition(13.361389, 38.115556));  // true
+    /// var position = new GeoPosition(13.361389, 38.115556);
+    /// var added = await client.GeoAddAsync("locations", "Palermo", position);  // true
     /// </code>
     /// </example>
     /// </remarks>
@@ -39,8 +40,9 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
+    /// var position = new GeoPosition(13.361389, 38.115556);
     /// var options = new GeoAddOptions { Condition = GeoAddCondition.OnlyIfNotExists };
-    /// var added = await client.GeoAddAsync("locations", "Palermo", new GeoPosition(13.361389, 38.115556), options);  // true
+    /// var added = await client.GeoAddAsync("locations", "Palermo", position, options);  // true
     /// </code>
     /// </example>
     /// </remarks>
@@ -117,7 +119,7 @@ public partial interface IBaseClient
     /// <code>
     /// await client.GeoAddAsync("locations", "Palermo", new GeoPosition(13.361389, 38.115556));
     /// await client.GeoAddAsync("locations", "Catania", new GeoPosition(15.087269, 37.502669));
-    /// var distance = await client.GeoDistanceAsync("locations", "Palermo", "Catania", GeoUnit.Kilometers);  // ~166.27
+    /// var distance = await client.GeoDistanceAsync("locations", "Palermo", "Catania", GeoUnit.Kilometers);  // ~166.27 km
     /// </code>
     /// </example>
     /// </remarks>
@@ -165,8 +167,10 @@ public partial interface IBaseClient
     /// <code>
     /// await client.GeoAddAsync("locations", "Palermo", new GeoPosition(13.361389, 38.115556));
     /// await client.GeoAddAsync("locations", "Catania", new GeoPosition(15.087269, 37.502669));
+    /// 
     /// var origin = new GeoPosition(15.0, 37.0);
-    /// var results = await client.GeoSearchAsync("locations", origin, new GeoSearchCircle(200, GeoUnit.Kilometers));  // 2 results
+    /// var circle = new GeoSearchCircle(200, GeoUnit.Kilometers);
+    /// var results = await client.GeoSearchAsync("locations", origin, circle);  // 2 results
     /// </code>
     /// </example>
     /// </remarks>
@@ -192,7 +196,9 @@ public partial interface IBaseClient
     /// <code>
     /// await client.GeoAddAsync("locations", "Palermo", new GeoPosition(13.361389, 38.115556));
     /// await client.GeoAddAsync("locations", "Catania", new GeoPosition(15.087269, 37.502669));
-    /// var stored = await client.GeoSearchAndStoreAsync("locations", "nearby", "Palermo", new GeoSearchCircle(200, GeoUnit.Kilometers));  // 2
+    /// 
+    /// var circle = new GeoSearchCircle(200, GeoUnit.Kilometers);
+    /// var stored = await client.GeoSearchAndStoreAsync("locations", "nearby", "Palermo", circle);  // 2
     /// </code>
     /// </example>
     /// </remarks>
@@ -219,8 +225,10 @@ public partial interface IBaseClient
     /// <code>
     /// await client.GeoAddAsync("locations", "Palermo", new GeoPosition(13.361389, 38.115556));
     /// await client.GeoAddAsync("locations", "Catania", new GeoPosition(15.087269, 37.502669));
+    ///
     /// var origin = new GeoPosition(15.0, 37.0);
-    /// var stored = await client.GeoSearchAndStoreAsync("locations", "nearby", origin, new GeoSearchCircle(200, GeoUnit.Kilometers));  // 2
+    /// var circle = new GeoSearchCircle(200, GeoUnit.Kilometers);
+    /// var stored = await client.GeoSearchAndStoreAsync("locations", "nearby", origin, circle);  // 2
     /// </code>
     /// </example>
     /// </remarks>
