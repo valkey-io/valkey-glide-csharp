@@ -49,70 +49,9 @@ jobs:
       - name: Load and filter matrices
         id: load
         working-directory: .github/json_matrices
-        shell: bash
-        run: |
-          set -euo pipefail
-          PROFILE="${{ inputs.profile }}"
+        run: python3 load_matrices.py ${{ inputs.profile }}
 
-          # --- OS matrix ---
-          # VM hosts: non-container, testable
-          VM_FILTER='select(has("IMAGE") | not) | select(.testable != false)'
-          case "$PROFILE" in
-              smoke)    HOST_MATRIX=$(jq -c "[.[] | $VM_FILTER]" os-matrix.json) ;;
-              standard) HOST_MATRIX=$(jq -c "[.[] | $VM_FILTER | select(.run == \"always\")]" os-matrix.json) ;;
-              full)     HOST_MATRIX=$(jq -c "[.[] | $VM_FILTER]" os-matrix.json) ;;
-              *)        echo "Unknown profile: $PROFILE"; exit 1 ;;
-          esac
-
-          # Container hosts: full profile only
-          if [[ "$PROFILE" == "full" ]]; then
-              CONTAINER_HOST_MATRIX=$(jq -c '[.[] | select(has("IMAGE"))]' os-matrix.json)
-          else
-              CONTAINER_HOST_MATRIX='[]'
-          fi
-
-          # --- Server matrix ---
-          case "$PROFILE" in
-              smoke)
-                  SERVER_MATRIX=$(jq -c '[.[] | select(.smoke == true)]' server-matrix.json)
-                  SMOKE_COUNT=$(echo "$SERVER_MATRIX" | jq 'length')
-                  if [[ "$SMOKE_COUNT" -ne 1 ]]; then
-                      echo "ERROR: Expected exactly 1 server with smoke=true, found $SMOKE_COUNT"
-                      exit 1
-                  fi
-                  ;;
-              standard) SERVER_MATRIX=$(jq -c '[.[] | select(.run == "always")]' server-matrix.json) ;;
-              full)     SERVER_MATRIX=$(jq -c '.' server-matrix.json) ;;
-          esac
-
-          # --- Dotnet version matrix ---
-          case "$PROFILE" in
-              smoke|standard) DOTNET_MATRIX=$(jq -c '.["always-run-versions"]' version-matrix.json) ;;
-              full)           DOTNET_MATRIX=$(jq -c '.versions' version-matrix.json) ;;
-          esac
-
-          # --- Validate non-empty ---
-          for name in HOST_MATRIX SERVER_MATRIX DOTNET_MATRIX; do
-              COUNT=$(echo "${!name}" | jq 'length')
-              if [[ "$COUNT" -eq 0 ]]; then
-                  echo "ERROR: $name is empty for profile=$PROFILE"
-                  exit 1
-              fi
-          done
-
-          # --- Output ---
-          echo "Profile: $PROFILE"
-          echo "VM hosts: $(echo "$HOST_MATRIX" | jq 'length')"
-          echo "Container hosts: $(echo "$CONTAINER_HOST_MATRIX" | jq 'length')"
-          echo "Servers: $(echo "$SERVER_MATRIX" | jq 'length')"
-          echo "Dotnet versions: $(echo "$DOTNET_MATRIX" | jq 'length')"
-
-          echo "host-matrix=$HOST_MATRIX" >> "$GITHUB_OUTPUT"
-          echo "container-host-matrix=$CONTAINER_HOST_MATRIX" >> "$GITHUB_OUTPUT"
-          echo "server-matrix=$SERVER_MATRIX" >> "$GITHUB_OUTPUT"
-          echo "dotnet-matrix=$DOTNET_MATRIX" >> "$GITHUB_OUTPUT"
-
-  test:
+  runner-tests:
     name: net${{ matrix.dotnet }}, server ${{ matrix.server.version }}, ${{ matrix.host.TARGET }}
     needs: load-matrix
     timeout-minutes: 100
@@ -258,7 +197,7 @@ jobs:
             failures.json
             valkey-glide/utils/clusters/**
 
-  test-container:
+  container-tests:
     name: net${{ matrix.dotnet }}, server ${{ matrix.server.version }}, ${{ matrix.host.IMAGE }}
     needs: load-matrix
     if: ${{ needs.load-matrix.outputs.container-host-matrix != '[]' }}
