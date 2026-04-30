@@ -63,17 +63,4 @@ internal static class GuardClauses
             throw new ArgumentException("Time span cannot be negative.");
         }
     }
-
-    /// <summary>
-    /// Throws a <see cref="NotImplementedException"/> if the stream trim mode is not supported.
-    /// </summary>
-    /// <param name="trimMode">The stream trim mode to validate.</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="trimMode"/> is not <see cref="StreamTrimMode.KeepReferences"/>.</exception>
-    public static void ThrowIfUnsupportedTrimMode(StreamTrimMode trimMode)
-    {
-        if (trimMode != StreamTrimMode.KeepReferences)
-        {
-            throw new NotImplementedException($"Stream trim mode {trimMode} is not supported by Valkey GLIDE");
-        }
-    }
 }

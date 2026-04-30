@@ -36,8 +36,8 @@ public interface ITransactionClusterCommands : ITransactionBaseCommands
     /// <exception cref="Errors.RequestException">Thrown if the command fails to execute on the server.</exception>
     /// <example>
     /// <code>
-    /// await client.WatchAsync(["sampleKey"]);
-    /// await client.UnwatchAsync(Route.AllPrimaries);
+    /// await clusterClient.WatchAsync(["sampleKey"]);
+    /// await clusterClient.UnwatchAsync(Route.AllPrimaries);
     /// // "sampleKey" is no longer watched on all primary nodes
     /// </code>
     /// </example>

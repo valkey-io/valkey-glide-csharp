@@ -253,15 +253,26 @@ jobs:
                   fi
 
             - name: Patch IT suite to run tests using freshly published version
-              working-directory: tests/Valkey.Glide.IntegrationTests
               shell: bash
               run: |
-                  dotnet remove reference $(dotnet list reference | tail -n +3)
-                  dotnet add package Valkey.Glide --version $RELEASE_VERSION
+                  # Remove local project references to Valkey.Glide
+                  dotnet remove tests/Valkey.Glide.TestUtils reference sources/Valkey.Glide/Valkey.Glide.csproj
+                  dotnet remove tests/Valkey.Glide.IntegrationTests reference sources/Valkey.Glide/Valkey.Glide.csproj
+                  # Replace with the published NuGet package
+                  dotnet add tests/Valkey.Glide.TestUtils package Valkey.Glide --version $RELEASE_VERSION
+                  dotnet add tests/Valkey.Glide.IntegrationTests package Valkey.Glide --version $RELEASE_VERSION
                   git diff
 
+            - name: Setup WSL (Windows only)
+              # WSL2 is not available on windows-11-arm runners (no Hyper-V).
+              if: ${{ matrix.host.OS == 'windows' && matrix.host.ARCH != 'arm64' }}
+              uses: Vampire/setup-wsl@v7
+              with:
+                  distribution: Ubuntu-22.04
+                  additional-packages: build-essential git make pkg-config libssl-dev
+
             - name: Install server
-              # WSL2 is not available on windows-11-arm runners (no Hyper-V), so we cannot run Valkey server there.
+              # WSL2 is not available on windows-11-arm runners (no Hyper-V).
               if: ${{ !(matrix.host.OS == 'windows' && matrix.host.ARCH == 'arm64') }}
               uses: ./.github/workflows/install-server
               with:

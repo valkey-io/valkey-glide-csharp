@@ -201,7 +201,7 @@ In Windows, run from following commands from the appropriate Visual Studio Comma
     task coverage:integration  # Integration tests with coverage
 
     # Run tests for specific framework
-    task test FRAMEWORK=net8.0
+    task test framework=net8.0
 
     # Clean test results and reports
     task clean
@@ -236,6 +236,7 @@ task install-tools
 
 # Build and test workflows
 task build                  # Build the solution
+task build target=lib       # Build only Valkey.Glide
 task test                   # Build and run all tests with coverage
 task coverage               # Run tests with coverage and generate HTML reports
 
@@ -372,7 +373,7 @@ The CSharp Valkey-Glide client uses xUnit v3 for testing code. The test code sty
 
 ## Documentation
 
-For user-facing documentation including quick start guides, tutorials, and how-to guides, visit the official [Valkey GLIDE documentation site](https://glide.valkey.io/getting-started/quickstart/?lang=csharp).
+For user-facing documentation including quick start guides, tutorials, and how-to guides, visit the official [Valkey GLIDE documentation site](https://glide.valkey.io/getting-started/quickstart/?lang=c%23).
 
 ## Benchmarking
 
@@ -382,4 +383,4 @@ Refer to the [resp-bench README](https://github.com/ikolomi/resp-bench/blob/main
 
 ## Community and Feedback
 
-We encourage you to join our community to support, share feedback, and ask questions. You can approach us for anything on our Valkey Slack: [Join Valkey Slack](https://join.slack.com/t/valkey-oss-developer/shared_invite/zt-2nxs51chx-EB9hu9Qdch3GMfRcztTSkQ).
+We encourage you to join our community to support, share feedback, and ask questions. You can approach us for anything on our Valkey Slack: [Join Valkey Slack](https://valkey.io/slack/).

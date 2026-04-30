@@ -93,7 +93,7 @@ public sealed class StandalonePubSubSubscriptionConfig : BasePubSubSubscriptionC
 public sealed class ClusterPubSubSubscriptionConfig : BasePubSubSubscriptionConfig
 {
     /// <summary>
-    /// /// Initializes a new instance of the <see cref="ClusterPubSubSubscriptionConfig"/> class.
+    /// Initializes a new instance of the <see cref="ClusterPubSubSubscriptionConfig"/> class.
     /// </summary>
     public ClusterPubSubSubscriptionConfig() { }
 

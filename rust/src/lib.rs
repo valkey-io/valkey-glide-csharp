@@ -522,9 +522,10 @@ pub unsafe extern "C-unwind" fn command(
         callback_index,
     };
 
-    let mut cmd = match unsafe { create_cmd(cmd_ptr) } {
+    let mut cmd = match unsafe { create_cmd(cmd_ptr, core.client.compression_manager().as_ref()) } {
         Ok(cmd) => cmd,
         Err(err) => {
+            panic_guard.panicked = false;
             unsafe {
                 report_error(
                     core.failure_callback,
@@ -541,20 +542,12 @@ pub unsafe extern "C-unwind" fn command(
 
     let request_type = unsafe { (*cmd_ptr).request_type };
 
-    // Apply compression to command arguments if compression is enabled
-    if let Some(compression_manager) = core.client.compression_manager()
-        && let Err(err) = compress_cmd(&mut cmd, request_type, compression_manager.as_ref())
-    {
-        unsafe {
-            report_error(
-                core.failure_callback,
-                callback_index,
-                format!("Compression failed: {}", err),
-                RequestErrorType::Unspecified,
-            );
-        }
-        return;
-    }
+    // Resolve the actual command type for CustomCommand (needed for decompression)
+    let resolved_request_type = if matches!(request_type, RequestType::CustomCommand) {
+        resolve_custom_command_type(&extract_cmd_args(&cmd))
+    } else {
+        request_type
+    };
 
     client.runtime.spawn(async move {
         let mut panic_guard = PanicGuard {
@@ -570,7 +563,7 @@ pub unsafe extern "C-unwind" fn command(
                 let original = value.clone();
                 let value = glide_core::compression::process_response_for_decompression(
                     value,
-                    request_type,
+                    resolved_request_type,
                     core.client.compression_manager().as_deref(),
                 )
                 .unwrap_or_else(|e| {
@@ -631,22 +624,27 @@ pub unsafe extern "C-unwind" fn batch(
         callback_index,
     };
 
-    let pipeline = match unsafe { create_pipeline(batch_ptr) } {
-        Ok(pipeline) => pipeline,
-        Err(err) => {
-            unsafe {
-                report_error(
-                    core.failure_callback,
-                    callback_index,
-                    err,
-                    RequestErrorType::Unspecified,
-                );
+    let pipeline =
+        match unsafe { create_pipeline(batch_ptr, core.client.compression_manager().as_ref()) } {
+            Ok(pipeline) => pipeline,
+            Err(err) => {
+                panic_guard.panicked = false;
+                unsafe {
+                    report_error(
+                        core.failure_callback,
+                        callback_index,
+                        err,
+                        RequestErrorType::Unspecified,
+                    );
+                }
+                return;
             }
-            return;
-        }
-    };
+        };
 
     let (routing, timeout, pipeline_retry_strategy) = unsafe { get_pipeline_options(options_ptr) };
+
+    // Clone compression manager for use in async block
+    let compression_manager = core.client.compression_manager();
 
     client.runtime.spawn(async move {
         let mut panic_guard = PanicGuard {
@@ -672,9 +670,31 @@ pub unsafe extern "C-unwind" fn batch(
                 )
                 .await
         };
+
+        // Process batch response for decompression if compression is enabled
         match result {
             Ok(value) => {
-                let ptr = Box::into_raw(Box::new(ResponseValue::from_value(value)));
+                let final_value = if let Some(ref manager) = compression_manager {
+                    match glide_core::compression::decompress_batch_response(
+                        value.clone(),
+                        manager.as_ref(),
+                    ) {
+                        Ok(decompressed) => decompressed,
+                        Err(e) => {
+                            logger_core::log_warn(
+                                "batch_decompression",
+                                format!(
+                                    "Failed to decompress batch response: {}, returning original",
+                                    e
+                                ),
+                            );
+                            value
+                        }
+                    }
+                } else {
+                    value
+                };
+                let ptr = Box::into_raw(Box::new(ResponseValue::from_value(final_value)));
                 unsafe { (core.success_callback)(callback_index, ptr) };
             }
             Err(err) => unsafe {
@@ -939,6 +959,7 @@ pub unsafe extern "C-unwind" fn invoke_script(
     let hash_str = match unsafe { CStr::from_ptr(hash).to_str() } {
         Ok(s) => s.to_string(),
         Err(e) => {
+            panic_guard.panicked = false;
             unsafe {
                 report_error(
                     core.failure_callback,
@@ -1673,44 +1694,29 @@ fn get_command_name(request_type_u32: u32) -> Option<String> {
     Some(command_name.to_string())
 }
 
-/// Applies compression to command arguments if the command supports it.
-///
-/// Returns `Ok(())` if compression was applied or skipped, `Err` if compression failed.
-fn compress_cmd(
-    cmd: &mut redis::Cmd,
-    request_type: RequestType,
-    compression_manager: &glide_core::compression::CompressionManager,
-) -> Result<(), String> {
-    let all_args: Vec<Vec<u8>> = cmd
-        .args_iter()
+/// Extracts all simple arguments from a redis command as byte vectors.
+/// Filters out cursor arguments and collects only simple byte arguments.
+fn extract_cmd_args(cmd: &redis::Cmd) -> Vec<Vec<u8>> {
+    cmd.args_iter()
         .filter_map(|arg| match arg {
             redis::Arg::Simple(bytes) => Some(bytes.to_vec()),
             redis::Arg::Cursor => None,
         })
-        .collect();
+        .collect()
+}
 
-    if all_args.is_empty() {
-        return Ok(());
+/// Resolves the actual RequestType for a CustomCommand by parsing the command name from the first argument.
+/// This is needed for compression validation since CustomCommand doesn't carry the actual command type.
+fn resolve_custom_command_type(args: &[Vec<u8>]) -> RequestType {
+    if args.is_empty() {
+        return RequestType::CustomCommand;
     }
 
-    let command_name = &all_args[0];
+    let command_name = &args[0];
+    let command_str = String::from_utf8_lossy(command_name);
 
-    let mut args: Vec<Vec<u8>> = all_args[1..].to_vec();
-    glide_core::compression::process_command_args_for_compression(
-        &mut args,
-        request_type,
-        Some(compression_manager),
-    )
-    .map_err(|err| err.to_string())?;
-
-    // Rebuild command with compressed arguments
-    *cmd = redis::Cmd::new();
-    cmd.arg(command_name);
-    for arg in args {
-        cmd.arg(arg);
-    }
-
-    Ok(())
+    // Use the centralized from_command_name method in glide-core
+    RequestType::from_command_name(&command_str).unwrap_or(RequestType::CustomCommand)
 }
 
 /// Returns a new span for the given command name.
@@ -1727,6 +1733,77 @@ fn create_span(command_name: &str) -> *const c_void {
     );
 
     span_ptr
+}
+
+// ========================================================================================
+// Client-Side Cache Metrics
+// ========================================================================================
+
+/// Cache metrics type enum matching the Rust core's cache metric methods.
+#[repr(u32)]
+#[derive(Debug, Clone, Copy)]
+pub enum CacheMetricsType {
+    HitRate = 0,
+    MissRate = 1,
+    EntryCount = 2,
+    Evictions = 3,
+    Expirations = 4,
+    TotalLookups = 5,
+}
+
+/// Get a cache metric from the client.
+///
+/// # Arguments
+/// * `client_ptr` - Pointer to the client
+/// * `callback_index` - Callback index for async response
+/// * `metrics_type` - The type of cache metric to retrieve
+///
+/// # Safety
+/// * `client_ptr` must be a valid pointer to a Client
+#[unsafe(no_mangle)]
+pub unsafe extern "C-unwind" fn get_cache_metrics(
+    client_ptr: *const c_void,
+    callback_index: usize,
+    metrics_type: CacheMetricsType,
+) {
+    let client = unsafe {
+        Arc::increment_strong_count(client_ptr);
+        Arc::from_raw(client_ptr as *mut Client)
+    };
+    let core = client.core.clone();
+
+    let mut panic_guard = PanicGuard {
+        panicked: true,
+        failure_callback: core.failure_callback,
+        callback_index,
+    };
+
+    let result = match metrics_type {
+        CacheMetricsType::HitRate => core.client.cache_hit_rate(),
+        CacheMetricsType::MissRate => core.client.cache_miss_rate(),
+        CacheMetricsType::EntryCount => core.client.cache_entry_count(),
+        CacheMetricsType::Evictions => core.client.cache_evictions(),
+        CacheMetricsType::Expirations => core.client.cache_expirations(),
+        CacheMetricsType::TotalLookups => core.client.cache_total_lookups(),
+    };
+
+    match result {
+        Ok(value) => {
+            let ptr = Box::into_raw(Box::new(ResponseValue::from_value(value)));
+            unsafe { (core.success_callback)(callback_index, ptr) };
+        }
+        Err(err) => unsafe {
+            report_error(
+                core.failure_callback,
+                callback_index,
+                error_message(&err),
+                error_type(&err),
+            );
+        },
+    };
+
+    panic_guard.panicked = false;
+    drop(panic_guard);
 }
 
 // ========================================================================================

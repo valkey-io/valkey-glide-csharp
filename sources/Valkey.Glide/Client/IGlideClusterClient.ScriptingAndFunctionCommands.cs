@@ -25,7 +25,7 @@ public partial interface IGlideClusterClient
     /// <code>
     /// using var script = new Script("return 'Hello'");
     /// var options = new ClusterScriptOptions().WithRoute(Route.AllPrimaries);
-    /// ClusterValue&lt;ValkeyResult&gt; result = await client.ScriptInvokeAsync(script, options);
+    /// var result = await clusterClient.ScriptInvokeAsync(script, options);
     /// if (result.HasMultiData)
     /// {
     ///     foreach (var (node, value) in result.MultiValue)
@@ -53,7 +53,8 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// ClusterValue&lt;bool[]&gt; exists = await client.ScriptExistsAsync(
+    /// using var script = new Script("return 1");
+    /// var exists = await clusterClient.ScriptExistsAsync(
     ///     [script.Hash],
     ///     Route.AllPrimaries);
     /// </code>
@@ -73,7 +74,7 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.ScriptFlushAsync(Route.AllNodes);
+    /// await clusterClient.ScriptFlushAsync(Route.AllNodes);
     /// </code>
     /// </example>
     /// </remarks>
@@ -90,7 +91,7 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.ScriptFlushAsync(FlushMode.Async, Route.AllPrimaries);
+    /// await clusterClient.ScriptFlushAsync(FlushMode.Async, Route.AllPrimaries);
     /// </code>
     /// </example>
     /// </remarks>
@@ -107,7 +108,7 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.ScriptKillAsync(Route.AllPrimaries);
+    /// await clusterClient.ScriptKillAsync(Route.AllPrimaries);
     /// </code>
     /// </example>
     /// </remarks>
@@ -127,7 +128,7 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// ClusterValue&lt;ValkeyResult&gt; result = await client.FCallAsync(
+    /// var result = await clusterClient.FCallAsync(
     ///     "myfunction",
     ///     Route.AllPrimaries);
     /// </code>
@@ -149,10 +150,10 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// ClusterValue&lt;ValkeyResult&gt; result = await client.FCallAsync(
+    /// var result = await clusterClient.FCallAsync(
     ///     "myfunction",
     ///     ["arg1", "arg2"],
-    ///     Route.RandomRoute);
+    ///     Route.Random);
     /// </code>
     /// </example>
     /// </remarks>
@@ -173,7 +174,7 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// ClusterValue&lt;ValkeyResult&gt; result = await client.FCallReadOnlyAsync(
+    /// var result = await clusterClient.FCallReadOnlyAsync(
     ///     "myfunction",
     ///     Route.AllNodes);
     /// </code>
@@ -195,7 +196,7 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// ClusterValue&lt;ValkeyResult&gt; result = await client.FCallReadOnlyAsync(
+    /// var result = await clusterClient.FCallReadOnlyAsync(
     ///     "myfunction",
     ///     ["arg1"],
     ///     Route.AllNodes);
@@ -221,7 +222,8 @@ public partial interface IGlideClusterClient
     /// Uses <c>replace: false</c> by default. Use the overload with <c>replace</c> parameter to overwrite existing libraries.
     /// <example>
     /// <code>
-    /// ClusterValue&lt;string&gt; result = await client.FunctionLoadAsync(
+    /// string libraryCode = "#!lua name=mylib\nvalkey.register_function('myfunc', function(keys, args) return args[1] end)";
+    /// var result = await clusterClient.FunctionLoadAsync(
     ///     libraryCode,
     ///     Route.AllPrimaries);
     /// </code>
@@ -243,7 +245,8 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// ClusterValue&lt;string&gt; result = await client.FunctionLoadAsync(
+    /// string libraryCode = "#!lua name=mylib\nvalkey.register_function('myfunc', function(keys, args) return args[1] end)";
+    /// var result = await clusterClient.FunctionLoadAsync(
     ///     libraryCode,
     ///     replace: true,
     ///     Route.AllPrimaries);
@@ -265,7 +268,7 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.FunctionDeleteAsync("mylib", Route.AllPrimaries);
+    /// await clusterClient.FunctionDeleteAsync("mylib", Route.AllPrimaries);
     /// </code>
     /// </example>
     /// </remarks>
@@ -282,7 +285,7 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.FunctionFlushAsync(Route.AllPrimaries);
+    /// await clusterClient.FunctionFlushAsync(Route.AllPrimaries);
     /// </code>
     /// </example>
     /// </remarks>
@@ -300,7 +303,7 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.FunctionFlushAsync(FlushMode.Async, Route.AllPrimaries);
+    /// await clusterClient.FunctionFlushAsync(FlushMode.Async, Route.AllPrimaries);
     /// </code>
     /// </example>
     /// </remarks>
@@ -317,7 +320,7 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.FunctionKillAsync(Route.AllPrimaries);
+    /// await clusterClient.FunctionKillAsync(Route.AllPrimaries);
     /// </code>
     /// </example>
     /// </remarks>
@@ -337,7 +340,7 @@ public partial interface IGlideClusterClient
     /// Uses <see cref="Route.AllPrimaries"/> as the default route.
     /// <example>
     /// <code>
-    /// ClusterValue&lt;LibraryInfo[]&gt; result = await client.FunctionListAsync();
+    /// var result = await clusterClient.FunctionListAsync();
     /// </code>
     /// </example>
     /// </remarks>
@@ -355,9 +358,7 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// ClusterValue&lt;LibraryInfo[]&gt; result = await client.FunctionListAsync(
-    ///     null,
-    ///     Route.AllPrimaries);
+    /// var result = await clusterClient.FunctionListAsync(null, Route.AllPrimaries);
     /// </code>
     /// </example>
     /// </remarks>
@@ -376,8 +377,7 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// ClusterValue&lt;FunctionStatsResult&gt; result = await client.FunctionStatsAsync(
-    ///     Route.AllPrimaries);
+    /// var result = await clusterClient.FunctionStatsAsync(Route.AllPrimaries);
     /// foreach (var (node, stats) in result.MultiValue)
     /// {
     ///     Console.WriteLine($"{node}: {stats.Engines.Count} engines");
@@ -400,7 +400,7 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// ClusterValue&lt;byte[]&gt; result = await client.FunctionDumpAsync(Route.RandomRoute);
+    /// var result = await clusterClient.FunctionDumpAsync(Route.Random);
     /// </code>
     /// </example>
     /// </remarks>
@@ -418,7 +418,8 @@ public partial interface IGlideClusterClient
     /// Uses the default APPEND policy.
     /// <example>
     /// <code>
-    /// await client.FunctionRestoreAsync(backup, Route.AllPrimaries);
+    /// var backup = new byte[] { 0x01, 0x02 };
+    /// await clusterClient.FunctionRestoreAsync(backup, Route.AllPrimaries);
     /// </code>
     /// </example>
     /// </remarks>
@@ -437,10 +438,9 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.FunctionRestoreAsync(
-    ///     backup,
-    ///     FunctionRestorePolicy.Replace,
-    ///     Route.AllPrimaries);
+    /// var payload = new byte[] { 0x01, 0x02 };
+    /// var policy = FunctionRestorePolicy.Replace;
+    /// await clusterClient.FunctionRestoreAsync(payload, policy, Route.AllPrimaries);
     /// </code>
     /// </example>
     /// </remarks>

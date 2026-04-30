@@ -40,10 +40,7 @@ public partial class GlideClient :
     /// </list>
     /// <example>
     /// <code>
-    /// using Valkey.Glide;
-    /// using static Valkey.Glide.ConnectionConfiguration;
-    ///
-    /// var config = new StandaloneClientConfigurationBuilder()
+    /// var config = new ConnectionConfiguration.StandaloneClientConfigurationBuilder()
     ///     .WithAddress("primary.example.com", 6379)
     ///     .WithAddress("replica1.example.com", 6379)
     ///     .WithDatabaseId(1)
@@ -51,7 +48,7 @@ public partial class GlideClient :
     ///     .WithTls()
     ///     .WithConnectionRetryStrategy(5, 100, 2)
     ///     .Build();
-    /// await using GlideClient client = await GlideClient.CreateClient(config);
+    /// await using var client = await GlideClient.CreateClient(config);
     /// </code>
     /// </example>
     /// </remarks>

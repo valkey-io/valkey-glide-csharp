@@ -42,6 +42,7 @@ public abstract class ConnectionConfiguration
         public TimeSpan? PubSubReconciliationInterval;
         public CompressionConfig? CompressionConfig;
         public bool ReadOnly;
+        public ClientSideCacheConfig? ClientSideCacheConfig;
 
         internal FFI.ConnectionConfig ToFfi() =>
             new(
@@ -62,7 +63,8 @@ public abstract class ConnectionConfiguration
                 RootCertificates,
                 (uint?)PubSubReconciliationInterval?.TotalMilliseconds,
                 CompressionConfig?.ToFfi(),
-                ReadOnly
+                ReadOnly,
+                ClientSideCacheConfig?.ToFfi()
             );
     }
 
@@ -351,10 +353,10 @@ public abstract class ConnectionConfiguration
         protected (string? host, ushort? port) Address
         {
             set => Config.Addresses.Add(new NodeAddress
-            {
-                Host = value.host ?? DEFAULT_HOST,
-                Port = value.port ?? DEFAULT_PORT
-            });
+            (
+                value.host ?? DEFAULT_HOST,
+                value.port ?? DEFAULT_PORT
+            ));
         }
 
         /// <inheritdoc cref="Address" />
@@ -846,6 +848,30 @@ public abstract class ConnectionConfiguration
         public T WithCompression(CompressionConfig compressionConfig)
         {
             CompressionConfig = compressionConfig;
+            return (T)this;
+        }
+
+        #endregion
+
+        #region Client-Side Cache
+
+        /// <summary>
+        /// Client-side cache configuration for local caching of read command responses.
+        /// When enabled, the client stores responses locally to reduce network round-trips
+        /// and server load. The cache uses TTL-based expiration.
+        /// </summary>
+        /// <seealso cref="ClientSideCacheConfig"/>
+        public ClientSideCacheConfig? ClientSideCacheConfig
+        {
+            get => Config.ClientSideCacheConfig;
+            set => Config.ClientSideCacheConfig = value;
+        }
+
+        /// <inheritdoc cref="ClientSideCacheConfig" />
+        public T WithClientSideCache(ClientSideCacheConfig clientSideCacheConfig)
+        {
+            ArgumentNullException.ThrowIfNull(clientSideCacheConfig);
+            ClientSideCacheConfig = clientSideCacheConfig;
             return (T)this;
         }
 

@@ -55,6 +55,8 @@ pub struct CompressionConfig {
     pub compression_level: i32,
     pub backend: CompressionBackend,
     pub enabled: bool,
+    pub has_max_decompressed_size: bool,
+    pub max_decompressed_size: u64,
 }
 
 #[repr(u32)]
@@ -62,6 +64,26 @@ pub struct CompressionConfig {
 pub enum CompressionBackend {
     Zstd = 0,
     Lz4 = 1,
+}
+
+/// A mirror of [`EvictionPolicy`] adopted for FFI.
+#[repr(u32)]
+#[derive(Debug, Clone, Copy)]
+pub enum EvictionPolicy {
+    Lru = 0,
+    Lfu = 1,
+}
+
+/// A mirror of [`glide_core::client::ClientSideCache`] adopted for FFI.
+#[repr(C)]
+#[derive(Debug, Clone, Copy)]
+pub struct ClientSideCacheConfig {
+    pub cache_id: *const c_char,
+    pub max_cache_kb: u64,
+    pub entry_ttl_ms: u64,
+    pub has_eviction_policy: bool,
+    pub eviction_policy: EvictionPolicy,
+    pub enable_metrics: bool,
 }
 
 /// A mirror of [`ConnectionRequest`] adopted for FFI.
@@ -104,6 +126,8 @@ pub struct ConnectionConfig {
     pub has_compression_config: bool,
     pub compression_config: CompressionConfig,
     pub read_only: bool,
+    pub has_client_side_cache_config: bool,
+    pub client_side_cache_config: ClientSideCacheConfig,
     /*
     TODO below
     pub periodic_checks: Option<PeriodicCheck>,
@@ -290,11 +314,36 @@ pub(crate) unsafe fn create_connection_request(
                     }
                     CompressionBackend::Lz4 => glide_core::compression::CompressionBackendType::Lz4,
                 },
-                max_decompressed_size: None,
+                max_decompressed_size: config
+                    .compression_config
+                    .has_max_decompressed_size
+                    .then_some(config.compression_config.max_decompressed_size as usize),
             },
         ),
         read_only: config.read_only,
         node_discovery_mode: glide_core::client::NodeDiscoveryMode::Standard,
+
+        // Client-side cache configuration
+        client_side_cache: if config.has_client_side_cache_config {
+            use redis::cache::EvictionPolicy as CoreEvictionPolicy;
+            let csc = config.client_side_cache_config;
+            Some(glide_core::client::ClientSideCache {
+                cache_id: unsafe { ptr_to_str(csc.cache_id) },
+                max_cache_kb: csc.max_cache_kb,
+                entry_ttl_ms: csc.entry_ttl_ms,
+                eviction_policy: if csc.has_eviction_policy {
+                    Some(match csc.eviction_policy {
+                        EvictionPolicy::Lru => CoreEvictionPolicy::Lru,
+                        EvictionPolicy::Lfu => CoreEvictionPolicy::Lfu,
+                    })
+                } else {
+                    None
+                },
+                enable_metrics: csc.enable_metrics,
+            })
+        } else {
+            None
+        },
 
         // Unimplemented configuration options.
         client_cert: Vec::new(),
@@ -302,7 +351,6 @@ pub(crate) unsafe fn create_connection_request(
         tcp_nodelay: false,
         periodic_checks: None,
         inflight_requests_limit: None,
-        client_side_cache: None,
     }
 }
 
@@ -716,17 +764,76 @@ pub struct BatchOptionsInfo {
 /// * `args` and `args_len` in a referred [`CmdInfo`] structure must not be `null`.
 /// * `args` in a referred [`CmdInfo`] structure must point to `arg_count` consecutive byte array pointers.
 /// * `args_len` in a referred [`CmdInfo`] structure must point to `arg_count` consecutive array lengths. See the safety documentation of [`convert_byte_array_to_slices`].
-pub(crate) unsafe fn create_cmd(ptr: *const CmdInfo) -> Result<Cmd, String> {
+pub(crate) unsafe fn create_cmd(
+    ptr: *const CmdInfo,
+    compression_manager: Option<&std::sync::Arc<glide_core::compression::CompressionManager>>,
+) -> Result<Cmd, String> {
     let info = unsafe { *ptr };
     let arg_vec = unsafe { convert_byte_array_to_slices(info.args, info.arg_count, info.args_len) };
 
     let Some(mut cmd) = info.request_type.get_command() else {
         return Err("Couldn't fetch command type".into());
     };
-    for command_arg in arg_vec {
-        cmd.arg(command_arg);
+
+    // Check if compression is enabled
+    let should_process_compression = compression_manager
+        .as_ref()
+        .map(|cm| cm.is_enabled())
+        .unwrap_or(false);
+
+    if should_process_compression {
+        // Convert arg_vec to owned Vec<Vec<u8>> for compression processing
+        let mut owned_args: Vec<Vec<u8>> = arg_vec.iter().map(|&arg| arg.to_vec()).collect();
+
+        // For CustomCommand, we need to determine the actual command type from the first argument
+        // and process compression on args[1..] since args[0] is the command name
+        let is_custom_command = matches!(info.request_type, RequestType::CustomCommand);
+        let effective_command_type = if is_custom_command {
+            resolve_custom_command_type(&owned_args)?
+        } else {
+            info.request_type
+        };
+
+        // Apply compression to command arguments
+        // For CustomCommand, skip the first argument (command name) when processing compression
+        let args_to_compress = if is_custom_command && !owned_args.is_empty() {
+            &mut owned_args[1..]
+        } else {
+            &mut owned_args[..]
+        };
+
+        if let Err(err) = glide_core::compression::process_command_args_for_compression(
+            args_to_compress,
+            effective_command_type,
+            compression_manager.map(|m| m.as_ref()),
+        ) {
+            return Err(format!("Compression failed: {}", err));
+        }
+
+        // Use the compressed arguments
+        for command_arg in &owned_args {
+            cmd.arg(command_arg);
+        }
+    } else {
+        // Use the original arguments
+        for command_arg in arg_vec {
+            cmd.arg(command_arg);
+        }
     }
+
     Ok(cmd)
+}
+
+/// Resolves the actual RequestType for a CustomCommand by parsing the command name from the first argument.
+fn resolve_custom_command_type(args: &[Vec<u8>]) -> Result<RequestType, String> {
+    if args.is_empty() {
+        return Err("CustomCommand requires at least one argument (the command name)".into());
+    }
+
+    let command_name = &args[0];
+    let command_str = String::from_utf8_lossy(command_name);
+
+    Ok(RequestType::from_command_name(&command_str).unwrap_or(RequestType::CustomCommand))
 }
 
 /// Convert [`BatchInfo`] to a [`Pipeline`].
@@ -738,12 +845,15 @@ pub(crate) unsafe fn create_cmd(ptr: *const CmdInfo) -> Result<Cmd, String> {
 ///   They must be able to be safely casted to a valid to a slice of the corresponding type via [`from_raw_parts`]. See the safety documentation of [`from_raw_parts`].
 /// * Every pointer stored in `cmds` must not be `null` and must point to a valid [`CmdInfo`] structure.
 /// * All data in referred [`CmdInfo`] structure(s) should be valid. See the safety documentation of [`create_cmd`].
-pub(crate) unsafe fn create_pipeline(ptr: *const BatchInfo) -> Result<Pipeline, String> {
+pub(crate) unsafe fn create_pipeline(
+    ptr: *const BatchInfo,
+    compression_manager: Option<&std::sync::Arc<glide_core::compression::CompressionManager>>,
+) -> Result<Pipeline, String> {
     let info = unsafe { *ptr };
     let cmd_pointers = unsafe { from_raw_parts(info.cmds, info.cmd_count) };
     let mut pipeline = Pipeline::with_capacity(info.cmd_count);
     for (i, cmd_ptr) in cmd_pointers.iter().enumerate() {
-        match unsafe { create_cmd(*cmd_ptr) } {
+        match unsafe { create_cmd(*cmd_ptr, compression_manager) } {
             Ok(cmd) => pipeline.add_command(cmd),
             Err(err) => return Err(format!("Coudln't create {i:?}'th command: {err:?}")),
         };
