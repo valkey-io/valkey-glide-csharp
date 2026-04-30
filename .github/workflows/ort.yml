@@ -150,7 +150,7 @@ jobs:
 
               ### Get licenses ###
             - name: Retrieve licenses list
-              working-directory: utils
+              working-directory: scripts
               run: |
                   {
                     echo 'LICENSES_LIST<<EOF'
