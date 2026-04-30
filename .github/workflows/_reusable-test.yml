@@ -1,0 +1,373 @@
+name: Reusable Test Workflow
+
+on:
+  workflow_call:
+    inputs:
+      profile:
+        required: true
+        type: string
+        description: "Test profile: smoke, standard, or full"
+      package-version:
+        required: false
+        type: string
+        description: >-
+          NuGet package version to test against (e.g. "1.0.0").
+          When set, project references are replaced with this package version.
+          When absent, tests run against source (default for CI and FMT).
+          Required when package-artifact-name is set.
+      package-artifact-name:
+        required: false
+        type: string
+        description: >-
+          Name of a workflow artifact containing the .nupkg file.
+          Used for CD dry-run testing when the package has not been published to nuget.org.
+          When set, the artifact is downloaded and registered as a local NuGet source.
+          Requires package-version to also be set.
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  load-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      host-matrix: ${{ steps.load.outputs.host-matrix }}
+      container-host-matrix: ${{ steps.load.outputs.container-host-matrix }}
+      server-matrix: ${{ steps.load.outputs.server-matrix }}
+      dotnet-matrix: ${{ steps.load.outputs.dotnet-matrix }}
+    steps:
+      - name: Validate inputs
+        shell: bash
+        run: |
+          if [[ -n "${{ inputs.package-artifact-name }}" && -z "${{ inputs.package-version }}" ]]; then
+              echo "ERROR: package-artifact-name requires package-version to also be set"
+              exit 1
+          fi
+
+      - uses: actions/checkout@v6
+
+      - name: Load and filter matrices
+        id: load
+        working-directory: .github/json_matrices
+        shell: bash
+        run: |
+          set -euo pipefail
+          PROFILE="${{ inputs.profile }}"
+
+          # --- OS matrix ---
+          # VM hosts: non-container, testable
+          VM_FILTER='select(has("IMAGE") | not) | select(.testable != false)'
+          case "$PROFILE" in
+              smoke)    HOST_MATRIX=$(jq -c "[.[] | $VM_FILTER]" os-matrix.json) ;;
+              standard) HOST_MATRIX=$(jq -c "[.[] | $VM_FILTER | select(.run == \"always\")]" os-matrix.json) ;;
+              full)     HOST_MATRIX=$(jq -c "[.[] | $VM_FILTER]" os-matrix.json) ;;
+              *)        echo "Unknown profile: $PROFILE"; exit 1 ;;
+          esac
+
+          # Container hosts: full profile only
+          if [[ "$PROFILE" == "full" ]]; then
+              CONTAINER_HOST_MATRIX=$(jq -c '[.[] | select(has("IMAGE"))]' os-matrix.json)
+          else
+              CONTAINER_HOST_MATRIX='[]'
+          fi
+
+          # --- Server matrix ---
+          case "$PROFILE" in
+              smoke)
+                  SERVER_MATRIX=$(jq -c '[.[] | select(.smoke == true)]' server-matrix.json)
+                  SMOKE_COUNT=$(echo "$SERVER_MATRIX" | jq 'length')
+                  if [[ "$SMOKE_COUNT" -ne 1 ]]; then
+                      echo "ERROR: Expected exactly 1 server with smoke=true, found $SMOKE_COUNT"
+                      exit 1
+                  fi
+                  ;;
+              standard) SERVER_MATRIX=$(jq -c '[.[] | select(.run == "always")]' server-matrix.json) ;;
+              full)     SERVER_MATRIX=$(jq -c '.' server-matrix.json) ;;
+          esac
+
+          # --- Dotnet version matrix ---
+          case "$PROFILE" in
+              smoke|standard) DOTNET_MATRIX=$(jq -c '.["always-run-versions"]' version-matrix.json) ;;
+              full)           DOTNET_MATRIX=$(jq -c '.versions' version-matrix.json) ;;
+          esac
+
+          # --- Validate non-empty ---
+          for name in HOST_MATRIX SERVER_MATRIX DOTNET_MATRIX; do
+              COUNT=$(echo "${!name}" | jq 'length')
+              if [[ "$COUNT" -eq 0 ]]; then
+                  echo "ERROR: $name is empty for profile=$PROFILE"
+                  exit 1
+              fi
+          done
+
+          # --- Output ---
+          echo "Profile: $PROFILE"
+          echo "VM hosts: $(echo "$HOST_MATRIX" | jq 'length')"
+          echo "Container hosts: $(echo "$CONTAINER_HOST_MATRIX" | jq 'length')"
+          echo "Servers: $(echo "$SERVER_MATRIX" | jq 'length')"
+          echo "Dotnet versions: $(echo "$DOTNET_MATRIX" | jq 'length')"
+
+          echo "host-matrix=$HOST_MATRIX" >> "$GITHUB_OUTPUT"
+          echo "container-host-matrix=$CONTAINER_HOST_MATRIX" >> "$GITHUB_OUTPUT"
+          echo "server-matrix=$SERVER_MATRIX" >> "$GITHUB_OUTPUT"
+          echo "dotnet-matrix=$DOTNET_MATRIX" >> "$GITHUB_OUTPUT"
+
+  test:
+    name: net${{ matrix.dotnet }}, server ${{ matrix.server.version }}, ${{ matrix.host.TARGET }}
+    needs: load-matrix
+    timeout-minutes: 100
+    strategy:
+      fail-fast: false
+      matrix:
+        dotnet: ${{ fromJson(needs.load-matrix.outputs.dotnet-matrix) }}
+        server: ${{ fromJson(needs.load-matrix.outputs.server-matrix) }}
+        host: ${{ fromJson(needs.load-matrix.outputs.host-matrix) }}
+    runs-on: ${{ matrix.host.RUNNER }}
+    env:
+      VALKEY_GLIDE_DNS_TESTS_ENABLED: "1"
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: true
+
+      - name: Output matrix parameters
+        run: |
+          echo "Job running with the following matrix configuration:"
+          echo "${{ toJson(matrix) }}"
+          echo "Profile: ${{ inputs.profile }}"
+          echo "Package version: ${{ inputs.package-version || 'source' }}"
+
+      - name: Set up dotnet ${{ matrix.dotnet }}
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: |
+            9
+            ${{ matrix.dotnet }}
+        env:
+          DOTNET_INSTALL_DIR: ~/.dotnet
+
+      - name: Download package artifact
+        if: ${{ inputs.package-artifact-name != '' }}
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ inputs.package-artifact-name }}
+          path: nuget.local
+
+      - name: Set up local NuGet source
+        if: ${{ inputs.package-artifact-name != '' }}
+        shell: bash
+        run: |
+          ls -l $GITHUB_WORKSPACE/nuget.local
+          dotnet nuget add source $GITHUB_WORKSPACE/nuget.local
+          dotnet nuget config paths
+
+      - name: Patch project references to NuGet package
+        if: ${{ inputs.package-version != '' }}
+        shell: bash
+        run: |
+          dotnet remove tests/Valkey.Glide.TestUtils reference sources/Valkey.Glide/Valkey.Glide.csproj
+          dotnet remove tests/Valkey.Glide.IntegrationTests reference sources/Valkey.Glide/Valkey.Glide.csproj
+          dotnet add tests/Valkey.Glide.TestUtils package Valkey.Glide --version ${{ inputs.package-version }}
+          dotnet add tests/Valkey.Glide.IntegrationTests package Valkey.Glide --version ${{ inputs.package-version }}
+          git diff
+
+      - name: Install shared software dependencies
+        uses: ./.github/workflows/install-shared-dependencies
+        with:
+          os: ${{ matrix.host.OS }}
+          target: ${{ matrix.host.TARGET }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          server-version: ${{ matrix.server.version }}
+
+      - name: Configure DNS for tests
+        shell: bash
+        run: |
+          ENTRIES="127.0.0.1 valkey.glide.test.tls.com
+          127.0.0.1 valkey.glide.test.no_tls.com
+          ::1 valkey.glide.test.tls.com
+          ::1 valkey.glide.test.no_tls.com"
+          if [[ "${{ matrix.host.OS }}" == "windows" ]]; then
+              echo "$ENTRIES" >> /c/Windows/System32/drivers/etc/hosts
+          else
+              echo "$ENTRIES" | sudo tee -a /etc/hosts
+          fi
+
+      - uses: actions/cache@v5
+        if: ${{ inputs.package-version == '' }}
+        with:
+          path: rust/target
+          key: rust-${{ matrix.host.TARGET }}
+
+      - name: Test dotnet ${{ matrix.dotnet }}
+        env:
+          AWS_ACCESS_KEY_ID: test_secret_key
+          AWS_SECRET_ACCESS_KEY: test_access_key
+          AWS_SESSION_TOKEN: test_session_token
+        run: >-
+          dotnet test
+          --configuration Debug
+          --framework net${{ matrix.dotnet }}
+          ${{ inputs.profile == 'smoke' && '--filter "FullyQualifiedName~CommandTests"' || '' }}
+          --logger "html;LogFileName=TestReport.html"
+          --logger "trx;LogFileName=TestResults.trx"
+          --logger "console;verbosity=detailed"
+          --results-directory .
+
+      - name: Derive failures.json (from TRX)
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          SUMMARY_FILE=failures.json
+          if command -v xmllint >/dev/null 2>&1 && command -v jq >/dev/null 2>&1; then
+              FAILED_COUNT=$(xmllint --xpath "string(//Counters/@failed)" TestResults.trx 2>/dev/null || echo 0)
+              PASSED_COUNT=$(xmllint --xpath "string(//Counters/@passed)" TestResults.trx 2>/dev/null || echo 0)
+              TOTAL_COUNT=$(xmllint --xpath "string(//Counters/@total)" TestResults.trx 2>/dev/null || echo 0)
+              SKIPPED_COUNT=$(xmllint --xpath "string(//Counters/@skipped)" TestResults.trx 2>/dev/null || echo 0)
+              echo "{" > "$SUMMARY_FILE"
+              echo "  \"workflow\": \"C# tests\"," >> "$SUMMARY_FILE"
+              echo "  \"runId\": ${GITHUB_RUN_ID}," >> "$SUMMARY_FILE"
+              echo "  \"jobName\": \"net${{ matrix.dotnet }}, server ${{ matrix.server.version }}, ${{ matrix.host.TARGET }}\"," >> "$SUMMARY_FILE"
+              echo "  \"matrix\": {" >> "$SUMMARY_FILE"
+              echo "    \"dotnet\": \"${{ matrix.dotnet }}\"," >> "$SUMMARY_FILE"
+              echo "    \"server\": { \"type\": \"${{ matrix.server.type }}\", \"version\": \"${{ matrix.server.version }}\" }," >> "$SUMMARY_FILE"
+              echo "    \"host\": { \"OS\": \"${{ matrix.host.OS }}\", \"ARCH\": \"${{ matrix.host.ARCH }}\", \"RUNNER\": \"${{ matrix.host.RUNNER }}\" }" >> "$SUMMARY_FILE"
+              echo "  }," >> "$SUMMARY_FILE"
+              echo "  \"summary\": { \"total\": $TOTAL_COUNT, \"passed\": $PASSED_COUNT, \"failed\": $FAILED_COUNT, \"skipped\": $SKIPPED_COUNT }," >> "$SUMMARY_FILE"
+              echo "  \"failed\": []," >> "$SUMMARY_FILE"
+              echo "  \"links\": { \"runUrl\": \"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\" }" >> "$SUMMARY_FILE"
+              echo "}" >> "$SUMMARY_FILE"
+          else
+              echo '{"workflow":"C# tests","summary":{"note":"Install xmllint+jq for rich failures"}}' > "$SUMMARY_FILE"
+          fi
+
+      - name: Run coverage
+        if: ${{ matrix.dotnet == '8.0' && contains(matrix.host.RUNNER, 'ubuntu') && matrix.host.ARCH == 'x64' && matrix.server.version == '9.0' }}
+        uses: ./.github/workflows/run-coverage
+
+      - name: Upload test reports
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-reports-dotnet-${{ matrix.dotnet }}-${{ matrix.server.type }}-${{ matrix.server.version }}-${{ matrix.host.OS }}-${{ matrix.host.ARCH }}
+          path: |
+            TestReport.html
+            TestResults.trx
+            failures.json
+            valkey-glide/utils/clusters/**
+
+  test-container:
+    name: net${{ matrix.dotnet }}, server ${{ matrix.server.version }}, ${{ matrix.host.IMAGE }}
+    needs: load-matrix
+    if: ${{ needs.load-matrix.outputs.container-host-matrix != '[]' }}
+    timeout-minutes: 100
+    strategy:
+      fail-fast: false
+      matrix:
+        dotnet: ${{ fromJson(needs.load-matrix.outputs.dotnet-matrix) }}
+        server: ${{ fromJson(needs.load-matrix.outputs.server-matrix) }}
+        host: ${{ fromJson(needs.load-matrix.outputs.container-host-matrix) }}
+    runs-on: ${{ matrix.host.RUNNER }}
+    container:
+      image: ${{ matrix.host.IMAGE }}
+    env:
+      VALKEY_GLIDE_DNS_TESTS_ENABLED: "1"
+
+    steps:
+      - name: Install container prerequisites
+        run: |
+          yum update -y
+          yum install -y git tar findutils libicu
+          echo IMAGE=${{ matrix.host.IMAGE }} | sed -r 's/:/-/g' >> $GITHUB_ENV
+
+      - uses: actions/checkout@v6
+        with:
+          submodules: true
+
+      - name: Output matrix parameters
+        run: |
+          echo "Job running with the following matrix configuration:"
+          echo "${{ toJson(matrix) }}"
+          echo "Profile: ${{ inputs.profile }}"
+          echo "Package version: ${{ inputs.package-version || 'source' }}"
+
+      - name: Set up dotnet ${{ matrix.dotnet }}
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: |
+            9
+            ${{ matrix.dotnet }}
+
+      - name: Install shared software dependencies
+        uses: ./.github/workflows/install-shared-dependencies
+        with:
+          os: ${{ matrix.host.OS }}
+          target: ${{ matrix.host.TARGET }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          server-version: ${{ matrix.server.version }}
+
+      - name: Configure DNS for tests
+        shell: bash
+        run: |
+          ENTRIES="127.0.0.1 valkey.glide.test.tls.com
+          127.0.0.1 valkey.glide.test.no_tls.com
+          ::1 valkey.glide.test.tls.com
+          ::1 valkey.glide.test.no_tls.com"
+          echo "$ENTRIES" | tee -a /etc/hosts
+
+      - uses: actions/cache@v5
+        with:
+          path: rust/target
+          key: rust-${{ matrix.host.IMAGE }}
+
+      - name: Test dotnet ${{ matrix.dotnet }}
+        run: >-
+          dotnet test
+          --framework net${{ matrix.dotnet }}
+          ${{ inputs.profile == 'smoke' && '--filter "FullyQualifiedName~CommandTests"' || '' }}
+          --logger "html;LogFileName=TestReport.html"
+          --logger "trx;LogFileName=TestResults.trx"
+          --logger "console;verbosity=detailed"
+          --results-directory .
+
+      - name: Derive failures.json (from TRX)
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          SUMMARY_FILE=failures.json
+          if command -v xmllint >/dev/null 2>&1 && command -v jq >/dev/null 2>&1; then
+              FAILED_COUNT=$(xmllint --xpath "string(//Counters/@failed)" TestResults.trx 2>/dev/null || echo 0)
+              PASSED_COUNT=$(xmllint --xpath "string(//Counters/@passed)" TestResults.trx 2>/dev/null || echo 0)
+              TOTAL_COUNT=$(xmllint --xpath "string(//Counters/@total)" TestResults.trx 2>/dev/null || echo 0)
+              SKIPPED_COUNT=$(xmllint --xpath "string(//Counters/@skipped)" TestResults.trx 2>/dev/null || echo 0)
+              echo "{" > "$SUMMARY_FILE"
+              echo "  \"workflow\": \"C# tests\"," >> "$SUMMARY_FILE"
+              echo "  \"runId\": ${GITHUB_RUN_ID}," >> "$SUMMARY_FILE"
+              echo "  \"jobName\": \"net${{ matrix.dotnet }}, server ${{ matrix.server.version }}, ${{ matrix.host.TARGET }}\"," >> "$SUMMARY_FILE"
+              echo "  \"matrix\": {" >> "$SUMMARY_FILE"
+              echo "    \"dotnet\": \"${{ matrix.dotnet }}\"," >> "$SUMMARY_FILE"
+              echo "    \"server\": { \"type\": \"${{ matrix.server.type }}\", \"version\": \"${{ matrix.server.version }}\" }," >> "$SUMMARY_FILE"
+              echo "    \"host\": { \"OS\": \"${{ matrix.host.OS }}\", \"ARCH\": \"${{ matrix.host.ARCH }}\", \"RUNNER\": \"${{ matrix.host.RUNNER }}\" }" >> "$SUMMARY_FILE"
+              echo "  }," >> "$SUMMARY_FILE"
+              echo "  \"summary\": { \"total\": $TOTAL_COUNT, \"passed\": $PASSED_COUNT, \"failed\": $FAILED_COUNT, \"skipped\": $SKIPPED_COUNT }," >> "$SUMMARY_FILE"
+              echo "  \"failed\": []," >> "$SUMMARY_FILE"
+              echo "  \"links\": { \"runUrl\": \"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\" }" >> "$SUMMARY_FILE"
+              echo "}" >> "$SUMMARY_FILE"
+          else
+              echo '{"workflow":"C# tests","summary":{"note":"Install xmllint+jq for rich failures"}}' > "$SUMMARY_FILE"
+          fi
+
+      - name: Upload test reports
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-reports-dotnet-${{ matrix.dotnet }}-${{ matrix.server.type }}-${{ matrix.server.version }}-${{ env.IMAGE }}-${{ matrix.host.ARCH }}
+          path: |
+            TestReport.html
+            TestResults.trx
+            failures.json
+            valkey-glide/utils/clusters/**

@@ -55,6 +55,7 @@
         "RUNNER": "windows-11-arm",
         "ARCH": "arm64",
         "TARGET": "aarch64-pc-windows-msvc",
-        "tags": ["ci", "cd"]
+        "tags": ["ci", "cd"],
+        "testable": false
     }
 ]
