@@ -387,7 +387,7 @@ To update our Github workflow test runs, edit the JSON files in [`.github/json_m
 
 It serves as a "test order", describing available properties and which `profiles` they belong to (`smoke`, `standard`, `full`). No workflow or script changes are needed.
 
-Ex: To add a new platform to the `standard` profile, add a new entry to `.github/json_matrices/os_matrices.json` with `profiles: ['standard']`
+Ex: To add a new platform to the `standard` profile, add a new entry to `.github/json_matrices/os_matrix.json` with `profiles: ['standard']`
 
 See the [CI/CD Test Matrices README](.github/json_matrices/README.md) for details.
 
