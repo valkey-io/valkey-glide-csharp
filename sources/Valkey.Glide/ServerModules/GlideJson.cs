@@ -52,7 +52,15 @@ public static partial class GlideJson
         else if (client is GlideClusterClient cc)
         {
             ClusterValue<object?> result = await cc.CustomCommand(args);
-            return result.SingleValue;
+            // HasSingleData returns false when the value is null, so we need to check HasMultiData first
+            // If neither has data, the result is null
+            if (result.HasMultiData)
+            {
+                // Multi-node response - this shouldn't happen for JSON commands but handle it gracefully
+                throw new InvalidOperationException("Unexpected multi-node response for JSON command");
+            }
+            // For single-node responses, return the value (which may be null)
+            return result.HasSingleData ? result.SingleValue : null;
         }
         throw new ArgumentException("Unsupported client type. Expected GlideClient or GlideClusterClient.", nameof(client));
     }

@@ -2005,7 +2005,7 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\",\"age\":30}";
 
-        object? result;
+        ValkeyResult result;
         if (client is GlideClient standaloneClient)
         {
             _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
@@ -2019,7 +2019,7 @@ public class JsonCommandTests(TestConfiguration config)
         }
 
         Assert.NotNull(result);
-        Assert.Equal("object", result.ToString());
+        Assert.Equal("object", (string?)result);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -2031,7 +2031,7 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "[1, 2, 3, 4, 5]";
 
-        object? result;
+        ValkeyResult result;
         if (client is GlideClient standaloneClient)
         {
             _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
@@ -2045,7 +2045,7 @@ public class JsonCommandTests(TestConfiguration config)
         }
 
         Assert.NotNull(result);
-        Assert.Equal("array", result.ToString());
+        Assert.Equal("array", (string?)result);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -2057,7 +2057,7 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "\"hello world\"";
 
-        object? result;
+        ValkeyResult result;
         if (client is GlideClient standaloneClient)
         {
             _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
@@ -2071,7 +2071,7 @@ public class JsonCommandTests(TestConfiguration config)
         }
 
         Assert.NotNull(result);
-        Assert.Equal("string", result.ToString());
+        Assert.Equal("string", (string?)result);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -2083,8 +2083,8 @@ public class JsonCommandTests(TestConfiguration config)
         string keyInteger = GetUniqueKey("integer");
         string keyFloat = GetUniqueKey("float");
 
-        object? intResult;
-        object? floatResult;
+        ValkeyResult intResult;
+        ValkeyResult floatResult;
         if (client is GlideClient standaloneClient)
         {
             _ = await GlideJson.SetAsync(standaloneClient, keyInteger, "$", "42");
@@ -2104,9 +2104,10 @@ public class JsonCommandTests(TestConfiguration config)
         Assert.NotNull(intResult);
         Assert.NotNull(floatResult);
         // Integer values may return "integer" or "number" depending on the JSON module version
-        Assert.True(intResult.ToString() == "integer" || intResult.ToString() == "number",
-            $"Expected 'integer' or 'number' but got '{intResult}'");
-        Assert.Equal("number", floatResult.ToString());
+        string? intType = (string?)intResult;
+        Assert.True(intType == "integer" || intType == "number",
+            $"Expected 'integer' or 'number' but got '{intType}'");
+        Assert.Equal("number", (string?)floatResult);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -2118,8 +2119,8 @@ public class JsonCommandTests(TestConfiguration config)
         string keyTrue = GetUniqueKey("true");
         string keyFalse = GetUniqueKey("false");
 
-        object? trueResult;
-        object? falseResult;
+        ValkeyResult trueResult;
+        ValkeyResult falseResult;
         if (client is GlideClient standaloneClient)
         {
             _ = await GlideJson.SetAsync(standaloneClient, keyTrue, "$", "true");
@@ -2138,8 +2139,8 @@ public class JsonCommandTests(TestConfiguration config)
 
         Assert.NotNull(trueResult);
         Assert.NotNull(falseResult);
-        Assert.Equal("boolean", trueResult.ToString());
-        Assert.Equal("boolean", falseResult.ToString());
+        Assert.Equal("boolean", (string?)trueResult);
+        Assert.Equal("boolean", (string?)falseResult);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -2151,7 +2152,7 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "null";
 
-        object? result;
+        ValkeyResult result;
         if (client is GlideClient standaloneClient)
         {
             _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
@@ -2165,7 +2166,7 @@ public class JsonCommandTests(TestConfiguration config)
         }
 
         Assert.NotNull(result);
-        Assert.Equal("null", result.ToString());
+        Assert.Equal("null", (string?)result);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -2177,9 +2178,9 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\",\"age\":30,\"active\":true}";
 
-        object? nameResult;
-        object? ageResult;
-        object? activeResult;
+        ValkeyResult nameResult;
+        ValkeyResult ageResult;
+        ValkeyResult activeResult;
         if (client is GlideClient standaloneClient)
         {
             _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
@@ -2202,37 +2203,40 @@ public class JsonCommandTests(TestConfiguration config)
         Assert.NotNull(activeResult);
 
         // Results should be arrays containing the type strings
-        if (nameResult is object?[] nameArray)
+        // ValkeyResult wraps the array, so we need to access elements via indexer or cast to array
+        if (nameResult.Length > 0)
         {
-            Assert.Single(nameArray);
-            Assert.Equal("string", nameArray[0]?.ToString());
+            Assert.Equal(1, nameResult.Length);
+            Assert.Equal("string", (string?)nameResult[0]);
         }
         else
         {
             // Some implementations may return the type directly
-            Assert.Equal("string", nameResult.ToString());
+            Assert.Equal("string", (string?)nameResult);
         }
 
-        if (ageResult is object?[] ageArray)
+        if (ageResult.Length > 0)
         {
-            Assert.Single(ageArray);
-            Assert.True(ageArray[0]?.ToString() == "integer" || ageArray[0]?.ToString() == "number",
-                $"Expected 'integer' or 'number' but got '{ageArray[0]}'");
+            Assert.Equal(1, ageResult.Length);
+            string? ageType = (string?)ageResult[0];
+            Assert.True(ageType == "integer" || ageType == "number",
+                $"Expected 'integer' or 'number' but got '{ageType}'");
         }
         else
         {
-            Assert.True(ageResult.ToString() == "integer" || ageResult.ToString() == "number",
-                $"Expected 'integer' or 'number' but got '{ageResult}'");
+            string? ageType = (string?)ageResult;
+            Assert.True(ageType == "integer" || ageType == "number",
+                $"Expected 'integer' or 'number' but got '{ageType}'");
         }
 
-        if (activeResult is object?[] activeArray)
+        if (activeResult.Length > 0)
         {
-            Assert.Single(activeArray);
-            Assert.Equal("boolean", activeArray[0]?.ToString());
+            Assert.Equal(1, activeResult.Length);
+            Assert.Equal("boolean", (string?)activeResult[0]);
         }
         else
         {
-            Assert.Equal("boolean", activeResult.ToString());
+            Assert.Equal("boolean", (string?)activeResult);
         }
     }
 
@@ -2245,7 +2249,7 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\",\"age\":30}";
 
-        object? result;
+        ValkeyResult result;
         if (client is GlideClient standaloneClient)
         {
             _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
@@ -2260,7 +2264,7 @@ public class JsonCommandTests(TestConfiguration config)
 
         Assert.NotNull(result);
         // Legacy path returns a single type string
-        Assert.Equal("string", result.ToString());
+        Assert.Equal("string", (string?)result);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -2294,9 +2298,9 @@ public class JsonCommandTests(TestConfiguration config)
         string path = "$";
         string jsonValue = "{\"name\":\"Jane\",\"items\":[1,2,3]}";
 
-        object? rootResult;
-        object? nameResult;
-        object? itemsResult;
+        ValkeyResult rootResult;
+        ValkeyResult nameResult;
+        ValkeyResult itemsResult;
         if (client is GlideClient standaloneClient)
         {
             _ = await GlideJson.SetAsync(standaloneClient, key, path, jsonValue);
@@ -2314,31 +2318,31 @@ public class JsonCommandTests(TestConfiguration config)
         }
 
         Assert.NotNull(rootResult);
-        Assert.Equal("object", rootResult.ToString());
+        Assert.Equal("object", (string?)rootResult);
 
         Assert.NotNull(nameResult);
         Assert.NotNull(itemsResult);
 
         // Check name type (should be string)
-        if (nameResult is object?[] nameArray)
+        if (nameResult.Length > 0)
         {
-            Assert.Single(nameArray);
-            Assert.Equal("string", nameArray[0]?.ToString());
+            Assert.Equal(1, nameResult.Length);
+            Assert.Equal("string", (string?)nameResult[0]);
         }
         else
         {
-            Assert.Equal("string", nameResult.ToString());
+            Assert.Equal("string", (string?)nameResult);
         }
 
         // Check items type (should be array)
-        if (itemsResult is object?[] itemsArray)
+        if (itemsResult.Length > 0)
         {
-            Assert.Single(itemsArray);
-            Assert.Equal("array", itemsArray[0]?.ToString());
+            Assert.Equal(1, itemsResult.Length);
+            Assert.Equal("array", (string?)itemsResult[0]);
         }
         else
         {
-            Assert.Equal("array", itemsResult.ToString());
+            Assert.Equal("array", (string?)itemsResult);
         }
     }
 
@@ -2351,8 +2355,8 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"person\":{\"name\":\"John\",\"scores\":[90,85,92]},\"active\":true}";
 
-        object? personResult;
-        object? scoresResult;
+        ValkeyResult personResult;
+        ValkeyResult scoresResult;
         if (client is GlideClient standaloneClient)
         {
             _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
@@ -2371,25 +2375,25 @@ public class JsonCommandTests(TestConfiguration config)
         Assert.NotNull(scoresResult);
 
         // Check person type (should be object)
-        if (personResult is object?[] personArray)
+        if (personResult.Length > 0)
         {
-            Assert.Single(personArray);
-            Assert.Equal("object", personArray[0]?.ToString());
+            Assert.Equal(1, personResult.Length);
+            Assert.Equal("object", (string?)personResult[0]);
         }
         else
         {
-            Assert.Equal("object", personResult.ToString());
+            Assert.Equal("object", (string?)personResult);
         }
 
         // Check scores type (should be array)
-        if (scoresResult is object?[] scoresArray)
+        if (scoresResult.Length > 0)
         {
-            Assert.Single(scoresArray);
-            Assert.Equal("array", scoresArray[0]?.ToString());
+            Assert.Equal(1, scoresResult.Length);
+            Assert.Equal("array", (string?)scoresResult[0]);
         }
         else
         {
-            Assert.Equal("array", scoresResult.ToString());
+            Assert.Equal("array", (string?)scoresResult);
         }
     }
 
@@ -2402,7 +2406,7 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"items\":[{\"value\":\"text\"},{\"value\":42},{\"value\":true}]}";
 
-        object? result;
+        ValkeyResult result;
         if (client is GlideClient standaloneClient)
         {
             _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
@@ -2418,14 +2422,12 @@ public class JsonCommandTests(TestConfiguration config)
         Assert.NotNull(result);
 
         // Wildcard path should return an array of types
-        if (result is object?[] typesArray)
-        {
-            Assert.Equal(3, typesArray.Length);
-            Assert.Equal("string", typesArray[0]?.ToString());
-            Assert.True(typesArray[1]?.ToString() == "integer" || typesArray[1]?.ToString() == "number",
-                $"Expected 'integer' or 'number' but got '{typesArray[1]}'");
-            Assert.Equal("boolean", typesArray[2]?.ToString());
-        }
+        Assert.Equal(3, result.Length);
+        Assert.Equal("string", (string?)result[0]);
+        string? secondType = (string?)result[1];
+        Assert.True(secondType == "integer" || secondType == "number",
+            $"Expected 'integer' or 'number' but got '{secondType}'");
+        Assert.Equal("boolean", (string?)result[2]);
     }
 
     #endregion
