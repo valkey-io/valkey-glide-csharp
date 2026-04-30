@@ -30,6 +30,8 @@ def main() -> None:
 
     profile = sys.argv[1]
 
+    profile_settings = load_json("profiles.json")[profile]
+
     os_matrix = filter_by_profile(load_json("os-matrix.json"), profile)
     host = [h for h in os_matrix if "IMAGE" not in h]
     container_host = [h for h in os_matrix if "IMAGE" in h]
@@ -38,6 +40,8 @@ def main() -> None:
     
     dotnet_entries = filter_by_profile(load_json("version-matrix.json"), profile)
     dotnet = [e["version"] for e in dotnet_entries]
+
+    test_filter = profile_settings.get("test-filter", "")
 
     # Validate
     if profile == "smoke" and len(server) != 1:
@@ -54,6 +58,7 @@ def main() -> None:
     print(f"Container hosts: {len(container_host)}")
     print(f"Servers: {len(server)}")
     print(f"Dotnet versions: {len(dotnet)}")
+    print(f"Test filter: {test_filter or '(none)'}")
 
     # Write to GITHUB_OUTPUT
     github_output = os.environ.get("GITHUB_OUTPUT")
@@ -63,11 +68,13 @@ def main() -> None:
             f.write(f"container-host-matrix={json.dumps(container_host, separators=(',', ':'))}\n")
             f.write(f"server-matrix={json.dumps(server, separators=(',', ':'))}\n")
             f.write(f"dotnet-matrix={json.dumps(dotnet, separators=(',', ':'))}\n")
+            f.write(f"test-filter={test_filter}\n")
     else:
         print(f"host-matrix={json.dumps(host, indent=2)}")
         print(f"container-host-matrix={json.dumps(container_host, indent=2)}")
         print(f"server-matrix={json.dumps(server, indent=2)}")
         print(f"dotnet-matrix={json.dumps(dotnet, indent=2)}")
+        print(f"test-filter={test_filter}")
 
 
 if __name__ == "__main__":

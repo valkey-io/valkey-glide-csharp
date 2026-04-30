@@ -147,7 +147,7 @@ jobs:
           dotnet test
           --configuration Debug
           --framework net${{ matrix.dotnet }}
-          ${{ inputs.profile == 'smoke' && '--filter "FullyQualifiedName~CommandTests"' || '' }}
+          ${{ needs.load-matrix.outputs.test-filter && format('--filter "{0}"', needs.load-matrix.outputs.test-filter) || '' }}
           --logger "html;LogFileName=TestReport.html"
           --logger "trx;LogFileName=TestResults.trx"
           --logger "console;verbosity=detailed"
@@ -265,7 +265,7 @@ jobs:
         run: >-
           dotnet test
           --framework net${{ matrix.dotnet }}
-          ${{ inputs.profile == 'smoke' && '--filter "FullyQualifiedName~CommandTests"' || '' }}
+          ${{ needs.load-matrix.outputs.test-filter && format('--filter "{0}"', needs.load-matrix.outputs.test-filter) || '' }}
           --logger "html;LogFileName=TestReport.html"
           --logger "trx;LogFileName=TestResults.trx"
           --logger "console;verbosity=detailed"

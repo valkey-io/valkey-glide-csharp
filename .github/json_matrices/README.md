@@ -9,17 +9,21 @@ This directory contains JSON configuration files that define **what** gets teste
 | `os-matrix.json` | OS/runner platforms (VMs and containers) |
 | `server-matrix.json` | Valkey and Redis server versions |
 | `version-matrix.json` | .NET SDK versions |
+| `profiles.json` | Per-profile settings (e.g., test filters) |
 | `load_matrices.py` | Filters all matrices by profile, outputs to `$GITHUB_OUTPUT` |
 
 ## Profiles
 
 Each entry in the JSON files has a `profiles` array that declares which test profiles include it:
 
-| Profile | When used | Scope |
-|---------|-----------|-------|
-| `smoke` | Quick validation (e.g., PR checks) | Minimal: 1 server, core platforms, default .NET version |
-| `standard` | Regular CI (e.g., push to main) | Moderate: common platforms and servers |
-| `full` | Nightly / manual | Everything, including containers |
+
+| Profile    | When used                                                                  |
+| ---------- | -------------------------------------------------------------------------- |
+| `smoke`    | For quick validation. Runs on wide platforms but only against CommandTests |
+| `standard` | Standard tests run on common platform                                      |
+| `full`     | Nightly / manual run on all platforms and all tests                        |
+
+Per-profile settings like test filters are defined in `profiles.json`.
 
 ### Example
 
@@ -57,6 +61,7 @@ The script outputs four JSON arrays:
 | `container-host-matrix` | Container hosts (entries with `IMAGE`) matching the profile |
 | `server-matrix` | Server versions matching the profile |
 | `dotnet-matrix` | .NET versions matching the profile |
+| `test-filter` | Test filter expression from `profiles.json` (empty = run all tests) |
 
 These feed into the `test` and `test-container` job strategy matrices.
 
