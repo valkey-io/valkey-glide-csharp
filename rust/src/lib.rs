@@ -1736,6 +1736,77 @@ fn create_span(command_name: &str) -> *const c_void {
 }
 
 // ========================================================================================
+// Client-Side Cache Metrics
+// ========================================================================================
+
+/// Cache metrics type enum matching the Rust core's cache metric methods.
+#[repr(u32)]
+#[derive(Debug, Clone, Copy)]
+pub enum CacheMetricsType {
+    HitRate = 0,
+    MissRate = 1,
+    EntryCount = 2,
+    Evictions = 3,
+    Expirations = 4,
+    TotalLookups = 5,
+}
+
+/// Get a cache metric from the client.
+///
+/// # Arguments
+/// * `client_ptr` - Pointer to the client
+/// * `callback_index` - Callback index for async response
+/// * `metrics_type` - The type of cache metric to retrieve
+///
+/// # Safety
+/// * `client_ptr` must be a valid pointer to a Client
+#[unsafe(no_mangle)]
+pub unsafe extern "C-unwind" fn get_cache_metrics(
+    client_ptr: *const c_void,
+    callback_index: usize,
+    metrics_type: CacheMetricsType,
+) {
+    let client = unsafe {
+        Arc::increment_strong_count(client_ptr);
+        Arc::from_raw(client_ptr as *mut Client)
+    };
+    let core = client.core.clone();
+
+    let mut panic_guard = PanicGuard {
+        panicked: true,
+        failure_callback: core.failure_callback,
+        callback_index,
+    };
+
+    let result = match metrics_type {
+        CacheMetricsType::HitRate => core.client.cache_hit_rate(),
+        CacheMetricsType::MissRate => core.client.cache_miss_rate(),
+        CacheMetricsType::EntryCount => core.client.cache_entry_count(),
+        CacheMetricsType::Evictions => core.client.cache_evictions(),
+        CacheMetricsType::Expirations => core.client.cache_expirations(),
+        CacheMetricsType::TotalLookups => core.client.cache_total_lookups(),
+    };
+
+    match result {
+        Ok(value) => {
+            let ptr = Box::into_raw(Box::new(ResponseValue::from_value(value)));
+            unsafe { (core.success_callback)(callback_index, ptr) };
+        }
+        Err(err) => unsafe {
+            report_error(
+                core.failure_callback,
+                callback_index,
+                error_message(&err),
+                error_type(&err),
+            );
+        },
+    };
+
+    panic_guard.panicked = false;
+    drop(panic_guard);
+}
+
+// ========================================================================================
 // Compression Statistics
 // ========================================================================================
 

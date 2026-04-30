@@ -5,6 +5,13 @@ using System.Net;
 
 internal class Utils
 {
+    /// <summary>
+    /// Converts a <see cref="TimeSpan"/> to milliseconds as a <see cref="ulong"/>,
+    /// using tick-based arithmetic to avoid floating-point precision loss.
+    /// </summary>
+    public static ulong ToMillisecondsUlong(TimeSpan timeSpan)
+        => (ulong)(timeSpan.Ticks / TimeSpan.TicksPerMillisecond);
+
     public static (string host, ushort port) SplitEndpoint(EndPoint ep)
         => ep switch
         {
