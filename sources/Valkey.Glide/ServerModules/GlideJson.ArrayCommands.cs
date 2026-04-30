@@ -1,7 +1,5 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using Valkey.Glide.ServerModules.Options;
-
 namespace Valkey.Glide.ServerModules;
 
 /// <summary>
@@ -111,14 +109,14 @@ public static partial class GlideJson
     /// When a legacy path is provided, returns the index or -1 if not found.
     /// </returns>
     /// <seealso href="https://valkey.io/commands/json.arrindex/"/>
-    public static async Task<ValkeyResult> ArrIndexAsync(BaseClient client, ValkeyKey key, ValkeyValue path, ValkeyValue value, JsonArrIndexOptions options)
+    public static async Task<ValkeyResult> ArrIndexAsync(BaseClient client, ValkeyKey key, ValkeyValue path, ValkeyValue value, ArrIndexOptions options)
     {
         GlideString[] args = BuildArrIndexArgs(ToGlideString(key), ToGlideString(path), ToGlideString(value), options);
         object? result = await ExecuteCommandAsync(client, args);
         return ValkeyResult.Create(result);
     }
 
-    private static GlideString[] BuildArrIndexArgs(GlideString key, GlideString path, GlideString value, JsonArrIndexOptions options)
+    private static GlideString[] BuildArrIndexArgs(GlideString key, GlideString path, GlideString value, ArrIndexOptions options)
     {
         List<GlideString> args = [JsonArrIndex, key, path, value];
         args.AddRange(options.ToArgs());

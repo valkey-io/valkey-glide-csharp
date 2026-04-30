@@ -1,7 +1,5 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using Valkey.Glide.ServerModules.Options;
-
 namespace Valkey.Glide.ServerModules;
 
 /// <summary>
@@ -106,7 +104,7 @@ public static partial class GlideJson
     /// </code>
     /// </example>
     public static Task<ValkeyValue> SetAsync(BaseClient client, ValkeyKey key, ValkeyValue path, ValkeyValue value)
-        => SetAsync(client, key, path, value, JsonSetCondition.None);
+        => SetAsync(client, key, path, value, SetCondition.None);
 
     /// <summary>
     /// Sets the JSON value at the specified path in the key with a condition.
@@ -118,19 +116,19 @@ public static partial class GlideJson
     /// <param name="condition">The condition for setting the value (NX or XX).</param>
     /// <returns>"OK" if the value was set successfully, or <see cref="ValkeyValue.Null"/> if the condition was not met.</returns>
     /// <seealso href="https://valkey.io/commands/json.set/"/>
-    public static async Task<ValkeyValue> SetAsync(BaseClient client, ValkeyKey key, ValkeyValue path, ValkeyValue value, JsonSetCondition condition)
+    public static async Task<ValkeyValue> SetAsync(BaseClient client, ValkeyKey key, ValkeyValue path, ValkeyValue value, SetCondition condition)
     {
         GlideString[] args = BuildSetArgs(ToGlideString(key), ToGlideString(path), ToGlideString(value), condition);
         object? result = await ExecuteCommandAsync(client, args);
         return ToValkeyValue(result);
     }
 
-    private static GlideString[] BuildSetArgs(GlideString key, GlideString path, GlideString value, JsonSetCondition condition)
+    private static GlideString[] BuildSetArgs(GlideString key, GlideString path, GlideString value, SetCondition condition)
     {
         return condition switch
         {
-            JsonSetCondition.OnlyIfDoesNotExist => [JsonSet, key, path, value, "NX"],
-            JsonSetCondition.OnlyIfExists => [JsonSet, key, path, value, "XX"],
+            SetCondition.OnlyIfDoesNotExist => [JsonSet, key, path, value, "NX"],
+            SetCondition.OnlyIfExists => [JsonSet, key, path, value, "XX"],
             _ => [JsonSet, key, path, value]
         };
     }
@@ -177,7 +175,7 @@ public static partial class GlideJson
     /// <param name="options">Formatting options for the JSON output.</param>
     /// <returns>The formatted JSON document, or <see cref="ValkeyValue.Null"/> if the key does not exist.</returns>
     /// <seealso href="https://valkey.io/commands/json.get/"/>
-    public static async Task<ValkeyValue> GetAsync(BaseClient client, ValkeyKey key, JsonGetOptions options)
+    public static async Task<ValkeyValue> GetAsync(BaseClient client, ValkeyKey key, GetOptions options)
     {
         GlideString[] args = BuildGetArgs(ToGlideString(key), null, options);
         object? result = await ExecuteCommandAsync(client, args);
@@ -193,7 +191,7 @@ public static partial class GlideJson
     /// <param name="options">Formatting options for the JSON output.</param>
     /// <returns>The formatted JSON value(s), or <see cref="ValkeyValue.Null"/> if the key does not exist.</returns>
     /// <seealso href="https://valkey.io/commands/json.get/"/>
-    public static async Task<ValkeyValue> GetAsync(BaseClient client, ValkeyKey key, ValkeyValue[] paths, JsonGetOptions options)
+    public static async Task<ValkeyValue> GetAsync(BaseClient client, ValkeyKey key, ValkeyValue[] paths, GetOptions options)
     {
         GlideString[] glidePaths = paths.Select(p => ToGlideString(p)).ToArray();
         GlideString[] args = BuildGetArgs(ToGlideString(key), glidePaths, options);
@@ -201,7 +199,7 @@ public static partial class GlideJson
         return ToValkeyValue(result);
     }
 
-    private static GlideString[] BuildGetArgs(GlideString key, GlideString[]? paths, JsonGetOptions? options)
+    private static GlideString[] BuildGetArgs(GlideString key, GlideString[]? paths, GetOptions? options)
     {
         List<GlideString> args = [JsonGet, key];
 

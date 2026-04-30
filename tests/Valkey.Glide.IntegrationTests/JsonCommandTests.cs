@@ -1,7 +1,6 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using Valkey.Glide.ServerModules;
-using Valkey.Glide.ServerModules.Options;
 
 namespace Valkey.Glide.IntegrationTests;
 
@@ -125,11 +124,11 @@ public class JsonCommandTests(TestConfiguration config)
         ValkeyValue result;
         if (client is GlideClient standaloneClient)
         {
-            result = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue, JsonSetCondition.OnlyIfDoesNotExist);
+            result = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue, GlideJson.SetCondition.OnlyIfDoesNotExist);
         }
         else
         {
-            result = await GlideJson.SetAsync((GlideClusterClient)client, key, "$", jsonValue, JsonSetCondition.OnlyIfDoesNotExist);
+            result = await GlideJson.SetAsync((GlideClusterClient)client, key, "$", jsonValue, GlideJson.SetCondition.OnlyIfDoesNotExist);
         }
 
         Assert.Equal("OK", result);
@@ -151,7 +150,7 @@ public class JsonCommandTests(TestConfiguration config)
             _ = await GlideJson.SetAsync(standaloneClient, key, "$", initialValue);
 
             // Try to set with NX condition - should return null since key exists
-            ValkeyValue result = await GlideJson.SetAsync(standaloneClient, key, "$", newValue, JsonSetCondition.OnlyIfDoesNotExist);
+            ValkeyValue result = await GlideJson.SetAsync(standaloneClient, key, "$", newValue, GlideJson.SetCondition.OnlyIfDoesNotExist);
             Assert.True(result.IsNull);
         }
         else
@@ -161,7 +160,7 @@ public class JsonCommandTests(TestConfiguration config)
             _ = await GlideJson.SetAsync(clusterClient, key, "$", initialValue);
 
             // Try to set with NX condition - should return null since key exists
-            ValkeyValue result = await GlideJson.SetAsync(clusterClient, key, "$", newValue, JsonSetCondition.OnlyIfDoesNotExist);
+            ValkeyValue result = await GlideJson.SetAsync(clusterClient, key, "$", newValue, GlideJson.SetCondition.OnlyIfDoesNotExist);
             Assert.True(result.IsNull);
         }
     }
@@ -182,7 +181,7 @@ public class JsonCommandTests(TestConfiguration config)
             _ = await GlideJson.SetAsync(standaloneClient, key, "$", initialValue);
 
             // Set with XX condition - should succeed since key exists
-            ValkeyValue result = await GlideJson.SetAsync(standaloneClient, key, "$", newValue, JsonSetCondition.OnlyIfExists);
+            ValkeyValue result = await GlideJson.SetAsync(standaloneClient, key, "$", newValue, GlideJson.SetCondition.OnlyIfExists);
             Assert.Equal("OK", result);
         }
         else
@@ -192,7 +191,7 @@ public class JsonCommandTests(TestConfiguration config)
             _ = await GlideJson.SetAsync(clusterClient, key, "$", initialValue);
 
             // Set with XX condition - should succeed since key exists
-            ValkeyValue result = await GlideJson.SetAsync(clusterClient, key, "$", newValue, JsonSetCondition.OnlyIfExists);
+            ValkeyValue result = await GlideJson.SetAsync(clusterClient, key, "$", newValue, GlideJson.SetCondition.OnlyIfExists);
             Assert.Equal("OK", result);
         }
     }
@@ -210,12 +209,12 @@ public class JsonCommandTests(TestConfiguration config)
         if (client is GlideClient standaloneClient)
         {
             // Try to set with XX condition on non-existent key - should return null
-            result = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue, JsonSetCondition.OnlyIfExists);
+            result = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue, GlideJson.SetCondition.OnlyIfExists);
         }
         else
         {
             // Try to set with XX condition on non-existent key - should return null
-            result = await GlideJson.SetAsync((GlideClusterClient)client, key, "$", jsonValue, JsonSetCondition.OnlyIfExists);
+            result = await GlideJson.SetAsync((GlideClusterClient)client, key, "$", jsonValue, GlideJson.SetCondition.OnlyIfExists);
         }
 
         Assert.True(result.IsNull);
@@ -451,7 +450,7 @@ public class JsonCommandTests(TestConfiguration config)
 
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\",\"age\":30}";
-        var options = new JsonGetOptions { Indent = "  ", Newline = "\n", Space = " " };
+        var options = new GlideJson.GetOptions { Indent = "  ", Newline = "\n", Space = " " };
 
         ValkeyValue result;
         if (client is GlideClient standaloneClient)
@@ -480,7 +479,7 @@ public class JsonCommandTests(TestConfiguration config)
 
         string key = GetUniqueKey();
         string jsonValue = "{\"person\":{\"name\":\"John\",\"age\":30}}";
-        var options = new JsonGetOptions { Indent = "\t", Newline = "\n" };
+        var options = new GlideJson.GetOptions { Indent = "\t", Newline = "\n" };
 
         ValkeyValue result;
         if (client is GlideClient standaloneClient)

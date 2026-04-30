@@ -1,7 +1,6 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using Valkey.Glide.ServerModules;
-using Valkey.Glide.ServerModules.Options;
 
 namespace Valkey.Glide.IntegrationTests;
 
@@ -233,7 +232,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
 
         string key = GetUniqueKey();
         string jsonValue = "{\"arr\":[1,2,3,2,5]}";
-        var options = JsonArrIndexOptions.FromStart(2);
+        var options = GlideJson.ArrIndexOptions.FromStart(2);
 
         ValkeyResult result;
         if (client is GlideClient standaloneClient)
