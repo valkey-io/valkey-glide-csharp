@@ -6,147 +6,146 @@ namespace Valkey.Glide.Commands;
 // by both Valkey GLIDE clients and StackExchange.Redis databases.
 
 /// <summary>
-/// Set commands for clients.
+/// Sets commands for clients.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/#set">Valkey – Set Commands</seealso>
 public interface ISetBaseCommands
 {
     /// <summary>
-    /// Adds specified members to the set stored at key.
-    /// Specified members that are already a member of this set are ignored.
+    /// Adds a member to a set. Ignores members that are already present.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/sadd"/>
-    /// <param name="key">The key where members will be added to its set.</param>
-    /// <param name="value">The value to add to the set.</param>
-    /// <returns><see langword="true"/> if the specified member was not already present in the set, else <see langword="false"/>.</returns>
+    /// <seealso href="https://valkey.io/commands/sadd/">Valkey commands – SADD</seealso>
+    /// <param name="key">The set key.</param>
+    /// <param name="value">The value to add.</param>
+    /// <returns><see langword="true"/> if the member was not already present in the set, <see langword="false"/> otherwise.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// bool result = await client.SetAddAsync("set", "member");
+    /// var added = await client.SetAddAsync("myset", "member");  // true
     /// </code>
     /// </example>
     /// </remarks>
     Task<bool> SetAddAsync(ValkeyKey key, ValkeyValue value);
 
     /// <summary>
-    /// Adds specified members to the set stored at key.
-    /// Specified members that are already a member of this set are ignored.
+    /// Adds one or more members to a set. Ignores members that are already present.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/sadd"/>
-    /// <param name="key">The key where members will be added to its set.</param>
-    /// <param name="values">The values to add to the set.</param>
-    /// <returns>The number of elements that were added to the set, not including all the elements already present into the set.</returns>
+    /// <seealso href="https://valkey.io/commands/sadd/">Valkey commands – SADD</seealso>
+    /// <param name="key">The set key.</param>
+    /// <param name="values">The values to add.</param>
+    /// <returns>The number of elements that were added to the set, not including elements already present.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// long result = await client.SetAddAsync("set", ["member1", "member2"]);
+    /// var addedCount = await client.SetAddAsync("myset", ["a", "b", "c"]);  // 3
     /// </code>
     /// </example>
     /// </remarks>
     Task<long> SetAddAsync(ValkeyKey key, IEnumerable<ValkeyValue> values);
 
     /// <summary>
-    /// Removes specified members from the set stored at key.
-    /// Specified members that are not a member of this set are ignored.
+    /// Removes a member from a set. Ignores members that are not present.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/srem"/>
-    /// <param name="key">The key from which members will be removed.</param>
+    /// <seealso href="https://valkey.io/commands/srem/">Valkey commands – SREM</seealso>
+    /// <param name="key">The set key.</param>
     /// <param name="value">The value to remove.</param>
-    /// <returns><see langword="true"/> if the specified member was already present in the set, <see langword="false"/> otherwise.</returns>
+    /// <returns><see langword="true"/> if the member was present in the set, <see langword="false"/> otherwise.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// bool result = await client.SetRemoveAsync("set", "member");
+    /// await client.SetAddAsync("myset", "member");
+    /// var removed = await client.SetRemoveAsync("myset", "member");  // true
     /// </code>
     /// </example>
     /// </remarks>
     Task<bool> SetRemoveAsync(ValkeyKey key, ValkeyValue value);
 
     /// <summary>
-    /// Removes specified members from the set stored at key.
-    /// Specified members that are not a member of this set are ignored.
+    /// Removes one or more members from a set. Ignores members that are not present.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/srem"/>
-    /// <param name="key">The key from which members will be removed.</param>
+    /// <seealso href="https://valkey.io/commands/srem/">Valkey commands – SREM</seealso>
+    /// <param name="key">The set key.</param>
     /// <param name="values">The values to remove.</param>
     /// <returns>The number of members that were removed from the set, excluding non-existing members.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// long result = await client.SetRemoveAsync("set", ["member1", "member2"]);
+    /// await client.SetAddAsync("myset", ["a", "b", "c"]);
+    /// var removedCount = await client.SetRemoveAsync("myset", ["a", "b"]);  // 2
     /// </code>
     /// </example>
     /// </remarks>
     Task<long> SetRemoveAsync(ValkeyKey key, IEnumerable<ValkeyValue> values);
 
     /// <summary>
-    /// Removes and returns one random member from the set stored at key.
+    /// Removes and returns a random member from a set.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/spop"/>
-    /// <param name="key">The key of the set.</param>
-    /// <returns>The removed element, or <see cref="ValkeyValue.Null"/> when key does not exist.</returns>
+    /// <seealso href="https://valkey.io/commands/spop/">Valkey commands – SPOP</seealso>
+    /// <param name="key">The set key.</param>
+    /// <returns>The removed element, or <see cref="ValkeyValue.Null"/> when the key does not exist.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// ValkeyValue result = await client.SetPopAsync("set");
+    /// await client.SetAddAsync("myset", ["a", "b", "c"]);
+    /// var popped = await client.SetPopAsync("myset");  // "a", "b", or "c"
     /// </code>
     /// </example>
     /// </remarks>
     Task<ValkeyValue> SetPopAsync(ValkeyKey key);
 
     /// <summary>
-    /// Returns a random element from the set value stored at key.
+    /// Returns a random element from a set without removing it.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/srandmember"/>
-    /// <param name="key">The key from which to retrieve the set member.</param>
-    /// <returns>The randomly selected element, or <see cref="ValkeyValue.Null"/> when key does not exist.</returns>
+    /// <seealso href="https://valkey.io/commands/srandmember/">Valkey commands – SRANDMEMBER</seealso>
+    /// <param name="key">The set key.</param>
+    /// <returns>The randomly selected element, or <see cref="ValkeyValue.Null"/> when the key does not exist.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// ValkeyValue result = await client.SetRandomMemberAsync("set");
+    /// await client.SetAddAsync("myset", ["a", "b", "c"]);
+    /// var member = await client.SetRandomMemberAsync("myset");  // "a", "b", or "c"
     /// </code>
     /// </example>
     /// </remarks>
     Task<ValkeyValue> SetRandomMemberAsync(ValkeyKey key);
 
     /// <summary>
-    /// Returns multiple random members from the set value stored at key.
-    /// If <paramref name="count"/> is positive, returns unique elements (no repetition) up to count or the set size, whichever is smaller.
-    /// If <paramref name="count"/> is negative, returns elements with possible repetition (the same element may be returned multiple times),
-    /// and the number of returned elements is the absolute value of count.
+    /// Returns multiple random members from a set.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/srandmember"/>
-    /// <param name="key">The key from which to retrieve the set members.</param>
-    /// <param name="count">The number of members to return.</param>
+    /// <seealso href="https://valkey.io/commands/srandmember/">Valkey commands – SRANDMEMBER</seealso>
+    /// <param name="key">The set key.</param>
+    /// <param name="count">The number of members to return.
+    /// If positive, returns unique elements up to <paramref name="count"/> or the set size, whichever is smaller.
+    /// If negative, allows duplicates and returns exactly <c>abs(count)</c> elements.
+    /// </param>
     /// <returns>
-    ///	An array of random elements from the set.
-    ///	When count is positive, the returned elements are unique (no repetitions).
-    ///	When count is negative, the returned elements may contain duplicates.
-    ///	If the set does not exist or is empty, an empty array is returned.
+    /// An array of random elements from the set, or an empty array if the set does not exist.
     /// </returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// ValkeyValue[] result = await client.SetRandomMembersAsync("set", 3);
+    /// await client.SetAddAsync("myset", ["a", "b", "c"]);
+    /// var members = await client.SetRandomMembersAsync("myset", 2);  // ["a", "c"]
     /// </code>
     /// </example>
     /// </remarks>
     Task<ValkeyValue[]> SetRandomMembersAsync(ValkeyKey key, long count);
 
     /// <summary>
-    /// Moves <paramref name="value"/> from the set at <paramref name="source"/> to the set at <paramref name="destination"/>, removing it from the source set.
-    /// Creates a new destination set if needed. The operation is atomic.
+    /// Moves a member from one set to another atomically.
+    /// Creates the destination set if needed.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/smove"/>
+    /// <seealso href="https://valkey.io/commands/smove/">Valkey commands – SMOVE</seealso>
     /// <note>When in cluster mode, <paramref name="source"/> and <paramref name="destination"/> must map to the same hash slot.</note>
-    /// <param name="source">The key of the set to remove the element from.</param>
-    /// <param name="destination">The key of the set to add the element to.</param>
+    /// <param name="source">The source set key.</param>
+    /// <param name="destination">The destination set key.</param>
     /// <param name="value">The set element to move.</param>
-    /// <returns><see langword="true"/> if the element is moved, <see langword="false"/> if the source set does not exist or the element is not a member of the source set.</returns>
+    /// <returns><see langword="true"/> if the element was moved, <see langword="false"/> if the source set does not exist or the element is not a member of the source set.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// bool result = await client.SetMoveAsync("source_set", "dest_set", "member");
+    /// await client.SetAddAsync("source", ["a", "b"]);
+    /// var moved = await client.SetMoveAsync("source", "dest", "a");  // true
     /// </code>
     /// </example>
     /// </remarks>

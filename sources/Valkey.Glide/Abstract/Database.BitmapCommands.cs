@@ -35,15 +35,14 @@ internal partial class Database
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StringBitOperationAsync(Bitwise, ValkeyKey, ValkeyKey, ValkeyKey, CommandFlags)"/>
-    public async Task<long> StringBitOperationAsync(Bitwise operation, ValkeyKey destination, ValkeyKey first, ValkeyKey second = default, CommandFlags flags = CommandFlags.None)
+    public Task<long> StringBitOperationAsync(Bitwise operation, ValkeyKey destination, ValkeyKey first, ValkeyKey second = default, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
+
         // If second is default, only use first key
-        if (second.Equals(default(ValkeyKey)))
-        {
-            return await BitOpAsync(operation, destination, [first]);
-        }
-        return await BitOpAsync(operation, destination, [first, second]);
+        return second.Equals(default)
+            ? BitOpAsync(operation, destination, [first])
+            : BitOpAsync(operation, destination, [first, second]);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StringBitOperationAsync(Bitwise, ValkeyKey, IEnumerable{ValkeyKey}, CommandFlags)"/>

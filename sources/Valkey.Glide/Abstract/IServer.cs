@@ -110,8 +110,7 @@ public partial interface IServer : IRedisAsync
     /// <remarks>
     /// <example>
     /// <code>
-    /// var echo = await server.EchoAsync("hello");
-    /// Console.WriteLine($"Server echoed: {echo}");
+    /// var echo = await server.EchoAsync("hello");  // "hello"
     /// </code>
     /// </example>
     /// </remarks>
