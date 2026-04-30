@@ -18,7 +18,7 @@ Each entry in the JSON files has a `profiles` array that declares which test pro
 | Profile | When used | Scope |
 |---------|-----------|-------|
 | `smoke` | Quick validation (e.g., PR checks) | Minimal: 1 server, core platforms, default .NET version |
-| `standard` | Regular CI (e.g., push to main) | Moderate: `always`-run platforms and servers |
+| `standard` | Regular CI (e.g., push to main) | Moderate: common platforms and servers |
 | `full` | Nightly / manual | Everything, including containers |
 
 ### Example

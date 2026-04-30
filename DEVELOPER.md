@@ -381,6 +381,16 @@ Performance benchmarking for the C# client can be performed using [resp-bench](h
 
 Refer to the [resp-bench README](https://github.com/ikolomi/resp-bench/blob/main/README.md) and [C# benchmark docs](https://github.com/ikolomi/resp-bench/blob/main/docs/BENCHMARKS_CSHARP.md) for setup and usage instructions.
 
+## Updating CI Test Matrices
+
+To update our Github workflow test runs, edit the JSON files in [`.github/json_matrices/`](.github/json_matrices/). 
+
+It serves as a "test order", describing available properties and which `profiles` they belong to (`smoke`, `standard`, `full`). No workflow or script changes are needed.
+
+Ex: To add a new platform to the `standard` profile, add a new entry to `.github/json_matrices/os_matrices.json` with `profiles: ['standard']`
+
+See the [CI/CD Test Matrices README](.github/json_matrices/README.md) for details.
+
 ## Community and Feedback
 
 We encourage you to join our community to support, share feedback, and ask questions. You can approach us for anything on our Valkey Slack: [Join Valkey Slack](https://valkey.io/slack/).

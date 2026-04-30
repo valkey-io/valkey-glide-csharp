@@ -41,12 +41,6 @@ Looking at the existing issues is a great way to find something to contribute on
 
 [C# Developer Guide](./DEVELOPER.md).
 
-## Updating CI Test Matrices
-
-To add or remove platforms, server versions, or .NET versions from CI runs, edit the JSON files in [`.github/json_matrices/`](.github/json_matrices/). Each entry has a `profiles` array that controls which test profiles include it (`smoke`, `standard`, `full`). No workflow or script changes are needed.
-
-See the [CI/CD Test Matrices README](.github/json_matrices/README.md) for details.
-
 ## Code of Conduct
 
 This project has adopted the [Amazon Open Source Code of Conduct](https://aws.github.io/code-of-conduct).
