@@ -55,7 +55,7 @@ public class JsonObjectCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"a\":1,\"b\":2,\"c\":3}";
 
-        object? result;
+        ValkeyResult result;
         if (client is GlideClient standaloneClient)
         {
             _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
@@ -69,9 +69,9 @@ public class JsonObjectCommandTests(TestConfiguration config)
         }
 
         Assert.NotNull(result);
-        object?[] arr = (object?[])result;
+        long[] arr = (long[])result;
         Assert.Single(arr);
-        Assert.Equal(3L, Convert.ToInt64(arr[0]));
+        Assert.Equal(3L, arr[0]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -83,7 +83,7 @@ public class JsonObjectCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{}";
 
-        object? result;
+        ValkeyResult result;
         if (client is GlideClient standaloneClient)
         {
             _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
@@ -97,9 +97,9 @@ public class JsonObjectCommandTests(TestConfiguration config)
         }
 
         Assert.NotNull(result);
-        object?[] arr = (object?[])result;
+        long[] arr = (long[])result;
         Assert.Single(arr);
-        Assert.Equal(0L, Convert.ToInt64(arr[0]));
+        Assert.Equal(0L, arr[0]);
     }
 
     #endregion
@@ -115,7 +115,7 @@ public class JsonObjectCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\",\"age\":30}";
 
-        object? result;
+        ValkeyResult result;
         if (client is GlideClient standaloneClient)
         {
             _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
@@ -130,9 +130,9 @@ public class JsonObjectCommandTests(TestConfiguration config)
 
         Assert.NotNull(result);
         // JSONPath returns array of arrays
-        object?[] outerArr = (object?[])result;
+        ValkeyResult[] outerArr = (ValkeyResult[])result;
         Assert.Single(outerArr);
-        object?[] keys = (object?[])outerArr[0]!;
+        ValkeyResult[] keys = (ValkeyResult[])outerArr[0];
         Assert.Equal(2, keys.Length);
     }
 
@@ -149,7 +149,7 @@ public class JsonObjectCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"active\":true}";
 
-        object? result;
+        ValkeyResult result;
         if (client is GlideClient standaloneClient)
         {
             _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
@@ -163,9 +163,9 @@ public class JsonObjectCommandTests(TestConfiguration config)
         }
 
         Assert.NotNull(result);
-        object?[] arr = (object?[])result;
+        bool[] arr = (bool[])result;
         Assert.Single(arr);
-        Assert.Equal(false, arr[0]);
+        Assert.False(arr[0]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -177,7 +177,7 @@ public class JsonObjectCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"active\":false}";
 
-        object? result;
+        ValkeyResult result;
         if (client is GlideClient standaloneClient)
         {
             _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
@@ -191,9 +191,9 @@ public class JsonObjectCommandTests(TestConfiguration config)
         }
 
         Assert.NotNull(result);
-        object?[] arr = (object?[])result;
+        bool[] arr = (bool[])result;
         Assert.Single(arr);
-        Assert.Equal(true, arr[0]);
+        Assert.True(arr[0]);
     }
 
     #endregion
@@ -209,7 +209,7 @@ public class JsonObjectCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\",\"age\":30}";
 
-        object? result;
+        ValkeyResult result;
         if (client is GlideClient standaloneClient)
         {
             _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
@@ -223,7 +223,7 @@ public class JsonObjectCommandTests(TestConfiguration config)
         }
 
         Assert.NotNull(result);
-        long memorySize = Convert.ToInt64(result);
+        long memorySize = (long)result;
         Assert.True(memorySize > 0);
     }
 
@@ -240,7 +240,7 @@ public class JsonObjectCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\",\"age\":30}";
 
-        object? result;
+        ValkeyResult result;
         if (client is GlideClient standaloneClient)
         {
             _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
@@ -254,7 +254,7 @@ public class JsonObjectCommandTests(TestConfiguration config)
         }
 
         Assert.NotNull(result);
-        long fieldCount = Convert.ToInt64(result);
+        long fieldCount = (long)result;
         Assert.True(fieldCount > 0);
     }
 
@@ -271,7 +271,7 @@ public class JsonObjectCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\"}";
 
-        object? result;
+        ValkeyResult result;
         if (client is GlideClient standaloneClient)
         {
             _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
@@ -286,7 +286,8 @@ public class JsonObjectCommandTests(TestConfiguration config)
 
         Assert.NotNull(result);
         // RESP format returns an array representation
-        Assert.IsType<object?[]>(result);
+        ValkeyResult[] arr = (ValkeyResult[])result;
+        Assert.NotNull(arr);
     }
 
     #endregion

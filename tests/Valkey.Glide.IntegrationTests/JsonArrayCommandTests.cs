@@ -1,7 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using Valkey.Glide.Commands.Options;
 using Valkey.Glide.ServerModules;
+using Valkey.Glide.ServerModules.Options;
 
 namespace Valkey.Glide.IntegrationTests;
 
@@ -59,7 +59,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"arr\":[1,2,3]}";
 
-        object? result;
+        ValkeyResult result;
         if (client is GlideClient standaloneClient)
         {
             _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
@@ -73,9 +73,9 @@ public class JsonArrayCommandTests(TestConfiguration config)
         }
 
         Assert.NotNull(result);
-        object?[] arr = (object?[])result;
+        long[] arr = (long[])result;
         Assert.Single(arr);
-        Assert.Equal(5L, Convert.ToInt64(arr[0]));
+        Assert.Equal(5L, arr[0]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -87,7 +87,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"a\":[1],\"b\":[2,3]}";
 
-        object? result;
+        ValkeyResult result;
         if (client is GlideClient standaloneClient)
         {
             _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
@@ -101,7 +101,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
         }
 
         Assert.NotNull(result);
-        object?[] arr = (object?[])result;
+        long[] arr = (long[])result;
         Assert.Equal(2, arr.Length);
     }
 
@@ -118,7 +118,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"arr\":[1,2,3]}";
 
-        object? result;
+        ValkeyResult result;
         if (client is GlideClient standaloneClient)
         {
             _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
@@ -132,9 +132,9 @@ public class JsonArrayCommandTests(TestConfiguration config)
         }
 
         Assert.NotNull(result);
-        object?[] arr = (object?[])result;
+        long[] arr = (long[])result;
         Assert.Single(arr);
-        Assert.Equal(4L, Convert.ToInt64(arr[0]));
+        Assert.Equal(4L, arr[0]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -146,7 +146,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"arr\":[1,2,3]}";
 
-        object? result;
+        ValkeyResult result;
         if (client is GlideClient standaloneClient)
         {
             _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
@@ -160,9 +160,9 @@ public class JsonArrayCommandTests(TestConfiguration config)
         }
 
         Assert.NotNull(result);
-        object?[] arr = (object?[])result;
+        long[] arr = (long[])result;
         Assert.Single(arr);
-        Assert.Equal(4L, Convert.ToInt64(arr[0]));
+        Assert.Equal(4L, arr[0]);
     }
 
     #endregion
@@ -178,7 +178,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"arr\":[1,2,3,4,5]}";
 
-        object? result;
+        ValkeyResult result;
         if (client is GlideClient standaloneClient)
         {
             _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
@@ -192,9 +192,9 @@ public class JsonArrayCommandTests(TestConfiguration config)
         }
 
         Assert.NotNull(result);
-        object?[] arr = (object?[])result;
+        long[] arr = (long[])result;
         Assert.Single(arr);
-        Assert.Equal(2L, Convert.ToInt64(arr[0]));
+        Assert.Equal(2L, arr[0]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -206,7 +206,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"arr\":[1,2,3]}";
 
-        object? result;
+        ValkeyResult result;
         if (client is GlideClient standaloneClient)
         {
             _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
@@ -220,9 +220,9 @@ public class JsonArrayCommandTests(TestConfiguration config)
         }
 
         Assert.NotNull(result);
-        object?[] arr = (object?[])result;
+        long[] arr = (long[])result;
         Assert.Single(arr);
-        Assert.Equal(-1L, Convert.ToInt64(arr[0]));
+        Assert.Equal(-1L, arr[0]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -235,7 +235,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string jsonValue = "{\"arr\":[1,2,3,2,5]}";
         var options = JsonArrIndexOptions.FromStart(2);
 
-        object? result;
+        ValkeyResult result;
         if (client is GlideClient standaloneClient)
         {
             _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
@@ -249,9 +249,9 @@ public class JsonArrayCommandTests(TestConfiguration config)
         }
 
         Assert.NotNull(result);
-        object?[] arr = (object?[])result;
+        long[] arr = (long[])result;
         Assert.Single(arr);
-        Assert.Equal(3L, Convert.ToInt64(arr[0]));
+        Assert.Equal(3L, arr[0]);
     }
 
     #endregion
@@ -267,7 +267,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"arr\":[1,2,3,4,5]}";
 
-        object? result;
+        ValkeyResult result;
         if (client is GlideClient standaloneClient)
         {
             _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
@@ -281,9 +281,9 @@ public class JsonArrayCommandTests(TestConfiguration config)
         }
 
         Assert.NotNull(result);
-        object?[] arr = (object?[])result;
+        long[] arr = (long[])result;
         Assert.Single(arr);
-        Assert.Equal(5L, Convert.ToInt64(arr[0]));
+        Assert.Equal(5L, arr[0]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -295,7 +295,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"arr\":[]}";
 
-        object? result;
+        ValkeyResult result;
         if (client is GlideClient standaloneClient)
         {
             _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
@@ -309,9 +309,9 @@ public class JsonArrayCommandTests(TestConfiguration config)
         }
 
         Assert.NotNull(result);
-        object?[] arr = (object?[])result;
+        long[] arr = (long[])result;
         Assert.Single(arr);
-        Assert.Equal(0L, Convert.ToInt64(arr[0]));
+        Assert.Equal(0L, arr[0]);
     }
 
     #endregion
@@ -327,7 +327,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"arr\":[1,2,3]}";
 
-        object? result;
+        ValkeyResult result;
         if (client is GlideClient standaloneClient)
         {
             _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
@@ -341,9 +341,9 @@ public class JsonArrayCommandTests(TestConfiguration config)
         }
 
         Assert.NotNull(result);
-        object?[] arr = (object?[])result;
+        ValkeyResult[] arr = (ValkeyResult[])result;
         Assert.Single(arr);
-        Assert.Equal("3", arr[0]?.ToString());
+        Assert.Equal("3", (string?)arr[0]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -355,7 +355,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"arr\":[1,2,3]}";
 
-        object? result;
+        ValkeyResult result;
         if (client is GlideClient standaloneClient)
         {
             _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
@@ -369,9 +369,9 @@ public class JsonArrayCommandTests(TestConfiguration config)
         }
 
         Assert.NotNull(result);
-        object?[] arr = (object?[])result;
+        ValkeyResult[] arr = (ValkeyResult[])result;
         Assert.Single(arr);
-        Assert.Equal("1", arr[0]?.ToString());
+        Assert.Equal("1", (string?)arr[0]);
     }
 
     #endregion
@@ -387,7 +387,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"arr\":[1,2,3,4,5]}";
 
-        object? result;
+        ValkeyResult result;
         if (client is GlideClient standaloneClient)
         {
             _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
@@ -401,9 +401,9 @@ public class JsonArrayCommandTests(TestConfiguration config)
         }
 
         Assert.NotNull(result);
-        object?[] arr = (object?[])result;
+        long[] arr = (long[])result;
         Assert.Single(arr);
-        Assert.Equal(3L, Convert.ToInt64(arr[0]));
+        Assert.Equal(3L, arr[0]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -415,7 +415,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"arr\":[1,2,3]}";
 
-        object? result;
+        ValkeyResult result;
         if (client is GlideClient standaloneClient)
         {
             _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
@@ -429,9 +429,9 @@ public class JsonArrayCommandTests(TestConfiguration config)
         }
 
         Assert.NotNull(result);
-        object?[] arr = (object?[])result;
+        long[] arr = (long[])result;
         Assert.Single(arr);
-        Assert.Equal(0L, Convert.ToInt64(arr[0]));
+        Assert.Equal(0L, arr[0]);
     }
 
     #endregion

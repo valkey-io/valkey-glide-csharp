@@ -20,81 +20,25 @@ public static partial class GlideJson
     /// When a legacy path is provided, returns the key count.
     /// </returns>
     /// <seealso href="https://valkey.io/commands/json.objlen/"/>
-    public static async Task<object?> ObjLenAsync(GlideClient client, string key, string path)
+    public static async Task<ValkeyResult> ObjLenAsync(BaseClient client, ValkeyKey key, ValkeyValue path)
     {
-        GlideString[] args = [JsonObjLen, key, path];
-        object? result = await client.CustomCommand(args);
-        return result;
+        GlideString[] args = [JsonObjLen, ToGlideString(key), ToGlideString(path)];
+        object? result = await ExecuteCommandAsync(client, args);
+        return ValkeyResult.Create(result);
     }
 
     /// <summary>
     /// Gets the number of keys in the object at the root path.
     /// </summary>
-    public static async Task<object?> ObjLenAsync(GlideClient client, string key)
+    /// <param name="client">The Glide client to use for the command.</param>
+    /// <param name="key">The key where the JSON document is stored.</param>
+    /// <returns>The key count at the root path.</returns>
+    /// <seealso href="https://valkey.io/commands/json.objlen/"/>
+    public static async Task<ValkeyResult> ObjLenAsync(BaseClient client, ValkeyKey key)
     {
-        GlideString[] args = [JsonObjLen, key];
-        object? result = await client.CustomCommand(args);
-        return result;
-    }
-
-    /// <summary>
-    /// Gets the number of keys in the object at the specified path.
-    /// </summary>
-    public static async Task<object?> ObjLenAsync(GlideClient client, GlideString key, GlideString path)
-    {
-        GlideString[] args = [JsonObjLen, key, path];
-        object? result = await client.CustomCommand(args);
-        return result;
-    }
-
-    /// <summary>
-    /// Gets the number of keys in the object at the root path.
-    /// </summary>
-    public static async Task<object?> ObjLenAsync(GlideClient client, GlideString key)
-    {
-        GlideString[] args = [JsonObjLen, key];
-        object? result = await client.CustomCommand(args);
-        return result;
-    }
-
-    /// <summary>
-    /// Gets the number of keys in the object at the specified path (cluster client).
-    /// </summary>
-    public static async Task<object?> ObjLenAsync(GlideClusterClient client, string key, string path)
-    {
-        GlideString[] args = [JsonObjLen, key, path];
-        ClusterValue<object?> result = await client.CustomCommand(args);
-        return result.SingleValue;
-    }
-
-    /// <summary>
-    /// Gets the number of keys in the object at the root path (cluster client).
-    /// </summary>
-    public static async Task<object?> ObjLenAsync(GlideClusterClient client, string key)
-    {
-        GlideString[] args = [JsonObjLen, key];
-        ClusterValue<object?> result = await client.CustomCommand(args);
-        return result.SingleValue;
-    }
-
-    /// <summary>
-    /// Gets the number of keys in the object at the specified path (cluster client).
-    /// </summary>
-    public static async Task<object?> ObjLenAsync(GlideClusterClient client, GlideString key, GlideString path)
-    {
-        GlideString[] args = [JsonObjLen, key, path];
-        ClusterValue<object?> result = await client.CustomCommand(args);
-        return result.SingleValue;
-    }
-
-    /// <summary>
-    /// Gets the number of keys in the object at the root path (cluster client).
-    /// </summary>
-    public static async Task<object?> ObjLenAsync(GlideClusterClient client, GlideString key)
-    {
-        GlideString[] args = [JsonObjLen, key];
-        ClusterValue<object?> result = await client.CustomCommand(args);
-        return result.SingleValue;
+        GlideString[] args = [JsonObjLen, ToGlideString(key)];
+        object? result = await ExecuteCommandAsync(client, args);
+        return ValkeyResult.Create(result);
     }
 
     #endregion
@@ -112,81 +56,25 @@ public static partial class GlideJson
     /// When a legacy path is provided, returns an array of key names.
     /// </returns>
     /// <seealso href="https://valkey.io/commands/json.objkeys/"/>
-    public static async Task<object?> ObjKeysAsync(GlideClient client, string key, string path)
+    public static async Task<ValkeyResult> ObjKeysAsync(BaseClient client, ValkeyKey key, ValkeyValue path)
     {
-        GlideString[] args = [JsonObjKeys, key, path];
-        object? result = await client.CustomCommand(args);
-        return result;
+        GlideString[] args = [JsonObjKeys, ToGlideString(key), ToGlideString(path)];
+        object? result = await ExecuteCommandAsync(client, args);
+        return ValkeyResult.Create(result);
     }
 
     /// <summary>
     /// Gets the keys of the object at the root path.
     /// </summary>
-    public static async Task<object?> ObjKeysAsync(GlideClient client, string key)
+    /// <param name="client">The Glide client to use for the command.</param>
+    /// <param name="key">The key where the JSON document is stored.</param>
+    /// <returns>An array of key names at the root path.</returns>
+    /// <seealso href="https://valkey.io/commands/json.objkeys/"/>
+    public static async Task<ValkeyResult> ObjKeysAsync(BaseClient client, ValkeyKey key)
     {
-        GlideString[] args = [JsonObjKeys, key];
-        object? result = await client.CustomCommand(args);
-        return result;
-    }
-
-    /// <summary>
-    /// Gets the keys of the object at the specified path.
-    /// </summary>
-    public static async Task<object?> ObjKeysAsync(GlideClient client, GlideString key, GlideString path)
-    {
-        GlideString[] args = [JsonObjKeys, key, path];
-        object? result = await client.CustomCommand(args);
-        return result;
-    }
-
-    /// <summary>
-    /// Gets the keys of the object at the root path.
-    /// </summary>
-    public static async Task<object?> ObjKeysAsync(GlideClient client, GlideString key)
-    {
-        GlideString[] args = [JsonObjKeys, key];
-        object? result = await client.CustomCommand(args);
-        return result;
-    }
-
-    /// <summary>
-    /// Gets the keys of the object at the specified path (cluster client).
-    /// </summary>
-    public static async Task<object?> ObjKeysAsync(GlideClusterClient client, string key, string path)
-    {
-        GlideString[] args = [JsonObjKeys, key, path];
-        ClusterValue<object?> result = await client.CustomCommand(args);
-        return result.SingleValue;
-    }
-
-    /// <summary>
-    /// Gets the keys of the object at the root path (cluster client).
-    /// </summary>
-    public static async Task<object?> ObjKeysAsync(GlideClusterClient client, string key)
-    {
-        GlideString[] args = [JsonObjKeys, key];
-        ClusterValue<object?> result = await client.CustomCommand(args);
-        return result.SingleValue;
-    }
-
-    /// <summary>
-    /// Gets the keys of the object at the specified path (cluster client).
-    /// </summary>
-    public static async Task<object?> ObjKeysAsync(GlideClusterClient client, GlideString key, GlideString path)
-    {
-        GlideString[] args = [JsonObjKeys, key, path];
-        ClusterValue<object?> result = await client.CustomCommand(args);
-        return result.SingleValue;
-    }
-
-    /// <summary>
-    /// Gets the keys of the object at the root path (cluster client).
-    /// </summary>
-    public static async Task<object?> ObjKeysAsync(GlideClusterClient client, GlideString key)
-    {
-        GlideString[] args = [JsonObjKeys, key];
-        ClusterValue<object?> result = await client.CustomCommand(args);
-        return result.SingleValue;
+        GlideString[] args = [JsonObjKeys, ToGlideString(key)];
+        object? result = await ExecuteCommandAsync(client, args);
+        return ValkeyResult.Create(result);
     }
 
     #endregion
@@ -204,41 +92,11 @@ public static partial class GlideJson
     /// When a legacy path is provided, returns the toggled boolean value.
     /// </returns>
     /// <seealso href="https://valkey.io/commands/json.toggle/"/>
-    public static async Task<object?> ToggleAsync(GlideClient client, string key, string path)
+    public static async Task<ValkeyResult> ToggleAsync(BaseClient client, ValkeyKey key, ValkeyValue path)
     {
-        GlideString[] args = [JsonToggle, key, path];
-        object? result = await client.CustomCommand(args);
-        return result;
-    }
-
-    /// <summary>
-    /// Toggles the boolean value at the specified path.
-    /// </summary>
-    public static async Task<object?> ToggleAsync(GlideClient client, GlideString key, GlideString path)
-    {
-        GlideString[] args = [JsonToggle, key, path];
-        object? result = await client.CustomCommand(args);
-        return result;
-    }
-
-    /// <summary>
-    /// Toggles the boolean value at the specified path (cluster client).
-    /// </summary>
-    public static async Task<object?> ToggleAsync(GlideClusterClient client, string key, string path)
-    {
-        GlideString[] args = [JsonToggle, key, path];
-        ClusterValue<object?> result = await client.CustomCommand(args);
-        return result.SingleValue;
-    }
-
-    /// <summary>
-    /// Toggles the boolean value at the specified path (cluster client).
-    /// </summary>
-    public static async Task<object?> ToggleAsync(GlideClusterClient client, GlideString key, GlideString path)
-    {
-        GlideString[] args = [JsonToggle, key, path];
-        ClusterValue<object?> result = await client.CustomCommand(args);
-        return result.SingleValue;
+        GlideString[] args = [JsonToggle, ToGlideString(key), ToGlideString(path)];
+        object? result = await ExecuteCommandAsync(client, args);
+        return ValkeyResult.Create(result);
     }
 
     #endregion
@@ -256,81 +114,25 @@ public static partial class GlideJson
     /// When a legacy path is provided, returns the memory size in bytes.
     /// </returns>
     /// <seealso href="https://valkey.io/commands/json.debug-memory/"/>
-    public static async Task<object?> DebugMemoryAsync(GlideClient client, string key, string path)
+    public static async Task<ValkeyResult> DebugMemoryAsync(BaseClient client, ValkeyKey key, ValkeyValue path)
     {
-        GlideString[] args = [JsonDebug, "MEMORY", key, path];
-        object? result = await client.CustomCommand(args);
-        return result;
+        GlideString[] args = [JsonDebug, "MEMORY", ToGlideString(key), ToGlideString(path)];
+        object? result = await ExecuteCommandAsync(client, args);
+        return ValkeyResult.Create(result);
     }
 
     /// <summary>
     /// Reports the memory usage in bytes of the JSON value at the root path.
     /// </summary>
-    public static async Task<object?> DebugMemoryAsync(GlideClient client, string key)
+    /// <param name="client">The Glide client to use for the command.</param>
+    /// <param name="key">The key where the JSON document is stored.</param>
+    /// <returns>The memory size in bytes at the root path.</returns>
+    /// <seealso href="https://valkey.io/commands/json.debug-memory/"/>
+    public static async Task<ValkeyResult> DebugMemoryAsync(BaseClient client, ValkeyKey key)
     {
-        GlideString[] args = [JsonDebug, "MEMORY", key];
-        object? result = await client.CustomCommand(args);
-        return result;
-    }
-
-    /// <summary>
-    /// Reports the memory usage in bytes of the JSON value at the specified path.
-    /// </summary>
-    public static async Task<object?> DebugMemoryAsync(GlideClient client, GlideString key, GlideString path)
-    {
-        GlideString[] args = [JsonDebug, "MEMORY", key, path];
-        object? result = await client.CustomCommand(args);
-        return result;
-    }
-
-    /// <summary>
-    /// Reports the memory usage in bytes of the JSON value at the root path.
-    /// </summary>
-    public static async Task<object?> DebugMemoryAsync(GlideClient client, GlideString key)
-    {
-        GlideString[] args = [JsonDebug, "MEMORY", key];
-        object? result = await client.CustomCommand(args);
-        return result;
-    }
-
-    /// <summary>
-    /// Reports the memory usage in bytes of the JSON value at the specified path (cluster client).
-    /// </summary>
-    public static async Task<object?> DebugMemoryAsync(GlideClusterClient client, string key, string path)
-    {
-        GlideString[] args = [JsonDebug, "MEMORY", key, path];
-        ClusterValue<object?> result = await client.CustomCommand(args);
-        return result.SingleValue;
-    }
-
-    /// <summary>
-    /// Reports the memory usage in bytes of the JSON value at the root path (cluster client).
-    /// </summary>
-    public static async Task<object?> DebugMemoryAsync(GlideClusterClient client, string key)
-    {
-        GlideString[] args = [JsonDebug, "MEMORY", key];
-        ClusterValue<object?> result = await client.CustomCommand(args);
-        return result.SingleValue;
-    }
-
-    /// <summary>
-    /// Reports the memory usage in bytes of the JSON value at the specified path (cluster client).
-    /// </summary>
-    public static async Task<object?> DebugMemoryAsync(GlideClusterClient client, GlideString key, GlideString path)
-    {
-        GlideString[] args = [JsonDebug, "MEMORY", key, path];
-        ClusterValue<object?> result = await client.CustomCommand(args);
-        return result.SingleValue;
-    }
-
-    /// <summary>
-    /// Reports the memory usage in bytes of the JSON value at the root path (cluster client).
-    /// </summary>
-    public static async Task<object?> DebugMemoryAsync(GlideClusterClient client, GlideString key)
-    {
-        GlideString[] args = [JsonDebug, "MEMORY", key];
-        ClusterValue<object?> result = await client.CustomCommand(args);
-        return result.SingleValue;
+        GlideString[] args = [JsonDebug, "MEMORY", ToGlideString(key)];
+        object? result = await ExecuteCommandAsync(client, args);
+        return ValkeyResult.Create(result);
     }
 
     #endregion
@@ -348,81 +150,25 @@ public static partial class GlideJson
     /// When a legacy path is provided, returns the field count.
     /// </returns>
     /// <seealso href="https://valkey.io/commands/json.debug-fields/"/>
-    public static async Task<object?> DebugFieldsAsync(GlideClient client, string key, string path)
+    public static async Task<ValkeyResult> DebugFieldsAsync(BaseClient client, ValkeyKey key, ValkeyValue path)
     {
-        GlideString[] args = [JsonDebug, "FIELDS", key, path];
-        object? result = await client.CustomCommand(args);
-        return result;
+        GlideString[] args = [JsonDebug, "FIELDS", ToGlideString(key), ToGlideString(path)];
+        object? result = await ExecuteCommandAsync(client, args);
+        return ValkeyResult.Create(result);
     }
 
     /// <summary>
     /// Reports the number of fields in the JSON value at the root path.
     /// </summary>
-    public static async Task<object?> DebugFieldsAsync(GlideClient client, string key)
+    /// <param name="client">The Glide client to use for the command.</param>
+    /// <param name="key">The key where the JSON document is stored.</param>
+    /// <returns>The field count at the root path.</returns>
+    /// <seealso href="https://valkey.io/commands/json.debug-fields/"/>
+    public static async Task<ValkeyResult> DebugFieldsAsync(BaseClient client, ValkeyKey key)
     {
-        GlideString[] args = [JsonDebug, "FIELDS", key];
-        object? result = await client.CustomCommand(args);
-        return result;
-    }
-
-    /// <summary>
-    /// Reports the number of fields in the JSON value at the specified path.
-    /// </summary>
-    public static async Task<object?> DebugFieldsAsync(GlideClient client, GlideString key, GlideString path)
-    {
-        GlideString[] args = [JsonDebug, "FIELDS", key, path];
-        object? result = await client.CustomCommand(args);
-        return result;
-    }
-
-    /// <summary>
-    /// Reports the number of fields in the JSON value at the root path.
-    /// </summary>
-    public static async Task<object?> DebugFieldsAsync(GlideClient client, GlideString key)
-    {
-        GlideString[] args = [JsonDebug, "FIELDS", key];
-        object? result = await client.CustomCommand(args);
-        return result;
-    }
-
-    /// <summary>
-    /// Reports the number of fields in the JSON value at the specified path (cluster client).
-    /// </summary>
-    public static async Task<object?> DebugFieldsAsync(GlideClusterClient client, string key, string path)
-    {
-        GlideString[] args = [JsonDebug, "FIELDS", key, path];
-        ClusterValue<object?> result = await client.CustomCommand(args);
-        return result.SingleValue;
-    }
-
-    /// <summary>
-    /// Reports the number of fields in the JSON value at the root path (cluster client).
-    /// </summary>
-    public static async Task<object?> DebugFieldsAsync(GlideClusterClient client, string key)
-    {
-        GlideString[] args = [JsonDebug, "FIELDS", key];
-        ClusterValue<object?> result = await client.CustomCommand(args);
-        return result.SingleValue;
-    }
-
-    /// <summary>
-    /// Reports the number of fields in the JSON value at the specified path (cluster client).
-    /// </summary>
-    public static async Task<object?> DebugFieldsAsync(GlideClusterClient client, GlideString key, GlideString path)
-    {
-        GlideString[] args = [JsonDebug, "FIELDS", key, path];
-        ClusterValue<object?> result = await client.CustomCommand(args);
-        return result.SingleValue;
-    }
-
-    /// <summary>
-    /// Reports the number of fields in the JSON value at the root path (cluster client).
-    /// </summary>
-    public static async Task<object?> DebugFieldsAsync(GlideClusterClient client, GlideString key)
-    {
-        GlideString[] args = [JsonDebug, "FIELDS", key];
-        ClusterValue<object?> result = await client.CustomCommand(args);
-        return result.SingleValue;
+        GlideString[] args = [JsonDebug, "FIELDS", ToGlideString(key)];
+        object? result = await ExecuteCommandAsync(client, args);
+        return ValkeyResult.Create(result);
     }
 
     #endregion
@@ -437,81 +183,25 @@ public static partial class GlideJson
     /// <param name="path">The JSONPath or legacy path within the JSON document.</param>
     /// <returns>The JSON value in RESP format.</returns>
     /// <seealso href="https://valkey.io/commands/json.resp/"/>
-    public static async Task<object?> RespAsync(GlideClient client, string key, string path)
+    public static async Task<ValkeyResult> RespAsync(BaseClient client, ValkeyKey key, ValkeyValue path)
     {
-        GlideString[] args = [JsonResp, key, path];
-        object? result = await client.CustomCommand(args);
-        return result;
+        GlideString[] args = [JsonResp, ToGlideString(key), ToGlideString(path)];
+        object? result = await ExecuteCommandAsync(client, args);
+        return ValkeyResult.Create(result);
     }
 
     /// <summary>
     /// Returns the JSON value at the root path in RESP format.
     /// </summary>
-    public static async Task<object?> RespAsync(GlideClient client, string key)
+    /// <param name="client">The Glide client to use for the command.</param>
+    /// <param name="key">The key where the JSON document is stored.</param>
+    /// <returns>The JSON value in RESP format at the root path.</returns>
+    /// <seealso href="https://valkey.io/commands/json.resp/"/>
+    public static async Task<ValkeyResult> RespAsync(BaseClient client, ValkeyKey key)
     {
-        GlideString[] args = [JsonResp, key];
-        object? result = await client.CustomCommand(args);
-        return result;
-    }
-
-    /// <summary>
-    /// Returns the JSON value at the specified path in RESP format.
-    /// </summary>
-    public static async Task<object?> RespAsync(GlideClient client, GlideString key, GlideString path)
-    {
-        GlideString[] args = [JsonResp, key, path];
-        object? result = await client.CustomCommand(args);
-        return result;
-    }
-
-    /// <summary>
-    /// Returns the JSON value at the root path in RESP format.
-    /// </summary>
-    public static async Task<object?> RespAsync(GlideClient client, GlideString key)
-    {
-        GlideString[] args = [JsonResp, key];
-        object? result = await client.CustomCommand(args);
-        return result;
-    }
-
-    /// <summary>
-    /// Returns the JSON value at the specified path in RESP format (cluster client).
-    /// </summary>
-    public static async Task<object?> RespAsync(GlideClusterClient client, string key, string path)
-    {
-        GlideString[] args = [JsonResp, key, path];
-        ClusterValue<object?> result = await client.CustomCommand(args);
-        return result.SingleValue;
-    }
-
-    /// <summary>
-    /// Returns the JSON value at the root path in RESP format (cluster client).
-    /// </summary>
-    public static async Task<object?> RespAsync(GlideClusterClient client, string key)
-    {
-        GlideString[] args = [JsonResp, key];
-        ClusterValue<object?> result = await client.CustomCommand(args);
-        return result.SingleValue;
-    }
-
-    /// <summary>
-    /// Returns the JSON value at the specified path in RESP format (cluster client).
-    /// </summary>
-    public static async Task<object?> RespAsync(GlideClusterClient client, GlideString key, GlideString path)
-    {
-        GlideString[] args = [JsonResp, key, path];
-        ClusterValue<object?> result = await client.CustomCommand(args);
-        return result.SingleValue;
-    }
-
-    /// <summary>
-    /// Returns the JSON value at the root path in RESP format (cluster client).
-    /// </summary>
-    public static async Task<object?> RespAsync(GlideClusterClient client, GlideString key)
-    {
-        GlideString[] args = [JsonResp, key];
-        ClusterValue<object?> result = await client.CustomCommand(args);
-        return result.SingleValue;
+        GlideString[] args = [JsonResp, ToGlideString(key)];
+        object? result = await ExecuteCommandAsync(client, args);
+        return ValkeyResult.Create(result);
     }
 
     #endregion

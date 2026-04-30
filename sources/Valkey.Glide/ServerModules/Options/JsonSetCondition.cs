@@ -1,6 +1,6 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-namespace Valkey.Glide.Commands.Options;
+namespace Valkey.Glide.ServerModules.Options;
 
 /// <summary>
 /// Specifies the condition for JSON.SET command execution.
