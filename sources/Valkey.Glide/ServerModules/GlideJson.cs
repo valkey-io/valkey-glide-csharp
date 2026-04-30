@@ -51,9 +51,12 @@ public static partial class GlideJson
         }
         else if (client is GlideClusterClient cc)
         {
-            ClusterValue<object?> result = await cc.CustomCommand(args);
-            // HasSingleData returns false when the value is null, so we need to check HasMultiData first
-            // If neither has data, the result is null
+            ClusterValue<object?>? result = await cc.CustomCommand(args);
+            // When the server returns null, CustomCommand returns null (not a ClusterValue containing null)
+            if (result is null)
+            {
+                return null;
+            }
             if (result.HasMultiData)
             {
                 // Multi-node response - this shouldn't happen for JSON commands but handle it gracefully
