@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.ServerModules;
+
 namespace Valkey.Glide.IntegrationTests;
 
 /// <summary>
@@ -7,6 +9,8 @@ namespace Valkey.Glide.IntegrationTests;
 /// </summary>
 internal static class SkipUtils
 {
+    #region Version Checks
+
     private static readonly Version Valkey7_0 = new("7.0.0");
     private static readonly Version Valkey9_0 = new("9.0.0");
 
