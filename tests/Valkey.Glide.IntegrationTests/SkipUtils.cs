@@ -33,4 +33,28 @@ internal static class SkipUtils
         => Assert.SkipWhen(
             TestConfiguration.SERVER_VERSION < Valkey7_0,
             "Set intersection cardinality commands require Valkey 7.0+");
+
+    #endregion
+    #region Module Checks
+
+    /// <summary>
+    /// Skips the test if the Valkey Search module is not loaded on the server.
+    /// </summary>
+    public static async Task IfSearchModuleNotLoaded(BaseClient client)
+    {
+        // TODO #361: Use client.ModuleListAsync() once implemented.
+        try
+        {
+            _ = await Ft.ListAsync(client);
+        }
+        catch (Exception ex) when (
+            ex.Message.Contains("unknown command", StringComparison.OrdinalIgnoreCase) ||
+            ex.Message.Contains("ERR unknown", StringComparison.OrdinalIgnoreCase) ||
+            ex.Message.Contains("module", StringComparison.OrdinalIgnoreCase))
+        {
+            Assert.Skip("Valkey Search module is not loaded on the server");
+        }
+    }
+
+    #endregion
 }
