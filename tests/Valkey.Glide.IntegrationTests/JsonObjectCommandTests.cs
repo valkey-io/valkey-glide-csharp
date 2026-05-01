@@ -55,18 +55,8 @@ public class JsonObjectCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"a\":1,\"b\":2,\"c\":3}";
 
-        ValkeyResult result;
-        if (client is GlideClient standaloneClient)
-        {
-            _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
-            result = await GlideJson.ObjLenAsync(standaloneClient, key, "$");
-        }
-        else
-        {
-            var clusterClient = (GlideClusterClient)client;
-            _ = await GlideJson.SetAsync(clusterClient, key, "$", jsonValue);
-            result = await GlideJson.ObjLenAsync(clusterClient, key, "$");
-        }
+        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        ValkeyResult result = await GlideJson.ObjLenAsync(client, key, "$");
 
         Assert.NotNull(result);
         long[] arr = (long[])result!;
@@ -83,18 +73,8 @@ public class JsonObjectCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{}";
 
-        ValkeyResult result;
-        if (client is GlideClient standaloneClient)
-        {
-            _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
-            result = await GlideJson.ObjLenAsync(standaloneClient, key, "$");
-        }
-        else
-        {
-            var clusterClient = (GlideClusterClient)client;
-            _ = await GlideJson.SetAsync(clusterClient, key, "$", jsonValue);
-            result = await GlideJson.ObjLenAsync(clusterClient, key, "$");
-        }
+        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        ValkeyResult result = await GlideJson.ObjLenAsync(client, key, "$");
 
         Assert.NotNull(result);
         long[] arr = (long[])result!;
@@ -115,18 +95,8 @@ public class JsonObjectCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\",\"age\":30}";
 
-        ValkeyResult result;
-        if (client is GlideClient standaloneClient)
-        {
-            _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
-            result = await GlideJson.ObjKeysAsync(standaloneClient, key, "$");
-        }
-        else
-        {
-            var clusterClient = (GlideClusterClient)client;
-            _ = await GlideJson.SetAsync(clusterClient, key, "$", jsonValue);
-            result = await GlideJson.ObjKeysAsync(clusterClient, key, "$");
-        }
+        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        ValkeyResult result = await GlideJson.ObjKeysAsync(client, key, "$");
 
         Assert.NotNull(result);
         // JSONPath returns array of arrays
@@ -149,18 +119,8 @@ public class JsonObjectCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"active\":true}";
 
-        ValkeyResult result;
-        if (client is GlideClient standaloneClient)
-        {
-            _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
-            result = await GlideJson.ToggleAsync(standaloneClient, key, "$.active");
-        }
-        else
-        {
-            var clusterClient = (GlideClusterClient)client;
-            _ = await GlideJson.SetAsync(clusterClient, key, "$", jsonValue);
-            result = await GlideJson.ToggleAsync(clusterClient, key, "$.active");
-        }
+        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        ValkeyResult result = await GlideJson.ToggleAsync(client, key, "$.active");
 
         Assert.NotNull(result);
         bool[] arr = (bool[])result!;
@@ -177,18 +137,8 @@ public class JsonObjectCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"active\":false}";
 
-        ValkeyResult result;
-        if (client is GlideClient standaloneClient)
-        {
-            _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
-            result = await GlideJson.ToggleAsync(standaloneClient, key, "$.active");
-        }
-        else
-        {
-            var clusterClient = (GlideClusterClient)client;
-            _ = await GlideJson.SetAsync(clusterClient, key, "$", jsonValue);
-            result = await GlideJson.ToggleAsync(clusterClient, key, "$.active");
-        }
+        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        ValkeyResult result = await GlideJson.ToggleAsync(client, key, "$.active");
 
         Assert.NotNull(result);
         bool[] arr = (bool[])result!;
@@ -209,18 +159,8 @@ public class JsonObjectCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\",\"age\":30}";
 
-        ValkeyResult result;
-        if (client is GlideClient standaloneClient)
-        {
-            _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
-            result = await GlideJson.DebugMemoryAsync(standaloneClient, key);
-        }
-        else
-        {
-            var clusterClient = (GlideClusterClient)client;
-            _ = await GlideJson.SetAsync(clusterClient, key, "$", jsonValue);
-            result = await GlideJson.DebugMemoryAsync(clusterClient, key);
-        }
+        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        ValkeyResult result = await GlideJson.DebugMemoryAsync(client, key);
 
         Assert.NotNull(result);
         long memorySize = (long)result;
@@ -240,18 +180,8 @@ public class JsonObjectCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\",\"age\":30}";
 
-        ValkeyResult result;
-        if (client is GlideClient standaloneClient)
-        {
-            _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
-            result = await GlideJson.DebugFieldsAsync(standaloneClient, key);
-        }
-        else
-        {
-            var clusterClient = (GlideClusterClient)client;
-            _ = await GlideJson.SetAsync(clusterClient, key, "$", jsonValue);
-            result = await GlideJson.DebugFieldsAsync(clusterClient, key);
-        }
+        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        ValkeyResult result = await GlideJson.DebugFieldsAsync(client, key);
 
         Assert.NotNull(result);
         long fieldCount = (long)result;
@@ -271,18 +201,8 @@ public class JsonObjectCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\"}";
 
-        ValkeyResult result;
-        if (client is GlideClient standaloneClient)
-        {
-            _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
-            result = await GlideJson.RespAsync(standaloneClient, key);
-        }
-        else
-        {
-            var clusterClient = (GlideClusterClient)client;
-            _ = await GlideJson.SetAsync(clusterClient, key, "$", jsonValue);
-            result = await GlideJson.RespAsync(clusterClient, key);
-        }
+        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        ValkeyResult result = await GlideJson.RespAsync(client, key);
 
         Assert.NotNull(result);
         // RESP format returns an array representation

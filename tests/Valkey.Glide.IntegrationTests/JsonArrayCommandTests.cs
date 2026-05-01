@@ -58,18 +58,8 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"arr\":[1,2,3]}";
 
-        ValkeyResult result;
-        if (client is GlideClient standaloneClient)
-        {
-            _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
-            result = await GlideJson.ArrAppendAsync(standaloneClient, key, "$.arr", "4", "5");
-        }
-        else
-        {
-            var clusterClient = (GlideClusterClient)client;
-            _ = await GlideJson.SetAsync(clusterClient, key, "$", jsonValue);
-            result = await GlideJson.ArrAppendAsync(clusterClient, key, "$.arr", "4", "5");
-        }
+        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        ValkeyResult result = await GlideJson.ArrAppendAsync(client, key, "$.arr", "4", "5");
 
         Assert.NotNull(result);
         long[] arr = (long[])result!;
@@ -86,18 +76,8 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"a\":[1],\"b\":[2,3]}";
 
-        ValkeyResult result;
-        if (client is GlideClient standaloneClient)
-        {
-            _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
-            result = await GlideJson.ArrAppendAsync(standaloneClient, key, "$.*", "99");
-        }
-        else
-        {
-            var clusterClient = (GlideClusterClient)client;
-            _ = await GlideJson.SetAsync(clusterClient, key, "$", jsonValue);
-            result = await GlideJson.ArrAppendAsync(clusterClient, key, "$.*", "99");
-        }
+        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        ValkeyResult result = await GlideJson.ArrAppendAsync(client, key, "$.*", "99");
 
         Assert.NotNull(result);
         long[] arr = (long[])result!;
@@ -117,18 +97,8 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"arr\":[1,2,3]}";
 
-        ValkeyResult result;
-        if (client is GlideClient standaloneClient)
-        {
-            _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
-            result = await GlideJson.ArrInsertAsync(standaloneClient, key, "$.arr", 1, "99");
-        }
-        else
-        {
-            var clusterClient = (GlideClusterClient)client;
-            _ = await GlideJson.SetAsync(clusterClient, key, "$", jsonValue);
-            result = await GlideJson.ArrInsertAsync(clusterClient, key, "$.arr", 1, "99");
-        }
+        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        ValkeyResult result = await GlideJson.ArrInsertAsync(client, key, "$.arr", 1, "99");
 
         Assert.NotNull(result);
         long[] arr = (long[])result!;
@@ -145,18 +115,8 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"arr\":[1,2,3]}";
 
-        ValkeyResult result;
-        if (client is GlideClient standaloneClient)
-        {
-            _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
-            result = await GlideJson.ArrInsertAsync(standaloneClient, key, "$.arr", -1, "99");
-        }
-        else
-        {
-            var clusterClient = (GlideClusterClient)client;
-            _ = await GlideJson.SetAsync(clusterClient, key, "$", jsonValue);
-            result = await GlideJson.ArrInsertAsync(clusterClient, key, "$.arr", -1, "99");
-        }
+        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        ValkeyResult result = await GlideJson.ArrInsertAsync(client, key, "$.arr", -1, "99");
 
         Assert.NotNull(result);
         long[] arr = (long[])result!;
@@ -177,18 +137,8 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"arr\":[1,2,3,4,5]}";
 
-        ValkeyResult result;
-        if (client is GlideClient standaloneClient)
-        {
-            _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
-            result = await GlideJson.ArrIndexAsync(standaloneClient, key, "$.arr", "3");
-        }
-        else
-        {
-            var clusterClient = (GlideClusterClient)client;
-            _ = await GlideJson.SetAsync(clusterClient, key, "$", jsonValue);
-            result = await GlideJson.ArrIndexAsync(clusterClient, key, "$.arr", "3");
-        }
+        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        ValkeyResult result = await GlideJson.ArrIndexAsync(client, key, "$.arr", "3");
 
         Assert.NotNull(result);
         long[] arr = (long[])result!;
@@ -205,18 +155,8 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"arr\":[1,2,3]}";
 
-        ValkeyResult result;
-        if (client is GlideClient standaloneClient)
-        {
-            _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
-            result = await GlideJson.ArrIndexAsync(standaloneClient, key, "$.arr", "99");
-        }
-        else
-        {
-            var clusterClient = (GlideClusterClient)client;
-            _ = await GlideJson.SetAsync(clusterClient, key, "$", jsonValue);
-            result = await GlideJson.ArrIndexAsync(clusterClient, key, "$.arr", "99");
-        }
+        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        ValkeyResult result = await GlideJson.ArrIndexAsync(client, key, "$.arr", "99");
 
         Assert.NotNull(result);
         long[] arr = (long[])result!;
@@ -234,18 +174,8 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string jsonValue = "{\"arr\":[1,2,3,2,5]}";
         var options = GlideJson.ArrIndexOptions.FromStart(2);
 
-        ValkeyResult result;
-        if (client is GlideClient standaloneClient)
-        {
-            _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
-            result = await GlideJson.ArrIndexAsync(standaloneClient, key, "$.arr", "2", options);
-        }
-        else
-        {
-            var clusterClient = (GlideClusterClient)client;
-            _ = await GlideJson.SetAsync(clusterClient, key, "$", jsonValue);
-            result = await GlideJson.ArrIndexAsync(clusterClient, key, "$.arr", "2", options);
-        }
+        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        ValkeyResult result = await GlideJson.ArrIndexAsync(client, key, "$.arr", "2", options);
 
         Assert.NotNull(result);
         long[] arr = (long[])result!;
@@ -266,18 +196,8 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"arr\":[1,2,3,4,5]}";
 
-        ValkeyResult result;
-        if (client is GlideClient standaloneClient)
-        {
-            _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
-            result = await GlideJson.ArrLenAsync(standaloneClient, key, "$.arr");
-        }
-        else
-        {
-            var clusterClient = (GlideClusterClient)client;
-            _ = await GlideJson.SetAsync(clusterClient, key, "$", jsonValue);
-            result = await GlideJson.ArrLenAsync(clusterClient, key, "$.arr");
-        }
+        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        ValkeyResult result = await GlideJson.ArrLenAsync(client, key, "$.arr");
 
         Assert.NotNull(result);
         long[] arr = (long[])result!;
@@ -294,18 +214,8 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"arr\":[]}";
 
-        ValkeyResult result;
-        if (client is GlideClient standaloneClient)
-        {
-            _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
-            result = await GlideJson.ArrLenAsync(standaloneClient, key, "$.arr");
-        }
-        else
-        {
-            var clusterClient = (GlideClusterClient)client;
-            _ = await GlideJson.SetAsync(clusterClient, key, "$", jsonValue);
-            result = await GlideJson.ArrLenAsync(clusterClient, key, "$.arr");
-        }
+        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        ValkeyResult result = await GlideJson.ArrLenAsync(client, key, "$.arr");
 
         Assert.NotNull(result);
         long[] arr = (long[])result!;
@@ -326,18 +236,8 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"arr\":[1,2,3]}";
 
-        ValkeyResult result;
-        if (client is GlideClient standaloneClient)
-        {
-            _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
-            result = await GlideJson.ArrPopAsync(standaloneClient, key, "$.arr");
-        }
-        else
-        {
-            var clusterClient = (GlideClusterClient)client;
-            _ = await GlideJson.SetAsync(clusterClient, key, "$", jsonValue);
-            result = await GlideJson.ArrPopAsync(clusterClient, key, "$.arr");
-        }
+        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        ValkeyResult result = await GlideJson.ArrPopAsync(client, key, "$.arr");
 
         Assert.NotNull(result);
         ValkeyResult[] arr = (ValkeyResult[])result!;
@@ -354,18 +254,8 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"arr\":[1,2,3]}";
 
-        ValkeyResult result;
-        if (client is GlideClient standaloneClient)
-        {
-            _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
-            result = await GlideJson.ArrPopAsync(standaloneClient, key, "$.arr", 0);
-        }
-        else
-        {
-            var clusterClient = (GlideClusterClient)client;
-            _ = await GlideJson.SetAsync(clusterClient, key, "$", jsonValue);
-            result = await GlideJson.ArrPopAsync(clusterClient, key, "$.arr", 0);
-        }
+        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        ValkeyResult result = await GlideJson.ArrPopAsync(client, key, "$.arr", 0);
 
         Assert.NotNull(result);
         ValkeyResult[] arr = (ValkeyResult[])result!;
@@ -386,18 +276,8 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"arr\":[1,2,3,4,5]}";
 
-        ValkeyResult result;
-        if (client is GlideClient standaloneClient)
-        {
-            _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
-            result = await GlideJson.ArrTrimAsync(standaloneClient, key, "$.arr", 1, 3);
-        }
-        else
-        {
-            var clusterClient = (GlideClusterClient)client;
-            _ = await GlideJson.SetAsync(clusterClient, key, "$", jsonValue);
-            result = await GlideJson.ArrTrimAsync(clusterClient, key, "$.arr", 1, 3);
-        }
+        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        ValkeyResult result = await GlideJson.ArrTrimAsync(client, key, "$.arr", 1, 3);
 
         Assert.NotNull(result);
         long[] arr = (long[])result!;
@@ -414,18 +294,8 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"arr\":[1,2,3]}";
 
-        ValkeyResult result;
-        if (client is GlideClient standaloneClient)
-        {
-            _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
-            result = await GlideJson.ArrTrimAsync(standaloneClient, key, "$.arr", 5, 10);
-        }
-        else
-        {
-            var clusterClient = (GlideClusterClient)client;
-            _ = await GlideJson.SetAsync(clusterClient, key, "$", jsonValue);
-            result = await GlideJson.ArrTrimAsync(clusterClient, key, "$.arr", 5, 10);
-        }
+        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        ValkeyResult result = await GlideJson.ArrTrimAsync(client, key, "$.arr", 5, 10);
 
         Assert.NotNull(result);
         long[] arr = (long[])result!;
