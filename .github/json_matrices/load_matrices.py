@@ -12,11 +12,11 @@ import os
 import sys
 from pathlib import Path
 
-VALID_PROFILES = ("smoke", "standard", "full")
-
-
 def load_json(filename: str) -> list | dict:
     return json.loads(Path(filename).read_text())
+
+
+PROFILES = load_json("profiles.json")
 
 
 def filter_by_profile(entries: list, profile: str) -> list:
@@ -24,57 +24,45 @@ def filter_by_profile(entries: list, profile: str) -> list:
 
 
 def main() -> None:
-    if len(sys.argv) != 2 or sys.argv[1] not in VALID_PROFILES:
-        print(f"Usage: {sys.argv[0]} <{'|'.join(VALID_PROFILES)}>", file=sys.stderr)
+    if len(sys.argv) != 2 or sys.argv[1] not in PROFILES:
+        print(f"Usage: {sys.argv[0]} <{'|'.join(PROFILES)}>", file=sys.stderr)
         sys.exit(1)
 
     profile = sys.argv[1]
 
-    profile_settings = load_json("profiles.json")[profile]
+    profile_settings = PROFILES[profile]
 
     os_matrix = filter_by_profile(load_json("os-matrix.json"), profile)
     host = [h for h in os_matrix if "IMAGE" not in h]
     container_host = [h for h in os_matrix if "IMAGE" in h]
 
     server = filter_by_profile(load_json("server-matrix.json"), profile)
+    assert server, "Given profile resulted in empty server matrix."
     
     dotnet_entries = filter_by_profile(load_json("version-matrix.json"), profile)
     dotnet = [e["version"] for e in dotnet_entries]
+    assert dotnet, "Given profile resulted in empty dotnet version matrix."
 
-    test_filter = profile_settings.get("test-filter", "")
+    test_filter = "|".join(profile_settings.get("test-filter", []))
 
-    # Validate
-    if profile == "smoke" and len(server) != 1:
-        print(f"ERROR: Expected exactly 1 smoke server, found {len(server)}", file=sys.stderr)
-        sys.exit(1)
-    for name, value in [("HOST_MATRIX", host), ("SERVER_MATRIX", server), ("DOTNET_MATRIX", dotnet)]:
-        if not value:
-            print(f"ERROR: {name} is empty for profile={profile}", file=sys.stderr)
-            sys.exit(1)
-
-    # Summary
-    print(f"Profile: {profile}")
-    print(f"VM hosts: {len(host)}")
-    print(f"Container hosts: {len(container_host)}")
-    print(f"Servers: {len(server)}")
-    print(f"Dotnet versions: {len(dotnet)}")
-    print(f"Test filter: {test_filter or '(none)'}")
+    configs = {
+        "host-matrix": json.dumps(host),
+        "container-host-matrix": json.dumps(container_host),
+        "server-matrix": json.dumps(server),
+        "dotnet-matrix": json.dumps(dotnet),
+        "test-filter": test_filter,
+    }
 
     # Write to GITHUB_OUTPUT
+    print(f"Loaded matrices for profile '{profile}':")
     github_output = os.environ.get("GITHUB_OUTPUT")
     if github_output:
         with open(github_output, "a") as f:
-            f.write(f"host-matrix={json.dumps(host, separators=(',', ':'))}\n")
-            f.write(f"container-host-matrix={json.dumps(container_host, separators=(',', ':'))}\n")
-            f.write(f"server-matrix={json.dumps(server, separators=(',', ':'))}\n")
-            f.write(f"dotnet-matrix={json.dumps(dotnet, separators=(',', ':'))}\n")
-            f.write(f"test-filter={test_filter}\n")
+            for key, value in configs.items():
+               print(f"{key}={value}", file=f)
     else:
-        print(f"host-matrix={json.dumps(host, indent=2)}")
-        print(f"container-host-matrix={json.dumps(container_host, indent=2)}")
-        print(f"server-matrix={json.dumps(server, indent=2)}")
-        print(f"dotnet-matrix={json.dumps(dotnet, indent=2)}")
-        print(f"test-filter={test_filter}")
+        for key, value in configs.items():
+            print(f"{key}={value}")
 
 
 if __name__ == "__main__":
