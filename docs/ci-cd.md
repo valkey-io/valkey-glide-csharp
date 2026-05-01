@@ -60,6 +60,7 @@ python3 load_matrices.py full
 Without `$GITHUB_OUTPUT` set, the script prints results to stdout.
 
 ## Tags (CD pipeline)
+TODO: To be removed as part of https://github.com/valkey-io/valkey-glide-csharp/issues/345
 
 The `tags` field in `os-matrix.json` is separate from profiles. It controls which platforms the CD pipeline (`cd.yml`) builds binaries for:
 

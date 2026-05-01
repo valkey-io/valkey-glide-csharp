@@ -389,7 +389,7 @@ It serves as a "test order", describing available properties and which `profiles
 
 Ex: To add a new platform to the `standard` profile, add a new entry to `.github/json_matrices/os_matrix.json` with `profiles: ['standard']`
 
-See the [CI/CD Test Matrices README](.github/json_matrices/README.md) for details.
+See the [CI/CD Test Matrices README](docs/ci-cd.md) for details.
 
 ## Community and Feedback
 
