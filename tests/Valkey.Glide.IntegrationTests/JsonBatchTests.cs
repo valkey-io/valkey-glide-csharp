@@ -6,7 +6,7 @@ using Valkey.Glide.ServerModules;
 namespace Valkey.Glide.IntegrationTests;
 
 /// <summary>
-/// Integration tests for JSON batch commands via the GlideJsonBatch extension methods.
+/// Integration tests for JSON batch commands via the GlideJsonBatch static methods.
 /// These tests require a Valkey server with the JSON module enabled.
 /// </summary>
 [Collection("GlideTests")]
@@ -72,11 +72,11 @@ public class JsonBatchTests(TestConfiguration config)
         try
         {
             Batch batch = new(false);
-            _ = batch.JsonSet(key, "$", jsonValue);
-            _ = batch.JsonGet(key);
-            _ = batch.JsonGet(key, "$.name");
-            _ = batch.JsonType(key);
-            _ = batch.JsonType(key, "$.age");
+            _ = GlideJsonBatch.Set(batch, key, "$", jsonValue);
+            _ = GlideJsonBatch.Get(batch, key);
+            _ = GlideJsonBatch.Get(batch, key, "$.name");
+            _ = GlideJsonBatch.Type(batch, key);
+            _ = GlideJsonBatch.Type(batch, key, "$.age");
 
             object?[]? results = await client.Exec(batch, true);
 
@@ -111,9 +111,9 @@ public class JsonBatchTests(TestConfiguration config)
             _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
 
             Batch batch = new(false);
-            _ = batch.JsonNumIncrBy(key, "$.counter", 5);
-            _ = batch.JsonNumMultBy(key, "$.multiplier", 2);
-            _ = batch.JsonGet(key);
+            _ = GlideJsonBatch.NumIncrBy(batch, key, "$.counter", 5);
+            _ = GlideJsonBatch.NumMultBy(batch, key, "$.multiplier", 2);
+            _ = GlideJsonBatch.Get(batch, key);
 
             object?[]? results = await client.Exec(batch, true);
 
@@ -147,10 +147,10 @@ public class JsonBatchTests(TestConfiguration config)
             _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
 
             Batch batch = new(false);
-            _ = batch.JsonArrAppend(key, "$.items", "4", "5");
-            _ = batch.JsonArrLen(key, "$.items");
-            _ = batch.JsonArrIndex(key, "$.items", "3");
-            _ = batch.JsonGet(key);
+            _ = GlideJsonBatch.ArrAppend(batch, key, "$.items", ["4", "5"]);
+            _ = GlideJsonBatch.ArrLen(batch, key, "$.items");
+            _ = GlideJsonBatch.ArrIndex(batch, key, "$.items", "3");
+            _ = GlideJsonBatch.Get(batch, key);
 
             object?[]? results = await client.Exec(batch, true);
 
@@ -181,10 +181,10 @@ public class JsonBatchTests(TestConfiguration config)
             _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
 
             Batch batch = new(false);
-            _ = batch.JsonObjLen(key);
-            _ = batch.JsonObjLen(key, "$");
-            _ = batch.JsonObjKeys(key);
-            _ = batch.JsonObjKeys(key, "$");
+            _ = GlideJsonBatch.ObjLen(batch, key);
+            _ = GlideJsonBatch.ObjLen(batch, key, "$");
+            _ = GlideJsonBatch.ObjKeys(batch, key);
+            _ = GlideJsonBatch.ObjKeys(batch, key, "$");
 
             object?[]? results = await client.Exec(batch, true);
 
@@ -215,10 +215,10 @@ public class JsonBatchTests(TestConfiguration config)
             _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
 
             Batch batch = new(false);
-            _ = batch.JsonStrLen(key, "$.greeting");
-            _ = batch.JsonStrAppend(key, "$.greeting", "\" World\"");
-            _ = batch.JsonStrLen(key, "$.greeting");
-            _ = batch.JsonGet(key, "$.greeting");
+            _ = GlideJsonBatch.StrLen(batch, key, "$.greeting");
+            _ = GlideJsonBatch.StrAppend(batch, key, "$.greeting", "\" World\"");
+            _ = GlideJsonBatch.StrLen(batch, key, "$.greeting");
+            _ = GlideJsonBatch.Get(batch, key, "$.greeting");
 
             object?[]? results = await client.Exec(batch, true);
 
@@ -250,10 +250,10 @@ public class JsonBatchTests(TestConfiguration config)
             _ = await GlideJson.SetAsync(client, key2, "$", "{\"arr\":[1,2,3],\"num\":42}");
 
             Batch batch = new(false);
-            _ = batch.JsonDel(key1, "$.b");
-            _ = batch.JsonClear(key2, "$.arr");
-            _ = batch.JsonGet(key1);
-            _ = batch.JsonGet(key2);
+            _ = GlideJsonBatch.Del(batch, key1, "$.b");
+            _ = GlideJsonBatch.Clear(batch, key2, "$.arr");
+            _ = GlideJsonBatch.Get(batch, key1);
+            _ = GlideJsonBatch.Get(batch, key2);
 
             object?[]? results = await client.Exec(batch, true);
 
@@ -284,9 +284,9 @@ public class JsonBatchTests(TestConfiguration config)
             _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
 
             Batch batch = new(false);
-            _ = batch.JsonToggle(key, "$.active");
-            _ = batch.JsonToggle(key, "$.enabled");
-            _ = batch.JsonGet(key);
+            _ = GlideJsonBatch.Toggle(batch, key, "$.active");
+            _ = GlideJsonBatch.Toggle(batch, key, "$.enabled");
+            _ = GlideJsonBatch.Get(batch, key);
 
             object?[]? results = await client.Exec(batch, true);
 
@@ -317,10 +317,10 @@ public class JsonBatchTests(TestConfiguration config)
             _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
 
             Batch batch = new(false);
-            _ = batch.JsonDebugMemory(key);
-            _ = batch.JsonDebugMemory(key, "$");
-            _ = batch.JsonDebugFields(key);
-            _ = batch.JsonDebugFields(key, "$");
+            _ = GlideJsonBatch.DebugMemory(batch, key);
+            _ = GlideJsonBatch.DebugMemory(batch, key, "$");
+            _ = GlideJsonBatch.DebugFields(batch, key);
+            _ = GlideJsonBatch.DebugFields(batch, key, "$");
 
             object?[]? results = await client.Exec(batch, true);
 
@@ -354,7 +354,7 @@ public class JsonBatchTests(TestConfiguration config)
             _ = await GlideJson.SetAsync(client, key3, "$", "{\"value\":3}");
 
             Batch batch = new(false);
-            _ = batch.JsonMGet([(GlideString)key1, key2, key3], "$.value");
+            _ = GlideJsonBatch.MGet(batch, [(GlideString)key1, key2, key3], "$.value");
 
             object?[]? results = await client.Exec(batch, true);
 
@@ -383,10 +383,10 @@ public class JsonBatchTests(TestConfiguration config)
         try
         {
             Batch batch = new(false);
-            _ = batch.JsonSet(key, "$", "{\"a\":1}", GlideJson.SetCondition.OnlyIfDoesNotExist);
-            _ = batch.JsonSet(key, "$.a", "2", GlideJson.SetCondition.OnlyIfExists);
-            _ = batch.JsonSet(key, "$", "{\"b\":1}", GlideJson.SetCondition.OnlyIfDoesNotExist);
-            _ = batch.JsonGet(key);
+            _ = GlideJsonBatch.Set(batch, key, "$", "{\"a\":1}", GlideJson.SetCondition.OnlyIfDoesNotExist);
+            _ = GlideJsonBatch.Set(batch, key, "$.a", "2", GlideJson.SetCondition.OnlyIfExists);
+            _ = GlideJsonBatch.Set(batch, key, "$", "{\"b\":1}", GlideJson.SetCondition.OnlyIfDoesNotExist);
+            _ = GlideJsonBatch.Get(batch, key);
 
             object?[]? results = await client.Exec(batch, true);
 
@@ -419,11 +419,11 @@ public class JsonBatchTests(TestConfiguration config)
             _ = await GlideJson.SetAsync(client, key, "$", "{\"arr\":[1,2,3,4,5]}");
 
             Batch batch = new(false);
-            _ = batch.JsonArrInsert(key, "$.arr", 2, "\"inserted\"");
-            _ = batch.JsonArrLen(key, "$.arr");
-            _ = batch.JsonArrTrim(key, "$.arr", 0, 3);
-            _ = batch.JsonArrLen(key, "$.arr");
-            _ = batch.JsonGet(key);
+            _ = GlideJsonBatch.ArrInsert(batch, key, "$.arr", 2, ["\"inserted\""]);
+            _ = GlideJsonBatch.ArrLen(batch, key, "$.arr");
+            _ = GlideJsonBatch.ArrTrim(batch, key, "$.arr", 0, 3);
+            _ = GlideJsonBatch.ArrLen(batch, key, "$.arr");
+            _ = GlideJsonBatch.Get(batch, key);
 
             object?[]? results = await client.Exec(batch, true);
 
@@ -453,10 +453,10 @@ public class JsonBatchTests(TestConfiguration config)
             _ = await GlideJson.SetAsync(client, key, "$", "{\"arr\":[1,2,3,4,5]}");
 
             Batch batch = new(false);
-            _ = batch.JsonArrPop(key, "$.arr");
-            _ = batch.JsonArrPop(key, "$.arr", 0);
-            _ = batch.JsonArrLen(key, "$.arr");
-            _ = batch.JsonGet(key);
+            _ = GlideJsonBatch.ArrPop(batch, key, "$.arr");
+            _ = GlideJsonBatch.ArrPop(batch, key, "$.arr", 0);
+            _ = GlideJsonBatch.ArrLen(batch, key, "$.arr");
+            _ = GlideJsonBatch.Get(batch, key);
 
             object?[]? results = await client.Exec(batch, true);
 
@@ -486,45 +486,13 @@ public class JsonBatchTests(TestConfiguration config)
             _ = await GlideJson.SetAsync(client, key, "$", "{\"a\":1,\"b\":\"hello\"}");
 
             Batch batch = new(false);
-            _ = batch.JsonResp(key);
-            _ = batch.JsonResp(key, "$");
+            _ = GlideJsonBatch.Resp(batch, key);
+            _ = GlideJsonBatch.Resp(batch, key, "$");
 
             object?[]? results = await client.Exec(batch, true);
 
             Assert.NotNull(results);
             Assert.Equal(2, results.Length);
-        }
-        finally
-        {
-            _ = await client.DeleteAsync(key);
-        }
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task JsonBatch_Chaining_WorksCorrectly(GlideClient client)
-    {
-        if (!await IsJsonModuleAvailable(client))
-        {
-            Assert.Skip("JSON module is not available");
-            return;
-        }
-
-        string key = GetUniqueKey();
-
-        try
-        {
-            Batch batch = new Batch(false)
-                .JsonSet(key, "$", "{\"x\":1}")
-                .JsonGet(key)
-                .JsonNumIncrBy(key, "$.x", 10)
-                .JsonGet(key);
-
-            object?[]? results = await client.Exec(batch, true);
-
-            Assert.NotNull(results);
-            Assert.Equal(4, results.Length);
-            Assert.Equal("OK", results[0]?.ToString());
         }
         finally
         {
@@ -547,11 +515,11 @@ public class JsonBatchTests(TestConfiguration config)
         try
         {
             Batch batch = new(true);
-            _ = batch.JsonSet(key, "$", "{\"counter\":0}");
-            _ = batch.JsonNumIncrBy(key, "$.counter", 1);
-            _ = batch.JsonNumIncrBy(key, "$.counter", 1);
-            _ = batch.JsonNumIncrBy(key, "$.counter", 1);
-            _ = batch.JsonGet(key);
+            _ = GlideJsonBatch.Set(batch, key, "$", "{\"counter\":0}");
+            _ = GlideJsonBatch.NumIncrBy(batch, key, "$.counter", 1);
+            _ = GlideJsonBatch.NumIncrBy(batch, key, "$.counter", 1);
+            _ = GlideJsonBatch.NumIncrBy(batch, key, "$.counter", 1);
+            _ = GlideJsonBatch.Get(batch, key);
 
             object?[]? results = await client.Exec(batch, true);
 
@@ -584,10 +552,10 @@ public class JsonBatchTests(TestConfiguration config)
         try
         {
             ClusterBatch batch = new(false);
-            _ = batch.JsonSet(key, "$", jsonValue);
-            _ = batch.JsonGet(key);
-            _ = batch.JsonGet(key, "$.name");
-            _ = batch.JsonType(key);
+            _ = GlideJsonBatch.Set(batch, key, "$", jsonValue);
+            _ = GlideJsonBatch.Get(batch, key);
+            _ = GlideJsonBatch.Get(batch, key, "$.name");
+            _ = GlideJsonBatch.Type(batch, key);
 
             object?[]? results = await client.Exec(batch, true);
 
@@ -619,11 +587,11 @@ public class JsonBatchTests(TestConfiguration config)
             _ = await GlideJson.SetAsync(client, key, "$", "{\"arr\":[1,2,3],\"obj\":{\"a\":1}}");
 
             ClusterBatch batch = new(false);
-            _ = batch.JsonArrAppend(key, "$.arr", "4");
-            _ = batch.JsonArrLen(key, "$.arr");
-            _ = batch.JsonObjLen(key, "$.obj");
-            _ = batch.JsonObjKeys(key, "$.obj");
-            _ = batch.JsonGet(key);
+            _ = GlideJsonBatch.ArrAppend(batch, key, "$.arr", ["4"]);
+            _ = GlideJsonBatch.ArrLen(batch, key, "$.arr");
+            _ = GlideJsonBatch.ObjLen(batch, key, "$.obj");
+            _ = GlideJsonBatch.ObjKeys(batch, key, "$.obj");
+            _ = GlideJsonBatch.Get(batch, key);
 
             object?[]? results = await client.Exec(batch, true);
 
