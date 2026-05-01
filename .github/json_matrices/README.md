@@ -46,24 +46,7 @@ This host runs in all three profiles. A host with `"profiles": ["full"]` only ru
 
 ## How it works
 
-The reusable workflow `_reusable-test.yml` calls the script:
-
-```yaml
-- name: Load and filter matrices
-  run: python3 load_matrices.py ${{ inputs.profile }}
-```
-
-The script outputs four JSON arrays:
-
-| Output | Description |
-|--------|-------------|
-| `host-matrix` | VM hosts (entries without `IMAGE`) matching the profile |
-| `container-host-matrix` | Container hosts (entries with `IMAGE`) matching the profile |
-| `server-matrix` | Server versions matching the profile |
-| `dotnet-matrix` | .NET versions matching the profile |
-| `test-filter` | Test filter expression from `profiles.json` (empty = run all tests) |
-
-These feed into the `test` and `test-container` job strategy matrices.
+The reusable workflow `_reusable-test.yml` calls the `load_matrices.py` script for a specified profile, which generates JSON arrays representing the corresponding host, server, .NET version, and test filter.s
 
 ### Local testing
 
