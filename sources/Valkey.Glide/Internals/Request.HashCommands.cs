@@ -51,8 +51,7 @@ internal partial class Request
         => Simple<double>(RequestType.HIncrByFloat, [key.ToGlideString(), hashField.ToGlideString(), value.ToGlideString()]);
 
     public static Cmd<object[], ISet<ValkeyValue>> HashKeysAsync(ValkeyKey key)
-        => new(RequestType.HKeys, [key.ToGlideString()], false, response =>
-            new HashSet<ValkeyValue>(response.Cast<GlideString>().Select(gs => (ValkeyValue)gs)));
+        => new(RequestType.HKeys, [key.ToGlideString()], false, ToValkeyValueSet);
 
     public static Cmd<long, long> HashLengthAsync(ValkeyKey key)
         => Simple<long>(RequestType.HLen, [key.ToGlideString()]);

@@ -1,6 +1,6 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using Valkey.Glide.Commands.Options;
+using Valkey.Glide.ServerModules;
 
 using static Valkey.Glide.Internals.FFI;
 
@@ -8,18 +8,23 @@ namespace Valkey.Glide.Internals;
 
 internal partial class Request
 {
-    public static Cmd<string, string> FtCreate(ValkeyKey indexName, IEnumerable<IField> schema, FtCreateOptions? options)
+    #region Public Methods
+
+    public static Cmd<string, string> FtCreate(ValkeyKey indexName, IEnumerable<Ft.ICreateField> schema, Ft.CreateOptions? options)
     {
         List<GlideString> args = [indexName];
+
         if (options is not null)
         {
             args.AddRange(options.ToArgs());
         }
+
         args.Add(ValkeyLiterals.SCHEMA);
         foreach (var field in schema)
         {
             args.AddRange(field.ToArgs());
         }
+
         return Simple<string>(RequestType.FtCreate, [.. args]);
     }
 
@@ -29,21 +34,12 @@ internal partial class Request
     public static Cmd<object[], ISet<ValkeyValue>> FtList()
         => new(RequestType.FtList, [], false, ToValkeyValueSet);
 
-    private static HashSet<ValkeyValue> ToValkeyValueSet(object[] objects)
-    {
-        HashSet<ValkeyValue> result = new(objects.Length);
-        foreach (var obj in objects)
-        {
-            _ = result.Add((ValkeyValue)(GlideString)obj);
-        }
-        return result;
-    }
-
-    public static Cmd<object[], FtSearchResult> FtSearch(ValkeyKey indexName, ValkeyValue query, FtSearchOptions? options)
+    public static Cmd<object[], Ft.SearchResult> FtSearch(ValkeyKey indexName, ValkeyValue query, Ft.SearchOptions? options)
     {
         List<GlideString> args = [indexName, query];
-        // Server ignores WITHSORTKEYS when NOCONTENT is set, so treat as plain search.
-        bool withSortKeys = options is { SortBy.WithSortKeys: true, NoContent: false };
+        bool isNoContent = options?.Return is not null
+            && !(options.Return as ICollection<Ft.SearchReturnField> ?? [.. options.Return]).Any();
+        bool withSortKeys = options is { SortBy.WithSortKeys: true } && !isNoContent;
         if (options is not null)
         {
             args.AddRange(options.ToArgs());
@@ -51,17 +47,19 @@ internal partial class Request
         return new(RequestType.FtSearch, [.. args], false, data => ParseFtSearchResponse(data, withSortKeys));
     }
 
-    public static Cmd<object[], FtAggregateRow[]> FtAggregate(ValkeyKey indexName, ValkeyValue query, FtAggregateOptions? options)
+    public static Cmd<object[], Ft.AggregateRow[]> FtAggregate(ValkeyKey indexName, ValkeyValue query, Ft.AggregateOptions? options)
     {
         List<GlideString> args = [indexName, query];
+
         if (options is not null)
         {
             args.AddRange(options.ToArgs());
         }
+
         return new(RequestType.FtAggregate, [.. args], false, ParseFtAggregateResponse);
     }
 
-    public static Cmd<object, Dictionary<ValkeyValue, object>> FtInfo(ValkeyKey indexName, FtInfoOptions? options)
+    public static Cmd<object, Dictionary<ValkeyValue, object>> FtInfo(ValkeyKey indexName, Ft.InfoOptions? options)
     {
         List<GlideString> args = [indexName];
         if (options is not null)
@@ -71,26 +69,27 @@ internal partial class Request
         return new(RequestType.FtInfo, [.. args], false, ParseFtInfoResponse);
     }
 
-    // --- response parsers ---
+    #endregion
+    #region Private Methods
 
-    private static FtSearchResult ParseFtSearchResponse(object[] data, bool withSortKeys)
+    private static Ft.SearchResult ParseFtSearchResponse(object[] data, bool withSortKeys)
     {
         // Format: [count, {key1: fields1, key2: fields2, ...}]
         if (data.Length < 2)
         {
-            return new FtSearchResult(0, []);
+            return new Ft.SearchResult(0, []);
         }
 
         long count = Convert.ToInt64(data[0]);
-        List<FtSearchDocument> docs = [];
+        List<Ft.SearchDocument> docs = [];
 
         if (data[1] is Dictionary<GlideString, object> map)
         {
             foreach (var kvp in map)
             {
                 ValkeyKey key = (ValkeyKey)kvp.Key.Bytes;
-                ValkeyValue? sortKey = null;
-                Dictionary<ValkeyValue, ValkeyValue> fields = [];
+                ValkeyValue sortKey = default;
+                IDictionary<ValkeyValue, ValkeyValue> fields = new Dictionary<ValkeyValue, ValkeyValue>();
 
                 if (withSortKeys && kvp.Value is object[] pair && pair.Length == 2)
                 {
@@ -109,22 +108,22 @@ internal partial class Request
                         f => (ValkeyValue)(GlideString)f.Value);
                 }
 
-                docs.Add(new FtSearchDocument(key, fields, sortKey));
+                docs.Add(new Ft.SearchDocument(key, fields, sortKey));
             }
         }
 
-        return new FtSearchResult(count, docs);
+        return new Ft.SearchResult(count, [.. docs]);
     }
 
-    private static FtAggregateRow[] ParseFtAggregateResponse(object[] data)
+    private static Ft.AggregateRow[] ParseFtAggregateResponse(object[] data)
     {
         // The Rust core normalizes the response: strips leading count, converts rows to maps.
-        var results = new List<FtAggregateRow>();
+        var results = new List<Ft.AggregateRow>();
         foreach (var row in data)
         {
             if (row is Dictionary<GlideString, object> map)
             {
-                results.Add(new FtAggregateRow(map.ToDictionary(
+                results.Add(new Ft.AggregateRow(map.ToDictionary(
                     kvp => (ValkeyValue)kvp.Key,
                     kvp => ToValkeyValue(kvp.Value))));
             }
@@ -158,4 +157,6 @@ internal partial class Request
         object[] arr => arr.Select(ConvertFtValue).ToArray(),
         _ => value,
     };
+
+    #endregion
 }
