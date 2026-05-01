@@ -99,6 +99,13 @@ internal partial class Request
     private static ISet<ValkeyValue> ToValkeyValueSet(object[] objects)
         => new HashSet<ValkeyValue>(objects.Cast<GlideString>().Select(s => (ValkeyValue)s));
 
+    /// <summary>
+    /// Converts a keyword and items into a counted array: <c>keyword count item1 item2 ...</c>.
+    /// Returns an empty array if <paramref name="items"/> is empty.
+    /// </summary>
+    private static GlideString[] ToArgs(GlideString keyword, IEnumerable<ValkeyValue> items)
+        => [keyword, items.Count().ToGlideString(), .. items];
+
 
     /// <summary>
     /// Converts a <see cref="GlideString"/>-keyed dictionary to a <see cref="ValkeyKey"/>-keyed dictionary with <see langword="long"/> values.

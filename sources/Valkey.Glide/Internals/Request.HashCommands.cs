@@ -109,7 +109,7 @@ internal partial class Request
             args.Add(ValkeyLiterals.PERSIST);
         }
 
-        AddFields(args, [.. hashFields]);
+        args.AddRange(ToArgs(ValkeyLiterals.FIELDS, hashFields));
 
         return new(RequestType.HGetEx, [.. args], true, response =>
             [.. response.Select(item => item == null ? ValkeyValue.Null : (ValkeyValue)(GlideString)item)]);
@@ -189,7 +189,7 @@ internal partial class Request
     public static Cmd<object[], HashPersistResult[]> HashPersistAsync(ValkeyKey key, ValkeyValue[] hashFields)
     {
         List<GlideString> args = [key.ToGlideString()];
-        AddFields(args, hashFields);
+        args.AddRange(ToArgs(ValkeyLiterals.FIELDS, hashFields));
         return new(RequestType.HPersist, [.. args], false, response =>
             [.. response.Select(item => (HashPersistResult)(long)item)]);
     }
@@ -199,7 +199,7 @@ internal partial class Request
         List<GlideString> args = [key, ToMilliseconds(expiry)];
 
         AddExpireCondition(args, condition);
-        AddFields(args, hashFields);
+        args.AddRange(ToArgs(ValkeyLiterals.FIELDS, hashFields));
 
         return new(RequestType.HPExpire, [.. args], false, response =>
             [.. response.Select(item => (HashExpireResult)(long)item)]);
@@ -210,7 +210,7 @@ internal partial class Request
         List<GlideString> args = [key.ToGlideString(), expiry.ToUnixTimeMilliseconds().ToGlideString()];
 
         AddExpireCondition(args, condition);
-        AddFields(args, hashFields);
+        args.AddRange(ToArgs(ValkeyLiterals.FIELDS, hashFields));
 
         return new(RequestType.HPExpireAt, [.. args], false, response =>
             [.. response.Select(item => (HashExpireResult)(long)item)]);
@@ -218,28 +218,16 @@ internal partial class Request
 
     public static Cmd<object[], ExpireTimeResult[]> HashExpireTimeAsync(ValkeyKey key, ValkeyValue[] hashFields)
     {
-        List<GlideString> args = [key.ToGlideString()];
-        AddFields(args, hashFields);
+        List<GlideString> args = [key.ToGlideString(), .. ToArgs(ValkeyLiterals.FIELDS, hashFields)];
         return new(RequestType.HPExpireTime, [.. args], false, response =>
             [.. response.Select(item => new ExpireTimeResult((long)item))]);
     }
 
     public static Cmd<object[], TimeToLiveResult[]> HashTimeToLiveAsync(ValkeyKey key, ValkeyValue[] hashFields)
     {
-        List<GlideString> args = [key.ToGlideString()];
-        AddFields(args, hashFields);
+        List<GlideString> args = [key.ToGlideString(), .. ToArgs(ValkeyLiterals.FIELDS, hashFields)];
         return new(RequestType.HPTtl, [.. args], false, response =>
             [.. response.Select(item => new TimeToLiveResult((long)item))]);
-    }
-
-    /// <summary>
-    /// Adds the given fields to the arguments list.
-    /// </summary>
-    private static void AddFields(List<GlideString> args, ValkeyValue[] fields)
-    {
-        args.Add(ValkeyLiterals.FIELDS);
-        args.Add(fields.Length.ToGlideString());
-        args.AddRange(fields.ToGlideStrings());
     }
 
     /// <summary>
