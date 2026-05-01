@@ -113,7 +113,7 @@ public static partial class GlideJson
     /// When a JSONPath is provided, returns an array of memory sizes in bytes.
     /// When a legacy path is provided, returns the memory size in bytes.
     /// </returns>
-    /// <seealso href="https://valkey.io/commands/json.debug-memory/"/>
+    /// <seealso href="https://valkey.io/commands/json.debug/"/>
     public static async Task<ValkeyResult> DebugMemoryAsync(BaseClient client, ValkeyKey key, ValkeyValue path)
     {
         GlideString[] args = [JsonDebug, "MEMORY", ToGlideString(key), ToGlideString(path)];
@@ -127,7 +127,7 @@ public static partial class GlideJson
     /// <param name="client">The Glide client to use for the command.</param>
     /// <param name="key">The key where the JSON document is stored.</param>
     /// <returns>The memory size in bytes at the root path.</returns>
-    /// <seealso href="https://valkey.io/commands/json.debug-memory/"/>
+    /// <seealso href="https://valkey.io/commands/json.debug/"/>
     public static async Task<ValkeyResult> DebugMemoryAsync(BaseClient client, ValkeyKey key)
     {
         GlideString[] args = [JsonDebug, "MEMORY", ToGlideString(key)];
@@ -149,7 +149,7 @@ public static partial class GlideJson
     /// When a JSONPath is provided, returns an array of field counts.
     /// When a legacy path is provided, returns the field count.
     /// </returns>
-    /// <seealso href="https://valkey.io/commands/json.debug-fields/"/>
+    /// <seealso href="https://valkey.io/commands/json.debug/"/>
     public static async Task<ValkeyResult> DebugFieldsAsync(BaseClient client, ValkeyKey key, ValkeyValue path)
     {
         GlideString[] args = [JsonDebug, "FIELDS", ToGlideString(key), ToGlideString(path)];
@@ -163,7 +163,7 @@ public static partial class GlideJson
     /// <param name="client">The Glide client to use for the command.</param>
     /// <param name="key">The key where the JSON document is stored.</param>
     /// <returns>The field count at the root path.</returns>
-    /// <seealso href="https://valkey.io/commands/json.debug-fields/"/>
+    /// <seealso href="https://valkey.io/commands/json.debug/"/>
     public static async Task<ValkeyResult> DebugFieldsAsync(BaseClient client, ValkeyKey key)
     {
         GlideString[] args = [JsonDebug, "FIELDS", ToGlideString(key)];
