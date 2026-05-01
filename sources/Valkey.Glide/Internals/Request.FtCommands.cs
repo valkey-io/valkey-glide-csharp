@@ -10,7 +10,7 @@ internal partial class Request
 {
     #region Public Methods
 
-    public static Cmd<string, string> FtCreate(ValkeyKey indexName, IEnumerable<Ft.Field> schema, Ft.CreateOptions? options)
+    public static Cmd<string, string> FtCreate(ValkeyKey indexName, IEnumerable<Ft.Field> schema, Ft.CreateOptions? options = null)
         => Simple<string>(RequestType.FtCreate, [indexName, .. ToArgs(options), .. ToArgs(schema)]);
 
     public static Cmd<string, string> FtDropIndex(ValkeyKey indexName)
@@ -19,13 +19,13 @@ internal partial class Request
     public static Cmd<object[], ISet<ValkeyValue>> FtList()
         => new(RequestType.FtList, [], false, ToValkeyValueSet);
 
-    public static Cmd<object[], Ft.SearchResult> FtSearch(ValkeyKey indexName, ValkeyValue query, Ft.SearchOptions? options)
+    public static Cmd<object[], Ft.SearchResult> FtSearch(ValkeyKey indexName, ValkeyValue query, Ft.SearchOptions? options = null)
         => new(RequestType.FtSearch, [indexName, query, .. ToArgs(options)], false, ParseFtSearchResponse);
 
-    public static Cmd<object[], Ft.AggregateRow[]> FtAggregate(ValkeyKey indexName, ValkeyValue query, Ft.AggregateOptions? options)
+    public static Cmd<object[], Ft.AggregateRow[]> FtAggregate(ValkeyKey indexName, ValkeyValue query, Ft.AggregateOptions? options = null)
         => new(RequestType.FtAggregate, [indexName, query, .. ToArgs(options)], false, ParseFtAggregateResponse);
 
-    public static Cmd<object, Dictionary<ValkeyValue, object>> FtInfo(ValkeyKey indexName, Ft.InfoOptions? options)
+    public static Cmd<object, Dictionary<ValkeyValue, object>> FtInfo(ValkeyKey indexName, Ft.InfoOptions? options = null)
         => new(RequestType.FtInfo, [indexName, .. ToArgs(options)], false, ParseFtInfoResponse);
 
     #endregion
