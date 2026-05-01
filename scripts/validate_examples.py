@@ -50,6 +50,7 @@ class ExamplesValidator:
         "Valkey.Glide.Pipeline",
         "Valkey.Glide.Commands",
         "Valkey.Glide.Commands.Options",
+        "Valkey.Glide.ServerModules",
     ]
 
     # Type imports (using static) to include when --add-imports is specified.
