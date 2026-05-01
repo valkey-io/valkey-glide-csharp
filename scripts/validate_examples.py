@@ -60,6 +60,7 @@ class ExamplesValidator:
         "Valkey.Glide.Commands.Options.InfoOptions",
         "Valkey.Glide.Commands.Options.BitFieldOptions",
         "Valkey.Glide.Commands.Options.BitFieldOptions.Encoding",
+        "Valkey.Glide.ServerModules.GlideJson",
     ]
 
     # Client fields to include when --add-clients is specified.

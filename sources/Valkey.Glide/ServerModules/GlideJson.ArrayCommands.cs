@@ -30,7 +30,7 @@ public static partial class GlideJson
     /// </example>
     public static async Task<ValkeyResult> ArrAppendAsync(BaseClient client, ValkeyKey key, ValkeyValue path, params ValkeyValue[] values)
     {
-        GlideString[] args = BuildArrAppendArgs(ToGlideString(key), ToGlideString(path), values.Select(v => ToGlideString(v)).ToArray());
+        GlideString[] args = BuildArrAppendArgs(ToGlideString(key), ToGlideString(path), [.. values.Select(v => ToGlideString(v))]);
         object? result = await ExecuteCommandAsync(client, args);
         return ValkeyResult.Create(result);
     }
@@ -61,7 +61,7 @@ public static partial class GlideJson
     /// <seealso href="https://valkey.io/commands/json.arrinsert/"/>
     public static async Task<ValkeyResult> ArrInsertAsync(BaseClient client, ValkeyKey key, ValkeyValue path, long index, params ValkeyValue[] values)
     {
-        GlideString[] args = BuildArrInsertArgs(ToGlideString(key), ToGlideString(path), index, values.Select(v => ToGlideString(v)).ToArray());
+        GlideString[] args = BuildArrInsertArgs(ToGlideString(key), ToGlideString(path), index, [.. values.Select(v => ToGlideString(v))]);
         object? result = await ExecuteCommandAsync(client, args);
         return ValkeyResult.Create(result);
     }
