@@ -6,7 +6,7 @@ on:
             profile:
                 required: true
                 type: string
-                description: "Test profile: smoke, standard, or full"
+                description: "Test profile. See profiles.json for available profiles."
             package-version:
                 required: false
                 type: string
@@ -49,6 +49,8 @@ jobs:
                   fi
 
             - uses: actions/checkout@v6
+              with:
+                  sparse-checkout: .github/json_matrices
 
             - name: Load and filter matrices
               id: load
@@ -57,7 +59,7 @@ jobs:
                   PROFILE: ${{ inputs.profile }}
               run: python3 load_matrices.py "$PROFILE"
 
-    runner-tests:
+    test-with-runners:
         name: net${{ matrix.dotnet }}, server ${{ matrix.server.version }}, ${{ matrix.host.TARGET }}
         needs: load-matrix
         timeout-minutes: 100
@@ -197,7 +199,7 @@ jobs:
                       failures.json
                       valkey-glide/utils/clusters/**
 
-    container-tests:
+    test-with-containers:
         name: net${{ matrix.dotnet }}, server ${{ matrix.server.version }}, ${{ matrix.host.IMAGE }}
         needs: load-matrix
         if: ${{ needs.load-matrix.outputs.container-host-matrix != '[]' }}
