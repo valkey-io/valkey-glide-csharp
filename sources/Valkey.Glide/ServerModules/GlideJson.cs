@@ -141,6 +141,7 @@ public static partial class GlideJson
             SetCondition.None => [JsonSet, key, path, value],
             SetCondition.OnlyIfDoesNotExist => [JsonSet, key, path, value, "NX"],
             SetCondition.OnlyIfExists => [JsonSet, key, path, value, "XX"],
+            _ => throw new ArgumentOutOfRangeException(nameof(condition), condition, "Invalid SetCondition value")
         };
     }
 
