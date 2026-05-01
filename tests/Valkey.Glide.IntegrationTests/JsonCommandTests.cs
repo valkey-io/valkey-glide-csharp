@@ -2985,7 +2985,7 @@ public class JsonCommandTests(TestConfiguration config)
         Assert.NotNull(result);
         // JSONPath returns array of lengths
         // "Hello" (5) + " World" (6) = 11
-        long[] arr = (long[])result;
+        long[] arr = (long[])result!;
         _ = Assert.Single(arr);
         Assert.Equal(11L, arr[0]);
     }
@@ -3014,7 +3014,7 @@ public class JsonCommandTests(TestConfiguration config)
 
         Assert.NotNull(result);
         // "foo" (3) + "baz" (3) = 6
-        long[] arr = (long[])result;
+        long[] arr = (long[])result!;
         _ = Assert.Single(arr);
         Assert.Equal(6L, arr[0]);
     }
@@ -3102,7 +3102,7 @@ public class JsonCommandTests(TestConfiguration config)
 
         Assert.NotNull(result);
         // "Hello" (5) + " World" (6) = 11
-        long[] arr = (long[])result;
+        long[] arr = (long[])result!;
         _ = Assert.Single(arr);
         Assert.Equal(11L, arr[0]);
     }
@@ -3131,7 +3131,7 @@ public class JsonCommandTests(TestConfiguration config)
 
         Assert.NotNull(result);
         // "Hello" (5) + "" (0) = 5
-        long[] arr = (long[])result;
+        long[] arr = (long[])result!;
         _ = Assert.Single(arr);
         Assert.Equal(5L, arr[0]);
     }
@@ -3192,7 +3192,7 @@ public class JsonCommandTests(TestConfiguration config)
 
         Assert.NotNull(result);
         // Should return array of new lengths: [2, 3, 4] (a+x=2, bb+x=3, ccc+x=4)
-        long[] arr = (long[])result;
+        long[] arr = (long[])result!;
         Assert.Equal(3, arr.Length);
         Assert.Equal(2L, arr[0]);
         Assert.Equal(3L, arr[1]);
@@ -3253,7 +3253,7 @@ public class JsonCommandTests(TestConfiguration config)
 
         Assert.NotNull(result);
         // JSONPath returns an array of lengths
-        long[] arr = (long[])result;
+        long[] arr = (long[])result!;
         _ = Assert.Single(arr);
         Assert.Equal(5L, arr[0]); // "Hello" has 5 characters
     }
@@ -3282,10 +3282,10 @@ public class JsonCommandTests(TestConfiguration config)
 
         Assert.NotNull(result);
         // JSONPath returns an array of lengths for all matching paths
-        long[] arr = (long[])result;
+        long[] arr = (long[])result!;
         Assert.Equal(2, arr.Length);
         // "foo" has 3 characters, "hello" has 5 characters
-        long[] lengths = arr.OrderBy(x => x).ToArray();
+        long[] lengths = [.. arr.OrderBy(x => x)];
         Assert.Contains(3L, lengths);
         Assert.Contains(5L, lengths);
     }
@@ -3366,7 +3366,7 @@ public class JsonCommandTests(TestConfiguration config)
 
         Assert.NotNull(result);
         // JSONPath returns an array of lengths
-        long[] arr = (long[])result;
+        long[] arr = (long[])result!;
         _ = Assert.Single(arr);
         Assert.Equal(11L, arr[0]); // "Hello World" has 11 characters
     }
@@ -3395,7 +3395,7 @@ public class JsonCommandTests(TestConfiguration config)
 
         Assert.NotNull(result);
         // JSONPath returns an array of lengths
-        long[] arr = (long[])result;
+        long[] arr = (long[])result!;
         _ = Assert.Single(arr);
         Assert.Equal(0L, arr[0]); // Empty string has 0 characters
     }
@@ -3454,7 +3454,7 @@ public class JsonCommandTests(TestConfiguration config)
 
         Assert.NotNull(result);
         // JSONPath returns an array with null for non-string matches
-        ValkeyResult[] arr = (ValkeyResult[])result;
+        ValkeyResult[] arr = (ValkeyResult[])result!;
         _ = Assert.Single(arr);
         Assert.True(arr[0].IsNull);
     }
@@ -3485,7 +3485,7 @@ public class JsonCommandTests(TestConfiguration config)
 
         Assert.NotNull(result);
         // JSONPath returns an array of lengths for all matching paths
-        long[] arr = (long[])result;
+        long[] arr = (long[])result!;
         Assert.Equal(3, arr.Length);
         Assert.Equal(1L, arr[0]); // "a" has 1 character
         Assert.Equal(2L, arr[1]); // "bb" has 2 characters

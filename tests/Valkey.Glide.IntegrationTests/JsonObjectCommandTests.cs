@@ -69,7 +69,7 @@ public class JsonObjectCommandTests(TestConfiguration config)
         }
 
         Assert.NotNull(result);
-        long[] arr = (long[])result;
+        long[] arr = (long[])result!;
         _ = Assert.Single(arr);
         Assert.Equal(3L, arr[0]);
     }
@@ -97,7 +97,7 @@ public class JsonObjectCommandTests(TestConfiguration config)
         }
 
         Assert.NotNull(result);
-        long[] arr = (long[])result;
+        long[] arr = (long[])result!;
         _ = Assert.Single(arr);
         Assert.Equal(0L, arr[0]);
     }
@@ -132,7 +132,7 @@ public class JsonObjectCommandTests(TestConfiguration config)
         // JSONPath returns array of arrays
         ValkeyResult[] outerArr = (ValkeyResult[])result;
         _ = Assert.Single(outerArr);
-        ValkeyResult[] keys = (ValkeyResult[])outerArr[0];
+        ValkeyResult[] keys = (ValkeyResult[])outerArr[0]!;
         Assert.Equal(2, keys.Length);
     }
 
@@ -163,7 +163,7 @@ public class JsonObjectCommandTests(TestConfiguration config)
         }
 
         Assert.NotNull(result);
-        bool[] arr = (bool[])result;
+        bool[] arr = (bool[])result!;
         _ = Assert.Single(arr);
         Assert.False(arr[0]);
     }
@@ -191,7 +191,7 @@ public class JsonObjectCommandTests(TestConfiguration config)
         }
 
         Assert.NotNull(result);
-        bool[] arr = (bool[])result;
+        bool[] arr = (bool[])result!;
         _ = Assert.Single(arr);
         Assert.True(arr[0]);
     }
@@ -286,7 +286,7 @@ public class JsonObjectCommandTests(TestConfiguration config)
 
         Assert.NotNull(result);
         // RESP format returns an array representation
-        ValkeyResult[] arr = (ValkeyResult[])result;
+        ValkeyResult[] arr = (ValkeyResult[])result!;
         Assert.NotNull(arr);
     }
 
