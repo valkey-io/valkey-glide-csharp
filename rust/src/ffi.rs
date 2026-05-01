@@ -66,6 +66,26 @@ pub enum CompressionBackend {
     Lz4 = 1,
 }
 
+/// A mirror of [`EvictionPolicy`] adopted for FFI.
+#[repr(u32)]
+#[derive(Debug, Clone, Copy)]
+pub enum EvictionPolicy {
+    Lru = 0,
+    Lfu = 1,
+}
+
+/// A mirror of [`glide_core::client::ClientSideCache`] adopted for FFI.
+#[repr(C)]
+#[derive(Debug, Clone, Copy)]
+pub struct ClientSideCacheConfig {
+    pub cache_id: *const c_char,
+    pub max_cache_kb: u64,
+    pub entry_ttl_ms: u64,
+    pub has_eviction_policy: bool,
+    pub eviction_policy: EvictionPolicy,
+    pub enable_metrics: bool,
+}
+
 /// A mirror of [`ConnectionRequest`] adopted for FFI.
 #[repr(C)]
 #[derive(Debug, Clone, Copy)]
@@ -106,6 +126,8 @@ pub struct ConnectionConfig {
     pub has_compression_config: bool,
     pub compression_config: CompressionConfig,
     pub read_only: bool,
+    pub has_client_side_cache_config: bool,
+    pub client_side_cache_config: ClientSideCacheConfig,
     /*
     TODO below
     pub periodic_checks: Option<PeriodicCheck>,
@@ -300,13 +322,34 @@ pub(crate) unsafe fn create_connection_request(
         ),
         read_only: config.read_only,
 
+        // Client-side cache configuration
+        client_side_cache: if config.has_client_side_cache_config {
+            use redis::cache::EvictionPolicy as CoreEvictionPolicy;
+            let csc = config.client_side_cache_config;
+            Some(glide_core::client::ClientSideCache {
+                cache_id: unsafe { ptr_to_str(csc.cache_id) },
+                max_cache_kb: csc.max_cache_kb,
+                entry_ttl_ms: csc.entry_ttl_ms,
+                eviction_policy: if csc.has_eviction_policy {
+                    Some(match csc.eviction_policy {
+                        EvictionPolicy::Lru => CoreEvictionPolicy::Lru,
+                        EvictionPolicy::Lfu => CoreEvictionPolicy::Lfu,
+                    })
+                } else {
+                    None
+                },
+                enable_metrics: csc.enable_metrics,
+            })
+        } else {
+            None
+        },
+
         // Unimplemented configuration options.
         client_cert: Vec::new(),
         client_key: Vec::new(),
         tcp_nodelay: false,
         periodic_checks: None,
         inflight_requests_limit: None,
-        client_side_cache: None,
         node_discovery_mode: glide_core::client::NodeDiscoveryMode::default(),
     }
 }
