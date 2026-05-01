@@ -130,7 +130,7 @@ public class JsonObjectCommandTests(TestConfiguration config)
 
         Assert.NotNull(result);
         // JSONPath returns array of arrays
-        ValkeyResult[] outerArr = (ValkeyResult[])result;
+        ValkeyResult[] outerArr = (ValkeyResult[])result!;
         _ = Assert.Single(outerArr);
         ValkeyResult[] keys = (ValkeyResult[])outerArr[0]!;
         Assert.Equal(2, keys.Length);
