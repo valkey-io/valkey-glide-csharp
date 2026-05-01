@@ -73,7 +73,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
 
         Assert.NotNull(result);
         long[] arr = (long[])result;
-        Assert.Single(arr);
+        _ = Assert.Single(arr);
         Assert.Equal(5L, arr[0]);
     }
 
@@ -132,7 +132,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
 
         Assert.NotNull(result);
         long[] arr = (long[])result;
-        Assert.Single(arr);
+        _ = Assert.Single(arr);
         Assert.Equal(4L, arr[0]);
     }
 
@@ -160,7 +160,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
 
         Assert.NotNull(result);
         long[] arr = (long[])result;
-        Assert.Single(arr);
+        _ = Assert.Single(arr);
         Assert.Equal(4L, arr[0]);
     }
 
@@ -192,7 +192,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
 
         Assert.NotNull(result);
         long[] arr = (long[])result;
-        Assert.Single(arr);
+        _ = Assert.Single(arr);
         Assert.Equal(2L, arr[0]);
     }
 
@@ -220,7 +220,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
 
         Assert.NotNull(result);
         long[] arr = (long[])result;
-        Assert.Single(arr);
+        _ = Assert.Single(arr);
         Assert.Equal(-1L, arr[0]);
     }
 
@@ -249,7 +249,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
 
         Assert.NotNull(result);
         long[] arr = (long[])result;
-        Assert.Single(arr);
+        _ = Assert.Single(arr);
         Assert.Equal(3L, arr[0]);
     }
 
@@ -281,7 +281,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
 
         Assert.NotNull(result);
         long[] arr = (long[])result;
-        Assert.Single(arr);
+        _ = Assert.Single(arr);
         Assert.Equal(5L, arr[0]);
     }
 
@@ -309,7 +309,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
 
         Assert.NotNull(result);
         long[] arr = (long[])result;
-        Assert.Single(arr);
+        _ = Assert.Single(arr);
         Assert.Equal(0L, arr[0]);
     }
 
@@ -341,7 +341,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
 
         Assert.NotNull(result);
         ValkeyResult[] arr = (ValkeyResult[])result;
-        Assert.Single(arr);
+        _ = Assert.Single(arr);
         Assert.Equal("3", (string?)arr[0]);
     }
 
@@ -369,7 +369,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
 
         Assert.NotNull(result);
         ValkeyResult[] arr = (ValkeyResult[])result;
-        Assert.Single(arr);
+        _ = Assert.Single(arr);
         Assert.Equal("1", (string?)arr[0]);
     }
 
@@ -401,7 +401,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
 
         Assert.NotNull(result);
         long[] arr = (long[])result;
-        Assert.Single(arr);
+        _ = Assert.Single(arr);
         Assert.Equal(3L, arr[0]);
     }
 
@@ -429,7 +429,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
 
         Assert.NotNull(result);
         long[] arr = (long[])result;
-        Assert.Single(arr);
+        _ = Assert.Single(arr);
         Assert.Equal(0L, arr[0]);
     }
 

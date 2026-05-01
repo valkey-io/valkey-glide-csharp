@@ -2585,7 +2585,7 @@ public class JsonCommandTests(TestConfiguration config)
         {
             _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
             // Trying to increment a string value with legacy path should throw
-            await Assert.ThrowsAsync<Errors.RequestException>(async () =>
+            _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
                 await GlideJson.NumIncrByAsync(standaloneClient, key, ".name", 5));
         }
         else
@@ -2593,7 +2593,7 @@ public class JsonCommandTests(TestConfiguration config)
             var clusterClient = (GlideClusterClient)client;
             _ = await GlideJson.SetAsync(clusterClient, key, "$", jsonValue);
             // Trying to increment a string value with legacy path should throw
-            await Assert.ThrowsAsync<Errors.RequestException>(async () =>
+            _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
                 await GlideJson.NumIncrByAsync(clusterClient, key, ".name", 5));
         }
     }
@@ -2670,7 +2670,7 @@ public class JsonCommandTests(TestConfiguration config)
         {
             _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
             // Trying to increment non-existent path with legacy path should throw
-            await Assert.ThrowsAsync<Errors.RequestException>(async () =>
+            _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
                 await GlideJson.NumIncrByAsync(standaloneClient, key, ".nonexistent", 5));
         }
         else
@@ -2678,7 +2678,7 @@ public class JsonCommandTests(TestConfiguration config)
             var clusterClient = (GlideClusterClient)client;
             _ = await GlideJson.SetAsync(clusterClient, key, "$", jsonValue);
             // Trying to increment non-existent path with legacy path should throw
-            await Assert.ThrowsAsync<Errors.RequestException>(async () =>
+            _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
                 await GlideJson.NumIncrByAsync(clusterClient, key, ".nonexistent", 5));
         }
     }
@@ -2915,7 +2915,7 @@ public class JsonCommandTests(TestConfiguration config)
         {
             _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
             // Trying to multiply a string value with legacy path should throw
-            await Assert.ThrowsAsync<Errors.RequestException>(async () =>
+            _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
                 await GlideJson.NumMultByAsync(standaloneClient, key, ".name", 5));
         }
         else
@@ -2923,7 +2923,7 @@ public class JsonCommandTests(TestConfiguration config)
             var clusterClient = (GlideClusterClient)client;
             _ = await GlideJson.SetAsync(clusterClient, key, "$", jsonValue);
             // Trying to multiply a string value with legacy path should throw
-            await Assert.ThrowsAsync<Errors.RequestException>(async () =>
+            _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
                 await GlideJson.NumMultByAsync(clusterClient, key, ".name", 5));
         }
     }
@@ -2986,7 +2986,7 @@ public class JsonCommandTests(TestConfiguration config)
         // JSONPath returns array of lengths
         // "Hello" (5) + " World" (6) = 11
         long[] arr = (long[])result;
-        Assert.Single(arr);
+        _ = Assert.Single(arr);
         Assert.Equal(11L, arr[0]);
     }
 
@@ -3015,7 +3015,7 @@ public class JsonCommandTests(TestConfiguration config)
         Assert.NotNull(result);
         // "foo" (3) + "baz" (3) = 6
         long[] arr = (long[])result;
-        Assert.Single(arr);
+        _ = Assert.Single(arr);
         Assert.Equal(6L, arr[0]);
     }
 
@@ -3062,7 +3062,7 @@ public class JsonCommandTests(TestConfiguration config)
         {
             _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
             // Trying to append to a number value with legacy path should throw
-            await Assert.ThrowsAsync<Errors.RequestException>(async () =>
+            _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
                 await GlideJson.StrAppendAsync(standaloneClient, key, ".count", "\"test\""));
         }
         else
@@ -3070,7 +3070,7 @@ public class JsonCommandTests(TestConfiguration config)
             var clusterClient = (GlideClusterClient)client;
             _ = await GlideJson.SetAsync(clusterClient, key, "$", jsonValue);
             // Trying to append to a number value with legacy path should throw
-            await Assert.ThrowsAsync<Errors.RequestException>(async () =>
+            _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
                 await GlideJson.StrAppendAsync(clusterClient, key, ".count", "\"test\""));
         }
     }
@@ -3103,7 +3103,7 @@ public class JsonCommandTests(TestConfiguration config)
         Assert.NotNull(result);
         // "Hello" (5) + " World" (6) = 11
         long[] arr = (long[])result;
-        Assert.Single(arr);
+        _ = Assert.Single(arr);
         Assert.Equal(11L, arr[0]);
     }
 
@@ -3132,7 +3132,7 @@ public class JsonCommandTests(TestConfiguration config)
         Assert.NotNull(result);
         // "Hello" (5) + "" (0) = 5
         long[] arr = (long[])result;
-        Assert.Single(arr);
+        _ = Assert.Single(arr);
         Assert.Equal(5L, arr[0]);
     }
 
@@ -3212,7 +3212,7 @@ public class JsonCommandTests(TestConfiguration config)
         {
             _ = await GlideJson.SetAsync(standaloneClient, key, "$", jsonValue);
             // Trying to append to non-existent path with legacy path should throw
-            await Assert.ThrowsAsync<Errors.RequestException>(async () =>
+            _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
                 await GlideJson.StrAppendAsync(standaloneClient, key, ".nonexistent", "\"test\""));
         }
         else
@@ -3220,7 +3220,7 @@ public class JsonCommandTests(TestConfiguration config)
             var clusterClient = (GlideClusterClient)client;
             _ = await GlideJson.SetAsync(clusterClient, key, "$", jsonValue);
             // Trying to append to non-existent path with legacy path should throw
-            await Assert.ThrowsAsync<Errors.RequestException>(async () =>
+            _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
                 await GlideJson.StrAppendAsync(clusterClient, key, ".nonexistent", "\"test\""));
         }
     }
@@ -3254,7 +3254,7 @@ public class JsonCommandTests(TestConfiguration config)
         Assert.NotNull(result);
         // JSONPath returns an array of lengths
         long[] arr = (long[])result;
-        Assert.Single(arr);
+        _ = Assert.Single(arr);
         Assert.Equal(5L, arr[0]); // "Hello" has 5 characters
     }
 
@@ -3367,7 +3367,7 @@ public class JsonCommandTests(TestConfiguration config)
         Assert.NotNull(result);
         // JSONPath returns an array of lengths
         long[] arr = (long[])result;
-        Assert.Single(arr);
+        _ = Assert.Single(arr);
         Assert.Equal(11L, arr[0]); // "Hello World" has 11 characters
     }
 
@@ -3396,7 +3396,7 @@ public class JsonCommandTests(TestConfiguration config)
         Assert.NotNull(result);
         // JSONPath returns an array of lengths
         long[] arr = (long[])result;
-        Assert.Single(arr);
+        _ = Assert.Single(arr);
         Assert.Equal(0L, arr[0]); // Empty string has 0 characters
     }
 
@@ -3455,7 +3455,7 @@ public class JsonCommandTests(TestConfiguration config)
         Assert.NotNull(result);
         // JSONPath returns an array with null for non-string matches
         ValkeyResult[] arr = (ValkeyResult[])result;
-        Assert.Single(arr);
+        _ = Assert.Single(arr);
         Assert.True(arr[0].IsNull);
     }
 
