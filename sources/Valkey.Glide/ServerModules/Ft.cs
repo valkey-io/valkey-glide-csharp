@@ -21,7 +21,7 @@ public static partial class Ft
     /// <remarks>
     /// <example>
     /// <code>
-    /// await Ft.CreateAsync(client, "my-index", new Ft.TextField("title"));
+    /// await Ft.CreateAsync(client, "my-index", new Ft.CreateTextField("title"));
     /// await Ft.DropIndexAsync(client, "my-index");
     /// </code>
     /// </example>
@@ -38,7 +38,7 @@ public static partial class Ft
     /// <remarks>
     /// <example>
     /// <code>
-    /// await Ft.CreateAsync(client, "my-index", new Ft.TextField("title"));
+    /// await Ft.CreateAsync(client, "my-index", new Ft.CreateTextField("title"));
     /// var indexes = await Ft.ListAsync(client);  // {"my-index"}
     /// </code>
     /// </example>

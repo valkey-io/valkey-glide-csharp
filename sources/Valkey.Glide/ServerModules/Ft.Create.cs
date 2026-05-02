@@ -15,37 +15,37 @@ public static partial class Ft
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ft.create/">Valkey commands – FT.CREATE</seealso>
     /// <param name="client">The client to execute the command.</param>
-    /// <param name="index">The name of the index to create.</param>
+    /// <param name="index">The name of the new index.</param>
     /// <param name="field">The field definition for the index schema.</param>
     /// <remarks>
     /// <example>
     /// <code>
-    /// var field = new Ft.TextField("title");
+    /// var field = new Ft.CreateTextField("title");
     /// await Ft.CreateAsync(client, "index", field);
     /// </code>
     /// </example>
     /// </remarks>
-    public static Task CreateAsync(BaseClient client, ValkeyKey index, Field field)
-        => client.Command(Request.FtCreate(index, [field], null));
+    public static Task CreateAsync(BaseClient client, ValkeyKey index, CreateField field)
+        => client.Command(Request.FtCreate(index, [field]));
 
     /// <summary>
     /// Creates a new search index.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ft.create/">Valkey commands – FT.CREATE</seealso>
     /// <param name="client">The client to execute the command.</param>
-    /// <param name="index">The name of the index to create.</param>
+    /// <param name="index">The name of the new index.</param>
     /// <param name="field">The field definition for the index schema.</param>
     /// <param name="options">Options for index creation.</param>
     /// <remarks>
     /// <example>
     /// <code>
-    /// var field = new Ft.TextField("title");
+    /// var field = new Ft.CreateTextField("title");
     /// var options = new Ft.CreateOptions { Prefixes = ["doc:"] };
     /// await Ft.CreateAsync(client, "index", field, options);
     /// </code>
     /// </example>
     /// </remarks>
-    public static Task CreateAsync(BaseClient client, ValkeyKey index, Field field, CreateOptions options)
+    public static Task CreateAsync(BaseClient client, ValkeyKey index, CreateField field, CreateOptions options)
         => client.Command(Request.FtCreate(index, [field], options));
 
     /// <summary>
@@ -53,40 +53,40 @@ public static partial class Ft
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ft.create/">Valkey commands – FT.CREATE</seealso>
     /// <param name="client">The client to execute the command.</param>
-    /// <param name="index">The name of the index to create.</param>
+    /// <param name="index">The name of the new index.</param>
     /// <param name="schema">The field definitions for the index schema.</param>
     /// <remarks>
     /// <example>
     /// <code>
-    /// var fields = new Ft.Field[]
+    /// var fields = new Ft.CreateField[]
     /// {
-    ///     new Ft.TextField("title"),
-    ///     new Ft.TagField("category"),
-    ///     new Ft.NumericField("price"),
+    ///     new Ft.CreateTextField("title"),
+    ///     new Ft.CreateTagField("category"),
+    ///     new Ft.CreateNumericField("price"),
     /// }
     /// await Ft.CreateAsync(client, "index", fields);
     /// </code>
     /// </example>
     /// </remarks>
-    public static Task CreateAsync(BaseClient client, ValkeyKey index, IEnumerable<Field> schema)
-        => client.Command(Request.FtCreate(index, schema, null));
+    public static Task CreateAsync(BaseClient client, ValkeyKey index, IEnumerable<CreateField> schema)
+        => client.Command(Request.FtCreate(index, schema));
 
     /// <summary>
     /// Creates a new search index.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ft.create/">Valkey commands – FT.CREATE</seealso>
     /// <param name="client">The client to execute the command.</param>
-    /// <param name="index">The name of the index to create.</param>
+    /// <param name="index">The name of the new index.</param>
     /// <param name="schema">The field definitions for the index schema.</param>
     /// <param name="options">Additional options for index creation.</param>
     /// <remarks>
     /// <example>
     /// <code>
-    /// var fields = new Ft.Field[]
+    /// var fields = new Ft.CreateField[]
     /// {
-    ///     new Ft.TextField("title"),
-    ///     new Ft.TagField("category"),
-    ///     new Ft.NumericField("price"),
+    ///     new Ft.CreateTextField("title"),
+    ///     new Ft.CreateTagField("category"),
+    ///     new Ft.CreateNumericField("price"),
     /// }
     /// var options = new Ft.CreateOptions
     /// {
@@ -97,7 +97,7 @@ public static partial class Ft
     /// </code>
     /// </example>
     /// </remarks>
-    public static Task CreateAsync(BaseClient client, ValkeyKey index, IEnumerable<Field> schema, CreateOptions options)
+    public static Task CreateAsync(BaseClient client, ValkeyKey index, IEnumerable<CreateField> schema, CreateOptions options)
         => client.Command(Request.FtCreate(index, schema, options));
 
     #endregion
@@ -162,10 +162,10 @@ public static partial class Ft
     }
 
     /// <summary>
-    /// Abstract base class for a search index field.
+    /// Abstract base class for a new search index field.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ft.create/">Valkey commands – FT.CREATE</seealso>
-    public abstract class Field
+    public abstract class CreateField
     {
         /// <summary>
         /// The field identifier: a hash field name (<c>ON HASH</c>) or a JSON path (<c>ON JSON</c>).
@@ -179,18 +179,18 @@ public static partial class Ft
     }
 
     /// <summary>
-    /// A full-text search index field (<c>TEXT</c>).
+    /// A new full-text search index field (<c>TEXT</c>).
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ft.create/">Valkey commands – FT.CREATE</seealso>
-    public sealed class TextField : Field
+    public sealed class CreateTextField : CreateField
     {
         /// <summary>
-        /// Creates a new <see cref="TextField"/> with the specified identifier and optional alias.
+        /// Creates a new <see cref="CreateTextField"/> with the specified identifier and optional alias.
         /// </summary>
         /// <param name="identifier">The field identifier.</param>
         /// <param name="alias">An optional alias for the field.</param>
         [SetsRequiredMembers]
-        public TextField(ValkeyValue identifier, ValkeyValue alias = default)
+        public CreateTextField(ValkeyValue identifier, ValkeyValue alias = default)
         {
             Identifier = identifier;
             Alias = alias;
@@ -202,24 +202,24 @@ public static partial class Ft
         public bool NoStem { get; init; }
 
         /// <summary>
-        /// Whether to disable the suffix trie optimization for this field (<c>NOSUFFIXTRIE</c>).
+        /// Whether to enable the suffix trie optimization for this field (<c>NOSUFFIXTRIE</c>/<c>NOSUFFIXTRIE</c>).
         /// </summary>
-        public bool NoSuffixTrie { get; init; }
+        public bool WithSuffixTrie { get; init; } = true;
     }
 
     /// <summary>
-    /// A tag search index field (<c>TAG</c>).
+    /// A new tag search index field (<c>TAG</c>).
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ft.create/">Valkey commands – FT.CREATE</seealso>
-    public sealed class TagField : Field
+    public sealed class CreateTagField : CreateField
     {
         /// <summary>
-        /// Creates a new <see cref="TagField"/> with the specified identifier and optional alias.
+        /// Creates a new <see cref="CreateTagField"/> with the specified identifier and optional alias.
         /// </summary>
         /// <param name="identifier">The field identifier.</param>
         /// <param name="alias">An optional alias for the field.</param>
         [SetsRequiredMembers]
-        public TagField(ValkeyValue identifier, ValkeyValue alias = default)
+        public CreateTagField(ValkeyValue identifier, ValkeyValue alias = default)
         {
             Identifier = identifier;
             Alias = alias;
@@ -238,18 +238,18 @@ public static partial class Ft
     }
 
     /// <summary>
-    /// A numeric search index field (<c>NUMERIC</c>).
+    /// A new numeric search index field (<c>NUMERIC</c>).
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ft.create/">Valkey commands – FT.CREATE</seealso>
-    public sealed class NumericField : Field
+    public sealed class CreateNumericField : CreateField
     {
         /// <summary>
-        /// Creates a new <see cref="NumericField"/> with the specified identifier and optional alias.
+        /// Creates a new <see cref="CreateNumericField"/> with the specified identifier and optional alias.
         /// </summary>
         /// <param name="identifier">The field identifier.</param>
         /// <param name="alias">An optional alias for the field.</param>
         [SetsRequiredMembers]
-        public NumericField(ValkeyValue identifier, ValkeyValue alias = default)
+        public CreateNumericField(ValkeyValue identifier, ValkeyValue alias = default)
         {
             Identifier = identifier;
             Alias = alias;
@@ -257,10 +257,10 @@ public static partial class Ft
     }
 
     /// <summary>
-    /// Abstract base class for a vector search index field (<c>VECTOR</c>).
+    /// Abstract base class for a new vector search index field (<c>VECTOR</c>).
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ft.create/">Valkey commands – FT.CREATE</seealso>
-    public abstract class VectorField : Field
+    public abstract class CreateVectorField : CreateField
     {
         /// <summary>
         /// The number of dimensions in the vector (<c>DIM</c>).
@@ -279,18 +279,18 @@ public static partial class Ft
     }
 
     /// <summary>
-    /// A vector search index field using the brute-force algorithm (<c>VECTOR FLAT</c>).
+    /// A new vector search index field using the brute-force algorithm (<c>VECTOR FLAT</c>).
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ft.create/">Valkey commands – FT.CREATE</seealso>
-    public sealed class VectorFieldFlat : VectorField
+    public sealed class CreateVectorFieldFlat : CreateVectorField
     {
     }
 
     /// <summary>
-    /// A vector search index field using the Hierarchical Navigable Small World algorithm (<c>VECTOR HNSW</c>).
+    /// A new vector search index field using the Hierarchical Navigable Small World algorithm (<c>VECTOR HNSW</c>).
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ft.create/">Valkey commands – FT.CREATE</seealso>
-    public sealed class VectorFieldHnsw : VectorField
+    public sealed class CreateVectorFieldHnsw : CreateVectorField
     {
         /// <summary>
         /// Maximum outgoing edges per graph node,
