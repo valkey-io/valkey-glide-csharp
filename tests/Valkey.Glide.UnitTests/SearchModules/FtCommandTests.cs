@@ -190,7 +190,7 @@ public class FtCommandTests
 
         Assert.Equal(
             ["FT.AGGREGATE", "idx", "*", "FILTER", "@p > 0"],
-            Request.FtAggregate("idx", "*", new Ft.AggregateOptions { Clauses = [new Ft.AggregateFilter { Expression = "@p > 0" }] }).GetArgs());
+            Request.FtAggregate("idx", "*", new Ft.AggregateOptions { Clauses = [new Ft.AggregateFilter("@p > 0")] }).GetArgs());
 
         Assert.Equal(
             ["FT.AGGREGATE", "idx", "*", "APPLY", "upper(@n)", "AS", "u"],

@@ -121,12 +121,12 @@ public static partial class Ft
         #region Properties
 
         /// <summary>
-        /// The data structure type for search index (<c>ON HASH</c>/<c>ON JSON</c>).
+        /// The data structure type for the index (<c>ON HASH</c>/<c>ON JSON</c>).
         /// </summary>
         public DataType DataType { get; init; } = DataType.Hash;
 
         /// <summary>
-        /// Key prefixes to include in the index (<c>PREFIX</c>).
+        /// Key prefixes to include in the index (<c>PREFIX prefix</c>).
         /// </summary>
         public IEnumerable<ValkeyValue> Prefixes { get; init; } = [];
 
@@ -136,8 +136,8 @@ public static partial class Ft
         public bool SkipInitialScan { get; init; }
 
         /// <summary>
-        /// The minimum word length for stemming
-        /// or <see langword="null"/> for server default (<c>MINSTEMSIZE</c>).
+        /// The minimum word length for stemming,
+        /// or <see langword="null"/> for server default (<c>MINSTEMSIZE min_stem_size</c>).
         /// </summary>
         public long? MinStemSize { get; init; }
 
@@ -148,13 +148,13 @@ public static partial class Ft
 
         /// <summary>
         /// Custom stop words, <see cref="NoStopWords"/> to disable,
-        /// or <see langword="null"/> for server default (<c>STOPWORDS</c>).
+        /// or <see langword="null"/> for server default (<c>STOPWORDS count word</c>).
         /// </summary>
         public IEnumerable<ValkeyValue>? StopWords { get; init; }
 
         /// <summary>
         /// Custom punctuation characters to use for tokenization,
-        /// or <see cref="ValkeyValue.Null"/> for server default (<c>PUNCTUATION</c>).
+        /// or <see cref="ValkeyValue.Null"/> for server default (<c>PUNCTUATION punctuation</c>).
         /// </summary>
         public ValkeyValue Punctuation { get; init; }
 
@@ -168,7 +168,7 @@ public static partial class Ft
     public abstract class CreateField
     {
         /// <summary>
-        /// The field identifier: a hash field name (<c>ON HASH</c>) or a JSON path (<c>ON JSON</c>).
+        /// The field identifier: a hash field name or a JSON path (<c>field-identifier</c>).
         /// </summary>
         public required ValkeyValue Identifier { get; init; }
 
@@ -202,7 +202,7 @@ public static partial class Ft
         public bool NoStem { get; init; }
 
         /// <summary>
-        /// Whether to enable the suffix trie optimization for this field (<c>NOSUFFIXTRIE</c>/<c>NOSUFFIXTRIE</c>).
+        /// Whether to enable the suffix trie optimization for this field (<c>WITHSUFFIXTRIE</c>/<c>NOSUFFIXTRIE</c>).
         /// </summary>
         public bool WithSuffixTrie { get; init; } = true;
     }
@@ -227,7 +227,7 @@ public static partial class Ft
 
         /// <summary>
         /// The separator character for splitting tag values,
-        /// or <see langword="null"/> for server default (<c>SEPARATOR</c>).
+        /// or <see langword="null"/> for server default (<c>SEPARATOR sep</c>).
         /// </summary>
         public char? Separator { get; init; }
 
@@ -263,7 +263,7 @@ public static partial class Ft
     public abstract class CreateVectorField : CreateField
     {
         /// <summary>
-        /// The number of dimensions in the vector (<c>DIM</c>).
+        /// The number of dimensions in the vector (<c>DIM number</c>).
         /// </summary>
         public required long Dimensions { get; init; }
 
@@ -273,7 +273,7 @@ public static partial class Ft
         public required DistanceMetric DistanceMetric { get; init; }
 
         /// <summary>
-        /// Initial vector capacity, or <see langword="null"/> for server default (<c>INITIAL_CAP</c>).
+        /// Initial vector capacity, or <see langword="null"/> for server default (<c>INITIAL_CAP size</c>).
         /// </summary>
         public long? InitialCap { get; init; }
     }
@@ -294,19 +294,19 @@ public static partial class Ft
     {
         /// <summary>
         /// Maximum outgoing edges per graph node,
-        /// or <see langword="null"/> for server default (<c>M</c>).
+        /// or <see langword="null"/> for server default (<c>M number</c>).
         /// </summary>
         public long? NumberOfEdges { get; init; }
 
         /// <summary>
         /// Vectors examined during index construction,
-        /// or <see langword="null"/> for server default (<c>EF_CONSTRUCTION</c>).
+        /// or <see langword="null"/> for server default (<c>EF_CONSTRUCTION number</c>).
         /// </summary>
         public long? VectorsExaminedOnConstruction { get; init; }
 
         /// <summary>
         /// Vectors examined during queries,
-        /// or <see langword="null"/> for server default (<c>EF_RUNTIME</c>).
+        /// or <see langword="null"/> for server default (<c>EF_RUNTIME number</c>).
         /// </summary>
         public long? VectorsExaminedOnRuntime { get; init; }
     }

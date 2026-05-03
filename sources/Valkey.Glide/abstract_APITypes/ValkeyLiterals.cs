@@ -195,7 +195,9 @@ internal static class ValkeyLiterals
 
         // Vector Search (FT.*) command literals
         ALLSHARDS = "ALLSHARDS",
+        AVG = "AVG",
         COSINE = "COSINE",
+        COUNT_DISTINCT = "COUNT_DISTINCT",
         DIM = "DIM",
         DISTANCE_METRIC = "DISTANCE_METRIC",
         EF_CONSTRUCTION = "EF_CONSTRUCTION",
@@ -243,6 +245,8 @@ internal static class ValkeyLiterals
         SORTBY = "SORTBY",
         STAR = "*",
         STOPWORDS = "STOPWORDS",
+        STDDEV = "STDDEV",
+        SUM = "SUM",
         TAG = "TAG",
         TEXT = "TEXT",
         VECTOR = "VECTOR",

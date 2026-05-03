@@ -27,6 +27,7 @@ public enum SortOrder
     Descending,
 }
 
+// TODO #360 - default is incorrect!
 internal static class SortOrderExtensions
 {
     /// <summary>

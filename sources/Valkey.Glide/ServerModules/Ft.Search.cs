@@ -76,7 +76,7 @@ public static partial class Ft
     public sealed class SearchOptions
     {
         #region Constants
-        
+
         /// <summary>
         /// Requests document IDs without field content (<c>NOCONTENT</c>).
         /// </summary>
@@ -147,12 +147,12 @@ public static partial class Ft
     public sealed class SearchLimit
     {
         /// <summary>
-        /// Number of results to return.
+        /// Number of results to return (<c>num</c>).
         /// </summary>
         public required long Count { get; init; }
 
         /// <summary>
-        /// Number of results to skip.
+        /// Number of results to skip (<c>offset</c>).
         /// </summary>
         public long Offset { get; init; } = 0;
     }
@@ -164,12 +164,12 @@ public static partial class Ft
     public sealed class SearchReturnField
     {
         /// <summary>
-        /// The field name to return.
+        /// The field name to return (<c>field</c>).
         /// </summary>
         public required ValkeyValue Field { get; init; }
 
         /// <summary>
-        /// An optional alias for the field in results (<c>AS</c>).
+        /// An optional alias for the field in results (<c>AS name</c>).
         /// </summary>
         public ValkeyValue Name { get; init; }
 
@@ -195,7 +195,7 @@ public static partial class Ft
     public sealed class SearchSortBy
     {
         /// <summary>
-        /// The field name to sort by (<c>SORTBY</c>).
+        /// The field name to sort by (<c>field</c>).
         /// </summary>
         public required ValkeyValue Field { get; init; }
 
