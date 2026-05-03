@@ -63,7 +63,7 @@ public static partial class Ft
     ///     new Ft.CreateTextField("title"),
     ///     new Ft.CreateTagField("category"),
     ///     new Ft.CreateNumericField("price"),
-    /// }
+    /// };
     /// await Ft.CreateAsync(client, "index", fields);
     /// </code>
     /// </example>
@@ -87,12 +87,12 @@ public static partial class Ft
     ///     new Ft.CreateTextField("title"),
     ///     new Ft.CreateTagField("category"),
     ///     new Ft.CreateNumericField("price"),
-    /// }
+    /// };
     /// var options = new Ft.CreateOptions
     /// {
     ///     DataType = Ft.DataType.Hash,
     ///     Prefixes = ["doc:"],
-    /// }
+    /// };
     /// await Ft.CreateAsync(client, "index", fields, options);
     /// </code>
     /// </example>

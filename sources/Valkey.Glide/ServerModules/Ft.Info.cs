@@ -21,7 +21,7 @@ public static partial class Ft
     /// await Ft.CreateAsync(client, "index", new Ft.CreateTextField("title"));
     ///
     /// var info = await Ft.InfoLocalAsync(client, "index");
-    /// Console.WriteLine($"Index name: {info.IndexName});  // "index"
+    /// Console.WriteLine($"Index name: {info.IndexName}");  // "index"
     /// </code>
     /// </example>
     /// </remarks>
@@ -43,7 +43,7 @@ public static partial class Ft
     ///
     /// var options = new Ft.InfoOptions { SomeShards = true };
     /// var info = await Ft.InfoLocalAsync(client, "index", options);
-    /// Console.WriteLine($"Index name: {info.IndexName});  // "index"
+    /// Console.WriteLine($"Index name: {info.IndexName}");  // "index"
     /// </code>
     /// </example>
     /// </remarks>
@@ -63,7 +63,7 @@ public static partial class Ft
     /// await Ft.CreateAsync(clusterClient, "index", new Ft.CreateTextField("title"));
     ///
     /// var info = await Ft.InfoClusterAsync(clusterClient, "index");
-    /// Console.WriteLine($"Index name: {info.IndexName});  // "index"
+    /// Console.WriteLine($"Index name: {info.IndexName}");  // "index"
     /// </code>
     /// </example>
     /// </remarks>
@@ -85,7 +85,7 @@ public static partial class Ft
     ///
     /// var options = new Ft.InfoOptions { SomeShards = true };
     /// var info = await Ft.InfoClusterAsync(clusterClient, "index", options);
-    /// Console.WriteLine($"Index name: {info.IndexName});  // "index"
+    /// Console.WriteLine($"Index name: {info.IndexName}");  // "index"
     /// </code>
     /// </example>
     /// </remarks>

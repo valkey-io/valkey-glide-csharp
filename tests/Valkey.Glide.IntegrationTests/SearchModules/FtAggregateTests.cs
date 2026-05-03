@@ -267,12 +267,12 @@ public class FtAggregateTests(TestConfiguration config)
         var index = Guid.NewGuid().ToString();
         var prefix = $"{index}:";
 
-        await Ft.CreateAsync(client, index, new Ft.CreateField[]
-        {
+        await Ft.CreateAsync(client, index,
+        [
             new Ft.CreateTextField("title"),
             new Ft.CreateNumericField("price"),
             new Ft.CreateTagField("category"),
-        },
+        ],
         new Ft.CreateOptions
         {
             DataType = Ft.DataType.Hash,
@@ -289,40 +289,40 @@ public class FtAggregateTests(TestConfiguration config)
             $"{prefix}5",
         ];
 
-        _ = await client.HashSetAsync(keys[0], new KeyValuePair<ValkeyValue, ValkeyValue>[]
-        {
+        _ = await client.HashSetAsync(keys[0],
+        [
             new("title", "Alpha Widget"),
             new("price", "10"),
             new("category", "electronics"),
-        });
+        ]);
 
-        _ = await client.HashSetAsync(keys[1], new KeyValuePair<ValkeyValue, ValkeyValue>[]
-        {
+        _ = await client.HashSetAsync(keys[1],
+        [
             new("title", "Beta Gadget"),
             new("price", "25"),
             new("category", "electronics"),
-        });
+        ]);
 
-        _ = await client.HashSetAsync(keys[2], new KeyValuePair<ValkeyValue, ValkeyValue>[]
-        {
+        _ = await client.HashSetAsync(keys[2],
+        [
             new("title", "Gamma Tool"),
             new("price", "50"),
             new("category", "hardware"),
-        });
+        ]);
 
-        _ = await client.HashSetAsync(keys[3], new KeyValuePair<ValkeyValue, ValkeyValue>[]
-        {
+        _ = await client.HashSetAsync(keys[3],
+        [
             new("title", "Delta Device"),
             new("price", "30"),
             new("category", "electronics"),
-        });
+        ]);
 
-        _ = await client.HashSetAsync(keys[4], new KeyValuePair<ValkeyValue, ValkeyValue>[]
-        {
+        _ = await client.HashSetAsync(keys[4],
+        [
             new("title", "Epsilon Wrench"),
             new("price", "15"),
             new("category", "hardware"),
-        });
+        ]);
 
         // Wait for indexing
         await Task.Delay(TimeSpan.FromSeconds(1));
