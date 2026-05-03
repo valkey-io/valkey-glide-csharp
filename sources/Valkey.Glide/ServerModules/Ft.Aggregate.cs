@@ -17,7 +17,7 @@ public static partial class Ft
     /// <param name="client">The client to execute the command.</param>
     /// <param name="index">The name of the index to aggregate.</param>
     /// <param name="query">The search query expression.</param>
-    /// <returns>An array of <see cref="AggregateRow"/></returns>
+    /// <returns>An array of result row dictionaries</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -29,13 +29,13 @@ public static partial class Ft
     ///
     /// var rows = await Ft.AggregateAsync(client, "index", "*");
     ///
-    /// Console.WriteLine($"Rows: {rows.Length}");                            // 2
-    /// Console.WriteLine($"{rows[0]["name"]}: {rows[0]["category"]}");       // "Widget: electronics"
-    /// Console.WriteLine($"{rows[1]["name"]}: {rows[1]["category"]}");       // "Gadget: electronics"
+    /// Console.WriteLine($"Rows: {rows.Length}");                                                        // 2
+    /// Console.WriteLine($"{rows[0]["name"]}: {rows[0]["category"]}");  // "Widget: electronics"
+    /// Console.WriteLine($"{rows[1]["name"]}: {rows[1]["category"]}");  // "Gadget: electronics"
     /// </code>
     /// </example>
     /// </remarks>
-    public static Task<AggregateRow[]> AggregateAsync(BaseClient client, ValkeyKey index, ValkeyValue query)
+    public static Task<IDictionary<ValkeyValue, ValkeyValue>[]> AggregateAsync(BaseClient client, ValkeyKey index, ValkeyValue query)
         => client.Command(Request.FtAggregate(index, query));
 
     /// <summary>
@@ -46,8 +46,7 @@ public static partial class Ft
     /// <param name="index">The name of the index to aggregate.</param>
     /// <param name="query">The search query expression.</param>
     /// <param name="options">Additional options for the aggregation command.</param>
-    /// <returns>An array of <see cref="AggregateRow"/></returns>
-    /// <remarks>
+    /// <returns>An array of result row dictionaries</returns>    /// <remarks>
     /// <example>
     /// <code>
     /// await Ft.CreateAsync(client, "index",
@@ -71,13 +70,13 @@ public static partial class Ft
     ///         ],
     ///     });
     ///
-    /// Console.WriteLine($"Rows: {rows.Length}");                        // 2
+    /// Console.WriteLine($"Rows: {rows.Length}");                                                    // 2
     /// Console.WriteLine($"{rows[0]["category"]}: {rows[0]["count"]}");  // "electronics: 2"
     /// Console.WriteLine($"{rows[1]["category"]}: {rows[1]["count"]}");  // "hardware: 1"
     /// </code>
     /// </example>
     /// </remarks>
-    public static Task<AggregateRow[]> AggregateAsync(BaseClient client, ValkeyKey index, ValkeyValue query, AggregateOptions options)
+    public static Task<IDictionary<ValkeyValue, ValkeyValue>[]> AggregateAsync(BaseClient client, ValkeyKey index, ValkeyValue query, AggregateOptions options)
         => client.Command(Request.FtAggregate(index, query, options));
 
     #endregion
@@ -356,32 +355,6 @@ public static partial class Ft
         /// <inheritdoc cref="IAggregateClause.ToArgs"/>
         GlideString[] IAggregateClause.ToArgs()
             => [ValkeyLiterals.APPLY, Expression, ValkeyLiterals.AS, Name];
-    }
-
-    /// <summary>
-    /// A result row from an aggregate command.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/ft.aggregate/">Valkey commands – FT.AGGREGATE</seealso>
-    public sealed class AggregateRow
-    {
-        /// <summary>
-        /// The field/value pairs in this row.
-        /// </summary>
-        public IDictionary<ValkeyValue, ValkeyValue> Fields { get; }
-
-        /// <summary>
-        /// Gets the value of the specified field, or <see cref="ValkeyValue.Null"/>
-        /// if the field is not present in this row.
-        /// </summary>
-        /// <param name="field">The field name to look up.</param>
-        /// <returns>The field value, or <see cref="ValkeyValue.Null"/> if absent.</returns>
-        public ValkeyValue this[ValkeyValue field]
-            => Fields.TryGetValue(field, out var value) ? value : ValkeyValue.Null;
-
-        internal AggregateRow(IDictionary<ValkeyValue, ValkeyValue> fields)
-        {
-            Fields = fields;
-        }
     }
 
     /// <summary>

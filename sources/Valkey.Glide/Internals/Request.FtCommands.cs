@@ -22,7 +22,7 @@ internal partial class Request
     public static Cmd<object[], Ft.SearchResult> FtSearch(ValkeyKey indexName, ValkeyValue query, Ft.SearchOptions? options = null)
         => new(RequestType.FtSearch, [indexName, query, .. ToArgs(options)], false, ParseFtSearchResponse);
 
-    public static Cmd<object[], Ft.AggregateRow[]> FtAggregate(ValkeyKey indexName, ValkeyValue query, Ft.AggregateOptions? options = null)
+    public static Cmd<object[], IDictionary<ValkeyValue, ValkeyValue>[]> FtAggregate(ValkeyKey indexName, ValkeyValue query, Ft.AggregateOptions? options = null)
         => new(RequestType.FtAggregate, [indexName, query, .. ToArgs(options)], false, ParseFtAggregateResponse);
 
     public static Cmd<object, Ft.InfoLocalResult> FtInfoLocal(ValkeyKey indexName, Ft.InfoOptions? options = null)
@@ -468,31 +468,20 @@ internal partial class Request
         return new Ft.SearchResult(count, [.. docs]);
     }
 
-    private static Ft.AggregateRow[] ParseFtAggregateResponse(object[] data)
+    private static IDictionary<ValkeyValue, ValkeyValue>[] ParseFtAggregateResponse(object[] data)
     {
-        // The Rust core normalizes the response: strips leading count, converts rows to maps.
-        var results = new List<Ft.AggregateRow>();
+        var results = new List<IDictionary<ValkeyValue, ValkeyValue>>();
         foreach (var row in data)
         {
             if (row is Dictionary<GlideString, object> map)
             {
-                results.Add(new Ft.AggregateRow(map.ToDictionary(
+                results.Add(map.ToDictionary(
                     kvp => (ValkeyValue)kvp.Key,
-                    kvp => ToValkeyValue(kvp.Value))));
+                    kvp => (ValkeyValue)(kvp.Value as GlideString)));
             }
         }
         return [.. results];
     }
-
-    private static ValkeyValue ToValkeyValue(object? value) => value switch
-    {
-        null => ValkeyValue.Null,
-        GlideString gs => (ValkeyValue)gs,
-        long l => (ValkeyValue)l,
-        double d => (ValkeyValue)d,
-        bool b => (ValkeyValue)b,
-        _ => (ValkeyValue)(value.ToString() ?? string.Empty),
-    };
 
     private static Ft.InfoLocalResult ParseFtInfoLocalResponse(object data)
     {
