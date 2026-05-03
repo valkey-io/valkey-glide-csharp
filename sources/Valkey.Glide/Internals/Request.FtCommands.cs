@@ -10,7 +10,7 @@ internal partial class Request
 {
     #region Public Methods
 
-    public static Cmd<string, string> FtCreate(ValkeyKey indexName, IEnumerable<Ft.Field> schema, Ft.CreateOptions? options = null)
+    public static Cmd<string, string> FtCreate(ValkeyKey indexName, IEnumerable<Ft.CreateField> schema, Ft.CreateOptions? options = null)
         => Simple<string>(RequestType.FtCreate, [indexName, .. ToArgs(options), .. ToArgs(schema)]);
 
     public static Cmd<string, string> FtDropIndex(ValkeyKey indexName)
@@ -25,8 +25,14 @@ internal partial class Request
     public static Cmd<object[], Ft.AggregateRow[]> FtAggregate(ValkeyKey indexName, ValkeyValue query, Ft.AggregateOptions? options = null)
         => new(RequestType.FtAggregate, [indexName, query, .. ToArgs(options)], false, ParseFtAggregateResponse);
 
-    public static Cmd<object, Dictionary<ValkeyValue, object>> FtInfo(ValkeyKey indexName, Ft.InfoOptions? options = null)
-        => new(RequestType.FtInfo, [indexName, .. ToArgs(options)], false, ParseFtInfoResponse);
+    public static Cmd<object, Ft.InfoLocalResult> FtInfoLocal(ValkeyKey indexName, Ft.InfoOptions? options = null)
+        => new(RequestType.FtInfo, [indexName, ValkeyLiterals.LOCAL, .. ToArgs(options)], false, ParseFtInfoLocalResponse);
+
+    public static Cmd<object, Ft.InfoClusterResult> FtInfoCluster(ValkeyKey indexName, Ft.InfoOptions? options = null)
+        => new(RequestType.FtInfo, [indexName, ValkeyLiterals.CLUSTER, .. ToArgs(options)], false, ParseFtInfoClusterResponse);
+
+    public static Cmd<object, Ft.InfoPrimaryResult> FtInfoPrimary(ValkeyKey indexName, Ft.InfoOptions? options = null)
+        => new(RequestType.FtInfo, [indexName, ValkeyLiterals.PRIMARY, .. ToArgs(options)], false, ParseFtInfoPrimaryResponse);
 
     #endregion
     #region Private Methods
@@ -83,9 +89,9 @@ internal partial class Request
     }
 
     /// <summary>
-    /// Converts the given <see cref="Ft.Field"/> array to command arguments.
+    /// Converts the given <see cref="Ft.CreateField"/> array to command arguments.
     /// </summary>
-    private static GlideString[] ToArgs(IEnumerable<Ft.Field> schema)
+    private static GlideString[] ToArgs(IEnumerable<Ft.CreateField> schema)
     {
         List<GlideString> args = [ValkeyLiterals.SCHEMA];
         foreach (var field in schema)
@@ -279,7 +285,7 @@ internal partial class Request
     }
 
     /// <summary>
-    /// Converts the given <see cref="Ft.InfoOptions"/> to command arguments.
+    /// Converts the given <see cref="Ft.InfoOptions"/> to command arguments (without scope keyword).
     /// </summary>
     private static GlideString[] ToArgs(Ft.InfoOptions? options)
     {
@@ -288,16 +294,7 @@ internal partial class Request
             return [];
         }
 
-        List<GlideString> args =
-        [
-            options.Scope switch
-            {
-                Ft.InfoScope.Local => ValkeyLiterals.LOCAL,
-                Ft.InfoScope.Cluster => ValkeyLiterals.CLUSTER,
-                Ft.InfoScope.Primary => ValkeyLiterals.PRIMARY,
-                _ => throw new ArgumentOutOfRangeException(nameof(options.Scope)),
-            },
-        ];
+        List<GlideString> args = [];
 
         if (options.SomeShards)
         {
@@ -313,9 +310,9 @@ internal partial class Request
     }
 
     /// <summary>
-    /// Converts the given <see cref="Ft.Field"/> to command arguments.
+    /// Converts the given <see cref="Ft.CreateField"/> to command arguments.
     /// </summary>
-    private static GlideString[] ToArgs(Ft.Field field)
+    private static GlideString[] ToArgs(Ft.CreateField field)
     {
         List<GlideString> args = [field.Identifier];
 
@@ -327,19 +324,19 @@ internal partial class Request
 
         switch (field)
         {
-            case Ft.TextField text:
+            case Ft.CreateTextField text:
                 args.Add(ValkeyLiterals.TEXT);
                 if (text.NoStem)
                 {
                     args.Add(ValkeyLiterals.NOSTEM);
                 }
-                if (text.NoSuffixTrie)
+                if (!text.WithSuffixTrie)
                 {
                     args.Add(ValkeyLiterals.NOSUFFIXTRIE);
                 }
                 break;
 
-            case Ft.TagField tag:
+            case Ft.CreateTagField tag:
                 args.Add(ValkeyLiterals.TAG);
                 if (tag.Separator.HasValue)
                 {
@@ -353,11 +350,11 @@ internal partial class Request
 
                 break;
 
-            case Ft.NumericField:
+            case Ft.CreateNumericField:
                 args.Add(ValkeyLiterals.NUMERIC);
                 break;
 
-            case Ft.VectorFieldFlat flat:
+            case Ft.CreateVectorFieldFlat flat:
                 args.Add(ValkeyLiterals.VECTOR);
                 args.Add(ValkeyLiterals.FLAT);
                 List<GlideString> flatAttrs =
@@ -375,7 +372,7 @@ internal partial class Request
                 args.AddRange(flatAttrs);
                 break;
 
-            case Ft.VectorFieldHnsw hnsw:
+            case Ft.CreateVectorFieldHnsw hnsw:
                 args.Add(ValkeyLiterals.VECTOR);
                 args.Add(ValkeyLiterals.HNSW);
                 List<GlideString> hnswAttrs =
@@ -497,22 +494,242 @@ internal partial class Request
         _ => (ValkeyValue)(value.ToString() ?? string.Empty),
     };
 
-    private static Dictionary<ValkeyValue, object> ParseFtInfoResponse(object data) => data is Dictionary<GlideString, object> map
-            ? map.ToDictionary(
-                kvp => (ValkeyValue)kvp.Key,
-                kvp => ConvertFtValue(kvp.Value) ?? ValkeyValue.Null)
+    private static Ft.InfoLocalResult ParseFtInfoLocalResponse(object data)
+    {
+        var map = ToStringMap(data);
+
+        return new Ft.InfoLocalResult
+        {
+            IndexName = GetString(map, "index_name"),
+            KeyType = GetString(map, "key_type") switch
+            {
+                "HASH" => Ft.DataType.Hash,
+                "JSON" => Ft.DataType.Json,
+                _ => Ft.DataType.Hash,
+            },
+            Prefixes = GetValkeyValueArray(map, "prefixes"),
+            Attributes = ParseInfoFields(map),
+            NumDocs = GetLong(map, "num_docs"),
+            NumRecords = GetLong(map, "num_records"),
+            TotalTermOccurrences = GetLong(map, "total_term_occurrences"),
+            NumTerms = GetLong(map, "num_terms"),
+            HashIndexingFailures = GetLong(map, "hash_indexing_failures"),
+            BackfillInProgress = GetBool(map, "backfill_in_progress"),
+            BackfillCompletePercent = GetDouble(map, "backfill_complete_percent"),
+            MutationQueueSize = GetLong(map, "mutation_queue_size"),
+            RecentMutationsQueueDelay = GetDouble(map, "recent_mutations_queue_delay"),
+            State = ParseInfoState(GetString(map, "state")),
+            Punctuation = GetValkeyValue(map, "punctuation"),
+            StopWords = GetValkeyValueArray(map, "stopwords"),
+            WithOffsets = GetBool(map, "with_offsets"),
+            MinStemSize = GetLong(map, "min_stem_size"),
+        };
+    }
+
+    private static Ft.InfoClusterResult ParseFtInfoClusterResponse(object data)
+    {
+        var map = ToStringMap(data);
+
+        return new Ft.InfoClusterResult
+        {
+            IndexName = GetString(map, "index_name"),
+            BackfillInProgress = GetBool(map, "backfill_in_progress"),
+            BackfillCompletePercentMin = GetDouble(map, "backfill_complete_percent_min"),
+            BackfillCompletePercentMax = GetDouble(map, "backfill_complete_percent_max"),
+            State = ParseInfoState(GetString(map, "state")),
+        };
+    }
+
+    private static Ft.InfoPrimaryResult ParseFtInfoPrimaryResponse(object data)
+    {
+        var map = ToStringMap(data);
+
+        return new Ft.InfoPrimaryResult
+        {
+            IndexName = GetString(map, "index_name"),
+            NumDocs = GetLong(map, "num_docs"),
+            NumRecords = GetLong(map, "num_records"),
+            HashIndexingFailures = GetLong(map, "hash_indexing_failures"),
+        };
+    }
+
+    private static Ft.InfoState ParseInfoState(string state) => state switch
+    {
+        "ready" => Ft.InfoState.Ready,
+        "backfill_in_progress" => Ft.InfoState.BackfillInProgress,
+        "backfill_paused_by_oom" => Ft.InfoState.BackfillPausedByOom,
+        _ => Ft.InfoState.Ready,
+    };
+
+    private static Ft.InfoField[] ParseInfoFields(Dictionary<string, object> map)
+    {
+        if (!map.TryGetValue("attributes", out var attrsObj) || attrsObj is not object[] attrs)
+        {
+            return [];
+        }
+
+        var fields = new List<Ft.InfoField>();
+        foreach (var attr in attrs)
+        {
+            var fieldMap = ToStringMap(attr);
+            var type = GetString(fieldMap, "type");
+            var identifier = GetValkeyValue(fieldMap, "identifier");
+            var attribute = GetValkeyValue(fieldMap, "attribute");
+            var userIndexedMemory = GetLong(fieldMap, "user_indexed_memory");
+
+            Ft.InfoField field = type switch
+            {
+                "TEXT" => new Ft.InfoTextField
+                {
+                    Identifier = identifier,
+                    Attribute = attribute,
+                    UserIndexedMemory = userIndexedMemory,
+                    WithSuffixTrie = GetBool(fieldMap, "with_suffix_trie"),
+                    NoStem = GetBool(fieldMap, "no_stem"),
+                },
+                "TAG" => new Ft.InfoTagField
+                {
+                    Identifier = identifier,
+                    Attribute = attribute,
+                    UserIndexedMemory = userIndexedMemory,
+                    Separator = GetString(fieldMap, "separator") is { Length: > 0 } sep ? sep[0] : ',',
+                    CaseSensitive = GetBool(fieldMap, "case_sensitive"),
+                    Size = GetLong(fieldMap, "size"),
+                },
+                "NUMERIC" => new Ft.InfoNumericField
+                {
+                    Identifier = identifier,
+                    Attribute = attribute,
+                    UserIndexedMemory = userIndexedMemory,
+                },
+                "VECTOR" => ParseInfoVectorField(identifier, attribute, userIndexedMemory, fieldMap),
+                _ => new Ft.InfoNumericField
+                {
+                    Identifier = identifier,
+                    Attribute = attribute,
+                    UserIndexedMemory = userIndexedMemory,
+                },
+            };
+
+            fields.Add(field);
+        }
+
+        return [.. fields];
+    }
+
+    private static Ft.InfoVectorField ParseInfoVectorField(
+        ValkeyValue identifier, ValkeyValue attribute, long userIndexedMemory,
+        Dictionary<string, object> fieldMap)
+    {
+        var indexMap = fieldMap.TryGetValue("index", out var indexObj)
+            ? ToStringMap(indexObj)
             : [];
 
-    private static object? ConvertFtValue(object? value) => value switch
-    {
-        null => null,
-        GlideString gs => (ValkeyValue)gs,
-        Dictionary<GlideString, object> nested => nested.ToDictionary(
-            kvp => (ValkeyValue)kvp.Key,
-            kvp => ConvertFtValue(kvp.Value)),
-        object[] arr => arr.Select(ConvertFtValue).ToArray(),
-        _ => value,
-    };
+        var algoMap = indexMap.TryGetValue("algorithm", out var algoObj)
+            ? ToStringMap(algoObj)
+            : [];
+
+        var algoName = GetString(algoMap, "name");
+
+        if (algoName is "HNSW")
+        {
+            return new Ft.InfoVectorFieldHnsw
+            {
+                Identifier = identifier,
+                Attribute = attribute,
+                UserIndexedMemory = userIndexedMemory,
+                Capacity = GetLong(indexMap, "capacity"),
+                Dimensions = GetLong(indexMap, "dimensions"),
+                DistanceMetric = GetString(indexMap, "distance_metric") switch
+                {
+                    "COSINE" => Ft.DistanceMetric.Cosine,
+                    "L2" => Ft.DistanceMetric.Euclidean,
+                    "IP" => Ft.DistanceMetric.InnerProduct,
+                    _ => Ft.DistanceMetric.Cosine,
+                },
+                Size = GetLong(indexMap, "size"),
+                M = GetNullableLong(algoMap, "m"),
+                EfConstruction = GetNullableLong(algoMap, "ef_construction"),
+                EfRuntime = GetNullableLong(algoMap, "ef_runtime"),
+            };
+        }
+
+        return new Ft.InfoVectorFieldFlat
+        {
+            Identifier = identifier,
+            Attribute = attribute,
+            UserIndexedMemory = userIndexedMemory,
+            Capacity = GetLong(indexMap, "capacity"),
+            Dimensions = GetLong(indexMap, "dimensions"),
+            DistanceMetric = GetString(indexMap, "distance_metric") switch
+            {
+                "COSINE" => Ft.DistanceMetric.Cosine,
+                "L2" => Ft.DistanceMetric.Euclidean,
+                "IP" => Ft.DistanceMetric.InnerProduct,
+                _ => Ft.DistanceMetric.Cosine,
+            },
+            Size = GetLong(indexMap, "size"),
+            BlockSize = GetNullableLong(algoMap, "block_size"),
+        };
+    }
+
+    /// <summary>
+    /// Converts a raw server response object to a string-keyed dictionary.
+    /// </summary>
+    private static Dictionary<string, object> ToStringMap(object data)
+        => data is Dictionary<GlideString, object> glideMap
+            ? glideMap.ToDictionary(kvp => kvp.Key.ToString(), kvp => kvp.Value)
+            : [];
+
+    private static string GetString(Dictionary<string, object> map, string key)
+        => map.TryGetValue(key, out var value)
+            ? value switch
+            {
+                GlideString gs => gs.ToString(),
+                string s => s,
+                _ => value?.ToString() ?? string.Empty,
+            }
+            : string.Empty;
+
+    private static long GetLong(Dictionary<string, object> map, string key)
+        => map.TryGetValue(key, out var value) ? Convert.ToInt64(value) : 0;
+
+    private static long? GetNullableLong(Dictionary<string, object> map, string key)
+        => map.TryGetValue(key, out var value) && value is not null ? Convert.ToInt64(value) : null;
+
+    private static double GetDouble(Dictionary<string, object> map, string key)
+        => map.TryGetValue(key, out var value) ? Convert.ToDouble(value) : 0.0;
+
+    private static bool GetBool(Dictionary<string, object> map, string key)
+        => map.TryGetValue(key, out var value)
+            && value switch
+            {
+                bool b => b,
+                long l => l != 0,
+                GlideString gs => gs.ToString() is "1" or "true",
+                string s => s is "1" or "true",
+                _ => false,
+            };
+
+    private static ValkeyValue GetValkeyValue(Dictionary<string, object> map, string key)
+        => map.TryGetValue(key, out var value)
+            ? value switch
+            {
+                GlideString gs => (ValkeyValue)gs,
+                string s => (ValkeyValue)s,
+                _ => (ValkeyValue)(value?.ToString() ?? string.Empty),
+            }
+            : ValkeyValue.Null;
+
+    private static ValkeyValue[] GetValkeyValueArray(Dictionary<string, object> map, string key)
+        => map.TryGetValue(key, out var value) && value is object[] arr
+            ? [.. arr.Select(item => item switch
+            {
+                GlideString gs => (ValkeyValue)gs,
+                string s => (ValkeyValue)s,
+                _ => (ValkeyValue)(item?.ToString() ?? string.Empty),
+            })]
+            : [];
 
     #endregion
 }

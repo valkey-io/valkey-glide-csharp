@@ -121,7 +121,7 @@ public static partial class Ft
         #region Properties
 
         /// <summary>
-        /// The data structure type for indexed documents (<c>ON HASH</c>/<c>ON JSON</c>).
+        /// The data structure type for search index (<c>ON HASH</c>/<c>ON JSON</c>).
         /// </summary>
         public DataType DataType { get; init; } = DataType.Hash;
 
@@ -153,7 +153,7 @@ public static partial class Ft
         public IEnumerable<ValkeyValue>? StopWords { get; init; }
 
         /// <summary>
-        /// Custom punctuation characters for tokenization,
+        /// Custom punctuation characters to use for tokenization,
         /// or <see cref="ValkeyValue.Null"/> for server default (<c>PUNCTUATION</c>).
         /// </summary>
         public ValkeyValue Punctuation { get; init; }

@@ -11,71 +11,71 @@ public class FtCommandTests
     {
         Assert.Equal(
             ["FT.CREATE", "idx", "SCHEMA", "title", "TEXT"],
-            Request.FtCreate("idx", [new Ft.TextField("title")]).GetArgs());
+            Request.FtCreate("idx", [new Ft.CreateTextField("title")]).GetArgs());
 
         Assert.Equal(
             ["FT.CREATE", "idx", "ON", "HASH", "SCHEMA", "title", "TEXT"],
-            Request.FtCreate("idx", [new Ft.TextField("title")], new Ft.CreateOptions()).GetArgs());
+            Request.FtCreate("idx", [new Ft.CreateTextField("title")], new Ft.CreateOptions()).GetArgs());
 
         Assert.Equal(
             ["FT.CREATE", "idx", "ON", "JSON", "SCHEMA", "f", "TEXT"],
-            Request.FtCreate("idx", [new Ft.TextField("f")], new Ft.CreateOptions { DataType = Ft.DataType.Json }).GetArgs());
+            Request.FtCreate("idx", [new Ft.CreateTextField("f")], new Ft.CreateOptions { DataType = Ft.DataType.Json }).GetArgs());
 
         Assert.Equal(
             ["FT.CREATE", "idx", "ON", "HASH", "PREFIX", "2", "a:", "b:", "SCHEMA", "f", "TEXT"],
-            Request.FtCreate("idx", [new Ft.TextField("f")], new Ft.CreateOptions { Prefixes = ["a:", "b:"] }).GetArgs());
+            Request.FtCreate("idx", [new Ft.CreateTextField("f")], new Ft.CreateOptions { Prefixes = ["a:", "b:"] }).GetArgs());
 
         Assert.Equal(
             ["FT.CREATE", "idx", "ON", "HASH", "SKIPINITIALSCAN", "SCHEMA", "f", "TEXT"],
-            Request.FtCreate("idx", [new Ft.TextField("f")], new Ft.CreateOptions { SkipInitialScan = true }).GetArgs());
+            Request.FtCreate("idx", [new Ft.CreateTextField("f")], new Ft.CreateOptions { SkipInitialScan = true }).GetArgs());
 
         Assert.Equal(
             ["FT.CREATE", "idx", "ON", "HASH", "MINSTEMSIZE", "3", "SCHEMA", "f", "TEXT"],
-            Request.FtCreate("idx", [new Ft.TextField("f")], new Ft.CreateOptions { MinStemSize = 3 }).GetArgs());
+            Request.FtCreate("idx", [new Ft.CreateTextField("f")], new Ft.CreateOptions { MinStemSize = 3 }).GetArgs());
 
         Assert.Equal(
             ["FT.CREATE", "idx", "ON", "HASH", "NOOFFSETS", "SCHEMA", "f", "TEXT"],
-            Request.FtCreate("idx", [new Ft.TextField("f")], new Ft.CreateOptions { NoOffsets = true }).GetArgs());
+            Request.FtCreate("idx", [new Ft.CreateTextField("f")], new Ft.CreateOptions { NoOffsets = true }).GetArgs());
 
         Assert.Equal(
             ["FT.CREATE", "idx", "ON", "HASH", "STOPWORDS", "2", "the", "a", "SCHEMA", "f", "TEXT"],
-            Request.FtCreate("idx", [new Ft.TextField("f")], new Ft.CreateOptions { StopWords = ["the", "a"] }).GetArgs());
+            Request.FtCreate("idx", [new Ft.CreateTextField("f")], new Ft.CreateOptions { StopWords = ["the", "a"] }).GetArgs());
 
         Assert.Equal(
             ["FT.CREATE", "idx", "ON", "HASH", "STOPWORDS", "0", "SCHEMA", "f", "TEXT"],
-            Request.FtCreate("idx", [new Ft.TextField("f")], new Ft.CreateOptions { StopWords = Ft.CreateOptions.NoStopWords }).GetArgs());
+            Request.FtCreate("idx", [new Ft.CreateTextField("f")], new Ft.CreateOptions { StopWords = Ft.CreateOptions.NoStopWords }).GetArgs());
 
         Assert.Equal(
             ["FT.CREATE", "idx", "ON", "HASH", "PUNCTUATION", ".,", "SCHEMA", "f", "TEXT"],
-            Request.FtCreate("idx", [new Ft.TextField("f")], new Ft.CreateOptions { Punctuation = ".," }).GetArgs());
+            Request.FtCreate("idx", [new Ft.CreateTextField("f")], new Ft.CreateOptions { Punctuation = ".," }).GetArgs());
 
         Assert.Equal(
             ["FT.CREATE", "idx", "SCHEMA", "$.f", "AS", "f", "TEXT", "NOSTEM", "NOSUFFIXTRIE"],
-            Request.FtCreate("idx", [new Ft.TextField("$.f", "f") { NoStem = true, NoSuffixTrie = true }]).GetArgs());
+            Request.FtCreate("idx", [new Ft.CreateTextField("$.f", "f") { NoStem = true, WithSuffixTrie = false }]).GetArgs());
 
         Assert.Equal(
             ["FT.CREATE", "idx", "SCHEMA", "f", "TAG", "SEPARATOR", "|", "CASESENSITIVE"],
-            Request.FtCreate("idx", [new Ft.TagField("f") { Separator = '|', CaseSensitive = true }]).GetArgs());
+            Request.FtCreate("idx", [new Ft.CreateTagField("f") { Separator = '|', CaseSensitive = true }]).GetArgs());
 
         Assert.Equal(
             ["FT.CREATE", "idx", "SCHEMA", "$.f", "AS", "f", "NUMERIC"],
-            Request.FtCreate("idx", [new Ft.NumericField("$.f", "f")]).GetArgs());
+            Request.FtCreate("idx", [new Ft.CreateNumericField("$.f", "f")]).GetArgs());
 
         Assert.Equal(
             ["FT.CREATE", "idx", "SCHEMA", "v", "VECTOR", "FLAT", "6", "DIM", "128", "DISTANCE_METRIC", "COSINE", "TYPE", "FLOAT32"],
-            Request.FtCreate("idx", [new Ft.VectorFieldFlat { Identifier = "v", Dimensions = 128, DistanceMetric = Ft.DistanceMetric.Cosine }]).GetArgs());
+            Request.FtCreate("idx", [new Ft.CreateVectorFieldFlat { Identifier = "v", Dimensions = 128, DistanceMetric = Ft.DistanceMetric.Cosine }]).GetArgs());
 
         Assert.Equal(
             ["FT.CREATE", "idx", "SCHEMA", "v", "VECTOR", "FLAT", "8", "DIM", "64", "DISTANCE_METRIC", "L2", "TYPE", "FLOAT32", "INITIAL_CAP", "1000"],
-            Request.FtCreate("idx", [new Ft.VectorFieldFlat { Identifier = "v", Dimensions = 64, DistanceMetric = Ft.DistanceMetric.Euclidean, InitialCap = 1000 }]).GetArgs());
+            Request.FtCreate("idx", [new Ft.CreateVectorFieldFlat { Identifier = "v", Dimensions = 64, DistanceMetric = Ft.DistanceMetric.Euclidean, InitialCap = 1000 }]).GetArgs());
 
         Assert.Equal(
             ["FT.CREATE", "idx", "SCHEMA", "v", "VECTOR", "HNSW", "12", "DIM", "256", "DISTANCE_METRIC", "IP", "TYPE", "FLOAT32", "M", "16", "EF_CONSTRUCTION", "200", "EF_RUNTIME", "10"],
-            Request.FtCreate("idx", [new Ft.VectorFieldHnsw { Identifier = "v", Dimensions = 256, DistanceMetric = Ft.DistanceMetric.InnerProduct, NumberOfEdges = 16, VectorsExaminedOnConstruction = 200, VectorsExaminedOnRuntime = 10 }]).GetArgs());
+            Request.FtCreate("idx", [new Ft.CreateVectorFieldHnsw { Identifier = "v", Dimensions = 256, DistanceMetric = Ft.DistanceMetric.InnerProduct, NumberOfEdges = 16, VectorsExaminedOnConstruction = 200, VectorsExaminedOnRuntime = 10 }]).GetArgs());
 
         Assert.Equal(
             ["FT.CREATE", "idx", "ON", "HASH", "PREFIX", "1", "p:", "SCHEMA", "t", "TEXT", "c", "TAG", "n", "NUMERIC", "v", "VECTOR", "FLAT", "6", "DIM", "3", "DISTANCE_METRIC", "COSINE", "TYPE", "FLOAT32"],
-            Request.FtCreate("idx", [new Ft.TextField("t"), new Ft.TagField("c"), new Ft.NumericField("n"), new Ft.VectorFieldFlat { Identifier = "v", Dimensions = 3, DistanceMetric = Ft.DistanceMetric.Cosine }], new Ft.CreateOptions { Prefixes = ["p:"] }).GetArgs());
+            Request.FtCreate("idx", [new Ft.CreateTextField("t"), new Ft.CreateTagField("c"), new Ft.CreateNumericField("n"), new Ft.CreateVectorFieldFlat { Identifier = "v", Dimensions = 3, DistanceMetric = Ft.DistanceMetric.Cosine }], new Ft.CreateOptions { Prefixes = ["p:"] }).GetArgs());
     }
 
     [Fact]
@@ -206,34 +206,46 @@ public class FtCommandTests
     }
 
     [Fact]
-    public void FtInfo()
+    public void FtInfoLocal()
     {
         Assert.Equal(
-            ["FT.INFO", "idx"],
-            Request.FtInfo("idx").GetArgs());
-
-        Assert.Equal(
             ["FT.INFO", "idx", "LOCAL"],
-            Request.FtInfo("idx", new Ft.InfoOptions()).GetArgs());
-
-        Assert.Equal(
-            ["FT.INFO", "idx", "CLUSTER"],
-            Request.FtInfo("idx", new Ft.InfoOptions { Scope = Ft.InfoScope.Cluster }).GetArgs());
-
-        Assert.Equal(
-            ["FT.INFO", "idx", "PRIMARY"],
-            Request.FtInfo("idx", new Ft.InfoOptions { Scope = Ft.InfoScope.Primary }).GetArgs());
+            Request.FtInfoLocal("idx").GetArgs());
 
         Assert.Equal(
             ["FT.INFO", "idx", "LOCAL", "SOMESHARDS"],
-            Request.FtInfo("idx", new Ft.InfoOptions { SomeShards = true }).GetArgs());
+            Request.FtInfoLocal("idx", new Ft.InfoOptions { SomeShards = true }).GetArgs());
 
         Assert.Equal(
             ["FT.INFO", "idx", "LOCAL", "INCONSISTENT"],
-            Request.FtInfo("idx", new Ft.InfoOptions { Inconsistent = true }).GetArgs());
+            Request.FtInfoLocal("idx", new Ft.InfoOptions { Inconsistent = true }).GetArgs());
+
+        Assert.Equal(
+            ["FT.INFO", "idx", "LOCAL", "SOMESHARDS", "INCONSISTENT"],
+            Request.FtInfoLocal("idx", new Ft.InfoOptions { SomeShards = true, Inconsistent = true }).GetArgs());
+    }
+
+    [Fact]
+    public void FtInfoCluster()
+    {
+        Assert.Equal(
+            ["FT.INFO", "idx", "CLUSTER"],
+            Request.FtInfoCluster("idx").GetArgs());
 
         Assert.Equal(
             ["FT.INFO", "idx", "CLUSTER", "SOMESHARDS", "INCONSISTENT"],
-            Request.FtInfo("idx", new Ft.InfoOptions { Scope = Ft.InfoScope.Cluster, SomeShards = true, Inconsistent = true }).GetArgs());
+            Request.FtInfoCluster("idx", new Ft.InfoOptions { SomeShards = true, Inconsistent = true }).GetArgs());
+    }
+
+    [Fact]
+    public void FtInfoPrimary()
+    {
+        Assert.Equal(
+            ["FT.INFO", "idx", "PRIMARY"],
+            Request.FtInfoPrimary("idx").GetArgs());
+
+        Assert.Equal(
+            ["FT.INFO", "idx", "PRIMARY", "SOMESHARDS"],
+            Request.FtInfoPrimary("idx", new Ft.InfoOptions { SomeShards = true }).GetArgs());
     }
 }
