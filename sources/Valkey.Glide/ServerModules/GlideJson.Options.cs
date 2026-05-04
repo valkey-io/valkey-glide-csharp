@@ -124,7 +124,7 @@ public static partial class GlideJson
     /// // Using factory methods (recommended)
     /// var fromStart = GlideJson.ArrIndexRange.FromStart(2);   // Search from index 2 to end
     /// var toEnd = GlideJson.ArrIndexRange.ToEnd(5);           // Search from start to index 5
-    /// var inRange = GlideJson.ArrIndexRange.InRange(0, 5);    // Search from index 0 to 5
+    /// var between = GlideJson.ArrIndexRange.Between(0, 5);    // Search from index 0 to 5
     ///
     /// // Using object initializer
     /// var options = new GlideJson.ArrIndexRange { Start = 1, End = 10 };
@@ -171,7 +171,7 @@ public static partial class GlideJson
         /// <param name="start">The starting index (inclusive).</param>
         /// <param name="end">The ending index (exclusive).</param>
         /// <returns>A new <see cref="ArrIndexRange"/> instance.</returns>
-        public static ArrIndexRange InRange(long start, long end) => new() { Start = start, End = end };
+        public static ArrIndexRange Between(long start, long end) => new() { Start = start, End = end };
 
         /// <summary>
         /// Converts options to command arguments.
