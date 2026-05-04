@@ -321,7 +321,6 @@ pub(crate) unsafe fn create_connection_request(
             },
         ),
         read_only: config.read_only,
-        node_discovery_mode: glide_core::client::NodeDiscoveryMode::Standard,
 
         // Client-side cache configuration
         client_side_cache: if config.has_client_side_cache_config {
@@ -351,6 +350,7 @@ pub(crate) unsafe fn create_connection_request(
         tcp_nodelay: false,
         periodic_checks: None,
         inflight_requests_limit: None,
+        node_discovery_mode: glide_core::client::NodeDiscoveryMode::default(),
     }
 }
 
