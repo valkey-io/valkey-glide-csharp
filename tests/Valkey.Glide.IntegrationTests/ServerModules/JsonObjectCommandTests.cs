@@ -28,12 +28,11 @@ public class JsonObjectCommandTests(TestConfiguration config)
         string jsonValue = "{\"a\":1,\"b\":2,\"c\":3}";
 
         _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        ValkeyResult result = await GlideJson.ObjLenAsync(client, key, "$");
+        long?[]? result = await GlideJson.ObjLenAsync(client, key, "$");
 
         Assert.NotNull(result);
-        long[] arr = (long[])result!;
-        _ = Assert.Single(arr);
-        Assert.Equal(3L, arr[0]);
+        _ = Assert.Single(result);
+        Assert.Equal(3L, result[0]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -46,12 +45,11 @@ public class JsonObjectCommandTests(TestConfiguration config)
         string jsonValue = "{}";
 
         _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        ValkeyResult result = await GlideJson.ObjLenAsync(client, key, "$");
+        long?[]? result = await GlideJson.ObjLenAsync(client, key, "$");
 
         Assert.NotNull(result);
-        long[] arr = (long[])result!;
-        _ = Assert.Single(arr);
-        Assert.Equal(0L, arr[0]);
+        _ = Assert.Single(result);
+        Assert.Equal(0L, result[0]);
     }
 
     #endregion
@@ -68,14 +66,13 @@ public class JsonObjectCommandTests(TestConfiguration config)
         string jsonValue = "{\"name\":\"John\",\"age\":30}";
 
         _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        ValkeyResult result = await GlideJson.ObjKeysAsync(client, key, "$");
+        ValkeyValue[]?[]? result = await GlideJson.ObjKeysAsync(client, key, "$");
 
         Assert.NotNull(result);
         // JSONPath returns array of arrays
-        ValkeyResult[] outerArr = (ValkeyResult[])result!;
-        _ = Assert.Single(outerArr);
-        ValkeyResult[] keys = (ValkeyResult[])outerArr[0]!;
-        Assert.Equal(2, keys.Length);
+        _ = Assert.Single(result);
+        Assert.NotNull(result[0]);
+        Assert.Equal(2, result[0]!.Length);
     }
 
     #endregion
@@ -92,12 +89,11 @@ public class JsonObjectCommandTests(TestConfiguration config)
         string jsonValue = "{\"active\":true}";
 
         _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        ValkeyResult result = await GlideJson.ToggleAsync(client, key, "$.active");
+        bool?[]? result = await GlideJson.ToggleAsync(client, key, "$.active");
 
         Assert.NotNull(result);
-        bool[] arr = (bool[])result!;
-        _ = Assert.Single(arr);
-        Assert.False(arr[0]);
+        _ = Assert.Single(result);
+        Assert.False(result[0]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -110,12 +106,11 @@ public class JsonObjectCommandTests(TestConfiguration config)
         string jsonValue = "{\"active\":false}";
 
         _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        ValkeyResult result = await GlideJson.ToggleAsync(client, key, "$.active");
+        bool?[]? result = await GlideJson.ToggleAsync(client, key, "$.active");
 
         Assert.NotNull(result);
-        bool[] arr = (bool[])result!;
-        _ = Assert.Single(arr);
-        Assert.True(arr[0]);
+        _ = Assert.Single(result);
+        Assert.True(result[0]);
     }
 
     #endregion
@@ -132,10 +127,9 @@ public class JsonObjectCommandTests(TestConfiguration config)
         string jsonValue = "{\"name\":\"John\",\"age\":30}";
 
         _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        ValkeyResult result = await GlideJson.DebugMemoryAsync(client, key);
+        long? memorySize = await GlideJson.DebugMemoryAsync(client, key);
 
-        Assert.NotNull(result);
-        long memorySize = (long)result;
+        _ = Assert.NotNull(memorySize);
         Assert.True(memorySize > 0);
     }
 
@@ -153,10 +147,9 @@ public class JsonObjectCommandTests(TestConfiguration config)
         string jsonValue = "{\"name\":\"John\",\"age\":30}";
 
         _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        ValkeyResult result = await GlideJson.DebugFieldsAsync(client, key);
+        long? fieldCount = await GlideJson.DebugFieldsAsync(client, key);
 
-        Assert.NotNull(result);
-        long fieldCount = (long)result;
+        _ = Assert.NotNull(fieldCount);
         Assert.True(fieldCount > 0);
     }
 

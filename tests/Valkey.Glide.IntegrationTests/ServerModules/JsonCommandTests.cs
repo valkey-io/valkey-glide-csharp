@@ -1235,11 +1235,11 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\",\"age\":30}";
 
-        ValkeyResult result; _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        result = await GlideJson.TypeAsync(client, key);
+        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        string? result = await GlideJson.TypeAsync(client, key);
 
         Assert.NotNull(result);
-        Assert.Equal("object", (string?)result);
+        Assert.Equal("object", result);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1251,11 +1251,11 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "[1, 2, 3, 4, 5]";
 
-        ValkeyResult result; _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        result = await GlideJson.TypeAsync(client, key);
+        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        string? result = await GlideJson.TypeAsync(client, key);
 
         Assert.NotNull(result);
-        Assert.Equal("array", (string?)result);
+        Assert.Equal("array", result);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1267,11 +1267,11 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "\"hello world\"";
 
-        ValkeyResult result; _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        result = await GlideJson.TypeAsync(client, key);
+        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        string? result = await GlideJson.TypeAsync(client, key);
 
         Assert.NotNull(result);
-        Assert.Equal("string", (string?)result);
+        Assert.Equal("string", result);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1283,21 +1283,18 @@ public class JsonCommandTests(TestConfiguration config)
         string keyInteger = GetUniqueKey("integer");
         string keyFloat = GetUniqueKey("float");
 
-        ValkeyResult intResult;
-        ValkeyResult floatResult;
         _ = await GlideJson.SetAsync(client, keyInteger, "$", "42");
         _ = await GlideJson.SetAsync(client, keyFloat, "$", "3.14");
-        intResult = await GlideJson.TypeAsync(client, keyInteger);
-        floatResult = await GlideJson.TypeAsync(client, keyFloat);
+        string? intResult = await GlideJson.TypeAsync(client, keyInteger);
+        string? floatResult = await GlideJson.TypeAsync(client, keyFloat);
 
 
         Assert.NotNull(intResult);
         Assert.NotNull(floatResult);
         // Integer values may return "integer" or "number" depending on the JSON module version
-        string? intType = (string?)intResult;
-        Assert.True(intType == "integer" || intType == "number",
-            $"Expected 'integer' or 'number' but got '{intType}'");
-        Assert.Equal("number", (string?)floatResult);
+        Assert.True(intResult == "integer" || intResult == "number",
+            $"Expected 'integer' or 'number' but got '{intResult}'");
+        Assert.Equal("number", floatResult);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1309,18 +1306,16 @@ public class JsonCommandTests(TestConfiguration config)
         string keyTrue = GetUniqueKey("true");
         string keyFalse = GetUniqueKey("false");
 
-        ValkeyResult trueResult;
-        ValkeyResult falseResult;
         _ = await GlideJson.SetAsync(client, keyTrue, "$", "true");
         _ = await GlideJson.SetAsync(client, keyFalse, "$", "false");
-        trueResult = await GlideJson.TypeAsync(client, keyTrue);
-        falseResult = await GlideJson.TypeAsync(client, keyFalse);
+        string? trueResult = await GlideJson.TypeAsync(client, keyTrue);
+        string? falseResult = await GlideJson.TypeAsync(client, keyFalse);
 
 
         Assert.NotNull(trueResult);
         Assert.NotNull(falseResult);
-        Assert.Equal("boolean", (string?)trueResult);
-        Assert.Equal("boolean", (string?)falseResult);
+        Assert.Equal("boolean", trueResult);
+        Assert.Equal("boolean", falseResult);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1332,11 +1327,11 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "null";
 
-        ValkeyResult result; _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        result = await GlideJson.TypeAsync(client, key);
+        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        string? result = await GlideJson.TypeAsync(client, key);
 
         Assert.NotNull(result);
-        Assert.Equal("null", (string?)result);
+        Assert.Equal("null", result);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1348,14 +1343,10 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\",\"age\":30,\"active\":true}";
 
-        ValkeyResult nameResult;
-        ValkeyResult ageResult;
-        ValkeyResult activeResult;
         _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        nameResult = await GlideJson.TypeAsync(client, key, "$.name");
-        ageResult = await GlideJson.TypeAsync(client, key, "$.age");
-        activeResult = await GlideJson.TypeAsync(client, key, "$.active");
-
+        ValkeyValue[]? nameResult = await GlideJson.TypeAsync(client, key, "$.name");
+        ValkeyValue[]? ageResult = await GlideJson.TypeAsync(client, key, "$.age");
+        ValkeyValue[]? activeResult = await GlideJson.TypeAsync(client, key, "$.active");
 
         // JSONPath returns an array of types
         Assert.NotNull(nameResult);
@@ -1363,41 +1354,16 @@ public class JsonCommandTests(TestConfiguration config)
         Assert.NotNull(activeResult);
 
         // Results should be arrays containing the type strings
-        // ValkeyResult wraps the array, so we need to access elements via indexer or cast to array
-        if (nameResult.Length > 0)
-        {
-            Assert.Equal(1, nameResult.Length);
-            Assert.Equal("string", (string?)nameResult[0]);
-        }
-        else
-        {
-            // Some implementations may return the type directly
-            Assert.Equal("string", (string?)nameResult);
-        }
+        _ = Assert.Single(nameResult);
+        Assert.Equal("string", (string?)nameResult[0]);
 
-        if (ageResult.Length > 0)
-        {
-            Assert.Equal(1, ageResult.Length);
-            string? ageType = (string?)ageResult[0];
-            Assert.True(ageType == "integer" || ageType == "number",
-                $"Expected 'integer' or 'number' but got '{ageType}'");
-        }
-        else
-        {
-            string? ageType = (string?)ageResult;
-            Assert.True(ageType == "integer" || ageType == "number",
-                $"Expected 'integer' or 'number' but got '{ageType}'");
-        }
+        _ = Assert.Single(ageResult);
+        string? ageType = (string?)ageResult[0];
+        Assert.True(ageType == "integer" || ageType == "number",
+            $"Expected 'integer' or 'number' but got '{ageType}'");
 
-        if (activeResult.Length > 0)
-        {
-            Assert.Equal(1, activeResult.Length);
-            Assert.Equal("boolean", (string?)activeResult[0]);
-        }
-        else
-        {
-            Assert.Equal("boolean", (string?)activeResult);
-        }
+        _ = Assert.Single(activeResult);
+        Assert.Equal("boolean", (string?)activeResult[0]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1409,12 +1375,13 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\",\"age\":30}";
 
-        ValkeyResult result; _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        result = await GlideJson.TypeAsync(client, key, ".name");
+        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        ValkeyValue[]? result = await GlideJson.TypeAsync(client, key, ".name");
 
         Assert.NotNull(result);
-        // Legacy path returns a single type string
-        Assert.Equal("string", (string?)result);
+        // Legacy path returns a single type string wrapped in array
+        _ = Assert.Single(result);
+        Assert.Equal("string", (string?)result[0]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1425,9 +1392,9 @@ public class JsonCommandTests(TestConfiguration config)
 
         string key = GetUniqueKey("nonexistent");
 
-        ValkeyResult result = await GlideJson.TypeAsync(client, key);
+        string? result = await GlideJson.TypeAsync(client, key);
 
-        Assert.True(result.IsNull);
+        Assert.Null(result);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1440,42 +1407,24 @@ public class JsonCommandTests(TestConfiguration config)
         string path = "$";
         string jsonValue = "{\"name\":\"Jane\",\"items\":[1,2,3]}";
 
-        ValkeyResult rootResult;
-        ValkeyResult nameResult;
-        ValkeyResult itemsResult;
         _ = await GlideJson.SetAsync(client, key, path, jsonValue);
-        rootResult = await GlideJson.TypeAsync(client, key);
-        nameResult = await GlideJson.TypeAsync(client, key, "$.name");
-        itemsResult = await GlideJson.TypeAsync(client, key, "$.items");
-
+        string? rootResult = await GlideJson.TypeAsync(client, key);
+        ValkeyValue[]? nameResult = await GlideJson.TypeAsync(client, key, "$.name");
+        ValkeyValue[]? itemsResult = await GlideJson.TypeAsync(client, key, "$.items");
 
         Assert.NotNull(rootResult);
-        Assert.Equal("object", (string?)rootResult);
+        Assert.Equal("object", rootResult);
 
         Assert.NotNull(nameResult);
         Assert.NotNull(itemsResult);
 
         // Check name type (should be string)
-        if (nameResult.Length > 0)
-        {
-            Assert.Equal(1, nameResult.Length);
-            Assert.Equal("string", (string?)nameResult[0]);
-        }
-        else
-        {
-            Assert.Equal("string", (string?)nameResult);
-        }
+        _ = Assert.Single(nameResult);
+        Assert.Equal("string", (string?)nameResult[0]);
 
         // Check items type (should be array)
-        if (itemsResult.Length > 0)
-        {
-            Assert.Equal(1, itemsResult.Length);
-            Assert.Equal("array", (string?)itemsResult[0]);
-        }
-        else
-        {
-            Assert.Equal("array", (string?)itemsResult);
-        }
+        _ = Assert.Single(itemsResult);
+        Assert.Equal("array", (string?)itemsResult[0]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1487,37 +1436,20 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"person\":{\"name\":\"John\",\"scores\":[90,85,92]},\"active\":true}";
 
-        ValkeyResult personResult;
-        ValkeyResult scoresResult;
         _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        personResult = await GlideJson.TypeAsync(client, key, "$.person");
-        scoresResult = await GlideJson.TypeAsync(client, key, "$.person.scores");
-
+        ValkeyValue[]? personResult = await GlideJson.TypeAsync(client, key, "$.person");
+        ValkeyValue[]? scoresResult = await GlideJson.TypeAsync(client, key, "$.person.scores");
 
         Assert.NotNull(personResult);
         Assert.NotNull(scoresResult);
 
         // Check person type (should be object)
-        if (personResult.Length > 0)
-        {
-            Assert.Equal(1, personResult.Length);
-            Assert.Equal("object", (string?)personResult[0]);
-        }
-        else
-        {
-            Assert.Equal("object", (string?)personResult);
-        }
+        _ = Assert.Single(personResult);
+        Assert.Equal("object", (string?)personResult[0]);
 
         // Check scores type (should be array)
-        if (scoresResult.Length > 0)
-        {
-            Assert.Equal(1, scoresResult.Length);
-            Assert.Equal("array", (string?)scoresResult[0]);
-        }
-        else
-        {
-            Assert.Equal("array", (string?)scoresResult);
-        }
+        _ = Assert.Single(scoresResult);
+        Assert.Equal("array", (string?)scoresResult[0]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1529,8 +1461,8 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"items\":[{\"value\":\"text\"},{\"value\":42},{\"value\":true}]}";
 
-        ValkeyResult result; _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        result = await GlideJson.TypeAsync(client, key, "$.items[*].value");
+        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        ValkeyValue[]? result = await GlideJson.TypeAsync(client, key, "$.items[*].value");
 
         Assert.NotNull(result);
 
@@ -1894,15 +1826,14 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"greeting\":\"Hello\"}";
 
-        ValkeyResult result; _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        result = await GlideJson.StrAppendAsync(client, key, "$.greeting", "\" World\"");
+        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        long?[]? result = await GlideJson.StrAppendAsync(client, key, "$.greeting", "\" World\"");
 
         Assert.NotNull(result);
         // JSONPath returns array of lengths
         // "Hello" (5) + " World" (6) = 11
-        long[] arr = (long[])result!;
-        _ = Assert.Single(arr);
-        Assert.Equal(11L, arr[0]);
+        _ = Assert.Single(result);
+        Assert.Equal(11L, result[0]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1914,14 +1845,13 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"a\":\"foo\",\"nested\":{\"b\":\"bar\"}}";
 
-        ValkeyResult result; _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        result = await GlideJson.StrAppendAsync(client, key, "$.a", "\"baz\"");
+        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        long?[]? result = await GlideJson.StrAppendAsync(client, key, "$.a", "\"baz\"");
 
         Assert.NotNull(result);
         // "foo" (3) + "baz" (3) = 6
-        long[] arr = (long[])result!;
-        _ = Assert.Single(arr);
-        Assert.Equal(6L, arr[0]);
+        _ = Assert.Single(result);
+        Assert.Equal(6L, result[0]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1933,16 +1863,15 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\"}";
 
-        ValkeyResult result;
         _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
         // Legacy path (no $ prefix)
-        result = await GlideJson.StrAppendAsync(client, key, ".name", "\" Doe\"");
-
+        long?[]? result = await GlideJson.StrAppendAsync(client, key, ".name", "\" Doe\"");
 
         Assert.NotNull(result);
         // "John" (4) + " Doe" (4) = 8
-        // Legacy path returns single value (not array)
-        Assert.Equal(8L, (long)result);
+        // Legacy path returns single value wrapped in array
+        _ = Assert.Single(result);
+        Assert.Equal(8L, result[0]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1972,14 +1901,13 @@ public class JsonCommandTests(TestConfiguration config)
         GlideString appendPath = "$.text";
         GlideString appendValue = "\" World\"";
 
-        ValkeyResult result; _ = await GlideJson.SetAsync(client, key, path, jsonValue);
-        result = await GlideJson.StrAppendAsync(client, key, appendPath, appendValue);
+        _ = await GlideJson.SetAsync(client, key, path, jsonValue);
+        long?[]? result = await GlideJson.StrAppendAsync(client, key, appendPath, appendValue);
 
         Assert.NotNull(result);
         // "Hello" (5) + " World" (6) = 11
-        long[] arr = (long[])result!;
-        _ = Assert.Single(arr);
-        Assert.Equal(11L, arr[0]);
+        _ = Assert.Single(result);
+        Assert.Equal(11L, result[0]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1991,14 +1919,13 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"text\":\"Hello\"}";
 
-        ValkeyResult result; _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        result = await GlideJson.StrAppendAsync(client, key, "$.text", "\"\"");
+        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        long?[]? result = await GlideJson.StrAppendAsync(client, key, "$.text", "\"\"");
 
         Assert.NotNull(result);
         // "Hello" (5) + "" (0) = 5
-        long[] arr = (long[])result!;
-        _ = Assert.Single(arr);
-        Assert.Equal(5L, arr[0]);
+        _ = Assert.Single(result);
+        Assert.Equal(5L, result[0]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -2011,15 +1938,13 @@ public class JsonCommandTests(TestConfiguration config)
         // Set a root-level string value
         string jsonValue = "\"Hello\"";
 
-        ValkeyResult result;
         _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
         // Append to root string (no path specified)
-        result = await GlideJson.StrAppendAsync(client, key, "\" World\"");
+        long result = await GlideJson.StrAppendAsync(client, key, "\" World\"");
 
 
-        Assert.NotNull(result);
         // "Hello" (5) + " World" (6) = 11
-        Assert.Equal(11L, (long)result);
+        Assert.Equal(11L, result);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -2031,19 +1956,16 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"items\":[{\"name\":\"a\"},{\"name\":\"bb\"},{\"name\":\"ccc\"}]}";
 
-        ValkeyResult result;
         _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
         // Append to all name values using wildcard
-        result = await GlideJson.StrAppendAsync(client, key, "$.items[*].name", "\"x\"");
-
+        long?[]? result = await GlideJson.StrAppendAsync(client, key, "$.items[*].name", "\"x\"");
 
         Assert.NotNull(result);
         // Should return array of new lengths: [2, 3, 4] (a+x=2, bb+x=3, ccc+x=4)
-        long[] arr = (long[])result!;
-        Assert.Equal(3, arr.Length);
-        Assert.Equal(2L, arr[0]);
-        Assert.Equal(3L, arr[1]);
-        Assert.Equal(4L, arr[2]);
+        Assert.Equal(3, result.Length);
+        Assert.Equal(2L, result[0]);
+        Assert.Equal(3L, result[1]);
+        Assert.Equal(4L, result[2]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -2074,14 +1996,13 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"greeting\":\"Hello\"}";
 
-        ValkeyResult result; _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        result = await GlideJson.StrLenAsync(client, key, "$.greeting");
+        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        long?[]? result = await GlideJson.StrLenAsync(client, key, "$.greeting");
 
         Assert.NotNull(result);
         // JSONPath returns an array of lengths
-        long[] arr = (long[])result!;
-        _ = Assert.Single(arr);
-        Assert.Equal(5L, arr[0]); // "Hello" has 5 characters
+        _ = Assert.Single(result);
+        Assert.Equal(5L, result[0]); // "Hello" has 5 characters
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -2093,15 +2014,14 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"a\":\"foo\",\"nested\":{\"a\":\"hello\"}}";
 
-        ValkeyResult result; _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        result = await GlideJson.StrLenAsync(client, key, "$..a");
+        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        long?[]? result = await GlideJson.StrLenAsync(client, key, "$..a");
 
         Assert.NotNull(result);
         // JSONPath returns an array of lengths for all matching paths
-        long[] arr = (long[])result!;
-        Assert.Equal(2, arr.Length);
+        Assert.Equal(2, result.Length);
         // "foo" has 3 characters, "hello" has 5 characters
-        long[] lengths = [.. arr.OrderBy(x => x)];
+        long?[] lengths = [.. result.OrderBy(x => x)];
         Assert.Contains(3L, lengths);
         Assert.Contains(5L, lengths);
     }
@@ -2115,15 +2035,14 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\"}";
 
-        ValkeyResult result;
         _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
         // Legacy path (no $ prefix)
-        result = await GlideJson.StrLenAsync(client, key, ".name");
-
+        long?[]? result = await GlideJson.StrLenAsync(client, key, ".name");
 
         Assert.NotNull(result);
-        // Legacy path returns a single length value
-        Assert.Equal(4L, (long)result); // "John" has 4 characters
+        // Legacy path returns a single length value wrapped in array
+        _ = Assert.Single(result);
+        Assert.Equal(4L, result[0]); // "John" has 4 characters
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -2134,9 +2053,9 @@ public class JsonCommandTests(TestConfiguration config)
 
         string key = GetUniqueKey("nonexistent");
 
-        ValkeyResult result = await GlideJson.StrLenAsync(client, key);
+        long? result = await GlideJson.StrLenAsync(client, key);
 
-        Assert.True(result.IsNull);
+        Assert.Null(result);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -2150,14 +2069,13 @@ public class JsonCommandTests(TestConfiguration config)
         string jsonValue = "{\"text\":\"Hello World\"}";
         GlideString strPath = "$.text";
 
-        ValkeyResult result; _ = await GlideJson.SetAsync(client, key, path, jsonValue);
-        result = await GlideJson.StrLenAsync(client, key, strPath);
+        _ = await GlideJson.SetAsync(client, key, path, jsonValue);
+        long?[]? result = await GlideJson.StrLenAsync(client, key, strPath);
 
         Assert.NotNull(result);
         // JSONPath returns an array of lengths
-        long[] arr = (long[])result!;
-        _ = Assert.Single(arr);
-        Assert.Equal(11L, arr[0]); // "Hello World" has 11 characters
+        _ = Assert.Single(result);
+        Assert.Equal(11L, result[0]); // "Hello World" has 11 characters
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -2169,14 +2087,13 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"empty\":\"\"}";
 
-        ValkeyResult result; _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        result = await GlideJson.StrLenAsync(client, key, "$.empty");
+        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        long?[]? result = await GlideJson.StrLenAsync(client, key, "$.empty");
 
         Assert.NotNull(result);
         // JSONPath returns an array of lengths
-        long[] arr = (long[])result!;
-        _ = Assert.Single(arr);
-        Assert.Equal(0L, arr[0]); // Empty string has 0 characters
+        _ = Assert.Single(result);
+        Assert.Equal(0L, result[0]); // Empty string has 0 characters
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -2188,14 +2105,13 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "\"Hello World\"";
 
-        ValkeyResult result;
         _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
         // Get length of root string (no path specified)
-        result = await GlideJson.StrLenAsync(client, key);
+        long? result = await GlideJson.StrLenAsync(client, key);
 
 
-        Assert.NotNull(result);
-        Assert.Equal(11L, (long)result); // "Hello World" has 11 characters
+        _ = Assert.NotNull(result);
+        Assert.Equal(11L, result); // "Hello World" has 11 characters
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -2207,17 +2123,14 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\",\"age\":30}";
 
-        ValkeyResult result;
         _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
         // Get length of non-string value with JSONPath
-        result = await GlideJson.StrLenAsync(client, key, "$.age");
-
+        long?[]? result = await GlideJson.StrLenAsync(client, key, "$.age");
 
         Assert.NotNull(result);
         // JSONPath returns an array with null for non-string matches
-        ValkeyResult[] arr = (ValkeyResult[])result!;
-        _ = Assert.Single(arr);
-        Assert.True(arr[0].IsNull);
+        _ = Assert.Single(result);
+        Assert.Null(result[0]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -2229,19 +2142,16 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"items\":[{\"name\":\"a\"},{\"name\":\"bb\"},{\"name\":\"ccc\"}]}";
 
-        ValkeyResult result;
         _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
         // Get length of all name values using wildcard
-        result = await GlideJson.StrLenAsync(client, key, "$.items[*].name");
-
+        long?[]? result = await GlideJson.StrLenAsync(client, key, "$.items[*].name");
 
         Assert.NotNull(result);
         // JSONPath returns an array of lengths for all matching paths
-        long[] arr = (long[])result!;
-        Assert.Equal(3, arr.Length);
-        Assert.Equal(1L, arr[0]); // "a" has 1 character
-        Assert.Equal(2L, arr[1]); // "bb" has 2 characters
-        Assert.Equal(3L, arr[2]); // "ccc" has 3 characters
+        Assert.Equal(3, result.Length);
+        Assert.Equal(1L, result[0]); // "a" has 1 character
+        Assert.Equal(2L, result[1]); // "bb" has 2 characters
+        Assert.Equal(3L, result[2]); // "ccc" has 3 characters
     }
 
     #endregion

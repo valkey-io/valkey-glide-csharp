@@ -28,12 +28,11 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string jsonValue = "{\"arr\":[1,2,3]}";
 
         _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        ValkeyResult result = await GlideJson.ArrAppendAsync(client, key, "$.arr", "4", "5");
+        long?[]? result = await GlideJson.ArrAppendAsync(client, key, "$.arr", ["4", "5"]);
 
         Assert.NotNull(result);
-        long[] arr = (long[])result!;
-        _ = Assert.Single(arr);
-        Assert.Equal(5L, arr[0]);
+        _ = Assert.Single(result);
+        Assert.Equal(5L, result[0]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -46,11 +45,10 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string jsonValue = "{\"a\":[1],\"b\":[2,3]}";
 
         _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        ValkeyResult result = await GlideJson.ArrAppendAsync(client, key, "$.*", "99");
+        long?[]? result = await GlideJson.ArrAppendAsync(client, key, "$.*", ["99"]);
 
         Assert.NotNull(result);
-        long[] arr = (long[])result!;
-        Assert.Equal(2, arr.Length);
+        Assert.Equal(2, result.Length);
     }
 
     #endregion
@@ -67,12 +65,11 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string jsonValue = "{\"arr\":[1,2,3]}";
 
         _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        ValkeyResult result = await GlideJson.ArrInsertAsync(client, key, "$.arr", 1, "99");
+        long?[]? result = await GlideJson.ArrInsertAsync(client, key, "$.arr", 1, ["99"]);
 
         Assert.NotNull(result);
-        long[] arr = (long[])result!;
-        _ = Assert.Single(arr);
-        Assert.Equal(4L, arr[0]);
+        _ = Assert.Single(result);
+        Assert.Equal(4L, result[0]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -85,12 +82,11 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string jsonValue = "{\"arr\":[1,2,3]}";
 
         _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        ValkeyResult result = await GlideJson.ArrInsertAsync(client, key, "$.arr", -1, "99");
+        long?[]? result = await GlideJson.ArrInsertAsync(client, key, "$.arr", -1, ["99"]);
 
         Assert.NotNull(result);
-        long[] arr = (long[])result!;
-        _ = Assert.Single(arr);
-        Assert.Equal(4L, arr[0]);
+        _ = Assert.Single(result);
+        Assert.Equal(4L, result[0]);
     }
 
     #endregion
@@ -107,12 +103,11 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string jsonValue = "{\"arr\":[1,2,3,4,5]}";
 
         _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        ValkeyResult result = await GlideJson.ArrIndexAsync(client, key, "$.arr", "3");
+        long?[]? result = await GlideJson.ArrIndexAsync(client, key, "$.arr", "3");
 
         Assert.NotNull(result);
-        long[] arr = (long[])result!;
-        _ = Assert.Single(arr);
-        Assert.Equal(2L, arr[0]);
+        _ = Assert.Single(result);
+        Assert.Equal(2L, result[0]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -125,12 +120,11 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string jsonValue = "{\"arr\":[1,2,3]}";
 
         _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        ValkeyResult result = await GlideJson.ArrIndexAsync(client, key, "$.arr", "99");
+        long?[]? result = await GlideJson.ArrIndexAsync(client, key, "$.arr", "99");
 
         Assert.NotNull(result);
-        long[] arr = (long[])result!;
-        _ = Assert.Single(arr);
-        Assert.Equal(-1L, arr[0]);
+        _ = Assert.Single(result);
+        Assert.Equal(-1L, result[0]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -144,12 +138,11 @@ public class JsonArrayCommandTests(TestConfiguration config)
         var options = GlideJson.ArrIndexRange.FromStart(2);
 
         _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        ValkeyResult result = await GlideJson.ArrIndexAsync(client, key, "$.arr", "2", options);
+        long?[]? result = await GlideJson.ArrIndexAsync(client, key, "$.arr", "2", options);
 
         Assert.NotNull(result);
-        long[] arr = (long[])result!;
-        _ = Assert.Single(arr);
-        Assert.Equal(3L, arr[0]);
+        _ = Assert.Single(result);
+        Assert.Equal(3L, result[0]);
     }
 
     #endregion
@@ -166,12 +159,11 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string jsonValue = "{\"arr\":[1,2,3,4,5]}";
 
         _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        ValkeyResult result = await GlideJson.ArrLenAsync(client, key, "$.arr");
+        long?[]? result = await GlideJson.ArrLenAsync(client, key, "$.arr");
 
         Assert.NotNull(result);
-        long[] arr = (long[])result!;
-        _ = Assert.Single(arr);
-        Assert.Equal(5L, arr[0]);
+        _ = Assert.Single(result);
+        Assert.Equal(5L, result[0]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -184,12 +176,11 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string jsonValue = "{\"arr\":[]}";
 
         _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        ValkeyResult result = await GlideJson.ArrLenAsync(client, key, "$.arr");
+        long?[]? result = await GlideJson.ArrLenAsync(client, key, "$.arr");
 
         Assert.NotNull(result);
-        long[] arr = (long[])result!;
-        _ = Assert.Single(arr);
-        Assert.Equal(0L, arr[0]);
+        _ = Assert.Single(result);
+        Assert.Equal(0L, result[0]);
     }
 
     #endregion
@@ -206,12 +197,11 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string jsonValue = "{\"arr\":[1,2,3]}";
 
         _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        ValkeyResult result = await GlideJson.ArrPopAsync(client, key, "$.arr");
+        ValkeyValue?[]? result = await GlideJson.ArrPopAsync(client, key, "$.arr");
 
         Assert.NotNull(result);
-        ValkeyResult[] arr = (ValkeyResult[])result!;
-        _ = Assert.Single(arr);
-        Assert.Equal("3", (string?)arr[0]);
+        _ = Assert.Single(result);
+        Assert.Equal("3", (string?)result[0]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -224,12 +214,11 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string jsonValue = "{\"arr\":[1,2,3]}";
 
         _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        ValkeyResult result = await GlideJson.ArrPopAsync(client, key, "$.arr", 0);
+        ValkeyValue?[]? result = await GlideJson.ArrPopAsync(client, key, "$.arr", 0);
 
         Assert.NotNull(result);
-        ValkeyResult[] arr = (ValkeyResult[])result!;
-        _ = Assert.Single(arr);
-        Assert.Equal("1", (string?)arr[0]);
+        _ = Assert.Single(result);
+        Assert.Equal("1", (string?)result[0]);
     }
 
     #endregion
@@ -246,12 +235,11 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string jsonValue = "{\"arr\":[1,2,3,4,5]}";
 
         _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        ValkeyResult result = await GlideJson.ArrTrimAsync(client, key, "$.arr", 1, 3);
+        long?[]? result = await GlideJson.ArrTrimAsync(client, key, "$.arr", 1, 3);
 
         Assert.NotNull(result);
-        long[] arr = (long[])result!;
-        _ = Assert.Single(arr);
-        Assert.Equal(3L, arr[0]);
+        _ = Assert.Single(result);
+        Assert.Equal(3L, result[0]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -264,12 +252,11 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string jsonValue = "{\"arr\":[1,2,3]}";
 
         _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        ValkeyResult result = await GlideJson.ArrTrimAsync(client, key, "$.arr", 5, 10);
+        long?[]? result = await GlideJson.ArrTrimAsync(client, key, "$.arr", 5, 10);
 
         Assert.NotNull(result);
-        long[] arr = (long[])result!;
-        _ = Assert.Single(arr);
-        Assert.Equal(0L, arr[0]);
+        _ = Assert.Single(result);
+        Assert.Equal(0L, result[0]);
     }
 
     #endregion
