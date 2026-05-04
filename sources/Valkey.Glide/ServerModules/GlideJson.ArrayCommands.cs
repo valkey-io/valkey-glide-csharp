@@ -181,7 +181,7 @@ public static partial class GlideJson
         if (result is null)
             return null;
         if (result is object?[] arr)
-            return arr.Select(o => o is null ? (ValkeyValue?)null : ToValkeyValue(o)).ToArray();
+            return [.. arr.Select(o => o is null ? (ValkeyValue?)null : ToValkeyValue(o))];
         // Single value (legacy path) - wrap in array for consistent return type
         return [ToValkeyValue(result)];
     }

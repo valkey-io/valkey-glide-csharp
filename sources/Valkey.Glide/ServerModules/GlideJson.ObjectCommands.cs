@@ -67,15 +67,15 @@ public static partial class GlideJson
             return null;
         if (result is object?[] arr)
         {
-            return arr.Select(o =>
+            return [.. arr.Select(o =>
             {
                 if (o is null)
                     return null;
                 if (o is object?[] innerArr)
-                    return innerArr.Select(ToValkeyValue).ToArray();
+                    return (ValkeyValue[])[.. innerArr.Select(ToValkeyValue)];
                 // Single value - wrap in array
-                return new ValkeyValue[] { ToValkeyValue(o) };
-            }).ToArray();
+                return (ValkeyValue[])[ToValkeyValue(o)];
+            })];
         }
         // Single value (legacy path) - wrap in nested array
         return [[ToValkeyValue(result)]];
@@ -95,7 +95,7 @@ public static partial class GlideJson
         if (result is null)
             return null;
         if (result is object?[] arr)
-            return arr.Select(o => o?.ToString() ?? string.Empty).ToArray();
+            return [.. arr.Select(o => o?.ToString() ?? string.Empty)];
         return [];
     }
 
@@ -125,7 +125,7 @@ public static partial class GlideJson
         if (result is null)
             return null;
         if (result is object?[] arr)
-            return arr.Select(o => o is null ? (bool?)null : Convert.ToBoolean(o)).ToArray();
+            return [.. arr.Select(o => o is null ? (bool?)null : Convert.ToBoolean(o))];
         // Single value (legacy path) - wrap in array for consistent return type
         return [Convert.ToBoolean(result)];
     }

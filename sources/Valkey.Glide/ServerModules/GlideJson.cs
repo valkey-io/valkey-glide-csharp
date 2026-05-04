@@ -390,7 +390,7 @@ public static partial class GlideJson
         if (result is null)
             return null;
         if (result is object?[] arr)
-            return arr.Select(ToValkeyValue).ToArray();
+            return [.. arr.Select(ToValkeyValue)];
         // Single value (legacy path) - wrap in array for consistent return type
         return [ToValkeyValue(result)];
     }
@@ -482,7 +482,7 @@ public static partial class GlideJson
         if (result is null)
             return null;
         if (result is object?[] arr)
-            return arr.Select(o => o is null ? (long?)null : (long)o).ToArray();
+            return [.. arr.Select(o => o is null ? (long?)null : (long)o)];
         // Single value (legacy path) - wrap in array for consistent return type
         return [(long)result];
     }
