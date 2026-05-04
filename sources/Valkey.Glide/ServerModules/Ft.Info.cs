@@ -435,7 +435,7 @@ public static partial class Ft
     }
 
     /// <summary>
-    /// Information about a vector field in a search index that uses the brute-force algorithm algorithm (<c>HNSW</c>).
+    /// Information about a vector field in a search index that uses the brute-force algorithm (<c>FLAT</c>).
     /// </summary>
     public sealed class InfoVectorFieldFlat : InfoVectorField
     {
