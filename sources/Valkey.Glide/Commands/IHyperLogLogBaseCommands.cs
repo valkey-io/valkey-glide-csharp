@@ -12,11 +12,11 @@ namespace Valkey.Glide.Commands;
 public interface IHyperLogLogBaseCommands
 {
     /// <summary>
-    /// Adds one element to the HyperLogLog data structure stored at the specified key.
+    /// Adds one element to a HyperLogLog data structure.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/pfadd/"/>
-    /// <param name="key">The key of the HyperLogLog.</param>
-    /// <param name="element">The element to add to the HyperLogLog.</param>
+    /// <seealso href="https://valkey.io/commands/pfadd/">Valkey commands – PFADD</seealso>
+    /// <param name="key">The HyperLogLog key.</param>
+    /// <param name="element">The element to add.</param>
     /// <returns>
     /// <see langword="true"/> if at least one HyperLogLog internal register was altered,
     /// <see langword="false"/> otherwise.
@@ -24,19 +24,18 @@ public interface IHyperLogLogBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// var response = await client.HyperLogLogAddAsync("my_hll", "element1");
-    /// Console.WriteLine(response); // Output: True (if this is a new element)
+    /// var altered = await client.HyperLogLogAddAsync("myhll", "element1");  // true
     /// </code>
     /// </example>
     /// </remarks>
     Task<bool> HyperLogLogAddAsync(ValkeyKey key, ValkeyValue element);
 
     /// <summary>
-    /// Adds multiple elements to the HyperLogLog data structure stored at the specified key.
+    /// Adds multiple elements to a HyperLogLog data structure.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/pfadd/"/>
-    /// <param name="key">The key of the HyperLogLog.</param>
-    /// <param name="elements">The elements to add to the HyperLogLog.</param>
+    /// <seealso href="https://valkey.io/commands/pfadd/">Valkey commands – PFADD</seealso>
+    /// <param name="key">The HyperLogLog key.</param>
+    /// <param name="elements">The elements to add.</param>
     /// <returns>
     /// <see langword="true"/> if at least one HyperLogLog internal register was altered,
     /// <see langword="false"/> otherwise.
@@ -44,56 +43,56 @@ public interface IHyperLogLogBaseCommands
     /// <remarks>
     /// <example>
     /// <code>
-    /// var response = await client.HyperLogLogAddAsync("my_hll", ["element1", "element2", "element3"]);
-    /// Console.WriteLine(response); // Output: True (if at least one element is new)
+    /// var altered = await client.HyperLogLogAddAsync("myhll", ["a", "b", "c"]);  // true
     /// </code>
     /// </example>
     /// </remarks>
     Task<bool> HyperLogLogAddAsync(ValkeyKey key, IEnumerable<ValkeyValue> elements);
 
     /// <summary>
-    /// Returns the approximated cardinality computed by the HyperLogLog data structure stored at the specified key.
+    /// Returns the approximated cardinality of a HyperLogLog data structure.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/pfcount/"/>
-    /// <param name="key">The key of the HyperLogLog.</param>
+    /// <seealso href="https://valkey.io/commands/pfcount/">Valkey commands – PFCOUNT</seealso>
+    /// <param name="key">The HyperLogLog key.</param>
     /// <returns>
-    /// The approximated number of unique elements observed by the HyperLogLog at key.
+    /// The approximated number of unique elements observed by the HyperLogLog.
     /// </returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// long count = await client.HyperLogLogLengthAsync("my_hll");
-    /// Console.WriteLine(count); // Output: approximated cardinality
+    /// await client.HyperLogLogAddAsync("myhll", ["a", "b", "c"]);
+    /// var count = await client.HyperLogLogLengthAsync("myhll");  // 3
     /// </code>
     /// </example>
     /// </remarks>
     Task<long> HyperLogLogLengthAsync(ValkeyKey key);
 
     /// <summary>
-    /// Returns the approximated cardinality of the union of the HyperLogLogs stored at the specified keys.
+    /// Returns the approximated cardinality of the union of multiple HyperLogLog data structures.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/pfcount/"/>
-    /// <param name="keys">The keys of the HyperLogLogs.</param>
+    /// <seealso href="https://valkey.io/commands/pfcount/">Valkey commands – PFCOUNT</seealso>
+    /// <param name="keys">The HyperLogLog keys.</param>
     /// <returns>
     /// The approximated number of unique elements observed by the union of the HyperLogLogs.
     /// </returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// long count = await client.HyperLogLogLengthAsync(["hll1", "hll2", "hll3"]);
-    /// Console.WriteLine(count); // Output: approximated cardinality of union
+    /// await client.HyperLogLogAddAsync("hll1", ["a", "b"]);
+    /// await client.HyperLogLogAddAsync("hll2", ["b", "c"]);
+    /// var count = await client.HyperLogLogLengthAsync(["hll1", "hll2"]);  // 3
     /// </code>
     /// </example>
     /// </remarks>
     Task<long> HyperLogLogLengthAsync(IEnumerable<ValkeyKey> keys);
 
     /// <summary>
-    /// Merges multiple HyperLogLog values into a unique value that will approximate the cardinality of the union of the observed Sets of the source HyperLogLog structures.
+    /// Merges multiple HyperLogLog values into a single key that approximates the cardinality of the union.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/pfmerge/"/>
-    /// <param name="destination">The key of the destination HyperLogLog.</param>
-    /// <param name="first">The key of the first source HyperLogLog.</param>
-    /// <param name="second">The key of the second source HyperLogLog.</param>
+    /// <seealso href="https://valkey.io/commands/pfmerge/">Valkey commands – PFMERGE</seealso>
+    /// <param name="destination">The destination HyperLogLog key.</param>
+    /// <param name="first">The first source HyperLogLog key.</param>
+    /// <param name="second">The second source HyperLogLog key.</param>
     /// <remarks>
     /// <example>
     /// <code>
@@ -104,11 +103,11 @@ public interface IHyperLogLogBaseCommands
     Task HyperLogLogMergeAsync(ValkeyKey destination, ValkeyKey first, ValkeyKey second);
 
     /// <summary>
-    /// Merges multiple HyperLogLog values into a unique value that will approximate the cardinality of the union of the observed Sets of the source HyperLogLog structures.
+    /// Merges multiple HyperLogLog values into a single key that approximates the cardinality of the union.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/pfmerge/"/>
-    /// <param name="destination">The key of the destination HyperLogLog.</param>
-    /// <param name="sourceKeys">The keys of the source HyperLogLogs.</param>
+    /// <seealso href="https://valkey.io/commands/pfmerge/">Valkey commands – PFMERGE</seealso>
+    /// <param name="destination">The destination HyperLogLog key.</param>
+    /// <param name="sourceKeys">The source HyperLogLog keys.</param>
     /// <remarks>
     /// <example>
     /// <code>

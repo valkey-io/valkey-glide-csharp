@@ -116,8 +116,7 @@ public partial interface IGlideClusterClient :
     /// <remarks>
     /// <example>
     /// <code>
-    /// var response = await clusterClient.PingAsync(Route.AllPrimaries);
-    /// Console.WriteLine(response); // Output: "PONG"
+    /// var response = await clusterClient.PingAsync(Route.AllPrimaries);  // "PONG"
     /// </code>
     /// </example>
     /// </remarks>
@@ -134,8 +133,7 @@ public partial interface IGlideClusterClient :
     /// <remarks>
     /// <example>
     /// <code>
-    /// var response = await clusterClient.PingAsync("Hello World", Route.AllPrimaries);
-    /// Console.WriteLine(response); // Output: "Hello World"
+    /// var response = await clusterClient.PingAsync("Hello World", Route.AllPrimaries);  // "Hello World"
     /// </code>
     /// </example>
     /// </remarks>

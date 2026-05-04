@@ -15,18 +15,17 @@ namespace Valkey.Glide;
 public partial interface IBaseClient
 {
     /// <summary>
-    /// The CONFIG SET command is used in order to reconfigure the server at runtime without the need to restart Valkey.
-    /// This overload allows setting multiple configuration parameters in a single call.
+    /// Sets multiple server configuration parameters at runtime.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/config-set/"/>
+    /// <seealso href="https://valkey.io/commands/config-set/">Valkey commands – CONFIG SET</seealso>
     /// <param name="parameters">A dictionary of configuration parameter names and their new values.</param>
     /// <remarks>
     /// <example>
     /// <code>
     /// var parameters = new Dictionary&lt;ValkeyValue, ValkeyValue&gt;
     /// {
-    ///     { "maxmemory", "100mb" },
-    ///     { "maxmemory-policy", "allkeys-lru" }
+    ///     ["maxmemory"] = "100mb",
+    ///     ["maxmemory-policy"] = "allkeys-lru",
     /// };
     /// await client.ConfigSetAsync(parameters);
     /// </code>
@@ -35,64 +34,63 @@ public partial interface IBaseClient
     Task ConfigSetAsync(IDictionary<ValkeyValue, ValkeyValue> parameters);
 
     /// <summary>
-    /// Gets the values of configuration parameters matching multiple patterns.
+    /// Gets the values of configuration parameters matching the specified patterns.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/config-get/"/>
-    /// <param name="patterns">The patterns of config values to get.</param>
-    /// <returns>All matching configuration parameters.</returns>
+    /// <seealso href="https://valkey.io/commands/config-get/">Valkey commands – CONFIG GET</seealso>
+    /// <param name="patterns">The patterns to match against configuration parameter names.</param>
+    /// <returns>An array of key-value pairs for all matching configuration parameters.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// var patterns = new ValkeyValue[] { "max*", "bind*" };
-    /// var config = await client.ConfigGetAsync(patterns);
+    /// ValkeyValue[] patterns = ["max*", "bind*"];
+    /// var config = await client.ConfigGetAsync(patterns);  // Patterns matching max* or bind*
     /// </code>
     /// </example>
     /// </remarks>
     Task<KeyValuePair<string, string>[]> ConfigGetAsync(IEnumerable<ValkeyValue> patterns);
 
     /// <summary>
-    /// Deletes all the keys of all the existing databases, with the specified flush mode.
+    /// Deletes all keys from all databases.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/flushall/"/>
-    /// <param name="mode">The flush mode to use. <see cref="FlushMode.Sync"/> waits for completion,
-    /// <see cref="FlushMode.Async"/> returns immediately while flush continues in background.</param>
+    /// <seealso href="https://valkey.io/commands/flushall/">Valkey commands – FLUSHALL</seealso>
+    /// <param name="mode">The flush mode. <see cref="FlushMode.Sync"/> waits for completion,
+    /// <see cref="FlushMode.Async"/> returns immediately while the flush continues in the background.</param>
     /// <remarks>
     /// <example>
     /// <code>
-    /// var mode = FlushMode.Async;
-    /// await client.FlushAllDatabasesAsync(mode);
+    /// await client.FlushAllDatabasesAsync(FlushMode.Async);
     /// </code>
     /// </example>
     /// </remarks>
     Task FlushAllDatabasesAsync(FlushMode mode);
 
     /// <summary>
-    /// Deletes all the keys of the currently selected database, with the specified flush mode.
+    /// Deletes all keys from the currently selected database.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/flushdb/"/>
-    /// <param name="mode">The flush mode to use. <see cref="FlushMode.Sync"/> waits for completion,
-    /// <see cref="FlushMode.Async"/> returns immediately while flush continues in background.</param>
+    /// <seealso href="https://valkey.io/commands/flushdb/">Valkey commands – FLUSHDB</seealso>
+    /// <param name="mode">The flush mode. <see cref="FlushMode.Sync"/> waits for completion,
+    /// <see cref="FlushMode.Async"/> returns immediately while the flush continues in the background.</param>
     /// <remarks>
     /// <example>
     /// <code>
-    /// var mode = FlushMode.Async;
-    /// await client.FlushDatabaseAsync(mode);
+    /// await client.FlushDatabaseAsync(FlushMode.Async);
     /// </code>
     /// </example>
     /// </remarks>
     Task FlushDatabaseAsync(FlushMode mode);
 
     /// <summary>
-    /// Displays a piece of generative computer art and the Valkey version.
+    /// Displays generative computer art and the Valkey version.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/lolwut/"/>
+    /// <seealso href="https://valkey.io/commands/lolwut/">Valkey commands – LOLWUT</seealso>
     /// <param name="options">The LOLWUT options specifying version and/or parameters.</param>
     /// <returns>A string containing the Valkey version and generative art.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// var options = new LolwutOptions { Version = 6, Parameters = new int[] { 40, 20 } };
-    /// string art = await client.LolwutAsync(options);
+    /// var options = new LolwutOptions { Version = 6, Parameters = [40, 20] };
+    /// var art = await client.LolwutAsync(options);
+    /// Console.WriteLine(art);  // Print art to console
     /// </code>
     /// </example>
     /// </remarks>

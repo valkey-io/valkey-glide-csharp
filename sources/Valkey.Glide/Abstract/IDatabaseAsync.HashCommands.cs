@@ -33,9 +33,10 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task HashSetAsync(ValkeyKey key, IEnumerable<HashEntry> hashFields, CommandFlags flags = CommandFlags.None);
 
-    /// <inheritdoc cref="IHashBaseCommands.HashSetAsync(ValkeyKey, ValkeyValue, ValkeyValue)"/>
+    /// <inheritdoc cref="IHashBaseCommands.HashSetAsync(ValkeyKey, ValkeyValue, ValkeyValue)" path="/*[not(self::returns)]"/>
     /// <param name="when">The conditions under which to set the field value.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns><see langword="true"/> if the field was set, <see langword="false"/> if the condition was not met.</returns>
     /// <exception cref="ArgumentException">Thrown if <paramref name="when"/> is <see cref="When.Exists"/>.</exception>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<bool> HashSetAsync(ValkeyKey key, ValkeyValue hashField, ValkeyValue value, When when, CommandFlags flags = CommandFlags.None);
@@ -106,99 +107,181 @@ public partial interface IDatabaseAsync
     /// <summary>
     /// Gets the value of the specified hash field and optionally sets its expiry.
     /// </summary>
-    /// <param name="key">The key of the hash.</param>
+    /// <seealso href="https://valkey.io/commands/hgetex/">Valkey commands – HGETEX</seealso>
+    /// <note>Since Valkey 9.0.0.</note>
+    /// <param name="key">The hash key.</param>
     /// <param name="hashField">The field to get.</param>
     /// <param name="expiry">The expiry duration to set, or <see langword="null"/> to not change expiry.</param>
     /// <param name="persist">If <see langword="true"/>, removes expiration from the field.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>The value for the requested field, or <see cref="ValkeyValue.Null"/> if the field does not exist.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await db.HashSetAsync("myhash", "field1", "value1");
+    /// var value = await db.HashFieldGetAndSetExpiryAsync("myhash", "field1", TimeSpan.FromSeconds(30));  // "value1"
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<ValkeyValue> HashFieldGetAndSetExpiryAsync(ValkeyKey key, ValkeyValue hashField, TimeSpan? expiry = null, bool persist = false, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Gets the value of the specified hash field and sets its expiry to the given <see cref="DateTime"/>.
     /// </summary>
-    /// <param name="key">The key of the hash.</param>
+    /// <seealso href="https://valkey.io/commands/hgetex/">Valkey commands – HGETEX</seealso>
+    /// <note>Since Valkey 9.0.0.</note>
+    /// <param name="key">The hash key.</param>
     /// <param name="hashField">The field to get.</param>
     /// <param name="expiry">The absolute expiry time to set.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>The value for the requested field, or <see cref="ValkeyValue.Null"/> if the field does not exist.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await db.HashSetAsync("myhash", "field1", "value1");
+    /// var value = await db.HashFieldGetAndSetExpiryAsync("myhash", "field1", DateTime.UtcNow.AddMinutes(5));  // "value1"
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<ValkeyValue> HashFieldGetAndSetExpiryAsync(ValkeyKey key, ValkeyValue hashField, DateTime expiry, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Gets the values of the specified hash fields and optionally sets their expiry.
     /// </summary>
-    /// <param name="key">The key of the hash.</param>
+    /// <seealso href="https://valkey.io/commands/hgetex/">Valkey commands – HGETEX</seealso>
+    /// <note>Since Valkey 9.0.0.</note>
+    /// <param name="key">The hash key.</param>
     /// <param name="hashFields">The fields to get.</param>
     /// <param name="expiry">The expiry duration to set, or <see langword="null"/> to not change expiry.</param>
     /// <param name="persist">If <see langword="true"/>, removes expiration from the fields.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>An array of values for the requested fields.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await db.HashSetAsync("myhash", [new("field1", "value1"), new("field2", "value2")]);
+    /// var values = await db.HashFieldGetAndSetExpiryAsync("myhash", ["field1", "field2"], TimeSpan.FromSeconds(30));  // ["value1", "value2"]
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<ValkeyValue[]> HashFieldGetAndSetExpiryAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, TimeSpan? expiry = null, bool persist = false, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Gets the values of the specified hash fields and sets their expiry to the given <see cref="DateTime"/>.
     /// </summary>
-    /// <param name="key">The key of the hash.</param>
+    /// <seealso href="https://valkey.io/commands/hgetex/">Valkey commands – HGETEX</seealso>
+    /// <note>Since Valkey 9.0.0.</note>
+    /// <param name="key">The hash key.</param>
     /// <param name="hashFields">The fields to get.</param>
     /// <param name="expiry">The absolute expiry time to set.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>An array of values for the requested fields.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await db.HashSetAsync("myhash", [new("field1", "value1"), new("field2", "value2")]);
+    /// var values = await db.HashFieldGetAndSetExpiryAsync("myhash", ["field1", "field2"], DateTime.UtcNow.AddMinutes(5));  // ["value1", "value2"]
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<ValkeyValue[]> HashFieldGetAndSetExpiryAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, DateTime expiry, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Sets the specified hash field and optionally sets its expiry.
     /// </summary>
-    /// <param name="key">The key of the hash.</param>
+    /// <seealso href="https://valkey.io/commands/hsetex/">Valkey commands – HSETEX</seealso>
+    /// <note>Since Valkey 9.0.0.</note>
+    /// <param name="key">The hash key.</param>
     /// <param name="hashField">The field to set.</param>
     /// <param name="value">The value to set.</param>
     /// <param name="expiry">The expiry duration to set, or <see langword="null"/> to not change expiry.</param>
     /// <param name="keepTtl">If <see langword="true"/>, retains the existing TTL on the field.</param>
     /// <param name="when">The conditions under which to set the field.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <returns>0 if no fields were set, 1 if the field was set.</returns>
+    /// <returns>A <see cref="ValkeyValue"/> of <c>1</c> if the field was set, <c>0</c> if no fields were set.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var wasSet = await db.HashFieldSetAndSetExpiryAsync("myhash", "field1", "value1", TimeSpan.FromSeconds(60));  // 1
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<ValkeyValue> HashFieldSetAndSetExpiryAsync(ValkeyKey key, ValkeyValue hashField, ValkeyValue value, TimeSpan? expiry = null, bool keepTtl = false, When when = When.Always, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Sets the specified hash field and sets its expiry to the given <see cref="DateTime"/>.
     /// </summary>
-    /// <param name="key">The key of the hash.</param>
+    /// <seealso href="https://valkey.io/commands/hsetex/">Valkey commands – HSETEX</seealso>
+    /// <note>Since Valkey 9.0.0.</note>
+    /// <param name="key">The hash key.</param>
     /// <param name="hashField">The field to set.</param>
     /// <param name="value">The value to set.</param>
     /// <param name="expiry">The absolute expiry time to set.</param>
     /// <param name="when">The conditions under which to set the field.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <returns>0 if no fields were set, 1 if the field was set.</returns>
+    /// <returns>A <see cref="ValkeyValue"/> of <c>1</c> if the field was set, <c>0</c> if no fields were set.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var wasSet = await db.HashFieldSetAndSetExpiryAsync("myhash", "field1", "value1", DateTime.UtcNow.AddMinutes(5));  // 1
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<ValkeyValue> HashFieldSetAndSetExpiryAsync(ValkeyKey key, ValkeyValue hashField, ValkeyValue value, DateTime expiry, When when = When.Always, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Sets the specified hash fields and optionally sets their expiry.
     /// </summary>
-    /// <param name="key">The key of the hash.</param>
+    /// <seealso href="https://valkey.io/commands/hsetex/">Valkey commands – HSETEX</seealso>
+    /// <note>Since Valkey 9.0.0.</note>
+    /// <param name="key">The hash key.</param>
     /// <param name="hashFields">The field-value pairs to set.</param>
     /// <param name="expiry">The expiry duration to set, or <see langword="null"/> to not change expiry.</param>
     /// <param name="keepTtl">If <see langword="true"/>, retains the existing TTL on the fields.</param>
     /// <param name="when">The conditions under which to set the fields.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <returns>0 if no fields were set, 1 if all the fields were set.</returns>
+    /// <returns>A <see cref="ValkeyValue"/> of <c>1</c> if all fields were set, <c>0</c> if no fields were set.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var wasSet = await db.HashFieldSetAndSetExpiryAsync(
+    ///     "myhash",
+    ///     [new("field1", "value1"), new("field2", "value2")],
+    ///     TimeSpan.FromSeconds(60));  // 1
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<ValkeyValue> HashFieldSetAndSetExpiryAsync(ValkeyKey key, IEnumerable<HashEntry> hashFields, TimeSpan? expiry = null, bool keepTtl = false, When when = When.Always, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Sets the specified hash fields and sets their expiry to the given <see cref="DateTime"/>.
     /// </summary>
-    /// <param name="key">The key of the hash.</param>
+    /// <seealso href="https://valkey.io/commands/hsetex/">Valkey commands – HSETEX</seealso>
+    /// <note>Since Valkey 9.0.0.</note>
+    /// <param name="key">The hash key.</param>
     /// <param name="hashFields">The field-value pairs to set.</param>
     /// <param name="expiry">The absolute expiry time to set.</param>
     /// <param name="when">The conditions under which to set the fields.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <returns>0 if no fields were set, 1 if all the fields were set.</returns>
+    /// <returns>A <see cref="ValkeyValue"/> of <c>1</c> if all fields were set, <c>0</c> if no fields were set.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var wasSet = await db.HashFieldSetAndSetExpiryAsync(
+    ///     "myhash",
+    ///     [new("field1", "value1"), new("field2", "value2")],
+    ///     DateTime.UtcNow.AddMinutes(5));  // 1
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<ValkeyValue> HashFieldSetAndSetExpiryAsync(ValkeyKey key, IEnumerable<HashEntry> hashFields, DateTime expiry, When when = When.Always, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="IBaseClient.HashExpireAsync(ValkeyKey, IEnumerable{ValkeyValue}, TimeSpan, ExpireCondition)" path="/*[not(self::param[@name='condition'])]"/>

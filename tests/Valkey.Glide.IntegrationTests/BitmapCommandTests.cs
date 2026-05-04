@@ -723,14 +723,9 @@ public class BitmapCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task BitOp_EmptyKeys_ThrowsArgumentException(BaseClient client)
-    {
-        string dest = Guid.NewGuid().ToString();
-
-        // Empty keys should throw ArgumentException
-        _ = await Assert.ThrowsAsync<ArgumentException>(async () =>
-            await client.BitOpAsync(Bitwise.And, dest, []));
-    }
+    public Task BitOp_EmptyKeys_ThrowsArgumentException(BaseClient client)
+        => _ = Assert.ThrowsAsync<RequestException>(() =>
+            client.BitOpAsync(Bitwise.And, Guid.NewGuid().ToString(), []));
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]

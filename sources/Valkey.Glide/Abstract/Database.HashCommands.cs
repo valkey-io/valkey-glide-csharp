@@ -7,21 +7,21 @@ namespace Valkey.Glide;
 
 internal partial class Database
 {
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IDatabaseAsync.HashGetAsync(ValkeyKey, ValkeyValue, CommandFlags)"/>
     public Task<ValkeyValue> HashGetAsync(ValkeyKey key, ValkeyValue hashField, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return HashGetAsync(key, hashField);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IDatabaseAsync.HashGetAsync(ValkeyKey, IEnumerable{ValkeyValue}, CommandFlags)"/>
     public Task<ValkeyValue[]> HashGetAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return HashGetAsync(key, hashFields);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IDatabaseAsync.HashGetAllAsync(ValkeyKey, CommandFlags)"/>
     public async Task<HashEntry[]> HashGetAllAsync(ValkeyKey key, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
@@ -29,7 +29,7 @@ internal partial class Database
         return [.. dict.Select(kvp => new HashEntry(kvp.Key, kvp.Value))];
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IDatabaseAsync.HashSetAsync(ValkeyKey, IEnumerable{HashEntry}, CommandFlags)"/>
     public async Task HashSetAsync(ValkeyKey key, IEnumerable<HashEntry> hashFields, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
@@ -37,7 +37,7 @@ internal partial class Database
         _ = await HashSetAsync(key, pairs);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IDatabaseAsync.HashSetAsync(ValkeyKey, ValkeyValue, ValkeyValue, When, CommandFlags)"/>
     public async Task<bool> HashSetAsync(ValkeyKey key, ValkeyValue hashField, ValkeyValue value, When when, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
@@ -50,119 +50,119 @@ internal partial class Database
         };
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IDatabaseAsync.HashDeleteAsync(ValkeyKey, ValkeyValue, CommandFlags)"/>
     public Task<bool> HashDeleteAsync(ValkeyKey key, ValkeyValue hashField, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return HashDeleteAsync(key, hashField);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IDatabaseAsync.HashDeleteAsync(ValkeyKey, IEnumerable{ValkeyValue}, CommandFlags)"/>
     public Task<long> HashDeleteAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return HashDeleteAsync(key, hashFields);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IDatabaseAsync.HashExistsAsync(ValkeyKey, ValkeyValue, CommandFlags)"/>
     public Task<bool> HashExistsAsync(ValkeyKey key, ValkeyValue hashField, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return HashExistsAsync(key, hashField);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IDatabaseAsync.HashIncrementAsync(ValkeyKey, ValkeyValue, long, CommandFlags)"/>
     public Task<long> HashIncrementAsync(ValkeyKey key, ValkeyValue hashField, long value = 1, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return HashIncrementByAsync(key, hashField, value);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IDatabaseAsync.HashIncrementAsync(ValkeyKey, ValkeyValue, double, CommandFlags)"/>
     public Task<double> HashIncrementAsync(ValkeyKey key, ValkeyValue hashField, double value, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return HashIncrementByAsync(key, hashField, value);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IDatabaseAsync.HashKeysAsync(ValkeyKey, CommandFlags)"/>
     public async Task<ValkeyValue[]> HashKeysAsync(ValkeyKey key, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return [.. await HashKeysAsync(key)];
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IDatabaseAsync.HashLengthAsync(ValkeyKey, CommandFlags)"/>
     public Task<long> HashLengthAsync(ValkeyKey key, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return HashLengthAsync(key);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IDatabaseAsync.HashStringLengthAsync(ValkeyKey, ValkeyValue, CommandFlags)"/>
     public Task<long> HashStringLengthAsync(ValkeyKey key, ValkeyValue hashField, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return HashStringLengthAsync(key, hashField);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IDatabaseAsync.HashValuesAsync(ValkeyKey, CommandFlags)"/>
     public async Task<ValkeyValue[]> HashValuesAsync(ValkeyKey key, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return [.. await HashValuesAsync(key)];
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IDatabaseAsync.HashRandomFieldAsync(ValkeyKey, CommandFlags)"/>
     public Task<ValkeyValue> HashRandomFieldAsync(ValkeyKey key, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return HashRandomFieldAsync(key);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IDatabaseAsync.HashRandomFieldsAsync(ValkeyKey, long, CommandFlags)"/>
     public Task<ValkeyValue[]> HashRandomFieldsAsync(ValkeyKey key, long count, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return HashRandomFieldsAsync(key, count);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IDatabaseAsync.HashRandomFieldsWithValuesAsync(ValkeyKey, long, CommandFlags)"/>
     public async Task<HashEntry[]> HashRandomFieldsWithValuesAsync(ValkeyKey key, long count, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await HashRandomFieldsWithValuesAsync(key, count);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IDatabaseAsync.HashFieldGetAndSetExpiryAsync(ValkeyKey, ValkeyValue, TimeSpan?, bool, CommandFlags)"/>
     public async Task<ValkeyValue> HashFieldGetAndSetExpiryAsync(ValkeyKey key, ValkeyValue hashField, TimeSpan? expiry = null, bool persist = false, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await HashGetAsync(key, hashField, ToGetExpiryOptions(expiry, persist));
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IDatabaseAsync.HashFieldGetAndSetExpiryAsync(ValkeyKey, ValkeyValue, DateTime, CommandFlags)"/>
     public async Task<ValkeyValue> HashFieldGetAndSetExpiryAsync(ValkeyKey key, ValkeyValue hashField, DateTime expiry, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await HashGetAsync(key, hashField, GetExpiryOptions.ExpireAt(new DateTimeOffset(expiry)));
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IDatabaseAsync.HashFieldGetAndSetExpiryAsync(ValkeyKey, IEnumerable{ValkeyValue}, TimeSpan?, bool, CommandFlags)"/>
     public async Task<ValkeyValue[]> HashFieldGetAndSetExpiryAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, TimeSpan? expiry = null, bool persist = false, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await HashGetAsync(key, hashFields, ToGetExpiryOptions(expiry, persist));
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IDatabaseAsync.HashFieldGetAndSetExpiryAsync(ValkeyKey, IEnumerable{ValkeyValue}, DateTime, CommandFlags)"/>
     public async Task<ValkeyValue[]> HashFieldGetAndSetExpiryAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, DateTime expiry, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await HashGetAsync(key, hashFields, GetExpiryOptions.ExpireAt(new DateTimeOffset(expiry)));
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IDatabaseAsync.HashFieldSetAndSetExpiryAsync(ValkeyKey, ValkeyValue, ValkeyValue, TimeSpan?, bool, When, CommandFlags)"/>
     public async Task<ValkeyValue> HashFieldSetAndSetExpiryAsync(ValkeyKey key, ValkeyValue hashField, ValkeyValue value, TimeSpan? expiry = null, bool keepTtl = false, When when = When.Always, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
@@ -173,14 +173,14 @@ internal partial class Database
         return set ? 1 : 0;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IDatabaseAsync.HashFieldSetAndSetExpiryAsync(ValkeyKey, ValkeyValue, ValkeyValue, DateTime, When, CommandFlags)"/>
     public async Task<ValkeyValue> HashFieldSetAndSetExpiryAsync(ValkeyKey key, ValkeyValue hashField, ValkeyValue value, DateTime expiry, When when = When.Always, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return await HashSetAsync(key, hashField, value, new HashSetOptions { Condition = ToHashSetCondition(when), Expiry = SetExpiryOptions.ExpireAt(new DateTimeOffset(expiry)) }) ? 1 : 0;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IDatabaseAsync.HashFieldSetAndSetExpiryAsync(ValkeyKey, IEnumerable{HashEntry}, TimeSpan?, bool, When, CommandFlags)"/>
     public async Task<ValkeyValue> HashFieldSetAndSetExpiryAsync(ValkeyKey key, IEnumerable<HashEntry> hashFields, TimeSpan? expiry = null, bool keepTtl = false, When when = When.Always, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
@@ -193,7 +193,7 @@ internal partial class Database
         return set ? 1 : 0;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IDatabaseAsync.HashFieldSetAndSetExpiryAsync(ValkeyKey, IEnumerable{HashEntry}, DateTime, When, CommandFlags)"/>
     public async Task<ValkeyValue> HashFieldSetAndSetExpiryAsync(ValkeyKey key, IEnumerable<HashEntry> hashFields, DateTime expiry, When when = When.Always, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
@@ -201,7 +201,7 @@ internal partial class Database
         return await HashSetAsync(key, entries, new HashSetOptions { Condition = ToHashSetCondition(when), Expiry = SetExpiryOptions.ExpireAt(new DateTimeOffset(expiry)) }) ? 1 : 0;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IDatabaseAsync.HashFieldExpireAsync(ValkeyKey, IEnumerable{ValkeyValue}, TimeSpan, ExpireWhen, CommandFlags)"/>
     public async Task<ExpireResult[]> HashFieldExpireAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, TimeSpan expiry, ExpireWhen when = ExpireWhen.Always, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
@@ -209,7 +209,7 @@ internal partial class Database
         return [.. results.Select(r => (ExpireResult)(int)r)];
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IDatabaseAsync.HashFieldExpireAsync(ValkeyKey, IEnumerable{ValkeyValue}, DateTime, ExpireWhen, CommandFlags)"/>
     public async Task<ExpireResult[]> HashFieldExpireAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, DateTime expiry, ExpireWhen when = ExpireWhen.Always, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
@@ -217,7 +217,7 @@ internal partial class Database
         return [.. results.Select(r => (ExpireResult)(int)r)];
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IDatabaseAsync.HashFieldGetExpireDateTimeAsync(ValkeyKey, IEnumerable{ValkeyValue}, CommandFlags)"/>
     public async Task<long[]> HashFieldGetExpireDateTimeAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
@@ -225,7 +225,7 @@ internal partial class Database
         return [.. results.Select(r => r.ExpireTimeMs)];
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IDatabaseAsync.HashFieldGetTimeToLiveAsync(ValkeyKey, IEnumerable{ValkeyValue}, CommandFlags)"/>
     public async Task<long[]> HashFieldGetTimeToLiveAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
@@ -233,7 +233,7 @@ internal partial class Database
         return [.. results.Select(r => r.TimeToLiveMs)];
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IDatabaseAsync.HashFieldPersistAsync(ValkeyKey, IEnumerable{ValkeyValue}, CommandFlags)"/>
     public async Task<PersistResult[]> HashFieldPersistAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
