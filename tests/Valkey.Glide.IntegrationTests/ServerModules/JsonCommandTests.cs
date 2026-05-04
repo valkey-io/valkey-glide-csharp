@@ -1,8 +1,9 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.IntegrationTests;
 using Valkey.Glide.ServerModules;
 
-namespace Valkey.Glide.IntegrationTests;
+namespace Valkey.Glide.IntegrationTests.ServerModules;
 
 /// <summary>
 /// Integration tests for JSON commands via the GlideJson module.
