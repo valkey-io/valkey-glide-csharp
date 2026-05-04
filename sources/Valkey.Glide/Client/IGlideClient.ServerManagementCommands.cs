@@ -17,8 +17,7 @@ public partial interface IGlideClient
     /// <summary>
     /// Get information and statistics about the server using <see cref="Section.DEFAULT" /> option.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/info/"/>
-    /// <inheritdoc cref="IGlideClusterClient.InfoAsync()" path="/remarks" />
+    /// <seealso href="https://valkey.io/commands/info/">Valkey commands – INFO</seealso>
     /// <returns>A <see langword="string" /> containing the information for the sections requested.</returns>
     /// <remarks>
     /// <example>
@@ -33,16 +32,16 @@ public partial interface IGlideClient
     /// Get information and statistics about the server.<br />
     /// Starting from server version 7, command supports multiple <see cref="Section" /> arguments.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/info/"/>
-    /// <inheritdoc cref="IGlideClusterClient.InfoAsync(IEnumerable{Section})" path="/remarks" />
-    /// <inheritdoc cref="IGlideClusterClient.InfoAsync(IEnumerable{Section})" path="/param" />
+    /// <seealso href="https://valkey.io/commands/info/">Valkey commands – INFO</seealso>
+    /// <param name="sections">A list of <see cref="Section" /> values specifying which sections of information to
+    /// retrieve. When no parameter is provided, the <see cref="Section.DEFAULT" /> option is assumed.</param>
     /// <returns>
-    /// <inheritdoc cref="InfoAsync()" />
+    /// <inheritdoc cref="InfoAsync()" path="/returns" />
     /// </returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// var sections = new Section[] { Section.SERVER, Section.MEMORY };
+    /// Section[] sections = [Section.SERVER, Section.MEMORY];
     /// string info = await client.InfoAsync(sections);
     /// </code>
     /// </example>
@@ -52,7 +51,7 @@ public partial interface IGlideClient
     /// <summary>
     /// Gets the values of configuration parameters.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/config-get/"/>
+    /// <seealso href="https://valkey.io/commands/config-get/">Valkey commands – CONFIG GET</seealso>
     /// <param name="pattern">The pattern of config values to get.</param>
     /// <returns>All matching configuration parameters.</returns>
     /// <remarks>
@@ -67,7 +66,7 @@ public partial interface IGlideClient
     /// <summary>
     /// Resets the statistics reported by the server using the INFO and LATENCY HISTOGRAM.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/config-resetstat/"/>
+    /// <seealso href="https://valkey.io/commands/config-resetstat/">Valkey commands – CONFIG RESETSTAT</seealso>
     /// <remarks>
     /// <example>
     /// <code>
@@ -78,11 +77,11 @@ public partial interface IGlideClient
     Task ConfigResetStatisticsAsync();
 
     /// <summary>
-    /// The CONFIG REWRITE command rewrites the valkey.conf file the server was started with,
-    /// applying the minimal changes needed to make it reflecting the configuration currently
-    /// used by the server, that may be different compared to the original one because of the use of the CONFIG SET command.
+    /// Rewrites the <c>valkey.conf</c> file the server was started with, applying the minimal changes needed
+    /// to make it reflect the configuration currently used by the server, which may differ from the original
+    /// because of the use of the <c>CONFIG SET</c> command.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/config-rewrite/"/>
+    /// <seealso href="https://valkey.io/commands/config-rewrite/">Valkey commands – CONFIG REWRITE</seealso>
     /// <remarks>
     /// <example>
     /// <code>
@@ -93,10 +92,10 @@ public partial interface IGlideClient
     Task ConfigRewriteAsync();
 
     /// <summary>
-    /// The CONFIG SET command is used in order to reconfigure the server at runtime without the need to restart Valkey.
-    /// You can change both trivial parameters or switch from one to another persistence option using this command.
+    /// Reconfigures the server at runtime without the need to restart Valkey. Callers can change trivial
+    /// parameters or switch from one persistence option to another using this command.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/config-set/"/>
+    /// <seealso href="https://valkey.io/commands/config-set/">Valkey commands – CONFIG SET</seealso>
     /// <param name="setting">The setting name.</param>
     /// <param name="value">The new setting value.</param>
     /// <remarks>
@@ -111,7 +110,7 @@ public partial interface IGlideClient
     /// <summary>
     /// Returns the number of keys in the currently-selected database.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/dbsize/"/>
+    /// <seealso href="https://valkey.io/commands/dbsize/">Valkey commands – DBSIZE</seealso>
     /// <returns>The number of keys in the currently-selected database.</returns>
     /// <remarks>
     /// <example>
@@ -125,7 +124,7 @@ public partial interface IGlideClient
     /// <summary>
     /// Deletes all the keys of all the existing databases.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/flushall/"/>
+    /// <seealso href="https://valkey.io/commands/flushall/">Valkey commands – FLUSHALL</seealso>
     /// <remarks>
     /// <example>
     /// <code>
@@ -138,7 +137,7 @@ public partial interface IGlideClient
     /// <summary>
     /// Deletes all the keys of the currently selected database.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/flushdb/"/>
+    /// <seealso href="https://valkey.io/commands/flushdb/">Valkey commands – FLUSHDB</seealso>
     /// <remarks>
     /// <example>
     /// <code>
@@ -149,12 +148,12 @@ public partial interface IGlideClient
     Task FlushDatabaseAsync();
 
     /// <summary>
-    /// Return the time of the last DB save executed with success.
-    /// A client may check if a BGSAVE command succeeded reading the LASTSAVE value, then issuing a BGSAVE command
-    /// and checking at regular intervals every N seconds if LASTSAVE changed.
+    /// Returns the time of the last DB save executed with success.
+    /// A client may check if a <c>BGSAVE</c> command succeeded by reading the <c>LASTSAVE</c> value, then
+    /// issuing a <c>BGSAVE</c> command and checking at regular intervals whether <c>LASTSAVE</c> changed.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/lastsave/"/>
-    /// <returns>UNIX TIME of the last DB save executed with success.</returns>
+    /// <seealso href="https://valkey.io/commands/lastsave/">Valkey commands – LASTSAVE</seealso>
+    /// <returns>UNIX time of the last DB save executed with success.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -165,10 +164,10 @@ public partial interface IGlideClient
     Task<DateTimeOffset> LastSaveAsync();
 
     /// <summary>
-    /// The TIME command returns the current server time in UTC format.
+    /// Returns the current server time in UTC format.
     /// Use the <see cref="DateTimeOffset.ToLocalTime"/> method to get local time.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/time/"/>
+    /// <seealso href="https://valkey.io/commands/time/">Valkey commands – TIME</seealso>
     /// <returns>The server's current time.</returns>
     /// <remarks>
     /// <example>
@@ -180,10 +179,10 @@ public partial interface IGlideClient
     Task<DateTimeOffset> TimeAsync();
 
     /// <summary>
-    /// Displays a piece of generative computer art of the specific Valkey version and it's optional arguments.
+    /// Displays a piece of generative computer art of the specific Valkey version and its optional arguments.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/lolwut/"/>
-    /// <returns>A string containing the Valkey version and generative art.</returns>
+    /// <seealso href="https://valkey.io/commands/lolwut/">Valkey commands – LOLWUT</seealso>
+    /// <returns>A <see langword="string" /> containing the Valkey version and generative art.</returns>
     /// <remarks>
     /// <example>
     /// <code>

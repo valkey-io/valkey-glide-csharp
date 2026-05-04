@@ -14,16 +14,16 @@ public partial interface IBaseClient : IConnectionManagementBaseCommands
     /// <summary>
     /// Gets the name of the current connection.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/client-getname"/>
+    /// <seealso href="https://valkey.io/commands/client-getname/">Valkey commands – CLIENT GETNAME</seealso>
     /// <returns>
-    /// The name of the client connection as a <see cref="ValkeyValue"/>.
-    /// If no name is assigned, <see cref="ValkeyValue.Null"/> will be returned.
+    /// The name of the client connection as a <see cref="ValkeyValue"/>,
+    /// or <see cref="ValkeyValue.Null"/> if no name is assigned.
     /// </returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// ValkeyValue result = await client.ClientGetNameAsync();
-    /// Console.WriteLine($"Connection name: {result}");
+    /// var name = await client.ClientGetNameAsync();
+    /// Console.WriteLine($"Connection name: {name}");
     /// </code>
     /// </example>
     /// </remarks>
@@ -32,59 +32,57 @@ public partial interface IBaseClient : IConnectionManagementBaseCommands
     /// <summary>
     /// Gets the current connection ID.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/client-id"/>
+    /// <seealso href="https://valkey.io/commands/client-id/">Valkey commands – CLIENT ID</seealso>
     /// <returns>The ID of the client connection.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// long connectionId = await client.ClientIdAsync();
-    /// Console.WriteLine($"Connection ID: {connectionId}");
+    /// var id = await client.ClientIdAsync();
+    /// Console.WriteLine($"Connection ID: {id}");
     /// </code>
     /// </example>
     /// </remarks>
     Task<long> ClientIdAsync();
 
     /// <summary>
-    /// Echo the given message back from the server.
+    /// Echoes the given message back from the server.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/echo/"/>
-    /// <param name="message">The message to echo</param>
+    /// <seealso href="https://valkey.io/commands/echo/">Valkey commands – ECHO</seealso>
+    /// <param name="message">The message to echo.</param>
     /// <returns>The echoed message as a <see cref="ValkeyValue"/>.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// ValkeyValue result = await client.EchoAsync("Hello World");
+    /// var echoed = await client.EchoAsync("Hello World");  // "Hello World"
     /// </code>
     /// </example>
     /// </remarks>
     Task<ValkeyValue> EchoAsync(ValkeyValue message);
 
     /// <summary>
-    /// Ping the server.
+    /// Pings the server.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/ping/"/>
+    /// <seealso href="https://valkey.io/commands/ping/">Valkey commands – PING</seealso>
     /// <returns>The server's response as a <see cref="ValkeyValue"/> containing <c>"PONG"</c>.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// var response = await client.PingAsync();
-    /// Console.WriteLine(response); // Output: "PONG"
+    /// var response = await client.PingAsync();  // "PONG"
     /// </code>
     /// </example>
     /// </remarks>
     Task<ValkeyValue> PingAsync();
 
     /// <summary>
-    /// Ping the server with a message.
+    /// Pings the server with a message.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/ping/"/>
-    /// <param name="message">The message to send with the ping</param>
+    /// <seealso href="https://valkey.io/commands/ping/">Valkey commands – PING</seealso>
+    /// <param name="message">The message to send with the ping.</param>
     /// <returns>The echoed message as a <see cref="ValkeyValue"/>.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// var response = await client.PingAsync("Hello World");
-    /// Console.WriteLine(response); // Output: "Hello World"
+    /// var response = await client.PingAsync("Hello World");  // "Hello World"
     /// </code>
     /// </example>
     /// </remarks>

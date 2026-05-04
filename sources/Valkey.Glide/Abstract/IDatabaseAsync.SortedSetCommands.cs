@@ -30,27 +30,27 @@ public partial interface IDatabaseAsync
     Task<long> SortedSetAddAsync(ValkeyKey key, IEnumerable<SortedSetEntry> values, SortedSetWhen when, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
-    /// Updates the score of a member in a sorted set. Returns <see langword="true"/> if the score changed.
-    /// Uses the ZADD command with the CH (changed) flag.
+    /// Updates the score of a member in a sorted set using the ZADD command with the CH (changed) flag.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/zadd"/>
+    /// <seealso href="https://valkey.io/commands/zadd/">Valkey commands – ZADD</seealso>
     /// <param name="key">The sorted set key.</param>
     /// <param name="member">The member to update.</param>
     /// <param name="score">The new score.</param>
     /// <param name="when">Condition for the update.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns><see langword="true"/> if the member's score changed, <see langword="false"/> otherwise.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<bool> SortedSetUpdateAsync(ValkeyKey key, ValkeyValue member, double score, SortedSetWhen when = SortedSetWhen.Always, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
-    /// Updates the scores of multiple members in a sorted set. Returns the number of members whose scores changed.
-    /// Uses the ZADD command with the CH (changed) flag.
+    /// Updates the scores of multiple members in a sorted set using the ZADD command with the CH (changed) flag.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/zadd"/>
+    /// <seealso href="https://valkey.io/commands/zadd/">Valkey commands – ZADD</seealso>
     /// <param name="key">The sorted set key.</param>
     /// <param name="values">The members and their new scores.</param>
     /// <param name="when">Condition for the update.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns>The number of members whose scores changed.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<long> SortedSetUpdateAsync(ValkeyKey key, IEnumerable<SortedSetEntry> values, SortedSetWhen when = SortedSetWhen.Always, CommandFlags flags = CommandFlags.None);
 
@@ -117,7 +117,7 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<ValkeyValue[]> SortedSetRangeByValueAsync(ValkeyKey key, ValkeyValue min, ValkeyValue max, Exclude exclude, long skip, long take = -1, CommandFlags flags = CommandFlags.None);
 
-    /// <inheritdoc cref="SortedSetRangeByValueAsync(ValkeyKey, ValkeyValue, ValkeyValue, Exclude, long, long, CommandFlags)" path="/*[not(self::param[@name='skip']) and not(self::returns)]"/>
+    /// <inheritdoc cref="SortedSetRangeByValueAsync(ValkeyKey, ValkeyValue, ValkeyValue, Exclude, long, long, CommandFlags)" path="/*[not(self::param[@name='skip']) and not(self::param[@name='flags']) and not(self::returns) and not(self::exception)]"/>
     /// <param name="order">The sort order.</param>
     /// <param name="skip">The number of elements to skip.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
@@ -278,9 +278,9 @@ public partial interface IDatabaseAsync
     Task<long> SortedSetRemoveRangeByScoreAsync(ValkeyKey key, double start, double stop, Exclude exclude = Exclude.None, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
-    /// Iterates elements of Sorted Set key and their associated scores using a cursor.
+    /// Iterates over elements and their scores in a sorted set using a cursor.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/zscan"/>
+    /// <seealso href="https://valkey.io/commands/zscan/">Valkey commands – ZSCAN</seealso>
     /// <param name="key">The key of the sorted set.</param>
     /// <param name="pattern">The pattern to match.</param>
     /// <param name="pageSize">The number of elements to return per iteration (hint to the server).</param>

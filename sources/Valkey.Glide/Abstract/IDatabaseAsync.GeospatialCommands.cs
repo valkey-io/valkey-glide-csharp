@@ -10,26 +10,29 @@ namespace Valkey.Glide;
 
 public partial interface IDatabaseAsync
 {
-    /// <inheritdoc cref="IBaseClient.GeoAddAsync(ValkeyKey, ValkeyValue, GeoPosition, GeoAddOptions)" path="/*[self::summary or self::seealso or self::returns]"/>
+    /// <inheritdoc cref="IBaseClient.GeoAddAsync(ValkeyKey, ValkeyValue, GeoPosition, GeoAddCondition)" path="/*[self::summary or self::seealso]"/>
     /// <param name="key">The sorted set key.</param>
     /// <param name="longitude">The longitude coordinate.</param>
     /// <param name="latitude">The latitude coordinate.</param>
     /// <param name="member">The name of the member to add.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns><see langword="true"/> if the member was added, <see langword="false"/> otherwise.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<bool> GeoAddAsync(ValkeyKey key, double longitude, double latitude, ValkeyValue member, CommandFlags flags = CommandFlags.None);
 
-    /// <inheritdoc cref="IBaseClient.GeoAddAsync(ValkeyKey, ValkeyValue, GeoPosition, GeoAddOptions)" path="/*[self::summary or self::seealso or self::returns]"/>
+    /// <inheritdoc cref="IBaseClient.GeoAddAsync(ValkeyKey, ValkeyValue, GeoPosition, GeoAddCondition)" path="/*[self::summary or self::seealso]"/>
     /// <param name="key">The sorted set key.</param>
     /// <param name="value">The geospatial entry to add.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns><see langword="true"/> if the member was added, <see langword="false"/> otherwise.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<bool> GeoAddAsync(ValkeyKey key, GeoEntry value, CommandFlags flags = CommandFlags.None);
 
-    /// <inheritdoc cref="IBaseClient.GeoAddAsync(ValkeyKey, IDictionary{ValkeyValue, GeoPosition}, GeoAddOptions)" path="/*[self::summary or self::seealso or self::returns]"/>
+    /// <inheritdoc cref="IBaseClient.GeoAddAsync(ValkeyKey, IDictionary{ValkeyValue, GeoPosition}, GeoAddCondition)" path="/*[self::summary or self::seealso]"/>
     /// <param name="key">The sorted set key.</param>
     /// <param name="values">The geospatial entries to add.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns>The number of members added.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<long> GeoAddAsync(ValkeyKey key, IEnumerable<GeoEntry> values, CommandFlags flags = CommandFlags.None);
 
@@ -85,7 +88,7 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<GeoRadiusResult[]> GeoSearchAsync(ValkeyKey key, double longitude, double latitude, GeoSearchShape shape, int count = -1, bool demandClosest = true, Order? order = null, GeoRadiusOptions options = GeoRadiusOptions.Default, CommandFlags flags = CommandFlags.None);
 
-    /// <inheritdoc cref="IBaseClient.GeoSearchAndStoreAsync(ValkeyKey, ValkeyKey, ValkeyValue, GeoSearchShape, GeoSearchStoreOptions)" path="/*[self::summary or self::seealso or self::returns]"/>
+    /// <inheritdoc cref="IBaseClient.GeoSearchAndStoreAsync(ValkeyKey, ValkeyKey, ValkeyValue, GeoSearchShape, GeoSearchStoreOptions)" path="/*[self::summary or self::seealso]"/>
     /// <param name="sourceKey">The source sorted set key.</param>
     /// <param name="destinationKey">The destination sorted set key.</param>
     /// <param name="member">The member to search from.</param>
@@ -95,10 +98,11 @@ public partial interface IDatabaseAsync
     /// <param name="order">The sort order for results, or <see langword="null"/> for server default.</param>
     /// <param name="storeDistances">When <see langword="true"/>, stores distances as scores instead of geohash values.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns>The number of elements stored in <paramref name="destinationKey"/>.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<long> GeoSearchAndStoreAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, ValkeyValue member, GeoSearchShape shape, int count = -1, bool demandClosest = true, Order? order = null, bool storeDistances = false, CommandFlags flags = CommandFlags.None);
 
-    /// <inheritdoc cref="IBaseClient.GeoSearchAndStoreAsync(ValkeyKey, ValkeyKey, GeoPosition, GeoSearchShape, GeoSearchStoreOptions)" path="/*[self::summary or self::seealso or self::returns]"/>
+    /// <inheritdoc cref="IBaseClient.GeoSearchAndStoreAsync(ValkeyKey, ValkeyKey, GeoPosition, GeoSearchShape, GeoSearchStoreOptions)" path="/*[self::summary or self::seealso]"/>
     /// <param name="sourceKey">The source sorted set key.</param>
     /// <param name="destinationKey">The destination sorted set key.</param>
     /// <param name="longitude">The longitude of the search origin.</param>
@@ -109,6 +113,7 @@ public partial interface IDatabaseAsync
     /// <param name="order">The sort order for results, or <see langword="null"/> for server default.</param>
     /// <param name="storeDistances">When <see langword="true"/>, stores distances as scores instead of geohash values.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns>The number of elements stored in <paramref name="destinationKey"/>.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<long> GeoSearchAndStoreAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, double longitude, double latitude, GeoSearchShape shape, int count = -1, bool demandClosest = true, Order? order = null, bool storeDistances = false, CommandFlags flags = CommandFlags.None);
 }

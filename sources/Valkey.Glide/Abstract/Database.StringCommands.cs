@@ -7,6 +7,8 @@ namespace Valkey.Glide;
 
 internal partial class Database
 {
+    #region Public Methods
+
     /// <inheritdoc cref="IDatabaseAsync.StringSetAsync(ValkeyKey, ValkeyValue, CommandFlags)"/>
     public async Task<bool> StringSetAsync(ValkeyKey key, ValkeyValue value, CommandFlags flags)
     {
@@ -185,6 +187,7 @@ internal partial class Database
         return Command(Request.LongestCommonSubsequenceWithMatches(first, second, minLength));
     }
 
+    #endregion
     #region Private Methods
 
     private static SetOptions ToSetOptions(When when, TimeSpan? expiry, bool keepTtl)

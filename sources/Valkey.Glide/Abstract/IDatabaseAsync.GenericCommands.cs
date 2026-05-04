@@ -13,65 +13,81 @@ public partial interface IDatabaseAsync
     /// <summary>
     /// Removes the specified key from the database using the DEL command.
     /// </summary>
-    /// <remarks>
-    /// In StackExchange.Redis, <c>KeyDeleteAsync</c> with <c>CommandFlags.FireAndForget</c> uses UNLINK instead of DEL.
-    /// Since GLIDE does not support command flags, use <see cref="KeyUnlinkAsync(ValkeyKey, CommandFlags)"/> directly if you want
-    /// non-blocking deletion (UNLINK).
-    /// </remarks>
-    /// <seealso href="https://valkey.io/commands/del"/>
-    /// <seealso cref="KeyUnlinkAsync(ValkeyKey, CommandFlags)"/>
+    /// <seealso href="https://valkey.io/commands/del/">Valkey commands – DEL</seealso>
     /// <param name="key">The key to delete.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns><see langword="true"/> if the key was removed.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <remarks>
+    /// This is the blocking form of the delete operation; reclaiming memory occurs synchronously with the call.
+    /// For a non-blocking variant that reclaims memory asynchronously, see <see cref="KeyUnlinkAsync(ValkeyKey, CommandFlags)"/>.
+    /// StackExchange.Redis's <see cref="CommandFlags.FireAndForget"/> is not currently supported by GLIDE.
+    /// <example>
+    /// <code>
+    /// var removed = await db.KeyDeleteAsync("key");  // true
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<bool> KeyDeleteAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Removes the specified keys from the database using the DEL command.
     /// </summary>
-    /// <remarks>
-    /// In StackExchange.Redis, <c>KeyDeleteAsync</c> with <c>CommandFlags.FireAndForget</c> uses UNLINK instead of DEL.
-    /// Since GLIDE does not support command flags, use <see cref="KeyUnlinkAsync(IEnumerable{ValkeyKey}, CommandFlags)"/> directly if you want
-    /// non-blocking deletion (UNLINK).
-    /// </remarks>
-    /// <seealso href="https://valkey.io/commands/del"/>
-    /// <seealso cref="KeyUnlinkAsync(IEnumerable{ValkeyKey}, CommandFlags)"/>
+    /// <seealso href="https://valkey.io/commands/del/">Valkey commands – DEL</seealso>
     /// <param name="keys">The keys to delete.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>The number of keys that were removed.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <remarks>
+    /// This is the blocking form of the delete operation; reclaiming memory occurs synchronously with the call.
+    /// For a non-blocking variant that reclaims memory asynchronously, see <see cref="KeyUnlinkAsync(IEnumerable{ValkeyKey}, CommandFlags)"/>.
+    /// StackExchange.Redis's <see cref="CommandFlags.FireAndForget"/> is not currently supported by GLIDE.
+    /// <example>
+    /// <code>
+    /// var removed = await db.KeyDeleteAsync(["key1", "key2"]);  // 2
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<long> KeyDeleteAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Removes the specified key from the database using the UNLINK command (non-blocking).
     /// </summary>
-    /// <remarks>
-    /// UNLINK is similar to DEL but performs the actual memory reclaiming in a background thread,
-    /// making it non-blocking. This is the command used by StackExchange.Redis when
-    /// <c>KeyDeleteAsync</c> is called with <c>CommandFlags.FireAndForget</c>.
-    /// </remarks>
-    /// <seealso href="https://valkey.io/commands/unlink"/>
-    /// <seealso cref="KeyDeleteAsync(ValkeyKey, CommandFlags)"/>
+    /// <seealso href="https://valkey.io/commands/unlink/">Valkey commands – UNLINK</seealso>
     /// <param name="key">The key to unlink.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns><see langword="true"/> if the key was unlinked.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <remarks>
+    /// This is a non-blocking variant of the delete operation; reclaiming memory asynchronously on a background thread.
+    /// Use <see cref="KeyDeleteAsync(ValkeyKey, CommandFlags)"/> for the blocking form.
+    /// StackExchange.Redis's <see cref="CommandFlags.FireAndForget"/> is not currently supported by GLIDE.
+    /// <example>
+    /// <code>
+    /// var unlinked = await db.KeyUnlinkAsync("key");  // true
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<bool> KeyUnlinkAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Removes the specified keys from the database using the UNLINK command (non-blocking).
     /// </summary>
-    /// <remarks>
-    /// UNLINK is similar to DEL but performs the actual memory reclaiming in a background thread,
-    /// making it non-blocking. This is the command used by StackExchange.Redis when
-    /// <c>KeyDeleteAsync</c> is called with <c>CommandFlags.FireAndForget</c>.
-    /// </remarks>
-    /// <seealso href="https://valkey.io/commands/unlink"/>
-    /// <seealso cref="KeyDeleteAsync(IEnumerable{ValkeyKey}, CommandFlags)"/>
+    /// <seealso href="https://valkey.io/commands/unlink/">Valkey commands – UNLINK</seealso>
     /// <param name="keys">The keys to unlink.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>The number of keys that were unlinked.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <remarks>
+    /// This is a non-blocking variant of the delete operation; reclaiming memory asynchronously on a background thread.
+    /// Use <see cref="KeyDeleteAsync(IEnumerable{ValkeyKey}, CommandFlags)"/> for the blocking form.
+    /// StackExchange.Redis's <see cref="CommandFlags.FireAndForget"/> is not currently supported by GLIDE.
+    /// <example>
+    /// <code>
+    /// var unlinked = await db.KeyUnlinkAsync(["key1", "key2"]);  // 2
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<long> KeyUnlinkAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="IBaseClient.ExistsAsync(ValkeyKey)"/>
@@ -85,44 +101,72 @@ public partial interface IDatabaseAsync
     Task<long> KeyExistsAsync(IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
-    /// Set a timeout on key. After the timeout has expired, the key will automatically be deleted.
+    /// Sets a timeout on key. After the timeout has expired, the key will automatically be deleted.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/expire"/>
+    /// <seealso href="https://valkey.io/commands/expire/">Valkey commands – EXPIRE</seealso>
     /// <param name="key">The key to expire.</param>
     /// <param name="expiry">Duration for the key to expire.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns><see langword="true"/> if the timeout was set.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await db.StringSetAsync("key", "value");
+    /// var set = await db.KeyExpireAsync("key", TimeSpan.FromSeconds(10));  // true
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<bool> KeyExpireAsync(ValkeyKey key, TimeSpan? expiry, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="KeyExpireAsync(ValkeyKey, TimeSpan?, CommandFlags)"/>
     /// <param name="when">The condition for setting the expiry.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<bool> KeyExpireAsync(ValkeyKey key, TimeSpan? expiry, ExpireWhen when, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Sets a timeout on key using an absolute timestamp.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/expireat"/>
+    /// <seealso href="https://valkey.io/commands/expireat/">Valkey commands – EXPIREAT</seealso>
     /// <param name="key">The key to expire.</param>
     /// <param name="expiry">The timestamp for expiry.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns><see langword="true"/> if the timeout was set.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await db.StringSetAsync("key", "value");
+    /// var set = await db.KeyExpireAsync("key", DateTime.UtcNow.AddMinutes(5));  // true
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<bool> KeyExpireAsync(ValkeyKey key, DateTime? expiry, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="KeyExpireAsync(ValkeyKey, DateTime?, CommandFlags)"/>
     /// <param name="when">The condition for setting the expiry.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<bool> KeyExpireAsync(ValkeyKey key, DateTime? expiry, ExpireWhen when, CommandFlags flags = CommandFlags.None);
-
 
     /// <summary>
     /// Returns the remaining time to live of a key that has a timeout.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/pttl"/>
+    /// <seealso href="https://valkey.io/commands/pttl/">Valkey commands – PTTL</seealso>
     /// <param name="key">The key to return its timeout.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>TTL, or <see langword="null"/> when key does not exist or key exists but has no associated expiration.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await db.StringSetAsync("key", "value");
+    /// await db.KeyExpireAsync("key", TimeSpan.FromMinutes(5));
+    /// var ttl = await db.KeyTimeToLiveAsync("key");  // ~00:05:00
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<TimeSpan?> KeyTimeToLiveAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="IBaseClient.TypeAsync(ValkeyKey)"/>
@@ -135,6 +179,14 @@ public partial interface IDatabaseAsync
     /// <param name="key">The key to rename.</param>
     /// <param name="newKey">The new name of the key.</param>
     /// <returns><see langword="true"/> if the key was renamed (always true on success, throws on failure).</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await db.StringSetAsync("oldkey", "value");
+    /// var renamed = await db.KeyRenameAsync("oldkey", "newkey");  // true
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<bool> KeyRenameAsync(ValkeyKey key, ValkeyKey newKey);
 
     /// <inheritdoc cref="IBaseClient.RenameAsync(ValkeyKey, ValkeyKey)" path="/summary"/>
@@ -146,6 +198,14 @@ public partial interface IDatabaseAsync
     /// <returns><see langword="true"/> if the key was renamed, <see langword="false"/> if newKey already exists (when <paramref name="when"/> is <see cref="When.NotExists"/>).</returns>
     /// <exception cref="ArgumentException">Thrown if <paramref name="when"/> is <see cref="When.Exists"/>.</exception>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await db.StringSetAsync("oldkey", "value");
+    /// var renamed = await db.KeyRenameAsync("oldkey", "newkey", When.NotExists);  // true
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<bool> KeyRenameAsync(ValkeyKey key, ValkeyKey newKey, When when = When.Always, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="IBaseClient.RenameIfNotExistsAsync(ValkeyKey, ValkeyKey)"/>
@@ -164,25 +224,43 @@ public partial interface IDatabaseAsync
     Task<byte[]?> KeyDumpAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
-    /// Creates a key associated with a value that is obtained by deserializing the provided serialized value.
+    /// Creates a key associated with a value obtained by deserializing the provided serialized value.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/restore"/>
+    /// <seealso href="https://valkey.io/commands/restore/">Valkey commands – RESTORE</seealso>
     /// <param name="key">The key to create.</param>
     /// <param name="value">The serialized value to deserialize and assign to key.</param>
     /// <param name="expiry">The expiry to set as a duration.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await db.StringSetAsync("{tag}source", "value");
+    /// var serialized = await db.KeyDumpAsync("{tag}source");
+    /// await db.KeyRestoreAsync("{tag}restored", serialized!, TimeSpan.FromMinutes(5));
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task KeyRestoreAsync(ValkeyKey key, byte[] value, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
-    /// Creates a key associated with a value that is obtained by deserializing the provided serialized value.
+    /// Creates a key associated with a value obtained by deserializing the provided serialized value.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/restore"/>
+    /// <seealso href="https://valkey.io/commands/restore/">Valkey commands – RESTORE</seealso>
     /// <param name="key">The key to create.</param>
     /// <param name="value">The serialized value to deserialize and assign to key.</param>
     /// <param name="expiry">The expiry to set as an absolute timestamp.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await db.StringSetAsync("{tag}source", "value");
+    /// var serialized = await db.KeyDumpAsync("{tag}source");
+    /// await db.KeyRestoreAsync("{tag}restored", serialized!, DateTime.UtcNow.AddHours(1));
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task KeyRestoreAsync(ValkeyKey key, byte[] value, DateTime? expiry, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="IBaseClient.TouchAsync(ValkeyKey)"/>
@@ -223,14 +301,22 @@ public partial interface IDatabaseAsync
     /// <summary>
     /// Copies the value stored at the source to the destination key.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/copy"/>
+    /// <seealso href="https://valkey.io/commands/copy/">Valkey commands – COPY</seealso>
     /// <param name="sourceKey">The key to the source value.</param>
     /// <param name="destinationKey">The key where the value should be copied to.</param>
-    /// <param name="destinationDatabase">The database ID to store destinationKey in. A value of -1 means the current database.</param>
+    /// <param name="destinationDatabase">The database ID to store destinationKey in, or <c>-1</c> to use the current database.</param>
     /// <param name="replace">Whether to overwrite an existing value at destinationKey.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns><see langword="true"/> if sourceKey was copied. <see langword="false"/> if sourceKey was not copied.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await db.StringSetAsync("{tag}source", "value");
+    /// var copied = await db.KeyCopyAsync("{tag}source", "{tag}destination", replace: true);  // true
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<bool> KeyCopyAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, int destinationDatabase = -1, bool replace = false, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="IGlideClient.MoveAsync(ValkeyKey, int)"/>
@@ -241,10 +327,19 @@ public partial interface IDatabaseAsync
     /// <summary>
     /// Returns a random key from the database.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/randomkey"/>
+    /// <seealso href="https://valkey.io/commands/randomkey/">Valkey commands – RANDOMKEY</seealso>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>A random key, or default when the database is empty.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await db.StringSetAsync("key", "value");
+    /// var randomKey = await db.KeyRandomAsync();
+    /// Console.WriteLine($"Random key: {randomKey}");
+    /// </code>
+    /// </example>
+    /// </remarks>
     Task<ValkeyKey> KeyRandomAsync(CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="IGenericBaseCommands.SortAsync(ValkeyKey, long, long, Order, SortType, ValkeyValue, IEnumerable{ValkeyValue})"/>
