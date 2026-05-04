@@ -265,7 +265,7 @@ public class FtAggregateTests(TestConfiguration config)
         BaseClient client)
     {
         var index = Guid.NewGuid().ToString();
-        var prefix = $"{index}:";
+        var prefix = $"{{{index}}}:";
 
         await Ft.CreateAsync(client, index,
         [

@@ -22,6 +22,7 @@ public class FtListTests(ClientFixture fixture) : IClassFixture<ClientFixture>
     {
         var client = fixture.GetClient(clusterMode);
         await SkipUtils.IfSearchModuleNotLoaded(client);
+
         Assert.Empty(await Ft.ListAsync(client));
     }
 
@@ -31,16 +32,14 @@ public class FtListTests(ClientFixture fixture) : IClassFixture<ClientFixture>
     {
         var client = fixture.GetClient(clusterMode);
         await SkipUtils.IfSearchModuleNotLoaded(client);
-        var indexes = Enumerable.Range(0, 3).Select(_ => Guid.NewGuid().ToString()).ToList();
 
+        var indexes = Enumerable.Range(0, 3).Select(_ => Guid.NewGuid().ToString()).ToList();
         foreach (var idx in indexes)
         {
             await Ft.CreateAsync(client, idx, new Ft.CreateTextField("field"));
         }
 
         Assert.Equivalent(indexes.ToHashSet(), await Ft.ListAsync(client));
-
-        // Cleanup to avoid polluting other list tests.
         foreach (var idx in indexes)
         {
             await Ft.DropIndexAsync(client, idx);

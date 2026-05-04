@@ -2,6 +2,8 @@
 
 using Valkey.Glide.ServerModules;
 
+using static Valkey.Glide.Errors;
+
 namespace Valkey.Glide.IntegrationTests.SearchModules;
 
 /// <summary>
@@ -22,6 +24,7 @@ public class FtDropIndexTests(TestConfiguration config)
     public async Task DropIndexAsync_IndexExists_Succeeds(BaseClient client)
     {
         await SkipUtils.IfSearchModuleNotLoaded(client);
+
         string index = Guid.NewGuid().ToString();
         await Ft.CreateAsync(client, index, new Ft.CreateTextField("title"));
 
@@ -34,7 +37,8 @@ public class FtDropIndexTests(TestConfiguration config)
     public async Task DropIndexAsync_IndexDoesNotExist_Throws(BaseClient client)
     {
         await SkipUtils.IfSearchModuleNotLoaded(client);
-        _ = await Assert.ThrowsAsync<Exception>(
+
+        _ = await Assert.ThrowsAsync<RequestException>(
             () => Ft.DropIndexAsync(client, Guid.NewGuid().ToString()));
     }
 

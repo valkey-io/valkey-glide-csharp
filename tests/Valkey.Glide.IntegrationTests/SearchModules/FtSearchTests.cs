@@ -35,7 +35,6 @@ public class FtSearchTests(TestConfiguration config)
         Assert.Equal(3, result.TotalResults);
         Assert.Equal(3, result.Documents.Length);
 
-        // Doc 1: Alpha Widget, price=10, category=electronics
         Assert.Equal($"{prefix}1", result.Documents[0].Key);
         Assert.Equivalent(
             new Dictionary<ValkeyValue, ValkeyValue>
@@ -46,7 +45,6 @@ public class FtSearchTests(TestConfiguration config)
             },
             result.Documents[0].Fields);
 
-        // Doc 2: Beta Gadget, price=25, category=electronics
         Assert.Equal($"{prefix}2", result.Documents[1].Key);
         Assert.Equivalent(
             new Dictionary<ValkeyValue, ValkeyValue>
@@ -57,7 +55,6 @@ public class FtSearchTests(TestConfiguration config)
             },
             result.Documents[1].Fields);
 
-        // Doc 3: Gamma Tool, price=50, category=hardware
         Assert.Equal($"{prefix}3", result.Documents[2].Key);
         Assert.Equivalent(
             new Dictionary<ValkeyValue, ValkeyValue>
@@ -77,14 +74,13 @@ public class FtSearchTests(TestConfiguration config)
         (string index, _, _) = await CreatePopulatedIndexAsync(client);
 
         Ft.SearchResult result = await Ft.SearchAsync(client, index, "@title:Alpha");
+        Assert.Equal(1, result.TotalResults);
+        Assert.Equal(1, result.Documents.Length);
 
-        Assert.True(result.TotalResults >= 1);
-        Assert.True(result.Documents.Length >= 1);
-
-        Ft.SearchDocument doc = result.Documents[0];
+        Ft.SearchDocument doc = ;
         Assert.Equivalent(
             new Dictionary<ValkeyValue, ValkeyValue> { ["title"] = "Alpha Widget", ["price"] = "10", ["category"] = "electronics" },
-            doc.Fields);
+            result.Documents[0].Fields);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -123,11 +119,14 @@ public class FtSearchTests(TestConfiguration config)
             });
 
         Assert.Equal(3, result.TotalResults);
-        Assert.Equal(3, result.Documents.Length);
-
-        // Verify ascending price order: 10, 25, 50
-        double[] prices = [.. result.Documents.Select(d => double.Parse(d.Fields["price"]!))];
-        Assert.Equivalent(new[] { 10.0, 25.0, 50.0 }, prices);
+        Assert.Equivalent(
+            new Dictionary<ValkeyValue, ValkeyValue>[]
+            {
+                new() { ["title"] = "Alpha Widget", ["price"] = "10", ["category"] = "electronics" },
+                new() { ["title"] = "Beta Gadget", ["price"] = "25", ["category"] = "electronics" },
+                new() { ["title"] = "Gamma Tool", ["price"] = "50", ["category"] = "hardware" },
+            },
+            result.Documents.Select(d => d.Fields));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -160,7 +159,6 @@ public class FtSearchTests(TestConfiguration config)
         await SkipUtils.IfSearchModuleNotLoaded(client);
         (string index, _, _) = await CreatePopulatedIndexAsync(client);
 
-        // Use a parameterized numeric filter: @price:[$minPrice +inf]
         Ft.SearchResult result = await Ft.SearchAsync(client, index, "@price:[$minPrice +inf]",
             new Ft.SearchOptions
             {
@@ -182,8 +180,8 @@ public class FtSearchTests(TestConfiguration config)
         (string index, string prefix, _) = await CreatePopulatedIndexAsync(client);
 
         Ft.SearchResult result = await Ft.SearchAsync(client, index, "@title:Alpha");
-
-        Assert.True(result.TotalResults >= 1);
+        Assert.Equal(1, result.TotalResults);
+        Assert.Equal(1, result.Documents.Length);
 
         Ft.SearchDocument doc = result.Documents[0];
         Assert.Equal($"{prefix}1", doc.Key);
@@ -204,7 +202,6 @@ public class FtSearchTests(TestConfiguration config)
         await SkipUtils.IfSearchModuleNotLoaded(client);
         (string index, _, _) = await CreatePopulatedIndexAsync(client);
 
-        // Request only 1 result but verify TotalResults reflects all matches
         Ft.SearchResult result = await Ft.SearchAsync(client, index, "*",
             new Ft.SearchOptions
             {
@@ -226,7 +223,7 @@ public class FtSearchTests(TestConfiguration config)
         BaseClient client)
     {
         var index = Guid.NewGuid().ToString();
-        var prefix = $"{index}:";
+        var prefix = $"{{{index}}}:";
 
         await Ft.CreateAsync(client, index,
         [
@@ -240,7 +237,6 @@ public class FtSearchTests(TestConfiguration config)
             Prefixes = [prefix],
         });
 
-        // Populate documents
         string[] keys =
         [
             $"{prefix}1",

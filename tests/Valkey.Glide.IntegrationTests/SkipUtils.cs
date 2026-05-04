@@ -60,5 +60,26 @@ internal static class SkipUtils
         }
     }
 
+    /// <summary>
+    /// Skips the test if the Valkey JSON module is not loaded on the server.
+    /// </summary>
+    public static async Task IfJsonModuleNotLoaded(BaseClient client)
+    {
+        // TODO #361: Use client.ModuleListAsync() once implemented.
+        try
+        {
+            var index = Guid.NewGuid().ToString();
+            var options = new Ft.CreateOptions { DataType = Ft.DataType.Json };
+            await Ft.CreateAsync(client, index, new Ft.CreateTextField("$.f", "f"), options);
+            await Ft.DropIndexAsync(client, index);
+        }
+        catch (Exception ex) when (
+            ex.Message.Contains("JSON", StringComparison.OrdinalIgnoreCase) ||
+            ex.Message.Contains("module", StringComparison.OrdinalIgnoreCase))
+        {
+            Assert.Skip("Valkey JSON module is not loaded on the server");
+        }
+    }
+
     #endregion
 }

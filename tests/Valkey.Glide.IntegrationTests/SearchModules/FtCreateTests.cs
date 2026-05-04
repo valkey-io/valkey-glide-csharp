@@ -2,6 +2,8 @@
 
 using Valkey.Glide.ServerModules;
 
+using static Valkey.Glide.Errors;
+
 namespace Valkey.Glide.IntegrationTests.SearchModules;
 
 /// <summary>
@@ -25,8 +27,8 @@ public class FtCreateTests(TestConfiguration config)
     public async Task CreateAsync_TextField_Succeeds(BaseClient client)
     {
         await SkipUtils.IfSearchModuleNotLoaded(client);
-        var index = Guid.NewGuid().ToString();
 
+        var index = Guid.NewGuid().ToString();
         var field = new Ft.CreateTextField("title");
         await Ft.CreateAsync(client, index, field);
 
@@ -38,8 +40,8 @@ public class FtCreateTests(TestConfiguration config)
     public async Task CreateAsync_TagField_Succeeds(BaseClient client)
     {
         await SkipUtils.IfSearchModuleNotLoaded(client);
-        var index = Guid.NewGuid().ToString();
 
+        var index = Guid.NewGuid().ToString();
         var field = new Ft.CreateTagField("category");
         await Ft.CreateAsync(client, index, field);
 
@@ -51,8 +53,8 @@ public class FtCreateTests(TestConfiguration config)
     public async Task CreateAsync_NumericField_Succeeds(BaseClient client)
     {
         await SkipUtils.IfSearchModuleNotLoaded(client);
-        var index = Guid.NewGuid().ToString();
 
+        var index = Guid.NewGuid().ToString();
         var field = new Ft.CreateNumericField("price");
         await Ft.CreateAsync(client, index, field);
 
@@ -64,8 +66,8 @@ public class FtCreateTests(TestConfiguration config)
     public async Task CreateAsync_VectorFieldFlat_Succeeds(BaseClient client)
     {
         await SkipUtils.IfSearchModuleNotLoaded(client);
-        var index = Guid.NewGuid().ToString();
 
+        var index = Guid.NewGuid().ToString();
         var field = new Ft.CreateVectorFieldFlat
         {
             Identifier = "embedding",
@@ -82,8 +84,8 @@ public class FtCreateTests(TestConfiguration config)
     public async Task CreateAsync_VectorFieldHnsw_Succeeds(BaseClient client)
     {
         await SkipUtils.IfSearchModuleNotLoaded(client);
-        var index = Guid.NewGuid().ToString();
 
+        var index = Guid.NewGuid().ToString();
         var field = new Ft.CreateVectorFieldHnsw
         {
             Identifier = "embedding",
@@ -100,8 +102,8 @@ public class FtCreateTests(TestConfiguration config)
     public async Task CreateAsync_MultipleFieldTypes_Succeeds(BaseClient client)
     {
         await SkipUtils.IfSearchModuleNotLoaded(client);
-        var index = Guid.NewGuid().ToString();
 
+        var index = Guid.NewGuid().ToString();
         Ft.CreateField[] schema =
         [
             new Ft.CreateTextField("title", "t"),
@@ -124,11 +126,11 @@ public class FtCreateTests(TestConfiguration config)
     public async Task CreateAsync_DuplicateIndex_Throws(BaseClient client)
     {
         await SkipUtils.IfSearchModuleNotLoaded(client);
-        var index = Guid.NewGuid().ToString();
 
+        var index = Guid.NewGuid().ToString();
         await Ft.CreateAsync(client, index, new Ft.CreateTextField("title"));
 
-        _ = await Assert.ThrowsAsync<Exception>(
+        _ = await Assert.ThrowsAsync<RequestException>(
             () => Ft.CreateAsync(client, index, new Ft.CreateTextField("title")));
     }
 
