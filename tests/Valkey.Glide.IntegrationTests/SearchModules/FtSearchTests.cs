@@ -78,10 +78,12 @@ public class FtSearchTests(TestConfiguration config)
         Assert.Equal(1, result.Documents.Length);
 
         Assert.Equivalent(
-            new Dictionary<ValkeyValue, ValkeyValue> {
+            new Dictionary<ValkeyValue, ValkeyValue>
+            {
                 ["title"] = "Alpha Widget",
                 ["price"] = "10",
-                ["category"] = "electronics" },
+                ["category"] = "electronics"
+            },
             result.Documents[0].Fields);
     }
 
