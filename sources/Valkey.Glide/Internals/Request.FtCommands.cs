@@ -596,12 +596,7 @@ internal partial class Request
                     UserIndexedMemory = userIndexedMemory,
                 },
                 "VECTOR" => ParseInfoVectorField(identifier, attribute, userIndexedMemory, fieldMap),
-                _ => new Ft.InfoNumericField
-                {
-                    Identifier = identifier,
-                    Attribute = attribute,
-                    UserIndexedMemory = userIndexedMemory,
-                },
+                _ => throw new ArgumentException($"Unknown FT.INFO field type: '{type}'"),
             };
 
             fields.Add(field);
