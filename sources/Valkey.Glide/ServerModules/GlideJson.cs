@@ -11,29 +11,29 @@ public static partial class GlideJson
 {
     private const string JsonPrefix = "JSON.";
 
-    // Command constants
-    private const string JsonSet = JsonPrefix + "SET";
-    private const string JsonGet = JsonPrefix + "GET";
-    private const string JsonMGet = JsonPrefix + "MGET";
-    private const string JsonDel = JsonPrefix + "DEL";
-    private const string JsonForget = JsonPrefix + "FORGET";
-    private const string JsonClear = JsonPrefix + "CLEAR";
-    private const string JsonType = JsonPrefix + "TYPE";
-    private const string JsonNumIncrBy = JsonPrefix + "NUMINCRBY";
-    private const string JsonNumMultBy = JsonPrefix + "NUMMULTBY";
-    private const string JsonStrAppend = JsonPrefix + "STRAPPEND";
-    private const string JsonStrLen = JsonPrefix + "STRLEN";
-    private const string JsonArrAppend = JsonPrefix + "ARRAPPEND";
-    private const string JsonArrInsert = JsonPrefix + "ARRINSERT";
-    private const string JsonArrIndex = JsonPrefix + "ARRINDEX";
-    private const string JsonArrLen = JsonPrefix + "ARRLEN";
-    private const string JsonArrPop = JsonPrefix + "ARRPOP";
-    private const string JsonArrTrim = JsonPrefix + "ARRTRIM";
-    private const string JsonObjLen = JsonPrefix + "OBJLEN";
-    private const string JsonObjKeys = JsonPrefix + "OBJKEYS";
-    private const string JsonToggle = JsonPrefix + "TOGGLE";
-    private const string JsonDebug = JsonPrefix + "DEBUG";
-    private const string JsonResp = JsonPrefix + "RESP";
+    // Command constants - internal so GlideJsonBatch can reuse them
+    internal const string JsonSet = JsonPrefix + "SET";
+    internal const string JsonGet = JsonPrefix + "GET";
+    internal const string JsonMGet = JsonPrefix + "MGET";
+    internal const string JsonDel = JsonPrefix + "DEL";
+    internal const string JsonForget = JsonPrefix + "FORGET";
+    internal const string JsonClear = JsonPrefix + "CLEAR";
+    internal const string JsonType = JsonPrefix + "TYPE";
+    internal const string JsonNumIncrBy = JsonPrefix + "NUMINCRBY";
+    internal const string JsonNumMultBy = JsonPrefix + "NUMMULTBY";
+    internal const string JsonStrAppend = JsonPrefix + "STRAPPEND";
+    internal const string JsonStrLen = JsonPrefix + "STRLEN";
+    internal const string JsonArrAppend = JsonPrefix + "ARRAPPEND";
+    internal const string JsonArrInsert = JsonPrefix + "ARRINSERT";
+    internal const string JsonArrIndex = JsonPrefix + "ARRINDEX";
+    internal const string JsonArrLen = JsonPrefix + "ARRLEN";
+    internal const string JsonArrPop = JsonPrefix + "ARRPOP";
+    internal const string JsonArrTrim = JsonPrefix + "ARRTRIM";
+    internal const string JsonObjLen = JsonPrefix + "OBJLEN";
+    internal const string JsonObjKeys = JsonPrefix + "OBJKEYS";
+    internal const string JsonToggle = JsonPrefix + "TOGGLE";
+    internal const string JsonDebug = JsonPrefix + "DEBUG";
+    internal const string JsonResp = JsonPrefix + "RESP";
 
     #region Helper Methods
 
