@@ -67,14 +67,14 @@ public static partial class GlideJson
             return null;
         if (result is object?[] arr)
         {
-            return [.. arr.Select(o =>
+            return [.. arr.Select<object?, ValkeyValue[]?>(o =>
             {
                 if (o is null)
                     return null;
                 if (o is object?[] innerArr)
-                    return (ValkeyValue[])[.. innerArr.Select(ToValkeyValue)];
+                    return [.. innerArr.Select(ToValkeyValue)];
                 // Single value - wrap in array
-                return (ValkeyValue[])[ToValkeyValue(o)];
+                return [ToValkeyValue(o)];
             })];
         }
         // Single value (legacy path) - wrap in nested array
