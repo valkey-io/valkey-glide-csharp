@@ -628,13 +628,7 @@ internal partial class Request
                 UserIndexedMemory = userIndexedMemory,
                 Capacity = GetLong(indexMap, "capacity"),
                 Dimensions = GetLong(indexMap, "dimensions"),
-                DistanceMetric = GetString(indexMap, "distance_metric") switch
-                {
-                    "COSINE" => Ft.DistanceMetric.Cosine,
-                    "L2" => Ft.DistanceMetric.Euclidean,
-                    "IP" => Ft.DistanceMetric.InnerProduct,
-                    _ => Ft.DistanceMetric.Cosine,
-                },
+                DistanceMetric = ParseDistanceMetric(GetString(indexMap, "distance_metric")),
                 Size = GetLong(indexMap, "size"),
                 M = GetNullableLong(algoMap, "m"),
                 EfConstruction = GetNullableLong(algoMap, "ef_construction"),
@@ -642,24 +636,31 @@ internal partial class Request
             };
         }
 
-        return new Ft.InfoVectorFieldFlat
+        if (algoName is "FLAT")
         {
-            Identifier = identifier,
-            Attribute = attribute,
-            UserIndexedMemory = userIndexedMemory,
-            Capacity = GetLong(indexMap, "capacity"),
-            Dimensions = GetLong(indexMap, "dimensions"),
-            DistanceMetric = GetString(indexMap, "distance_metric") switch
+            return new Ft.InfoVectorFieldFlat
             {
-                "COSINE" => Ft.DistanceMetric.Cosine,
-                "L2" => Ft.DistanceMetric.Euclidean,
-                "IP" => Ft.DistanceMetric.InnerProduct,
-                _ => Ft.DistanceMetric.Cosine,
-            },
-            Size = GetLong(indexMap, "size"),
-            BlockSize = GetNullableLong(algoMap, "block_size"),
-        };
+                Identifier = identifier,
+                Attribute = attribute,
+                UserIndexedMemory = userIndexedMemory,
+                Capacity = GetLong(indexMap, "capacity"),
+                Dimensions = GetLong(indexMap, "dimensions"),
+                DistanceMetric = ParseDistanceMetric(GetString(indexMap, "distance_metric")),
+                Size = GetLong(indexMap, "size"),
+                BlockSize = GetNullableLong(algoMap, "block_size"),
+            };
+        }
+
+        throw new ArgumentException($"Unknown FT.INFO vector algorithm: '{algoName}'");
     }
+
+    private static Ft.DistanceMetric ParseDistanceMetric(string metric) => metric switch
+    {
+        "COSINE" => Ft.DistanceMetric.Cosine,
+        "L2" => Ft.DistanceMetric.Euclidean,
+        "IP" => Ft.DistanceMetric.InnerProduct,
+        _ => throw new ArgumentException($"Unknown FT.INFO distance metric: '{metric}'"),
+    };
 
     /// <summary>
     /// Converts a raw server response object to a string-keyed dictionary.
