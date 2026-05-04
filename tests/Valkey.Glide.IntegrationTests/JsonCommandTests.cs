@@ -121,7 +121,7 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\"}";
 
-        ValkeyValue result = await GlideJson.SetAsync(client, key, "$", jsonValue, GlideJson.SetCondition.OnlyIfDoesNotExist);
+        ValkeyValue result = await GlideJson.SetAsync(client, key, "$", jsonValue, GlideJson.JsonSetCondition.OnlyIfDoesNotExist);
 
         Assert.Equal("OK", result);
     }
@@ -138,7 +138,7 @@ public class JsonCommandTests(TestConfiguration config)
         _ = await GlideJson.SetAsync(client, key, "$", initialValue);
 
         // Try to set with condition
-        ValkeyValue result = await GlideJson.SetAsync(client, key, "$", newValue, GlideJson.SetCondition.OnlyIfDoesNotExist);
+        ValkeyValue result = await GlideJson.SetAsync(client, key, "$", newValue, GlideJson.JsonSetCondition.OnlyIfDoesNotExist);
         Assert.True(result.IsNull);
     }
 
@@ -154,7 +154,7 @@ public class JsonCommandTests(TestConfiguration config)
         _ = await GlideJson.SetAsync(client, key, "$", initialValue);
 
         // Try to set with condition
-        ValkeyValue result = await GlideJson.SetAsync(client, key, "$", newValue, GlideJson.SetCondition.OnlyIfExists);
+        ValkeyValue result = await GlideJson.SetAsync(client, key, "$", newValue, GlideJson.JsonSetCondition.OnlyIfExists);
         Assert.Equal("OK", result);
     }
 
@@ -167,7 +167,7 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\"}";
 
-        ValkeyValue result = await GlideJson.SetAsync(client, key, "$", jsonValue, GlideJson.SetCondition.OnlyIfExists);
+        ValkeyValue result = await GlideJson.SetAsync(client, key, "$", jsonValue, GlideJson.JsonSetCondition.OnlyIfExists);
 
         Assert.True(result.IsNull);
     }

@@ -8,7 +8,7 @@ public static partial class GlideJson
     /// Specifies the condition for JSON.SET command execution.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/json.set/"/>
-    public enum SetCondition
+    public enum JsonSetCondition
     {
         /// <summary>
         /// Always set the value (default behavior).

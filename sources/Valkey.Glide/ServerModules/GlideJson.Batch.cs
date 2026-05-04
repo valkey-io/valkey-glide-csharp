@@ -55,15 +55,15 @@ public static class GlideJsonBatch
     /// <param name="condition">The condition for setting (NX or XX).</param>
     /// <returns>The batch for chaining.</returns>
     /// <remarks>Command Response - "OK" if successful, null if condition not met.</remarks>
-    public static T Set<T>(T batch, GlideString key, GlideString path, GlideString value, GlideJson.SetCondition condition)
+    public static T Set<T>(T batch, GlideString key, GlideString path, GlideString value, GlideJson.JsonSetCondition condition)
         where T : BaseBatch<T>
     {
         GlideString[] args = condition switch
         {
-            GlideJson.SetCondition.None => [GlideJson.JsonSet, key, path, value],
-            GlideJson.SetCondition.OnlyIfDoesNotExist => [GlideJson.JsonSet, key, path, value, "NX"],
-            GlideJson.SetCondition.OnlyIfExists => [GlideJson.JsonSet, key, path, value, "XX"],
-            _ => throw new ArgumentOutOfRangeException(nameof(condition), condition, "Invalid SetCondition value")
+            GlideJson.JsonSetCondition.None => [GlideJson.JsonSet, key, path, value],
+            GlideJson.JsonSetCondition.OnlyIfDoesNotExist => [GlideJson.JsonSet, key, path, value, "NX"],
+            GlideJson.JsonSetCondition.OnlyIfExists => [GlideJson.JsonSet, key, path, value, "XX"],
+            _ => throw new ArgumentOutOfRangeException(nameof(condition), condition, "Invalid JsonSetCondition value")
         };
         return batch.CustomCommand(args);
     }
