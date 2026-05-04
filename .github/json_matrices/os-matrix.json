@@ -6,7 +6,7 @@
         "ARCH": "x64",
         "TARGET": "x86_64-unknown-linux-gnu",
         "tags": ["ci", "cd"],
-        "run": "always"
+        "profiles": ["smoke", "standard", "full"]
     },
     {
         "OS": "ubuntu",
@@ -14,7 +14,8 @@
         "RUNNER": "ubuntu-24.04-arm",
         "ARCH": "arm64",
         "TARGET": "aarch64-unknown-linux-gnu",
-        "tags": ["ci", "cd"]
+        "tags": ["ci", "cd"],
+        "profiles": ["smoke", "full"]
     },
     {
         "OS": "amazon-linux",
@@ -22,7 +23,8 @@
         "ARCH": "x64",
         "TARGET": "x86_64-unknown-linux-gnu",
         "IMAGE": "amazonlinux:latest",
-        "tags": ["container"]
+        "tags": ["container"],
+        "profiles": ["full"]
     },
     {
         "OS": "macos",
@@ -30,7 +32,8 @@
         "RUNNER": "macos-15",
         "ARCH": "arm64",
         "TARGET": "aarch64-apple-darwin",
-        "tags": ["ci", "cd"]
+        "tags": ["ci", "cd"],
+        "profiles": ["smoke", "full"]
     },
     {
         "OS": "macos",
@@ -38,7 +41,8 @@
         "RUNNER": "macos-15-intel",
         "ARCH": "x64",
         "TARGET": "x86_64-apple-darwin",
-        "tags": ["ci", "cd"]
+        "tags": ["ci", "cd"],
+        "profiles": ["smoke", "full"]
     },
     {
         "OS": "windows",
@@ -47,7 +51,7 @@
         "ARCH": "x64",
         "TARGET": "x86_64-pc-windows-msvc",
         "tags": ["ci", "cd"],
-        "run": "always"
+        "profiles": ["smoke", "standard", "full"]
     },
     {
         "OS": "windows",
@@ -55,6 +59,7 @@
         "RUNNER": "windows-11-arm",
         "ARCH": "arm64",
         "TARGET": "aarch64-pc-windows-msvc",
-        "tags": ["ci", "cd"]
+        "tags": ["ci", "cd"],
+        "profiles": []
     }
 ]

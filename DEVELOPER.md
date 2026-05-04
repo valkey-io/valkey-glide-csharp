@@ -373,13 +373,24 @@ The CSharp Valkey-Glide client uses xUnit v3 for testing code. The test code sty
 
 ## Documentation
 
-For user-facing documentation including quick start guides, tutorials, and how-to guides, visit the official [Valkey GLIDE documentation site](https://glide.valkey.io/getting-started/quickstart/?lang=c%23).
+- [Valkey GLIDE](<https://glide.valkey.io/getting-started/quickstart/?lang=c%23>) – Official Valkey GLIDE documentation for users, including quick start guides, tutorials, and how-to guides.
+- [Documentation Guidelines](docs/documentation-guidelines.md) – Project documentation guidelines for developers.
 
 ## Benchmarking
 
 Performance benchmarking for the C# client can be performed using [resp-bench](https://github.com/ikolomi/resp-bench), a multi-language benchmark suite for RESP protocol compatible databases. It supports Valkey GLIDE C# and StackExchange.Redis out of the box.
 
 Refer to the [resp-bench README](https://github.com/ikolomi/resp-bench/blob/main/README.md) and [C# benchmark docs](https://github.com/ikolomi/resp-bench/blob/main/docs/BENCHMARKS_CSHARP.md) for setup and usage instructions.
+
+## Updating CI Test Matrices
+
+To update our Github workflow test runs, edit the JSON files in [`.github/json_matrices/`](.github/json_matrices/). 
+
+It serves as a "test order", describing available properties and which `profiles` they belong to (`smoke`, `standard`, `full`). No workflow or script changes are needed.
+
+Ex: To add a new platform to the `standard` profile, add a new entry to `.github/json_matrices/os_matrix.json` with `profiles: ['standard']`
+
+See the [CI/CD Test Matrices README](docs/ci-cd.md) for details.
 
 ## Community and Feedback
 

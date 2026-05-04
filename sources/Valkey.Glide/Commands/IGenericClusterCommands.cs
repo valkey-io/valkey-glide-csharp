@@ -17,97 +17,90 @@ namespace Valkey.Glide.Commands;
 public interface IGenericClusterCommands
 {
     /// <summary>
-    /// Executes a single command, without checking inputs. Every part of the command, including subcommands,
+    /// Executes a single command without checking inputs. Every part of the command, including subcommands,
     /// should be added as a separate value in <paramref name="args" />.
-    /// The command will be routed automatically based on the command's default request policy.
+    /// The command is routed automatically based on the command's default request policy.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/">Valkey commands</seealso>
+    /// <param name="args">A list includes the command name and arguments for the custom command.</param>
+    /// <returns>The returning value depends on the executed command.</returns>
+    /// <remarks>
+    /// This API returns all <see langword="string" /> data as <see cref="GlideString" />.
     /// <para />
     /// This function should only be used for single-response commands. Commands that don't return complete response and awaits
     /// (such as SUBSCRIBE); that return potentially more than a single response (such as XREAD); or that change the client's
     /// behavior (such as entering pub/sub mode on RESP2 connections) shouldn't be called using this function.
     /// <example>
     /// <code>
-    /// // Query all pub/sub clients
     /// var result = await clusterClient.CustomCommand(["CLIENT", "LIST", "TYPE", "PUBSUB"]);
-    /// GlideString response = (result.SingleValue as GlideString)!;
+    /// var response = (result.SingleValue as GlideString)!;
     /// </code>
     /// </example>
-    /// <example>
-    /// <code>
-    /// // Query all pub/sub clients on all nodes
-    /// var result = await clusterClient.CustomCommand(["CLIENT", "LIST", "TYPE", "PUBSUB"], Route.AllNodes);
-    /// </code>
-    /// </example>
-    /// </summary>
-    /// <remarks>
-    /// This API returns all <see langword="string" /> data as <see cref="GlideString" />.
     /// </remarks>
-    /// <param name="args">A list includes the command name and arguments for the custom command.</param>
-    /// <returns>The returning value depends on the executed command.</returns>
     Task<ClusterValue<object?>> CustomCommand(IEnumerable<GlideString> args);
 
     /// <summary>
-    /// Executes a single command, without checking inputs. Every part of the command, including subcommands,
+    /// Executes a single command without checking inputs. Every part of the command, including subcommands,
     /// should be added as a separate value in <paramref name="args" />.
-    /// The command will be routed to the nodes defined by <paramref name="route"/>.
+    /// The command is routed to the nodes defined by <paramref name="route"/>.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/">Valkey commands</seealso>
+    /// <param name="args">A list including the command name and arguments for the custom command.</param>
+    /// <param name="route">Specifies the routing configuration for the command. The client will route the command to the nodes defined by <c>route</c>.</param>
+    /// <returns>The returning value depends on the executed command.</returns>
+    /// <remarks>
+    /// This API returns all <see langword="string" /> data as <see cref="GlideString" />.
     /// <para />
     /// This function should only be used for single-response commands. Commands that don't return complete response and awaits
     /// (such as SUBSCRIBE); that return potentially more than a single response (such as XREAD); or that change the client's
     /// behavior (such as entering pub/sub mode on RESP2 connections) shouldn't be called using this function.
     /// <example>
     /// <code>
-    /// // Query all pub/sub clients
-    /// var response = await clusterClient.CustomCommand(["CLIENT", "LIST", "TYPE", "PUBSUB"], Route.AllNodes);
-    /// foreach (var pair in response.MultiValue)
+    /// var result = await clusterClient.CustomCommand(["CLIENT", "LIST", "TYPE", "PUBSUB"], Route.AllNodes);
+    /// foreach (var pair in result.MultiValue)
     /// {
     ///     Console.WriteLine($"Response from {pair.Key}: {pair.Value}");
     /// }
     /// </code>
     /// </example>
-    /// </summary>
-    /// <remarks>
-    /// This API returns all <see langword="string" /> data as <see cref="GlideString" />.
     /// </remarks>
-    /// <param name="args">A list including the command name and arguments for the custom command.</param>
-    /// <param name="route">Specifies the routing configuration for the command. The client will route the command to the nodes defined by <c>route</c>.</param>
-    /// <returns>The returning value depends on the executed command.</returns>
     Task<ClusterValue<object?>> CustomCommand(IEnumerable<GlideString> args, Route route);
 
     /// <summary>
     /// Executes a batch by processing the queued commands.
+    /// </summary>
+    /// <seealso href="https://valkey.io/topics/transactions/">Valkey Transactions (Atomic Batches)</seealso>
+    /// <seealso href="https://valkey.io/topics/pipelining/">Valkey Pipelines (Non-Atomic Batches)</seealso>
+    /// <param name="batch">A <see cref="ClusterBatch" /> object containing a list of commands to be executed.</param>
+    /// <param name="raiseOnError">
+    /// Determines how errors are handled within the batch response.
     /// <para />
+    /// When set to <see langword="true" />, the first encountered error in the batch will be raised as an
+    /// exception of type <see cref="RequestException" /> after all retries and reconnections have been
+    /// executed.
+    /// <para />
+    /// When set to <see langword="false" />, errors will be included as part of the batch response, allowing
+    /// the caller to process both successful and failed commands together. In this case, error details
+    /// will be provided as instances of <see cref="RequestException" />.
+    /// </param>
+    /// <returns>
+    /// An array of results, where each entry corresponds to a command's execution result
+    /// or <see langword="null" /> if a transaction failed due to a <c>WATCH</c> command.
+    /// </returns>
+    /// <remarks>
     /// <b>Routing Behavior:</b>
     /// <list type="bullet">
     ///   <item>
-    ///     <b>For atomic batches (Transactions):</b>
-    ///     <list type="bullet">
-    ///       <item>
-    ///         The transaction will be routed to the slot owner of the first key found in the batch.
-    ///       </item>
-    ///       <item>
-    ///         If no key is found, the request will be sent to a random node.
-    ///       </item>
-    ///     </list>
+    ///     <b>For atomic batches (Transactions):</b> The transaction is routed to the slot owner of the first key found in the batch.
+    ///     If no key is found, the request is sent to a random node.
     ///   </item>
     ///   <item>
-    ///     <b>For non-atomic batches (Pipelines):</b>
-    ///     <list type="bullet">
-    ///       <item>
-    ///         Each command will be routed to the node that owns the corresponding key's slot. If
-    ///         no key is present, the routing will follow the default policy for the command.
-    ///       </item>
-    ///       <item>
-    ///         Multi-node commands will be automatically split and sent to the respective nodes.
-    ///       </item>
-    ///     </list>
+    ///     <b>For non-atomic batches (Pipelines):</b> Each command is routed to the node that owns the corresponding key's slot.
+    ///     If no key is present, routing follows the default policy for the command. Multi-node commands are automatically split.
     ///   </item>
     /// </list>
-    /// See the <see href="https://valkey.io/topics/transactions/">Valkey Transactions (Atomic Batches)</see>.<br />
-    /// See the <see href="https://valkey.io/topics/pipelining/">Valkey Pipelines (Non-Atomic Batches)</see>.
-    /// </summary>
-    /// <remarks>
-    /// <b>Behavior notes:</b><br />
     /// <b>Atomic Batches (Transactions):</b> All key-based commands must map to the
-    /// same hash slot. If keys span different slots, the transaction will fail.<br />
+    /// same hash slot. If keys span different slots, the transaction will fail.
     /// If a transaction fails due to a <c>WATCH</c> command, <c>Exec</c> will return <see langword="null" />.
     /// <example>
     /// <code>
@@ -135,27 +128,14 @@ public interface IGenericClusterCommands
     /// </code>
     /// </example>
     /// </remarks>
-    /// <param name="batch">A <see cref="ClusterBatch" /> object containing a list of commands to be executed.</param>
-    /// <param name="raiseOnError">
-    /// Determines how errors are handled within the batch response.
-    /// <para />
-    /// When set to <see langword="true" />, the first encountered error in the batch will be raised as an
-    /// exception of type <see cref="RequestException" /> after all retries and reconnections have been
-    /// executed.
-    /// <para />
-    /// When set to <see langword="false" />, errors will be included as part of the batch response, allowing
-    /// the caller to process both successful and failed commands together. In this case, error details
-    /// will be provided as instances of <see cref="RequestException" />.
-    /// </param>
-    /// <returns>
-    /// An array of results, where each entry corresponds to a command’s execution result
-    /// or <see langword="null" /> if a transaction failed due to a <c>WATCH</c> command.
-    /// </returns>
     Task<object?[]?> Exec(ClusterBatch batch, bool raiseOnError);
 
     /// <summary>
-    /// Executes a batch by processing the queued commands.
-    /// <para />
+    /// Executes a batch by processing the queued commands with additional options.
+    /// </summary>
+    /// <inheritdoc cref="Exec(ClusterBatch, bool)" path="/*[not(self::summary) and not(self::remarks)]"/>
+    /// <param name="options">A <see cref="ClusterBatchOptions" /> object containing execution options.</param>
+    /// <remarks>
     /// <b>Routing Behavior:</b>
     /// <list type="bullet">
     ///   <item>
@@ -171,33 +151,22 @@ public interface IGenericClusterCommands
     ///       </item>
     ///       <item>
     ///         <b>Non-atomic batches (Pipelines):</b> Each command is routed to the node
-    ///         owning the corresponding key's slot. If no key is present, routing follows the
-    ///         command's request policy. Multi-node commands are automatically split and
-    ///         dispatched to the appropriate nodes.
+    ///         owning the corresponding key's slot. Multi-node commands are automatically split.
     ///       </item>
     ///     </list>
     ///   </item>
     /// </list>
-    /// See the <see href="https://valkey.io/topics/transactions/">Valkey Transactions (Atomic Batches)</see>.<br />
-    /// See the <see href="https://valkey.io/topics/pipelining/">Valkey Pipelines (Non-Atomic Batches)</see>.
-    /// </summary>
-    /// <remarks>
-    /// <b>Behavior notes:</b><br />
     /// <b>Atomic Batches (Transactions):</b> All key-based commands must map to the
-    /// same hash slot. If keys span different slots, the transaction will fail.<br />
+    /// same hash slot. If keys span different slots, the transaction will fail.
     /// If a transaction fails due to a <c>WATCH</c> command, <c>Exec</c> will return <see langword="null" />.
     /// <para />
-    /// <b>Retry and Redirection:</b><br />
+    /// <b>Retry and Redirection:</b>
     /// <list type="bullet">
     ///   <item>
     ///     If a redirection error occurs:
     ///     <list type="bullet">
-    ///       <item>
-    ///         <b>Atomic batches (Transactions):</b> The entire transaction will be redirected.
-    ///       </item>
-    ///       <item>
-    ///         <b>Non-atomic batches:</b> Only commands that encountered redirection errors will be redirected.
-    ///       </item>
+    ///       <item><b>Atomic batches (Transactions):</b> The entire transaction will be redirected.</item>
+    ///       <item><b>Non-atomic batches:</b> Only commands that encountered redirection errors will be redirected.</item>
     ///     </list>
     ///   </item>
     ///   <item>
@@ -236,22 +205,5 @@ public interface IGenericClusterCommands
     /// </code>
     /// </example>
     /// </remarks>
-    /// <param name="batch">A <see cref="ClusterBatch" /> object containing a list of commands to be executed.</param>
-    /// <param name="raiseOnError">
-    /// Determines how errors are handled within the batch response.
-    /// <para />
-    /// When set to <see langword="true" />, the first encountered error in the batch will be raised as an
-    /// exception of type <see cref="RequestException" /> after all retries and reconnections have been
-    /// executed.
-    /// <para />
-    /// When set to <see langword="false" />, errors will be included as part of the batch response, allowing
-    /// the caller to process both successful and failed commands together. In this case, error details
-    /// will be provided as instances of <see cref="RequestException" />.
-    /// </param>
-    /// <param name="options">A <see cref="ClusterBatchOptions" /> object containing execution options.</param>
-    /// <returns>
-    /// An array of results, where each entry corresponds to a command’s execution result
-    /// or <see langword="null" /> if a transaction failed due to a <c>WATCH</c> command.
-    /// </returns>
     Task<object?[]?> Exec(ClusterBatch batch, bool raiseOnError, ClusterBatchOptions options);
 }

@@ -38,7 +38,7 @@ public class GeoSearchCircle : GeoSearchShape
     /// Creates a <see cref="GeoSearchCircle"/>.
     /// </summary>
     /// <param name="radius">The radius of the circle.</param>
-    /// <param name="unit">The distance unit, defaults to Meters.</param>
+    /// <param name="unit">The distance unit.</param>
     public GeoSearchCircle(double radius, GeoUnit unit = GeoUnit.Meters) : base(unit)
     {
         _radius = radius;
@@ -66,7 +66,7 @@ public class GeoSearchBox : GeoSearchShape
     /// </summary>
     /// <param name="height">The height of the box.</param>
     /// <param name="width">The width of the box.</param>
-    /// <param name="unit">The distance unit, defaults to metres.</param>
+    /// <param name="unit">The distance unit.</param>
     public GeoSearchBox(double height, double width, GeoUnit unit = GeoUnit.Meters) : base(unit)
     {
         _height = height;

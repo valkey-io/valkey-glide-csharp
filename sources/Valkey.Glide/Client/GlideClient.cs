@@ -1,5 +1,6 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands;
 using Valkey.Glide.Commands.Options;
 using Valkey.Glide.Internals;
 using Valkey.Glide.Pipeline;
@@ -57,106 +58,106 @@ public partial class GlideClient :
     public static async Task<GlideClient> CreateClient(StandaloneClientConfiguration config)
         => await CreateClient(config, () => new GlideClient());
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IGenericCommands.Exec(Batch, bool)"/>
     public async Task<object?[]?> Exec(Batch batch, bool raiseOnError)
         => await Batch(batch, raiseOnError);
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IGenericCommands.Exec(Batch, bool, BatchOptions)"/>
     public async Task<object?[]?> Exec(Batch batch, bool raiseOnError, BatchOptions options)
         => await Batch(batch, raiseOnError, options);
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IGenericCommands.CustomCommand(IEnumerable{GlideString})"/>
     public async Task<object?> CustomCommand(IEnumerable<GlideString> args)
         => await Command(Request.CustomCommand([.. args]));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IGlideClient.InfoAsync()"/>
     public async Task<string> InfoAsync() => await InfoAsync([]);
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IGlideClient.InfoAsync(IEnumerable{InfoOptions.Section})"/>
     public async Task<string> InfoAsync(IEnumerable<InfoOptions.Section> sections)
         => await Command(Request.Info([.. sections]));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IGlideClient.ConfigGetAsync(ValkeyValue)"/>
     public async Task<KeyValuePair<string, string>[]> ConfigGetAsync(ValkeyValue pattern = default)
     {
         return await Command(Request.ConfigGetAsync(pattern));
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IGlideClient.ConfigResetStatisticsAsync()"/>
     public async Task ConfigResetStatisticsAsync()
     {
         _ = await Command(Request.ConfigResetStatisticsAsync());
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IGlideClient.ConfigRewriteAsync()"/>
     public async Task ConfigRewriteAsync()
     {
         _ = await Command(Request.ConfigRewriteAsync());
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IGlideClient.ConfigSetAsync(ValkeyValue, ValkeyValue)"/>
     public async Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value)
     {
         _ = await Command(Request.ConfigSetAsync(setting, value));
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.ConfigSetAsync(IDictionary{ValkeyValue, ValkeyValue})"/>
     public override async Task ConfigSetAsync(IDictionary<ValkeyValue, ValkeyValue> parameters)
     {
         _ = await Command(Request.ConfigSetAsync(parameters));
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IGlideClient.DatabaseSizeAsync()"/>
     public async Task<long> DatabaseSizeAsync()
     {
         return await Command(Request.DatabaseSizeAsync());
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IGlideClient.FlushAllDatabasesAsync()"/>
     public async Task FlushAllDatabasesAsync()
     {
         _ = await Command(Request.FlushAllDatabasesAsync());
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.FlushAllDatabasesAsync(FlushMode)"/>
     public override async Task FlushAllDatabasesAsync(FlushMode mode)
     {
         _ = await Command(Request.FlushAllDatabasesAsync(mode));
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IGlideClient.FlushDatabaseAsync()"/>
     public async Task FlushDatabaseAsync()
     {
         _ = await Command(Request.FlushDatabaseAsync());
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.FlushDatabaseAsync(FlushMode)"/>
     public override async Task FlushDatabaseAsync(FlushMode mode)
     {
         _ = await Command(Request.FlushDatabaseAsync(mode));
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IGlideClient.LastSaveAsync()"/>
     public Task<DateTimeOffset> LastSaveAsync()
         => Command(Request.LastSaveAsync());
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IGlideClient.TimeAsync()"/>
     public Task<DateTimeOffset> TimeAsync()
         => Command(Request.TimeAsync());
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IGlideClient.LolwutAsync()"/>
     public async Task<string> LolwutAsync()
     {
         return await Command(Request.LolwutAsync());
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.LolwutAsync(LolwutOptions)"/>
     public override async Task<string> LolwutAsync(LolwutOptions options)
     {
         return await Command(Request.LolwutAsync(options));
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.ConfigGetAsync(IEnumerable{ValkeyValue})"/>
     public override async Task<KeyValuePair<string, string>[]> ConfigGetAsync(IEnumerable<ValkeyValue> patterns)
     {
         return await Command(Request.ConfigGetAsync(patterns));
@@ -166,7 +167,7 @@ public partial class GlideClient :
     public async Task<(string cursor, ValkeyKey[] keys)> ScanAsync(string cursor, ScanOptions? options = null)
         => await Command(Request.ScanAsync(cursor, options));
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IGlideClient.ScanAsync(ScanOptions?)"/>
     public async IAsyncEnumerable<ValkeyKey> ScanAsync(ScanOptions? options = null)
     {
         string currentCursor = "0";
@@ -184,19 +185,19 @@ public partial class GlideClient :
         } while (currentCursor != "0");
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="ITransactionBaseCommands.WatchAsync(IEnumerable{ValkeyKey})"/>
     public async Task WatchAsync(IEnumerable<ValkeyKey> keys)
     {
         _ = await Command(Request.Watch(keys));
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="ITransactionCommands.UnwatchAsync()"/>
     public async Task UnwatchAsync()
     {
         _ = await Command(Request.Unwatch());
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="BaseClient.GetServerVersionAsync()"/>
     protected override async Task<Version> GetServerVersionAsync()
     {
         if (_serverVersion == null)

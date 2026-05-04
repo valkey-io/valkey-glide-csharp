@@ -135,6 +135,9 @@ Note: Conventional Commits apply to commit messages only. Do not enforce this fo
   - Treat `reports/`, `testresults/`, `bin/`, `obj/` as generated; do not commit.
 - API compatibility:
   - Maintain StackExchange.Redis API compatibility (target version 2.8.58) in the public API surface whenever possible.
+- Documentation:
+  - All public and protected members must have XML doc comments (`CS1591` should produce zero warnings).
+  - Follow the guidelines in `docs/documentation-guidelines.md`.
 - Analyzer quirks:
   - `<ImplicitUsings>enable</ImplicitUsings>` can flag required `using` directives as unnecessary. Verify before removing (common false positives: `System.Net`, `System.ComponentModel`, `System.Text`, `Valkey.Glide.Internals`).
 
@@ -176,10 +179,7 @@ Note: Conventional Commits apply to commit messages only. Do not enforce this fo
 
 - General overview: `README.md`
 - Developer setup and Task usage: `DEVELOPER.md`
-- Commit/DCO rules: `.kiro/steering/commits.md`, `CONTRIBUTING.md`
-- Test invocation rules: `.kiro/steering/dotnet-test-usage.md`
-- Tech stack and CI expectations: `.kiro/steering/tech.md`
-- Framework targeting rules: `.kiro/steering/framework.md`
-- Structure details: `.kiro/steering/structure.md`
+- Commit/DCO rules: `CONTRIBUTING.md`
+- Documentation guidelines: `docs/documentation-guidelines.md`
 
 This file is optimized for autonomous agents. Keep commands scoped to `net8.0`; avoid modifying submodules; preserve API compatibility and DCO signoffs.

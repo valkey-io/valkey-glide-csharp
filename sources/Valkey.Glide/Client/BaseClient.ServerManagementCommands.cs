@@ -6,18 +6,18 @@ namespace Valkey.Glide;
 
 public abstract partial class BaseClient
 {
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.ConfigSetAsync(IDictionary{ValkeyValue, ValkeyValue})"/>
     public abstract Task ConfigSetAsync(IDictionary<ValkeyValue, ValkeyValue> parameters);
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.ConfigGetAsync(IEnumerable{ValkeyValue})"/>
     public abstract Task<KeyValuePair<string, string>[]> ConfigGetAsync(IEnumerable<ValkeyValue> patterns);
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.FlushAllDatabasesAsync(FlushMode)"/>
     public abstract Task FlushAllDatabasesAsync(FlushMode mode);
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.FlushDatabaseAsync(FlushMode)"/>
     public abstract Task FlushDatabaseAsync(FlushMode mode);
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IBaseClient.LolwutAsync(LolwutOptions)"/>
     public abstract Task<string> LolwutAsync(LolwutOptions options);
 }
