@@ -134,6 +134,11 @@ public static partial class GlideJson
     public sealed class ArrIndexOptions
     {
         /// <summary>
+        /// Represents searching to the end of the array.
+        /// </summary>
+        public const long ToEnd = 0L;
+
+        /// <summary>
         /// The start index (inclusive). Defaults to 0.
         /// </summary>
         /// <remarks>
@@ -142,16 +147,16 @@ public static partial class GlideJson
         public long Start { get; init; } = 0;
 
         /// <summary>
-        /// The end index (exclusive). If null, searches to end of array.
+        /// The end index (exclusive). Defaults to <see cref="ToEnd"/> (0), which means search to the end of the array.
         /// </summary>
         /// <remarks>
         /// Negative values indicate offsets from the end of the array.
-        /// When null, the search continues to the end of the array.
+        /// A value of 0 means search to the end of the array.
         /// </remarks>
-        public long? End { get; init; }
+        public long End { get; init; } = ToEnd;
 
         /// <summary>
-        /// Creates options with a start index.
+        /// Creates options with a start index, searching to the end of the array.
         /// </summary>
         /// <param name="start">The starting index (inclusive).</param>
         /// <returns>A new <see cref="ArrIndexOptions"/> instance.</returns>
@@ -170,15 +175,6 @@ public static partial class GlideJson
         /// </summary>
         /// <returns>An array of <see cref="GlideString"/> containing the command arguments.</returns>
         internal GlideString[] ToArgs()
-        {
-            List<GlideString> args = [Start.ToString()];
-
-            if (End.HasValue)
-            {
-                args.Add(End.Value.ToString());
-            }
-
-            return [.. args];
-        }
+            => [Start.ToString(), End.ToString()];
     }
 }
