@@ -14,44 +14,6 @@ public class JsonBatchTests(TestConfiguration config)
 {
     public TestConfiguration Config { get; } = config;
 
-    /// <summary>
-    /// Checks if the JSON module is available on the server.
-    /// </summary>
-    private static async Task<bool> IsJsonModuleAvailable(GlideClient client)
-    {
-        try
-        {
-            string testKey = $"__json_batch_module_check_{Guid.NewGuid()}";
-            GlideString[] args = ["JSON.SET", testKey, "$", "{}"];
-            _ = await client.CustomCommand(args);
-            _ = await client.DeleteAsync(testKey);
-            return true;
-        }
-        catch (Errors.RequestException)
-        {
-            return false;
-        }
-    }
-
-    /// <summary>
-    /// Checks if the JSON module is available on the cluster server.
-    /// </summary>
-    private static async Task<bool> IsJsonModuleAvailable(GlideClusterClient client)
-    {
-        try
-        {
-            string testKey = $"__json_batch_module_check_{Guid.NewGuid()}";
-            GlideString[] args = ["JSON.SET", testKey, "$", "{}"];
-            _ = await client.CustomCommand(args);
-            _ = await client.DeleteAsync(testKey);
-            return true;
-        }
-        catch (Errors.RequestException)
-        {
-            return false;
-        }
-    }
-
     private static string GetUniqueKey(string prefix = "json_batch") => $"{prefix}:{Guid.NewGuid()}";
 
     #region Standalone Batch Tests
@@ -60,7 +22,7 @@ public class JsonBatchTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
     public async Task JsonBatch_SetAndGet_ReturnsExpectedResults(GlideClient client)
     {
-        if (!await IsJsonModuleAvailable(client))
+        if (!await ModuleUtils.IsJsonModuleAvailableAsync(client))
         {
             Assert.Skip("JSON module is not available");
             return;
@@ -97,7 +59,7 @@ public class JsonBatchTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
     public async Task JsonBatch_NumericOperations_ReturnsExpectedResults(GlideClient client)
     {
-        if (!await IsJsonModuleAvailable(client))
+        if (!await ModuleUtils.IsJsonModuleAvailableAsync(client))
         {
             Assert.Skip("JSON module is not available");
             return;
@@ -133,7 +95,7 @@ public class JsonBatchTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
     public async Task JsonBatch_ArrayOperations_ReturnsExpectedResults(GlideClient client)
     {
-        if (!await IsJsonModuleAvailable(client))
+        if (!await ModuleUtils.IsJsonModuleAvailableAsync(client))
         {
             Assert.Skip("JSON module is not available");
             return;
@@ -167,7 +129,7 @@ public class JsonBatchTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
     public async Task JsonBatch_ObjectOperations_ReturnsExpectedResults(GlideClient client)
     {
-        if (!await IsJsonModuleAvailable(client))
+        if (!await ModuleUtils.IsJsonModuleAvailableAsync(client))
         {
             Assert.Skip("JSON module is not available");
             return;
@@ -201,7 +163,7 @@ public class JsonBatchTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
     public async Task JsonBatch_StringOperations_ReturnsExpectedResults(GlideClient client)
     {
-        if (!await IsJsonModuleAvailable(client))
+        if (!await ModuleUtils.IsJsonModuleAvailableAsync(client))
         {
             Assert.Skip("JSON module is not available");
             return;
@@ -235,7 +197,7 @@ public class JsonBatchTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
     public async Task JsonBatch_DeleteAndClear_ReturnsExpectedResults(GlideClient client)
     {
-        if (!await IsJsonModuleAvailable(client))
+        if (!await ModuleUtils.IsJsonModuleAvailableAsync(client))
         {
             Assert.Skip("JSON module is not available");
             return;
@@ -270,7 +232,7 @@ public class JsonBatchTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
     public async Task JsonBatch_Toggle_ReturnsExpectedResults(GlideClient client)
     {
-        if (!await IsJsonModuleAvailable(client))
+        if (!await ModuleUtils.IsJsonModuleAvailableAsync(client))
         {
             Assert.Skip("JSON module is not available");
             return;
@@ -303,7 +265,7 @@ public class JsonBatchTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
     public async Task JsonBatch_DebugOperations_ReturnsExpectedResults(GlideClient client)
     {
-        if (!await IsJsonModuleAvailable(client))
+        if (!await ModuleUtils.IsJsonModuleAvailableAsync(client))
         {
             Assert.Skip("JSON module is not available");
             return;
@@ -337,7 +299,7 @@ public class JsonBatchTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
     public async Task JsonBatch_MGet_ReturnsExpectedResults(GlideClient client)
     {
-        if (!await IsJsonModuleAvailable(client))
+        if (!await ModuleUtils.IsJsonModuleAvailableAsync(client))
         {
             Assert.Skip("JSON module is not available");
             return;
@@ -372,7 +334,7 @@ public class JsonBatchTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
     public async Task JsonBatch_SetWithCondition_ReturnsExpectedResults(GlideClient client)
     {
-        if (!await IsJsonModuleAvailable(client))
+        if (!await ModuleUtils.IsJsonModuleAvailableAsync(client))
         {
             Assert.Skip("JSON module is not available");
             return;
@@ -406,7 +368,7 @@ public class JsonBatchTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
     public async Task JsonBatch_ArrInsertAndTrim_ReturnsExpectedResults(GlideClient client)
     {
-        if (!await IsJsonModuleAvailable(client))
+        if (!await ModuleUtils.IsJsonModuleAvailableAsync(client))
         {
             Assert.Skip("JSON module is not available");
             return;
@@ -440,7 +402,7 @@ public class JsonBatchTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
     public async Task JsonBatch_ArrPop_ReturnsExpectedResults(GlideClient client)
     {
-        if (!await IsJsonModuleAvailable(client))
+        if (!await ModuleUtils.IsJsonModuleAvailableAsync(client))
         {
             Assert.Skip("JSON module is not available");
             return;
@@ -473,7 +435,7 @@ public class JsonBatchTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
     public async Task JsonBatch_Resp_ReturnsExpectedResults(GlideClient client)
     {
-        if (!await IsJsonModuleAvailable(client))
+        if (!await ModuleUtils.IsJsonModuleAvailableAsync(client))
         {
             Assert.Skip("JSON module is not available");
             return;
@@ -504,7 +466,7 @@ public class JsonBatchTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
     public async Task JsonBatch_AtomicTransaction_WorksCorrectly(GlideClient client)
     {
-        if (!await IsJsonModuleAvailable(client))
+        if (!await ModuleUtils.IsJsonModuleAvailableAsync(client))
         {
             Assert.Skip("JSON module is not available");
             return;
@@ -540,7 +502,7 @@ public class JsonBatchTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task JsonClusterBatch_SetAndGet_ReturnsExpectedResults(GlideClusterClient client)
     {
-        if (!await IsJsonModuleAvailable(client))
+        if (!await ModuleUtils.IsJsonModuleAvailableAsync(client))
         {
             Assert.Skip("JSON module is not available");
             return;
@@ -574,7 +536,7 @@ public class JsonBatchTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task JsonClusterBatch_ArrayAndObjectOps_ReturnsExpectedResults(GlideClusterClient client)
     {
-        if (!await IsJsonModuleAvailable(client))
+        if (!await ModuleUtils.IsJsonModuleAvailableAsync(client))
         {
             Assert.Skip("JSON module is not available");
             return;

@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Globalization;
+
 namespace Valkey.Glide.ServerModules;
 
 /// <summary>
@@ -88,10 +90,11 @@ public static partial class GlideJson
     /// <summary>
     /// Converts a ValkeyValue to GlideString for command arguments.
     /// </summary>
+    /// <exception cref="ArgumentException">Thrown when value is null.</exception>
     private static GlideString ToGlideString(ValkeyValue value)
     {
         if (value.IsNull)
-            return new GlideString(string.Empty);
+            throw new ArgumentException("Null ValkeyValue is not valid for command arguments", nameof(value));
         return new GlideString(value.ToString());
     }
 
@@ -313,12 +316,8 @@ public static partial class GlideJson
     /// <param name="path">The JSONPath or legacy path within the JSON document.</param>
     /// <returns>The number of paths deleted.</returns>
     /// <seealso href="https://valkey.io/commands/json.forget/"/>
-    public static async Task<long> ForgetAsync(BaseClient client, ValkeyKey key, ValkeyValue path)
-    {
-        GlideString[] args = [JsonForget, ToGlideString(key), ToGlideString(path)];
-        object? result = await ExecuteCommandAsync(client, args);
-        return (long)(result ?? 0L);
-    }
+    public static Task<long> ForgetAsync(BaseClient client, ValkeyKey key, ValkeyValue path)
+        => DelAsync(client, key, path);
 
     /// <summary>
     /// Alias for <see cref="DelAsync(BaseClient, ValkeyKey)"/>.
@@ -328,12 +327,8 @@ public static partial class GlideJson
     /// <param name="key">The key where the JSON document is stored.</param>
     /// <returns>The number of paths deleted (1 if the key existed, 0 otherwise).</returns>
     /// <seealso href="https://valkey.io/commands/json.forget/"/>
-    public static async Task<long> ForgetAsync(BaseClient client, ValkeyKey key)
-    {
-        GlideString[] args = [JsonForget, ToGlideString(key)];
-        object? result = await ExecuteCommandAsync(client, args);
-        return (long)(result ?? 0L);
-    }
+    public static Task<long> ForgetAsync(BaseClient client, ValkeyKey key)
+        => DelAsync(client, key);
 
     #endregion
 
@@ -423,7 +418,7 @@ public static partial class GlideJson
     /// <seealso href="https://valkey.io/commands/json.numincrby/"/>
     public static async Task<ValkeyValue> NumIncrByAsync(BaseClient client, ValkeyKey key, ValkeyValue path, double increment)
     {
-        GlideString[] args = [JsonNumIncrBy, ToGlideString(key), ToGlideString(path), increment.ToString()];
+        GlideString[] args = [JsonNumIncrBy, ToGlideString(key), ToGlideString(path), increment.ToString(CultureInfo.InvariantCulture)];
         object? result = await ExecuteCommandAsync(client, args);
         return ToValkeyValue(result);
     }
@@ -446,7 +441,7 @@ public static partial class GlideJson
     /// <seealso href="https://valkey.io/commands/json.nummultby/"/>
     public static async Task<ValkeyValue> NumMultByAsync(BaseClient client, ValkeyKey key, ValkeyValue path, double multiplier)
     {
-        GlideString[] args = [JsonNumMultBy, ToGlideString(key), ToGlideString(path), multiplier.ToString()];
+        GlideString[] args = [JsonNumMultBy, ToGlideString(key), ToGlideString(path), multiplier.ToString(CultureInfo.InvariantCulture)];
         object? result = await ExecuteCommandAsync(client, args);
         return ToValkeyValue(result);
     }

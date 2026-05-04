@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Globalization;
+
 using Valkey.Glide.Pipeline;
 
 namespace Valkey.Glide.ServerModules;
@@ -182,6 +184,37 @@ public static class GlideJsonBatch
 
     #endregion
 
+    #region JSON.FORGET
+
+    /// <summary>
+    /// Alias for <see cref="Del{T}(T, GlideString)"/>.
+    /// Adds a JSON.FORGET command to the batch.
+    /// Deletes the entire JSON document stored at key.
+    /// </summary>
+    /// <typeparam name="T">The batch type.</typeparam>
+    /// <param name="batch">The batch to add the command to.</param>
+    /// <param name="key">The key of the JSON document.</param>
+    /// <returns>The batch for chaining.</returns>
+    /// <remarks>Command Response - Number of paths deleted.</remarks>
+    public static T Forget<T>(T batch, GlideString key)
+        where T : BaseBatch<T>
+        => Del(batch, key);
+
+    /// <summary>
+    /// Alias for <see cref="Del{T}(T, GlideString, GlideString)"/>.
+    /// Adds a JSON.FORGET command to the batch with a path.
+    /// </summary>
+    /// <typeparam name="T">The batch type.</typeparam>
+    /// <param name="batch">The batch to add the command to.</param>
+    /// <param name="key">The key of the JSON document.</param>
+    /// <param name="path">The path within the JSON document.</param>
+    /// <returns>The batch for chaining.</returns>
+    public static T Forget<T>(T batch, GlideString key, GlideString path)
+        where T : BaseBatch<T>
+        => Del(batch, key, path);
+
+    #endregion
+
     #region JSON.CLEAR
 
     /// <summary>
@@ -252,7 +285,7 @@ public static class GlideJsonBatch
     /// <returns>The batch for chaining.</returns>
     public static T NumIncrBy<T>(T batch, GlideString key, GlideString path, double increment)
         where T : BaseBatch<T>
-        => batch.CustomCommand([GlideJson.JsonNumIncrBy, key, path, increment.ToString()]);
+        => batch.CustomCommand([GlideJson.JsonNumIncrBy, key, path, increment.ToString(CultureInfo.InvariantCulture)]);
 
     #endregion
 
@@ -270,7 +303,7 @@ public static class GlideJsonBatch
     /// <returns>The batch for chaining.</returns>
     public static T NumMultBy<T>(T batch, GlideString key, GlideString path, double multiplier)
         where T : BaseBatch<T>
-        => batch.CustomCommand([GlideJson.JsonNumMultBy, key, path, multiplier.ToString()]);
+        => batch.CustomCommand([GlideJson.JsonNumMultBy, key, path, multiplier.ToString(CultureInfo.InvariantCulture)]);
 
     #endregion
 

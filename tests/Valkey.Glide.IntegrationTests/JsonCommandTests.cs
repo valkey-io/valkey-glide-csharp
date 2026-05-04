@@ -14,45 +14,6 @@ public class JsonCommandTests(TestConfiguration config)
     public TestConfiguration Config { get; } = config;
 
     /// <summary>
-    /// Checks if the JSON module is available on the server.
-    /// Returns true if available, false otherwise.
-    /// </summary>
-    private static async Task<bool> IsJsonModuleAvailable(BaseClient client)
-    {
-        try
-        {
-            // Try a simple JSON.SET command to check if the module is loaded
-            string testKey = $"__json_module_check_{Guid.NewGuid()}";
-            GlideString[] args = ["JSON.SET", testKey, "$", "{}"];
-            if (client is GlideClient standaloneClient)
-            {
-                _ = await standaloneClient.CustomCommand(args);
-            }
-            else if (client is GlideClusterClient clusterClient)
-            {
-                _ = await clusterClient.CustomCommand(args);
-            }
-            // Clean up the test key
-            _ = await client.DeleteAsync(testKey);
-            return true;
-        }
-        catch (Errors.RequestException)
-        {
-            // JSON module is not available
-            return false;
-        }
-    }
-
-    /// <summary>
-    /// Skips the test if the JSON module is not available.
-    /// </summary>
-    private static async Task SkipIfJsonModuleNotAvailable(BaseClient client)
-    {
-        bool isAvailable = await IsJsonModuleAvailable(client);
-        Assert.SkipWhen(!isAvailable, "JSON module is not available on the server");
-    }
-
-    /// <summary>
     /// Generates a unique key with an optional prefix for test isolation.
     /// </summary>
     private static string GetUniqueKey(string prefix = "json") => $"{prefix}:{Guid.NewGuid()}";
@@ -68,7 +29,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task SetAsync_BasicSet_ReturnsOk(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\",\"age\":30}";
@@ -82,7 +43,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task SetAsync_WithGlideString_ReturnsOk(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string path = "$";
@@ -97,7 +58,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task SetAsync_OverwriteExistingValue_ReturnsOk(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string initialValue = "{\"name\":\"John\"}";
@@ -116,7 +77,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task SetAsync_WithNxCondition_KeyDoesNotExist_ReturnsOk(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\"}";
@@ -130,7 +91,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task SetAsync_WithNxCondition_KeyExists_ReturnsNull(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string initialValue = "{\"name\":\"John\"}";
@@ -146,7 +107,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task SetAsync_WithXxCondition_KeyExists_ReturnsOk(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string initialValue = "{\"name\":\"John\"}";
@@ -162,7 +123,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task SetAsync_WithXxCondition_KeyDoesNotExist_ReturnsNull(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\"}";
@@ -176,7 +137,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task SetAsync_SetNestedPath_ReturnsOk(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string initialValue = "{\"person\":{\"name\":\"John\"}}";
@@ -192,7 +153,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task SetAsync_SetArrayValue_ReturnsOk(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "[1, 2, 3, 4, 5]";
@@ -206,7 +167,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task SetAsync_SetScalarValues_ReturnsOk(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string keyString = GetUniqueKey("string");
         string keyNumber = GetUniqueKey("number");
@@ -238,7 +199,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task GetAsync_EntireDocument_ReturnsDocument(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\",\"age\":30}";
@@ -258,7 +219,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task GetAsync_WithJsonPath_ReturnsArray(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\",\"age\":30}";
@@ -275,7 +236,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task GetAsync_WithLegacyPath_ReturnsSingleValue(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\",\"age\":30}";
@@ -292,7 +253,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task GetAsync_WithMultiplePaths_ReturnsObject(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\",\"age\":30,\"city\":\"NYC\"}";
@@ -312,7 +273,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task GetAsync_WithJsonGetOptions_ReturnsFormattedJson(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\",\"age\":30}";
@@ -331,7 +292,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task GetAsync_WithPathsAndOptions_ReturnsFormattedJson(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"person\":{\"name\":\"John\",\"age\":30}}";
@@ -350,7 +311,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task GetAsync_NonExistentKey_ReturnsNull(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey("nonexistent");
 
@@ -363,7 +324,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task GetAsync_SetGetRoundTrip_ReturnsOriginalValue(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\",\"age\":30,\"active\":true,\"scores\":[1,2,3]}";
@@ -391,7 +352,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task GetAsync_WithGlideString_ReturnsDocument(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string path = "$";
@@ -410,7 +371,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task GetAsync_WithGlideStringPaths_ReturnsValues(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string path = "$";
@@ -428,7 +389,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task GetAsync_NestedObject_ReturnsNestedValue(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"person\":{\"name\":\"John\",\"address\":{\"city\":\"NYC\",\"zip\":\"10001\"}}}";
@@ -444,7 +405,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task GetAsync_ArrayElement_ReturnsElement(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"numbers\":[10,20,30,40,50]}";
@@ -460,7 +421,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task GetAsync_WildcardPath_ReturnsAllMatches(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"items\":[{\"name\":\"a\"},{\"name\":\"b\"},{\"name\":\"c\"}]}";
@@ -479,7 +440,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task GetAsync_ScalarValues_ReturnsCorrectTypes(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string keyString = GetUniqueKey("string");
         string keyNumber = GetUniqueKey("number");
@@ -515,7 +476,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task MGetAsync_MultipleExistingKeys_ReturnsAllValues(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         // Use hash tags for cluster compatibility
         string key1 = GetUniqueClusterKey("mget");
@@ -540,7 +501,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task MGetAsync_SomeNonExistentKeys_ReturnsNullForMissing(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         // Use hash tags for cluster compatibility
         string key1 = GetUniqueClusterKey("mget");
@@ -564,7 +525,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task MGetAsync_WithJsonPath_ReturnsArrays(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         // Use hash tags for cluster compatibility
         string key1 = GetUniqueClusterKey("mget");
@@ -589,7 +550,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task MGetAsync_WithLegacyPath_ReturnsSingleValues(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         // Use hash tags for cluster compatibility
         string key1 = GetUniqueClusterKey("mget");
@@ -611,7 +572,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task MGetAsync_WithGlideString_ReturnsValues(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         // Use hash tags for cluster compatibility
         string key1 = GetUniqueClusterKey("mget");
@@ -636,7 +597,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task MGetAsync_PathDoesNotExist_ReturnsNullForThoseKeys(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         // Use hash tags for cluster compatibility
         string key1 = GetUniqueClusterKey("mget");
@@ -658,7 +619,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task MGetAsync_RootPath_ReturnsEntireDocuments(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         // Use hash tags for cluster compatibility
         string key1 = GetUniqueClusterKey("mget");
@@ -688,7 +649,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task DelAsync_EntireDocument_ReturnsOne(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\",\"age\":30}";
@@ -712,7 +673,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task DelAsync_WithPath_DeletesSpecificElement(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\",\"age\":30,\"city\":\"NYC\"}";
@@ -739,7 +700,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task DelAsync_NonExistentKey_ReturnsZero(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey("nonexistent");
 
@@ -752,7 +713,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task DelAsync_NonExistentPath_ReturnsZero(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\"}";
@@ -772,7 +733,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task DelAsync_WithGlideString_DeletesDocument(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string path = "$";
@@ -793,7 +754,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task DelAsync_WithGlideStringPath_DeletesSpecificElement(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string path = "$";
@@ -815,7 +776,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task DelAsync_MultipleMatchingPaths_ReturnsCount(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"items\":[{\"name\":\"a\"},{\"name\":\"b\"},{\"name\":\"c\"}]}";
@@ -840,7 +801,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task ForgetAsync_EntireDocument_ReturnsOne(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\",\"age\":30}";
@@ -864,7 +825,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task ForgetAsync_WithPath_DeletesSpecificElement(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\",\"age\":30,\"city\":\"NYC\"}";
@@ -891,7 +852,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task ForgetAsync_NonExistentKey_ReturnsZero(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey("nonexistent");
 
@@ -904,7 +865,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task ForgetAsync_BehavesIdenticallyToDel(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string keyDel = GetUniqueKey("del");
         string keyForget = GetUniqueKey("forget");
@@ -935,7 +896,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task ForgetAsync_WithGlideString_DeletesDocument(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string path = "$";
@@ -956,7 +917,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task ForgetAsync_WithGlideStringPath_DeletesSpecificElement(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string path = "$";
@@ -982,7 +943,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task ClearAsync_Array_EmptiesArray(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"items\":[1,2,3,4,5]}";
@@ -1009,7 +970,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task ClearAsync_Object_RemovesAllKeys(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"data\":{\"name\":\"John\",\"age\":30,\"city\":\"NYC\"}}";
@@ -1036,7 +997,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task ClearAsync_Number_SetsToZero(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"count\":42}";
@@ -1063,7 +1024,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task ClearAsync_Boolean_SetsToFalse(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"active\":true}";
@@ -1091,7 +1052,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task ClearAsync_String_NotCleared(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\"}";
@@ -1119,7 +1080,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task ClearAsync_NonExistentKey_ThrowsException(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey("nonexistent");
 
@@ -1134,7 +1095,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task ClearAsync_WithGlideString_ClearsArray(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string path = "$";
@@ -1162,7 +1123,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task ClearAsync_RootPath_ClearsEntireDocument(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\",\"items\":[1,2,3],\"count\":5}";
@@ -1189,7 +1150,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task ClearAsync_MultipleMatchingPaths_ReturnsCount(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"items\":[{\"data\":[1,2]},{\"data\":[3,4]},{\"data\":[5,6]}]}";
@@ -1217,7 +1178,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task ClearAsync_WithoutPath_ClearsRoot(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\",\"age\":30}";
@@ -1244,7 +1205,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task ClearAsync_NonExistentPath_ReturnsZero(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\"}";
@@ -1268,7 +1229,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TypeAsync_ObjectType_ReturnsObject(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\",\"age\":30}";
@@ -1284,7 +1245,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TypeAsync_ArrayType_ReturnsArray(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "[1, 2, 3, 4, 5]";
@@ -1300,7 +1261,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TypeAsync_StringType_ReturnsString(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "\"hello world\"";
@@ -1316,7 +1277,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TypeAsync_NumberType_ReturnsNumberOrInteger(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string keyInteger = GetUniqueKey("integer");
         string keyFloat = GetUniqueKey("float");
@@ -1342,7 +1303,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TypeAsync_BooleanType_ReturnsBoolean(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string keyTrue = GetUniqueKey("true");
         string keyFalse = GetUniqueKey("false");
@@ -1365,7 +1326,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TypeAsync_NullType_ReturnsNull(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "null";
@@ -1381,7 +1342,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TypeAsync_WithJsonPath_ReturnsArrayOfTypes(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\",\"age\":30,\"active\":true}";
@@ -1442,7 +1403,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TypeAsync_WithLegacyPath_ReturnsSingleType(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\",\"age\":30}";
@@ -1459,7 +1420,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TypeAsync_NonExistentKey_ReturnsNull(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey("nonexistent");
 
@@ -1472,7 +1433,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TypeAsync_WithGlideString_ReturnsType(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string path = "$";
@@ -1520,7 +1481,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TypeAsync_NestedTypes_ReturnsCorrectTypes(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"person\":{\"name\":\"John\",\"scores\":[90,85,92]},\"active\":true}";
@@ -1562,7 +1523,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TypeAsync_WildcardPath_ReturnsMultipleTypes(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"items\":[{\"value\":\"text\"},{\"value\":42},{\"value\":true}]}";
@@ -1589,7 +1550,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task NumIncrByAsync_IncrementInteger_ReturnsNewValue(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"count\":10}";
@@ -1606,7 +1567,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task NumIncrByAsync_IncrementFloat_ReturnsNewValue(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"price\":10.5}";
@@ -1623,7 +1584,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task NumIncrByAsync_DecrementWithNegativeValue_ReturnsNewValue(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"count\":20}";
@@ -1640,7 +1601,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task NumIncrByAsync_WithJsonPath_ReturnsArray(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"a\":1,\"b\":2,\"nested\":{\"c\":3}}";
@@ -1660,7 +1621,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task NumIncrByAsync_WithLegacyPath_ReturnsSingleValue(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"count\":100}";
@@ -1680,7 +1641,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task NumIncrByAsync_NonNumericValue_ThrowsError(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\"}";
@@ -1695,7 +1656,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task NumIncrByAsync_WithGlideString_ReturnsNewValue(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string path = "$";
@@ -1713,7 +1674,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task NumIncrByAsync_MultipleNumericValues_ReturnsArrayOfResults(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"items\":[{\"count\":1},{\"count\":2},{\"count\":3}]}";
@@ -1735,7 +1696,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task NumIncrByAsync_NonExistentPath_ThrowsError(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"count\":10}";
@@ -1750,7 +1711,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task NumIncrByAsync_IncrementByZero_ReturnsSameValue(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"count\":42}";
@@ -1766,7 +1727,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task NumIncrByAsync_NegativeToPositive_ReturnsCorrectValue(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"value\":-10}";
@@ -1786,7 +1747,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task NumMultByAsync_MultiplyInteger_ReturnsNewValue(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"count\":10}";
@@ -1803,7 +1764,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task NumMultByAsync_MultiplyFloat_ReturnsNewValue(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"price\":10.5}";
@@ -1820,7 +1781,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task NumMultByAsync_MultiplyByZero_ReturnsZero(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"count\":42}";
@@ -1836,7 +1797,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task NumMultByAsync_MultiplyByNegative_ReturnsNegativeValue(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"count\":10}";
@@ -1853,7 +1814,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task NumMultByAsync_WithJsonPath_ReturnsArray(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"a\":2,\"b\":3,\"nested\":{\"c\":4}}";
@@ -1870,7 +1831,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task NumMultByAsync_WithLegacyPath_ReturnsSingleValue(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"count\":5}";
@@ -1890,7 +1851,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task NumMultByAsync_NonNumericValue_ThrowsError(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\"}";
@@ -1905,7 +1866,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task NumMultByAsync_WithGlideString_ReturnsNewValue(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string path = "$";
@@ -1927,7 +1888,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StrAppendAsync_AppendToString_ReturnsNewLength(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"greeting\":\"Hello\"}";
@@ -1947,7 +1908,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StrAppendAsync_WithJsonPath_ReturnsArrayOfLengths(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"a\":\"foo\",\"nested\":{\"b\":\"bar\"}}";
@@ -1966,7 +1927,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StrAppendAsync_WithLegacyPath_ReturnsSingleLength(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\"}";
@@ -1987,7 +1948,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StrAppendAsync_NonStringValue_ThrowsError(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"count\":42}";
@@ -2002,7 +1963,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StrAppendAsync_WithGlideString_ReturnsNewLength(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string path = "$";
@@ -2024,7 +1985,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StrAppendAsync_AppendEmptyString_ReturnsSameLength(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"text\":\"Hello\"}";
@@ -2043,7 +2004,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StrAppendAsync_RootStringValue_ReturnsNewLength(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         // Set a root-level string value
@@ -2064,7 +2025,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StrAppendAsync_MultipleStringValues_ReturnsArrayOfLengths(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"items\":[{\"name\":\"a\"},{\"name\":\"bb\"},{\"name\":\"ccc\"}]}";
@@ -2088,7 +2049,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StrAppendAsync_NonExistentPath_ThrowsError(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\"}";
@@ -2107,7 +2068,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StrLenAsync_GetStringLength_ReturnsLength(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"greeting\":\"Hello\"}";
@@ -2126,7 +2087,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StrLenAsync_WithJsonPath_ReturnsArrayOfLengths(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"a\":\"foo\",\"nested\":{\"a\":\"hello\"}}";
@@ -2148,7 +2109,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StrLenAsync_WithLegacyPath_ReturnsSingleLength(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\"}";
@@ -2168,7 +2129,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StrLenAsync_NonExistentKey_ReturnsNull(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey("nonexistent");
 
@@ -2181,7 +2142,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StrLenAsync_WithGlideString_ReturnsLength(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string path = "$";
@@ -2202,7 +2163,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StrLenAsync_EmptyString_ReturnsZero(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"empty\":\"\"}";
@@ -2221,7 +2182,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StrLenAsync_RootStringValue_ReturnsLength(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "\"Hello World\"";
@@ -2240,7 +2201,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StrLenAsync_NonStringValue_ReturnsNullInArray(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\",\"age\":30}";
@@ -2262,7 +2223,7 @@ public class JsonCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StrLenAsync_MultipleStringValues_ReturnsArrayOfLengths(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"items\":[{\"name\":\"a\"},{\"name\":\"bb\"},{\"name\":\"ccc\"}]}";

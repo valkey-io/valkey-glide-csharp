@@ -13,35 +13,6 @@ public class JsonObjectCommandTests(TestConfiguration config)
 {
     public TestConfiguration Config { get; } = config;
 
-    private static async Task<bool> IsJsonModuleAvailable(BaseClient client)
-    {
-        try
-        {
-            string testKey = $"__json_module_check_{Guid.NewGuid()}";
-            GlideString[] args = ["JSON.SET", testKey, "$", "{}"];
-            if (client is GlideClient standaloneClient)
-            {
-                _ = await standaloneClient.CustomCommand(args);
-            }
-            else if (client is GlideClusterClient clusterClient)
-            {
-                _ = await clusterClient.CustomCommand(args);
-            }
-            _ = await client.DeleteAsync(testKey);
-            return true;
-        }
-        catch (Errors.RequestException)
-        {
-            return false;
-        }
-    }
-
-    private static async Task SkipIfJsonModuleNotAvailable(BaseClient client)
-    {
-        bool isAvailable = await IsJsonModuleAvailable(client);
-        Assert.SkipWhen(!isAvailable, "JSON module is not available on the server");
-    }
-
     private static string GetUniqueKey(string prefix = "json") => $"{prefix}:{Guid.NewGuid()}";
 
     #region JSON.OBJLEN Tests
@@ -50,7 +21,7 @@ public class JsonObjectCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task ObjLenAsync_ValidObject_ReturnsKeyCount(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"a\":1,\"b\":2,\"c\":3}";
@@ -68,7 +39,7 @@ public class JsonObjectCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task ObjLenAsync_EmptyObject_ReturnsZero(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{}";
@@ -90,7 +61,7 @@ public class JsonObjectCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task ObjKeysAsync_ValidObject_ReturnsKeys(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\",\"age\":30}";
@@ -114,7 +85,7 @@ public class JsonObjectCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task ToggleAsync_TrueToFalse_ReturnsFalse(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"active\":true}";
@@ -132,7 +103,7 @@ public class JsonObjectCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task ToggleAsync_FalseToTrue_ReturnsTrue(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"active\":false}";
@@ -154,7 +125,7 @@ public class JsonObjectCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task DebugMemoryAsync_ValidDocument_ReturnsMemorySize(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\",\"age\":30}";
@@ -175,7 +146,7 @@ public class JsonObjectCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task DebugFieldsAsync_ValidDocument_ReturnsFieldCount(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\",\"age\":30}";
@@ -196,7 +167,7 @@ public class JsonObjectCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task RespAsync_ValidDocument_ReturnsRespFormat(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\"}";

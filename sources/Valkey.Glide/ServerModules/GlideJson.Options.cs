@@ -2,6 +2,9 @@
 
 namespace Valkey.Glide.ServerModules;
 
+/// <summary>
+/// Options and enums for JSON commands.
+/// </summary>
 public static partial class GlideJson
 {
     /// <summary>

@@ -13,38 +13,6 @@ public class JsonArrayCommandTests(TestConfiguration config)
 {
     public TestConfiguration Config { get; } = config;
 
-    /// <summary>
-    /// Checks if the JSON module is available on the server.
-    /// </summary>
-    private static async Task<bool> IsJsonModuleAvailable(BaseClient client)
-    {
-        try
-        {
-            string testKey = $"__json_module_check_{Guid.NewGuid()}";
-            GlideString[] args = ["JSON.SET", testKey, "$", "{}"];
-            if (client is GlideClient standaloneClient)
-            {
-                _ = await standaloneClient.CustomCommand(args);
-            }
-            else if (client is GlideClusterClient clusterClient)
-            {
-                _ = await clusterClient.CustomCommand(args);
-            }
-            _ = await client.DeleteAsync(testKey);
-            return true;
-        }
-        catch (Errors.RequestException)
-        {
-            return false;
-        }
-    }
-
-    private static async Task SkipIfJsonModuleNotAvailable(BaseClient client)
-    {
-        bool isAvailable = await IsJsonModuleAvailable(client);
-        Assert.SkipWhen(!isAvailable, "JSON module is not available on the server");
-    }
-
     private static string GetUniqueKey(string prefix = "json") => $"{prefix}:{Guid.NewGuid()}";
 
     #region JSON.ARRAPPEND Tests
@@ -53,7 +21,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task ArrAppendAsync_BasicAppend_ReturnsNewLength(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"arr\":[1,2,3]}";
@@ -71,7 +39,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task ArrAppendAsync_MultipleArrays_ReturnsArrayOfLengths(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"a\":[1],\"b\":[2,3]}";
@@ -92,7 +60,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task ArrInsertAsync_InsertAtIndex_ReturnsNewLength(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"arr\":[1,2,3]}";
@@ -110,7 +78,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task ArrInsertAsync_NegativeIndex_InsertsFromEnd(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"arr\":[1,2,3]}";
@@ -132,7 +100,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task ArrIndexAsync_ValueExists_ReturnsIndex(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"arr\":[1,2,3,4,5]}";
@@ -150,7 +118,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task ArrIndexAsync_ValueNotFound_ReturnsMinusOne(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"arr\":[1,2,3]}";
@@ -168,7 +136,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task ArrIndexAsync_WithRangeOptions_SearchesInRange(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"arr\":[1,2,3,2,5]}";
@@ -191,7 +159,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task ArrLenAsync_ValidArray_ReturnsLength(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"arr\":[1,2,3,4,5]}";
@@ -209,7 +177,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task ArrLenAsync_EmptyArray_ReturnsZero(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"arr\":[]}";
@@ -231,7 +199,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task ArrPopAsync_PopLastElement_ReturnsElement(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"arr\":[1,2,3]}";
@@ -249,7 +217,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task ArrPopAsync_PopAtIndex_ReturnsElement(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"arr\":[1,2,3]}";
@@ -271,7 +239,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task ArrTrimAsync_TrimArray_ReturnsNewLength(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"arr\":[1,2,3,4,5]}";
@@ -289,7 +257,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task ArrTrimAsync_TrimToEmpty_ReturnsZero(BaseClient client)
     {
-        await SkipIfJsonModuleNotAvailable(client);
+        await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey();
         string jsonValue = "{\"arr\":[1,2,3]}";
