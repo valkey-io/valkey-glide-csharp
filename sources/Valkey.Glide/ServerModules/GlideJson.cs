@@ -174,7 +174,7 @@ public static partial class GlideJson
     /// <param name="paths">The JSONPath or legacy path(s) within the JSON document.</param>
     /// <returns>The JSON value(s), or <see cref="ValkeyValue.Null"/> if the key does not exist.</returns>
     /// <seealso href="https://valkey.io/commands/json.get/"/>
-    public static async Task<ValkeyValue> GetAsync(BaseClient client, ValkeyKey key, ValkeyValue[] paths)
+    public static async Task<ValkeyValue> GetAsync(BaseClient client, ValkeyKey key, IEnumerable<ValkeyValue> paths)
     {
         GlideString[] glidePaths = [.. paths.Select(p => ToGlideString(p))];
         GlideString[] args = BuildGetArgs(ToGlideString(key), glidePaths, null);
@@ -206,7 +206,7 @@ public static partial class GlideJson
     /// <param name="options">Formatting options for the JSON output.</param>
     /// <returns>The formatted JSON value(s), or <see cref="ValkeyValue.Null"/> if the key does not exist.</returns>
     /// <seealso href="https://valkey.io/commands/json.get/"/>
-    public static async Task<ValkeyValue> GetAsync(BaseClient client, ValkeyKey key, ValkeyValue[] paths, GetOptions options)
+    public static async Task<ValkeyValue> GetAsync(BaseClient client, ValkeyKey key, IEnumerable<ValkeyValue> paths, GetOptions options)
     {
         GlideString[] glidePaths = [.. paths.Select(p => ToGlideString(p))];
         GlideString[] args = BuildGetArgs(ToGlideString(key), glidePaths, options);
@@ -243,14 +243,14 @@ public static partial class GlideJson
     /// <param name="path">The JSONPath or legacy path within the JSON documents.</param>
     /// <returns>An array of JSON values, one for each key. Returns null for keys that don't exist or don't have the path.</returns>
     /// <seealso href="https://valkey.io/commands/json.mget/"/>
-    public static async Task<ValkeyValue[]> MGetAsync(BaseClient client, ValkeyKey[] keys, ValkeyValue path)
+    public static async Task<ValkeyValue[]> MGetAsync(BaseClient client, IEnumerable<ValkeyKey> keys, ValkeyValue path)
     {
         GlideString[] args = BuildMGetArgs(keys, ToGlideString(path));
         object? result = await ExecuteCommandAsync(client, args);
         return ConvertToValkeyValueArray(result);
     }
 
-    private static GlideString[] BuildMGetArgs(ValkeyKey[] keys, GlideString path)
+    private static GlideString[] BuildMGetArgs(IEnumerable<ValkeyKey> keys, GlideString path)
     {
         List<GlideString> args = [JsonMGet];
         foreach (ValkeyKey key in keys)

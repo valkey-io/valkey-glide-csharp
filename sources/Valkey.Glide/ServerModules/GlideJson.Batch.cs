@@ -107,7 +107,7 @@ public static class GlideJsonBatch
     /// <param name="key">The key of the JSON document.</param>
     /// <param name="paths">The paths within the JSON document.</param>
     /// <returns>The batch for chaining.</returns>
-    public static T Get<T>(T batch, GlideString key, GlideString[] paths)
+    public static T Get<T>(T batch, GlideString key, IEnumerable<GlideString> paths)
         where T : BaseBatch<T>
     {
         List<GlideString> args = [GlideJson.JsonGet, key];
@@ -144,7 +144,7 @@ public static class GlideJsonBatch
     /// <param name="keys">The keys of the JSON documents.</param>
     /// <param name="path">The path within the JSON documents.</param>
     /// <returns>The batch for chaining.</returns>
-    public static T MGet<T>(T batch, GlideString[] keys, GlideString path)
+    public static T MGet<T>(T batch, IEnumerable<GlideString> keys, GlideString path)
         where T : BaseBatch<T>
     {
         List<GlideString> args = [GlideJson.JsonMGet];
@@ -354,7 +354,7 @@ public static class GlideJsonBatch
     /// <param name="path">The path within the JSON document.</param>
     /// <param name="values">The JSON values to append.</param>
     /// <returns>The batch for chaining.</returns>
-    public static T ArrAppend<T>(T batch, GlideString key, GlideString path, GlideString[] values)
+    public static T ArrAppend<T>(T batch, GlideString key, GlideString path, IEnumerable<GlideString> values)
         where T : BaseBatch<T>
     {
         List<GlideString> args = [GlideJson.JsonArrAppend, key, path];
@@ -377,7 +377,7 @@ public static class GlideJsonBatch
     /// <param name="index">The array index before which to insert.</param>
     /// <param name="values">The JSON values to insert.</param>
     /// <returns>The batch for chaining.</returns>
-    public static T ArrInsert<T>(T batch, GlideString key, GlideString path, long index, GlideString[] values)
+    public static T ArrInsert<T>(T batch, GlideString key, GlideString path, long index, IEnumerable<GlideString> values)
         where T : BaseBatch<T>
     {
         List<GlideString> args = [GlideJson.JsonArrInsert, key, path, index.ToString()];
