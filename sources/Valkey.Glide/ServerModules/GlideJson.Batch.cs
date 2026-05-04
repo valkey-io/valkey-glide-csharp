@@ -13,18 +13,18 @@ namespace Valkey.Glide.ServerModules;
 /// <remarks>
 /// This class provides static methods for adding JSON commands to batches, following the same
 /// pattern as the Java client's JsonBatch class.
-/// </remarks>
 /// <example>
 /// <code>
-/// Batch batch = new Batch(true);
+/// var batch = new Batch(true);
 /// GlideJsonBatch.Set(batch, "doc", ".", "{\"a\": 1.0, \"b\": 2}");
 /// GlideJsonBatch.Get(batch, "doc");
-/// object?[]? result = await client.Exec(batch, false);
+/// var result = await client.Exec(batch, false);
 /// // result[0] == "OK" (result of Set)
 /// // result[1] == "{\"a\": 1.0, \"b\": 2}" (result of Get)
 /// </code>
 /// </example>
-/// <seealso href="https://valkey.io/commands/?group=json">Valkey JSON Commands</seealso>
+/// </remarks>
+/// <seealso href="https://valkey.io/commands/?group=json">Valkey commands – JSON</seealso>
 public static class GlideJsonBatch
 {
     // Use command constants from GlideJson to avoid duplication

@@ -10,7 +10,7 @@ public static partial class GlideJson
     /// <summary>
     /// Specifies the condition for JSON.SET command execution.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/json.set/"/>
+    /// <seealso href="https://valkey.io/commands/json.set/">Valkey commands – JSON.SET</seealso>
     public enum SetCondition
     {
         /// <summary>
@@ -33,9 +33,7 @@ public static partial class GlideJson
     /// Options for formatting JSON.GET command output.
     /// </summary>
     /// <remarks>
-    /// <para>
     /// These options control the formatting of the JSON output returned by the JSON.GET command.
-    /// </para>
     /// <example>
     /// <code>
     /// // Using object initializer
@@ -51,7 +49,7 @@ public static partial class GlideJson
     /// </code>
     /// </example>
     /// </remarks>
-    /// <seealso href="https://valkey.io/commands/json.get/">valkey.io</seealso>
+    /// <seealso href="https://valkey.io/commands/json.get/">Valkey commands – JSON.GET</seealso>
     public sealed class GetOptions
     {
         /// <summary>
@@ -115,10 +113,8 @@ public static partial class GlideJson
     /// Options for JSON.ARRINDEX command specifying search range.
     /// </summary>
     /// <remarks>
-    /// <para>
     /// These options control the search range for the JSON.ARRINDEX command.
     /// The start index is inclusive and the end index is exclusive.
-    /// </para>
     /// <example>
     /// <code>
     /// // Using factory methods (recommended)
@@ -131,7 +127,7 @@ public static partial class GlideJson
     /// </code>
     /// </example>
     /// </remarks>
-    /// <seealso href="https://valkey.io/commands/json.arrindex/">valkey.io</seealso>
+    /// <seealso href="https://valkey.io/commands/json.arrindex/">Valkey commands – JSON.ARRINDEX</seealso>
     public sealed class ArrIndexRange
     {
         /// <summary>

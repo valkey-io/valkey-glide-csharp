@@ -16,9 +16,17 @@ public static partial class GlideJson
     /// <param name="key">The key where the JSON document is stored.</param>
     /// <param name="path">The JSONPath or legacy path within the JSON document.</param>
     /// <returns>
-    /// An array of key counts for each matching path. Returns null for non-object matches.
+    /// An array of key counts for each matching path. Returns <see langword="null"/> for non-object matches.
     /// </returns>
-    /// <seealso href="https://valkey.io/commands/json.objlen/"/>
+    /// <seealso href="https://valkey.io/commands/json.objlen/">Valkey commands – JSON.OBJLEN</seealso>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await GlideJson.SetAsync(client, "mykey", "$", "{\"a\":{\"x\":1,\"y\":2},\"b\":{\"z\":3}}");
+    /// var counts = await GlideJson.ObjLenAsync(client, "mykey", "$.*");  // [2, 1]
+    /// </code>
+    /// </example>
+    /// </remarks>
     public static async Task<long?[]?> ObjLenAsync(BaseClient client, ValkeyKey key, ValkeyValue path)
     {
         GlideString[] args = [JsonObjLen, ToGlideString(key), ToGlideString(path)];
@@ -31,8 +39,16 @@ public static partial class GlideJson
     /// </summary>
     /// <param name="client">The Glide client to use for the command.</param>
     /// <param name="key">The key where the JSON document is stored.</param>
-    /// <returns>The key count at the root path, or null if the key does not exist or root is not an object.</returns>
-    /// <seealso href="https://valkey.io/commands/json.objlen/"/>
+    /// <returns>The key count at the root path, or <see langword="null"/> if the key does not exist or root is not an object.</returns>
+    /// <seealso href="https://valkey.io/commands/json.objlen/">Valkey commands – JSON.OBJLEN</seealso>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await GlideJson.SetAsync(client, "mykey", "$", "{\"a\":1,\"b\":2}");
+    /// var count = await GlideJson.ObjLenAsync(client, "mykey");  // 2
+    /// </code>
+    /// </example>
+    /// </remarks>
     public static async Task<long?> ObjLenAsync(BaseClient client, ValkeyKey key)
     {
         GlideString[] args = [JsonObjLen, ToGlideString(key)];
@@ -51,9 +67,17 @@ public static partial class GlideJson
     /// <param name="key">The key where the JSON document is stored.</param>
     /// <param name="path">The JSONPath or legacy path within the JSON document.</param>
     /// <returns>
-    /// An array of arrays of key names for each matching path. Returns null for non-object matches.
+    /// An array of arrays of key names for each matching path. Returns <see langword="null"/> for non-object matches.
     /// </returns>
-    /// <seealso href="https://valkey.io/commands/json.objkeys/"/>
+    /// <seealso href="https://valkey.io/commands/json.objkeys/">Valkey commands – JSON.OBJKEYS</seealso>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await GlideJson.SetAsync(client, "mykey", "$", "{\"a\":{\"x\":1},\"b\":{\"y\":2}}");
+    /// var keys = await GlideJson.ObjKeysAsync(client, "mykey", "$.*");  // [["x"], ["y"]]
+    /// </code>
+    /// </example>
+    /// </remarks>
     public static async Task<ValkeyValue[]?[]?> ObjKeysAsync(BaseClient client, ValkeyKey key, ValkeyValue path)
     {
         GlideString[] args = [JsonObjKeys, ToGlideString(key), ToGlideString(path)];
@@ -86,8 +110,16 @@ public static partial class GlideJson
     /// </summary>
     /// <param name="client">The Glide client to use for the command.</param>
     /// <param name="key">The key where the JSON document is stored.</param>
-    /// <returns>An array of key names at the root path, or null if the key does not exist or root is not an object.</returns>
-    /// <seealso href="https://valkey.io/commands/json.objkeys/"/>
+    /// <returns>An array of key names at the root path, or <see langword="null"/> if the key does not exist or root is not an object.</returns>
+    /// <seealso href="https://valkey.io/commands/json.objkeys/">Valkey commands – JSON.OBJKEYS</seealso>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await GlideJson.SetAsync(client, "mykey", "$", "{\"a\":1,\"b\":2}");
+    /// var keys = await GlideJson.ObjKeysAsync(client, "mykey");  // ["a", "b"]
+    /// </code>
+    /// </example>
+    /// </remarks>
     public static async Task<string[]?> ObjKeysAsync(BaseClient client, ValkeyKey key)
     {
         GlideString[] args = [JsonObjKeys, ToGlideString(key)];
@@ -110,9 +142,17 @@ public static partial class GlideJson
     /// <param name="key">The key where the JSON document is stored.</param>
     /// <param name="path">The JSONPath or legacy path within the JSON document.</param>
     /// <returns>
-    /// An array of toggled boolean values for each matching path. Returns null for non-boolean matches.
+    /// An array of toggled boolean values for each matching path. Returns <see langword="null"/> for non-boolean matches.
     /// </returns>
-    /// <seealso href="https://valkey.io/commands/json.toggle/"/>
+    /// <seealso href="https://valkey.io/commands/json.toggle/">Valkey commands – JSON.TOGGLE</seealso>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await GlideJson.SetAsync(client, "mykey", "$", "{\"a\":true,\"b\":false}");
+    /// var toggled = await GlideJson.ToggleAsync(client, "mykey", "$.*");  // [false, true]
+    /// </code>
+    /// </example>
+    /// </remarks>
     public static async Task<bool?[]?> ToggleAsync(BaseClient client, ValkeyKey key, ValkeyValue path)
     {
         GlideString[] args = [JsonToggle, ToGlideString(key), ToGlideString(path)];
@@ -143,7 +183,16 @@ public static partial class GlideJson
     /// <returns>
     /// An array of memory sizes in bytes for each matching path.
     /// </returns>
-    /// <seealso href="https://valkey.io/commands/json.debug/"/>
+    /// <seealso href="https://valkey.io/commands/json.debug/">Valkey commands – JSON.DEBUG</seealso>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await GlideJson.SetAsync(client, "mykey", "$", "{\"a\":\"hello\"}");
+    /// var memory = await GlideJson.DebugMemoryAsync(client, "mykey", "$");
+    /// Console.WriteLine($"Memory usage: {memory?[0]} bytes");
+    /// </code>
+    /// </example>
+    /// </remarks>
     public static async Task<long?[]?> DebugMemoryAsync(BaseClient client, ValkeyKey key, ValkeyValue path)
     {
         GlideString[] args = [JsonDebug, ValkeyLiterals.MEMORY, ToGlideString(key), ToGlideString(path)];
@@ -156,8 +205,17 @@ public static partial class GlideJson
     /// </summary>
     /// <param name="client">The Glide client to use for the command.</param>
     /// <param name="key">The key where the JSON document is stored.</param>
-    /// <returns>The memory size in bytes at the root path, or null if the key does not exist.</returns>
-    /// <seealso href="https://valkey.io/commands/json.debug/"/>
+    /// <returns>The memory size in bytes at the root path, or <see langword="null"/> if the key does not exist.</returns>
+    /// <seealso href="https://valkey.io/commands/json.debug/">Valkey commands – JSON.DEBUG</seealso>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await GlideJson.SetAsync(client, "mykey", "$", "{\"a\":1}");
+    /// var memory = await GlideJson.DebugMemoryAsync(client, "mykey");
+    /// Console.WriteLine($"Memory usage: {memory} bytes");
+    /// </code>
+    /// </example>
+    /// </remarks>
     public static async Task<long?> DebugMemoryAsync(BaseClient client, ValkeyKey key)
     {
         GlideString[] args = [JsonDebug, ValkeyLiterals.MEMORY, ToGlideString(key)];
@@ -178,7 +236,15 @@ public static partial class GlideJson
     /// <returns>
     /// An array of field counts for each matching path.
     /// </returns>
-    /// <seealso href="https://valkey.io/commands/json.debug/"/>
+    /// <seealso href="https://valkey.io/commands/json.debug/">Valkey commands – JSON.DEBUG</seealso>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await GlideJson.SetAsync(client, "mykey", "$", "{\"a\":{\"x\":1,\"y\":2}}");
+    /// var fields = await GlideJson.DebugFieldsAsync(client, "mykey", "$.a");  // [2]
+    /// </code>
+    /// </example>
+    /// </remarks>
     public static async Task<long?[]?> DebugFieldsAsync(BaseClient client, ValkeyKey key, ValkeyValue path)
     {
         GlideString[] args = [JsonDebug, ValkeyLiterals.FIELDS, ToGlideString(key), ToGlideString(path)];
@@ -191,8 +257,16 @@ public static partial class GlideJson
     /// </summary>
     /// <param name="client">The Glide client to use for the command.</param>
     /// <param name="key">The key where the JSON document is stored.</param>
-    /// <returns>The field count at the root path, or null if the key does not exist.</returns>
-    /// <seealso href="https://valkey.io/commands/json.debug/"/>
+    /// <returns>The field count at the root path, or <see langword="null"/> if the key does not exist.</returns>
+    /// <seealso href="https://valkey.io/commands/json.debug/">Valkey commands – JSON.DEBUG</seealso>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await GlideJson.SetAsync(client, "mykey", "$", "{\"a\":1,\"b\":2}");
+    /// var fields = await GlideJson.DebugFieldsAsync(client, "mykey");  // 2
+    /// </code>
+    /// </example>
+    /// </remarks>
     public static async Task<long?> DebugFieldsAsync(BaseClient client, ValkeyKey key)
     {
         GlideString[] args = [JsonDebug, ValkeyLiterals.FIELDS, ToGlideString(key)];
@@ -211,7 +285,15 @@ public static partial class GlideJson
     /// <param name="key">The key where the JSON document is stored.</param>
     /// <param name="path">The JSONPath or legacy path within the JSON document.</param>
     /// <returns>The JSON value in RESP format.</returns>
-    /// <seealso href="https://valkey.io/commands/json.resp/"/>
+    /// <seealso href="https://valkey.io/commands/json.resp/">Valkey commands – JSON.RESP</seealso>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await GlideJson.SetAsync(client, "mykey", "$", "{\"a\":1}");
+    /// var resp = await GlideJson.RespAsync(client, "mykey", "$");
+    /// </code>
+    /// </example>
+    /// </remarks>
     public static async Task<ValkeyResult> RespAsync(BaseClient client, ValkeyKey key, ValkeyValue path)
     {
         GlideString[] args = [JsonResp, ToGlideString(key), ToGlideString(path)];
@@ -225,7 +307,15 @@ public static partial class GlideJson
     /// <param name="client">The Glide client to use for the command.</param>
     /// <param name="key">The key where the JSON document is stored.</param>
     /// <returns>The JSON value in RESP format at the root path.</returns>
-    /// <seealso href="https://valkey.io/commands/json.resp/"/>
+    /// <seealso href="https://valkey.io/commands/json.resp/">Valkey commands – JSON.RESP</seealso>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await GlideJson.SetAsync(client, "mykey", "$", "{\"a\":1}");
+    /// var resp = await GlideJson.RespAsync(client, "mykey");
+    /// </code>
+    /// </example>
+    /// </remarks>
     public static async Task<ValkeyResult> RespAsync(BaseClient client, ValkeyKey key)
     {
         GlideString[] args = [JsonResp, ToGlideString(key)];
