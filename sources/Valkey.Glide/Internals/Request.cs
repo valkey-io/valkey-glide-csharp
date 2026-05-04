@@ -101,7 +101,6 @@ internal partial class Request
 
     /// <summary>
     /// Converts a keyword and items into a counted array: <c>keyword count item1 item2 ...</c>.
-    /// Returns an empty array if <paramref name="items"/> is empty.
     /// </summary>
     private static GlideString[] ToArgs(GlideString keyword, IEnumerable<ValkeyValue> items)
         => [keyword, items.Count().ToGlideString(), .. items];
