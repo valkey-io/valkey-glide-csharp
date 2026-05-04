@@ -409,9 +409,9 @@ public class JsonBatchTests(TestConfiguration config)
         try
         {
             Batch batch = new(false);
-            _ = GlideJsonBatch.Set(batch, key, "$", "{\"a\":1}", GlideJson.JsonSetCondition.OnlyIfDoesNotExist);
-            _ = GlideJsonBatch.Set(batch, key, "$.a", "2", GlideJson.JsonSetCondition.OnlyIfExists);
-            _ = GlideJsonBatch.Set(batch, key, "$", "{\"b\":1}", GlideJson.JsonSetCondition.OnlyIfDoesNotExist);
+            _ = GlideJsonBatch.Set(batch, key, "$", "{\"a\":1}", GlideJson.SetCondition.OnlyIfDoesNotExist);
+            _ = GlideJsonBatch.Set(batch, key, "$.a", "2", GlideJson.SetCondition.OnlyIfExists);
+            _ = GlideJsonBatch.Set(batch, key, "$", "{\"b\":1}", GlideJson.SetCondition.OnlyIfDoesNotExist);
             _ = GlideJsonBatch.Get(batch, key);
 
             object?[]? results = await client.Exec(batch, true);
