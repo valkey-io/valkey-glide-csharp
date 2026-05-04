@@ -4,7 +4,7 @@ using Valkey.Glide.ServerModules;
 
 using static Valkey.Glide.Errors;
 
-namespace Valkey.Glide.IntegrationTests.SearchModules;
+namespace Valkey.Glide.IntegrationTests.ServerModules;
 
 /// <summary>
 /// Integration tests for <c>FT.INFO</c>:

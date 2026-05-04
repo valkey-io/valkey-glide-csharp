@@ -2,7 +2,7 @@
 
 using Valkey.Glide.ServerModules;
 
-namespace Valkey.Glide.IntegrationTests.SearchModules;
+namespace Valkey.Glide.IntegrationTests.ServerModules;
 
 /// <summary>
 /// Integration tests for <see cref="Ft.ListAsync(BaseClient)"/>.

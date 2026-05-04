@@ -2,7 +2,7 @@
 
 using Valkey.Glide.ServerModules;
 
-namespace Valkey.Glide.UnitTests.SearchModules;
+namespace Valkey.Glide.UnitTests.ServerModules;
 
 public class FtCommandTests
 {
