@@ -116,7 +116,7 @@ public static partial class GlideJson
     /// <seealso href="https://valkey.io/commands/json.debug/"/>
     public static async Task<ValkeyResult> DebugMemoryAsync(BaseClient client, ValkeyKey key, ValkeyValue path)
     {
-        GlideString[] args = [JsonDebug, "MEMORY", ToGlideString(key), ToGlideString(path)];
+        GlideString[] args = [JsonDebug, ValkeyLiterals.MEMORY, ToGlideString(key), ToGlideString(path)];
         object? result = await ExecuteCommandAsync(client, args);
         return ValkeyResult.Create(result);
     }
@@ -130,7 +130,7 @@ public static partial class GlideJson
     /// <seealso href="https://valkey.io/commands/json.debug/"/>
     public static async Task<ValkeyResult> DebugMemoryAsync(BaseClient client, ValkeyKey key)
     {
-        GlideString[] args = [JsonDebug, "MEMORY", ToGlideString(key)];
+        GlideString[] args = [JsonDebug, ValkeyLiterals.MEMORY, ToGlideString(key)];
         object? result = await ExecuteCommandAsync(client, args);
         return ValkeyResult.Create(result);
     }
@@ -152,7 +152,7 @@ public static partial class GlideJson
     /// <seealso href="https://valkey.io/commands/json.debug/"/>
     public static async Task<ValkeyResult> DebugFieldsAsync(BaseClient client, ValkeyKey key, ValkeyValue path)
     {
-        GlideString[] args = [JsonDebug, "FIELDS", ToGlideString(key), ToGlideString(path)];
+        GlideString[] args = [JsonDebug, ValkeyLiterals.FIELDS, ToGlideString(key), ToGlideString(path)];
         object? result = await ExecuteCommandAsync(client, args);
         return ValkeyResult.Create(result);
     }
@@ -166,7 +166,7 @@ public static partial class GlideJson
     /// <seealso href="https://valkey.io/commands/json.debug/"/>
     public static async Task<ValkeyResult> DebugFieldsAsync(BaseClient client, ValkeyKey key)
     {
-        GlideString[] args = [JsonDebug, "FIELDS", ToGlideString(key)];
+        GlideString[] args = [JsonDebug, ValkeyLiterals.FIELDS, ToGlideString(key)];
         object? result = await ExecuteCommandAsync(client, args);
         return ValkeyResult.Create(result);
     }

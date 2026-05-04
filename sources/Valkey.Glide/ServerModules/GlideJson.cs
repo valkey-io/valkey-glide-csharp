@@ -142,8 +142,8 @@ public static partial class GlideJson
         return condition switch
         {
             JsonSetCondition.None => [JsonSet, key, path, value],
-            JsonSetCondition.OnlyIfDoesNotExist => [JsonSet, key, path, value, "NX"],
-            JsonSetCondition.OnlyIfExists => [JsonSet, key, path, value, "XX"],
+            JsonSetCondition.OnlyIfDoesNotExist => [JsonSet, key, path, value, ValkeyLiterals.NX],
+            JsonSetCondition.OnlyIfExists => [JsonSet, key, path, value, ValkeyLiterals.XX],
             _ => throw new ArgumentOutOfRangeException(nameof(condition), condition, "Invalid JsonSetCondition value")
         };
     }

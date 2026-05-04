@@ -63,8 +63,8 @@ public static class GlideJsonBatch
         GlideString[] args = condition switch
         {
             GlideJson.JsonSetCondition.None => [GlideJson.JsonSet, key, path, value],
-            GlideJson.JsonSetCondition.OnlyIfDoesNotExist => [GlideJson.JsonSet, key, path, value, "NX"],
-            GlideJson.JsonSetCondition.OnlyIfExists => [GlideJson.JsonSet, key, path, value, "XX"],
+            GlideJson.JsonSetCondition.OnlyIfDoesNotExist => [GlideJson.JsonSet, key, path, value, ValkeyLiterals.NX],
+            GlideJson.JsonSetCondition.OnlyIfExists => [GlideJson.JsonSet, key, path, value, ValkeyLiterals.XX],
             _ => throw new ArgumentOutOfRangeException(nameof(condition), condition, "Invalid JsonSetCondition value")
         };
         return batch.CustomCommand(args);
@@ -557,7 +557,7 @@ public static class GlideJsonBatch
     /// <returns>The batch for chaining.</returns>
     public static T DebugMemory<T>(T batch, GlideString key)
         where T : BaseBatch<T>
-        => batch.CustomCommand([GlideJson.JsonDebug, "MEMORY", key]);
+        => batch.CustomCommand([GlideJson.JsonDebug, ValkeyLiterals.MEMORY, key]);
 
     /// <summary>
     /// Adds a JSON.DEBUG MEMORY command to the batch with a path.
@@ -569,7 +569,7 @@ public static class GlideJsonBatch
     /// <returns>The batch for chaining.</returns>
     public static T DebugMemory<T>(T batch, GlideString key, GlideString path)
         where T : BaseBatch<T>
-        => batch.CustomCommand([GlideJson.JsonDebug, "MEMORY", key, path]);
+        => batch.CustomCommand([GlideJson.JsonDebug, ValkeyLiterals.MEMORY, key, path]);
 
     /// <summary>
     /// Adds a JSON.DEBUG FIELDS command to the batch.
@@ -581,7 +581,7 @@ public static class GlideJsonBatch
     /// <returns>The batch for chaining.</returns>
     public static T DebugFields<T>(T batch, GlideString key)
         where T : BaseBatch<T>
-        => batch.CustomCommand([GlideJson.JsonDebug, "FIELDS", key]);
+        => batch.CustomCommand([GlideJson.JsonDebug, ValkeyLiterals.FIELDS, key]);
 
     /// <summary>
     /// Adds a JSON.DEBUG FIELDS command to the batch with a path.
@@ -593,7 +593,7 @@ public static class GlideJsonBatch
     /// <returns>The batch for chaining.</returns>
     public static T DebugFields<T>(T batch, GlideString key, GlideString path)
         where T : BaseBatch<T>
-        => batch.CustomCommand([GlideJson.JsonDebug, "FIELDS", key, path]);
+        => batch.CustomCommand([GlideJson.JsonDebug, ValkeyLiterals.FIELDS, key, path]);
 
     #endregion
 

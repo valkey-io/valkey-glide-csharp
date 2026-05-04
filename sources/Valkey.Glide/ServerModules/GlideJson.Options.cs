@@ -91,19 +91,19 @@ public static partial class GlideJson
 
             if (Indent is not null)
             {
-                args.Add("INDENT");
+                args.Add(ValkeyLiterals.INDENT);
                 args.Add(Indent);
             }
 
             if (Newline is not null)
             {
-                args.Add("NEWLINE");
+                args.Add(ValkeyLiterals.NEWLINE);
                 args.Add(Newline);
             }
 
             if (Space is not null)
             {
-                args.Add("SPACE");
+                args.Add(ValkeyLiterals.SPACE);
                 args.Add(Space);
             }
 
