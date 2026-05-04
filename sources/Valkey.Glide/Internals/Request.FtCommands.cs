@@ -29,12 +29,6 @@ internal partial class Request
     public static Cmd<object, Ft.InfoLocalResult> FtInfoLocal(ValkeyKey indexName, Ft.InfoOptions? options = null)
         => new(RequestType.FtInfo, [indexName, ValkeyLiterals.LOCAL, .. ToArgs(options)], false, ParseFtInfoLocalResponse);
 
-    public static Cmd<object, Ft.InfoClusterResult> FtInfoCluster(ValkeyKey indexName, Ft.InfoOptions? options = null)
-        => new(RequestType.FtInfo, [indexName, ValkeyLiterals.CLUSTER, .. ToArgs(options)], false, ParseFtInfoClusterResponse);
-
-    public static Cmd<object, Ft.InfoPrimaryResult> FtInfoPrimary(ValkeyKey indexName, Ft.InfoOptions? options = null)
-        => new(RequestType.FtInfo, [indexName, ValkeyLiterals.PRIMARY, .. ToArgs(options)], false, ParseFtInfoPrimaryResponse);
-
     #endregion
     #region Private Methods
 
@@ -528,33 +522,6 @@ internal partial class Request
             StopWords = GetValkeyValues(map, "stopwords"),
             WithOffsets = GetBool(map, "with_offsets"),
             MinStemSize = GetLong(map, "min_stem_size"),
-        };
-    }
-
-    private static Ft.InfoClusterResult ParseFtInfoClusterResponse(object data)
-    {
-        var map = ToStringMap(data);
-
-        return new Ft.InfoClusterResult
-        {
-            IndexName = GetString(map, "index_name"),
-            BackfillInProgress = GetBool(map, "backfill_in_progress"),
-            BackfillCompletePercentMin = GetDouble(map, "backfill_complete_percent_min"),
-            BackfillCompletePercentMax = GetDouble(map, "backfill_complete_percent_max"),
-            State = ParseInfoState(GetString(map, "state")),
-        };
-    }
-
-    private static Ft.InfoPrimaryResult ParseFtInfoPrimaryResponse(object data)
-    {
-        var map = ToStringMap(data);
-
-        return new Ft.InfoPrimaryResult
-        {
-            IndexName = GetString(map, "index_name"),
-            NumDocs = GetLong(map, "num_docs"),
-            NumRecords = GetLong(map, "num_records"),
-            HashIndexingFailures = GetLong(map, "hash_indexing_failures"),
         };
     }
 

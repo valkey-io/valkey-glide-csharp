@@ -225,27 +225,4 @@ public class FtCommandTests
             Request.FtInfoLocal("idx", new Ft.InfoOptions { SomeShards = true, Inconsistent = true }).GetArgs());
     }
 
-    [Fact]
-    public void FtInfoCluster()
-    {
-        Assert.Equal(
-            ["FT.INFO", "idx", "CLUSTER"],
-            Request.FtInfoCluster("idx").GetArgs());
-
-        Assert.Equal(
-            ["FT.INFO", "idx", "CLUSTER", "SOMESHARDS", "INCONSISTENT"],
-            Request.FtInfoCluster("idx", new Ft.InfoOptions { SomeShards = true, Inconsistent = true }).GetArgs());
-    }
-
-    [Fact]
-    public void FtInfoPrimary()
-    {
-        Assert.Equal(
-            ["FT.INFO", "idx", "PRIMARY"],
-            Request.FtInfoPrimary("idx").GetArgs());
-
-        Assert.Equal(
-            ["FT.INFO", "idx", "PRIMARY", "SOMESHARDS"],
-            Request.FtInfoPrimary("idx", new Ft.InfoOptions { SomeShards = true }).GetArgs());
-    }
 }

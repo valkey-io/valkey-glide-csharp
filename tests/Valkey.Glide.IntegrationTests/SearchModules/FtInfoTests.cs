@@ -11,10 +11,6 @@ namespace Valkey.Glide.IntegrationTests.SearchModules;
 /// <list type="bullet">
 /// <item><see cref="Ft.InfoLocalAsync(BaseClient, ValkeyKey)"/></item>
 /// <item><see cref="Ft.InfoLocalAsync(BaseClient, ValkeyKey, Ft.InfoOptions)"/></item>
-/// <item><see cref="Ft.InfoClusterAsync(GlideClusterClient, ValkeyKey)"/></item>
-/// <item><see cref="Ft.InfoClusterAsync(GlideClusterClient, ValkeyKey, Ft.InfoOptions)"/></item>
-/// <item><see cref="Ft.InfoPrimaryAsync(GlideClusterClient, ValkeyKey)"/></item>
-/// <item><see cref="Ft.InfoPrimaryAsync(GlideClusterClient, ValkeyKey, Ft.InfoOptions)"/></item>
 /// </list>
 /// </summary>
 /// <seealso href="https://valkey.io/commands/ft.info/">Valkey commands – FT.INFO</seealso>
@@ -290,90 +286,4 @@ public class FtInfoTests(TestConfiguration config)
 
     #endregion
 
-    #region InfoClusterAsync Tests
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
-    public async Task InfoClusterAsync_ReturnsClusterResult(GlideClusterClient client)
-    {
-        await SkipUtils.IfSearchModuleNotLoaded(client);
-
-        var index = Guid.NewGuid().ToString();
-        await Ft.CreateAsync(client, index, new Ft.CreateTextField("title"));
-
-        var info = await Ft.InfoClusterAsync(client, index);
-        Assert.Equal(index, info.IndexName);
-        _ = Assert.IsType<bool>(info.BackfillInProgress);
-        Assert.InRange(info.BackfillCompletePercentMin, 0.0, 1.0);
-        Assert.InRange(info.BackfillCompletePercentMax, 0.0, 1.0);
-        Assert.True(info.BackfillCompletePercentMax >= info.BackfillCompletePercentMin);
-        _ = Assert.IsType<Ft.InfoState>(info.State);
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
-    public async Task InfoClusterAsync_WithOptions(GlideClusterClient client)
-    {
-        await SkipUtils.IfSearchModuleNotLoaded(client);
-
-        var index = Guid.NewGuid().ToString();
-        await Ft.CreateAsync(client, index, new Ft.CreateTextField("title"));
-
-        var info = await Ft.InfoClusterAsync(client, index, new Ft.InfoOptions { SomeShards = true });
-        Assert.Equal(index, info.IndexName);
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
-    public async Task InfoClusterAsync_NonExistentIndex_Throws(GlideClusterClient client)
-        => await Assert.ThrowsAsync<RequestException>(()
-            => Ft.InfoClusterAsync(client, Guid.NewGuid().ToString()));
-
-    #endregion
-
-    #region InfoPrimaryAsync Tests
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
-    public async Task InfoPrimaryAsync_ReturnsPrimaryResult(GlideClusterClient client)
-    {
-        await SkipUtils.IfSearchModuleNotLoaded(client);
-
-        var index = Guid.NewGuid().ToString();
-        var prefix = $"{{{index}}}:";
-
-        var field = new Ft.CreateTextField("title");
-        var options = new Ft.CreateOptions { Prefixes = [prefix] };
-        await Ft.CreateAsync(client, index, field, options);
-
-        _ = await client.HashSetAsync($"{prefix}1", [new("title", "hello world")]);
-        await Task.Delay(500, TestContext.Current.CancellationToken);
-
-        var info = await Ft.InfoPrimaryAsync(client, index);
-        Assert.Equal(index, info.IndexName);
-        Assert.Equal(1L, info.NumDocs);
-        Assert.Equal(2L, info.NumRecords); // "hello" + "world"
-        Assert.Equal(0L, info.HashIndexingFailures);
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
-    public async Task InfoPrimaryAsync_WithOptions(GlideClusterClient client)
-    {
-        await SkipUtils.IfSearchModuleNotLoaded(client);
-
-        var index = Guid.NewGuid().ToString();
-        await Ft.CreateAsync(client, index, new Ft.CreateTextField("title"));
-
-        var info = await Ft.InfoPrimaryAsync(client, index, new Ft.InfoOptions { SomeShards = true });
-        Assert.Equal(index, info.IndexName);
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
-    public async Task InfoPrimaryAsync_NonExistentIndex_Throws(GlideClusterClient client)
-        => await Assert.ThrowsAsync<RequestException>(()
-            => Ft.InfoPrimaryAsync(client, Guid.NewGuid().ToString()));
-
-    #endregion
 }
