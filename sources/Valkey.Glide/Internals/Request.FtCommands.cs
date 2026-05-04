@@ -56,7 +56,11 @@ internal partial class Request
                 _ => throw new ArgumentOutOfRangeException(nameof(options.DataType)),
             }];
 
-        args.AddRange(ToArgs(ValkeyLiterals.PREFIX, options.Prefixes));
+        var prefixes = options.Prefixes;
+        if (prefixes.Count() > 0)
+        {
+            args.AddRange(ToArgs(ValkeyLiterals.PREFIX, prefixes));
+        }
 
         if (options.SkipInitialScan)
         {
@@ -254,7 +258,7 @@ internal partial class Request
             args.Add(ValkeyLiterals.LOAD);
             args.Add(ValkeyLiterals.STAR);
         }
-        else
+        else if (options.LoadFields.Any())
         {
             args.AddRange(ToArgs(ValkeyLiterals.LOAD, options.LoadFields));
         }
