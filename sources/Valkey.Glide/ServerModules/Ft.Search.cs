@@ -264,7 +264,7 @@ public static partial class Ft
         public IDictionary<ValkeyValue, ValkeyValue> Fields { get; }
 
         /// <summary>
-        /// The sort key value returned when <c>WITHSORTKEYS</c> is specifed,
+        /// The sort key value returned when <c>WITHSORTKEYS</c> is specified,
         /// or <see cref="ValkeyValue.Null"/>.
         /// </summary>
         public ValkeyValue SortKey { get; }
