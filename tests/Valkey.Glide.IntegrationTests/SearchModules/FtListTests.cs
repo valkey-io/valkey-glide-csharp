@@ -1,49 +1,46 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using Valkey.Glide.ServerModules;
-using Valkey.Glide.TestUtils;
 
 namespace Valkey.Glide.IntegrationTests.SearchModules;
 
 /// <summary>
-/// Integration tests for <c>FT._LIST</c>:
-/// <list type="bullet">
-/// <item><see cref="Ft.ListAsync(BaseClient)"/></item>
-/// </list>
+/// Integration tests for <see cref="Ft.ListAsync(BaseClient)"/>.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/ft._list/">Valkey commands – FT._LIST</seealso>
-public class FtListTests(ClientFixture fixture) : IClassFixture<ClientFixture>
+public class FtListTests(TestConfiguration config)
 {
+    public TestConfiguration Config { get; } = config;
+
     #region Tests
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
-    public async Task ListAsync_NoIndexes_ReturnsEmptySet(bool clusterMode)
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task ListAsync_NewIndex_AppearsInList(BaseClient client)
     {
-        var client = fixture.GetClient(clusterMode);
         await SkipUtils.IfSearchModuleNotLoaded(client);
 
-        Assert.Empty(await Ft.ListAsync(client));
+        var index = Guid.NewGuid().ToString();
+        await Ft.CreateAsync(client, index, new Ft.CreateTextField("field"));
+
+        var list = await Ft.ListAsync(client);
+        Assert.Contains((ValkeyValue)index, list);
+
+        await Ft.DropIndexAsync(client, index);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
-    public async Task ListAsync_MultipleIndexes_ReturnsAll(bool clusterMode)
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task ListAsync_DroppedIndex_DisappearsFromList(BaseClient client)
     {
-        var client = fixture.GetClient(clusterMode);
         await SkipUtils.IfSearchModuleNotLoaded(client);
 
-        var indexes = Enumerable.Range(0, 3).Select(_ => Guid.NewGuid().ToString()).ToList();
-        foreach (var idx in indexes)
-        {
-            await Ft.CreateAsync(client, idx, new Ft.CreateTextField("field"));
-        }
+        var index = Guid.NewGuid().ToString();
+        await Ft.CreateAsync(client, index, new Ft.CreateTextField("field"));
+        Assert.Contains((ValkeyValue)index, await Ft.ListAsync(client));
 
-        Assert.Equivalent(indexes.ToHashSet(), await Ft.ListAsync(client));
-        foreach (var idx in indexes)
-        {
-            await Ft.DropIndexAsync(client, idx);
-        }
+        await Ft.DropIndexAsync(client, index);
+        Assert.DoesNotContain((ValkeyValue)index, await Ft.ListAsync(client));
     }
 
     #endregion

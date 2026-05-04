@@ -23,7 +23,7 @@ public class FtAggregateTests(TestConfiguration config)
     public async Task AggregateAsync_WildcardQuery_ReturnsRows(BaseClient client)
     {
         await SkipUtils.IfSearchModuleNotLoaded(client);
-        (string index, _, _) = await CreatePopulatedIndexAsync(client);
+        (string index, _, _) = await FtUtils.CreateAggregateIndexAsync(client);
 
         Assert.Equal(5, (await Ft.AggregateAsync(client, index, "*")).Length);
     }
@@ -33,11 +33,12 @@ public class FtAggregateTests(TestConfiguration config)
     public async Task AggregateAsync_GroupByWithCountReducer_ReturnsGroupedResults(BaseClient client)
     {
         await SkipUtils.IfSearchModuleNotLoaded(client);
-        (string index, _, _) = await CreatePopulatedIndexAsync(client);
+        (string index, _, _) = await FtUtils.CreateAggregateIndexAsync(client);
 
         var rows = await Ft.AggregateAsync(client, index, "*",
             new Ft.AggregateOptions
             {
+                LoadFields = ["@category"],
                 Clauses =
                 [
                     new Ft.AggregateGroupBy
@@ -80,7 +81,7 @@ public class FtAggregateTests(TestConfiguration config)
     public async Task AggregateAsync_SortByPrice_ReturnsSortedResults(BaseClient client)
     {
         await SkipUtils.IfSearchModuleNotLoaded(client);
-        (string index, _, _) = await CreatePopulatedIndexAsync(client);
+        (string index, _, _) = await FtUtils.CreateAggregateIndexAsync(client);
 
         var rows = await Ft.AggregateAsync(client, index, "*",
             new Ft.AggregateOptions
@@ -119,7 +120,7 @@ public class FtAggregateTests(TestConfiguration config)
     public async Task AggregateAsync_FilterByExpression_ReturnsFilteredResults(BaseClient client)
     {
         await SkipUtils.IfSearchModuleNotLoaded(client);
-        (string index, _, _) = await CreatePopulatedIndexAsync(client);
+        (string index, _, _) = await FtUtils.CreateAggregateIndexAsync(client);
 
         var rows = await Ft.AggregateAsync(client, index, "*",
             new Ft.AggregateOptions
@@ -149,7 +150,7 @@ public class FtAggregateTests(TestConfiguration config)
     public async Task AggregateAsync_ApplyTransformation_ReturnsTransformedResults(BaseClient client)
     {
         await SkipUtils.IfSearchModuleNotLoaded(client);
-        (string index, _, _) = await CreatePopulatedIndexAsync(client);
+        (string index, _, _) = await FtUtils.CreateAggregateIndexAsync(client);
 
         var rows = await Ft.AggregateAsync(client, index, "*",
             new Ft.AggregateOptions
@@ -185,7 +186,7 @@ public class FtAggregateTests(TestConfiguration config)
     public async Task AggregateAsync_WithLimit_ReturnsLimitedResults(BaseClient client)
     {
         await SkipUtils.IfSearchModuleNotLoaded(client);
-        (string index, _, _) = await CreatePopulatedIndexAsync(client);
+        (string index, _, _) = await FtUtils.CreateAggregateIndexAsync(client);
 
         var rows = await Ft.AggregateAsync(client, index, "*",
             new Ft.AggregateOptions
@@ -214,11 +215,12 @@ public class FtAggregateTests(TestConfiguration config)
     public async Task AggregateAsync_PipelineGroupBySortByLimit_ReturnsOrderedLimitedGroups(BaseClient client)
     {
         await SkipUtils.IfSearchModuleNotLoaded(client);
-        (string index, _, _) = await CreatePopulatedIndexAsync(client);
+        (string index, _, _) = await FtUtils.CreateAggregateIndexAsync(client);
 
         var rows = await Ft.AggregateAsync(client, index, "*",
             new Ft.AggregateOptions
             {
+                LoadFields = ["@category"],
                 Clauses =
                 [
                     new Ft.AggregateGroupBy
@@ -252,82 +254,6 @@ public class FtAggregateTests(TestConfiguration config)
             new Dictionary<ValkeyValue, ValkeyValue>[] {
                 new() { ["category"] = "electronics", ["count"] = "3" } },
             rows);
-    }
-
-    #endregion
-    #region Helpers
-
-    /// <summary>
-    /// Creates a text+numeric+tag index with a unique prefix, populates hash documents,
-    /// waits for indexing, and returns the index name and document keys for cleanup.
-    /// </summary>
-    private static async Task<(string IndexName, string Prefix, string[] DocKeys)> CreatePopulatedIndexAsync(
-        BaseClient client)
-    {
-        var index = Guid.NewGuid().ToString();
-        var prefix = $"{index}:";
-
-        await Ft.CreateAsync(client, index,
-        [
-            new Ft.CreateTextField("title"),
-            new Ft.CreateNumericField("price"),
-            new Ft.CreateTagField("category"),
-        ],
-        new Ft.CreateOptions
-        {
-            DataType = Ft.DataType.Hash,
-            Prefixes = [prefix],
-        });
-
-        // Populate documents with varying categories and prices
-        string[] keys =
-        [
-            $"{prefix}1",
-            $"{prefix}2",
-            $"{prefix}3",
-            $"{prefix}4",
-            $"{prefix}5",
-        ];
-
-        _ = await client.HashSetAsync(keys[0],
-        [
-            new("title", "Alpha Widget"),
-            new("price", "10"),
-            new("category", "electronics"),
-        ]);
-
-        _ = await client.HashSetAsync(keys[1],
-        [
-            new("title", "Beta Gadget"),
-            new("price", "25"),
-            new("category", "electronics"),
-        ]);
-
-        _ = await client.HashSetAsync(keys[2],
-        [
-            new("title", "Gamma Tool"),
-            new("price", "50"),
-            new("category", "hardware"),
-        ]);
-
-        _ = await client.HashSetAsync(keys[3],
-        [
-            new("title", "Delta Device"),
-            new("price", "30"),
-            new("category", "electronics"),
-        ]);
-
-        _ = await client.HashSetAsync(keys[4],
-        [
-            new("title", "Epsilon Wrench"),
-            new("price", "15"),
-            new("category", "hardware"),
-        ]);
-
-        // Wait for indexing to complete
-        await FtUtils.WaitForIndexingAsync(client, index);
-
-        return (index, prefix, keys);
     }
 
     #endregion

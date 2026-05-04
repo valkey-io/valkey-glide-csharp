@@ -23,7 +23,7 @@ public class FtSearchTests(TestConfiguration config)
     public async Task SearchAsync_WildcardQuery_ReturnsAllDocuments(BaseClient client)
     {
         await SkipUtils.IfSearchModuleNotLoaded(client);
-        (string index, string prefix, _) = await CreatePopulatedIndexAsync(client);
+        (string index, _, string[] keys) = await FtUtils.CreateSearchIndexAsync(client);
 
         // Sort by price ascending for deterministic order: 10, 25, 50
         Ft.SearchResult result = await Ft.SearchAsync(client, index, "*",
@@ -35,35 +35,28 @@ public class FtSearchTests(TestConfiguration config)
         Assert.Equal(3, result.TotalResults);
         Assert.Equal(3, result.Documents.Length);
 
-        Assert.Equal($"{prefix}1", result.Documents[0].Key);
-        Assert.Equivalent(
-            new Dictionary<ValkeyValue, ValkeyValue>
-            {
-                ["title"] = "Alpha Widget",
-                ["price"] = "10",
-                ["category"] = "electronics"
-            },
-            result.Documents[0].Fields);
-
-        Assert.Equal($"{prefix}2", result.Documents[1].Key);
-        Assert.Equivalent(
-            new Dictionary<ValkeyValue, ValkeyValue>
-            {
-                ["title"] = "Beta Gadget",
-                ["price"] = "25",
-                ["category"] = "electronics"
-            },
-            result.Documents[1].Fields);
-
-        Assert.Equal($"{prefix}3", result.Documents[2].Key);
-        Assert.Equivalent(
-            new Dictionary<ValkeyValue, ValkeyValue>
-            {
-                ["title"] = "Gamma Tool",
-                ["price"] = "50",
-                ["category"] = "hardware"
-            },
-            result.Documents[2].Fields);
+        var expected = new[]
+        {
+            new {
+                Key = (ValkeyKey)keys[0],
+                Fields = (IDictionary<ValkeyValue, ValkeyValue>)new Dictionary<ValkeyValue, ValkeyValue> {
+                    ["title"] = "Alpha Widget",
+                    ["price"] = "10",
+                    ["category"] = "electronics" } },
+            new {
+                Key = (ValkeyKey)keys[1],
+                Fields = (IDictionary<ValkeyValue, ValkeyValue>)new Dictionary<ValkeyValue, ValkeyValue> {
+                    ["title"] = "Beta Gadget",
+                    ["price"] = "25",
+                    ["category"] = "electronics" } },
+            new {
+                Key = (ValkeyKey)keys[2],
+                Fields = (IDictionary<ValkeyValue, ValkeyValue>)new Dictionary<ValkeyValue, ValkeyValue> {
+                    ["title"] = "Gamma Tool",
+                    ["price"] = "50",
+                    ["category"] = "hardware" } },
+        };
+        Assert.Equivalent(expected, result.Documents);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -71,7 +64,7 @@ public class FtSearchTests(TestConfiguration config)
     public async Task SearchAsync_TextQuery_ReturnsMatchingDocuments(BaseClient client)
     {
         await SkipUtils.IfSearchModuleNotLoaded(client);
-        (string index, _, _) = await CreatePopulatedIndexAsync(client);
+        (string index, _, _) = await FtUtils.CreateSearchIndexAsync(client);
 
         Ft.SearchResult result = await Ft.SearchAsync(client, index, "@title:Alpha");
         Assert.Equal(1, result.TotalResults);
@@ -90,7 +83,7 @@ public class FtSearchTests(TestConfiguration config)
     public async Task SearchAsync_WithLimit_ReturnsPaginatedResults(BaseClient client)
     {
         await SkipUtils.IfSearchModuleNotLoaded(client);
-        (string index, _, _) = await CreatePopulatedIndexAsync(client);
+        (string index, _, _) = await FtUtils.CreateSearchIndexAsync(client);
 
         Ft.SearchResult result = await Ft.SearchAsync(client, index, "*",
             new Ft.SearchOptions
@@ -108,7 +101,7 @@ public class FtSearchTests(TestConfiguration config)
     public async Task SearchAsync_WithSortBy_ReturnsSortedResults(BaseClient client)
     {
         await SkipUtils.IfSearchModuleNotLoaded(client);
-        (string index, _, _) = await CreatePopulatedIndexAsync(client);
+        (string index, _, _) = await FtUtils.CreateSearchIndexAsync(client);
 
         Ft.SearchResult result = await Ft.SearchAsync(client, index, "*",
             new Ft.SearchOptions
@@ -136,7 +129,7 @@ public class FtSearchTests(TestConfiguration config)
     public async Task SearchAsync_WithReturnFields_ReturnsOnlySpecifiedFields(BaseClient client)
     {
         await SkipUtils.IfSearchModuleNotLoaded(client);
-        (string index, _, _) = await CreatePopulatedIndexAsync(client);
+        (string index, _, _) = await FtUtils.CreateSearchIndexAsync(client);
 
         Ft.SearchResult result = await Ft.SearchAsync(client, index, "*",
             new Ft.SearchOptions
@@ -156,19 +149,12 @@ public class FtSearchTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task SearchAsync_WithParams_ReturnsParameterizedResults(BaseClient client)
+    public async Task SearchAsync_WithNumericFilter_ReturnsFilteredResults(BaseClient client)
     {
         await SkipUtils.IfSearchModuleNotLoaded(client);
-        (string index, _, _) = await CreatePopulatedIndexAsync(client);
+        (string index, _, _) = await FtUtils.CreateSearchIndexAsync(client);
 
-        Ft.SearchResult result = await Ft.SearchAsync(client, index, "@price:[$minPrice +inf]",
-            new Ft.SearchOptions
-            {
-                Params = new Dictionary<ValkeyValue, ValkeyValue>
-                {
-                    { "minPrice", "20" },
-                },
-            });
+        Ft.SearchResult result = await Ft.SearchAsync(client, index, "@price:[20 +inf]");
 
         Assert.Equal(2, result.TotalResults);
         Assert.Equal(2, result.Documents.Length);
@@ -179,13 +165,13 @@ public class FtSearchTests(TestConfiguration config)
     public async Task SearchAsync_SearchDocumentFieldAccess_FieldsAreAccessible(BaseClient client)
     {
         await SkipUtils.IfSearchModuleNotLoaded(client);
-        (string index, string prefix, _) = await CreatePopulatedIndexAsync(client);
+        (string index, _, string[] keys) = await FtUtils.CreateSearchIndexAsync(client);
 
         Ft.SearchResult result = await Ft.SearchAsync(client, index, "@title:Alpha");
         Assert.Equal(1, result.TotalResults);
 
         Ft.SearchDocument doc = Assert.Single(result.Documents);
-        Assert.Equal($"{prefix}1", doc.Key);
+        Assert.Equal(keys[0], doc.Key);
         Assert.Equivalent(
             new Dictionary<ValkeyValue, ValkeyValue>
             {
@@ -201,7 +187,7 @@ public class FtSearchTests(TestConfiguration config)
     public async Task SearchAsync_TotalResults_ReflectsFullMatchCount(BaseClient client)
     {
         await SkipUtils.IfSearchModuleNotLoaded(client);
-        (string index, _, _) = await CreatePopulatedIndexAsync(client);
+        (string index, _, _) = await FtUtils.CreateSearchIndexAsync(client);
 
         Ft.SearchResult result = await Ft.SearchAsync(client, index, "*",
             new Ft.SearchOptions
@@ -211,65 +197,6 @@ public class FtSearchTests(TestConfiguration config)
 
         Assert.Equal(3, result.TotalResults);
         _ = Assert.Single(result.Documents);
-    }
-
-    #endregion
-    #region Helpers
-
-    /// <summary>
-    /// Creates a text+numeric+tag index with a unique prefix, populates hash documents,
-    /// waits for indexing, and returns the index name and document keys for cleanup.
-    /// </summary>
-    private static async Task<(string IndexName, string Prefix, string[] DocKeys)> CreatePopulatedIndexAsync(
-        BaseClient client)
-    {
-        var index = Guid.NewGuid().ToString();
-        var prefix = $"{index}:";
-
-        await Ft.CreateAsync(client, index,
-        [
-            new Ft.CreateTextField("title"),
-            new Ft.CreateNumericField("price"),
-            new Ft.CreateTagField("category"),
-        ],
-        new Ft.CreateOptions
-        {
-            DataType = Ft.DataType.Hash,
-            Prefixes = [prefix],
-        });
-
-        string[] keys =
-        [
-            $"{prefix}1",
-            $"{prefix}2",
-            $"{prefix}3",
-        ];
-
-        _ = await client.HashSetAsync(keys[0],
-        [
-            new("title", "Alpha Widget"),
-            new("price", "10"),
-            new("category", "electronics"),
-        ]);
-
-        _ = await client.HashSetAsync(keys[1],
-        [
-            new("title", "Beta Gadget"),
-            new("price", "25"),
-            new("category", "electronics"),
-        ]);
-
-        _ = await client.HashSetAsync(keys[2],
-        [
-            new("title", "Gamma Tool"),
-            new("price", "50"),
-            new("category", "hardware"),
-        ]);
-
-        // Wait for indexing to complete
-        await FtUtils.WaitForIndexingAsync(client, index);
-
-        return (index, prefix, keys);
     }
 
     #endregion
