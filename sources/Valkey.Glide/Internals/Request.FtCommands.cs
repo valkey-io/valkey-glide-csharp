@@ -2,6 +2,7 @@
 
 using Valkey.Glide.ServerModules;
 
+using static Valkey.Glide.Errors;
 using static Valkey.Glide.Internals.FFI;
 
 namespace Valkey.Glide.Internals;
@@ -481,7 +482,15 @@ internal partial class Request
             {
                 results.Add(map.ToDictionary(
                     kvp => (ValkeyValue)kvp.Key,
-                    kvp => (ValkeyValue)(kvp.Value as GlideString)));
+                    kvp => kvp.Value switch
+                    {
+                        null => ValkeyValue.Null,
+                        GlideString gs => (ValkeyValue)gs,
+                        long l => (ValkeyValue)l,
+                        double d => (ValkeyValue)d,
+                        bool b => (ValkeyValue)b,
+                        _ => throw new RequestException($"Unexpected FT.AGGREGATE value type: {kvp.Value.GetType()}"),
+                    }));
             }
         }
         return [.. results];
@@ -490,17 +499,20 @@ internal partial class Request
     private static Ft.InfoLocalResult ParseFtInfoLocalResponse(object data)
     {
         var map = ToStringMap(data);
+        var indexDefinition = map.TryGetValue("index_definition", out var definitionObj)
+            ? ToStringMap(definitionObj)
+            : throw new RequestException("FT.INFO LOCAL response missing 'index_definition'");
 
         return new Ft.InfoLocalResult
         {
             IndexName = GetString(map, "index_name"),
-            KeyType = GetString(map, "key_type") switch
+            KeyType = GetString(indexDefinition, "key_type") switch
             {
                 "HASH" => Ft.DataType.Hash,
                 "JSON" => Ft.DataType.Json,
-                _ => Ft.DataType.Hash,
+                var unknown => throw new Errors.RequestException($"Unknown FT.INFO key_type: '{unknown}'"),
             },
-            Prefixes = GetValkeyValueArray(map, "prefixes"),
+            Prefixes = GetValkeyValues(indexDefinition, "prefixes"),
             Attributes = ParseInfoFields(map),
             NumDocs = GetLong(map, "num_docs"),
             NumRecords = GetLong(map, "num_records"),
@@ -513,7 +525,7 @@ internal partial class Request
             RecentMutationsQueueDelay = GetDouble(map, "recent_mutations_queue_delay"),
             State = ParseInfoState(GetString(map, "state")),
             Punctuation = GetValkeyValue(map, "punctuation"),
-            StopWords = GetValkeyValueArray(map, "stopwords"),
+            StopWords = GetValkeyValues(map, "stopwords"),
             WithOffsets = GetBool(map, "with_offsets"),
             MinStemSize = GetLong(map, "min_stem_size"),
         };
@@ -551,7 +563,7 @@ internal partial class Request
         "ready" => Ft.InfoState.Ready,
         "backfill_in_progress" => Ft.InfoState.BackfillInProgress,
         "backfill_paused_by_oom" => Ft.InfoState.BackfillPausedByOom,
-        _ => throw new ArgumentException($"Unknown FT.INFO state: '{state}'"),
+        _ => throw new RequestException($"Unknown FT.INFO state: '{state}'"),
     };
 
     private static Ft.InfoField[] ParseInfoFields(Dictionary<string, object> map)
@@ -596,7 +608,7 @@ internal partial class Request
                     UserIndexedMemory = userIndexedMemory,
                 },
                 "VECTOR" => ParseInfoVectorField(identifier, attribute, userIndexedMemory, fieldMap),
-                _ => throw new ArgumentException($"Unknown FT.INFO field type: '{type}'"),
+                _ => throw new RequestException($"Unknown FT.INFO field type: '{type}'"),
             };
 
             fields.Add(field);
@@ -630,9 +642,9 @@ internal partial class Request
                 Dimensions = GetLong(indexMap, "dimensions"),
                 DistanceMetric = ParseDistanceMetric(GetString(indexMap, "distance_metric")),
                 Size = GetLong(indexMap, "size"),
-                M = GetNullableLong(algoMap, "m"),
-                EfConstruction = GetNullableLong(algoMap, "ef_construction"),
-                EfRuntime = GetNullableLong(algoMap, "ef_runtime"),
+                M = GetLong(algoMap, "m"),
+                EfConstruction = GetLong(algoMap, "ef_construction"),
+                EfRuntime = GetLong(algoMap, "ef_runtime"),
             };
         }
 
@@ -647,11 +659,11 @@ internal partial class Request
                 Dimensions = GetLong(indexMap, "dimensions"),
                 DistanceMetric = ParseDistanceMetric(GetString(indexMap, "distance_metric")),
                 Size = GetLong(indexMap, "size"),
-                BlockSize = GetNullableLong(algoMap, "block_size"),
+                BlockSize = GetLong(algoMap, "block_size"),
             };
         }
 
-        throw new ArgumentException($"Unknown FT.INFO vector algorithm: '{algoName}'");
+        throw new RequestException($"Unknown FT.INFO vector algorithm: '{algoName}'");
     }
 
     private static Ft.DistanceMetric ParseDistanceMetric(string metric) => metric switch
@@ -659,7 +671,7 @@ internal partial class Request
         "COSINE" => Ft.DistanceMetric.Cosine,
         "L2" => Ft.DistanceMetric.Euclidean,
         "IP" => Ft.DistanceMetric.InnerProduct,
-        _ => throw new ArgumentException($"Unknown FT.INFO distance metric: '{metric}'"),
+        _ => throw new RequestException($"Unknown FT.INFO distance metric: '{metric}'"),
     };
 
     /// <summary>
@@ -670,55 +682,89 @@ internal partial class Request
             ? glideMap.ToDictionary(kvp => kvp.Key.ToString(), kvp => kvp.Value)
             : [];
 
+    /// <summary>
+    /// Returns a <see langword="string"/> corresponding to the given dictionary and key.
+    /// </summary>
+    /// <exception cref="Errors.RequestException">If the key does not exist.</exception>
     private static string GetString(Dictionary<string, object> map, string key)
-        => map.TryGetValue(key, out var value)
-            ? value switch
-            {
-                GlideString gs => gs.ToString(),
-                string s => s,
-                _ => value?.ToString() ?? string.Empty,
-            }
-            : string.Empty;
+    {
+        if (map.TryGetValue(key, out var value))
+        {
+            return ((GlideString)value).ToString();
+        }
 
+        throw new Errors.RequestException($"FT.INFO response missing required field '{key}'");
+    }
+
+    /// <summary>
+    /// Returns a <see langword="long"/> corresponding to the given dictionary and key.
+    /// </summary>
+    /// <exception cref="Errors.RequestException">If the key does not exist.</exception>
     private static long GetLong(Dictionary<string, object> map, string key)
-        => map.TryGetValue(key, out var value) ? Convert.ToInt64(value) : 0;
+    {
+        if (map.TryGetValue(key, out var value))
+        {
+            return Convert.ToInt64(value);
+        }
 
-    private static long? GetNullableLong(Dictionary<string, object> map, string key)
-        => map.TryGetValue(key, out var value) && value is not null ? Convert.ToInt64(value) : null;
+        throw new Errors.RequestException($"FT.INFO response missing required field '{key}'");
+    }
 
+    /// <summary>
+    /// Returns a <see langword="double"/> corresponding to the given dictionary and key.
+    /// </summary>
+    /// <exception cref="Errors.RequestException">If the key does not exist.</exception>
     private static double GetDouble(Dictionary<string, object> map, string key)
-        => map.TryGetValue(key, out var value) ? Convert.ToDouble(value) : 0.0;
+    {
+        if (map.TryGetValue(key, out var value))
+        {
+            return Convert.ToDouble(value);
+        }
 
+        throw new Errors.RequestException($"FT.INFO response missing required field '{key}'");
+    }
+
+    /// <summary>
+    /// Returns a <see langword="bool"/> corresponding to the given dictionary and key.
+    /// </summary>
+    /// <exception cref="Errors.RequestException">If the key does not exist.</exception>
     private static bool GetBool(Dictionary<string, object> map, string key)
-        => map.TryGetValue(key, out var value)
-            && value switch
-            {
-                bool b => b,
-                long l => l != 0,
-                GlideString gs => gs.ToString() is "1" or "true",
-                string s => s is "1" or "true",
-                _ => false,
-            };
+    {
+        if (map.TryGetValue(key, out var value))
+        {
+            return Convert.ToInt64(value) != 0;
+        }
 
+        throw new Errors.RequestException($"FT.INFO response missing required field '{key}'");
+    }
+
+    /// <summary>
+    /// Returns a <see cref="ValkeyValue"/> corresponding to the given dictionary and key.
+    /// </summary>
+    /// <exception cref="Errors.RequestException">If the key does not exist.</exception>
     private static ValkeyValue GetValkeyValue(Dictionary<string, object> map, string key)
-        => map.TryGetValue(key, out var value)
-            ? value switch
-            {
-                GlideString gs => (ValkeyValue)gs,
-                string s => (ValkeyValue)s,
-                _ => (ValkeyValue)(value?.ToString() ?? string.Empty),
-            }
-            : ValkeyValue.Null;
+    {
+        if (map.TryGetValue(key, out var value))
+        {
+            return (GlideString)value;
+        }
 
-    private static ValkeyValue[] GetValkeyValueArray(Dictionary<string, object> map, string key)
-        => map.TryGetValue(key, out var value) && value is object[] arr
-            ? [.. arr.Select(item => item switch
-            {
-                GlideString gs => (ValkeyValue)gs,
-                string s => (ValkeyValue)s,
-                _ => (ValkeyValue)(item?.ToString() ?? string.Empty),
-            })]
-            : [];
+        throw new Errors.RequestException($"FT.INFO response missing required field '{key}'");
+    }
+
+    /// <summary>
+    /// Returns a <see cref="ValkeyValue"/> array corresponding to the given dictionary and key.
+    /// </summary>
+    /// <exception cref="Errors.RequestException">If the key does not exist.</exception>
+    private static ValkeyValue[] GetValkeyValues(Dictionary<string, object> map, string key)
+    {
+        if (map.TryGetValue(key, out var value) && value is object[] arr)
+        {
+            return [.. arr.Cast<GlideString>().Select(gs => (ValkeyValue)gs)];
+        }
+
+        throw new Errors.RequestException($"FT.INFO response missing required field '{key}'");
+    }
 
     #endregion
 }

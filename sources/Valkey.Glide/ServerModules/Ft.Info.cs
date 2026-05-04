@@ -442,7 +442,7 @@ public static partial class Ft
         /// <summary>
         /// The block size for the FLAT index (<c>index.algorithm.block_size</c>).
         /// </summary>
-        public long? BlockSize { get; init; }
+        public required long BlockSize { get; init; }
 
         internal InfoVectorFieldFlat() { }
     }
@@ -455,17 +455,17 @@ public static partial class Ft
         /// <summary>
         /// The maximum number of outgoing edges per graph node (<c>index.algorithm.m</c>).
         /// </summary>
-        public long? M { get; init; }
+        public required long M { get; init; }
 
         /// <summary>
         /// The number of vectors examined during index construction (<c>index.algorithm.ef_construction</c>).
         /// </summary>
-        public long? EfConstruction { get; init; }
+        public required long EfConstruction { get; init; }
 
         /// <summary>
         /// The number of vectors examined during queries (<c>index.algorithm.ef_runtime</c>).
         /// </summary>
-        public long? EfRuntime { get; init; }
+        public required long EfRuntime { get; init; }
 
         internal InfoVectorFieldHnsw() { }
     }
