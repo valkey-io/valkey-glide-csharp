@@ -141,7 +141,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
 
         string key = GetUniqueKey();
         string jsonValue = "{\"arr\":[1,2,3,2,5]}";
-        var options = GlideJson.ArrIndexOptions.FromStart(2);
+        var options = GlideJson.ArrIndexRange.FromStart(2);
 
         _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
         ValkeyResult result = await GlideJson.ArrIndexAsync(client, key, "$.arr", "2", options);

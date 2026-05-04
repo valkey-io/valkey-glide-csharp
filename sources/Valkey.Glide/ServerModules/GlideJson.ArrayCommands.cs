@@ -103,23 +103,23 @@ public static partial class GlideJson
     /// <param name="key">The key where the JSON document is stored.</param>
     /// <param name="path">The JSONPath or legacy path within the JSON document.</param>
     /// <param name="value">The JSON value to search for.</param>
-    /// <param name="options">Range options for the search.</param>
+    /// <param name="range">Range options for the search.</param>
     /// <returns>
     /// When a JSONPath is provided, returns an array of indices (or -1 if not found, null for non-array matches).
     /// When a legacy path is provided, returns the index or -1 if not found.
     /// </returns>
     /// <seealso href="https://valkey.io/commands/json.arrindex/"/>
-    public static async Task<ValkeyResult> ArrIndexAsync(BaseClient client, ValkeyKey key, ValkeyValue path, ValkeyValue value, ArrIndexOptions options)
+    public static async Task<ValkeyResult> ArrIndexAsync(BaseClient client, ValkeyKey key, ValkeyValue path, ValkeyValue value, ArrIndexRange range)
     {
-        GlideString[] args = BuildArrIndexArgs(ToGlideString(key), ToGlideString(path), ToGlideString(value), options);
+        GlideString[] args = BuildArrIndexArgs(ToGlideString(key), ToGlideString(path), ToGlideString(value), range);
         object? result = await ExecuteCommandAsync(client, args);
         return ValkeyResult.Create(result);
     }
 
-    private static GlideString[] BuildArrIndexArgs(GlideString key, GlideString path, GlideString value, ArrIndexOptions options)
+    private static GlideString[] BuildArrIndexArgs(GlideString key, GlideString path, GlideString value, ArrIndexRange range)
     {
         List<GlideString> args = [JsonArrIndex, key, path, value];
-        args.AddRange(options.ToArgs());
+        args.AddRange(range.ToArgs());
         return [.. args];
     }
 

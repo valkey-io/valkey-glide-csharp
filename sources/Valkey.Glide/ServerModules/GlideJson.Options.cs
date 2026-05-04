@@ -122,16 +122,16 @@ public static partial class GlideJson
     /// <example>
     /// <code>
     /// // Using factory methods (recommended)
-    /// var fromStart = GlideJson.ArrIndexOptions.FromStart(2);
-    /// var inRange = GlideJson.ArrIndexOptions.InRange(0, 5);
+    /// var fromStart = GlideJson.ArrIndexRange.FromStart(2);
+    /// var inRange = GlideJson.ArrIndexRange.InRange(0, 5);
     ///
     /// // Using object initializer
-    /// var options = new GlideJson.ArrIndexOptions { Start = 1, End = 10 };
+    /// var options = new GlideJson.ArrIndexRange { Start = 1, End = 10 };
     /// </code>
     /// </example>
     /// </remarks>
     /// <seealso href="https://valkey.io/commands/json.arrindex/">valkey.io</seealso>
-    public sealed class ArrIndexOptions
+    public sealed class ArrIndexRange
     {
         /// <summary>
         /// The start index (inclusive). Defaults to 0.
@@ -154,16 +154,16 @@ public static partial class GlideJson
         /// Creates options with a start index, searching to the end of the array.
         /// </summary>
         /// <param name="start">The starting index (inclusive).</param>
-        /// <returns>A new <see cref="ArrIndexOptions"/> instance.</returns>
-        public static ArrIndexOptions FromStart(long start) => new() { Start = start };
+        /// <returns>A new <see cref="ArrIndexRange"/> instance.</returns>
+        public static ArrIndexRange FromStart(long start) => new() { Start = start };
 
         /// <summary>
         /// Creates options with a start and end index.
         /// </summary>
         /// <param name="start">The starting index (inclusive).</param>
         /// <param name="end">The ending index (exclusive).</param>
-        /// <returns>A new <see cref="ArrIndexOptions"/> instance.</returns>
-        public static ArrIndexOptions InRange(long start, long end) => new() { Start = start, End = end };
+        /// <returns>A new <see cref="ArrIndexRange"/> instance.</returns>
+        public static ArrIndexRange InRange(long start, long end) => new() { Start = start, End = end };
 
         /// <summary>
         /// Converts options to command arguments.
