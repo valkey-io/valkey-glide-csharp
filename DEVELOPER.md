@@ -373,7 +373,8 @@ The CSharp Valkey-Glide client uses xUnit v3 for testing code. The test code sty
 
 ## Documentation
 
-For user-facing documentation including quick start guides, tutorials, and how-to guides, visit the official [Valkey GLIDE documentation site](https://glide.valkey.io/getting-started/quickstart/?lang=c%23).
+- [Valkey GLIDE](<https://glide.valkey.io/getting-started/quickstart/?lang=c%23>) – Official Valkey GLIDE documentation for users, including quick start guides, tutorials, and how-to guides.
+- [Documentation Guidelines](docs/documentation-guidelines.md) – Project documentation guidelines for developers.
 
 ## Benchmarking
 

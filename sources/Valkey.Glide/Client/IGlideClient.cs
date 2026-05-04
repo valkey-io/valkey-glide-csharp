@@ -42,7 +42,6 @@ public partial interface IGlideClient :
     /// exists, otherwise performs no action.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/copy"/>
-    /// <note>Since Valkey 6.2.0 and above.</note>
     /// <param name="source">The key to the source value.</param>
     /// <param name="destination">The key where the value should be copied to.</param>
     /// <param name="destinationDatabase">The database ID to store destination in.</param>

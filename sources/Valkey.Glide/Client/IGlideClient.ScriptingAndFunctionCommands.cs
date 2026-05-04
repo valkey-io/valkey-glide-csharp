@@ -16,13 +16,15 @@ public partial interface IGlideClient
     /// <summary>
     /// Lists all loaded function libraries.
     /// </summary>
+    /// <seealso href="https://valkey.io/commands/function-list/">Valkey commands – FUNCTION LIST</seealso>
+    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="options">Optional query parameters to filter results.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>An array of library information.</returns>
+    /// <param name="cancellationToken">A token to cancel the async operation.</param>
+    /// <returns>An array of <see cref="LibraryInfo"/> describing each loaded library.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// LibraryInfo[] libraries = await client.FunctionListAsync();
+    /// var libraries = await client.FunctionListAsync();
     /// </code>
     /// </example>
     /// </remarks>
@@ -33,12 +35,14 @@ public partial interface IGlideClient
     /// <summary>
     /// Returns statistics about loaded functions.
     /// </summary>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>Function statistics including engine stats and running script information.</returns>
+    /// <seealso href="https://valkey.io/commands/function-stats/">Valkey commands – FUNCTION STATS</seealso>
+    /// <note>Since Valkey 7.0.0.</note>
+    /// <param name="cancellationToken">A token to cancel the async operation.</param>
+    /// <returns>A <see cref="FunctionStatsResult"/> with engine statistics and information about any running script.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// FunctionStatsResult stats = await client.FunctionStatsAsync();
+    /// var stats = await client.FunctionStatsAsync();
     /// </code>
     /// </example>
     /// </remarks>
