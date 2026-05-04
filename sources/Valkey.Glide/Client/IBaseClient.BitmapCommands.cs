@@ -140,7 +140,7 @@ public partial interface IBaseClient
     /// <param name="keys">The source keys. Must contain at least one key.
     /// For <see cref="Bitwise.Not"/>, must contain exactly one key.</param>
     /// <returns>The size of the string stored in <paramref name="destination"/>, in bytes.</returns>
-    /// <exception cref="ArgumentException">Thrown when <paramref name="keys"/> is empty.</exception>
+    /// <exception cref="Errors.RequestException">Thrown when <paramref name="keys"/> is empty.</exception>
     /// <remarks>
     /// <example>
     /// <code>
