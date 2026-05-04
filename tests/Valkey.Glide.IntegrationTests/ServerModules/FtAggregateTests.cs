@@ -20,12 +20,12 @@ public class FtAggregateTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task AggregateAsync_WildcardQuery_ReturnsRows(BaseClient client)
+    public async Task AggregateAsync_MatchAll_ReturnsRows(BaseClient client)
     {
         await SkipUtils.IfSearchModuleNotLoaded(client);
         (string index, _, _) = await FtUtils.CreateAggregateIndexAsync(client);
 
-        Assert.Equal(5, (await Ft.AggregateAsync(client, index, "*")).Length);
+        Assert.Equal(5, (await Ft.AggregateAsync(client, index, "@price:[-inf +inf]")).Length);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -35,7 +35,7 @@ public class FtAggregateTests(TestConfiguration config)
         await SkipUtils.IfSearchModuleNotLoaded(client);
         (string index, _, _) = await FtUtils.CreateAggregateIndexAsync(client);
 
-        var rows = await Ft.AggregateAsync(client, index, "*",
+        var rows = await Ft.AggregateAsync(client, index, "@price:[-inf +inf]",
             new Ft.AggregateOptions
             {
                 LoadFields = ["@category"],
@@ -83,7 +83,7 @@ public class FtAggregateTests(TestConfiguration config)
         await SkipUtils.IfSearchModuleNotLoaded(client);
         (string index, _, _) = await FtUtils.CreateAggregateIndexAsync(client);
 
-        var rows = await Ft.AggregateAsync(client, index, "*",
+        var rows = await Ft.AggregateAsync(client, index, "@price:[-inf +inf]",
             new Ft.AggregateOptions
             {
                 LoadFields = ["@price"],
@@ -122,7 +122,7 @@ public class FtAggregateTests(TestConfiguration config)
         await SkipUtils.IfSearchModuleNotLoaded(client);
         (string index, _, _) = await FtUtils.CreateAggregateIndexAsync(client);
 
-        var rows = await Ft.AggregateAsync(client, index, "*",
+        var rows = await Ft.AggregateAsync(client, index, "@price:[-inf +inf]",
             new Ft.AggregateOptions
             {
                 LoadFields = ["@price"],
@@ -152,7 +152,7 @@ public class FtAggregateTests(TestConfiguration config)
         await SkipUtils.IfSearchModuleNotLoaded(client);
         (string index, _, _) = await FtUtils.CreateAggregateIndexAsync(client);
 
-        var rows = await Ft.AggregateAsync(client, index, "*",
+        var rows = await Ft.AggregateAsync(client, index, "@price:[-inf +inf]",
             new Ft.AggregateOptions
             {
                 LoadFields = ["@price"],
@@ -188,7 +188,7 @@ public class FtAggregateTests(TestConfiguration config)
         await SkipUtils.IfSearchModuleNotLoaded(client);
         (string index, _, _) = await FtUtils.CreateAggregateIndexAsync(client);
 
-        var rows = await Ft.AggregateAsync(client, index, "*",
+        var rows = await Ft.AggregateAsync(client, index, "@price:[-inf +inf]",
             new Ft.AggregateOptions
             {
                 LoadFields = ["@price"],
@@ -217,7 +217,7 @@ public class FtAggregateTests(TestConfiguration config)
         await SkipUtils.IfSearchModuleNotLoaded(client);
         (string index, _, _) = await FtUtils.CreateAggregateIndexAsync(client);
 
-        var rows = await Ft.AggregateAsync(client, index, "*",
+        var rows = await Ft.AggregateAsync(client, index, "@price:[-inf +inf]",
             new Ft.AggregateOptions
             {
                 LoadFields = ["@category"],
