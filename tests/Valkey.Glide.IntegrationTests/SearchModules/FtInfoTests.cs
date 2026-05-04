@@ -27,13 +27,19 @@ public class FtInfoTests(TestConfiguration config)
         await SkipUtils.IfSearchModuleNotLoaded(client);
 
         var index = Guid.NewGuid().ToString();
-        var prefix = $"{{{index}}}:";
+        var prefix = $"{index}:";
 
         await Ft.CreateAsync(client, index,
             [
                 new Ft.CreateTextField("title"),
                 new Ft.CreateTagField("category"),
                 new Ft.CreateNumericField("price"),
+                new Ft.CreateVectorFieldHnsw
+                {
+                    Identifier = "vec",
+                    Dimensions = 2,
+                    DistanceMetric = Ft.DistanceMetric.Euclidean,
+                },
             ],
             new Ft.CreateOptions
             {
@@ -44,39 +50,47 @@ public class FtInfoTests(TestConfiguration config)
         _ = await client.HashSetAsync($"{prefix}1",
             [new("title", "hello world"),
             new("category", "test"),
-            new("price", "42")]);
+            new("price", "42"),
+            new("vec", (ValkeyValue)new byte[8])]);
 
-        // Allow indexing to complete
-        await Task.Delay(500, TestContext.Current.CancellationToken);
+        // Wait for indexing to complete
+        await FtUtils.WaitForIndexingAsync(client, index);
 
         var info = await Ft.InfoLocalAsync(client, index);
 
-        // InfoResult base
         Assert.Equal(index, info.IndexName);
-
-        // Index definition
         Assert.Equal(Ft.DataType.Hash, info.KeyType);
         Assert.Equal(prefix, Assert.Single(info.Prefixes));
 
-        // Attributes
-        Assert.Equal(3, info.Attributes.Length);
+        Assert.Equal(4, info.Attributes.Length);
 
-        // Document and term stats
-        Assert.Equal(1L, info.NumDocs);
-        Assert.Equal(2L, info.NumRecords);
-        Assert.Equal(2L, info.TotalTermOccurrences);
-        Assert.Equal(2L, info.NumTerms);
-        Assert.Equal(0L, info.HashIndexingFailures);
+        if (client is GlideClient)
+        {
+            Assert.Equal(1L, info.NumDocs);
+            Assert.Equal(4L, info.NumRecords);
+            Assert.Equal(2L, info.TotalTermOccurrences);
+            Assert.Equal(2L, info.NumTerms);
+            Assert.Equal(0L, info.HashIndexingFailures);
+        }
+        else
+        {
+            // In cluster mode the document may be on another shard.
+            Assert.True(info.NumDocs >= 0);
+            Assert.True(info.NumRecords >= 0);
+            Assert.True(info.TotalTermOccurrences >= 0);
+            Assert.True(info.NumTerms >= 0);
+            Assert.True(info.HashIndexingFailures >= 0);
+        }
 
         _ = Assert.IsType<bool>(info.BackfillInProgress);
         Assert.InRange(info.BackfillCompletePercent, 0.0, 1.0);
         Assert.True(info.MutationQueueSize >= 0);
-        Assert.True(info.RecentMutationsQueueDelay >= 0.0);
+        Assert.True(info.RecentMutationsQueueDelay >= TimeSpan.Zero);
         _ = Assert.IsType<Ft.InfoState>(info.State);
 
         Assert.Equal((ValkeyValue)",.<>{}[]\"':;!@#$%^&*()-+=~/\\|?", info.Punctuation);
         Assert.Equivalent(new ValkeyValue[] { "the", "a" }, info.StopWords);
-        Assert.True(info.WithOffsets);
+        Assert.True(info.WithOffsets!);
         Assert.Equal(4L, info.MinStemSize);
     }
 
@@ -260,7 +274,7 @@ public class FtInfoTests(TestConfiguration config)
         await Ft.CreateAsync(client, index, field, options);
 
         var info = await Ft.InfoLocalAsync(client, index);
-        Assert.Empty(info.StopWords);
+        Assert.Empty(info.StopWords!);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]

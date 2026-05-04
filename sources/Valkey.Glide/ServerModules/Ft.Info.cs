@@ -167,9 +167,9 @@ public static partial class Ft
         public required long MutationQueueSize { get; init; }
 
         /// <summary>
-        /// The recent delay of the mutation queue in seconds (<c>recent_mutations_queue_delay</c>).
+        /// The recent delay of the mutation queue (<c>recent_mutations_queue_delay</c>).
         /// </summary>
-        public required double RecentMutationsQueueDelay { get; init; }
+        public required TimeSpan RecentMutationsQueueDelay { get; init; }
 
         /// <summary>
         /// The current state of the index (<c>state</c>).
@@ -177,24 +177,28 @@ public static partial class Ft
         public required InfoState State { get; init; }
 
         /// <summary>
-        /// The punctuation characters used for tokenization (<c>punctuation</c>).
+        /// The punctuation characters used for tokenization,
+        /// or <see cref="ValkeyValue.Null"/> if not specified(<c>punctuation</c>).
         /// </summary>
-        public required ValkeyValue Punctuation { get; init; }
+        public ValkeyValue Punctuation { get; init; }
 
         /// <summary>
-        /// The stop words configured for the index (<c>stopwords</c>).
+        /// The stop words configured for the index,
+        /// or <see langword="null"/> if not specified (<c>stopwords</c>).
         /// </summary>
-        public required ValkeyValue[] StopWords { get; init; }
+        public ValkeyValue[]? StopWords { get; init; }
 
         /// <summary>
-        /// Whether term offsets are stored in the index (<c>with_offsets</c>).
+        /// Whether term offsets are stored in the index,
+        /// or <see langword="null"/> if not specified (<c>with_offsets</c>).
         /// </summary>
-        public required bool WithOffsets { get; init; }
+        public bool? WithOffsets { get; init; }
 
         /// <summary>
-        /// The minimum word length for stemming (<c>min_stem_size</c>).
+        /// The minimum word length for stemming,
+        /// or <see langword="null"/> if not specified (<c>min_stem_size</c>).
         /// </summary>
-        public required long MinStemSize { get; init; }
+        public long? MinStemSize { get; init; }
 
         internal InfoLocalResult() { }
     }

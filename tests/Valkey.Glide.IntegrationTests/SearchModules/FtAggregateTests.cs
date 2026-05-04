@@ -265,7 +265,7 @@ public class FtAggregateTests(TestConfiguration config)
         BaseClient client)
     {
         var index = Guid.NewGuid().ToString();
-        var prefix = $"{{{index}}}:";
+        var prefix = $"{index}:";
 
         await Ft.CreateAsync(client, index,
         [
@@ -324,8 +324,8 @@ public class FtAggregateTests(TestConfiguration config)
             new("category", "hardware"),
         ]);
 
-        // Wait for indexing
-        await Task.Delay(TimeSpan.FromSeconds(1));
+        // Wait for indexing to complete
+        await FtUtils.WaitForIndexingAsync(client, index);
 
         return (index, prefix, keys);
     }

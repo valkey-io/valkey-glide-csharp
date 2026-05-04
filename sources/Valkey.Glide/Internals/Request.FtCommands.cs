@@ -422,9 +422,6 @@ internal partial class Request
         _ => throw new ArgumentOutOfRangeException(nameof(metric)),
     };
 
-    // TODO #360: refactor later
-    // -------------------------
-
     private static Ft.SearchResult ParseFtSearchResponse(object[] data)
     {
         // Format: [count, {key1: fields1, key2: fields2, ...}]
@@ -504,7 +501,7 @@ internal partial class Request
             {
                 "HASH" => Ft.DataType.Hash,
                 "JSON" => Ft.DataType.Json,
-                var unknown => throw new Errors.RequestException($"Unknown FT.INFO key_type: '{unknown}'"),
+                var unknown => throw new RequestException($"Unknown FT.INFO key_type: '{unknown}'"),
             },
             Prefixes = GetValkeyValues(indexDefinition, "prefixes"),
             Attributes = ParseInfoFields(map),
@@ -516,12 +513,12 @@ internal partial class Request
             BackfillInProgress = GetBool(map, "backfill_in_progress"),
             BackfillCompletePercent = GetDouble(map, "backfill_complete_percent"),
             MutationQueueSize = GetLong(map, "mutation_queue_size"),
-            RecentMutationsQueueDelay = GetDouble(map, "recent_mutations_queue_delay"),
+            RecentMutationsQueueDelay = GetTimeSpan(map, "recent_mutations_queue_delay"),
             State = ParseInfoState(GetString(map, "state")),
-            Punctuation = GetValkeyValue(map, "punctuation"),
-            StopWords = GetValkeyValues(map, "stopwords"),
-            WithOffsets = GetBool(map, "with_offsets"),
-            MinStemSize = GetLong(map, "min_stem_size"),
+            Punctuation = TryGetValkeyValue(map, "punctuation"),
+            StopWords = TryGetValkeyValues(map, "stop_words"),
+            WithOffsets = TryGetBool(map, "with_offsets"),
+            MinStemSize = TryGetLong(map, "min_stem_size"),
         };
     }
 
@@ -556,16 +553,16 @@ internal partial class Request
                     Identifier = identifier,
                     Attribute = attribute,
                     UserIndexedMemory = userIndexedMemory,
-                    WithSuffixTrie = GetBool(fieldMap, "with_suffix_trie"),
-                    NoStem = GetBool(fieldMap, "no_stem"),
+                    WithSuffixTrie = GetBool(fieldMap, "WITH_SUFFIX_TRIE"),
+                    NoStem = GetBool(fieldMap, "NO_STEM"),
                 },
                 "TAG" => new Ft.InfoTagField
                 {
                     Identifier = identifier,
                     Attribute = attribute,
                     UserIndexedMemory = userIndexedMemory,
-                    Separator = GetString(fieldMap, "separator") is { Length: > 0 } sep ? sep[0] : ',',
-                    CaseSensitive = GetBool(fieldMap, "case_sensitive"),
+                    Separator = GetChar(fieldMap, "SEPARATOR"),
+                    CaseSensitive = GetBool(fieldMap, "CASESENSITIVE"),
                     Size = GetLong(fieldMap, "size"),
                 },
                 "NUMERIC" => new Ft.InfoNumericField
@@ -643,94 +640,174 @@ internal partial class Request
 
     /// <summary>
     /// Converts a raw server response object to a string-keyed dictionary.
+    /// Handles both <see cref="Dictionary{GlideString, Object}"/> (RESP3 maps) and
+    /// <see cref="T:object[]"/> (RESP2 flat key-value pair arrays).
     /// </summary>
     private static Dictionary<string, object> ToStringMap(object data)
-        => data is Dictionary<GlideString, object> glideMap
-            ? glideMap.ToDictionary(kvp => kvp.Key.ToString(), kvp => kvp.Value)
-            : [];
+    {
+        if (data is Dictionary<GlideString, object> glideMap)
+        {
+            return glideMap.ToDictionary(kvp => kvp.Key.ToString(), kvp => kvp.Value);
+        }
+
+        if (data is object[] arr && arr.Length >= 2)
+        {
+            var dict = new Dictionary<string, object>();
+            for (int i = 0; i < arr.Length - 1; i += 2)
+            {
+                var key = arr[i] is GlideString gs ? gs.ToString() : arr[i]?.ToString() ?? string.Empty; // TODO
+                dict[key] = arr[i + 1];
+            }
+            return dict;
+        }
+
+        return [];
+    }
 
     /// <summary>
-    /// Returns a <see langword="string"/> corresponding to the given dictionary and key.
+    /// Returns a <see langword="string"/> for the given key.
     /// </summary>
-    /// <exception cref="Errors.RequestException">If the key does not exist.</exception>
+    /// <exception cref="RequestException">If the key does not exist.</exception>
     private static string GetString(Dictionary<string, object> map, string key)
-    {
-        if (map.TryGetValue(key, out var value))
-        {
-            return ((GlideString)value).ToString();
-        }
+        => TryGetString(map, key) ?? throw new RequestException($"FT.INFO response missing required field '{key}'");
 
-        throw new Errors.RequestException($"FT.INFO response missing required field '{key}'");
+    /// <summary>
+    /// Returns a <see langword="string"/> for the given key, or <see langword="null"/> if absent.
+    /// </summary>
+    private static string? TryGetString(Dictionary<string, object> map, string key)
+        => map.TryGetValue(key, out var value) ? ((GlideString)value).ToString() : null;
+
+    /// <summary>
+    /// Returns a <see cref="TimeSpan"/> parsed from a server duration string (e.g. <c>"0.123 sec"</c>).
+    /// </summary>
+    /// <exception cref="RequestException">If the key does not exist.</exception>
+    private static TimeSpan GetTimeSpan(Dictionary<string, object> map, string key)
+        => TimeSpan.FromSeconds(double.Parse(GetString(map, key).Replace(" sec", "")));
+
+    /// <summary>
+    /// Returns a single <see langword="char"/> for the given key.
+    /// </summary>
+    /// <exception cref="RequestException">If the key does not exist or the value is not exactly one character.</exception>
+    private static char GetChar(Dictionary<string, object> map, string key)
+    {
+        var s = GetString(map, key);
+        return s.Length == 1 ? s[0] : throw new RequestException($"FT.INFO field '{key}' expected single character, got '{s}'");
     }
 
     /// <summary>
-    /// Returns a <see langword="long"/> corresponding to the given dictionary and key.
+    /// Returns a <see langword="long"/> for the given key.
     /// </summary>
-    /// <exception cref="Errors.RequestException">If the key does not exist.</exception>
+    /// <exception cref="RequestException">If the key does not exist.</exception>
     private static long GetLong(Dictionary<string, object> map, string key)
+        => TryGetLong(map, key) ?? throw new RequestException($"FT.INFO response missing required field '{key}'");
+
+    /// <summary>
+    /// Returns a <see langword="long"/> for the given key, or <see langword="null"/> if absent.
+    /// </summary>
+    private static long? TryGetLong(Dictionary<string, object> map, string key)
     {
-        if (map.TryGetValue(key, out var value))
+        if (!map.TryGetValue(key, out var value))
         {
-            return Convert.ToInt64(value);
+            return null;
         }
 
-        throw new Errors.RequestException($"FT.INFO response missing required field '{key}'");
+        return value switch
+        {
+            long l => l,
+            GlideString gs => long.Parse(gs.ToString()),
+            _ => throw new RequestException($"FT.INFO field '{key}' expected long or string, got {value.GetType()}"),
+        };
     }
 
     /// <summary>
-    /// Returns a <see langword="double"/> corresponding to the given dictionary and key.
+    /// Returns a <see langword="double"/> for the given key.
     /// </summary>
-    /// <exception cref="Errors.RequestException">If the key does not exist.</exception>
+    /// <exception cref="RequestException">If the key does not exist.</exception>
     private static double GetDouble(Dictionary<string, object> map, string key)
+        => TryGetDouble(map, key) ?? throw new RequestException($"FT.INFO response missing required field '{key}'");
+
+    /// <summary>
+    /// Returns a <see langword="double"/> for the given key, or <see langword="null"/> if absent.
+    /// </summary>
+    private static double? TryGetDouble(Dictionary<string, object> map, string key)
     {
-        if (map.TryGetValue(key, out var value))
+        if (!map.TryGetValue(key, out var value))
         {
-            return Convert.ToDouble(value);
+            return null;
         }
 
-        throw new Errors.RequestException($"FT.INFO response missing required field '{key}'");
+        return value switch
+        {
+            double d => d,
+            long l => l,
+            GlideString gs => double.Parse(gs.ToString()),
+            _ => throw new RequestException($"FT.INFO field '{key}' expected double or string, got {value.GetType()}"),
+        };
     }
 
     /// <summary>
-    /// Returns a <see langword="bool"/> corresponding to the given dictionary and key.
+    /// Returns a <see langword="bool"/> for the given key.
+    /// Values are string-encoded as <c>"0"</c> or <c>"1"</c> by the server.
     /// </summary>
-    /// <exception cref="Errors.RequestException">If the key does not exist.</exception>
+    /// <exception cref="RequestException">If the key does not exist.</exception>
     private static bool GetBool(Dictionary<string, object> map, string key)
+        => TryGetBool(map, key) ?? throw new RequestException($"FT.INFO response missing required field '{key}'");
+
+    /// <summary>
+    /// Returns a <see langword="bool"/> for the given key, or <see langword="null"/> if absent.
+    /// </summary>
+    private static bool? TryGetBool(Dictionary<string, object> map, string key)
     {
-        if (map.TryGetValue(key, out var value))
+        if (!map.TryGetValue(key, out var value))
         {
-            return Convert.ToInt64(value) != 0;
+            return null;
         }
 
-        throw new Errors.RequestException($"FT.INFO response missing required field '{key}'");
+        var s = value is GlideString gs ? gs.ToString() : value?.ToString();
+        return s is "1" or "true";
     }
 
     /// <summary>
-    /// Returns a <see cref="ValkeyValue"/> corresponding to the given dictionary and key.
+    /// Returns a <see cref="ValkeyValue"/> for the given key.
     /// </summary>
-    /// <exception cref="Errors.RequestException">If the key does not exist.</exception>
+    /// <exception cref="RequestException">If the key does not exist.</exception>
     private static ValkeyValue GetValkeyValue(Dictionary<string, object> map, string key)
     {
-        if (map.TryGetValue(key, out var value))
-        {
-            return (GlideString)value;
-        }
-
-        throw new Errors.RequestException($"FT.INFO response missing required field '{key}'");
+        var result = TryGetValkeyValue(map, key);
+        return result != ValkeyValue.Null ? result : throw new RequestException($"FT.INFO response missing required field '{key}'");
     }
 
     /// <summary>
-    /// Returns a <see cref="ValkeyValue"/> array corresponding to the given dictionary and key.
+    /// Returns a <see cref="ValkeyValue"/> for the given key, or <see cref="ValkeyValue.Null"/> if absent.
     /// </summary>
-    /// <exception cref="Errors.RequestException">If the key does not exist.</exception>
+    private static ValkeyValue TryGetValkeyValue(Dictionary<string, object> map, string key)
+        => map.TryGetValue(key, out var value) ? (GlideString)value : ValkeyValue.Null;
+
+    /// <summary>
+    /// Returns a <see cref="ValkeyValue"/> array for the given key.
+    /// </summary>
+    /// <exception cref="RequestException">If the key does not exist.</exception>
     private static ValkeyValue[] GetValkeyValues(Dictionary<string, object> map, string key)
+        => TryGetValkeyValues(map, key) ?? throw new RequestException($"FT.INFO response missing required field '{key}'");
+
+    /// <summary>
+    /// Returns a <see cref="ValkeyValue"/> array for the given key, or <see langword="null"/> if absent.
+    /// </summary>
+    private static ValkeyValue[]? TryGetValkeyValues(Dictionary<string, object> map, string key)
     {
-        if (map.TryGetValue(key, out var value) && value is object[] arr)
+        if (!map.TryGetValue(key, out var value))
         {
-            return [.. arr.Cast<GlideString>().Select(gs => (ValkeyValue)gs)];
+            return null;
         }
 
-        throw new Errors.RequestException($"FT.INFO response missing required field '{key}'");
+        IEnumerable<object> items = value switch
+        {
+            object[] arr => arr,
+            HashSet<object> set => set,
+            _ => throw new Errors.RequestException($"FT.INFO field '{key}' expected array, got {value.GetType()}"),
+        };
+
+        return [.. items.Cast<GlideString>().Select(gs => (ValkeyValue)gs)];
     }
 
     #endregion

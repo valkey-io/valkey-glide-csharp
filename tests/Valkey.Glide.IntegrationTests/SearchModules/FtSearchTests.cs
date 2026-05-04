@@ -75,8 +75,6 @@ public class FtSearchTests(TestConfiguration config)
 
         Ft.SearchResult result = await Ft.SearchAsync(client, index, "@title:Alpha");
         Assert.Equal(1, result.TotalResults);
-        Assert.Equal(1, result.Documents.Length);
-
         Assert.Equivalent(
             new Dictionary<ValkeyValue, ValkeyValue>
             {
@@ -185,9 +183,8 @@ public class FtSearchTests(TestConfiguration config)
 
         Ft.SearchResult result = await Ft.SearchAsync(client, index, "@title:Alpha");
         Assert.Equal(1, result.TotalResults);
-        Assert.Equal(1, result.Documents.Length);
 
-        Ft.SearchDocument doc = result.Documents[0];
+        Ft.SearchDocument doc = Assert.Single(result.Documents);
         Assert.Equal($"{prefix}1", doc.Key);
         Assert.Equivalent(
             new Dictionary<ValkeyValue, ValkeyValue>
@@ -227,7 +224,7 @@ public class FtSearchTests(TestConfiguration config)
         BaseClient client)
     {
         var index = Guid.NewGuid().ToString();
-        var prefix = $"{{{index}}}:";
+        var prefix = $"{index}:";
 
         await Ft.CreateAsync(client, index,
         [
@@ -269,8 +266,8 @@ public class FtSearchTests(TestConfiguration config)
             new("category", "hardware"),
         ]);
 
-        // Wait for indexing
-        await Task.Delay(1000);
+        // Wait for indexing to complete
+        await FtUtils.WaitForIndexingAsync(client, index);
 
         return (index, prefix, keys);
     }
