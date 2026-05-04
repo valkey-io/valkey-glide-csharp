@@ -551,7 +551,7 @@ internal partial class Request
         "ready" => Ft.InfoState.Ready,
         "backfill_in_progress" => Ft.InfoState.BackfillInProgress,
         "backfill_paused_by_oom" => Ft.InfoState.BackfillPausedByOom,
-        _ => Ft.InfoState.Ready,
+        _ => throw new ArgumentException($"Unknown FT.INFO state: '{state}'"),
     };
 
     private static Ft.InfoField[] ParseInfoFields(Dictionary<string, object> map)
