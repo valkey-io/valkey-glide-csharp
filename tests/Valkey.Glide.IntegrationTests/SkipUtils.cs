@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.ServerModules;
+
 namespace Valkey.Glide.IntegrationTests;
 
 /// <summary>
@@ -7,6 +9,8 @@ namespace Valkey.Glide.IntegrationTests;
 /// </summary>
 internal static class SkipUtils
 {
+    #region Version Checks
+
     private static readonly Version Valkey7_0 = new("7.0.0");
     private static readonly Version Valkey9_0 = new("9.0.0");
 
@@ -33,4 +37,49 @@ internal static class SkipUtils
         => Assert.SkipWhen(
             TestConfiguration.SERVER_VERSION < Valkey7_0,
             "Set intersection cardinality commands require Valkey 7.0+");
+
+    #endregion
+    #region Module Checks
+
+    /// <summary>
+    /// Skips the test if the Valkey Search module is not loaded on the server.
+    /// </summary>
+    public static async Task IfSearchModuleNotLoaded(BaseClient client)
+    {
+        // TODO #361: Use client.ModuleListAsync() once implemented.
+        try
+        {
+            _ = await Ft.ListAsync(client);
+        }
+        catch (Exception ex) when (
+            ex.Message.Contains("unknown command", StringComparison.OrdinalIgnoreCase) ||
+            ex.Message.Contains("ERR unknown", StringComparison.OrdinalIgnoreCase) ||
+            ex.Message.Contains("not loaded", StringComparison.OrdinalIgnoreCase))
+        {
+            Assert.Skip("Valkey Search module is not loaded on the server");
+        }
+    }
+
+    /// <summary>
+    /// Skips the test if the Valkey JSON module is not loaded on the server.
+    /// </summary>
+    public static async Task IfJsonModuleNotLoaded(BaseClient client)
+    {
+        // TODO #361: Use client.ModuleListAsync() once implemented.
+        try
+        {
+            var index = Guid.NewGuid().ToString();
+            var options = new Ft.CreateOptions { DataType = Ft.DataType.Json };
+            await Ft.CreateAsync(client, index, new Ft.CreateTextField("$.f", "f"), options);
+            await Ft.DropIndexAsync(client, index);
+        }
+        catch (Exception ex) when (
+            ex.Message.Contains("JSON", StringComparison.OrdinalIgnoreCase) ||
+            ex.Message.Contains("module", StringComparison.OrdinalIgnoreCase))
+        {
+            Assert.Skip("Valkey JSON module is not loaded on the server");
+        }
+    }
+
+    #endregion
 }

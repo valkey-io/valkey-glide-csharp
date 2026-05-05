@@ -86,12 +86,24 @@ internal partial class Request
         => new HashSet<ValkeyValue>(set.Cast<GlideString>().Select(gs => (ValkeyValue)gs));
 
     /// <summary>
-    /// Converts an object array to a <see cref="ValkeyKey"/> set and returns the result.
+    /// Converts an object array to an <see cref="ISet{ValkeyKey}"/>.
     /// </summary>
     /// <param name="objects">The object array to convert.</param>
     /// <returns>A converted <see cref="ValkeyKey"/> set.</returns>
-    private static HashSet<ValkeyKey> ToValkeyKeySet(object[] objects)
-        => [.. objects.Cast<GlideString>().Select(gs => (ValkeyKey)gs.Bytes)];
+    private static ISet<ValkeyKey> ToValkeyKeySet(object[] objects)
+        => new HashSet<ValkeyKey>(objects.Cast<GlideString>().Select(gs => (ValkeyKey)gs.Bytes));
+
+    /// <summary>
+    /// Converts an object array to an <see cref="ISet{ValkeyValue}"/>.
+    /// </summary>
+    private static ISet<ValkeyValue> ToValkeyValueSet(object[] objects)
+        => new HashSet<ValkeyValue>(objects.Cast<GlideString>().Select(s => (ValkeyValue)s));
+
+    /// <summary>
+    /// Converts a keyword and items into a counted array: <c>keyword count item1 item2 ...</c>.
+    /// </summary>
+    private static GlideString[] ToArgs(GlideString keyword, IEnumerable<ValkeyValue> items)
+        => [keyword, items.Count().ToGlideString(), .. items];
 
 
     /// <summary>

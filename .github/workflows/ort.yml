@@ -150,7 +150,7 @@ jobs:
 
               ### Get licenses ###
             - name: Retrieve licenses list
-              working-directory: utils
+              working-directory: scripts
               run: |
                   {
                     echo 'LICENSES_LIST<<EOF'
@@ -171,7 +171,7 @@ jobs:
               with:
                   name: final-package-list-${{ steps.date.outputs.date }}
                   path: |
-                      utils/final_package_list.txt
+                      scripts/final_package_list.txt
                   retention-days: 30
 
             - name: Upload the skipped package list
@@ -180,7 +180,7 @@ jobs:
               with:
                   name: skipped-package-list-${{ steps.date.outputs.date }}
                   path: |
-                      utils/skipped_package_list.txt
+                      scripts/skipped_package_list.txt
                   retention-days: 30
 
             - name: Upload the unknown/unapproved package list
@@ -189,14 +189,14 @@ jobs:
               with:
                   name: unapproved-package-list-${{ steps.date.outputs.date }}
                   path: |
-                      utils/unapproved_package_list.txt
+                      scripts/unapproved_package_list.txt
                   retention-days: 30
 
             - name: Check for unapproved packages
               run: |
-                  if [ -s utils/unapproved_package_list.txt ]; then
+                  if [ -s scripts/unapproved_package_list.txt ]; then
                     echo "::error::Found unapproved packages. Please review unapproved package list"
-                    cat utils/unapproved_package_list.txt
+                    cat scripts/unapproved_package_list.txt
                     exit 1
                   else
                     echo "No unapproved packages found."

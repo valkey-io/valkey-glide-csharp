@@ -197,7 +197,7 @@ jobs:
               run: |
                   dotnet test tests/Valkey.Glide.IntegrationTests/ \
                     --framework net${{ matrix.dotnet }} \
-                    --filter "FullyQualifiedName~ValkeySearchCommand|FullyQualifiedName~Valkey.Glide.IntegrationTests.ServerModules" \
+                    --filter "FullyQualifiedName~ServerModules" \
                     --logger "html;LogFileName=ModuleTestReport.html" \
                     --logger "trx;LogFileName=ModuleTestResults.trx" \
                     --logger "console;verbosity=detailed" \
