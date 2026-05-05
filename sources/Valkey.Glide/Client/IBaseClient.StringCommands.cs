@@ -273,7 +273,7 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var wasSet = await client.SetAsync("key", "value", SetCondition.OnlyIfDoesNotExist);  // true
+    /// var wasSet = await client.SetAsync("key", "value", Valkey.Glide.Commands.Options.SetCondition.OnlyIfDoesNotExist);  // true
     /// </code>
     /// </example>
     /// </remarks>
@@ -290,7 +290,7 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var setOptions = new SetOptions { Condition = SetCondition.OnlyIfDoesNotExist };
+    /// var setOptions = new SetOptions { Condition = Valkey.Glide.Commands.Options.SetCondition.OnlyIfDoesNotExist };
     /// var wasSet = await client.SetAsync("key", "value", setOptions);  // true
     /// </code>
     /// </example>
@@ -342,7 +342,7 @@ public partial interface IBaseClient
     /// <example>
     /// <code>
     /// await client.SetAsync("key", "oldValue");
-    /// var previous = await client.GetSetAsync("key", "newValue", SetCondition.OnlyIfExists);  // "oldValue"
+    /// var previous = await client.GetSetAsync("key", "newValue", Valkey.Glide.Commands.Options.SetCondition.OnlyIfExists);  // "oldValue"
     /// </code>
     /// </example>
     /// </remarks>
@@ -360,7 +360,7 @@ public partial interface IBaseClient
     /// <example>
     /// <code>
     /// await client.SetAsync("key", "oldValue");
-    /// var setOptions = new SetOptions { Condition = SetCondition.OnlyIfExists };
+    /// var setOptions = new SetOptions { Condition = Valkey.Glide.Commands.Options.SetCondition.OnlyIfExists };
     /// var previous = await client.GetSetAsync("key", "newValue", setOptions);  // "oldValue"
     /// </code>
     /// </example>

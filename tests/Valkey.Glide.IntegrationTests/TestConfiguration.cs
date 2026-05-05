@@ -21,6 +21,7 @@ public class TestConfiguration : IDisposable
     public static IList<Address> CLUSTER_ADDRESSES = [];
 
     // First address for standalone and cluster servers, for convenience.
+    // These throw if no addresses are available - use HasStandalone/HasCluster to check first.
     public static Address STANDALONE_ADDRESS => STANDALONE_ADDRESSES.First();
     public static Address CLUSTER_ADDRESS => CLUSTER_ADDRESSES.First();
 
@@ -32,6 +33,18 @@ public class TestConfiguration : IDisposable
     private const string DefaultServerGroupName = "cluster";
     public static Version SERVER_VERSION { get; internal set; } = new();
     public static bool TLS { get; internal set; } = false;
+
+    /// <summary>
+    /// Indicates whether standalone server endpoints are available for testing.
+    /// </summary>
+    public static bool HasStandalone => STANDALONE_ADDRESSES.Count > 0;
+
+    /// <summary>
+    /// Indicates whether cluster server endpoints are available for testing.
+    /// When only standalone-endpoints env var is provided
+    /// this will be false and cluster tests will be skipped gracefully.
+    /// </summary>
+    public static bool HasCluster => CLUSTER_ADDRESSES.Count > 0;
 
     // Version check helper methods for test skipping
     public static bool IsVersionLessThan(string version) => SERVER_VERSION < new Version(version);
@@ -92,6 +105,12 @@ public class TestConfiguration : IDisposable
         {
             lock (LockObject)
             {
+                // Return empty if no standalone endpoints available
+                if (!HasStandalone)
+                {
+                    return field;
+                }
+
                 if (field.Count == 0)
                 {
                     GlideClient resp2client = GlideClient.CreateClient(
@@ -123,6 +142,11 @@ public class TestConfiguration : IDisposable
         {
             lock (LockObject)
             {
+                if (!HasCluster)
+                {
+                    return field;
+                }
+
                 if (field.Count == 0)
                 {
                     GlideClusterClient resp2client = GlideClusterClient.CreateClient(
@@ -190,6 +214,12 @@ public class TestConfiguration : IDisposable
         {
             lock (LockObject)
             {
+                // Return empty if no standalone endpoints available
+                if (!HasStandalone)
+                {
+                    return field;
+                }
+
                 if (field.Count == 0)
                 {
                     ConfigurationOptions resp2conf = DefaultCompatibleConfig();
@@ -216,6 +246,12 @@ public class TestConfiguration : IDisposable
         {
             lock (LockObject)
             {
+                // Return empty if no cluster endpoints available
+                if (!HasCluster)
+                {
+                    return field;
+                }
+
                 if (field.Count == 0)
                 {
                     ConfigurationOptions resp2conf = DefaultCompatibleClusterConfig();
