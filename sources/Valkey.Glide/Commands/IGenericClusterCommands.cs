@@ -176,8 +176,7 @@ public interface IGenericClusterCommands
     /// <example>
     /// <code>
     /// // Example 1: Atomic Batch (Transaction) all keys must share the same hash slot
-    /// Pipeline.Options.ClusterBatchOptions options = new(
-    ///     timeout: 1000); // Set a timeout of 1000 milliseconds
+    /// var options = new ClusterBatchOptions(timeout: 1000); // Set a timeout of 1000 milliseconds
     ///
     /// var batch = new ClusterBatch(true) // Atomic (Transaction)
     ///     .SetAsync("key", "1")
@@ -191,8 +190,8 @@ public interface IGenericClusterCommands
     /// <example>
     /// <code>
     /// // Example 2: Non-Atomic Batch (Pipeline)
-    /// var retryStrategy = new Pipeline.Options.ClusterBatchRetryStrategy(retryServerError: true, retryConnectionError: false);
-    /// Pipeline.Options.ClusterBatchOptions options = new(retryStrategy: retryStrategy);
+    /// var retryStrategy = new ClusterBatchRetryStrategy(retryServerError: true, retryConnectionError: false);
+    /// var options = new ClusterBatchOptions(retryStrategy: retryStrategy);
     ///
     /// var batch = new ClusterBatch(false) // Non-Atomic (Pipeline) keys may span different hash slots
     ///     .SetAsync("key1", "value1")
