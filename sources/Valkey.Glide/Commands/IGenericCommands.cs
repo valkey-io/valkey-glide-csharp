@@ -102,8 +102,7 @@ public interface IGenericCommands
     /// <example>
     /// <code>
     /// // Example 1: Atomic Batch (Transaction)
-    /// Pipeline.Options.BatchOptions options = new(
-    ///     timeout: 1000); // Set a timeout of 1000 milliseconds
+    /// var options = new BatchOptions(timeout: 1000); // Set a timeout of 1000 milliseconds
     ///
     /// var batch = new Batch(true) // Atomic (Transaction)
     ///     .SetAsync("key", "1")
@@ -117,8 +116,7 @@ public interface IGenericCommands
     /// <example>
     /// <code>
     /// // Example 2: Non-Atomic Batch (Pipeline)
-    /// Pipeline.Options.BatchOptions options = new(
-    ///     timeout: 1000); // Set a timeout of 1000 milliseconds
+    /// var options = new BatchOptions(timeout: 1000); // Set a timeout of 1000 milliseconds
     ///
     /// var batch = new Batch(false) // Non-Atomic (Pipeline) keys may span different hash slots
     ///     .SetAsync("key1", "value1")

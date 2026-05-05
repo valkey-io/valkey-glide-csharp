@@ -55,12 +55,12 @@ class ExamplesValidator:
 
     # Type imports (using static) to include when --add-imports is specified.
     _USING_TYPES = [
+        "Valkey.Glide.Commands.Options.BitFieldOptions.Encoding",
+        "Valkey.Glide.Commands.Options.BitFieldOptions",
+        "Valkey.Glide.Commands.Options.InfoOptions",
         "Valkey.Glide.Pipeline.Batch",
         "Valkey.Glide.Pipeline.ClusterBatch",
-        "Valkey.Glide.Commands.Options.InfoOptions",
-        "Valkey.Glide.Commands.Options.BitFieldOptions",
-        "Valkey.Glide.Commands.Options.BitFieldOptions.Encoding",
-        "Valkey.Glide.ServerModules.GlideJson",
+        "Valkey.Glide.Pipeline.Options",
     ]
 
     # Client fields to include when --add-clients is specified.
