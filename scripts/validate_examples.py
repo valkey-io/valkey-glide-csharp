@@ -50,6 +50,7 @@ class ExamplesValidator:
         "Valkey.Glide.Pipeline",
         "Valkey.Glide.Commands",
         "Valkey.Glide.Commands.Options",
+        "Valkey.Glide.ServerModules",
     ]
 
     # Type imports (using static) to include when --add-imports is specified.
@@ -59,6 +60,7 @@ class ExamplesValidator:
         "Valkey.Glide.Commands.Options.InfoOptions",
         "Valkey.Glide.Commands.Options.BitFieldOptions",
         "Valkey.Glide.Commands.Options.BitFieldOptions.Encoding",
+        "Valkey.Glide.ServerModules.GlideJson",
     ]
 
     # Client fields to include when --add-clients is specified.
