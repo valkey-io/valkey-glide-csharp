@@ -720,4 +720,43 @@ public static partial class GlideJson
     }
 
     #endregion
+
+    #region JSON.TOGGLE
+
+    /// <summary>
+    /// Toggles the boolean value at the specified path in the JSON document stored at the key.
+    /// </summary>
+    /// <param name="client">The Glide client to use for the command.</param>
+    /// <param name="key">The key where the JSON document is stored.</param>
+    /// <param name="path">The JSONPath or legacy path within the JSON document.</param>
+    /// <returns>
+    /// An array of toggled boolean values for each matching path. Returns <see langword="null"/> for non-boolean matches.
+    /// </returns>
+    /// <seealso href="https://valkey.io/commands/json.toggle/">Valkey commands – JSON.TOGGLE</seealso>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await GlideJson.SetAsync(client, "mykey", "$", "{\"a\":true,\"b\":false}");
+    /// var toggled = await GlideJson.ToggleAsync(client, "mykey", "$.*");  // [false, true]
+    /// </code>
+    /// </example>
+    /// </remarks>
+    public static async Task<bool?[]?> ToggleAsync(BaseClient client, ValkeyKey key, ValkeyValue path)
+    {
+        GlideString[] args = [JsonToggle, ToGlideString(key), ToGlideString(path)];
+        object? result = await ExecuteCommandAsync(client, args);
+        return ConvertToNullableBoolArray(result);
+    }
+
+    private static bool?[]? ConvertToNullableBoolArray(object? result)
+    {
+        if (result is null)
+            return null;
+        if (result is object?[] arr)
+            return [.. arr.Select(o => o is null ? (bool?)null : Convert.ToBoolean(o))];
+        // Single value (legacy path) - wrap in array for consistent return type
+        return [Convert.ToBoolean(result)];
+    }
+
+    #endregion
 }
