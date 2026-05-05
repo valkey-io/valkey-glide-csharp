@@ -97,7 +97,7 @@ class ExamplesValidator:
 
 {usings}
 
-namespace Valkey.Glide.ExampleValidation;
+namespace ExampleValidation;
 
 public class {class_name}
 {{
