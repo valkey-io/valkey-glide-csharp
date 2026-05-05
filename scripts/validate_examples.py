@@ -136,9 +136,10 @@ public class {class_name}
             add_imports: If True, include default using directives in the generated class.
             add_clients: If True, include static client fields in the generated class.
         """
-        self._examples = examples
-        self._add_imports = add_imports
-        self._add_clients = add_clients
+        self._examples: dict[str, str] = examples
+        self._add_imports: bool = add_imports
+        self._add_clients: bool = add_clients
+
         self._temp_dir = tempfile.TemporaryDirectory()
         self._glide_dll_path = os.path.abspath(glide_dll)
 
@@ -169,48 +170,58 @@ public class {class_name}
         """Validate the examples by compiling them.
 
         Returns:
-            A dict mapping source references to lists of error messages for
-            examples that failed compilation. An empty dict means all examples
-            compiled successfully.
+            A dict mapping source references to lists of error messages.
+            An empty dict means all examples were successfully validated.
         """
         if not self._examples:
             return {}
 
-        file_to_source = self._create_project()
-        return self._build_project(file_to_source)
+        self._file_to_source: dict[str, str] = {}
+        self._source_to_errors: dict[str, list[str]] = {}
 
-    def _create_project(self) -> dict[str, str]:
+        self._create_project()
+        self._build_project()
+
+        return self._source_to_errors
+
+    def _create_project(self) -> None:
         """Generate the .csproj and wrapper files in the temp directory."""
         csproj_content = self._PROJECT_TEMPLATE.format(dll_path=self._glide_dll_path)
 
         with open(os.path.join(self._temp_dir.name, "ExampleValidation.csproj"), "w") as f:
             f.write(csproj_content)
 
-        file_to_source: dict[str, str] = {}
         for source, content in self._examples.items():
-            filename = self._generate_class(source, content)
-            file_to_source[filename] = source
+            self._generate_class(source, content)
 
-        return file_to_source
-
-    def _generate_class(self, source: str, content: str) -> str:
+    def _generate_class(self, source: str, content: str) -> None:
         """Generate and write a C# class for a single example."""
 
+        using_directives = []
+
         # Extract 'using' directives from code.
-        usings = []
         code_lines = []
         for line in content.splitlines():
             if self._USING_DIRECTIVE.match(line):
-                usings.append(line)
+                using_directives.append(line)
             else:
                 code_lines.append(line)
 
+        # Add default 'using' directives.
         if self._add_imports:
-            usings = (
-                [f"using {ns};" for ns in self._USING_NAMESPACES]
-                + [f"using static {t};" for t in self._USING_TYPES]
-                + usings
-            )
+            using_directives += [f"using {ns};" for ns in self._USING_NAMESPACES]
+            using_directives += [f"using static {t};" for t in self._USING_TYPES]
+
+        # Detect duplicate using directives.
+        using_directives_set: set[str] = set()
+        for u in using_directives:
+            normalized = u.strip()
+            if normalized in using_directives_set:
+                self._source_to_errors.setdefault(source, []).append(
+                    f"Duplicate import: {normalized}"
+                )
+            else:
+                using_directives_set.add(normalized)
 
         # Get fields to include
         fields = []
@@ -218,7 +229,7 @@ public class {class_name}
             fields += self._CLIENT_FIELDS
 
         class_name = f"Example_{uuid.uuid4().hex}"
-        usings_str = "\n".join(dict.fromkeys(usings))
+        usings_str = "\n".join(using_directives_set)
         fields_str = "\n".join(f"    {f}" for f in fields)
         indented_code = textwrap.indent("\n".join(code_lines).strip(), "        ")
 
@@ -235,10 +246,10 @@ public class {class_name}
         with open(filepath, "w") as f:
             f.write(file_content)
 
-        return filename
+        self._file_to_source[filename] = source
 
-    def _build_project(self, file_to_source: dict[str, str]) -> dict[str, list[str]]:
-        """Run dotnet build and return errors mapped by source."""
+    def _build_project(self) -> None:
+        """Run dotnet build and record compilation errors."""
         result = subprocess.run(
             ["dotnet", "build", "--framework", "net8.0"],
             cwd=self._temp_dir.name,
@@ -248,26 +259,32 @@ public class {class_name}
             text=True,
         )
 
+        # Build succeeded:
         if result.returncode == 0:
-            return {}
+            return
 
-        errors: dict[str, list[str]] = {}
+        # Build failed with matching errors:
+        found_errors = False
         for line in result.stdout.splitlines():
             match = self._ERROR_PATTERN.search(line)
             if match:
+                found_errors = True
                 basename = os.path.basename(match.group("file"))
-                source = file_to_source.get(basename, basename)
-                errors.setdefault(source, []).append(match.group("message").strip())
+                source = self._file_to_source.get(basename, basename)
+                self._source_to_errors.setdefault(source, []).append(
+                    match.group("message").strip()
+                )
 
-        if not errors:
-            fallback = [f"dotnet build failed with exit code {result.returncode}."]
-            raw = result.stdout.strip()
-            if raw:
-                fallback.append("Raw build output:")
-                fallback.extend(raw.splitlines())
-            errors["<build>"] = fallback
+        if found_errors:
+            return
 
-        return errors
+        # Build failed without any matching errors:
+        fallback = [f"dotnet build failed with exit code {result.returncode}."]
+        raw = result.stdout.strip()
+        if raw:
+            fallback.append("Raw build output:")
+            fallback.extend(raw.splitlines())
+        self._source_to_errors.setdefault("<build>", []).extend(fallback)
 
 
 def main():
