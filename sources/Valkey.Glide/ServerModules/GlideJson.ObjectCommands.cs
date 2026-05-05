@@ -16,14 +16,19 @@ public static partial class GlideJson
     /// <param name="key">The key where the JSON document is stored.</param>
     /// <param name="path">The JSONPath or legacy path within the JSON document.</param>
     /// <returns>
-    /// An array of key counts for each matching path. Returns <see langword="null"/> for non-object matches.
+    /// An array of key counts for each matching path, or <see langword="null"/> if the key does not exist.
+    /// Elements are <see langword="null"/> for paths where the value is not an object.
     /// </returns>
     /// <seealso href="https://valkey.io/commands/json.objlen/">Valkey commands – JSON.OBJLEN</seealso>
     /// <remarks>
     /// <example>
     /// <code>
-    /// await GlideJson.SetAsync(client, "mykey", "$", "{\"a\":{\"x\":1,\"y\":2},\"b\":{\"z\":3}}");
-    /// var counts = await GlideJson.ObjLenAsync(client, "mykey", "$.*");  // [2, 1]
+    /// await GlideJson.SetAsync(client, "mykey", "$", "{\"obj\":{\"a\":1,\"b\":2},\"arr\":[1,2]}");
+    /// var counts = await GlideJson.ObjLenAsync(client, "mykey", "$.*");
+    /// // counts = [2, null] - obj has 2 keys, arr is not an object (null)
+    ///
+    /// var missing = await GlideJson.ObjLenAsync(client, "nonexistent", "$.*");
+    /// // missing = null - key doesn't exist
     /// </code>
     /// </example>
     /// </remarks>
@@ -181,15 +186,19 @@ public static partial class GlideJson
     /// <param name="key">The key where the JSON document is stored.</param>
     /// <param name="path">The JSONPath or legacy path within the JSON document.</param>
     /// <returns>
-    /// An array of memory sizes in bytes for each matching path.
+    /// An array of memory sizes in bytes for each matching path, or <see langword="null"/> if the key does not exist.
+    /// Elements are <see langword="null"/> for paths that don't exist.
     /// </returns>
     /// <seealso href="https://valkey.io/commands/json.debug/">Valkey commands – JSON.DEBUG</seealso>
     /// <remarks>
     /// <example>
     /// <code>
-    /// await GlideJson.SetAsync(client, "mykey", "$", "{\"a\":\"hello\"}");
-    /// var memory = await GlideJson.DebugMemoryAsync(client, "mykey", "$");
-    /// Console.WriteLine($"Memory usage: {memory?[0]} bytes");
+    /// await GlideJson.SetAsync(client, "mykey", "$", "{\"a\":\"hello\",\"b\":123}");
+    /// var memory = await GlideJson.DebugMemoryAsync(client, "mykey", "$.*");
+    /// // memory = [size1, size2] - memory usage for each matched path
+    ///
+    /// var missing = await GlideJson.DebugMemoryAsync(client, "nonexistent", "$.*");
+    /// // missing = null - key doesn't exist
     /// </code>
     /// </example>
     /// </remarks>
@@ -234,14 +243,19 @@ public static partial class GlideJson
     /// <param name="key">The key where the JSON document is stored.</param>
     /// <param name="path">The JSONPath or legacy path within the JSON document.</param>
     /// <returns>
-    /// An array of field counts for each matching path.
+    /// An array of field counts for each matching path, or <see langword="null"/> if the key does not exist.
+    /// Elements are <see langword="null"/> for paths that don't exist.
     /// </returns>
     /// <seealso href="https://valkey.io/commands/json.debug/">Valkey commands – JSON.DEBUG</seealso>
     /// <remarks>
     /// <example>
     /// <code>
-    /// await GlideJson.SetAsync(client, "mykey", "$", "{\"a\":{\"x\":1,\"y\":2}}");
-    /// var fields = await GlideJson.DebugFieldsAsync(client, "mykey", "$.a");  // [2]
+    /// await GlideJson.SetAsync(client, "mykey", "$", "{\"a\":{\"x\":1,\"y\":2},\"b\":123}");
+    /// var fields = await GlideJson.DebugFieldsAsync(client, "mykey", "$.*");
+    /// // fields = [2, 1] - a has 2 fields, b has 1 field
+    ///
+    /// var missing = await GlideJson.DebugFieldsAsync(client, "nonexistent", "$.*");
+    /// // missing = null - key doesn't exist
     /// </code>
     /// </example>
     /// </remarks>

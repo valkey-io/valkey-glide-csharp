@@ -27,7 +27,7 @@ public class JsonObjectCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"a\":1,\"b\":2,\"c\":3}";
 
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
         long?[]? result = await GlideJson.ObjLenAsync(client, key, "$");
 
         Assert.NotNull(result);
@@ -44,7 +44,7 @@ public class JsonObjectCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{}";
 
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
         long?[]? result = await GlideJson.ObjLenAsync(client, key, "$");
 
         Assert.NotNull(result);
@@ -65,7 +65,7 @@ public class JsonObjectCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\",\"age\":30}";
 
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
         ValkeyValue[]?[]? result = await GlideJson.ObjKeysAsync(client, key, "$");
 
         Assert.NotNull(result);
@@ -88,7 +88,7 @@ public class JsonObjectCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"active\":true}";
 
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
         bool?[]? result = await GlideJson.ToggleAsync(client, key, "$.active");
 
         Assert.NotNull(result);
@@ -105,7 +105,7 @@ public class JsonObjectCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"active\":false}";
 
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
         bool?[]? result = await GlideJson.ToggleAsync(client, key, "$.active");
 
         Assert.NotNull(result);
@@ -126,7 +126,7 @@ public class JsonObjectCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\",\"age\":30}";
 
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
         long? memorySize = await GlideJson.DebugMemoryAsync(client, key);
 
         _ = Assert.NotNull(memorySize);
@@ -146,7 +146,7 @@ public class JsonObjectCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\",\"age\":30}";
 
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
         long? fieldCount = await GlideJson.DebugFieldsAsync(client, key);
 
         _ = Assert.NotNull(fieldCount);
@@ -166,7 +166,7 @@ public class JsonObjectCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\"}";
 
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
         ValkeyResult result = await GlideJson.RespAsync(client, key);
 
         Assert.NotNull(result);

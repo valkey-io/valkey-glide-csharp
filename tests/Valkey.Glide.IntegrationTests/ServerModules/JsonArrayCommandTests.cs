@@ -27,7 +27,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"arr\":[1,2,3]}";
 
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
         long?[]? result = await GlideJson.ArrAppendAsync(client, key, "$.arr", ["4", "5"]);
 
         Assert.NotNull(result);
@@ -44,7 +44,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"a\":[1],\"b\":[2,3]}";
 
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
         long?[]? result = await GlideJson.ArrAppendAsync(client, key, "$.*", ["99"]);
 
         Assert.NotNull(result);
@@ -64,7 +64,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"arr\":[1,2,3]}";
 
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
         long?[]? result = await GlideJson.ArrInsertAsync(client, key, "$.arr", 1, ["99"]);
 
         Assert.NotNull(result);
@@ -81,7 +81,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"arr\":[1,2,3]}";
 
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
         long?[]? result = await GlideJson.ArrInsertAsync(client, key, "$.arr", -1, ["99"]);
 
         Assert.NotNull(result);
@@ -102,7 +102,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"arr\":[1,2,3,4,5]}";
 
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
         long?[]? result = await GlideJson.ArrIndexAsync(client, key, "$.arr", "3");
 
         Assert.NotNull(result);
@@ -119,7 +119,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"arr\":[1,2,3]}";
 
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
         long?[]? result = await GlideJson.ArrIndexAsync(client, key, "$.arr", "99");
 
         Assert.NotNull(result);
@@ -137,7 +137,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string jsonValue = "{\"arr\":[1,2,3,2,5]}";
         var options = GlideJson.ArrIndexRange.FromStart(2);
 
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
         long?[]? result = await GlideJson.ArrIndexAsync(client, key, "$.arr", "2", options);
 
         Assert.NotNull(result);
@@ -158,7 +158,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"arr\":[1,2,3,4,5]}";
 
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
         long?[]? result = await GlideJson.ArrLenAsync(client, key, "$.arr");
 
         Assert.NotNull(result);
@@ -175,7 +175,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"arr\":[]}";
 
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
         long?[]? result = await GlideJson.ArrLenAsync(client, key, "$.arr");
 
         Assert.NotNull(result);
@@ -196,7 +196,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"arr\":[1,2,3]}";
 
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
         ValkeyValue?[]? result = await GlideJson.ArrPopAsync(client, key, "$.arr");
 
         Assert.NotNull(result);
@@ -213,7 +213,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"arr\":[1,2,3]}";
 
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
         ValkeyValue?[]? result = await GlideJson.ArrPopAsync(client, key, "$.arr", 0);
 
         Assert.NotNull(result);
@@ -234,7 +234,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"arr\":[1,2,3,4,5]}";
 
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
         long?[]? result = await GlideJson.ArrTrimAsync(client, key, "$.arr", 1, 3);
 
         Assert.NotNull(result);
@@ -251,7 +251,7 @@ public class JsonArrayCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"arr\":[1,2,3]}";
 
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
         long?[]? result = await GlideJson.ArrTrimAsync(client, key, "$.arr", 5, 10);
 
         Assert.NotNull(result);

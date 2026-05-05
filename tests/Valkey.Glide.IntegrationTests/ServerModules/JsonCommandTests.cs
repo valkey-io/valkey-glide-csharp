@@ -35,9 +35,11 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\",\"age\":30}";
 
-        ValkeyValue result = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
 
-        Assert.Equal("OK", result);
+        // Verify the value was set by reading it back
+        ValkeyValue result = await GlideJson.GetAsync(client, key);
+        Assert.False(result.IsNull);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -50,9 +52,11 @@ public class JsonCommandTests(TestConfiguration config)
         string path = "$";
         string jsonValue = "{\"name\":\"Jane\",\"age\":25}";
 
-        ValkeyValue result = await GlideJson.SetAsync(client, key, path, jsonValue);
+        await GlideJson.SetAsync(client, key, path, jsonValue);
 
-        Assert.Equal("OK", result);
+        // Verify the value was set by reading it back
+        ValkeyValue result = await GlideJson.GetAsync(client, key);
+        Assert.False(result.IsNull);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -66,12 +70,14 @@ public class JsonCommandTests(TestConfiguration config)
         string newValue = "{\"name\":\"Jane\",\"age\":25}";
 
         // Set initial value
-        ValkeyValue result1 = await GlideJson.SetAsync(client, key, "$", initialValue);
-        Assert.Equal("OK", result1);
+        await GlideJson.SetAsync(client, key, "$", initialValue);
 
         // Overwrite with new value
-        ValkeyValue result2 = await GlideJson.SetAsync(client, key, "$", newValue);
-        Assert.Equal("OK", result2);
+        await GlideJson.SetAsync(client, key, "$", newValue);
+
+        // Verify the new value was set
+        ValkeyValue result = await GlideJson.GetAsync(client, key);
+        Assert.Contains("Jane", result.ToString());
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -83,9 +89,9 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\"}";
 
-        ValkeyValue result = await GlideJson.SetAsync(client, key, "$", jsonValue, GlideJson.SetCondition.OnlyIfDoesNotExist);
+        bool wasSet = await GlideJson.SetAsync(client, key, "$", jsonValue, GlideJson.SetCondition.OnlyIfDoesNotExist);
 
-        Assert.Equal("OK", result);
+        Assert.True(wasSet);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -97,11 +103,11 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string initialValue = "{\"name\":\"John\"}";
         string newValue = "{\"name\":\"Jane\"}";            // Set initial value
-        _ = await GlideJson.SetAsync(client, key, "$", initialValue);
+        await GlideJson.SetAsync(client, key, "$", initialValue);
 
         // Try to set with condition
-        ValkeyValue result = await GlideJson.SetAsync(client, key, "$", newValue, GlideJson.SetCondition.OnlyIfDoesNotExist);
-        Assert.True(result.IsNull);
+        bool wasSet = await GlideJson.SetAsync(client, key, "$", newValue, GlideJson.SetCondition.OnlyIfDoesNotExist);
+        Assert.False(wasSet);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -113,11 +119,11 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string initialValue = "{\"name\":\"John\"}";
         string newValue = "{\"name\":\"Jane\"}";            // Set initial value
-        _ = await GlideJson.SetAsync(client, key, "$", initialValue);
+        await GlideJson.SetAsync(client, key, "$", initialValue);
 
         // Try to set with condition
-        ValkeyValue result = await GlideJson.SetAsync(client, key, "$", newValue, GlideJson.SetCondition.OnlyIfExists);
-        Assert.Equal("OK", result);
+        bool wasSet = await GlideJson.SetAsync(client, key, "$", newValue, GlideJson.SetCondition.OnlyIfExists);
+        Assert.True(wasSet);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -129,9 +135,9 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\"}";
 
-        ValkeyValue result = await GlideJson.SetAsync(client, key, "$", jsonValue, GlideJson.SetCondition.OnlyIfExists);
+        bool wasSet = await GlideJson.SetAsync(client, key, "$", jsonValue, GlideJson.SetCondition.OnlyIfExists);
 
-        Assert.True(result.IsNull);
+        Assert.False(wasSet);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -143,11 +149,14 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string initialValue = "{\"person\":{\"name\":\"John\"}}";
         string newNameValue = "\"Jane\"";            // Set initial value
-        _ = await GlideJson.SetAsync(client, key, "$", initialValue);
+        await GlideJson.SetAsync(client, key, "$", initialValue);
 
         // Try to set with condition
-        ValkeyValue result = await GlideJson.SetAsync(client, key, "$.person.name", newNameValue);
-        Assert.Equal("OK", result);
+        await GlideJson.SetAsync(client, key, "$.person.name", newNameValue);
+
+        // Verify the value was updated
+        ValkeyValue result = await GlideJson.GetAsync(client, key);
+        Assert.Contains("Jane", result.ToString());
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -159,9 +168,11 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "[1, 2, 3, 4, 5]";
 
-        ValkeyValue result = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
 
-        Assert.Equal("OK", result);
+        // Verify the value was set
+        ValkeyValue result = await GlideJson.GetAsync(client, key);
+        Assert.Contains("1", result.ToString());
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -175,21 +186,22 @@ public class JsonCommandTests(TestConfiguration config)
         string keyBool = GetUniqueKey("bool");
         string keyNull = GetUniqueKey("null");
         // Set string value
-        string? resultString = await GlideJson.SetAsync(client, keyString, "$", "\"hello\"");
-        Assert.Equal("OK", resultString);
+        await GlideJson.SetAsync(client, keyString, "$", "\"hello\"");
 
         // Set number value
-        string? resultNumber = await GlideJson.SetAsync(client, keyNumber, "$", "42");
-        Assert.Equal("OK", resultNumber);
+        await GlideJson.SetAsync(client, keyNumber, "$", "42");
 
         // Set boolean value
-        string? resultBool = await GlideJson.SetAsync(client, keyBool, "$", "true");
-        Assert.Equal("OK", resultBool);
+        await GlideJson.SetAsync(client, keyBool, "$", "true");
 
         // Set null value
-        string? resultNull = await GlideJson.SetAsync(client, keyNull, "$", "null");
-        Assert.Equal("OK", resultNull);
+        await GlideJson.SetAsync(client, keyNull, "$", "null");
 
+        // Verify values were set
+        Assert.Equal("\"hello\"", (await GlideJson.GetAsync(client, keyString)).ToString());
+        Assert.Equal("42", (await GlideJson.GetAsync(client, keyNumber)).ToString());
+        Assert.Equal("true", (await GlideJson.GetAsync(client, keyBool)).ToString());
+        Assert.Equal("null", (await GlideJson.GetAsync(client, keyNull)).ToString());
     }
 
     #endregion
@@ -205,8 +217,8 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\",\"age\":30}";
 
-        ValkeyValue result; _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        result = await GlideJson.GetAsync(client, key);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
+        ValkeyValue result = await GlideJson.GetAsync(client, key);
 
         Assert.False(result.IsNull);
         // The result should contain the JSON document
@@ -225,8 +237,8 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\",\"age\":30}";
 
-        ValkeyValue result; _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        result = await GlideJson.GetAsync(client, key, ["$.name"]);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
+        ValkeyValue result = await GlideJson.GetAsync(client, key, ["$.name"]);
 
         Assert.False(result.IsNull);
         // JSONPath returns an array of matching values
@@ -242,8 +254,8 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\",\"age\":30}";
 
-        ValkeyValue result; _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        result = await GlideJson.GetAsync(client, key, [".name"]);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
+        ValkeyValue result = await GlideJson.GetAsync(client, key, [".name"]);
 
         Assert.False(result.IsNull);
         // Legacy path returns the single matching value
@@ -259,8 +271,8 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\",\"age\":30,\"city\":\"NYC\"}";
 
-        ValkeyValue result; _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        result = await GlideJson.GetAsync(client, key, ["$.name", "$.age"]);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
+        ValkeyValue result = await GlideJson.GetAsync(client, key, ["$.name", "$.age"]);
 
         Assert.False(result.IsNull);
         // Multiple paths return a JSON object with each path as a key
@@ -280,8 +292,8 @@ public class JsonCommandTests(TestConfiguration config)
         string jsonValue = "{\"name\":\"John\",\"age\":30}";
         var options = new GlideJson.GetOptions { Indent = "  ", Newline = "\n", Space = " " };
 
-        ValkeyValue result; _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        result = await GlideJson.GetAsync(client, key, options);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
+        ValkeyValue result = await GlideJson.GetAsync(client, key, options);
 
         Assert.False(result.IsNull);
         // The result should be formatted with newlines and indentation
@@ -299,8 +311,8 @@ public class JsonCommandTests(TestConfiguration config)
         string jsonValue = "{\"person\":{\"name\":\"John\",\"age\":30}}";
         var options = new GlideJson.GetOptions { Indent = "\t", Newline = "\n" };
 
-        ValkeyValue result; _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        result = await GlideJson.GetAsync(client, key, ["$.person"], options);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
+        ValkeyValue result = await GlideJson.GetAsync(client, key, ["$.person"], options);
 
         Assert.False(result.IsNull);
         // The result should be formatted with tabs and newlines
@@ -330,8 +342,7 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\",\"age\":30,\"active\":true,\"scores\":[1,2,3]}";
         // Set the value
-        string? setResult = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        Assert.Equal("OK", setResult);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
 
         // Get the value back
         string? getResult = await GlideJson.GetAsync(client, key);
@@ -359,8 +370,8 @@ public class JsonCommandTests(TestConfiguration config)
         string path = "$";
         string jsonValue = "{\"name\":\"Jane\",\"age\":25}";
 
-        ValkeyValue result; _ = await GlideJson.SetAsync(client, key, path, jsonValue);
-        result = await GlideJson.GetAsync(client, key);
+        await GlideJson.SetAsync(client, key, path, jsonValue);
+        ValkeyValue result = await GlideJson.GetAsync(client, key);
 
         Assert.False(result.IsNull);
         string resultStr = result.ToString();
@@ -379,8 +390,8 @@ public class JsonCommandTests(TestConfiguration config)
         string jsonValue = "{\"name\":\"Jane\",\"age\":25}";
         ValkeyValue[] paths = ["$.name"];
 
-        ValkeyValue result; _ = await GlideJson.SetAsync(client, key, path, jsonValue);
-        result = await GlideJson.GetAsync(client, key, paths);
+        await GlideJson.SetAsync(client, key, path, jsonValue);
+        ValkeyValue result = await GlideJson.GetAsync(client, key, paths);
 
         Assert.False(result.IsNull);
         Assert.Equal("[\"Jane\"]", result.ToString());
@@ -395,8 +406,8 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"person\":{\"name\":\"John\",\"address\":{\"city\":\"NYC\",\"zip\":\"10001\"}}}";
 
-        ValkeyValue result; _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        result = await GlideJson.GetAsync(client, key, ["$.person.address.city"]);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
+        ValkeyValue result = await GlideJson.GetAsync(client, key, ["$.person.address.city"]);
 
         Assert.False(result.IsNull);
         Assert.Equal("[\"NYC\"]", result);
@@ -411,8 +422,8 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"numbers\":[10,20,30,40,50]}";
 
-        ValkeyValue result; _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        result = await GlideJson.GetAsync(client, key, ["$.numbers[2]"]);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
+        ValkeyValue result = await GlideJson.GetAsync(client, key, ["$.numbers[2]"]);
 
         Assert.False(result.IsNull);
         Assert.Equal("[30]", result);
@@ -427,8 +438,8 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"items\":[{\"name\":\"a\"},{\"name\":\"b\"},{\"name\":\"c\"}]}";
 
-        ValkeyValue result; _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        result = await GlideJson.GetAsync(client, key, ["$.items[*].name"]);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
+        ValkeyValue result = await GlideJson.GetAsync(client, key, ["$.items[*].name"]);
 
         Assert.False(result.IsNull);
         // Should return all matching names as an array
@@ -448,22 +459,22 @@ public class JsonCommandTests(TestConfiguration config)
         string keyBool = GetUniqueKey("bool");
         string keyNull = GetUniqueKey("null");
         // Set and get string value
-        _ = await GlideJson.SetAsync(client, keyString, "$", "\"hello\"");
+        await GlideJson.SetAsync(client, keyString, "$", "\"hello\"");
         string? resultString = await GlideJson.GetAsync(client, keyString);
         Assert.Equal("\"hello\"", resultString);
 
         // Set and get number value
-        _ = await GlideJson.SetAsync(client, keyNumber, "$", "42");
+        await GlideJson.SetAsync(client, keyNumber, "$", "42");
         string? resultNumber = await GlideJson.GetAsync(client, keyNumber);
         Assert.Equal("42", resultNumber);
 
         // Set and get boolean value
-        _ = await GlideJson.SetAsync(client, keyBool, "$", "true");
+        await GlideJson.SetAsync(client, keyBool, "$", "true");
         string? resultBool = await GlideJson.GetAsync(client, keyBool);
         Assert.Equal("true", resultBool);
 
         // Set and get null value
-        _ = await GlideJson.SetAsync(client, keyNull, "$", "null");
+        await GlideJson.SetAsync(client, keyNull, "$", "null");
         string? resultNull = await GlideJson.GetAsync(client, keyNull);
         Assert.Equal("null", resultNull);
 
@@ -484,9 +495,9 @@ public class JsonCommandTests(TestConfiguration config)
         string key2 = GetUniqueClusterKey("mget");
         string key3 = GetUniqueClusterKey("mget");
         // Set up JSON documents
-        _ = await GlideJson.SetAsync(client, key1, "$", "{\"name\":\"John\",\"age\":30}");
-        _ = await GlideJson.SetAsync(client, key2, "$", "{\"name\":\"Jane\",\"age\":25}");
-        _ = await GlideJson.SetAsync(client, key3, "$", "{\"name\":\"Bob\",\"age\":35}");
+        await GlideJson.SetAsync(client, key1, "$", "{\"name\":\"John\",\"age\":30}");
+        await GlideJson.SetAsync(client, key2, "$", "{\"name\":\"Jane\",\"age\":25}");
+        await GlideJson.SetAsync(client, key3, "$", "{\"name\":\"Bob\",\"age\":35}");
 
         // Get values from multiple keys with JSONPath
         ValkeyValue[] results = await GlideJson.MGetAsync(client, [key1, key2, key3], "$.name");
@@ -509,8 +520,8 @@ public class JsonCommandTests(TestConfiguration config)
         string key2 = GetUniqueClusterKey("mget");
         string nonExistentKey = GetUniqueClusterKey("mget_nonexistent");
         // Set up JSON documents (only key1 and key2)
-        _ = await GlideJson.SetAsync(client, key1, "$", "{\"name\":\"John\"}");
-        _ = await GlideJson.SetAsync(client, key2, "$", "{\"name\":\"Jane\"}");
+        await GlideJson.SetAsync(client, key1, "$", "{\"name\":\"John\"}");
+        await GlideJson.SetAsync(client, key2, "$", "{\"name\":\"Jane\"}");
 
         // Get values including a non-existent key
         ValkeyValue[] results = await GlideJson.MGetAsync(client, [key1, nonExistentKey, key2], "$.name");
@@ -532,8 +543,8 @@ public class JsonCommandTests(TestConfiguration config)
         string key1 = GetUniqueClusterKey("mget");
         string key2 = GetUniqueClusterKey("mget");
         // Set up JSON documents with arrays
-        _ = await GlideJson.SetAsync(client, key1, "$", "{\"items\":[1,2,3]}");
-        _ = await GlideJson.SetAsync(client, key2, "$", "{\"items\":[4,5,6]}");
+        await GlideJson.SetAsync(client, key1, "$", "{\"items\":[1,2,3]}");
+        await GlideJson.SetAsync(client, key2, "$", "{\"items\":[4,5,6]}");
 
         // Get values with JSONPath - should return arrays
         ValkeyValue[] results = await GlideJson.MGetAsync(client, [key1, key2], "$.items");
@@ -557,8 +568,8 @@ public class JsonCommandTests(TestConfiguration config)
         string key1 = GetUniqueClusterKey("mget");
         string key2 = GetUniqueClusterKey("mget");
         // Set up JSON documents
-        _ = await GlideJson.SetAsync(client, key1, "$", "{\"name\":\"John\"}");
-        _ = await GlideJson.SetAsync(client, key2, "$", "{\"name\":\"Jane\"}");
+        await GlideJson.SetAsync(client, key1, "$", "{\"name\":\"John\"}");
+        await GlideJson.SetAsync(client, key2, "$", "{\"name\":\"Jane\"}");
 
         // Get values with legacy path (no $ prefix)
         ValkeyValue[] results = await GlideJson.MGetAsync(client, [key1, key2], ".name");
@@ -580,8 +591,8 @@ public class JsonCommandTests(TestConfiguration config)
         string key2 = GetUniqueClusterKey("mget");
         string path = "$.name";
         // Set up JSON documents
-        _ = await GlideJson.SetAsync(client, key1, "$", (GlideString)"{\"name\":\"John\"}");
-        _ = await GlideJson.SetAsync(client, key2, "$", (GlideString)"{\"name\":\"Jane\"}");
+        await GlideJson.SetAsync(client, key1, "$", (GlideString)"{\"name\":\"John\"}");
+        await GlideJson.SetAsync(client, key2, "$", (GlideString)"{\"name\":\"Jane\"}");
 
         // Get values using GlideString overload
         ValkeyValue[] results = await GlideJson.MGetAsync(client, [key1, key2], path);
@@ -604,8 +615,8 @@ public class JsonCommandTests(TestConfiguration config)
         string key1 = GetUniqueClusterKey("mget");
         string key2 = GetUniqueClusterKey("mget");
         // Set up JSON documents with different structures
-        _ = await GlideJson.SetAsync(client, key1, "$", "{\"name\":\"John\"}");
-        _ = await GlideJson.SetAsync(client, key2, "$", "{\"age\":25}"); // No "name" field
+        await GlideJson.SetAsync(client, key1, "$", "{\"name\":\"John\"}");
+        await GlideJson.SetAsync(client, key2, "$", "{\"age\":25}"); // No "name" field
 
         // Get values with legacy path - key2 doesn't have "name"
         ValkeyValue[] results = await GlideJson.MGetAsync(client, [key1, key2], ".name");
@@ -626,8 +637,8 @@ public class JsonCommandTests(TestConfiguration config)
         string key1 = GetUniqueClusterKey("mget");
         string key2 = GetUniqueClusterKey("mget");
         // Set up JSON documents
-        _ = await GlideJson.SetAsync(client, key1, "$", "{\"a\":1}");
-        _ = await GlideJson.SetAsync(client, key2, "$", "{\"b\":2}");
+        await GlideJson.SetAsync(client, key1, "$", "{\"a\":1}");
+        await GlideJson.SetAsync(client, key2, "$", "{\"b\":2}");
 
         // Get entire documents with root path
         ValkeyValue[] results = await GlideJson.MGetAsync(client, [key1, key2], "$");
@@ -657,7 +668,7 @@ public class JsonCommandTests(TestConfiguration config)
 
         long deleted;
         // Set up JSON document
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
 
         // Delete entire document
         deleted = await GlideJson.DelAsync(client, key);
@@ -681,7 +692,7 @@ public class JsonCommandTests(TestConfiguration config)
 
         long deleted;
         // Set up JSON document
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
 
         // Delete specific path
         deleted = await GlideJson.DelAsync(client, key, "$.age");
@@ -721,7 +732,7 @@ public class JsonCommandTests(TestConfiguration config)
 
         long deleted;
         // Set up JSON document
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
 
         // Try to delete non-existent path
         deleted = await GlideJson.DelAsync(client, key, "$.nonexistent");
@@ -742,7 +753,7 @@ public class JsonCommandTests(TestConfiguration config)
 
         long deleted;
         // Set up JSON document
-        _ = await GlideJson.SetAsync(client, key, path, jsonValue);
+        await GlideJson.SetAsync(client, key, path, jsonValue);
 
         // Delete entire document using GlideString overload
         deleted = await GlideJson.DelAsync(client, key);
@@ -764,7 +775,7 @@ public class JsonCommandTests(TestConfiguration config)
 
         long deleted;
         // Set up JSON document
-        _ = await GlideJson.SetAsync(client, key, path, jsonValue);
+        await GlideJson.SetAsync(client, key, path, jsonValue);
 
         // Delete specific path using GlideString overload
         deleted = await GlideJson.DelAsync(client, key, deletePath);
@@ -784,7 +795,7 @@ public class JsonCommandTests(TestConfiguration config)
 
         long deleted;
         // Set up JSON document with array of objects
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
 
         // Delete all "name" fields using wildcard path
         deleted = await GlideJson.DelAsync(client, key, "$.items[*].name");
@@ -809,7 +820,7 @@ public class JsonCommandTests(TestConfiguration config)
 
         long deleted;
         // Set up JSON document
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
 
         // Forget (delete) entire document
         deleted = await GlideJson.ForgetAsync(client, key);
@@ -833,7 +844,7 @@ public class JsonCommandTests(TestConfiguration config)
 
         long deleted;
         // Set up JSON document
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
 
         // Forget specific path
         deleted = await GlideJson.ForgetAsync(client, key, "$.city");
@@ -872,8 +883,8 @@ public class JsonCommandTests(TestConfiguration config)
         string keyForget = GetUniqueKey("forget");
         string jsonValue = "{\"name\":\"John\",\"age\":30,\"items\":[1,2,3]}";
         // Set up identical JSON documents
-        _ = await GlideJson.SetAsync(client, keyDel, "$", jsonValue);
-        _ = await GlideJson.SetAsync(client, keyForget, "$", jsonValue);
+        await GlideJson.SetAsync(client, keyDel, "$", jsonValue);
+        await GlideJson.SetAsync(client, keyForget, "$", jsonValue);
 
         // Delete using Del
         long deletedDel = await GlideJson.DelAsync(client, keyDel, "$.age");
@@ -905,7 +916,7 @@ public class JsonCommandTests(TestConfiguration config)
 
         long deleted;
         // Set up JSON document
-        _ = await GlideJson.SetAsync(client, key, path, jsonValue);
+        await GlideJson.SetAsync(client, key, path, jsonValue);
 
         // Forget entire document using GlideString overload
         deleted = await GlideJson.ForgetAsync(client, key);
@@ -927,7 +938,7 @@ public class JsonCommandTests(TestConfiguration config)
 
         long deleted;
         // Set up JSON document
-        _ = await GlideJson.SetAsync(client, key, path, jsonValue);
+        await GlideJson.SetAsync(client, key, path, jsonValue);
 
         // Forget specific path using GlideString overload
         deleted = await GlideJson.ForgetAsync(client, key, deletePath);
@@ -950,15 +961,14 @@ public class JsonCommandTests(TestConfiguration config)
         string jsonValue = "{\"items\":[1,2,3,4,5]}";
 
         long cleared;
-        ValkeyValue result;
         // Set up JSON document with array
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
 
         // Clear the array
         cleared = await GlideJson.ClearAsync(client, key, "$.items");
 
         // Get the result
-        result = await GlideJson.GetAsync(client, key, ["$.items"]);
+        ValkeyValue result = await GlideJson.GetAsync(client, key, ["$.items"]);
 
 
         Assert.Equal(1, cleared);
@@ -977,15 +987,14 @@ public class JsonCommandTests(TestConfiguration config)
         string jsonValue = "{\"data\":{\"name\":\"John\",\"age\":30,\"city\":\"NYC\"}}";
 
         long cleared;
-        ValkeyValue result;
         // Set up JSON document with nested object
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
 
         // Clear the nested object
         cleared = await GlideJson.ClearAsync(client, key, "$.data");
 
         // Get the result
-        result = await GlideJson.GetAsync(client, key, ["$.data"]);
+        ValkeyValue result = await GlideJson.GetAsync(client, key, ["$.data"]);
 
 
         Assert.Equal(1, cleared);
@@ -1004,15 +1013,14 @@ public class JsonCommandTests(TestConfiguration config)
         string jsonValue = "{\"count\":42}";
 
         long cleared;
-        ValkeyValue result;
         // Set up JSON document with number
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
 
         // Clear the number
         cleared = await GlideJson.ClearAsync(client, key, "$.count");
 
         // Get the result
-        result = await GlideJson.GetAsync(client, key, ["$.count"]);
+        ValkeyValue result = await GlideJson.GetAsync(client, key, ["$.count"]);
 
 
         Assert.Equal(1, cleared);
@@ -1031,15 +1039,14 @@ public class JsonCommandTests(TestConfiguration config)
         string jsonValue = "{\"active\":true}";
 
         long cleared;
-        ValkeyValue result;
         // Set up JSON document with boolean
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
 
         // Clear the boolean - Valkey JSON clears booleans to false
         cleared = await GlideJson.ClearAsync(client, key, "$.active");
 
         // Get the result
-        result = await GlideJson.GetAsync(client, key, ["$.active"]);
+        ValkeyValue result = await GlideJson.GetAsync(client, key, ["$.active"]);
 
 
         // Valkey JSON clears booleans to false and returns 1
@@ -1059,15 +1066,14 @@ public class JsonCommandTests(TestConfiguration config)
         string jsonValue = "{\"name\":\"John\"}";
 
         long cleared;
-        ValkeyValue result;
         // Set up JSON document with string
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
 
         // Clear the string - Valkey JSON clears strings to empty string
         cleared = await GlideJson.ClearAsync(client, key, "$.name");
 
         // Get the result
-        result = await GlideJson.GetAsync(client, key, ["$.name"]);
+        ValkeyValue result = await GlideJson.GetAsync(client, key, ["$.name"]);
 
 
         // Valkey JSON clears strings to empty string and returns 1
@@ -1104,15 +1110,14 @@ public class JsonCommandTests(TestConfiguration config)
         GlideString clearPath = "$.items";
 
         long cleared;
-        ValkeyValue result;
         // Set up JSON document
-        _ = await GlideJson.SetAsync(client, key, path, jsonValue);
+        await GlideJson.SetAsync(client, key, path, jsonValue);
 
         // Clear using GlideString overload
         cleared = await GlideJson.ClearAsync(client, key, clearPath);
 
         // Get the result
-        result = await GlideJson.GetAsync(client, key, [clearPath]);
+        ValkeyValue result = await GlideJson.GetAsync(client, key, [clearPath]);
 
 
         Assert.Equal(1, cleared);
@@ -1130,15 +1135,14 @@ public class JsonCommandTests(TestConfiguration config)
         string jsonValue = "{\"name\":\"John\",\"items\":[1,2,3],\"count\":5}";
 
         long cleared;
-        ValkeyValue result;
         // Set up JSON document
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
 
         // Clear at root path
         cleared = await GlideJson.ClearAsync(client, key, "$");
 
         // Get the result
-        result = await GlideJson.GetAsync(client, key);
+        ValkeyValue result = await GlideJson.GetAsync(client, key);
 
 
         Assert.Equal(1, cleared);
@@ -1157,15 +1161,14 @@ public class JsonCommandTests(TestConfiguration config)
         string jsonValue = "{\"items\":[{\"data\":[1,2]},{\"data\":[3,4]},{\"data\":[5,6]}]}";
 
         long cleared;
-        ValkeyValue result;
         // Set up JSON document with multiple arrays
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
 
         // Clear all "data" arrays using wildcard path
         cleared = await GlideJson.ClearAsync(client, key, "$.items[*].data");
 
         // Get the result
-        result = await GlideJson.GetAsync(client, key, ["$.items[*].data"]);
+        ValkeyValue result = await GlideJson.GetAsync(client, key, ["$.items[*].data"]);
 
 
         // Should clear 3 arrays
@@ -1185,15 +1188,14 @@ public class JsonCommandTests(TestConfiguration config)
         string jsonValue = "{\"name\":\"John\",\"age\":30}";
 
         long cleared;
-        ValkeyValue result;
         // Set up JSON document
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
 
         // Clear without specifying path (should clear root)
         cleared = await GlideJson.ClearAsync(client, key);
 
         // Get the result
-        result = await GlideJson.GetAsync(client, key);
+        ValkeyValue result = await GlideJson.GetAsync(client, key);
 
 
         Assert.Equal(1, cleared);
@@ -1213,7 +1215,7 @@ public class JsonCommandTests(TestConfiguration config)
 
         long cleared;
         // Set up JSON document
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
 
         // Try to clear non-existent path
         cleared = await GlideJson.ClearAsync(client, key, "$.nonexistent");
@@ -1235,7 +1237,7 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\",\"age\":30}";
 
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
         string? result = await GlideJson.TypeAsync(client, key);
 
         Assert.NotNull(result);
@@ -1251,7 +1253,7 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "[1, 2, 3, 4, 5]";
 
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
         string? result = await GlideJson.TypeAsync(client, key);
 
         Assert.NotNull(result);
@@ -1267,7 +1269,7 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "\"hello world\"";
 
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
         string? result = await GlideJson.TypeAsync(client, key);
 
         Assert.NotNull(result);
@@ -1283,8 +1285,8 @@ public class JsonCommandTests(TestConfiguration config)
         string keyInteger = GetUniqueKey("integer");
         string keyFloat = GetUniqueKey("float");
 
-        _ = await GlideJson.SetAsync(client, keyInteger, "$", "42");
-        _ = await GlideJson.SetAsync(client, keyFloat, "$", "3.14");
+        await GlideJson.SetAsync(client, keyInteger, "$", "42");
+        await GlideJson.SetAsync(client, keyFloat, "$", "3.14");
         string? intResult = await GlideJson.TypeAsync(client, keyInteger);
         string? floatResult = await GlideJson.TypeAsync(client, keyFloat);
 
@@ -1306,8 +1308,8 @@ public class JsonCommandTests(TestConfiguration config)
         string keyTrue = GetUniqueKey("true");
         string keyFalse = GetUniqueKey("false");
 
-        _ = await GlideJson.SetAsync(client, keyTrue, "$", "true");
-        _ = await GlideJson.SetAsync(client, keyFalse, "$", "false");
+        await GlideJson.SetAsync(client, keyTrue, "$", "true");
+        await GlideJson.SetAsync(client, keyFalse, "$", "false");
         string? trueResult = await GlideJson.TypeAsync(client, keyTrue);
         string? falseResult = await GlideJson.TypeAsync(client, keyFalse);
 
@@ -1327,7 +1329,7 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "null";
 
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
         string? result = await GlideJson.TypeAsync(client, key);
 
         Assert.NotNull(result);
@@ -1343,16 +1345,12 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\",\"age\":30,\"active\":true}";
 
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        ValkeyValue[]? nameResult = await GlideJson.TypeAsync(client, key, "$.name");
-        ValkeyValue[]? ageResult = await GlideJson.TypeAsync(client, key, "$.age");
-        ValkeyValue[]? activeResult = await GlideJson.TypeAsync(client, key, "$.active");
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
+        ValkeyValue[] nameResult = await GlideJson.TypeAsync(client, key, "$.name");
+        ValkeyValue[] ageResult = await GlideJson.TypeAsync(client, key, "$.age");
+        ValkeyValue[] activeResult = await GlideJson.TypeAsync(client, key, "$.active");
 
         // JSONPath returns an array of types
-        Assert.NotNull(nameResult);
-        Assert.NotNull(ageResult);
-        Assert.NotNull(activeResult);
-
         // Results should be arrays containing the type strings
         _ = Assert.Single(nameResult);
         Assert.Equal("string", (string?)nameResult[0]);
@@ -1375,10 +1373,9 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\",\"age\":30}";
 
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        ValkeyValue[]? result = await GlideJson.TypeAsync(client, key, ".name");
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
+        ValkeyValue[] result = await GlideJson.TypeAsync(client, key, ".name");
 
-        Assert.NotNull(result);
         // Legacy path returns a single type string wrapped in array
         _ = Assert.Single(result);
         Assert.Equal("string", (string?)result[0]);
@@ -1407,16 +1404,13 @@ public class JsonCommandTests(TestConfiguration config)
         string path = "$";
         string jsonValue = "{\"name\":\"Jane\",\"items\":[1,2,3]}";
 
-        _ = await GlideJson.SetAsync(client, key, path, jsonValue);
+        await GlideJson.SetAsync(client, key, path, jsonValue);
         string? rootResult = await GlideJson.TypeAsync(client, key);
-        ValkeyValue[]? nameResult = await GlideJson.TypeAsync(client, key, "$.name");
-        ValkeyValue[]? itemsResult = await GlideJson.TypeAsync(client, key, "$.items");
+        ValkeyValue[] nameResult = await GlideJson.TypeAsync(client, key, "$.name");
+        ValkeyValue[] itemsResult = await GlideJson.TypeAsync(client, key, "$.items");
 
         Assert.NotNull(rootResult);
         Assert.Equal("object", rootResult);
-
-        Assert.NotNull(nameResult);
-        Assert.NotNull(itemsResult);
 
         // Check name type (should be string)
         _ = Assert.Single(nameResult);
@@ -1436,12 +1430,9 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"person\":{\"name\":\"John\",\"scores\":[90,85,92]},\"active\":true}";
 
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        ValkeyValue[]? personResult = await GlideJson.TypeAsync(client, key, "$.person");
-        ValkeyValue[]? scoresResult = await GlideJson.TypeAsync(client, key, "$.person.scores");
-
-        Assert.NotNull(personResult);
-        Assert.NotNull(scoresResult);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
+        ValkeyValue[] personResult = await GlideJson.TypeAsync(client, key, "$.person");
+        ValkeyValue[] scoresResult = await GlideJson.TypeAsync(client, key, "$.person.scores");
 
         // Check person type (should be object)
         _ = Assert.Single(personResult);
@@ -1461,10 +1452,8 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"items\":[{\"value\":\"text\"},{\"value\":42},{\"value\":true}]}";
 
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        ValkeyValue[]? result = await GlideJson.TypeAsync(client, key, "$.items[*].value");
-
-        Assert.NotNull(result);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
+        ValkeyValue[] result = await GlideJson.TypeAsync(client, key, "$.items[*].value");
 
         // Wildcard path should return an array of types
         Assert.Equal(3, result.Length);
@@ -1488,8 +1477,8 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"count\":10}";
 
-        ValkeyValue result; _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        result = await GlideJson.NumIncrByAsync(client, key, "$.count", 5);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
+        ValkeyValue result = await GlideJson.NumIncrByAsync(client, key, "$.count", 5);
 
         Assert.False(result.IsNull);
         // JSONPath returns array of results
@@ -1505,8 +1494,8 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"price\":10.5}";
 
-        ValkeyValue result; _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        result = await GlideJson.NumIncrByAsync(client, key, "$.price", 2.5);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
+        ValkeyValue result = await GlideJson.NumIncrByAsync(client, key, "$.price", 2.5);
 
         Assert.False(result.IsNull);
         // JSONPath returns array of results
@@ -1522,8 +1511,8 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"count\":20}";
 
-        ValkeyValue result; _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        result = await GlideJson.NumIncrByAsync(client, key, "$.count", -7);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
+        ValkeyValue result = await GlideJson.NumIncrByAsync(client, key, "$.count", -7);
 
         Assert.False(result.IsNull);
         // JSONPath returns array of results
@@ -1539,10 +1528,9 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"a\":1,\"b\":2,\"nested\":{\"c\":3}}";
 
-        ValkeyValue result;
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
         // Increment all numeric values at root level
-        result = await GlideJson.NumIncrByAsync(client, key, "$.a", 10);
+        ValkeyValue result = await GlideJson.NumIncrByAsync(client, key, "$.a", 10);
 
 
         Assert.False(result.IsNull);
@@ -1559,10 +1547,9 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"count\":100}";
 
-        ValkeyValue result;
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
         // Legacy path (no $ prefix)
-        result = await GlideJson.NumIncrByAsync(client, key, ".count", 25);
+        ValkeyValue result = await GlideJson.NumIncrByAsync(client, key, ".count", 25);
 
 
         Assert.False(result.IsNull);
@@ -1578,7 +1565,7 @@ public class JsonCommandTests(TestConfiguration config)
 
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\"}";
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
         // Trying to increment a string value with legacy path should throw
         _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
             await GlideJson.NumIncrByAsync(client, key, ".name", 5));
@@ -1596,8 +1583,8 @@ public class JsonCommandTests(TestConfiguration config)
         string jsonValue = "{\"value\":50}";
         GlideString incrPath = "$.value";
 
-        ValkeyValue result; _ = await GlideJson.SetAsync(client, key, path, jsonValue);
-        result = await GlideJson.NumIncrByAsync(client, key, incrPath, 25);
+        await GlideJson.SetAsync(client, key, path, jsonValue);
+        ValkeyValue result = await GlideJson.NumIncrByAsync(client, key, incrPath, 25);
 
         Assert.False(result.IsNull);
         Assert.Equal("[75]", result.ToString());
@@ -1612,10 +1599,9 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"items\":[{\"count\":1},{\"count\":2},{\"count\":3}]}";
 
-        ValkeyValue result;
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
         // Increment all count values using wildcard
-        result = await GlideJson.NumIncrByAsync(client, key, "$.items[*].count", 10);
+        ValkeyValue result = await GlideJson.NumIncrByAsync(client, key, "$.items[*].count", 10);
 
 
         Assert.False(result.IsNull);
@@ -1633,7 +1619,7 @@ public class JsonCommandTests(TestConfiguration config)
 
         string key = GetUniqueKey();
         string jsonValue = "{\"count\":10}";
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
         // Trying to increment non-existent path with legacy path should throw
         _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
             await GlideJson.NumIncrByAsync(client, key, ".nonexistent", 5));
@@ -1649,8 +1635,8 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"count\":42}";
 
-        ValkeyValue result; _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        result = await GlideJson.NumIncrByAsync(client, key, "$.count", 0);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
+        ValkeyValue result = await GlideJson.NumIncrByAsync(client, key, "$.count", 0);
 
         Assert.False(result.IsNull);
         Assert.Equal("[42]", result);
@@ -1665,8 +1651,8 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"value\":-10}";
 
-        ValkeyValue result; _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        result = await GlideJson.NumIncrByAsync(client, key, "$.value", 25);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
+        ValkeyValue result = await GlideJson.NumIncrByAsync(client, key, "$.value", 25);
 
         Assert.False(result.IsNull);
         Assert.Equal("[15]", result);
@@ -1685,8 +1671,8 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"count\":10}";
 
-        ValkeyValue result; _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        result = await GlideJson.NumMultByAsync(client, key, "$.count", 3);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
+        ValkeyValue result = await GlideJson.NumMultByAsync(client, key, "$.count", 3);
 
         Assert.False(result.IsNull);
         // JSONPath returns array of results
@@ -1702,8 +1688,8 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"price\":10.5}";
 
-        ValkeyValue result; _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        result = await GlideJson.NumMultByAsync(client, key, "$.price", 2);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
+        ValkeyValue result = await GlideJson.NumMultByAsync(client, key, "$.price", 2);
 
         Assert.False(result.IsNull);
         // JSONPath returns array of results
@@ -1719,8 +1705,8 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"count\":42}";
 
-        ValkeyValue result; _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        result = await GlideJson.NumMultByAsync(client, key, "$.count", 0);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
+        ValkeyValue result = await GlideJson.NumMultByAsync(client, key, "$.count", 0);
 
         Assert.False(result.IsNull);
         Assert.Equal("[0]", result);
@@ -1735,8 +1721,8 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"count\":10}";
 
-        ValkeyValue result; _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        result = await GlideJson.NumMultByAsync(client, key, "$.count", -3);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
+        ValkeyValue result = await GlideJson.NumMultByAsync(client, key, "$.count", -3);
 
         Assert.False(result.IsNull);
         // JSONPath returns array of results
@@ -1752,8 +1738,8 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"a\":2,\"b\":3,\"nested\":{\"c\":4}}";
 
-        ValkeyValue result; _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
-        result = await GlideJson.NumMultByAsync(client, key, "$.a", 5);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
+        ValkeyValue result = await GlideJson.NumMultByAsync(client, key, "$.a", 5);
 
         Assert.False(result.IsNull);
         // JSONPath returns array of results
@@ -1769,10 +1755,9 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"count\":5}";
 
-        ValkeyValue result;
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
         // Legacy path (no $ prefix)
-        result = await GlideJson.NumMultByAsync(client, key, ".count", 4);
+        ValkeyValue result = await GlideJson.NumMultByAsync(client, key, ".count", 4);
 
 
         Assert.False(result.IsNull);
@@ -1788,7 +1773,7 @@ public class JsonCommandTests(TestConfiguration config)
 
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\"}";
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
         // Trying to multiply a string value with legacy path should throw
         _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
             await GlideJson.NumMultByAsync(client, key, ".name", 5));
@@ -1806,8 +1791,8 @@ public class JsonCommandTests(TestConfiguration config)
         string jsonValue = "{\"value\":7}";
         GlideString multPath = "$.value";
 
-        ValkeyValue result; _ = await GlideJson.SetAsync(client, key, path, jsonValue);
-        result = await GlideJson.NumMultByAsync(client, key, multPath, 6);
+        await GlideJson.SetAsync(client, key, path, jsonValue);
+        ValkeyValue result = await GlideJson.NumMultByAsync(client, key, multPath, 6);
 
         Assert.False(result.IsNull);
         Assert.Equal("[42]", result.ToString());
@@ -1826,7 +1811,7 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"greeting\":\"Hello\"}";
 
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
         long?[]? result = await GlideJson.StrAppendAsync(client, key, "$.greeting", "\" World\"");
 
         Assert.NotNull(result);
@@ -1845,7 +1830,7 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"a\":\"foo\",\"nested\":{\"b\":\"bar\"}}";
 
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
         long?[]? result = await GlideJson.StrAppendAsync(client, key, "$.a", "\"baz\"");
 
         Assert.NotNull(result);
@@ -1863,7 +1848,7 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\"}";
 
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
         // Legacy path (no $ prefix)
         long?[]? result = await GlideJson.StrAppendAsync(client, key, ".name", "\" Doe\"");
 
@@ -1882,7 +1867,7 @@ public class JsonCommandTests(TestConfiguration config)
 
         string key = GetUniqueKey();
         string jsonValue = "{\"count\":42}";
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
         // Trying to append to a number value with legacy path should throw
         _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
             await GlideJson.StrAppendAsync(client, key, ".count", "\"test\""));
@@ -1901,7 +1886,7 @@ public class JsonCommandTests(TestConfiguration config)
         GlideString appendPath = "$.text";
         GlideString appendValue = "\" World\"";
 
-        _ = await GlideJson.SetAsync(client, key, path, jsonValue);
+        await GlideJson.SetAsync(client, key, path, jsonValue);
         long?[]? result = await GlideJson.StrAppendAsync(client, key, appendPath, appendValue);
 
         Assert.NotNull(result);
@@ -1919,7 +1904,7 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"text\":\"Hello\"}";
 
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
         long?[]? result = await GlideJson.StrAppendAsync(client, key, "$.text", "\"\"");
 
         Assert.NotNull(result);
@@ -1938,7 +1923,7 @@ public class JsonCommandTests(TestConfiguration config)
         // Set a root-level string value
         string jsonValue = "\"Hello\"";
 
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
         // Append to root string (no path specified)
         long result = await GlideJson.StrAppendAsync(client, key, "\" World\"");
 
@@ -1956,7 +1941,7 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"items\":[{\"name\":\"a\"},{\"name\":\"bb\"},{\"name\":\"ccc\"}]}";
 
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
         // Append to all name values using wildcard
         long?[]? result = await GlideJson.StrAppendAsync(client, key, "$.items[*].name", "\"x\"");
 
@@ -1976,7 +1961,7 @@ public class JsonCommandTests(TestConfiguration config)
 
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\"}";
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
         // Trying to append to non-existent path with legacy path should throw
         _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
             await GlideJson.StrAppendAsync(client, key, ".nonexistent", "\"test\""));
@@ -1996,7 +1981,7 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"greeting\":\"Hello\"}";
 
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
         long?[]? result = await GlideJson.StrLenAsync(client, key, "$.greeting");
 
         Assert.NotNull(result);
@@ -2014,7 +1999,7 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"a\":\"foo\",\"nested\":{\"a\":\"hello\"}}";
 
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
         long?[]? result = await GlideJson.StrLenAsync(client, key, "$..a");
 
         Assert.NotNull(result);
@@ -2035,7 +2020,7 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\"}";
 
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
         // Legacy path (no $ prefix)
         long?[]? result = await GlideJson.StrLenAsync(client, key, ".name");
 
@@ -2069,7 +2054,7 @@ public class JsonCommandTests(TestConfiguration config)
         string jsonValue = "{\"text\":\"Hello World\"}";
         GlideString strPath = "$.text";
 
-        _ = await GlideJson.SetAsync(client, key, path, jsonValue);
+        await GlideJson.SetAsync(client, key, path, jsonValue);
         long?[]? result = await GlideJson.StrLenAsync(client, key, strPath);
 
         Assert.NotNull(result);
@@ -2087,7 +2072,7 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"empty\":\"\"}";
 
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
         long?[]? result = await GlideJson.StrLenAsync(client, key, "$.empty");
 
         Assert.NotNull(result);
@@ -2105,7 +2090,7 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "\"Hello World\"";
 
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
         // Get length of root string (no path specified)
         long? result = await GlideJson.StrLenAsync(client, key);
 
@@ -2123,7 +2108,7 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"name\":\"John\",\"age\":30}";
 
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
         // Get length of non-string value with JSONPath
         long?[]? result = await GlideJson.StrLenAsync(client, key, "$.age");
 
@@ -2142,7 +2127,7 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = "{\"items\":[{\"name\":\"a\"},{\"name\":\"bb\"},{\"name\":\"ccc\"}]}";
 
-        _ = await GlideJson.SetAsync(client, key, "$", jsonValue);
+        await GlideJson.SetAsync(client, key, "$", jsonValue);
         // Get length of all name values using wildcard
         long?[]? result = await GlideJson.StrLenAsync(client, key, "$.items[*].name");
 

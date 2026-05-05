@@ -17,22 +17,25 @@ public static partial class GlideJson
     /// <param name="path">The JSONPath or legacy path within the JSON document.</param>
     /// <param name="values">The JSON values to append to the array.</param>
     /// <returns>
-    /// An array of new array lengths for each matching path. Returns <see langword="null"/> for non-array matches.
+    /// An array of new array lengths for each matching path.
+    /// Elements are <see langword="null"/> for paths where the value is not an array.
     /// </returns>
+    /// <exception cref="Exception">Thrown if the key does not exist.</exception>
     /// <seealso href="https://valkey.io/commands/json.arrappend/">Valkey commands – JSON.ARRAPPEND</seealso>
     /// <remarks>
     /// <example>
     /// <code>
-    /// await GlideJson.SetAsync(client, "mykey", "$", "{\"arr\":[1,2,3]}");
-    /// var lengths = await GlideJson.ArrAppendAsync(client, "mykey", "$.arr", ["4", "5"]);  // [5]
+    /// await GlideJson.SetAsync(client, "mykey", "$", "{\"arr\":[1,2],\"str\":\"hello\"}");
+    /// var lengths = await GlideJson.ArrAppendAsync(client, "mykey", "$.*", ["3"]);
+    /// // lengths = [3, null] - arr now has 3 elements, str is not an array (null)
     /// </code>
     /// </example>
     /// </remarks>
-    public static async Task<long?[]?> ArrAppendAsync(BaseClient client, ValkeyKey key, ValkeyValue path, IEnumerable<ValkeyValue> values)
+    public static async Task<long?[]> ArrAppendAsync(BaseClient client, ValkeyKey key, ValkeyValue path, IEnumerable<ValkeyValue> values)
     {
         GlideString[] args = BuildArrAppendArgs(ToGlideString(key), ToGlideString(path), [.. values.Select(v => ToGlideString(v))]);
         object? result = await ExecuteCommandAsync(client, args);
-        return ConvertToNullableLongArray(result);
+        return ConvertToNullableLongArrayNonNull(result);
     }
 
     private static GlideString[] BuildArrAppendArgs(GlideString key, GlideString path, GlideString[] values)
@@ -55,22 +58,25 @@ public static partial class GlideJson
     /// <param name="index">The index before which to insert the values. Negative indices count from the end.</param>
     /// <param name="values">The JSON values to insert into the array.</param>
     /// <returns>
-    /// An array of new array lengths for each matching path. Returns <see langword="null"/> for non-array matches.
+    /// An array of new array lengths for each matching path.
+    /// Elements are <see langword="null"/> for paths where the value is not an array.
     /// </returns>
+    /// <exception cref="Exception">Thrown if the key does not exist.</exception>
     /// <seealso href="https://valkey.io/commands/json.arrinsert/">Valkey commands – JSON.ARRINSERT</seealso>
     /// <remarks>
     /// <example>
     /// <code>
-    /// await GlideJson.SetAsync(client, "mykey", "$", "{\"arr\":[1,3]}");
-    /// var lengths = await GlideJson.ArrInsertAsync(client, "mykey", "$.arr", 1, ["2"]);  // [3]
+    /// await GlideJson.SetAsync(client, "mykey", "$", "{\"arr\":[1,3],\"str\":\"hello\"}");
+    /// var lengths = await GlideJson.ArrInsertAsync(client, "mykey", "$.*", 1, ["2"]);
+    /// // lengths = [3, null] - arr now has 3 elements, str is not an array (null)
     /// </code>
     /// </example>
     /// </remarks>
-    public static async Task<long?[]?> ArrInsertAsync(BaseClient client, ValkeyKey key, ValkeyValue path, long index, IEnumerable<ValkeyValue> values)
+    public static async Task<long?[]> ArrInsertAsync(BaseClient client, ValkeyKey key, ValkeyValue path, long index, IEnumerable<ValkeyValue> values)
     {
         GlideString[] args = BuildArrInsertArgs(ToGlideString(key), ToGlideString(path), index, [.. values.Select(v => ToGlideString(v))]);
         object? result = await ExecuteCommandAsync(client, args);
-        return ConvertToNullableLongArray(result);
+        return ConvertToNullableLongArrayNonNull(result);
     }
 
     private static GlideString[] BuildArrInsertArgs(GlideString key, GlideString path, long index, GlideString[] values)
@@ -92,14 +98,19 @@ public static partial class GlideJson
     /// <param name="path">The JSONPath or legacy path within the JSON document.</param>
     /// <param name="value">The JSON value to search for.</param>
     /// <returns>
-    /// An array of indices for each matching path. Returns -1 if not found, <see langword="null"/> for non-array matches.
+    /// An array of indices for each matching path, or <see langword="null"/> if the key does not exist.
+    /// Elements are -1 if not found, or <see langword="null"/> for paths where the value is not an array.
     /// </returns>
     /// <seealso href="https://valkey.io/commands/json.arrindex/">Valkey commands – JSON.ARRINDEX</seealso>
     /// <remarks>
     /// <example>
     /// <code>
-    /// await GlideJson.SetAsync(client, "mykey", "$", "{\"arr\":[1,2,3,2]}");
-    /// var indices = await GlideJson.ArrIndexAsync(client, "mykey", "$.arr", "2");  // [1]
+    /// await GlideJson.SetAsync(client, "mykey", "$", "{\"arr\":[1,2,3],\"str\":\"hello\"}");
+    /// var indices = await GlideJson.ArrIndexAsync(client, "mykey", "$.*", "2");
+    /// // indices = [1, null] - found at index 1 in arr, str is not an array (null)
+    ///
+    /// var missing = await GlideJson.ArrIndexAsync(client, "nonexistent", "$.*", "2");
+    /// // missing = null - key doesn't exist
     /// </code>
     /// </example>
     /// </remarks>
@@ -119,7 +130,8 @@ public static partial class GlideJson
     /// <param name="value">The JSON value to search for.</param>
     /// <param name="range">Range options for the search.</param>
     /// <returns>
-    /// An array of indices for each matching path. Returns -1 if not found, <see langword="null"/> for non-array matches.
+    /// An array of indices for each matching path, or <see langword="null"/> if the key does not exist.
+    /// Elements are -1 if not found, or <see langword="null"/> for paths where the value is not an array.
     /// </returns>
     /// <seealso href="https://valkey.io/commands/json.arrindex/">Valkey commands – JSON.ARRINDEX</seealso>
     /// <remarks>
@@ -156,14 +168,19 @@ public static partial class GlideJson
     /// <param name="key">The key where the JSON document is stored.</param>
     /// <param name="path">The JSONPath or legacy path within the JSON document.</param>
     /// <returns>
-    /// An array of lengths for each matching path. Returns <see langword="null"/> for non-array matches.
+    /// An array of lengths for each matching path, or <see langword="null"/> if the key does not exist.
+    /// Elements are <see langword="null"/> for paths where the value is not an array.
     /// </returns>
     /// <seealso href="https://valkey.io/commands/json.arrlen/">Valkey commands – JSON.ARRLEN</seealso>
     /// <remarks>
     /// <example>
     /// <code>
-    /// await GlideJson.SetAsync(client, "mykey", "$", "{\"arr\":[1,2,3]}");
-    /// var lengths = await GlideJson.ArrLenAsync(client, "mykey", "$.arr");  // [3]
+    /// await GlideJson.SetAsync(client, "mykey", "$", "{\"arr\":[1,2,3],\"str\":\"hello\"}");
+    /// var lengths = await GlideJson.ArrLenAsync(client, "mykey", "$.*");
+    /// // lengths = [3, null] - arr has 3 elements, str is not an array (null)
+    ///
+    /// var missing = await GlideJson.ArrLenAsync(client, "nonexistent", "$.*");
+    /// // missing = null - key doesn't exist
     /// </code>
     /// </example>
     /// </remarks>
@@ -271,22 +288,25 @@ public static partial class GlideJson
     /// <param name="start">The start index (inclusive).</param>
     /// <param name="end">The end index (inclusive). Negative indices count from the end.</param>
     /// <returns>
-    /// An array of new array lengths for each matching path. Returns <see langword="null"/> for non-array matches.
+    /// An array of new array lengths for each matching path.
+    /// Elements are <see langword="null"/> for paths where the value is not an array.
     /// </returns>
+    /// <exception cref="Exception">Thrown if the key does not exist.</exception>
     /// <seealso href="https://valkey.io/commands/json.arrtrim/">Valkey commands – JSON.ARRTRIM</seealso>
     /// <remarks>
     /// <example>
     /// <code>
-    /// await GlideJson.SetAsync(client, "mykey", "$", "{\"arr\":[1,2,3,4,5]}");
-    /// var lengths = await GlideJson.ArrTrimAsync(client, "mykey", "$.arr", 1, 3);  // [3]
+    /// await GlideJson.SetAsync(client, "mykey", "$", "{\"arr\":[1,2,3,4,5],\"str\":\"hello\"}");
+    /// var lengths = await GlideJson.ArrTrimAsync(client, "mykey", "$.*", 1, 3);
+    /// // lengths = [3, null] - arr now has 3 elements [2,3,4], str is not an array (null)
     /// </code>
     /// </example>
     /// </remarks>
-    public static async Task<long?[]?> ArrTrimAsync(BaseClient client, ValkeyKey key, ValkeyValue path, long start, long end)
+    public static async Task<long?[]> ArrTrimAsync(BaseClient client, ValkeyKey key, ValkeyValue path, long start, long end)
     {
         GlideString[] args = [JsonArrTrim, ToGlideString(key), ToGlideString(path), start.ToString(), end.ToString()];
         object? result = await ExecuteCommandAsync(client, args);
-        return ConvertToNullableLongArray(result);
+        return ConvertToNullableLongArrayNonNull(result);
     }
 
     #endregion
