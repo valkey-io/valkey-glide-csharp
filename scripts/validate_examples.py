@@ -24,10 +24,8 @@ Usage:
 Options:
     --examples      Path to an existing JSON file containing examples to validate.
     --glide-dll     Path to the built Valkey.Glide.dll to reference during compilation.
-    --add-imports   Include default using directives (Valkey.Glide namespaces) in
-                    the generated classes. Disabled by default.
-    --add-clients   Include static client fields (GlideClient, GlideClusterClient,
-                    IDatabase, IServer) in the generated classes. Disabled by default.
+    --add-imports   Include default using directives in the generated classes. Disabled by default.
+    --add-clients   Include static client fields in the generated classes. Disabled by default.
 """
 
 import argparse
