@@ -303,11 +303,11 @@ public static partial class GlideJson
     /// <code>
     /// await GlideJson.SetAsync(client, "key1", "$", "{\"a\":1}");
     /// await GlideJson.SetAsync(client, "key2", "$", "{\"a\":2}");
-    /// var values = await GlideJson.MGetAsync(client, ["key1", "key2"], "$.a");  // ["[1]", "[2]"]
+    /// var values = await GlideJson.GetAsync(client, ["key1", "key2"], "$.a");  // ["[1]", "[2]"]
     /// </code>
     /// </example>
     /// </remarks>
-    public static async Task<ValkeyValue[]> MGetAsync(BaseClient client, IEnumerable<ValkeyKey> keys, ValkeyValue path)
+    public static async Task<ValkeyValue[]> GetAsync(BaseClient client, IEnumerable<ValkeyKey> keys, ValkeyValue path)
     {
         GlideString[] args = BuildMGetArgs(keys, ToGlideString(path));
         object? result = await ExecuteCommandAsync(client, args);

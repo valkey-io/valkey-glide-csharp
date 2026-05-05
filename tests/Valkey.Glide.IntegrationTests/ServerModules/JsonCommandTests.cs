@@ -486,7 +486,7 @@ public class JsonCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task MGetAsync_MultipleExistingKeys_ReturnsAllValues(BaseClient client)
+    public async Task GetAsync_MultipleExistingKeys_ReturnsAllValues(BaseClient client)
     {
         await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
@@ -500,7 +500,7 @@ public class JsonCommandTests(TestConfiguration config)
         await GlideJson.SetAsync(client, key3, "$", "{\"name\":\"Bob\",\"age\":35}");
 
         // Get values from multiple keys with JSONPath
-        ValkeyValue[] results = await GlideJson.MGetAsync(client, [key1, key2, key3], "$.name");
+        ValkeyValue[] results = await GlideJson.GetAsync(client, [key1, key2, key3], "$.name");
 
         Assert.Equal(3, results.Length);
         Assert.Equal("[\"John\"]", results[0]);
@@ -511,7 +511,7 @@ public class JsonCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task MGetAsync_SomeNonExistentKeys_ReturnsNullForMissing(BaseClient client)
+    public async Task GetAsync_SomeNonExistentKeys_ReturnsNullForMissing(BaseClient client)
     {
         await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
@@ -524,7 +524,7 @@ public class JsonCommandTests(TestConfiguration config)
         await GlideJson.SetAsync(client, key2, "$", "{\"name\":\"Jane\"}");
 
         // Get values including a non-existent key
-        ValkeyValue[] results = await GlideJson.MGetAsync(client, [key1, nonExistentKey, key2], "$.name");
+        ValkeyValue[] results = await GlideJson.GetAsync(client, [key1, nonExistentKey, key2], "$.name");
 
         Assert.Equal(3, results.Length);
         Assert.Equal("[\"John\"]", results[0]);
@@ -535,7 +535,7 @@ public class JsonCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task MGetAsync_WithJsonPath_ReturnsArrays(BaseClient client)
+    public async Task GetAsync_WithJsonPath_ReturnsArrays(BaseClient client)
     {
         await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
@@ -547,7 +547,7 @@ public class JsonCommandTests(TestConfiguration config)
         await GlideJson.SetAsync(client, key2, "$", "{\"items\":[4,5,6]}");
 
         // Get values with JSONPath - should return arrays
-        ValkeyValue[] results = await GlideJson.MGetAsync(client, [key1, key2], "$.items");
+        ValkeyValue[] results = await GlideJson.GetAsync(client, [key1, key2], "$.items");
 
         Assert.Equal(2, results.Length);
         Assert.False(results[0].IsNull);
@@ -560,7 +560,7 @@ public class JsonCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task MGetAsync_WithLegacyPath_ReturnsSingleValues(BaseClient client)
+    public async Task GetAsync_WithLegacyPath_ReturnsSingleValues(BaseClient client)
     {
         await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
@@ -572,7 +572,7 @@ public class JsonCommandTests(TestConfiguration config)
         await GlideJson.SetAsync(client, key2, "$", "{\"name\":\"Jane\"}");
 
         // Get values with legacy path (no $ prefix)
-        ValkeyValue[] results = await GlideJson.MGetAsync(client, [key1, key2], ".name");
+        ValkeyValue[] results = await GlideJson.GetAsync(client, [key1, key2], ".name");
 
         Assert.Equal(2, results.Length);
         Assert.Equal("\"John\"", results[0]);
@@ -582,7 +582,7 @@ public class JsonCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task MGetAsync_WithGlideString_ReturnsValues(BaseClient client)
+    public async Task GetAsync_WithGlideString_ReturnsValues(BaseClient client)
     {
         await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
@@ -595,7 +595,7 @@ public class JsonCommandTests(TestConfiguration config)
         await GlideJson.SetAsync(client, key2, "$", (GlideString)"{\"name\":\"Jane\"}");
 
         // Get values using GlideString overload
-        ValkeyValue[] results = await GlideJson.MGetAsync(client, [key1, key2], path);
+        ValkeyValue[] results = await GlideJson.GetAsync(client, [key1, key2], path);
 
         Assert.Equal(2, results.Length);
         Assert.False(results[0].IsNull);
@@ -607,7 +607,7 @@ public class JsonCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task MGetAsync_PathDoesNotExist_ReturnsNullForThoseKeys(BaseClient client)
+    public async Task GetAsync_PathDoesNotExist_ReturnsNullForThoseKeys(BaseClient client)
     {
         await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
@@ -619,7 +619,7 @@ public class JsonCommandTests(TestConfiguration config)
         await GlideJson.SetAsync(client, key2, "$", "{\"age\":25}"); // No "name" field
 
         // Get values with legacy path - key2 doesn't have "name"
-        ValkeyValue[] results = await GlideJson.MGetAsync(client, [key1, key2], ".name");
+        ValkeyValue[] results = await GlideJson.GetAsync(client, [key1, key2], ".name");
 
         Assert.Equal(2, results.Length);
         Assert.Equal("\"John\"", results[0]);
@@ -629,7 +629,7 @@ public class JsonCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task MGetAsync_RootPath_ReturnsEntireDocuments(BaseClient client)
+    public async Task GetAsync_RootPath_ReturnsEntireDocuments(BaseClient client)
     {
         await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
@@ -641,7 +641,7 @@ public class JsonCommandTests(TestConfiguration config)
         await GlideJson.SetAsync(client, key2, "$", "{\"b\":2}");
 
         // Get entire documents with root path
-        ValkeyValue[] results = await GlideJson.MGetAsync(client, [key1, key2], "$");
+        ValkeyValue[] results = await GlideJson.GetAsync(client, [key1, key2], "$");
 
         Assert.Equal(2, results.Length);
         Assert.False(results[0].IsNull);
