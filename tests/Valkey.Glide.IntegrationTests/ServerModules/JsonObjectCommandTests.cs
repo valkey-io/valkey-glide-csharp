@@ -66,13 +66,12 @@ public class JsonObjectCommandTests(TestConfiguration config)
         string jsonValue = "{\"name\":\"John\",\"age\":30}";
 
         await GlideJson.SetAsync(client, key, "$", jsonValue);
-        ValkeyValue[]?[]? result = await GlideJson.ObjKeysAsync(client, key, "$");
+        ValkeyValue[][]? result = await GlideJson.ObjKeysAsync(client, key, "$");
 
         Assert.NotNull(result);
         // JSONPath returns array of arrays
         _ = Assert.Single(result);
-        Assert.NotNull(result[0]);
-        Assert.Equal(2, result[0]!.Length);
+        Assert.Equal(2, result[0].Length);
     }
 
     #endregion

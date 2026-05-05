@@ -72,34 +72,39 @@ public static partial class GlideJson
     /// <param name="key">The key where the JSON document is stored.</param>
     /// <param name="path">The JSONPath or legacy path within the JSON document.</param>
     /// <returns>
-    /// An array of arrays of key names for each matching path. Returns <see langword="null"/> for non-object matches.
+    /// An array of arrays of key names for each matching path, or <see langword="null"/> if the key does not exist.
+    /// Inner arrays are empty for paths where the value is not an object.
     /// </returns>
     /// <seealso href="https://valkey.io/commands/json.objkeys/">Valkey commands – JSON.OBJKEYS</seealso>
     /// <remarks>
     /// <example>
     /// <code>
-    /// await GlideJson.SetAsync(client, "mykey", "$", "{\"a\":{\"x\":1},\"b\":{\"y\":2}}");
-    /// var keys = await GlideJson.ObjKeysAsync(client, "mykey", "$.*");  // [["x"], ["y"]]
+    /// await GlideJson.SetAsync(client, "mykey", "$", "{\"a\":{\"x\":1},\"b\":123}");
+    /// var keys = await GlideJson.ObjKeysAsync(client, "mykey", "$.*");
+    /// // keys = [["x"], []] - a has key "x", b is not an object (empty array)
+    ///
+    /// var missing = await GlideJson.ObjKeysAsync(client, "nonexistent", "$.*");
+    /// // missing = null - key doesn't exist
     /// </code>
     /// </example>
     /// </remarks>
-    public static async Task<ValkeyValue[]?[]?> ObjKeysAsync(BaseClient client, ValkeyKey key, ValkeyValue path)
+    public static async Task<ValkeyValue[][]?> ObjKeysAsync(BaseClient client, ValkeyKey key, ValkeyValue path)
     {
         GlideString[] args = [JsonObjKeys, ToGlideString(key), ToGlideString(path)];
         object? result = await ExecuteCommandAsync(client, args);
         return ConvertToNestedValkeyValueArray(result);
     }
 
-    private static ValkeyValue[]?[]? ConvertToNestedValkeyValueArray(object? result)
+    private static ValkeyValue[][]? ConvertToNestedValkeyValueArray(object? result)
     {
         if (result is null)
             return null;
         if (result is object?[] arr)
         {
-            return [.. arr.Select<object?, ValkeyValue[]?>(o =>
+            return [.. arr.Select<object?, ValkeyValue[]>(o =>
             {
                 if (o is null)
-                    return null;
+                    return []; // Non-object values return empty array per Valkey docs
                 if (o is object?[] innerArr)
                     return [.. innerArr.Select(ToValkeyValue)];
                 // Single value - wrap in array
