@@ -1,7 +1,6 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace Valkey.Glide;
 
@@ -103,7 +102,7 @@ public class Logger
         {
             message += $": {error}";
         }
-        log(Convert.ToInt32(logLevel), Encoding.UTF8.GetBytes(logIdentifier), Encoding.UTF8.GetBytes(message));
+        log(Convert.ToInt32(logLevel), logIdentifier, message);
     }
 
     /// <summary>
@@ -121,11 +120,10 @@ public class Logger
     /// <exception cref="InvalidOperationException">Thrown when the native logger fails to initialize.</exception>
     public static void SetLoggerConfig(Level level, string? filename = null)
     {
-        byte[]? buffer = filename is null ? null : Encoding.UTF8.GetBytes(filename);
-        IntPtr errorPtr = InitInternalLogger(Convert.ToInt32(level), buffer, out Level resolvedLevel);
+        IntPtr errorPtr = InitInternalLogger(Convert.ToInt32(level), filename, out Level resolvedLevel);
         if (errorPtr != IntPtr.Zero)
         {
-            string? errorMessage = Marshal.PtrToStringAnsi(errorPtr);
+            string? errorMessage = Marshal.PtrToStringUTF8(errorPtr);
             FreeString(errorPtr);
             throw new InvalidOperationException($"Failed to initialize logger: {errorMessage}");
         }
@@ -136,10 +134,16 @@ public class Logger
 
     #region FFI function declaration
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "log")]
-    private static extern void log(int logLevel, byte[] logIdentifier, byte[] message);
+    private static extern void log(
+        int logLevel,
+        [MarshalAs(UnmanagedType.LPUTF8Str)] string logIdentifier,
+        [MarshalAs(UnmanagedType.LPUTF8Str)] string message);
 
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "init_logger")]
-    private static extern IntPtr InitInternalLogger(int level, byte[]? filename, out Level levelOut);
+    private static extern IntPtr InitInternalLogger(
+        int level,
+        [MarshalAs(UnmanagedType.LPUTF8Str)] string? filename,
+        out Level levelOut);
 
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "free_string")]
     private static extern void FreeString(IntPtr strPtr);
