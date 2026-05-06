@@ -620,16 +620,20 @@ pub struct ResponseValue {
 }
 
 impl ResponseValue {
-    /// Safely convert a `usize` length to `u32`, returning an error if it exceeds `u32::MAX`.
-    fn checked_size(len: usize, context: &str) -> Result<u32, String> {
-        u32::try_from(len).map_err(|_| {
+    /// Validate that `vec.len()` fits in `u32`, then transfer ownership of the vec to a raw
+    /// pointer with the validated size. The size check happens *before* the ownership transfer,
+    /// so the vec is dropped normally if validation fails.
+    fn convert_vec_to_ffi<T>(vec: Vec<T>, context: &str) -> Result<(*const T, u32), String> {
+        let size = u32::try_from(vec.len()).map_err(|_| {
             format!(
                 "Response {} size ({}) exceeds maximum FFI size ({})",
                 context,
-                len,
+                vec.len(),
                 u32::MAX
             )
-        })
+        })?;
+        let (ptr, _) = convert_vec_to_pointer(vec);
+        Ok((ptr, size))
     }
 
     /// Build [`ResponseValue`] from a [`Value`].
@@ -648,8 +652,7 @@ impl ResponseValue {
                 size: 0,
             }),
             Value::BulkString(text) => {
-                let (vec_ptr, len) = convert_vec_to_pointer(text);
-                let size = Self::checked_size(len, "BulkString")?;
+                let (vec_ptr, size) = Self::convert_vec_to_ffi(text, "BulkString")?;
                 Ok(ResponseValue {
                     typ: ValueType::BulkString,
                     val: vec_ptr as i64,
@@ -661,8 +664,7 @@ impl ResponseValue {
                     .into_iter()
                     .map(ResponseValue::from_value)
                     .collect::<Result<Vec<_>, _>>()?;
-                let (vec_ptr, len) = convert_vec_to_pointer(vec);
-                let size = Self::checked_size(len, "Array")?;
+                let (vec_ptr, size) = Self::convert_vec_to_ffi(vec, "Array")?;
                 Ok(ResponseValue {
                     typ: ValueType::Array,
                     val: vec_ptr as i64,
@@ -674,8 +676,7 @@ impl ResponseValue {
                     .into_iter()
                     .map(ResponseValue::from_value)
                     .collect::<Result<Vec<_>, _>>()?;
-                let (vec_ptr, len) = convert_vec_to_pointer(vec);
-                let size = Self::checked_size(len, "Set")?;
+                let (vec_ptr, size) = Self::convert_vec_to_ffi(vec, "Set")?;
                 Ok(ResponseValue {
                     typ: ValueType::Set,
                     val: vec_ptr as i64,
@@ -699,8 +700,7 @@ impl ResponseValue {
                     .into_iter()
                     .flatten()
                     .collect();
-                let (vec_ptr, len) = convert_vec_to_pointer(vec);
-                let size = Self::checked_size(len, "Map")?;
+                let (vec_ptr, size) = Self::convert_vec_to_ffi(vec, "Map")?;
                 Ok(ResponseValue {
                     typ: ValueType::Map,
                     val: vec_ptr as i64,
@@ -718,8 +718,7 @@ impl ResponseValue {
                 size: 0,
             }),
             Value::VerbatimString { format: _, text } | Value::SimpleString(text) => {
-                let (vec_ptr, len) = convert_vec_to_pointer(text.into_bytes());
-                let size = Self::checked_size(len, "String")?;
+                let (vec_ptr, size) = Self::convert_vec_to_ffi(text.into_bytes(), "String")?;
                 Ok(ResponseValue {
                     typ: ValueType::String,
                     val: vec_ptr as i64,
@@ -727,9 +726,8 @@ impl ResponseValue {
                 })
             }
             Value::ServerError(err) => {
-                let (vec_ptr, len) =
-                    convert_vec_to_pointer(err.details().unwrap().as_bytes().to_vec());
-                let size = Self::checked_size(len, "Error")?;
+                let (vec_ptr, size) =
+                    Self::convert_vec_to_ffi(err.details().unwrap().as_bytes().to_vec(), "Error")?;
                 Ok(ResponseValue {
                     typ: ValueType::Error,
                     val: vec_ptr as i64,
