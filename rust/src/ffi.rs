@@ -734,7 +734,7 @@ impl ResponseValue {
                     size,
                 })
             }
-            _ => todo!(), // push, bigint, attribute
+            _ => Err("Unsupported Redis value type in FFI response serialization".into()),
         }
     }
 
