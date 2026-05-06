@@ -172,12 +172,7 @@ pub unsafe extern "C-unwind" fn create_client(
         Err(err) => {
             panic_guard.panicked = false;
             unsafe {
-                report_error(
-                    failure_callback,
-                    0,
-                    err,
-                    RequestErrorType::Unspecified,
-                );
+                report_error(failure_callback, 0, err, RequestErrorType::Unspecified);
             }
             return;
         }
@@ -601,8 +596,20 @@ pub unsafe extern "C-unwind" fn command(
                     );
                     original
                 });
-                let ptr = Box::into_raw(Box::new(ResponseValue::from_value(value)));
-                unsafe { (core.success_callback)(callback_index, ptr) };
+                match ResponseValue::from_value(value) {
+                    Ok(response) => {
+                        let ptr = Box::into_raw(Box::new(response));
+                        unsafe { (core.success_callback)(callback_index, ptr) };
+                    }
+                    Err(err) => unsafe {
+                        report_error(
+                            core.failure_callback,
+                            callback_index,
+                            err,
+                            RequestErrorType::Unspecified,
+                        );
+                    },
+                }
             }
             Err(err) => unsafe {
                 report_error(
@@ -737,8 +744,20 @@ pub unsafe extern "C-unwind" fn batch(
                 } else {
                     value
                 };
-                let ptr = Box::into_raw(Box::new(ResponseValue::from_value(final_value)));
-                unsafe { (core.success_callback)(callback_index, ptr) };
+                match ResponseValue::from_value(final_value) {
+                    Ok(response) => {
+                        let ptr = Box::into_raw(Box::new(response));
+                        unsafe { (core.success_callback)(callback_index, ptr) };
+                    }
+                    Err(err) => unsafe {
+                        report_error(
+                            core.failure_callback,
+                            callback_index,
+                            err,
+                            RequestErrorType::Unspecified,
+                        );
+                    },
+                }
             }
             Err(err) => unsafe {
                 report_error(
@@ -1058,10 +1077,20 @@ pub unsafe extern "C-unwind" fn invoke_script(
             .await;
 
         match result {
-            Ok(value) => {
-                let ptr = Box::into_raw(Box::new(ResponseValue::from_value(value)));
-                unsafe { (core.success_callback)(callback_index, ptr) };
-            }
+            Ok(value) => match ResponseValue::from_value(value) {
+                Ok(response) => {
+                    let ptr = Box::into_raw(Box::new(response));
+                    unsafe { (core.success_callback)(callback_index, ptr) };
+                }
+                Err(err) => unsafe {
+                    report_error(
+                        core.failure_callback,
+                        callback_index,
+                        err,
+                        RequestErrorType::Unspecified,
+                    );
+                },
+            },
             Err(err) => unsafe {
                 report_error(
                     core.failure_callback,
@@ -1165,10 +1194,20 @@ pub unsafe extern "C-unwind" fn request_cluster_scan(
             .cluster_scan(&scan_state_cursor, cluster_scan_args)
             .await;
         match result {
-            Ok(value) => {
-                let ptr = Box::into_raw(Box::new(ResponseValue::from_value(value)));
-                unsafe { (core.success_callback)(callback_index, ptr) };
-            }
+            Ok(value) => match ResponseValue::from_value(value) {
+                Ok(response) => {
+                    let ptr = Box::into_raw(Box::new(response));
+                    unsafe { (core.success_callback)(callback_index, ptr) };
+                }
+                Err(err) => unsafe {
+                    report_error(
+                        core.failure_callback,
+                        callback_index,
+                        err,
+                        RequestErrorType::Unspecified,
+                    );
+                },
+            },
             Err(err) => unsafe {
                 report_error(
                     core.failure_callback,
@@ -1427,11 +1466,20 @@ pub unsafe extern "C-unwind" fn refresh_iam_token(
 
         let result = core.client.clone().refresh_iam_token().await;
         match result {
-            Ok(()) => {
-                let response = ResponseValue::from_value(redis::Value::Okay);
-                let ptr = Box::into_raw(Box::new(response));
-                unsafe { (core.success_callback)(callback_index, ptr) };
-            }
+            Ok(()) => match ResponseValue::from_value(redis::Value::Okay) {
+                Ok(response) => {
+                    let ptr = Box::into_raw(Box::new(response));
+                    unsafe { (core.success_callback)(callback_index, ptr) };
+                }
+                Err(err) => unsafe {
+                    report_error(
+                        core.failure_callback,
+                        callback_index,
+                        err,
+                        RequestErrorType::Unspecified,
+                    );
+                },
+            },
             Err(err) => unsafe {
                 report_error(
                     core.failure_callback,
@@ -1520,11 +1568,20 @@ pub unsafe extern "C-unwind" fn update_connection_password(
             .update_connection_password(password, immediate_auth)
             .await;
         match result {
-            Ok(value) => {
-                let response = ResponseValue::from_value(value);
-                let ptr = Box::into_raw(Box::new(response));
-                unsafe { (core.success_callback)(callback_index, ptr) };
-            }
+            Ok(value) => match ResponseValue::from_value(value) {
+                Ok(response) => {
+                    let ptr = Box::into_raw(Box::new(response));
+                    unsafe { (core.success_callback)(callback_index, ptr) };
+                }
+                Err(err) => unsafe {
+                    report_error(
+                        core.failure_callback,
+                        callback_index,
+                        err,
+                        RequestErrorType::Unspecified,
+                    );
+                },
+            },
             Err(err) => unsafe {
                 report_error(
                     core.failure_callback,
@@ -1850,10 +1907,20 @@ pub unsafe extern "C-unwind" fn get_cache_metrics(
     };
 
     match result {
-        Ok(value) => {
-            let ptr = Box::into_raw(Box::new(ResponseValue::from_value(value)));
-            unsafe { (core.success_callback)(callback_index, ptr) };
-        }
+        Ok(value) => match ResponseValue::from_value(value) {
+            Ok(response) => {
+                let ptr = Box::into_raw(Box::new(response));
+                unsafe { (core.success_callback)(callback_index, ptr) };
+            }
+            Err(err) => unsafe {
+                report_error(
+                    core.failure_callback,
+                    callback_index,
+                    err,
+                    RequestErrorType::Unspecified,
+                );
+            },
+        },
         Err(err) => unsafe {
             report_error(
                 core.failure_callback,

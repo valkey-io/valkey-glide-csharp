@@ -620,90 +620,121 @@ pub struct ResponseValue {
 }
 
 impl ResponseValue {
+    /// Safely convert a `usize` length to `u32`, returning an error if it exceeds `u32::MAX`.
+    fn checked_size(len: usize, context: &str) -> Result<u32, String> {
+        u32::try_from(len).map_err(|_| {
+            format!(
+                "Response {} size ({}) exceeds maximum FFI size ({})",
+                context,
+                len,
+                u32::MAX
+            )
+        })
+    }
+
     /// Build [`ResponseValue`] from a [`Value`].
-    pub(crate) fn from_value(value: Value) -> Self {
+    ///
+    /// Returns an error if any size component exceeds `u32::MAX`, preventing
+    /// silent truncation across the FFI boundary.
+    pub(crate) fn from_value(value: Value) -> Result<Self, String> {
         match value {
-            Value::Nil => ResponseValue {
+            Value::Nil => Ok(ResponseValue {
                 typ: ValueType::Null,
                 ..Default::default()
-            },
-            Value::Int(int) => ResponseValue {
+            }),
+            Value::Int(int) => Ok(ResponseValue {
                 typ: ValueType::Int,
                 val: int,
                 size: 0,
-            },
+            }),
             Value::BulkString(text) => {
                 let (vec_ptr, len) = convert_vec_to_pointer(text);
-                ResponseValue {
+                let size = Self::checked_size(len, "BulkString")?;
+                Ok(ResponseValue {
                     typ: ValueType::BulkString,
                     val: vec_ptr as i64,
-                    size: len as u32,
-                }
+                    size,
+                })
             }
             Value::Array(values) => {
-                let vec: Vec<ResponseValue> =
-                    values.into_iter().map(ResponseValue::from_value).collect();
+                let vec: Vec<ResponseValue> = values
+                    .into_iter()
+                    .map(ResponseValue::from_value)
+                    .collect::<Result<Vec<_>, _>>()?;
                 let (vec_ptr, len) = convert_vec_to_pointer(vec);
-                ResponseValue {
+                let size = Self::checked_size(len, "Array")?;
+                Ok(ResponseValue {
                     typ: ValueType::Array,
                     val: vec_ptr as i64,
-                    size: len as u32,
-                }
+                    size,
+                })
             }
             Value::Set(values) => {
-                let vec: Vec<ResponseValue> =
-                    values.into_iter().map(ResponseValue::from_value).collect();
+                let vec: Vec<ResponseValue> = values
+                    .into_iter()
+                    .map(ResponseValue::from_value)
+                    .collect::<Result<Vec<_>, _>>()?;
                 let (vec_ptr, len) = convert_vec_to_pointer(vec);
-                ResponseValue {
+                let size = Self::checked_size(len, "Set")?;
+                Ok(ResponseValue {
                     typ: ValueType::Set,
                     val: vec_ptr as i64,
-                    size: len as u32,
-                }
+                    size,
+                })
             }
-            Value::Okay => ResponseValue {
+            Value::Okay => Ok(ResponseValue {
                 typ: ValueType::OK,
                 ..Default::default()
-            },
+            }),
             Value::Map(items) => {
                 let vec: Vec<ResponseValue> = items
                     .into_iter()
-                    .flat_map(|(k, v)| {
-                        vec![ResponseValue::from_value(k), ResponseValue::from_value(v)]
+                    .map(|(k, v)| {
+                        Ok::<_, String>(vec![
+                            ResponseValue::from_value(k)?,
+                            ResponseValue::from_value(v)?,
+                        ])
                     })
+                    .collect::<Result<Vec<_>, _>>()?
+                    .into_iter()
+                    .flatten()
                     .collect();
                 let (vec_ptr, len) = convert_vec_to_pointer(vec);
-                ResponseValue {
+                let size = Self::checked_size(len, "Map")?;
+                Ok(ResponseValue {
                     typ: ValueType::Map,
                     val: vec_ptr as i64,
-                    size: len as u32,
-                }
+                    size,
+                })
             }
-            Value::Double(num) => ResponseValue {
+            Value::Double(num) => Ok(ResponseValue {
                 typ: ValueType::Float,
                 val: num.to_bits() as i64,
                 size: 0,
-            },
-            Value::Boolean(boolean) => ResponseValue {
+            }),
+            Value::Boolean(boolean) => Ok(ResponseValue {
                 typ: ValueType::Bool,
                 val: if boolean { 1 } else { 0 },
                 size: 0,
-            },
+            }),
             Value::VerbatimString { format: _, text } | Value::SimpleString(text) => {
                 let (vec_ptr, len) = convert_vec_to_pointer(text.into_bytes());
-                ResponseValue {
+                let size = Self::checked_size(len, "String")?;
+                Ok(ResponseValue {
                     typ: ValueType::String,
                     val: vec_ptr as i64,
-                    size: len as u32,
-                }
+                    size,
+                })
             }
             Value::ServerError(err) => {
                 let (vec_ptr, len) =
                     convert_vec_to_pointer(err.details().unwrap().as_bytes().to_vec());
-                ResponseValue {
+                let size = Self::checked_size(len, "Error")?;
+                Ok(ResponseValue {
                     typ: ValueType::Error,
                     val: vec_ptr as i64,
-                    size: len as u32,
-                }
+                    size,
+                })
             }
             _ => todo!(), // push, bigint, attribute
         }
