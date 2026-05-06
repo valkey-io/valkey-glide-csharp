@@ -22,27 +22,34 @@ use redis::{
 
 /// Convert raw C string to a rust string.
 ///
+/// Returns an error if the pointer is non-null but the data is not valid UTF-8.
+///
 /// # Safety
 ///
 /// * `ptr` must be able to be safely casted to a valid [`CStr`] via [`CStr::from_ptr`]. See the safety documentation of [`std::ffi::CStr::from_ptr`].
-unsafe fn ptr_to_str(ptr: *const c_char) -> String {
+unsafe fn ptr_to_str(ptr: *const c_char) -> Result<String, String> {
     if !ptr.is_null() {
-        unsafe { CStr::from_ptr(ptr) }.to_str().unwrap().into()
+        unsafe { CStr::from_ptr(ptr) }
+            .to_str()
+            .map(|s| s.to_owned())
+            .map_err(|e| format!("Invalid UTF-8 in C string: {e}"))
     } else {
-        "".into()
+        Ok(String::new())
     }
 }
 
 /// Convert raw C string to a rust string wrapped by [Option].
 ///
+/// Returns an error if the pointer is non-null but the data is not valid UTF-8.
+///
 /// # Safety
 ///
 /// * `ptr` must be able to be safely casted to a valid [`CStr`] via [`CStr::from_ptr`]. See the safety documentation of [`std::ffi::CStr::from_ptr`].
-unsafe fn ptr_to_opt_str(ptr: *const c_char) -> Option<String> {
+unsafe fn ptr_to_opt_str(ptr: *const c_char) -> Result<Option<String>, String> {
     if !ptr.is_null() {
-        Some(unsafe { ptr_to_str(ptr) })
+        unsafe { ptr_to_str(ptr) }.map(Some)
     } else {
-        None
+        Ok(None)
     }
 }
 
@@ -223,33 +230,33 @@ unsafe fn convert_pubsub_config(
 ///   See the safety documentation of [`convert_node_addresses`], [`ptr_to_str`] and [`ptr_to_opt_str`].
 pub(crate) unsafe fn create_connection_request(
     config_ptr: *const ConnectionConfig,
-) -> ConnectionRequest {
+) -> Result<ConnectionRequest, String> {
     let config = unsafe { *config_ptr };
-    ConnectionRequest {
+    Ok(ConnectionRequest {
         read_from: if config.has_read_from {
             Some(match config.read_from.strategy {
                 ReadFromStrategy::Primary => coreReadFrom::Primary,
                 ReadFromStrategy::PreferReplica => coreReadFrom::PreferReplica,
                 ReadFromStrategy::AZAffinity => {
-                    coreReadFrom::AZAffinity(unsafe { ptr_to_str(config.read_from.az) })
+                    coreReadFrom::AZAffinity(unsafe { ptr_to_str(config.read_from.az) }?)
                 }
                 ReadFromStrategy::AZAffinityReplicasAndPrimary => {
                     coreReadFrom::AZAffinityReplicasAndPrimary(unsafe {
                         ptr_to_str(config.read_from.az)
-                    })
+                    }?)
                 }
             })
         } else {
             None
         },
-        client_name: unsafe { ptr_to_opt_str(config.client_name) },
+        client_name: unsafe { ptr_to_opt_str(config.client_name) }?,
         lib_name: option_env!("GLIDE_NAME").map(|s| s.to_string()),
         authentication_info: if config.has_authentication_info {
             let auth_info = config.authentication_info;
             let iam_config = if auth_info.has_iam_credentials {
                 Some(glide_core::client::IamAuthenticationConfig {
-                    cluster_name: unsafe { ptr_to_str(auth_info.iam_credentials.cluster_name) },
-                    region: unsafe { ptr_to_str(auth_info.iam_credentials.region) },
+                    cluster_name: unsafe { ptr_to_str(auth_info.iam_credentials.cluster_name) }?,
+                    region: unsafe { ptr_to_str(auth_info.iam_credentials.region) }?,
                     service_type: match auth_info.iam_credentials.service_type {
                         ServiceType::ElastiCache => glide_core::iam::ServiceType::ElastiCache,
                         ServiceType::MemoryDB => glide_core::iam::ServiceType::MemoryDB,
@@ -268,8 +275,8 @@ pub(crate) unsafe fn create_connection_request(
             };
 
             Some(CoreAuthenticationInfo {
-                username: unsafe { ptr_to_opt_str(auth_info.username) },
-                password: unsafe { ptr_to_opt_str(auth_info.password) },
+                username: unsafe { ptr_to_opt_str(auth_info.username) }?,
+                password: unsafe { ptr_to_opt_str(auth_info.password) }?,
                 iam_config,
             })
         } else {
@@ -278,7 +285,7 @@ pub(crate) unsafe fn create_connection_request(
         database_id: config.database_id.into(),
         protocol: config.has_protocol.then_some(config.protocol),
         tls_mode: config.has_tls.then_some(config.tls_mode),
-        addresses: unsafe { convert_node_addresses(config.addresses, config.address_count) },
+        addresses: unsafe { convert_node_addresses(config.addresses, config.address_count) }?,
         cluster_mode_enabled: config.cluster_mode,
         request_timeout: config.has_request_timeout.then_some(config.request_timeout),
         connection_timeout: config
@@ -327,7 +334,7 @@ pub(crate) unsafe fn create_connection_request(
             use redis::cache::EvictionPolicy as CoreEvictionPolicy;
             let csc = config.client_side_cache_config;
             Some(glide_core::client::ClientSideCache {
-                cache_id: unsafe { ptr_to_str(csc.cache_id) },
+                cache_id: unsafe { ptr_to_str(csc.cache_id) }?,
                 max_cache_kb: csc.max_cache_kb,
                 entry_ttl_ms: csc.entry_ttl_ms,
                 eviction_policy: if csc.has_eviction_policy {
@@ -351,7 +358,7 @@ pub(crate) unsafe fn create_connection_request(
         periodic_checks: None,
         inflight_requests_limit: None,
         node_discovery_mode: glide_core::client::NodeDiscoveryMode::default(),
-    }
+    })
 }
 
 /// A mirror of [`NodeAddress`] adopted for FFI.
@@ -359,15 +366,6 @@ pub(crate) unsafe fn create_connection_request(
 pub struct Address {
     pub host: *const c_char,
     pub port: u16,
-}
-
-impl From<&Address> for NodeAddress {
-    fn from(addr: &Address) -> Self {
-        NodeAddress {
-            host: unsafe { ptr_to_str(addr.host) },
-            port: addr.port,
-        }
-    }
 }
 
 /// Convert raw array pointer of [`Address`]es to a vector of [`NodeAddress`]es.
@@ -378,10 +376,18 @@ impl From<&Address> for NodeAddress {
 /// * `data` must not be `null`.
 /// * `data` must point to `len` consecutive properly initialized [`Address`] structs.
 /// * Each [`Address`] dereferenced by `data` must contain a valid string pointer. See the safety documentation of [`ptr_to_str`].
-unsafe fn convert_node_addresses(data: *const *const Address, len: usize) -> Vec<NodeAddress> {
+unsafe fn convert_node_addresses(
+    data: *const *const Address,
+    len: usize,
+) -> Result<Vec<NodeAddress>, String> {
     unsafe { std::slice::from_raw_parts(data as *mut Address, len) }
         .iter()
-        .map(NodeAddress::from)
+        .map(|addr| {
+            Ok(NodeAddress {
+                host: unsafe { ptr_to_str(addr.host) }?,
+                port: addr.port,
+            })
+        })
         .collect()
 }
 
@@ -486,37 +492,41 @@ pub struct RouteInfo {
 pub(crate) unsafe fn create_route(
     route_ptr: *const RouteInfo,
     cmd: Option<&Cmd>,
-) -> Option<RoutingInfo> {
+) -> Result<Option<RoutingInfo>, String> {
     if route_ptr.is_null() {
-        return None;
+        return Ok(None);
     }
     let route = unsafe { *route_ptr };
     match route.route_type {
-        RouteType::Random => Some(RoutingInfo::SingleNode(SingleNodeRoutingInfo::Random)),
-        RouteType::AllNodes => Some(RoutingInfo::MultiNode((
+        RouteType::Random => Ok(Some(RoutingInfo::SingleNode(SingleNodeRoutingInfo::Random))),
+        RouteType::AllNodes => Ok(Some(RoutingInfo::MultiNode((
             MultipleNodeRoutingInfo::AllNodes,
             cmd.and_then(|c| ResponsePolicy::for_command(&c.command().unwrap())),
-        ))),
-        RouteType::AllPrimaries => Some(RoutingInfo::MultiNode((
+        )))),
+        RouteType::AllPrimaries => Ok(Some(RoutingInfo::MultiNode((
             MultipleNodeRoutingInfo::AllMasters,
             cmd.and_then(|c| ResponsePolicy::for_command(&c.command().unwrap())),
-        ))),
-        RouteType::SlotId => Some(RoutingInfo::SingleNode(
+        )))),
+        RouteType::SlotId => Ok(Some(RoutingInfo::SingleNode(
             SingleNodeRoutingInfo::SpecificNode(Route::new(
                 route.slot_id as u16,
                 (&route.slot_type).into(),
             )),
-        )),
-        RouteType::SlotKey => Some(RoutingInfo::SingleNode(
+        ))),
+        RouteType::SlotKey => Ok(Some(RoutingInfo::SingleNode(
             SingleNodeRoutingInfo::SpecificNode(Route::new(
-                redis::cluster_topology::get_slot(unsafe { ptr_to_str(route.slot_key) }.as_bytes()),
+                redis::cluster_topology::get_slot(
+                    unsafe { ptr_to_str(route.slot_key) }?.as_bytes(),
+                ),
                 (&route.slot_type).into(),
             )),
-        )),
-        RouteType::ByAddress => Some(RoutingInfo::SingleNode(SingleNodeRoutingInfo::ByAddress {
-            host: unsafe { ptr_to_str(route.hostname) },
-            port: route.port as u16,
-        })),
+        ))),
+        RouteType::ByAddress => Ok(Some(RoutingInfo::SingleNode(
+            SingleNodeRoutingInfo::ByAddress {
+                host: unsafe { ptr_to_str(route.hostname) }?,
+                port: route.port as u16,
+            },
+        ))),
     }
 }
 
@@ -873,9 +883,9 @@ pub(crate) unsafe fn create_pipeline(
 ///   See description of [`RouteInfo`] and the safety documentation of [`create_route`].
 pub(crate) unsafe fn get_pipeline_options(
     ptr: *const BatchOptionsInfo,
-) -> (Option<RoutingInfo>, Option<u32>, PipelineRetryStrategy) {
+) -> Result<(Option<RoutingInfo>, Option<u32>, PipelineRetryStrategy), String> {
     if ptr.is_null() {
-        return (None, None, PipelineRetryStrategy::new(false, false));
+        return Ok((None, None, PipelineRetryStrategy::new(false, false)));
     }
     let info = unsafe { *ptr };
     let timeout = if info.has_timeout {
@@ -883,13 +893,13 @@ pub(crate) unsafe fn get_pipeline_options(
     } else {
         None
     };
-    let route = unsafe { create_route(info.route_info, None) };
+    let route = unsafe { create_route(info.route_info, None) }?;
 
-    (
+    Ok((
         route,
         timeout,
         PipelineRetryStrategy::new(info.retry_server_error, info.retry_connection_error),
-    )
+    ))
 }
 
 /// FFI-safe version of [`redis::PushKind`] for C# interop.

@@ -118,19 +118,31 @@ public class Logger
     /// If provided the target of the logs will be the file mentioned.<br />
     /// Otherwise, logs will be printed to the console.
     /// </param>
+    /// <exception cref="InvalidOperationException">Thrown when the native logger fails to initialize.</exception>
     public static void SetLoggerConfig(Level level, string? filename = null)
     {
         byte[]? buffer = filename is null ? null : Encoding.UTF8.GetBytes(filename);
-        s_loggerLevel = InitInternalLogger(Convert.ToInt32(level), buffer);
+        IntPtr errorPtr = InitInternalLogger(Convert.ToInt32(level), buffer, out Level resolvedLevel);
+        if (errorPtr != IntPtr.Zero)
+        {
+            string? errorMessage = Marshal.PtrToStringAnsi(errorPtr);
+            FreeString(errorPtr);
+            throw new InvalidOperationException($"Failed to initialize logger: {errorMessage}");
+        }
+        s_loggerLevel = resolvedLevel;
     }
+
     #endregion public methods
 
     #region FFI function declaration
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "log")]
     private static extern void log(int logLevel, byte[] logIdentifier, byte[] message);
 
-    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "init")]
-    private static extern Level InitInternalLogger(int level, byte[]? filename);
+    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "init_logger")]
+    private static extern IntPtr InitInternalLogger(int level, byte[]? filename, out Level levelOut);
+
+    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "free_string")]
+    private static extern void FreeString(IntPtr strPtr);
 
     #endregion
 }
