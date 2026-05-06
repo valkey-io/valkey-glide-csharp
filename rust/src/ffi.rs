@@ -55,7 +55,7 @@ unsafe fn ptr_to_opt_str(ptr: *const c_char) -> Result<Option<String>, String> {
 
 /// A mirror of [`ConnectionRequest`] adopted for FFI.
 #[repr(C)]
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub struct CompressionConfig {
     pub min_compression_size: usize,
     pub has_compression_level: bool,
@@ -67,7 +67,7 @@ pub struct CompressionConfig {
 }
 
 #[repr(u32)]
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub enum CompressionBackend {
     Zstd = 0,
     Lz4 = 1,
@@ -75,7 +75,7 @@ pub enum CompressionBackend {
 
 /// A mirror of [`EvictionPolicy`] adopted for FFI.
 #[repr(u32)]
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub enum EvictionPolicy {
     Lru = 0,
     Lfu = 1,
@@ -83,7 +83,7 @@ pub enum EvictionPolicy {
 
 /// A mirror of [`glide_core::client::ClientSideCache`] adopted for FFI.
 #[repr(C)]
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub struct ClientSideCacheConfig {
     pub cache_id: *const c_char,
     pub max_cache_kb: u64,
@@ -95,7 +95,7 @@ pub struct ClientSideCacheConfig {
 
 /// A mirror of [`ConnectionRequest`] adopted for FFI.
 #[repr(C)]
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub struct ConnectionConfig {
     pub address_count: usize,
     /// Pointer to an array.
@@ -143,7 +143,7 @@ pub struct ConnectionConfig {
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub struct PubSubConfigInfo {
     pub channels_ptr: *const *const c_char,
     pub channel_count: u32,
@@ -393,14 +393,14 @@ unsafe fn convert_node_addresses(
 
 /// A mirror of [`coreReadFrom`] adopted for FFI.
 #[repr(C)]
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub struct ReadFrom {
     pub strategy: ReadFromStrategy,
     pub az: *const c_char,
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub enum ReadFromStrategy {
     Primary,
     PreferReplica,
@@ -410,7 +410,7 @@ pub enum ReadFromStrategy {
 
 /// A mirror of [`AuthenticationInfo`] adopted for FFI.
 #[repr(C)]
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub struct AuthenticationInfo {
     pub username: *const c_char,
     pub password: *const c_char,
@@ -420,7 +420,7 @@ pub struct AuthenticationInfo {
 
 /// A mirror of [`IamCredentials`] adopted for FFI.
 #[repr(C)]
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub struct IamCredentials {
     pub cluster_name: *const c_char,
     pub region: *const c_char,
@@ -430,14 +430,14 @@ pub struct IamCredentials {
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub enum ServiceType {
     ElastiCache = 0,
     MemoryDB = 1,
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub enum RouteType {
     Random,
     AllNodes,
@@ -449,7 +449,7 @@ pub enum RouteType {
 
 /// A mirror of [`SlotAddr`]
 #[repr(C)]
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub enum SlotType {
     Primary,
     Replica,
@@ -471,7 +471,7 @@ impl From<&SlotType> for SlotAddr {
 /// * `route_type`, `slot_key` and `slot_type`, if route is a Slot key route;
 /// * `route_type`, `hostname` and `port`, if route is a Address route;
 #[repr(C)]
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub struct RouteInfo {
     pub route_type: RouteType,
     pub slot_id: i32,
@@ -584,7 +584,7 @@ pub(crate) fn convert_vec_to_pointer<T>(mut vec: Vec<T>) -> (*const T, usize) {
 }
 
 #[repr(C)]
-#[derive(Default, Debug, Clone)]
+#[derive(Default, Clone)]
 pub enum ValueType {
     #[default]
     Null = 0,
@@ -610,7 +610,7 @@ pub enum ValueType {
 ///   [`ResponseValue::val`] a pointer to an array of another [`ResponseValue`] is stored and [`ResponseValue::size`] contains
 ///   the array length (for a map - it is 2x map size).
 #[repr(C)]
-#[derive(Default, Debug, Clone)]
+#[derive(Default, Clone)]
 pub struct ResponseValue {
     pub typ: ValueType,
     pub val: i64,
@@ -740,7 +740,7 @@ impl ResponseValue {
 }
 
 #[repr(C)]
-#[derive(Clone, Debug, Copy)]
+#[derive(Clone, Copy)]
 pub struct CmdInfo {
     pub request_type: RequestType,
     pub args: *const *const u8,
@@ -749,7 +749,7 @@ pub struct CmdInfo {
 }
 
 #[repr(C)]
-#[derive(Clone, Debug, Copy)]
+#[derive(Clone, Copy)]
 pub struct BatchInfo {
     pub cmd_count: usize,
     pub cmds: *const *const CmdInfo,
@@ -757,7 +757,7 @@ pub struct BatchInfo {
 }
 
 #[repr(C)]
-#[derive(Clone, Debug, Copy)]
+#[derive(Clone, Copy)]
 pub struct BatchOptionsInfo {
     // two params from PipelineRetryStrategy
     pub retry_server_error: bool,
@@ -908,7 +908,7 @@ pub(crate) unsafe fn get_pipeline_options(
 /// The `#[repr(u32)]` attribute ensures a stable memory layout compatible with C# marshaling.
 /// Each variant corresponds to a specific Redis/Valkey PubSub notification type.
 #[repr(u32)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub enum PushKind {
     /// Disconnection notification sent from the library when connection is closed.
     Disconnection = 0,
