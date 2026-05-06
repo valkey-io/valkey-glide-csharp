@@ -167,7 +167,21 @@ pub unsafe extern "C-unwind" fn create_client(
         callback_index: 0,
     };
 
-    let request = unsafe { create_connection_request(config) };
+    let request = match unsafe { create_connection_request(config) } {
+        Ok(req) => req,
+        Err(err) => {
+            panic_guard.panicked = false;
+            unsafe {
+                report_error(
+                    failure_callback,
+                    0,
+                    err,
+                    RequestErrorType::Unspecified,
+                );
+            }
+            return;
+        }
+    };
 
     let runtime = Builder::new_multi_thread()
         .enable_all()
@@ -538,7 +552,21 @@ pub unsafe extern "C-unwind" fn command(
         }
     };
 
-    let route = unsafe { create_route(route_info, Some(&cmd)) };
+    let route = match unsafe { create_route(route_info, Some(&cmd)) } {
+        Ok(route) => route,
+        Err(err) => {
+            panic_guard.panicked = false;
+            unsafe {
+                report_error(
+                    core.failure_callback,
+                    callback_index,
+                    err,
+                    RequestErrorType::Unspecified,
+                );
+            }
+            return;
+        }
+    };
 
     let request_type = unsafe { (*cmd_ptr).request_type };
 
@@ -641,7 +669,22 @@ pub unsafe extern "C-unwind" fn batch(
             }
         };
 
-    let (routing, timeout, pipeline_retry_strategy) = unsafe { get_pipeline_options(options_ptr) };
+    let (routing, timeout, pipeline_retry_strategy) =
+        match unsafe { get_pipeline_options(options_ptr) } {
+            Ok(opts) => opts,
+            Err(err) => {
+                panic_guard.panicked = false;
+                unsafe {
+                    report_error(
+                        core.failure_callback,
+                        callback_index,
+                        err,
+                        RequestErrorType::Unspecified,
+                    );
+                }
+                return;
+            }
+        };
 
     // Clone compression manager for use in async block
     let compression_manager = core.client.compression_manager();
@@ -782,36 +825,55 @@ pub unsafe extern "C" fn log(
     log_identifier: *const c_char,
     message: *const c_char,
 ) {
-    logger_core::log(
-        log_level.into(),
-        unsafe { CStr::from_ptr(log_identifier) }
-            .to_str()
-            .expect("Can not read log_identifier argument."),
-        unsafe { CStr::from_ptr(message) }
-            .to_str()
-            .expect("Can not read message argument."),
-    );
+    let log_id = match unsafe { CStr::from_ptr(log_identifier) }.to_str() {
+        Ok(s) => s,
+        Err(_) => {
+            // Cannot log with invalid UTF-8 identifier; silently skip.
+            return;
+        }
+    };
+    let msg = match unsafe { CStr::from_ptr(message) }.to_str() {
+        Ok(s) => s,
+        Err(_) => {
+            // Cannot log with invalid UTF-8 message; silently skip.
+            return;
+        }
+    };
+    logger_core::log(log_level.into(), log_id, msg);
 }
 
+/// Initializes the logger with the given level and optional file name.
+///
+/// Returns a null pointer on success, or a pointer to a C string error message on failure.
+/// On success, the resolved log level is written to `*level_out`.
+/// The caller is responsible for freeing the error message using `free_string`.
+///
 /// # Safety
 ///
-/// * `file_name` must not be `null`.
-/// * `file_name` must be able to be safely casted to a valid [`CStr`] via [`CStr::from_ptr`]. See the safety documentation of [`CStr::from_ptr`].
+/// * `file_name` may be `null` (logs to console). If non-null, it must be a valid C string.
+/// * `level_out` must not be `null` and must point to a valid writable `Level`.
 #[unsafe(no_mangle)]
 #[allow(improper_ctypes_definitions)]
-pub unsafe extern "C" fn init(level: Option<Level>, file_name: *const c_char) -> Level {
+pub unsafe extern "C" fn init_logger(
+    level: Option<Level>,
+    file_name: *const c_char,
+    level_out: *mut Level,
+) -> *const c_char {
     let file_name_as_str = if file_name.is_null() {
         None
     } else {
-        Some(
-            unsafe { CStr::from_ptr(file_name) }
-                .to_str()
-                .expect("Can not read string argument."),
-        )
+        match unsafe { CStr::from_ptr(file_name) }.to_str() {
+            Ok(s) => Some(s),
+            Err(e) => {
+                let error_msg = format!("Invalid UTF-8 in file name: {e}");
+                return CString::new(error_msg).unwrap().into_raw();
+            }
+        }
     };
 
     let logger_level = logger_core::init(level.map(|level| level.into()), file_name_as_str);
-    logger_level.into()
+    unsafe { *level_out = logger_level.into() };
+    std::ptr::null()
 }
 
 #[repr(C)]
