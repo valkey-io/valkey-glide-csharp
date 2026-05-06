@@ -877,7 +877,7 @@ pub unsafe extern "C" fn init_logger(
     level: Option<Level>,
     file_name: *const c_char,
     level_out: *mut Level,
-) -> *const c_char {
+) -> *mut c_char {
     let file_name_as_str = if file_name.is_null() {
         None
     } else {
@@ -892,7 +892,7 @@ pub unsafe extern "C" fn init_logger(
 
     let logger_level = logger_core::init(level.map(|level| level.into()), file_name_as_str);
     unsafe { *level_out = logger_level.into() };
-    std::ptr::null()
+    std::ptr::null_mut()
 }
 
 #[repr(C)]
