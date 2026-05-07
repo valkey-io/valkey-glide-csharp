@@ -1,0 +1,37 @@
+name: C# Full Matrix Tests (Nightly)
+
+on:
+    schedule:
+        - cron: "0 6 * * *" # 11:00 PM PDT
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+jobs:
+    # Full source-mode test — all platform × server-version combinations
+    full-matrix-tests:
+        uses: ./.github/workflows/_reusable-test.yml
+        with:
+            profile: full
+        secrets: inherit
+
+    # Package-mode smoke test against the latest released NuGet version
+    get-latest-package-version:
+        runs-on: ubuntu-latest
+        outputs:
+            version: ${{ steps.get-version.outputs.version }}
+        steps:
+            - name: Get latest released version from NuGet
+              id: get-version
+              run: |
+                  VERSION=$(curl -s 'https://api.nuget.org/v3-flatcontainer/valkey.glide/index.json' | jq -r '.versions[-1]')
+                  echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+    package-smoke-test:
+        needs: get-latest-package-version
+        uses: ./.github/workflows/_reusable-test.yml
+        with:
+            profile: smoke
+            package-version: ${{ needs.get-latest-package-version.outputs.version }}
+        secrets: inherit
