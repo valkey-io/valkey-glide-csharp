@@ -1,0 +1,17 @@
+name: CI
+
+on:
+    push:
+        branches: [main, release-*, v*]
+    pull_request:
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+jobs:
+    tests:
+        uses: ./.github/workflows/_reusable-test.yml
+        with:
+            profile: standard
+        secrets: inherit
