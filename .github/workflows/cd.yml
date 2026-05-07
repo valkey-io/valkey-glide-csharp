@@ -1,4 +1,4 @@
-name: C# CD
+name: CD
 
 on:
     push:
@@ -41,8 +41,9 @@ jobs:
             - name: load-platform-matrix
               id: load-platform-matrix
               working-directory: .github/json_matrices
+              # Select all VM runners (non-container) — each produces a unique native binary for the NuGet package.
               run: |
-                  jq -c "[.[] | select(any(.tags[] == \"cd\"; .))]" < os-matrix.json | awk '{ printf "PLATFORM_MATRIX=%s\n", $0 }' | tee -a $GITHUB_OUTPUT
+                  jq -c '[.[] | select(has("IMAGE") | not)]' < os-matrix.json | awk '{ printf "PLATFORM_MATRIX=%s\n", $0 }' | tee -a $GITHUB_OUTPUT
 
     set-release-version:
         runs-on: ubuntu-latest
@@ -208,93 +209,17 @@ jobs:
                   echo "Timeout: Package is not available after ${TIMEOUT}s"
                   exit 1
 
+    # Test the published package as users would install it from nuget.org.
+    # On dry-run (publish skipped), tests use the locally-built .nupkg artifact instead.
+    # If tests fail after a real publish, remove-package-if-validation-fails unlists the package.
     test:
-        needs: [publish, set-release-version, load-platform-matrix]
-        timeout-minutes: 35
-        strategy:
-            # Run all jobs
-            fail-fast: false
-            matrix:
-                host: ${{ fromJson(needs.load-platform-matrix.outputs.PLATFORM_MATRIX) }}
-        runs-on: ${{ matrix.host.RUNNER }}
-        env:
-            RELEASE_VERSION: ${{ needs.set-release-version.outputs.RELEASE_VERSION }}
-        steps:
-            - uses: actions/checkout@v6
-              with:
-                  submodules: true
-
-            - name: Download package
-              if: ${{ needs.publish.result == 'skipped' }}
-              uses: actions/download-artifact@v8
-              with:
-                  name: package
-                  path: nuget.local
-
-            - name: Set up dotnet
-              uses: actions/setup-dotnet@v5
-              with:
-                  # install latest dotnet to use language features
-                  dotnet-version: |
-                      8
-                      9
-
-            - name: Set up a local nuget
-              if: ${{ needs.publish.result == 'skipped' }}
-              shell: bash
-              run: |
-                  ls -l $GITHUB_WORKSPACE/nuget.local
-                  dotnet nuget add source $GITHUB_WORKSPACE/nuget.local
-                  dotnet nuget config paths
-                  if [[ "${{ matrix.host.OS }}" != "windows" ]]; then
-                    dotnet nuget config paths | xargs cat
-                  else
-                    cat "C:\\Users\\runneradmin\\AppData\\Roaming\\NuGet\\NuGet.Config"
-                  fi
-
-            - name: Patch IT suite to run tests using freshly published version
-              shell: bash
-              run: |
-                  # Remove local project references to Valkey.Glide
-                  dotnet remove tests/Valkey.Glide.TestUtils reference sources/Valkey.Glide/Valkey.Glide.csproj
-                  dotnet remove tests/Valkey.Glide.IntegrationTests reference sources/Valkey.Glide/Valkey.Glide.csproj
-                  # Replace with the published NuGet package
-                  dotnet add tests/Valkey.Glide.TestUtils package Valkey.Glide --version $RELEASE_VERSION
-                  dotnet add tests/Valkey.Glide.IntegrationTests package Valkey.Glide --version $RELEASE_VERSION
-                  git diff
-
-            - name: Setup WSL (Windows only)
-              # WSL2 is not available on windows-11-arm runners (no Hyper-V).
-              if: ${{ matrix.host.OS == 'windows' && matrix.host.ARCH != 'arm64' }}
-              uses: Vampire/setup-wsl@v7
-              with:
-                  distribution: Ubuntu-22.04
-                  additional-packages: build-essential git make pkg-config libssl-dev
-
-            - name: Install server
-              # WSL2 is not available on windows-11-arm runners (no Hyper-V).
-              if: ${{ !(matrix.host.OS == 'windows' && matrix.host.ARCH == 'arm64') }}
-              uses: ./.github/workflows/install-server
-              with:
-                  os: ${{ matrix.host.OS }}
-                  target: ${{ matrix.host.TARGET }}
-                  server-version: 8.1
-
-            - name: Run command tests
-              # WSL2 is not available on windows-11-arm runners (no Hyper-V), so we cannot run Valkey server there.
-              if: ${{ !(matrix.host.OS == 'windows' && matrix.host.ARCH == 'arm64') }}
-              working-directory: tests/Valkey.Glide.IntegrationTests
-              run: dotnet test --framework net8.0 --logger "console;verbosity=detailed" --logger "html;LogFileName=TestReport.html" --results-directory . --filter "FullyQualifiedName~CommandTests"
-
-            - name: Upload test reports
-              if: always()
-              continue-on-error: true
-              uses: actions/upload-artifact@v7
-              with:
-                  name: test-reports-${{ matrix.host.TARGET }}
-                  path: |
-                      TestReport.html
-                      valkey-glide/utils/clusters/**
+        needs: [publish, set-release-version]
+        uses: ./.github/workflows/_reusable-test.yml
+        with:
+            profile: smoke
+            package-version: ${{ needs.set-release-version.outputs.RELEASE_VERSION }}
+            package-artifact-name: ${{ needs.publish.result == 'skipped' && 'package' || '' }}
+        secrets: inherit
 
     remove-package-if-validation-fails:
         needs: [publish, test, set-release-version]
