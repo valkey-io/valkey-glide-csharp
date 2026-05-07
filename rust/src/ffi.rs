@@ -22,33 +22,40 @@ use redis::{
 
 /// Convert raw C string to a rust string.
 ///
+/// Returns an error if the pointer is non-null but the data is not valid UTF-8.
+///
 /// # Safety
 ///
 /// * `ptr` must be able to be safely casted to a valid [`CStr`] via [`CStr::from_ptr`]. See the safety documentation of [`std::ffi::CStr::from_ptr`].
-unsafe fn ptr_to_str(ptr: *const c_char) -> String {
+unsafe fn ptr_to_str(ptr: *const c_char) -> Result<String, String> {
     if !ptr.is_null() {
-        unsafe { CStr::from_ptr(ptr) }.to_str().unwrap().into()
+        unsafe { CStr::from_ptr(ptr) }
+            .to_str()
+            .map(|s| s.to_owned())
+            .map_err(|e| format!("Invalid UTF-8 in C string: {e}"))
     } else {
-        "".into()
+        Ok(String::new())
     }
 }
 
 /// Convert raw C string to a rust string wrapped by [Option].
 ///
+/// Returns an error if the pointer is non-null but the data is not valid UTF-8.
+///
 /// # Safety
 ///
 /// * `ptr` must be able to be safely casted to a valid [`CStr`] via [`CStr::from_ptr`]. See the safety documentation of [`std::ffi::CStr::from_ptr`].
-unsafe fn ptr_to_opt_str(ptr: *const c_char) -> Option<String> {
+unsafe fn ptr_to_opt_str(ptr: *const c_char) -> Result<Option<String>, String> {
     if !ptr.is_null() {
-        Some(unsafe { ptr_to_str(ptr) })
+        unsafe { ptr_to_str(ptr) }.map(Some)
     } else {
-        None
+        Ok(None)
     }
 }
 
 /// A mirror of [`ConnectionRequest`] adopted for FFI.
 #[repr(C)]
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub struct CompressionConfig {
     pub min_compression_size: usize,
     pub has_compression_level: bool,
@@ -60,7 +67,7 @@ pub struct CompressionConfig {
 }
 
 #[repr(u32)]
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub enum CompressionBackend {
     Zstd = 0,
     Lz4 = 1,
@@ -68,7 +75,7 @@ pub enum CompressionBackend {
 
 /// A mirror of [`EvictionPolicy`] adopted for FFI.
 #[repr(u32)]
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub enum EvictionPolicy {
     Lru = 0,
     Lfu = 1,
@@ -76,7 +83,7 @@ pub enum EvictionPolicy {
 
 /// A mirror of [`glide_core::client::ClientSideCache`] adopted for FFI.
 #[repr(C)]
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub struct ClientSideCacheConfig {
     pub cache_id: *const c_char,
     pub max_cache_kb: u64,
@@ -88,7 +95,7 @@ pub struct ClientSideCacheConfig {
 
 /// A mirror of [`ConnectionRequest`] adopted for FFI.
 #[repr(C)]
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub struct ConnectionConfig {
     pub address_count: usize,
     /// Pointer to an array.
@@ -136,7 +143,7 @@ pub struct ConnectionConfig {
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub struct PubSubConfigInfo {
     pub channels_ptr: *const *const c_char,
     pub channel_count: u32,
@@ -223,33 +230,33 @@ unsafe fn convert_pubsub_config(
 ///   See the safety documentation of [`convert_node_addresses`], [`ptr_to_str`] and [`ptr_to_opt_str`].
 pub(crate) unsafe fn create_connection_request(
     config_ptr: *const ConnectionConfig,
-) -> ConnectionRequest {
+) -> Result<ConnectionRequest, String> {
     let config = unsafe { *config_ptr };
-    ConnectionRequest {
+    Ok(ConnectionRequest {
         read_from: if config.has_read_from {
             Some(match config.read_from.strategy {
                 ReadFromStrategy::Primary => coreReadFrom::Primary,
                 ReadFromStrategy::PreferReplica => coreReadFrom::PreferReplica,
                 ReadFromStrategy::AZAffinity => {
-                    coreReadFrom::AZAffinity(unsafe { ptr_to_str(config.read_from.az) })
+                    coreReadFrom::AZAffinity(unsafe { ptr_to_str(config.read_from.az) }?)
                 }
                 ReadFromStrategy::AZAffinityReplicasAndPrimary => {
                     coreReadFrom::AZAffinityReplicasAndPrimary(unsafe {
                         ptr_to_str(config.read_from.az)
-                    })
+                    }?)
                 }
             })
         } else {
             None
         },
-        client_name: unsafe { ptr_to_opt_str(config.client_name) },
+        client_name: unsafe { ptr_to_opt_str(config.client_name) }?,
         lib_name: option_env!("GLIDE_NAME").map(|s| s.to_string()),
         authentication_info: if config.has_authentication_info {
             let auth_info = config.authentication_info;
             let iam_config = if auth_info.has_iam_credentials {
                 Some(glide_core::client::IamAuthenticationConfig {
-                    cluster_name: unsafe { ptr_to_str(auth_info.iam_credentials.cluster_name) },
-                    region: unsafe { ptr_to_str(auth_info.iam_credentials.region) },
+                    cluster_name: unsafe { ptr_to_str(auth_info.iam_credentials.cluster_name) }?,
+                    region: unsafe { ptr_to_str(auth_info.iam_credentials.region) }?,
                     service_type: match auth_info.iam_credentials.service_type {
                         ServiceType::ElastiCache => glide_core::iam::ServiceType::ElastiCache,
                         ServiceType::MemoryDB => glide_core::iam::ServiceType::MemoryDB,
@@ -268,8 +275,8 @@ pub(crate) unsafe fn create_connection_request(
             };
 
             Some(CoreAuthenticationInfo {
-                username: unsafe { ptr_to_opt_str(auth_info.username) },
-                password: unsafe { ptr_to_opt_str(auth_info.password) },
+                username: unsafe { ptr_to_opt_str(auth_info.username) }?,
+                password: unsafe { ptr_to_opt_str(auth_info.password) }?,
                 iam_config,
             })
         } else {
@@ -278,7 +285,7 @@ pub(crate) unsafe fn create_connection_request(
         database_id: config.database_id.into(),
         protocol: config.has_protocol.then_some(config.protocol),
         tls_mode: config.has_tls.then_some(config.tls_mode),
-        addresses: unsafe { convert_node_addresses(config.addresses, config.address_count) },
+        addresses: unsafe { convert_node_addresses(config.addresses, config.address_count) }?,
         cluster_mode_enabled: config.cluster_mode,
         request_timeout: config.has_request_timeout.then_some(config.request_timeout),
         connection_timeout: config
@@ -327,7 +334,7 @@ pub(crate) unsafe fn create_connection_request(
             use redis::cache::EvictionPolicy as CoreEvictionPolicy;
             let csc = config.client_side_cache_config;
             Some(glide_core::client::ClientSideCache {
-                cache_id: unsafe { ptr_to_str(csc.cache_id) },
+                cache_id: unsafe { ptr_to_str(csc.cache_id) }?,
                 max_cache_kb: csc.max_cache_kb,
                 entry_ttl_ms: csc.entry_ttl_ms,
                 eviction_policy: if csc.has_eviction_policy {
@@ -351,7 +358,7 @@ pub(crate) unsafe fn create_connection_request(
         periodic_checks: None,
         inflight_requests_limit: None,
         node_discovery_mode: glide_core::client::NodeDiscoveryMode::default(),
-    }
+    })
 }
 
 /// A mirror of [`NodeAddress`] adopted for FFI.
@@ -359,15 +366,6 @@ pub(crate) unsafe fn create_connection_request(
 pub struct Address {
     pub host: *const c_char,
     pub port: u16,
-}
-
-impl From<&Address> for NodeAddress {
-    fn from(addr: &Address) -> Self {
-        NodeAddress {
-            host: unsafe { ptr_to_str(addr.host) },
-            port: addr.port,
-        }
-    }
 }
 
 /// Convert raw array pointer of [`Address`]es to a vector of [`NodeAddress`]es.
@@ -378,23 +376,31 @@ impl From<&Address> for NodeAddress {
 /// * `data` must not be `null`.
 /// * `data` must point to `len` consecutive properly initialized [`Address`] structs.
 /// * Each [`Address`] dereferenced by `data` must contain a valid string pointer. See the safety documentation of [`ptr_to_str`].
-unsafe fn convert_node_addresses(data: *const *const Address, len: usize) -> Vec<NodeAddress> {
+unsafe fn convert_node_addresses(
+    data: *const *const Address,
+    len: usize,
+) -> Result<Vec<NodeAddress>, String> {
     unsafe { std::slice::from_raw_parts(data as *mut Address, len) }
         .iter()
-        .map(NodeAddress::from)
+        .map(|addr| {
+            Ok(NodeAddress {
+                host: unsafe { ptr_to_str(addr.host) }?,
+                port: addr.port,
+            })
+        })
         .collect()
 }
 
 /// A mirror of [`coreReadFrom`] adopted for FFI.
 #[repr(C)]
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub struct ReadFrom {
     pub strategy: ReadFromStrategy,
     pub az: *const c_char,
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub enum ReadFromStrategy {
     Primary,
     PreferReplica,
@@ -404,7 +410,7 @@ pub enum ReadFromStrategy {
 
 /// A mirror of [`AuthenticationInfo`] adopted for FFI.
 #[repr(C)]
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub struct AuthenticationInfo {
     pub username: *const c_char,
     pub password: *const c_char,
@@ -414,7 +420,7 @@ pub struct AuthenticationInfo {
 
 /// A mirror of [`IamCredentials`] adopted for FFI.
 #[repr(C)]
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub struct IamCredentials {
     pub cluster_name: *const c_char,
     pub region: *const c_char,
@@ -424,14 +430,14 @@ pub struct IamCredentials {
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub enum ServiceType {
     ElastiCache = 0,
     MemoryDB = 1,
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub enum RouteType {
     Random,
     AllNodes,
@@ -443,7 +449,7 @@ pub enum RouteType {
 
 /// A mirror of [`SlotAddr`]
 #[repr(C)]
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub enum SlotType {
     Primary,
     Replica,
@@ -465,7 +471,7 @@ impl From<&SlotType> for SlotAddr {
 /// * `route_type`, `slot_key` and `slot_type`, if route is a Slot key route;
 /// * `route_type`, `hostname` and `port`, if route is a Address route;
 #[repr(C)]
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub struct RouteInfo {
     pub route_type: RouteType,
     pub slot_id: i32,
@@ -486,37 +492,41 @@ pub struct RouteInfo {
 pub(crate) unsafe fn create_route(
     route_ptr: *const RouteInfo,
     cmd: Option<&Cmd>,
-) -> Option<RoutingInfo> {
+) -> Result<Option<RoutingInfo>, String> {
     if route_ptr.is_null() {
-        return None;
+        return Ok(None);
     }
     let route = unsafe { *route_ptr };
     match route.route_type {
-        RouteType::Random => Some(RoutingInfo::SingleNode(SingleNodeRoutingInfo::Random)),
-        RouteType::AllNodes => Some(RoutingInfo::MultiNode((
+        RouteType::Random => Ok(Some(RoutingInfo::SingleNode(SingleNodeRoutingInfo::Random))),
+        RouteType::AllNodes => Ok(Some(RoutingInfo::MultiNode((
             MultipleNodeRoutingInfo::AllNodes,
             cmd.and_then(|c| ResponsePolicy::for_command(&c.command().unwrap())),
-        ))),
-        RouteType::AllPrimaries => Some(RoutingInfo::MultiNode((
+        )))),
+        RouteType::AllPrimaries => Ok(Some(RoutingInfo::MultiNode((
             MultipleNodeRoutingInfo::AllMasters,
             cmd.and_then(|c| ResponsePolicy::for_command(&c.command().unwrap())),
-        ))),
-        RouteType::SlotId => Some(RoutingInfo::SingleNode(
+        )))),
+        RouteType::SlotId => Ok(Some(RoutingInfo::SingleNode(
             SingleNodeRoutingInfo::SpecificNode(Route::new(
                 route.slot_id as u16,
                 (&route.slot_type).into(),
             )),
-        )),
-        RouteType::SlotKey => Some(RoutingInfo::SingleNode(
+        ))),
+        RouteType::SlotKey => Ok(Some(RoutingInfo::SingleNode(
             SingleNodeRoutingInfo::SpecificNode(Route::new(
-                redis::cluster_topology::get_slot(unsafe { ptr_to_str(route.slot_key) }.as_bytes()),
+                redis::cluster_topology::get_slot(
+                    unsafe { ptr_to_str(route.slot_key) }?.as_bytes(),
+                ),
                 (&route.slot_type).into(),
             )),
-        )),
-        RouteType::ByAddress => Some(RoutingInfo::SingleNode(SingleNodeRoutingInfo::ByAddress {
-            host: unsafe { ptr_to_str(route.hostname) },
-            port: route.port as u16,
-        })),
+        ))),
+        RouteType::ByAddress => Ok(Some(RoutingInfo::SingleNode(
+            SingleNodeRoutingInfo::ByAddress {
+                host: unsafe { ptr_to_str(route.hostname) }?,
+                port: route.port as u16,
+            },
+        ))),
     }
 }
 
@@ -574,7 +584,7 @@ pub(crate) fn convert_vec_to_pointer<T>(mut vec: Vec<T>) -> (*const T, usize) {
 }
 
 #[repr(C)]
-#[derive(Default, Debug, Clone)]
+#[derive(Default, Clone)]
 pub enum ValueType {
     #[default]
     Null = 0,
@@ -600,7 +610,7 @@ pub enum ValueType {
 ///   [`ResponseValue::val`] a pointer to an array of another [`ResponseValue`] is stored and [`ResponseValue::size`] contains
 ///   the array length (for a map - it is 2x map size).
 #[repr(C)]
-#[derive(Default, Debug, Clone)]
+#[derive(Default, Clone)]
 pub struct ResponseValue {
     pub typ: ValueType,
     pub val: i64,
@@ -610,92 +620,121 @@ pub struct ResponseValue {
 }
 
 impl ResponseValue {
+    /// Validate that `vec.len()` fits in `u32`, then transfer ownership of the vec to a raw
+    /// pointer with the validated size. The size check happens *before* the ownership transfer,
+    /// so the vec is dropped normally if validation fails.
+    fn convert_vec_to_ffi<T>(vec: Vec<T>, context: &str) -> Result<(*const T, u32), String> {
+        let size = u32::try_from(vec.len()).map_err(|_| {
+            format!(
+                "Response {} size ({}) exceeds maximum FFI size ({})",
+                context,
+                vec.len(),
+                u32::MAX
+            )
+        })?;
+        let (ptr, _) = convert_vec_to_pointer(vec);
+        Ok((ptr, size))
+    }
+
     /// Build [`ResponseValue`] from a [`Value`].
-    pub(crate) fn from_value(value: Value) -> Self {
+    ///
+    /// Returns an error if any size component exceeds `u32::MAX`, preventing
+    /// silent truncation across the FFI boundary.
+    pub(crate) fn from_value(value: Value) -> Result<Self, String> {
         match value {
-            Value::Nil => ResponseValue {
+            Value::Nil => Ok(ResponseValue {
                 typ: ValueType::Null,
                 ..Default::default()
-            },
-            Value::Int(int) => ResponseValue {
+            }),
+            Value::Int(int) => Ok(ResponseValue {
                 typ: ValueType::Int,
                 val: int,
                 size: 0,
-            },
+            }),
             Value::BulkString(text) => {
-                let (vec_ptr, len) = convert_vec_to_pointer(text);
-                ResponseValue {
+                let (vec_ptr, size) = Self::convert_vec_to_ffi(text, "BulkString")?;
+                Ok(ResponseValue {
                     typ: ValueType::BulkString,
                     val: vec_ptr as i64,
-                    size: len as u32,
-                }
+                    size,
+                })
             }
             Value::Array(values) => {
-                let vec: Vec<ResponseValue> =
-                    values.into_iter().map(ResponseValue::from_value).collect();
-                let (vec_ptr, len) = convert_vec_to_pointer(vec);
-                ResponseValue {
+                let vec: Vec<ResponseValue> = values
+                    .into_iter()
+                    .map(ResponseValue::from_value)
+                    .collect::<Result<Vec<_>, _>>()?;
+                let (vec_ptr, size) = Self::convert_vec_to_ffi(vec, "Array")?;
+                Ok(ResponseValue {
                     typ: ValueType::Array,
                     val: vec_ptr as i64,
-                    size: len as u32,
-                }
+                    size,
+                })
             }
             Value::Set(values) => {
-                let vec: Vec<ResponseValue> =
-                    values.into_iter().map(ResponseValue::from_value).collect();
-                let (vec_ptr, len) = convert_vec_to_pointer(vec);
-                ResponseValue {
+                let vec: Vec<ResponseValue> = values
+                    .into_iter()
+                    .map(ResponseValue::from_value)
+                    .collect::<Result<Vec<_>, _>>()?;
+                let (vec_ptr, size) = Self::convert_vec_to_ffi(vec, "Set")?;
+                Ok(ResponseValue {
                     typ: ValueType::Set,
                     val: vec_ptr as i64,
-                    size: len as u32,
-                }
+                    size,
+                })
             }
-            Value::Okay => ResponseValue {
+            Value::Okay => Ok(ResponseValue {
                 typ: ValueType::OK,
                 ..Default::default()
-            },
+            }),
             Value::Map(items) => {
                 let vec: Vec<ResponseValue> = items
                     .into_iter()
-                    .flat_map(|(k, v)| {
-                        vec![ResponseValue::from_value(k), ResponseValue::from_value(v)]
+                    .map(|(k, v)| {
+                        Ok::<_, String>(vec![
+                            ResponseValue::from_value(k)?,
+                            ResponseValue::from_value(v)?,
+                        ])
                     })
+                    .collect::<Result<Vec<_>, _>>()?
+                    .into_iter()
+                    .flatten()
                     .collect();
-                let (vec_ptr, len) = convert_vec_to_pointer(vec);
-                ResponseValue {
+                let (vec_ptr, size) = Self::convert_vec_to_ffi(vec, "Map")?;
+                Ok(ResponseValue {
                     typ: ValueType::Map,
                     val: vec_ptr as i64,
-                    size: len as u32,
-                }
+                    size,
+                })
             }
-            Value::Double(num) => ResponseValue {
+            Value::Double(num) => Ok(ResponseValue {
                 typ: ValueType::Float,
                 val: num.to_bits() as i64,
                 size: 0,
-            },
-            Value::Boolean(boolean) => ResponseValue {
+            }),
+            Value::Boolean(boolean) => Ok(ResponseValue {
                 typ: ValueType::Bool,
                 val: if boolean { 1 } else { 0 },
                 size: 0,
-            },
+            }),
             Value::VerbatimString { format: _, text } | Value::SimpleString(text) => {
-                let (vec_ptr, len) = convert_vec_to_pointer(text.into_bytes());
-                ResponseValue {
+                let (vec_ptr, size) = Self::convert_vec_to_ffi(text.into_bytes(), "String")?;
+                Ok(ResponseValue {
                     typ: ValueType::String,
                     val: vec_ptr as i64,
-                    size: len as u32,
-                }
+                    size,
+                })
             }
             Value::ServerError(err) => {
-                let (vec_ptr, len) =
-                    convert_vec_to_pointer(err.details().unwrap().as_bytes().to_vec());
-                ResponseValue {
+                let (vec_ptr, size) =
+                    Self::convert_vec_to_ffi(err.details().unwrap().as_bytes().to_vec(), "Error")?;
+                Ok(ResponseValue {
                     typ: ValueType::Error,
                     val: vec_ptr as i64,
-                    size: len as u32,
-                }
+                    size,
+                })
             }
-            _ => todo!(), // push, bigint, attribute
+            _ => Err("Unsupported Redis value type in FFI response serialization".into()),
         }
     }
 
@@ -730,7 +769,7 @@ impl ResponseValue {
 }
 
 #[repr(C)]
-#[derive(Clone, Debug, Copy)]
+#[derive(Clone, Copy)]
 pub struct CmdInfo {
     pub request_type: RequestType,
     pub args: *const *const u8,
@@ -739,7 +778,7 @@ pub struct CmdInfo {
 }
 
 #[repr(C)]
-#[derive(Clone, Debug, Copy)]
+#[derive(Clone, Copy)]
 pub struct BatchInfo {
     pub cmd_count: usize,
     pub cmds: *const *const CmdInfo,
@@ -747,7 +786,7 @@ pub struct BatchInfo {
 }
 
 #[repr(C)]
-#[derive(Clone, Debug, Copy)]
+#[derive(Clone, Copy)]
 pub struct BatchOptionsInfo {
     // two params from PipelineRetryStrategy
     pub retry_server_error: bool,
@@ -873,9 +912,9 @@ pub(crate) unsafe fn create_pipeline(
 ///   See description of [`RouteInfo`] and the safety documentation of [`create_route`].
 pub(crate) unsafe fn get_pipeline_options(
     ptr: *const BatchOptionsInfo,
-) -> (Option<RoutingInfo>, Option<u32>, PipelineRetryStrategy) {
+) -> Result<(Option<RoutingInfo>, Option<u32>, PipelineRetryStrategy), String> {
     if ptr.is_null() {
-        return (None, None, PipelineRetryStrategy::new(false, false));
+        return Ok((None, None, PipelineRetryStrategy::new(false, false)));
     }
     let info = unsafe { *ptr };
     let timeout = if info.has_timeout {
@@ -883,13 +922,13 @@ pub(crate) unsafe fn get_pipeline_options(
     } else {
         None
     };
-    let route = unsafe { create_route(info.route_info, None) };
+    let route = unsafe { create_route(info.route_info, None) }?;
 
-    (
+    Ok((
         route,
         timeout,
         PipelineRetryStrategy::new(info.retry_server_error, info.retry_connection_error),
-    )
+    ))
 }
 
 /// FFI-safe version of [`redis::PushKind`] for C# interop.
@@ -898,7 +937,7 @@ pub(crate) unsafe fn get_pipeline_options(
 /// The `#[repr(u32)]` attribute ensures a stable memory layout compatible with C# marshaling.
 /// Each variant corresponds to a specific Redis/Valkey PubSub notification type.
 #[repr(u32)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub enum PushKind {
     /// Disconnection notification sent from the library when connection is closed.
     Disconnection = 0,
