@@ -1,0 +1,16 @@
+name: C# Full Matrix Tests (Nightly)
+
+on:
+    schedule:
+        - cron: "0 8 * * 1-5" # 1AM Mon - Fri
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+jobs:
+    full-matrix-tests:
+        uses: ./.github/workflows/_reusable-test.yml
+        with:
+            profile: full
+        secrets: inherit
