@@ -49,7 +49,7 @@ For more information see the [Code of Conduct FAQ](https://aws.github.io/code-of
 
 ## Security issue notifications
 
-[Reporting a Vulnerability](./SECURITY.md)
+[Reporting a Vulnerability](https://github.com/valkey-io/valkey-glide-csharp/security/policy)
 
 ## Licensing
 

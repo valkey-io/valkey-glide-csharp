@@ -19,7 +19,7 @@ jobs:
         steps:
             - name: Download inputs.json artifact (if present)
               id: inputs
-              uses: dawidd6/action-download-artifact@v21
+              uses: dawidd6/action-download-artifact@b6e2e70617bc3265edd6dab6c906732b2f1ae151 # v21
               continue-on-error: true
               with:
                   run_id: ${{ github.event.workflow_run.id }}
@@ -28,7 +28,7 @@ jobs:
 
             - name: Gate on full-matrix runs
               id: gate
-              uses: actions/github-script@v9
+              uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
               with:
                   github-token: ${{ github.token }}
                   script: |
@@ -63,7 +63,7 @@ jobs:
                       return should;
 
             - name: Download artifacts from triggering run
-              uses: dawidd6/action-download-artifact@v21
+              uses: dawidd6/action-download-artifact@b6e2e70617bc3265edd6dab6c906732b2f1ae151 # v21
               if: ${{ steps.gate.outputs.result == 'true' }}
               with:
                   run_id: ${{ github.event.workflow_run.id }}
@@ -163,7 +163,7 @@ jobs:
 
             - name: Find or create rolling failure issue
               id: ensure_issue
-              uses: actions/github-script@v9
+              uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
               if: ${{ steps.gate.outputs.result == 'true' }}
               env:
                   SUMMARY_PATH: ${{ steps.aggregate.outputs.summary_path }}

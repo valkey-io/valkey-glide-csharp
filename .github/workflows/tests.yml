@@ -59,7 +59,7 @@ jobs:
             VALKEY_GLIDE_DNS_TESTS_ENABLED: "1"
 
         steps:
-            - uses: actions/checkout@v6
+            - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
               with:
                   submodules: true
 
@@ -69,7 +69,7 @@ jobs:
                   echo "${{ toJson(matrix) }}"
 
             - name: Set up dotnet ${{ matrix.dotnet }}
-              uses: actions/setup-dotnet@v5
+              uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
               with:
                   # install latest dotnet too to use language features
                   dotnet-version: |
@@ -99,7 +99,7 @@ jobs:
                       echo "$ENTRIES" | sudo tee -a /etc/hosts
                   fi
 
-            - uses: actions/cache@v5
+            - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
               with:
                   path: rust/target
                   key: rust-${{ matrix.host.TARGET }}
@@ -146,7 +146,7 @@ jobs:
             - name: Upload test reports
               if: always()
               continue-on-error: true
-              uses: actions/upload-artifact@v7
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
               with:
                   name: test-reports-dotnet-${{ matrix.dotnet }}-${{ matrix.server.type }}-${{ matrix.server.version }}-${{ matrix.host.OS }}-${{ matrix.host.ARCH }}
                   path: |
@@ -164,12 +164,12 @@ jobs:
             matrix:
                 dotnet: ["8.0"]
         steps:
-            - uses: actions/checkout@v6
+            - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
               with:
                   submodules: true
 
             - name: Set up dotnet ${{ matrix.dotnet }}
-              uses: actions/setup-dotnet@v5
+              uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
               with:
                   dotnet-version: |
                       9
@@ -185,7 +185,7 @@ jobs:
                   github-token: ${{ secrets.GITHUB_TOKEN }}
                   server-version: "9.0"
 
-            - uses: actions/cache@v5
+            - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
               with:
                   path: rust/target
                   key: rust-x86_64-unknown-linux-gnu
@@ -230,7 +230,7 @@ jobs:
             - name: Upload test reports
               if: always()
               continue-on-error: true
-              uses: actions/upload-artifact@v7
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
               with:
                   name: module-test-reports-net${{ matrix.dotnet }}
                   path: |
@@ -247,7 +247,7 @@ jobs:
             version-matrix-output: ${{ steps.get-matrices.outputs.version-matrix-output }}
 
         steps:
-            - uses: actions/checkout@v6
+            - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
             - id: get-matrices
               uses: ./.github/workflows/create-test-matrices
               with:
@@ -276,12 +276,12 @@ jobs:
                   yum install -y git tar findutils libicu
                   echo IMAGE=amazonlinux:latest | sed -r 's/:/-/g' >> $GITHUB_ENV
             # Replace `:` in the variable otherwise it can't be used in `upload-artifact`
-            - uses: actions/checkout@v6
+            - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
               with:
                   submodules: true
 
             - name: Set up dotnet ${{ matrix.dotnet }}
-              uses: actions/setup-dotnet@v5
+              uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
               with:
                   # install latest dotnet too to use language features
                   dotnet-version: |
@@ -305,7 +305,7 @@ jobs:
                   ::1 valkey.glide.test.no_tls.com"
                   echo "$ENTRIES" | tee -a /etc/hosts
 
-            - uses: actions/cache@v5
+            - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
               with:
                   path: rust/target
                   key: rust-${{ matrix.host.IMAGE }}
@@ -344,7 +344,7 @@ jobs:
             - name: Upload test reports
               if: always()
               continue-on-error: true
-              uses: actions/upload-artifact@v7
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
               with:
                   name: test-reports-dotnet-${{ matrix.dotnet }}-${{ matrix.server.type }}-${{ matrix.server.version }}-${{ matrix.host.IMAGE }}-${{ matrix.host.ARCH }}
                   path: |
