@@ -74,7 +74,7 @@ runs:
               additional-packages: python3 build-essential git pkg-config libssl-dev
 
         - name: Install Rust toolchain
-          uses: ./.github/workflows/install-rust
+          uses: ./.github/actions/install-rust
           with:
               target: ${{ inputs.target }}
 
@@ -82,7 +82,7 @@ runs:
         # needed by 'start-valkey-docker' to start servers in Docker.
         - name: Install server from source
           if: "${{ inputs.server-version }}"
-          uses: ./.github/workflows/install-server
+          uses: ./.github/actions/install-server
           with:
               os: ${{ inputs.os }}
               target: ${{ inputs.target }}
@@ -95,10 +95,10 @@ runs:
         # and modules-cluster-endpoints env vars.
         - name: Start module servers via Docker (valkey 9.0, ubuntu)
           if: "${{ inputs.server-version == '9.0' && inputs.os == 'ubuntu' }}"
-          uses: ./.github/workflows/start-valkey-docker
+          uses: ./.github/actions/start-valkey-docker
           with:
               engine-version: ${{ inputs.server-version }}
 
         - name: Install zig
           if: ${{ contains(inputs.target, 'linux-gnu') }}
-          uses: ./.github/workflows/install-zig
+          uses: ./.github/actions/install-zig

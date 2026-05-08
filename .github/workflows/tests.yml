@@ -79,7 +79,7 @@ jobs:
                   DOTNET_INSTALL_DIR: ~/.dotnet
 
             - name: Install shared software dependencies
-              uses: ./.github/workflows/install-shared-dependencies
+              uses: ./.github/actions/install-shared-dependencies
               with:
                   os: ${{ matrix.host.OS }}
                   target: ${{ matrix.host.TARGET }}
@@ -141,7 +141,7 @@ jobs:
 
             - name: Run coverage
               if: ${{ matrix.dotnet == '8.0' && contains(matrix.host.RUNNER, 'ubuntu') && matrix.host.ARCH == 'x64' && matrix.server.version == '8.1' }}
-              uses: ./.github/workflows/run-coverage
+              uses: ./.github/actions/run-coverage
 
             - name: Upload test reports
               if: always()
@@ -178,7 +178,7 @@ jobs:
                   DOTNET_INSTALL_DIR: ~/.dotnet
 
             - name: Install shared software dependencies
-              uses: ./.github/workflows/install-shared-dependencies
+              uses: ./.github/actions/install-shared-dependencies
               with:
                   os: ubuntu
                   target: x86_64-unknown-linux-gnu
@@ -249,7 +249,7 @@ jobs:
         steps:
             - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
             - id: get-matrices
-              uses: ./.github/workflows/create-test-matrices
+              uses: ./.github/actions/create-test-matrices
               with:
                   run-full-matrix: true
                   tag: container
@@ -289,7 +289,7 @@ jobs:
                       ${{ matrix.dotnet }}
 
             - name: Install shared software dependencies
-              uses: ./.github/workflows/install-shared-dependencies
+              uses: ./.github/actions/install-shared-dependencies
               with:
                   os: ${{ matrix.host.OS }}
                   target: ${{ matrix.host.TARGET }}

@@ -22,7 +22,7 @@ jobs:
                   submodules: true
 
             - name: Install Rust toolchain
-              uses: ./.github/workflows/install-rust
+              uses: ./.github/actions/install-rust
 
             - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
               with:

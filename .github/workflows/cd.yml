@@ -88,7 +88,7 @@ jobs:
                   echo "${{ toJson(matrix) }}"
 
             - name: Install shared software dependencies
-              uses: ./.github/workflows/install-shared-dependencies
+              uses: ./.github/actions/install-shared-dependencies
               with:
                   os: ${{ matrix.host.OS }}
                   target: ${{ matrix.host.TARGET }}
@@ -274,7 +274,7 @@ jobs:
             - name: Install server
               # WSL2 is not available on windows-11-arm runners (no Hyper-V).
               if: ${{ !(matrix.host.OS == 'windows' && matrix.host.ARCH == 'arm64') }}
-              uses: ./.github/workflows/install-server
+              uses: ./.github/actions/install-server
               with:
                   os: ${{ matrix.host.OS }}
                   target: ${{ matrix.host.TARGET }}
