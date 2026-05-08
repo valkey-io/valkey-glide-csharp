@@ -217,7 +217,7 @@ jobs:
         needs: [publish, set-release-version]
         uses: ./.github/workflows/_reusable-test.yml
         with:
-            profile: standard
+            profile: full
             package-version: ${{ needs.set-release-version.outputs.RELEASE_VERSION }}
             package-artifact-name: ${{ needs.publish.result == 'skipped' && 'package' || '' }}
         secrets: inherit
