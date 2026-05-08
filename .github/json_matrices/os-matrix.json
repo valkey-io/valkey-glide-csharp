@@ -1,7 +1,6 @@
 [
     {
         "OS": "ubuntu",
-        "NAMED_OS": "linux",
         "RUNNER": "ubuntu-24.04",
         "ARCH": "x64",
         "TARGET": "x86_64-unknown-linux-gnu",
@@ -9,7 +8,6 @@
     },
     {
         "OS": "ubuntu",
-        "NAMED_OS": "linux",
         "RUNNER": "ubuntu-24.04-arm",
         "ARCH": "arm64",
         "TARGET": "aarch64-unknown-linux-gnu",
@@ -25,7 +23,6 @@
     },
     {
         "OS": "macos",
-        "NAMED_OS": "darwin",
         "RUNNER": "macos-15",
         "ARCH": "arm64",
         "TARGET": "aarch64-apple-darwin",
@@ -41,7 +38,6 @@
     },
     {
         "OS": "windows",
-        "NAMED_OS": "windows",
         "RUNNER": "windows-2025",
         "ARCH": "x64",
         "TARGET": "x86_64-pc-windows-msvc",
@@ -49,7 +45,6 @@
     },
     {
         "OS": "windows",
-        "NAMED_OS": "windows",
         "RUNNER": "windows-11-arm",
         "ARCH": "arm64",
         "TARGET": "aarch64-pc-windows-msvc",
