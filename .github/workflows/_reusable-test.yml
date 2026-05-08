@@ -303,3 +303,77 @@ jobs:
                       TestResults.trx
                       failures.json
                       valkey-glide/utils/clusters/**
+
+    test-modules:
+        name: Module tests (Docker, net${{ matrix.dotnet }})
+        needs: load-matrix
+        if: ${{ inputs.profile != 'smoke' }}
+        runs-on: ubuntu-24.04
+        timeout-minutes: 30
+        strategy:
+            fail-fast: false
+            matrix:
+                dotnet: ${{ fromJson(needs.load-matrix.outputs.dotnet-matrix) }}
+        steps:
+            - uses: actions/checkout@v6
+              with:
+                  submodules: true
+
+            - name: Set up dotnet ${{ matrix.dotnet }}
+              uses: actions/setup-dotnet@v5
+              with:
+                  dotnet-version: |
+                      9
+                      ${{ matrix.dotnet }}
+              env:
+                  DOTNET_INSTALL_DIR: ~/.dotnet
+
+            - name: Install shared software dependencies
+              uses: ./.github/workflows/install-shared-dependencies
+              with:
+                  os: ubuntu
+                  target: x86_64-unknown-linux-gnu
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  server-version: "9.0"
+
+            - uses: actions/cache@v5
+              with:
+                  path: rust/target
+                  key: rust-x86_64-unknown-linux-gnu
+
+            - name: Run module tests against Docker servers
+              run: >-
+                  dotnet test tests/Valkey.Glide.IntegrationTests/
+                  --framework net${{ matrix.dotnet }}
+                  --filter "FullyQualifiedName~ServerModules"
+                  --logger "html;LogFileName=ModuleTestReport.html"
+                  --logger "trx;LogFileName=ModuleTestResults.trx"
+                  --logger "console;verbosity=detailed"
+                  --results-directory .
+
+            - name: Create failures.json from TRX
+              if: always()
+              shell: bash
+              env:
+                  TRX_FILE: ModuleTestResults.trx
+                  JOB_NAME: "Module tests (Docker, net${{ matrix.dotnet }})"
+                  DOTNET: ${{ matrix.dotnet }}
+                  SERVER_TYPE: valkey
+                  SERVER_VERSION: "9.0"
+                  HOST_OS: ubuntu
+                  HOST_ARCH: x64
+                  HOST_RUNNER: ubuntu-24.04
+                  RUN_ID: ${{ github.run_id }}
+                  RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+              run: .github/workflows/scripts/create_failures_json.sh
+
+            - name: Upload test reports
+              if: always()
+              continue-on-error: true
+              uses: actions/upload-artifact@v7
+              with:
+                  name: module-test-reports-net${{ matrix.dotnet }}
+                  path: |
+                      ModuleTestReport.html
+                      ModuleTestResults.trx
+                      failures.json
