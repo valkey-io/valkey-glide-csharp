@@ -43,7 +43,8 @@ jobs:
               working-directory: .github/json_matrices
               # Select all VM runners (non-container) — each produces a unique native binary for the NuGet package.
               run: |
-                  jq -c '[.[] | select(has("IMAGE") | not)]' < os-matrix.json | awk '{ printf "PLATFORM_MATRIX=%s\n", $0 }' | tee -a $GITHUB_OUTPUT
+                  PLATFORM_MATRIX=$(jq -c '[.[] | select(has("IMAGE") | not)]' < os-matrix.json)  
+                  echo "PLATFORM_MATRIX=$PLATFORM_MATRIX" | tee -a "$GITHUB_OUTPUT"
 
     set-release-version:
         runs-on: ubuntu-latest
@@ -216,7 +217,7 @@ jobs:
         needs: [publish, set-release-version]
         uses: ./.github/workflows/_reusable-test.yml
         with:
-            profile: smoke
+            profile: standard
             package-version: ${{ needs.set-release-version.outputs.RELEASE_VERSION }}
             package-artifact-name: ${{ needs.publish.result == 'skipped' && 'package' || '' }}
         secrets: inherit
