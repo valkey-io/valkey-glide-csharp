@@ -3,16 +3,13 @@ description: "Build and install Valkey server binaries."
 
 inputs:
     os:
-        # See 'os-matrix.json' for supported values.
-        description: "The current operating system"
+        description: "The current operating system (see 'os-matrix.json')"
         required: true
     target:
-        # See 'os-matrix.json' for supported values.
-        description: "Specified target for rust toolchain"
+        description: "Specified target for rust toolchain (see 'os-matrix.json')"
         required: true
     server-version:
-        # See 'server-matrix.json' for supported values.
-        description: "Server version to install"
+        description: "Server version to install (see 'server-matrix.json')"
         required: true
 
 runs:
