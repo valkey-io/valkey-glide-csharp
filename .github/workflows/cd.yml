@@ -7,7 +7,7 @@ on:
     workflow_dispatch:
         inputs:
             version:
-                description: "The release version of GLIDE, formatted as v*.*.* or v*.*.*-rc*"
+                description: "The Valkey GLIDE release version (v*.*.* or v*.*.*-rc*)."
                 required: true
             nuget_publish:
                 description: "Publish to NuGet"
@@ -22,9 +22,7 @@ concurrency:
     group: C#-CD-${{ github.head_ref || github.ref }}-${{ toJson(inputs) }}
     cancel-in-progress: true
 
-run-name:
-    # Set custom name if job is started manually and name is given
-    ${{ github.event_name == 'workflow_dispatch' && (inputs.name == '' && format('{0} @ {1} {2}', github.ref_name, github.sha, toJson(inputs)) || inputs.name) || '' }}
+run-name: ${{ format('{0} @ {1} {2}', github.ref_name, github.sha, toJson(inputs)) }}
 
 env:
     CARGO_TERM_COLOR: always
