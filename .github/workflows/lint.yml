@@ -36,15 +36,12 @@ jobs:
             - name: Install dotnet
               uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
               with:
-                  dotnet-version: |
-                      9
-                      8
+                  dotnet-version: "8"
 
             - name: Install actionlint
               run: |
-                  VERSION=1.7.12
-                  ACTIONLINT_URL = https://github.com/rhysd/actionlint/releases/download/v${VERSION}/actionlint_${VERSION}_linux_amd64.tar.gz
-                  curl -fsSL ACTIONLINT_URL | tar xz -C /usr/local/bin actionlint
+                  ACTIONLINT_URL=https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz
+                  curl -fsSL "$ACTIONLINT_URL" | tar xz -C /usr/local/bin actionlint
 
             - name: Install Task
               run: sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin
