@@ -109,8 +109,8 @@ jobs:
               if: ${{ inputs.package-artifact-name != '' }}
               shell: bash
               run: |
-                  ls -l $GITHUB_WORKSPACE/nuget.local
-                  dotnet nuget add source $GITHUB_WORKSPACE/nuget.local
+                  ls -l "$GITHUB_WORKSPACE/nuget.local"
+                  dotnet nuget add source "$GITHUB_WORKSPACE/nuget.local"
                   dotnet nuget config paths
 
             - name: Patch project references to NuGet package
