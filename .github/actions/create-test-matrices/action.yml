@@ -1,12 +1,13 @@
+name: Create Test Matrices
+description: "Load and filter server, operating system, and language version matrices for CI test jobs."
+
 inputs:
     run-full-matrix:
         description: "Run the full matrix"
         required: true
-        type: boolean
     tag:
         description: "Tag to filter hosts"
         required: true
-        type: string
         default: ci
 
 outputs:

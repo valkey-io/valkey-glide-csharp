@@ -1,8 +1,9 @@
 name: Install Rust tool chain
+description: "Install the Rust toolchain."
 
 inputs:
     target:
-        description: "Specified target for rust toolchain, ex. x86_64-apple-darwin"
+        description: "Target for rust toolchain (e.g. x86_64-apple-darwin)"
         required: false
 
 runs:
@@ -10,5 +11,7 @@ runs:
     steps:
         - name: Install Rust toolchain
           uses: dtolnay/rust-toolchain@stable
+          # If target is not specified, installs the stable
+          # Rust toolchain for the current GitHub runner.
           with:
               targets: ${{ inputs.target }}
