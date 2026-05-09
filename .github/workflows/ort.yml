@@ -20,8 +20,8 @@ concurrency:
     cancel-in-progress: true
 
 jobs:
-    check-condition:
-        name: Check condition
+    run-ort:
+        name: Create attribution files
         # workaround for https://github.com/orgs/community/discussions/54860 (`create` event filter)
         if: >
             github.repository_owner == 'valkey-io' &&
@@ -31,13 +31,6 @@ jobs:
                     github.event.ref_type == 'tag')
                 )
             )
-        runs-on: ubuntu-latest
-        steps:
-            - run:
-
-    run-ort:
-        needs: [check-condition]
-        name: Create attribution files
         runs-on: ubuntu-latest
         env:
             ATTRIBUTIONS_FILE: THIRD_PARTY_LICENSES
