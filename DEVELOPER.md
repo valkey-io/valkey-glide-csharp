@@ -129,6 +129,10 @@ source "$HOME/.cargo/env"
 
 # Install dependencies using cargo:
 cargo install --locked cargo-deny lychee
+
+# Install actionlint:
+curl -fsSL https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz \
+  | tar xz -C /usr/local/bin actionlint
 ```
 
 ### Additional Dependencies Installation for MacOS
@@ -136,7 +140,7 @@ cargo install --locked cargo-deny lychee
 ```bash
 # Install dependencies using Homebrew:
 brew update
-brew install openssl coreutils lychee
+brew install openssl coreutils lychee actionlint
 
 # Install Rust using curl:
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
@@ -157,6 +161,9 @@ choco install mingw pkgconfiglite openssl
 
 # Install dependencies using cargo:
 cargo install --locked cargo-deny lychee
+
+# Install actionlint:
+go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
 ```
 
 ### Building and Installation
@@ -354,6 +361,7 @@ task lint
 task lint:rust     # Run Rust linting
 task lint:csharp   # Run C# linting
 task lint:yaml     # Run YAML linting
+task lint:actions  # Run GitHub Actions linting
 
 # Run all formatters:
 task format
@@ -384,7 +392,7 @@ Refer to the [resp-bench README](https://github.com/ikolomi/resp-bench/blob/main
 
 ## Updating CI Test Matrices
 
-To update our Github workflow test runs, edit the JSON files in [`.github/json_matrices/`](.github/json_matrices/). 
+To update our Github workflow test runs, edit the JSON files in [`.github/json_matrices/`](.github/json_matrices/).
 
 It serves as a "test order", describing available properties and which `profiles` they belong to (`smoke`, `standard`, `full`). No workflow or script changes are needed.
 
