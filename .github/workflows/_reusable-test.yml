@@ -300,6 +300,7 @@ jobs:
                       failures.json
                       valkey-glide/utils/clusters/**
 
+    # See: https://github.com/valkey-io/valkey-glide-csharp/issues/390
     test-modules:
         name: Module tests (Docker, net${{ matrix.dotnet }})
         needs: load-matrix
