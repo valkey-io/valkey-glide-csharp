@@ -218,7 +218,7 @@ jobs:
     # If tests fail after a real publish, remove-package-if-validation-fails unlists the package.
     test:
         needs: [publish, set-release-version]
-        uses: ./.github/workflows/_reusable-test.yml
+        uses: ./.github/workflows/test.yml
         with:
             profile: full
             package-version: ${{ needs.set-release-version.outputs.RELEASE_VERSION }}

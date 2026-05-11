@@ -15,7 +15,7 @@ permissions:
 
 jobs:
     tests:
-        uses: ./.github/workflows/_reusable-test.yml
+        uses: ./.github/workflows/test.yml
         with:
             profile: standard
         secrets: inherit

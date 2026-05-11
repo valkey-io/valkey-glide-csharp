@@ -10,7 +10,7 @@ permissions:
 
 jobs:
     full-matrix-tests:
-        uses: ./.github/workflows/_reusable-test.yml
+        uses: ./.github/workflows/test.yml
         with:
             profile: full
         secrets: inherit
