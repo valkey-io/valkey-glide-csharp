@@ -82,12 +82,9 @@ jobs:
                   total_failed=0
                   total_legs=0
                   failing_legs=0
-                  md='<!-- run:${{ github.event.workflow_run.id }} -->
-                  '
-                  md+="# Nightly CI failures for ${{ github.repository }}
-                  "$'\n'
-                  md+="Triggered: ${{ github.event.workflow_run.run_started_at }} • [Run link](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }})
-                  "$'\n\n'
+                  md="<!-- run:${{ github.event.workflow_run.id }} -->\n"
+                  md+="# Nightly CI failures for ${{ github.repository }}\n"
+                  md+="Triggered: ${{ github.event.workflow_run.run_started_at }} • [Run link](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }})\n\n"
                   md_details=""
 
                   # Iterate each artifact folder downloaded
@@ -111,7 +108,7 @@ jobs:
 
                     # Fallback to TRX parse if counts are zero
                     if [ "$failed" = "0" ] && [ "$total" = "0" ]; then
-                      trx=$(ls "$dir"/*.trx 2>/dev/null | head -n1 || true)
+                      trx=$(find "$dir" -maxdepth 1 -name '*.trx' -print -quit 2>/dev/null || true)
                       if [ -n "$trx" ]; then
                         total=$(xmlstarlet sel -T -t -v 'string(//*[local-name()="Counters"]/@total)' "$trx" 2>/dev/null || echo 0)
                         failed=$(xmlstarlet sel -T -t -v 'string(//*[local-name()="Counters"]/@failed)' "$trx" 2>/dev/null || echo 0)
@@ -157,9 +154,11 @@ jobs:
                   md+="$md_details"
 
                   printf "%b" "$md" > summary.md
-                  echo "summary_path=$(pwd)/summary.md" >> "$GITHUB_OUTPUT"
-                  echo "total_failed=${total_failed}" >> "$GITHUB_OUTPUT"
-                  echo "total_legs=${total_legs}" >> "$GITHUB_OUTPUT"
+                  {
+                      echo "summary_path=$(pwd)/summary.md"
+                      echo "total_failed=${total_failed}"
+                      echo "total_legs=${total_legs}"
+                  } >> "$GITHUB_OUTPUT"
 
             - name: Find or create rolling failure issue
               id: ensure_issue

@@ -45,7 +45,7 @@ Common commands:
 
 - Prefer `task` commands for linting and formatting.
 - Lint checks (read-only, fail on issues):
-  - `task lint` (all checks), `task lint:rust`, `task lint:csharp`, `task lint:yaml`
+  - `task lint` (all checks), `task lint:rust`, `task lint:csharp`, `task lint:yaml`, `task lint:actions`
 - Auto-fix formatting:
   - `task format` (all languages), `task format:rust`, `task format:csharp`, `task format:yaml`
 - Link checking (separate from lint, slower):
