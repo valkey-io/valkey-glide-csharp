@@ -10,9 +10,6 @@ on:
     push:
         branches:
             - "release-*"
-    pull_request:
-        paths:
-            - .github/workflows/ort.yml
     workflow_dispatch:
 
 concurrency:
@@ -20,8 +17,8 @@ concurrency:
     cancel-in-progress: true
 
 jobs:
-    check-condition:
-        name: Check condition
+    run-ort:
+        name: Create attribution files
         # workaround for https://github.com/orgs/community/discussions/54860 (`create` event filter)
         if: >
             github.repository_owner == 'valkey-io' &&
@@ -32,13 +29,6 @@ jobs:
                 )
             )
         runs-on: ubuntu-latest
-        steps:
-            - run:
-
-    run-ort:
-        needs: [check-condition]
-        name: Create attribution files
-        runs-on: ubuntu-latest
         env:
             ATTRIBUTIONS_FILE: THIRD_PARTY_LICENSES
         steps:
@@ -48,7 +38,7 @@ jobs:
 
             - name: Setup target commit
               run: |
-                  echo "TARGET_COMMIT=`git rev-parse HEAD`" >> $GITHUB_ENV
+                  echo "TARGET_COMMIT=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
 
             - name: Set up JDK 11 for the ORT package
               uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
@@ -121,7 +111,7 @@ jobs:
               run: |
                   wget -q https://github.com/aboutcode-org/nuget-inspector/releases/download/v0.9.12/nuget-inspector-v0.9.12-linux-x64.tar.gz
                   tar xf nuget-inspector-*.tar.gz
-                  echo /tmp/nuget-inspector >> $GITHUB_PATH
+                  echo /tmp/nuget-inspector >> "$GITHUB_PATH"
 
               # Add SER, because >50% of glide C# client's code is copied from there for compatibility purposes
             - name: Add SER dependency
@@ -132,7 +122,7 @@ jobs:
             - name: Run ORT tools
               working-directory: /tmp/ort
               run: |
-                  mkdir -p $GITHUB_WORKSPACE/ort_results
+                  mkdir -p "$GITHUB_WORKSPACE/ort_results"
                   # Analyzer (analyzer-result.json)
                   ./gradlew cli:run --args="--info analyze -i $GITHUB_WORKSPACE -o $GITHUB_WORKSPACE/ort_results -f JSON"
 
@@ -163,7 +153,7 @@ jobs:
               id: date
               run: |
                   CURR_DATE=$(date +'%Y-%m-%d-%H')
-                  echo "date=${CURR_DATE}" >> $GITHUB_OUTPUT
+                  echo "date=${CURR_DATE}" >> "$GITHUB_OUTPUT"
 
             - name: Upload the final package list
               continue-on-error: true
@@ -205,12 +195,12 @@ jobs:
               ### Check for ATTRIBUTIONS_FILE diff ###
             - name: Check for diff
               run: |
-                  cp ort_results/NOTICE_DEFAULT $ATTRIBUTIONS_FILE
-                  GIT_DIFF=`git diff $ATTRIBUTIONS_FILE`
+                  cp ort_results/NOTICE_DEFAULT "$ATTRIBUTIONS_FILE"
+                  GIT_DIFF=$(git diff "$ATTRIBUTIONS_FILE")
                   if [ -n "$GIT_DIFF" ]; then
-                    echo "FOUND_DIFF=true" >> $GITHUB_ENV
+                    echo "FOUND_DIFF=true" >> "$GITHUB_ENV"
                   else
-                    echo "FOUND_DIFF=false" >> $GITHUB_ENV
+                    echo "FOUND_DIFF=false" >> "$GITHUB_ENV"
                   fi
 
               ### Create PR, Note a potential race on the source branch ###
@@ -225,7 +215,7 @@ jobs:
                   branch: "ort-diff-for-${{ github.head_ref || github.ref_name }}"
                   base: ${{ github.head_ref || github.ref_name }}
                   title: "Updated attribution files for commit ${{ env.TARGET_COMMIT }}"
-                  body: "Created by Github action. ${{ env.LICENSES_LIST }}"
+                  body: "Created by GitHub action. ${{ env.LICENSES_LIST }}"
                   add-paths: |
                       ${{ env.ATTRIBUTIONS_FILE }}
 
@@ -248,9 +238,7 @@ jobs:
                   # Emit a general warning in the action log
                   echo "::warning::$MESSAGE"
 
-                  if git diff --quiet $ATTRIBUTIONS_FILE; then
-                    continue
-                  else
+                  if ! git diff --quiet "$ATTRIBUTIONS_FILE"; then
                     # Emit a warning associated with the changed file
-                    echo "::warning file=$FILE::WARNING! The attribution file is outdated."
+                    echo "::warning file=$ATTRIBUTIONS_FILE::WARNING! The attribution file is outdated."
                   fi

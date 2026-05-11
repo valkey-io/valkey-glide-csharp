@@ -1,43 +1,18 @@
 name: Install shared software dependencies
+description: "Install shared software dependencies like OS packages, Rust toolchain, and Valkey server."
 
 inputs:
     os:
-        description: "The current operating system"
+        description: "The current operating system (see 'os-matrix.json')"
         required: true
-        # See 'os-matrix.json'
-        type: choice
-        options:
-            - ubuntu
-            - amazon-linux
-            - macos
-            - windows
     target:
-        description: "Specified target for rust toolchain"
+        description: "Specified target for rust toolchain (see 'os-matrix.json')"
         required: true
-        # See 'os-matrix.json'
-        type: choice
-        options:
-            - x86_64-unknown-linux-gnu
-            - aarch64-unknown-linux-gnu
-            - x86_64-apple-darwin
-            - aarch64-apple-darwin
-            - x86_64-pc-windows-msvc
-            - aarch64-pc-windows-msvc
     server-version:
-        description: "Server version to install"
-        required: true
-        # See 'server-matrix.json'
-        type: choice
-        options:
-            - 9.0
-            - 8.1
-            - 8.0
-            - 7.2
-            - 7.0
-            - 6.2
-    github-token:
-        description: "GITHUB_TOKEN, GitHub App installation access token"
-        type: string
+        description: >-
+            Server version to install (see 'server-matrix.json').
+            Skips server installation if not specified.
+        required: false
 
 runs:
     using: "composite"
@@ -74,7 +49,7 @@ runs:
               additional-packages: python3 build-essential git pkg-config libssl-dev
 
         - name: Install Rust toolchain
-          uses: ./.github/workflows/install-rust
+          uses: ./.github/actions/install-rust
           with:
               target: ${{ inputs.target }}
 
@@ -82,7 +57,7 @@ runs:
         # needed by 'start-valkey-docker' to start servers in Docker.
         - name: Install server from source
           if: "${{ inputs.server-version }}"
-          uses: ./.github/workflows/install-server
+          uses: ./.github/actions/install-server
           with:
               os: ${{ inputs.os }}
               target: ${{ inputs.target }}
@@ -95,10 +70,10 @@ runs:
         # and modules-cluster-endpoints env vars.
         - name: Start module servers via Docker (valkey 9.0, ubuntu)
           if: "${{ inputs.server-version == '9.0' && inputs.os == 'ubuntu' }}"
-          uses: ./.github/workflows/start-valkey-docker
+          uses: ./.github/actions/start-valkey-docker
           with:
               engine-version: ${{ inputs.server-version }}
 
         - name: Install zig
           if: ${{ contains(inputs.target, 'linux-gnu') }}
-          uses: ./.github/workflows/install-zig
+          uses: ./.github/actions/install-zig
