@@ -1,9 +1,11 @@
 gitignore: true
 
 config:
+  # Line length — not auto-fixable.
   MD013: false
-  MD024: false
-  MD041: false
+  # Duplicate headings — allow under different parents only.
+  MD024:
+    siblings_only: true
 
 ignores:
   - "valkey-glide/**"
