@@ -392,7 +392,7 @@ Refer to the [resp-bench README](https://github.com/ikolomi/resp-bench/blob/main
 
 ## Updating CI Test Matrices
 
-To update our Github workflow test runs, edit the JSON files in [`.github/json_matrices/`](.github/json_matrices/).
+To update our GitHub workflow test runs, edit the JSON files in [`.github/json_matrices/`](.github/json_matrices/).
 
 It serves as a "test order", describing available properties and which `profiles` they belong to (`smoke`, `standard`, `full`). No workflow or script changes are needed.
 

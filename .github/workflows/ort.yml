@@ -218,7 +218,7 @@ jobs:
                   branch: "ort-diff-for-${{ github.head_ref || github.ref_name }}"
                   base: ${{ github.head_ref || github.ref_name }}
                   title: "Updated attribution files for commit ${{ env.TARGET_COMMIT }}"
-                  body: "Created by Github action. ${{ env.LICENSES_LIST }}"
+                  body: "Created by GitHub action. ${{ env.LICENSES_LIST }}"
                   add-paths: |
                       ${{ env.ATTRIBUTIONS_FILE }}
 
