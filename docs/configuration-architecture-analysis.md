@@ -7,18 +7,20 @@ This document analyzes the configuration architecture in the Valkey.Glide C# cli
 ## Configuration Classes Relationship
 
 ### ConfigurationOptions
+
 - **Purpose**: External API configuration class that follows StackExchange.Redis compatibility patterns
 - **Location**: `sources/Valkey.Glide/Abstract/ConfigurationOptions.cs`
 - **Role**: User-facing configuration interface
 
 ### ConnectionConfiguration
+
 - **Purpose**: Internal configuration classes that map to the underlying FFI layer
 - **Location**: `sources/Valkey.Glide/ConnectionConfiguration.cs`
 - **Role**: Internal configuration representation and builder pattern implementation
 
 ## Configuration Flow
 
-```
+```text
 ConfigurationOptions → ClientConfigurationBuilder → ConnectionConfig → FFI.ConnectionConfig
 ```
 
@@ -53,10 +55,12 @@ internal static T CreateClientConfigBuilder<T>(ConfigurationOptions configuratio
 ### Configuration Builders
 
 The builder pattern is implemented through:
+
 - `StandaloneClientConfigurationBuilder` (line 525)
 - `ClusterClientConfigurationBuilder` (line 550)
 
 Both inherit from `ClientConfigurationBuilder<T>` which provides:
+
 - Fluent API methods (`WithXxx()`)
 - Property setters
 - Internal `ConnectionConfig Build()` method
@@ -92,6 +96,7 @@ internal ConfigurationOptions RawConfig { private set; get; }
 ## Potential Configuration Change Approaches
 
 ### 1. Connection Recreation (Current Pattern)
+
 ```csharp
 // Current approach - requires new connection
 var newConfig = oldConfig.Clone();
@@ -136,12 +141,15 @@ public async Task<bool> TryUpdateConfigurationAsync<T>(Action<T> configure)
 ## ReadFrom Configuration Specifics
 
 ### Current Implementation
+
 - `ReadFrom` is a struct (line 74) with `ReadFromStrategy` enum and optional AZ string
 - Mapped in `CreateClientConfigBuilder()` at line 199
 - Flows through to FFI layer via `ConnectionConfig.ToFfi()` method
 
 ### ReadFrom Change Requirements
+
 To change `ReadFrom` configuration at runtime would require:
+
 1. **API Design**: Method to accept new `ReadFrom` configuration
 2. **Validation**: Ensure new configuration is compatible with current connection type
 3. **FFI Updates**: Update the underlying client configuration
@@ -150,8 +158,10 @@ To change `ReadFrom` configuration at runtime would require:
 ## Recommendations
 
 ### Short Term
+
 1. **Document Current Limitations**: Clearly document that configuration changes require connection recreation
 2. **Helper Methods**: Provide utility methods for common reconfiguration scenarios:
+
    ```csharp
    public static async Task<ConnectionMultiplexer> RecreateWithReadFromAsync(
        ConnectionMultiplexer current,
@@ -159,6 +169,7 @@ To change `ReadFrom` configuration at runtime would require:
    ```
 
 ### Long Term
+
 1. **Runtime Reconfiguration API**: Implement selective runtime configuration updates for non-disruptive changes
 2. **Configuration Validation**: Add validation to determine which changes require reconnection vs. runtime updates
 3. **Connection Pool Management**: Consider connection pooling to minimize disruption during reconfiguration

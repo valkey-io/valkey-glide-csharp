@@ -1,0 +1,12 @@
+config:
+  MD013: false
+  MD024: false
+  MD041: false
+  MD060: false
+
+ignores:
+  - "valkey-glide/**"
+  - "THIRD_PARTY_LICENSES"
+  - "reports/**"
+  - "rust/target/**"
+  - ".kiro/specs/**"
