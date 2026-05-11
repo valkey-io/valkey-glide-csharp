@@ -10,9 +10,6 @@ on:
     push:
         branches:
             - "release-*"
-    pull_request:
-        paths:
-            - .github/workflows/ort.yml
     workflow_dispatch:
 
 concurrency:
