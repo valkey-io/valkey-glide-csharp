@@ -320,7 +320,9 @@ jobs:
             - name: Set up dotnet ${{ matrix.dotnet }}
               uses: actions/setup-dotnet@v5
               with:
-                  dotnet-version: ${{ matrix.dotnet }}
+                  dotnet-version: |
+                      9
+                      ${{ matrix.dotnet }}
               env:
                   DOTNET_INSTALL_DIR: ~/.dotnet
 
