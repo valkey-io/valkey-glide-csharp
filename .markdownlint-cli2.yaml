@@ -9,4 +9,3 @@ config:
 
 ignores:
   - "valkey-glide/**"
-  - "THIRD_PARTY_LICENSES"
