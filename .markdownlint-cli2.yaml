@@ -1,3 +1,5 @@
+gitignore: true
+
 config:
   MD013: false
   MD024: false
@@ -7,6 +9,3 @@ config:
 ignores:
   - "valkey-glide/**"
   - "THIRD_PARTY_LICENSES"
-  - "reports/**"
-  - "rust/target/**"
-  - ".kiro/specs/**"
