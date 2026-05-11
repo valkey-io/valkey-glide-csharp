@@ -130,9 +130,9 @@ source "$HOME/.cargo/env"
 # Install dependencies using cargo:
 cargo install --locked cargo-deny lychee
 
-# Install actionlint:
-curl -fsSL https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz \
-  | tar xz -C /usr/local/bin actionlint
+# Install actionlint (x64) – see https://github.com/rhysd/actionlint/releases for other architectures:
+sudo curl -fsSL https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz \
+  | sudo tar xz -C /usr/local/bin actionlint
 ```
 
 ### Additional Dependencies Installation for MacOS
@@ -154,16 +154,13 @@ cargo install --locked cargo-deny
 
 ```bash
 # Install dependencies using choco:
-choco install mingw pkgconfiglite openssl
+choco install mingw pkgconfiglite openssl actionlint
 
 # Install Rust directly:
 # <https://rust-lang.org/tools/install/>
 
 # Install dependencies using cargo:
 cargo install --locked cargo-deny lychee
-
-# Install actionlint:
-go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
 ```
 
 ### Building and Installation
