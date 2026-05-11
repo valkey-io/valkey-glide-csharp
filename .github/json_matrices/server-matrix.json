@@ -2,7 +2,7 @@
     {
         "type": "valkey",
         "version": "9.0",
-        "profiles": ["smoke", "standard", "full"]
+        "profiles": [ "standard", "full"]
     },
     {
         "type": "valkey",

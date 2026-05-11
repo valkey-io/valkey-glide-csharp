@@ -4,14 +4,14 @@
         "RUNNER": "ubuntu-24.04",
         "ARCH": "x64",
         "TARGET": "x86_64-unknown-linux-gnu",
-        "profiles": ["smoke", "standard", "full"]
+        "profiles": [ "standard", "full"]
     },
     {
         "OS": "ubuntu",
         "RUNNER": "ubuntu-24.04-arm",
         "ARCH": "arm64",
         "TARGET": "aarch64-unknown-linux-gnu",
-        "profiles": ["smoke", "full"]
+        "profiles": [ "full"]
     },
     {
         "OS": "amazon-linux",
@@ -26,7 +26,7 @@
         "RUNNER": "macos-15",
         "ARCH": "arm64",
         "TARGET": "aarch64-apple-darwin",
-        "profiles": ["smoke", "full"]
+        "profiles": [ "full"]
     },
     {
         "OS": "macos",
@@ -34,14 +34,14 @@
         "RUNNER": "macos-15-intel",
         "ARCH": "x64",
         "TARGET": "x86_64-apple-darwin",
-        "profiles": ["smoke", "full"]
+        "profiles": [ "full"]
     },
     {
         "OS": "windows",
         "RUNNER": "windows-2025",
         "ARCH": "x64",
         "TARGET": "x86_64-pc-windows-msvc",
-        "profiles": ["smoke", "standard", "full"]
+        "profiles": [ "standard", "full"]
     },
     {
         "OS": "windows",

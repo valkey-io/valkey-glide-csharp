@@ -1,7 +1,4 @@
 {
-    "smoke": {
-        "test-filter": ["FullyQualifiedName~CommandTests"]
-    },
     "standard": {
         "test-filter": []
     },

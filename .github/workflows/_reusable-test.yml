@@ -303,7 +303,6 @@ jobs:
     test-modules:
         name: Module tests (Docker, net${{ matrix.dotnet }})
         needs: load-matrix
-        if: ${{ inputs.profile != 'smoke' }}
         runs-on: ubuntu-24.04
         timeout-minutes: 30
         strategy:
