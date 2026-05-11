@@ -7,7 +7,7 @@ a set of platforms, versions, and tests to be run. The json files list our avail
 ## Files
 
 | File | Purpose |
-|------|---------|
+| ---- | ------- |
 | `os-matrix.json` | OS/runner platforms (VMs and containers) |
 | `server-matrix.json` | Valkey and Redis server versions |
 | `version-matrix.json` | .NET SDK versions |
