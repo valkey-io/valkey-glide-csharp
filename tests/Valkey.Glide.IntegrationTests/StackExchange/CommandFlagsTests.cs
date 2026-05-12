@@ -1046,16 +1046,16 @@ public class CommandFlagsTests(TestConfiguration config)
     public async Task StringSetAsync_WithExpiry_ThrowsOnCommandFlags(IDatabaseAsync db)
     {
         _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => db.StringSetAsync("key", "value", TimeSpan.FromSeconds(10), false, When.Always, UnsupportedFlag));
+            () => db.StringSetAsync("key", "value", TimeSpan.Zero, false, When.Always, UnsupportedFlag));
         _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => db.StringSetAsync("key", "value", TimeSpan.FromSeconds(10), When.Always, UnsupportedFlag));
+            () => db.StringSetAsync("key", "value", TimeSpan.Zero, When.Always, UnsupportedFlag));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task StringSetAndGetAsync_WithExpiry_ThrowsOnCommandFlags(IDatabaseAsync db)
         => _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => db.StringSetAndGetAsync("key", "value", TimeSpan.FromSeconds(10), When.Always, UnsupportedFlag));
+            () => db.StringSetAndGetAsync("key", "value", TimeSpan.Zero, When.Always, UnsupportedFlag));
 
     #endregion
     #region Stream Commands
@@ -1100,7 +1100,7 @@ public class CommandFlagsTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task StreamReadGroupAsync_WithClaimMinIdleTime_ThrowsOnCommandFlags(IDatabaseAsync db)
         => _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => db.StreamReadGroupAsync("key", "group", "consumer", null, null, false, TimeSpan.FromSeconds(1), UnsupportedFlag));
+            () => db.StreamReadGroupAsync("key", "group", "consumer", null, null, false, TimeSpan.Zero, UnsupportedFlag));
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
