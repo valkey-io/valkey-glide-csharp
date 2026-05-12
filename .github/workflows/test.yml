@@ -35,7 +35,6 @@ jobs:
             container-host-matrix: ${{ steps.load.outputs.container-host-matrix }}
             server-matrix: ${{ steps.load.outputs.server-matrix }}
             dotnet-matrix: ${{ steps.load.outputs.dotnet-matrix }}
-            test-filter: ${{ steps.load.outputs.test-filter }}
         steps:
             - name: Validate inputs
               shell: bash
@@ -60,7 +59,7 @@ jobs:
               run: python3 load_matrices.py "$PROFILE"
 
     test-with-runners:
-        name: net${{ matrix.dotnet }}, server ${{ matrix.server.version }}, ${{ matrix.host.TARGET }}
+        name: net${{ matrix.dotnet }}, ${{ matrix.server.type }} ${{ matrix.server.version }}, ${{ matrix.host.TARGET }}
         needs: load-matrix
         timeout-minutes: 100
         strategy:
@@ -160,7 +159,6 @@ jobs:
                   dotnet test
                   --configuration Debug
                   --framework net${{ matrix.dotnet }}
-                  ${{ needs.load-matrix.outputs.test-filter && format('--filter "{0}"', needs.load-matrix.outputs.test-filter) || '' }}
                   --logger "html;LogFileName=TestReport.html"
                   --logger "trx;LogFileName=TestResults.trx"
                   --logger "console;verbosity=detailed"
@@ -182,10 +180,6 @@ jobs:
                   RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
               run: .github/workflows/scripts/create_failures_json.sh
 
-            - name: Run coverage
-              if: ${{ matrix.dotnet == '8.0' && contains(matrix.host.RUNNER, 'ubuntu') && matrix.host.ARCH == 'x64' && matrix.server.version == '9.0' }}
-              uses: ./.github/actions/run-coverage
-
             - name: Upload test reports
               if: always()
               continue-on-error: true
@@ -199,7 +193,7 @@ jobs:
                       valkey-glide/utils/clusters/**
 
     test-with-containers:
-        name: net${{ matrix.dotnet }}, server ${{ matrix.server.version }}, ${{ matrix.host.IMAGE }}
+        name: net${{ matrix.dotnet }}, ${{ matrix.server.type }} ${{ matrix.server.version }}, ${{ matrix.host.IMAGE }}
         needs: load-matrix
         if: ${{ needs.load-matrix.outputs.container-host-matrix != '[]' }}
         timeout-minutes: 100
@@ -268,7 +262,6 @@ jobs:
               run: >-
                   dotnet test
                   --framework net${{ matrix.dotnet }}
-                  ${{ needs.load-matrix.outputs.test-filter && format('--filter "{0}"', needs.load-matrix.outputs.test-filter) || '' }}
                   --logger "html;LogFileName=TestReport.html"
                   --logger "trx;LogFileName=TestResults.trx"
                   --logger "console;verbosity=detailed"
@@ -301,3 +294,76 @@ jobs:
                       TestResults.trx
                       failures.json
                       valkey-glide/utils/clusters/**
+
+    # See: https://github.com/valkey-io/valkey-glide-csharp/issues/390
+    test-modules:
+        name: Module tests (Docker, net${{ matrix.dotnet }})
+        needs: load-matrix
+        runs-on: ubuntu-24.04
+        timeout-minutes: 30
+        strategy:
+            fail-fast: false
+            matrix:
+                dotnet: ${{ fromJson(needs.load-matrix.outputs.dotnet-matrix) }}
+        steps:
+            - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+              with:
+                  submodules: true
+
+            - name: Set up dotnet ${{ matrix.dotnet }}
+              uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
+              with:
+                  dotnet-version: |
+                      9
+                      ${{ matrix.dotnet }}
+              env:
+                  DOTNET_INSTALL_DIR: ~/.dotnet
+
+            - name: Install shared software dependencies
+              uses: ./.github/actions/install-shared-dependencies
+              with:
+                  os: ubuntu
+                  target: x86_64-unknown-linux-gnu
+                  server-version: "9.0"
+
+            - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+              with:
+                  path: rust/target
+                  key: rust-x86_64-unknown-linux-gnu
+
+            - name: Run module tests against Docker servers
+              run: >-
+                  dotnet test tests/Valkey.Glide.IntegrationTests/
+                  --framework net${{ matrix.dotnet }}
+                  --filter "FullyQualifiedName~ServerModules"
+                  --logger "html;LogFileName=ModuleTestReport.html"
+                  --logger "trx;LogFileName=ModuleTestResults.trx"
+                  --logger "console;verbosity=detailed"
+                  --results-directory .
+
+            - name: Create failures.json from TRX
+              if: always()
+              shell: bash
+              env:
+                  TRX_FILE: ModuleTestResults.trx
+                  JOB_NAME: "Module tests (Docker, net${{ matrix.dotnet }})"
+                  DOTNET: ${{ matrix.dotnet }}
+                  SERVER_TYPE: valkey
+                  SERVER_VERSION: "9.0"
+                  HOST_OS: ubuntu
+                  HOST_ARCH: x64
+                  HOST_RUNNER: ubuntu-24.04
+                  RUN_ID: ${{ github.run_id }}
+                  RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+              run: .github/workflows/scripts/create_failures_json.sh
+
+            - name: Upload test reports
+              if: always()
+              continue-on-error: true
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              with:
+                  name: module-test-reports-net${{ matrix.dotnet }}
+                  path: |
+                      ModuleTestReport.html
+                      ModuleTestResults.trx
+                      failures.json
