@@ -27,6 +27,6 @@
     {
         "type": "redis",
         "version": "6.2",
-        "profiles": ["standard", "full"]
+        "profiles": ["full"]
     }
 ]

@@ -59,7 +59,7 @@ jobs:
               run: python3 load_matrices.py "$PROFILE"
 
     test-with-runners:
-        name: net${{ matrix.dotnet }}, server ${{ matrix.server.version }}, ${{ matrix.host.TARGET }}
+        name: net${{ matrix.dotnet }}, ${{ matrix.server.type }} ${{ matrix.server.version }}, ${{ matrix.host.TARGET }}
         needs: load-matrix
         timeout-minutes: 100
         strategy:
@@ -193,7 +193,7 @@ jobs:
                       valkey-glide/utils/clusters/**
 
     test-with-containers:
-        name: net${{ matrix.dotnet }}, server ${{ matrix.server.version }}, ${{ matrix.host.IMAGE }}
+        name: net${{ matrix.dotnet }}, ${{ matrix.server.type }} ${{ matrix.server.version }}, ${{ matrix.host.IMAGE }}
         needs: load-matrix
         if: ${{ needs.load-matrix.outputs.container-host-matrix != '[]' }}
         timeout-minutes: 100
