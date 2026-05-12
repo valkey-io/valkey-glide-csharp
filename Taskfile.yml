@@ -10,12 +10,12 @@ vars:
     # Build the solution or a specific target.
     # Usage: `task build target=lib`
     TARGET: '{{.target | default "all"}}'
-    TARGET_PATH: '{{if eq .TARGET "lib"}}sources/Valkey.Glide/{{end}}'
+    BUILD_TARGET: '{{if eq .TARGET "lib"}}sources/Valkey.Glide/{{end}}'
 
     # Filter tests by class or method name.
-    # Usage: `task test:unit name=MyTestClass`
-    NAME: '{{.name | default ""}}'
-    TEST_FILTER: '{{if .NAME}}--filter FullyQualifiedName~{{.NAME}}{{end}}'
+    # Usage: `task test:unit filter=MyTestClass`
+    FILTER: '{{.filter | default ""}}'
+    TEST_FILTER: '{{if .FILTER}}--filter FullyQualifiedName~{{.FILTER}}{{end}}'
 
 tasks:
     clean:
@@ -159,7 +159,7 @@ tasks:
     build:
         desc: Build the solution
         cmds:
-            - dotnet build {{.TARGET_PATH}} --configuration Release
+            - dotnet build {{.BUILD_TARGET}} --configuration Release
 
     test:
         desc: Build and run all tests
