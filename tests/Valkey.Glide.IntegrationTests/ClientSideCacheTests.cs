@@ -11,31 +11,10 @@ public class ClientSideCacheTests
 {
     #region Helpers
 
-    private static async Task<GlideClient> CreateStandaloneClientWithCache(ClientSideCacheConfig cache)
-    {
-        var config = TestConfiguration.DefaultClientConfig()
-            .WithClientSideCache(cache)
-            .Build();
-        return await GlideClient.CreateClient(config);
-    }
-
-    private static async Task<GlideClusterClient> CreateClusterClientWithCache(ClientSideCacheConfig cache)
-    {
-        var config = TestConfiguration.DefaultClusterClientConfig()
-            .WithClientSideCache(cache)
-            .Build();
-        return await GlideClusterClient.CreateClient(config);
-    }
-
     private static async Task<BaseClient> CreateClientWithCache(ClientSideCacheConfig cache, bool clusterMode)
-    {
-        if (clusterMode)
-        {
-            return await CreateClusterClientWithCache(cache);
-        }
-
-        return await CreateStandaloneClientWithCache(cache);
-    }
+        => clusterMode
+            ? await GlideClusterClient.CreateClient(TestConfiguration.DefaultClusterClientConfig().WithClientSideCache(cache).Build())
+            : await GlideClient.CreateClient(TestConfiguration.DefaultClientConfig().WithClientSideCache(cache).Build());
 
     #endregion
 
