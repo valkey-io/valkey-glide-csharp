@@ -33,9 +33,8 @@ Common commands:
   - `task test:integration` (integration tests only)
 
 - Filter tests:
-  - Via Task: `task test:unit filter=ClassName` or `task test:integration filter=MethodName`
-  - Via dotnet directly: `dotnet test --filter "FullyQualifiedName~ClassName"`
-  - By display name pattern: `dotnet test --filter "DisplayName~Pattern"`
+  - By class: `task test:unit filter=MyTestClass`
+  - By method: `task test:integration filter=MyMethodName`
 
 - Coverage and reports (preferred via Task):
   - `task coverage`, `task coverage:unit`, `task coverage:integration`
