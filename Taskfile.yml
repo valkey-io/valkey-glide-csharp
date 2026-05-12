@@ -15,7 +15,7 @@ vars:
     # Filter tests by class or method name.
     # Usage: `task test:unit name=MyTestClass`
     NAME: '{{.name | default ""}}'
-    TEST_FILTER: '{{if .NAME}}--filter "FullyQualifiedName~{{.NAME}}"{{end}}'
+    TEST_FILTER: '{{if .NAME}}--filter FullyQualifiedName~{{.NAME}}{{end}}'
 
 tasks:
     clean:
