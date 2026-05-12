@@ -180,10 +180,6 @@ jobs:
                   RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
               run: .github/workflows/scripts/create_failures_json.sh
 
-            - name: Run coverage
-              if: ${{ matrix.dotnet == '8.0' && contains(matrix.host.RUNNER, 'ubuntu') && matrix.host.ARCH == 'x64' && matrix.server.version == '9.0' }}
-              uses: ./.github/actions/run-coverage
-
             - name: Upload test reports
               if: always()
               continue-on-error: true
@@ -310,12 +306,12 @@ jobs:
             matrix:
                 dotnet: ${{ fromJson(needs.load-matrix.outputs.dotnet-matrix) }}
         steps:
-            - uses: actions/checkout@v6
+            - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
               with:
                   submodules: true
 
             - name: Set up dotnet ${{ matrix.dotnet }}
-              uses: actions/setup-dotnet@v5
+              uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
               with:
                   dotnet-version: |
                       9
@@ -330,7 +326,7 @@ jobs:
                   target: x86_64-unknown-linux-gnu
                   server-version: "9.0"
 
-            - uses: actions/cache@v5
+            - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
               with:
                   path: rust/target
                   key: rust-x86_64-unknown-linux-gnu
@@ -364,7 +360,7 @@ jobs:
             - name: Upload test reports
               if: always()
               continue-on-error: true
-              uses: actions/upload-artifact@v7
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
               with:
                   name: module-test-reports-net${{ matrix.dotnet }}
                   path: |
