@@ -45,9 +45,9 @@ Common commands:
 
 - Prefer `task` commands for linting and formatting.
 - Lint checks (read-only, fail on issues):
-  - `task lint` (all checks), `task lint:rust`, `task lint:csharp`, `task lint:yaml`, `task lint:actions`
+  - `task lint` (all checks), `task lint:rust`, `task lint:csharp`, `task lint:yaml`, `task lint:actions`, `task lint:markdown`
 - Auto-fix formatting:
-  - `task format` (all languages), `task format:rust`, `task format:csharp`, `task format:yaml`
+  - `task format` (all languages), `task format:rust`, `task format:csharp`, `task format:yaml`, `task format:markdown`
 - Link checking (separate from lint, slower):
   - `task check-links`
 
@@ -163,7 +163,7 @@ Note: Conventional Commits apply to commit messages only. Do not enforce this fo
 ## Quality Gates (Agent Checklist)
 
 - Build passes on `net8.0`.
-- Lint passes: `task lint` (or individual `task lint:rust`, `task lint:csharp`, `task lint:yaml`).
+- Lint passes: `task lint` (or individual `task lint:rust`, `task lint:csharp`, `task lint:yaml`, `task lint:markdown`).
 - Tests pass; targeted via filters instead of per-file execution.
 - Generated outputs not committed.
 - Public API changes respect StackExchange.Redis compatibility.
