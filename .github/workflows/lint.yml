@@ -48,7 +48,7 @@ jobs:
                   dotnet-version: "8"
 
             - name: Install Task
-              uses: go-task/setup-task@dc4f00a24b1b0b5e1a9265f6f4e81d65c0862414 # v2.0.0
+              uses: go-task/setup-task@3be4020d41929789a01026e0e427a4321ce0ad44 # v2.0.0
 
             - name: Run lint
               run: task lint
