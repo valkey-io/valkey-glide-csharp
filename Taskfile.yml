@@ -39,7 +39,7 @@ tasks:
         cmds:
             - dotnet test {{.UNIT_TEST_PROJECT}}
               --configuration Release
-              -verbosity normal
+              --verbosity normal
               {{.TEST_FILTER}}
 
     test:integration:
