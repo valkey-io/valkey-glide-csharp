@@ -20,7 +20,6 @@ Each entry in the JSON files has a `profiles` array that declares which test pro
 
 | Profile    | When used                                                                  |
 | ---------- | -------------------------------------------------------------------------- |
-| `smoke`    | For quick validation. Runs on wide platforms but only against CommandTests |
 | `standard` | Standard tests run on common platform                                      |
 | `full`     | Nightly / manual run on all platforms and all tests                        |
 
@@ -30,7 +29,7 @@ Each entry in the JSON files has a `profiles` array that declares which test pro
 {
     "OS": "ubuntu",
     "RUNNER": "ubuntu-24.04",
-    "profiles": ["smoke", "standard", "full"]
+    "profiles": [ "standard", "full"]
 }
 ```
 

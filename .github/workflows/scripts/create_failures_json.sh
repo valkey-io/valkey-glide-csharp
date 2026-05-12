@@ -13,10 +13,16 @@ if ! command -v xmllint >/dev/null 2>&1 || ! command -v jq >/dev/null 2>&1; then
     exit 0
 fi
 
-FAILED_COUNT=$(xmllint --xpath "string(//Counters/@failed)" "$TRX_FILE" 2>/dev/null || echo 0)
-PASSED_COUNT=$(xmllint --xpath "string(//Counters/@passed)" "$TRX_FILE" 2>/dev/null || echo 0)
-TOTAL_COUNT=$(xmllint --xpath "string(//Counters/@total)" "$TRX_FILE" 2>/dev/null || echo 0)
-SKIPPED_COUNT=$(xmllint --xpath "string(//Counters/@skipped)" "$TRX_FILE" 2>/dev/null || echo 0)
+FAILED_COUNT=$(xmllint --xpath "string(//*[local-name()='Counters']/@failed)" "$TRX_FILE" 2>/dev/null || echo 0)
+PASSED_COUNT=$(xmllint --xpath "string(//*[local-name()='Counters']/@passed)" "$TRX_FILE" 2>/dev/null || echo 0)
+TOTAL_COUNT=$(xmllint --xpath "string(//*[local-name()='Counters']/@total)" "$TRX_FILE" 2>/dev/null || echo 0)
+SKIPPED_COUNT=$(xmllint --xpath "string(//*[local-name()='Counters']/@skipped)" "$TRX_FILE" 2>/dev/null || echo 0)
+
+# xmllint returns empty string (exit 0) when the XPath matches nothing; coerce to 0 for --argjson.
+FAILED_COUNT=${FAILED_COUNT:-0}
+PASSED_COUNT=${PASSED_COUNT:-0}
+TOTAL_COUNT=${TOTAL_COUNT:-0}
+SKIPPED_COUNT=${SKIPPED_COUNT:-0}
 
 jq -n \
     --arg workflow "C# tests" \

@@ -398,7 +398,7 @@ Refer to the [resp-bench README](https://github.com/ikolomi/resp-bench/blob/main
 
 To update our GitHub workflow test runs, edit the JSON files in [`.github/json_matrices/`](.github/json_matrices/).
 
-It serves as a "test order", describing available properties and which `profiles` they belong to (`smoke`, `standard`, `full`). No workflow or script changes are needed.
+It serves as a "test order", describing available properties and which `profiles` they belong to (`standard`, `full`). No workflow or script changes are needed.
 
 Ex: To add a new platform to the `standard` profile, add a new entry to `.github/json_matrices/os_matrix.json` with `profiles: ['standard']`
 
