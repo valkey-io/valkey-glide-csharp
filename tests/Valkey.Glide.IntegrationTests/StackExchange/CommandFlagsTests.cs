@@ -1041,6 +1041,203 @@ public class CommandFlagsTests(TestConfiguration config)
         => _ = await Assert.ThrowsAsync<NotImplementedException>(
             () => db.StringSetRangeAsync("key", 0, "value", UnsupportedFlag));
 
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StringSetAsync_WithExpiry_ThrowsOnCommandFlags(IDatabaseAsync db)
+    {
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StringSetAsync("key", "value", TimeSpan.FromSeconds(10), false, When.Always, UnsupportedFlag));
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StringSetAsync("key", "value", TimeSpan.FromSeconds(10), When.Always, UnsupportedFlag));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StringSetAndGetAsync_WithExpiry_ThrowsOnCommandFlags(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StringSetAndGetAsync("key", "value", TimeSpan.FromSeconds(10), When.Always, UnsupportedFlag));
+
+    #endregion
+    #region Stream Commands
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StreamAddAsync_SingleField_ThrowsOnCommandFlags(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StreamAddAsync("key", "field", "value", flags: UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StreamAddAsync_MultiField_ThrowsOnCommandFlags(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StreamAddAsync("key", [], flags: UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StreamReadAsync_SingleKey_ThrowsOnCommandFlags(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StreamReadAsync("key", "0-0", flags: UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StreamReadAsync_MultiKey_ThrowsOnCommandFlags(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StreamReadAsync([], flags: UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StreamRangeAsync_ThrowsOnCommandFlags(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StreamRangeAsync("key", flags: UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StreamReadGroupAsync_SingleKey_ThrowsOnCommandFlags(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StreamReadGroupAsync("key", "group", "consumer", flags: UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StreamReadGroupAsync_WithClaimMinIdleTime_ThrowsOnCommandFlags(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StreamReadGroupAsync("key", "group", "consumer", null, null, false, TimeSpan.FromSeconds(1), UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StreamReadGroupAsync_MultiKey_ThrowsOnCommandFlags(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StreamReadGroupAsync([], "group", "consumer", flags: UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StreamLengthAsync_ThrowsOnCommandFlags(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StreamLengthAsync("key", UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StreamDeleteAsync_ThrowsOnCommandFlags(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StreamDeleteAsync("key", [], UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StreamCreateConsumerGroupAsync_ThrowsOnCommandFlags(IDatabaseAsync db)
+    {
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StreamCreateConsumerGroupAsync("key", "group", flags: UnsupportedFlag));
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StreamCreateConsumerGroupAsync("key", "group", null, true, 0L, UnsupportedFlag));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StreamDeleteConsumerGroupAsync_ThrowsOnCommandFlags(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StreamDeleteConsumerGroupAsync("key", "group", UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StreamCreateConsumerAsync_ThrowsOnCommandFlags(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StreamCreateConsumerAsync("key", "group", "consumer", UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StreamDeleteConsumerAsync_ThrowsOnCommandFlags(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StreamDeleteConsumerAsync("key", "group", "consumer", UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StreamConsumerGroupSetPositionAsync_ThrowsOnCommandFlags(IDatabaseAsync db)
+    {
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StreamConsumerGroupSetPositionAsync("key", "group", "0-0", UnsupportedFlag));
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StreamConsumerGroupSetPositionAsync("key", "group", "0-0", 0L, UnsupportedFlag));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StreamAcknowledgeAsync_ThrowsOnCommandFlags(IDatabaseAsync db)
+    {
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StreamAcknowledgeAsync("key", "group", "0-0", UnsupportedFlag));
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StreamAcknowledgeAsync("key", "group", [], UnsupportedFlag));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StreamPendingAsync_ThrowsOnCommandFlags(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StreamPendingAsync("key", "group", UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StreamPendingMessagesAsync_ThrowsOnCommandFlags(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StreamPendingMessagesAsync("key", "group", 10, "consumer", flags: UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StreamClaimAsync_ThrowsOnCommandFlags(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StreamClaimAsync("key", "group", "consumer", 0, [], UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StreamClaimIdsOnlyAsync_ThrowsOnCommandFlags(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StreamClaimIdsOnlyAsync("key", "group", "consumer", 0, [], UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StreamAutoClaimAsync_ThrowsOnCommandFlags(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StreamAutoClaimAsync("key", "group", "consumer", 0, "0-0", flags: UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StreamAutoClaimIdsOnlyAsync_ThrowsOnCommandFlags(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StreamAutoClaimIdsOnlyAsync("key", "group", "consumer", 0, "0-0", flags: UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StreamTrimAsync_ThrowsOnCommandFlags(IDatabaseAsync db)
+    {
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StreamTrimAsync("key", 100, false, UnsupportedFlag));
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StreamTrimAsync("key", 100L, false, null, StreamTrimMode.KeepReferences, UnsupportedFlag));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StreamTrimByMinIdAsync_ThrowsOnCommandFlags(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StreamTrimByMinIdAsync("key", "0-0", flags: UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StreamInfoAsync_ThrowsOnCommandFlags(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StreamInfoAsync("key", UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StreamGroupInfoAsync_ThrowsOnCommandFlags(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StreamGroupInfoAsync("key", UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StreamConsumerInfoAsync_ThrowsOnCommandFlags(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StreamConsumerInfoAsync("key", "group", UnsupportedFlag));
+
     #endregion
     #region Server Management Commands
 
@@ -1091,6 +1288,191 @@ public class CommandFlagsTests(TestConfiguration config)
     public async Task IServer_FlushAllDatabasesAsync_UnsupportedFlags_Throws(IServer server)
         => _ = await Assert.ThrowsAsync<NotImplementedException>(
             () => server.FlushAllDatabasesAsync(UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task IServer_ExecuteAsync_UnsupportedFlags_Throws(IServer server)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => server.ExecuteAsync("PING", [], UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task IServer_InfoRawAsync_UnsupportedFlags_Throws(IServer server)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => server.InfoRawAsync(flags: UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task IServer_InfoAsync_UnsupportedFlags_Throws(IServer server)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => server.InfoAsync(flags: UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task IServer_PingAsync_UnsupportedFlags_Throws(IServer server)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => server.PingAsync("hello", UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task IServer_EchoAsync_UnsupportedFlags_Throws(IServer server)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => server.EchoAsync("hello", UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task IServer_ConfigRewriteAsync_UnsupportedFlags_Throws(IServer server)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => server.ConfigRewriteAsync(UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task IServer_DatabaseSizeAsync_UnsupportedFlags_Throws(IServer server)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => server.DatabaseSizeAsync(UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task IServer_ClientGetNameAsync_UnsupportedFlags_Throws(IServer server)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => server.ClientGetNameAsync(UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task IServer_ClientIdAsync_UnsupportedFlags_Throws(IServer server)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => server.ClientIdAsync(UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task IServer_ScriptExistsAsync_String_UnsupportedFlags_Throws(IServer server)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => server.ScriptExistsAsync("return 1", UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task IServer_ScriptExistsAsync_ByteArray_UnsupportedFlags_Throws(IServer server)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => server.ScriptExistsAsync([], UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task IServer_ScriptLoadAsync_String_UnsupportedFlags_Throws(IServer server)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => server.ScriptLoadAsync("return 1", UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task IServer_ScriptLoadAsync_LuaScript_UnsupportedFlags_Throws(IServer server)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => server.ScriptLoadAsync(LuaScript.Prepare("return 1"), UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task IServer_ScriptFlushAsync_UnsupportedFlags_Throws(IServer server)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => server.ScriptFlushAsync(UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task IServer_KeysAsync_UnsupportedFlags_Throws(IServer server)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            async () => { await foreach (var _ in server.KeysAsync(flags: UnsupportedFlag)) { } });
+
+    #endregion
+    #region IDatabaseAsync Commands
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task ExecuteAsync_ThrowsOnCommandFlags(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.ExecuteAsync("PING", null, UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task PingAsync_ThrowsOnCommandFlags(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.PingAsync(UnsupportedFlag));
+
+    #endregion
+    #region Transaction Commands
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task WatchAsync_ThrowsOnCommandFlags(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.WatchAsync([], UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task UnwatchAsync_ThrowsOnCommandFlags(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.UnwatchAsync(UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task UnwatchAsync_WithRoute_ThrowsOnCommandFlags(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.UnwatchAsync(Route.Random, UnsupportedFlag));
+
+    #endregion
+    #region Subscriber Commands
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestStandaloneConnections), MemberType = typeof(TestConfiguration))]
+    public async Task ISubscriber_PublishAsync_ThrowsOnCommandFlags(ConnectionMultiplexer connection)
+    {
+        var subscriber = connection.GetSubscriber();
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => subscriber.PublishAsync(
+                ValkeyChannel.Literal("test-channel"),
+                "hello",
+                UnsupportedFlag));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestStandaloneConnections), MemberType = typeof(TestConfiguration))]
+    public async Task ISubscriber_SubscribeAsync_WithHandler_ThrowsOnCommandFlags(ConnectionMultiplexer connection)
+    {
+        var subscriber = connection.GetSubscriber();
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => subscriber.SubscribeAsync(
+                ValkeyChannel.Literal("test-channel"),
+                (_, _) => { },
+                UnsupportedFlag));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestStandaloneConnections), MemberType = typeof(TestConfiguration))]
+    public async Task ISubscriber_SubscribeAsync_Queue_ThrowsOnCommandFlags(ConnectionMultiplexer connection)
+    {
+        var subscriber = connection.GetSubscriber();
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => subscriber.SubscribeAsync(
+                ValkeyChannel.Literal("test-channel"),
+                UnsupportedFlag));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestStandaloneConnections), MemberType = typeof(TestConfiguration))]
+    public async Task ISubscriber_UnsubscribeAsync_ThrowsOnCommandFlags(ConnectionMultiplexer connection)
+    {
+        var subscriber = connection.GetSubscriber();
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => subscriber.UnsubscribeAsync(
+                ValkeyChannel.Literal("test-channel"),
+                null,
+                UnsupportedFlag));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestStandaloneConnections), MemberType = typeof(TestConfiguration))]
+    public async Task ISubscriber_UnsubscribeAllAsync_ThrowsOnCommandFlags(ConnectionMultiplexer connection)
+    {
+        var subscriber = connection.GetSubscriber();
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => subscriber.UnsubscribeAllAsync(UnsupportedFlag));
+    }
 
     #endregion
 }
