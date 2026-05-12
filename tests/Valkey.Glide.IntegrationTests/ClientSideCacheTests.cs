@@ -91,11 +91,11 @@ public class ClientSideCacheTests
         Assert.Equal("value", value.ToString());
 
         // Metrics that require EnableMetrics should fail
-        _ = await Assert.ThrowsAsync<Errors.RequestException>(() => client.GetCacheHitRateAsync());
-        _ = await Assert.ThrowsAsync<Errors.RequestException>(() => client.GetCacheMissRateAsync());
-        _ = await Assert.ThrowsAsync<Errors.RequestException>(() => client.GetCacheEvictionsAsync());
-        _ = await Assert.ThrowsAsync<Errors.RequestException>(() => client.GetCacheExpirationsAsync());
-        _ = await Assert.ThrowsAsync<Errors.RequestException>(() => client.GetCacheTotalLookupsAsync());
+        _ = await Assert.ThrowsAsync<Errors.RequestException>(client.GetCacheHitRateAsync);
+        _ = await Assert.ThrowsAsync<Errors.RequestException>(client.GetCacheMissRateAsync);
+        _ = await Assert.ThrowsAsync<Errors.RequestException>(client.GetCacheEvictionsAsync);
+        _ = await Assert.ThrowsAsync<Errors.RequestException>(client.GetCacheExpirationsAsync);
+        _ = await Assert.ThrowsAsync<Errors.RequestException>(client.GetCacheTotalLookupsAsync);
 
         // Entry count should still work (doesn't require metrics)
         long entryCount = await client.GetCacheEntryCountAsync();
@@ -111,12 +111,12 @@ public class ClientSideCacheTests
     public async Task NoCacheConfigured_AllMetricsFail(BaseClient client)
     {
         // Without cache configured, all metric calls should fail
-        _ = await Assert.ThrowsAsync<Errors.RequestException>(() => client.GetCacheHitRateAsync());
-        _ = await Assert.ThrowsAsync<Errors.RequestException>(() => client.GetCacheMissRateAsync());
-        _ = await Assert.ThrowsAsync<Errors.RequestException>(() => client.GetCacheEntryCountAsync());
-        _ = await Assert.ThrowsAsync<Errors.RequestException>(() => client.GetCacheEvictionsAsync());
-        _ = await Assert.ThrowsAsync<Errors.RequestException>(() => client.GetCacheExpirationsAsync());
-        _ = await Assert.ThrowsAsync<Errors.RequestException>(() => client.GetCacheTotalLookupsAsync());
+        _ = await Assert.ThrowsAsync<Errors.RequestException>(client.GetCacheHitRateAsync);
+        _ = await Assert.ThrowsAsync<Errors.RequestException>(client.GetCacheMissRateAsync);
+        _ = await Assert.ThrowsAsync<Errors.RequestException>(client.GetCacheEntryCountAsync);
+        _ = await Assert.ThrowsAsync<Errors.RequestException>(client.GetCacheEvictionsAsync);
+        _ = await Assert.ThrowsAsync<Errors.RequestException>(client.GetCacheExpirationsAsync);
+        _ = await Assert.ThrowsAsync<Errors.RequestException>(client.GetCacheTotalLookupsAsync);
     }
 
     #endregion
