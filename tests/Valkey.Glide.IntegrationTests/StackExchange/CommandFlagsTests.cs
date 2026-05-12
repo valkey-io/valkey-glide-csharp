@@ -423,7 +423,7 @@ public class CommandFlagsTests(TestConfiguration config)
         _ = await Assert.ThrowsAsync<NotImplementedException>(
             () => db.HashFieldGetAndSetExpiryAsync("key", [], flags: UnsupportedFlag));
         _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => db.HashFieldGetAndSetExpiryAsync("key", [], flags: UnsupportedFlag));
+            () => db.HashFieldGetAndSetExpiryAsync("key", [], DateTime.MinValue, UnsupportedFlag));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -443,7 +443,7 @@ public class CommandFlagsTests(TestConfiguration config)
         _ = await Assert.ThrowsAsync<NotImplementedException>(
             () => db.HashFieldSetAndSetExpiryAsync("key", [], flags: UnsupportedFlag));
         _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => db.HashFieldSetAndSetExpiryAsync("key", [], flags: UnsupportedFlag));
+            () => db.HashFieldSetAndSetExpiryAsync("key", [], DateTime.MinValue, flags: UnsupportedFlag));
     }
 
     #endregion
