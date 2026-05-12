@@ -163,12 +163,12 @@ internal partial class ValkeyServer(Database conn, EndPoint endpoint) : IServer
 
     public async Task<bool> ScriptExistsAsync(string script, CommandFlags flags = CommandFlags.None)
     {
+        GuardClauses.ThrowIfCommandFlags(flags);
+
         if (string.IsNullOrEmpty(script))
         {
             throw new ArgumentException("Script cannot be null or empty", nameof(script));
         }
-
-        GuardClauses.ThrowIfCommandFlags(flags);
 
         // Calculate SHA1 hash of the script
         using Script scriptObj = new(script);
@@ -181,12 +181,12 @@ internal partial class ValkeyServer(Database conn, EndPoint endpoint) : IServer
 
     public async Task<bool> ScriptExistsAsync(byte[] sha1, CommandFlags flags = CommandFlags.None)
     {
+        GuardClauses.ThrowIfCommandFlags(flags);
+
         if (sha1 == null || sha1.Length == 0)
         {
             throw new ArgumentException("SHA1 hash cannot be null or empty", nameof(sha1));
         }
-
-        GuardClauses.ThrowIfCommandFlags(flags);
 
         // Convert byte array to hex string
         string hash = BitConverter.ToString(sha1).Replace("-", "").ToLowerInvariant();
@@ -198,12 +198,12 @@ internal partial class ValkeyServer(Database conn, EndPoint endpoint) : IServer
 
     public async Task<byte[]> ScriptLoadAsync(string script, CommandFlags flags = CommandFlags.None)
     {
+        GuardClauses.ThrowIfCommandFlags(flags);
+
         if (string.IsNullOrEmpty(script))
         {
             throw new ArgumentException("Script cannot be null or empty", nameof(script));
         }
-
-        GuardClauses.ThrowIfCommandFlags(flags);
 
         // Use custom command to call SCRIPT LOAD
         ValkeyResult result = await ExecuteAsync("SCRIPT", ["LOAD", script], flags);
@@ -220,12 +220,12 @@ internal partial class ValkeyServer(Database conn, EndPoint endpoint) : IServer
 
     public async Task<LoadedLuaScript> ScriptLoadAsync(LuaScript script, CommandFlags flags = CommandFlags.None)
     {
+        GuardClauses.ThrowIfCommandFlags(flags);
+
         if (script == null)
         {
             throw new ArgumentNullException(nameof(script));
         }
-
-        GuardClauses.ThrowIfCommandFlags(flags);
 
         // Load the executable script
         byte[] hash = await ScriptLoadAsync(script.ExecutableScript, flags);
