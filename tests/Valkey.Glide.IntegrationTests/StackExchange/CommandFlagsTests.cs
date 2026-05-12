@@ -1474,5 +1474,15 @@ public class CommandFlagsTests(TestConfiguration config)
             () => subscriber.UnsubscribeAllAsync(UnsupportedFlag));
     }
 
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestStandaloneConnections), MemberType = typeof(TestConfiguration))]
+    public async Task ChannelMessageQueue_UnsubscribeAsync_ThrowsOnCommandFlags(ConnectionMultiplexer connection)
+    {
+        var subscriber = connection.GetSubscriber();
+        var queue = await subscriber.SubscribeAsync(ValkeyChannel.Literal(Guid.NewGuid().ToString()));
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => queue.UnsubscribeAsync(UnsupportedFlag));
+    }
+
     #endregion
 }
