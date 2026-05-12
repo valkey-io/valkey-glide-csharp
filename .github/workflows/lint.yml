@@ -17,11 +17,12 @@ jobs:
         timeout-minutes: 10
 
         steps:
-            - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+            - name: Checkout
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
               with:
                   submodules: true
 
-            - name: Install Rust toolchain
+            - name: Install Rust
               uses: ./.github/actions/install-rust
 
             - name: Cache Rust
@@ -30,23 +31,20 @@ jobs:
                   path: rust/target
                   key: rust-x86_64-unknown-linux-gnu
 
-            - name: Install cargo-deny
+            - name: Install cargo-deny and actionlint
               uses: taiki-e/install-action@735e5933943122c5ac182670a935f54a949265c1 # v2.52.4
               with:
-                  tool: cargo-deny
+                  tool: |
+                      cargo-deny
+                      actionlint
 
             - name: Install dotnet
               uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
               with:
                   dotnet-version: "8"
 
-            - name: Install actionlint
-              run: |
-                  ACTIONLINT_URL=https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz
-                  curl -fsSL "$ACTIONLINT_URL" | tar xz -C /usr/local/bin actionlint
-
             - name: Install Task
               uses: go-task/setup-task@dc4f00a24b1b0b5e1a9265f6f4e81d65c0862414 # v2.0.0
 
-            - name: Lint
+            - name: Run lint
               run: task lint
