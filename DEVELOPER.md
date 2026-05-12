@@ -313,7 +313,8 @@ You can combine this with test filter as well:
 ```bash
 cluster-endpoints=localhost:7000 standalone-endpoints=localhost:6379 tls=true dotnet test --logger "console;verbosity=detailed" --filter "FullyQualifiedName~GetReturnsNull"
 ```
-#### IAM Authentication Tests
+
+### IAM Authentication Tests
 
 To run [IAM authentication tests](tests/Valkey.Glide.IntegrationTests/IamAuthTests.cs) locally, set the following environment variables:
 
@@ -359,10 +360,11 @@ Before making a contribution, ensure that all new user APIs and non-obvious code
 task lint
 
 # Run linters for specific languages:
-task lint:rust     # Run Rust linting
-task lint:csharp   # Run C# linting
-task lint:yaml     # Run YAML linting
-task lint:actions  # Run GitHub Actions linting
+task lint:rust      # Run Rust linting
+task lint:csharp    # Run C# linting
+task lint:yaml      # Run YAML linting
+task lint:actions   # Run GitHub Actions linting
+task lint:markdown  # Run Markdown linting
 
 # Run all formatters:
 task format
@@ -371,6 +373,7 @@ task format
 task format:rust
 task format:csharp
 task format:yaml
+task format:markdown
 
 # Check for broken links
 task check-links

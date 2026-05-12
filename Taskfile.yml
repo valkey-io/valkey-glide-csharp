@@ -158,8 +158,7 @@ tasks:
 
     build:
         desc: Build the solution
-        cmds:
-            - dotnet build {{.BUILD_TARGET}} --configuration Release
+        cmd: dotnet build {{.BUILD_TARGET}} --configuration Release
 
     test:
         desc: Build and run all tests
@@ -167,9 +166,17 @@ tasks:
         cmds:
             - task: test:coverage:all
 
+    # Lint
+    # --------------------------------------------------------------------------------
+
     lint:
         desc: "Run all linters"
-        deps: [lint:rust, lint:csharp, lint:yaml, lint:actions]
+        deps:
+            - lint:rust
+            - lint:csharp
+            - lint:yaml
+            - lint:actions
+            - lint:markdown
 
     lint:rust:
         desc: "Run Rust linting"
@@ -190,43 +197,51 @@ tasks:
 
     lint:yaml:
         desc: "Run YAML linting"
-        cmds:
-            - npx prettier --check "**/*.yml"
+        cmd: npx prettier --check "**/*.yml"
 
     lint:actions:
         desc: "Run GitHub Actions linting"
-        cmds:
-            - actionlint
+        cmd: actionlint
+
+    lint:markdown:
+        desc: "Run Markdown linting"
+        cmd: npx markdownlint-cli2 "**/*.md"
+
+    # Format
+    # --------------------------------------------------------------------------------
 
     format:
         desc: "Run all formatters"
-        cmds:
-            - task: format:rust
-            - task: format:csharp
-            - task: format:yaml
+        deps:
+            - format:rust
+            - format:csharp
+            - format:yaml
+            - format:markdown
 
     format:rust:
         desc: "Run Rust formatting"
         dir: rust
-        cmds:
-            - cargo fmt --all
+        cmd: cargo fmt --all
 
     format:csharp:
         desc: "Run C# formatting"
-        cmds:
-            - dotnet format
+        cmd: dotnet format
 
     format:yaml:
         desc: "Run YAML formatting"
-        cmds:
-            - npx prettier --write "**/*.yml"
+        cmd: npx prettier --write "**/*.yml"
+
+    format:markdown:
+        desc: "Run Markdown formatting"
+        cmd: npx markdownlint-cli2 --fix "**/*.md"
+
+    # Additional checks
+    # --------------------------------------------------------------------------------
 
     check-links:
         desc: "Check for broken links"
-        cmds:
-            - lychee --config lychee.toml .
+        cmd: lychee --config lychee.toml .
 
     check-examples:
-        desc: "Extract and validate C# code examples in doc comments"
-        cmds:
-            - python3 scripts/check_examples.py
+        desc: "Check C# examples in doc comments"
+        cmd: python3 scripts/check_examples.py
