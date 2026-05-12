@@ -101,8 +101,9 @@ public class FtInfoTests(TestConfiguration config)
         await SkipUtils.IfSearchModuleNotLoaded(client);
 
         var index = Guid.NewGuid().ToString();
+        var prefix = $"{index}:";
         var field = new Ft.CreateTextField("$.title", "title") { NoStem = true, WithSuffixTrie = false };
-        await Ft.CreateAsync(client, index, field);
+        await Ft.CreateAsync(client, index, field, new Ft.CreateOptions { Prefixes = [prefix] });
 
         var info = await Ft.InfoLocalAsync(client, index);
         var attr = Assert.IsType<Ft.InfoTextField>(Assert.Single(info.Attributes));
@@ -122,8 +123,9 @@ public class FtInfoTests(TestConfiguration config)
         await SkipUtils.IfSearchModuleNotLoaded(client);
 
         var index = Guid.NewGuid().ToString();
+        var prefix = $"{index}:";
         var field = new Ft.CreateTagField("category") { Separator = '|', CaseSensitive = true };
-        await Ft.CreateAsync(client, index, field);
+        await Ft.CreateAsync(client, index, field, new Ft.CreateOptions { Prefixes = [prefix] });
 
         var info = await Ft.InfoLocalAsync(client, index);
         var attr = Assert.IsType<Ft.InfoTagField>(Assert.Single(info.Attributes));
@@ -144,8 +146,9 @@ public class FtInfoTests(TestConfiguration config)
         await SkipUtils.IfSearchModuleNotLoaded(client);
 
         var index = Guid.NewGuid().ToString();
+        var prefix = $"{index}:";
         var field = new Ft.CreateNumericField("price");
-        await Ft.CreateAsync(client, index, field);
+        await Ft.CreateAsync(client, index, field, new Ft.CreateOptions { Prefixes = [prefix] });
 
         var info = await Ft.InfoLocalAsync(client, index);
         var attr = Assert.IsType<Ft.InfoNumericField>(Assert.Single(info.Attributes));
@@ -162,13 +165,14 @@ public class FtInfoTests(TestConfiguration config)
         await SkipUtils.IfSearchModuleNotLoaded(client);
 
         var index = Guid.NewGuid().ToString();
+        var prefix = $"{index}:";
         var field = new Ft.CreateVectorFieldFlat
         {
             Identifier = "embedding",
             Dimensions = 128,
             DistanceMetric = Ft.DistanceMetric.Cosine,
         };
-        await Ft.CreateAsync(client, index, field);
+        await Ft.CreateAsync(client, index, field, new Ft.CreateOptions { Prefixes = [prefix] });
 
         var info = await Ft.InfoLocalAsync(client, index);
         var attr = Assert.IsType<Ft.InfoVectorFieldFlat>(Assert.Single(info.Attributes));
@@ -190,6 +194,7 @@ public class FtInfoTests(TestConfiguration config)
         await SkipUtils.IfSearchModuleNotLoaded(client);
 
         var index = Guid.NewGuid().ToString();
+        var prefix = $"{index}:";
         var field = new Ft.CreateVectorFieldHnsw
         {
             Identifier = "vec",
@@ -199,7 +204,7 @@ public class FtInfoTests(TestConfiguration config)
             VectorsExaminedOnConstruction = 200,
             VectorsExaminedOnRuntime = 10,
         };
-        await Ft.CreateAsync(client, index, field);
+        await Ft.CreateAsync(client, index, field, new Ft.CreateOptions { Prefixes = [prefix] });
 
         var info = await Ft.InfoLocalAsync(client, index);
         var attr = Assert.IsType<Ft.InfoVectorFieldHnsw>(Assert.Single(info.Attributes));
