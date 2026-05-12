@@ -97,6 +97,55 @@ pub type FailureCallback = unsafe extern "C-unwind" fn(
     error_type: RequestErrorType,
 ) -> ();
 
+/// Callback for resolving server addresses before connection.
+/// Returns the resolved port (0 on error), and writes the resolved host into `resolved_host_buf`.
+/// `resolved_host_len` is set to the number of bytes written.
+pub type AddressResolverCallback = unsafe extern "C-unwind" fn(
+    host: *const u8,
+    host_len: usize,
+    port: u16,
+    resolved_host_buf: *mut u8,
+    resolved_host_buf_len: usize,
+    resolved_host_len: *mut usize,
+) -> u16;
+
+struct FFIAddressResolver {
+    callback: AddressResolverCallback,
+}
+
+unsafe impl Send for FFIAddressResolver {}
+unsafe impl Sync for FFIAddressResolver {}
+
+impl std::fmt::Debug for FFIAddressResolver {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "FFIAddressResolver")
+    }
+}
+
+impl redis::AddressResolver for FFIAddressResolver {
+    fn resolve(&self, host: &str, port: u16) -> (String, u16) {
+        let mut buf = vec![0u8; 1024];
+        let mut len: usize = 0;
+        let resolved_port = unsafe {
+            (self.callback)(
+                host.as_ptr(),
+                host.len(),
+                port,
+                buf.as_mut_ptr(),
+                buf.len(),
+                &mut len,
+            )
+        };
+        if resolved_port == 0 || len == 0 || len > buf.len() {
+            return (host.to_string(), port);
+        }
+        match std::str::from_utf8(&buf[..len]) {
+            Ok(h) => (h.to_string(), resolved_port),
+            Err(_) => (host.to_string(), port),
+        }
+    }
+}
+
 struct CommandExecutionCore {
     client: GlideClient,
     success_callback: SuccessCallback,
@@ -160,6 +209,7 @@ pub unsafe extern "C-unwind" fn create_client(
     success_callback: SuccessCallback,
     failure_callback: FailureCallback,
     #[allow(unused_variables)] pubsub_callback: Option<PubSubCallback>,
+    address_resolver: Option<AddressResolverCallback>,
 ) {
     let mut panic_guard = PanicGuard {
         panicked: true,
@@ -167,7 +217,7 @@ pub unsafe extern "C-unwind" fn create_client(
         callback_index: 0,
     };
 
-    let request = match unsafe { create_connection_request(config) } {
+    let mut request = match unsafe { create_connection_request(config) } {
         Ok(req) => req,
         Err(err) => {
             panic_guard.panicked = false;
@@ -177,6 +227,11 @@ pub unsafe extern "C-unwind" fn create_client(
             return;
         }
     };
+
+    // Set address resolver if provided
+    if let Some(cb) = address_resolver {
+        request.address_resolver = Some(std::sync::Arc::new(FFIAddressResolver { callback: cb }));
+    }
 
     let runtime = Builder::new_multi_thread()
         .enable_all()

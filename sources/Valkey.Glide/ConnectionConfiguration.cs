@@ -20,6 +20,15 @@ public abstract class ConnectionConfiguration
     /// </summary>
     public static readonly long CertificateMaxSize = 10 * 1024 * 1024; // 10 MB
 
+    /// <summary>
+    /// Callback for resolving server addresses before connection.
+    /// Allows intercepting and rewriting host/port pairs before the client connects.
+    /// </summary>
+    /// <param name="host">The configured host.</param>
+    /// <param name="port">The configured port.</param>
+    /// <returns>The resolved (host, port) to use for the actual connection.</returns>
+    public delegate (string host, int port) AddressResolverDelegate(string host, int port);
+
     #region Structs and Enums definitions
 
     internal record ConnectionConfig
@@ -43,6 +52,7 @@ public abstract class ConnectionConfiguration
         public CompressionConfig? CompressionConfig;
         public bool ReadOnly;
         public ClientSideCacheConfig? ClientSideCacheConfig;
+        public AddressResolverDelegate? AddressResolver;
 
         internal FFI.ConnectionConfig ToFfi() =>
             new(
@@ -872,6 +882,27 @@ public abstract class ConnectionConfiguration
         {
             ArgumentNullException.ThrowIfNull(clientSideCacheConfig);
             ClientSideCacheConfig = clientSideCacheConfig;
+            return (T)this;
+        }
+
+        #endregion
+
+        #region Address Resolver
+
+        /// <summary>
+        /// Optional callback for resolving server addresses before connection.
+        /// When set, the callback is invoked for each server address and can return a different host/port.
+        /// </summary>
+        public AddressResolverDelegate? AddressResolver
+        {
+            get => Config.AddressResolver;
+            set => Config.AddressResolver = value;
+        }
+
+        /// <inheritdoc cref="AddressResolver" />
+        public T WithAddressResolver(AddressResolverDelegate addressResolver)
+        {
+            AddressResolver = addressResolver;
             return (T)this;
         }
 

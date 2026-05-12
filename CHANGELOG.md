@@ -5,6 +5,7 @@
 ### Changes
 
 - Add client-side caching support with TTL-based expiration, LRU/LFU eviction policies, and cache metrics (#330)
+- Add custom socket address resolution support via `AddressResolverDelegate` callback (#392)
 
 ## 0.10.0
 
