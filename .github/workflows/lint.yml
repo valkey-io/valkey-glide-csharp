@@ -35,12 +35,13 @@ jobs:
                   # only recompiles changed dependencies instead of building from scratch.
                   restore-keys: rust-lint-
 
-            - name: Install cargo-deny and actionlint
+            - name: Install cargo-deny
               uses: taiki-e/install-action@735e5933943122c5ac182670a935f54a949265c1 # v2.52.4
               with:
-                  tool: |
-                      cargo-deny
-                      actionlint@1.7.12
+                  tool: cargo-deny
+
+            - name: Install actionlint
+              run: curl -fsSL https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz | tar xz -C /usr/local/bin actionlint
 
             - name: Install dotnet
               uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
