@@ -2,7 +2,7 @@
     {
         "type": "valkey",
         "version": "9.0",
-        "profiles": [ "standard", "full"]
+        "profiles": ["standard", "full"]
     },
     {
         "type": "valkey",
@@ -17,6 +17,16 @@
     {
         "type": "valkey",
         "version": "7.2",
+        "profiles": ["full"]
+    },
+    {
+        "type": "redis",
+        "version": "7.2",
+        "profiles": ["full"]
+    },
+    {
+        "type": "redis",
+        "version": "7.1",
         "profiles": ["full"]
     },
     {
