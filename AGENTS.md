@@ -33,9 +33,8 @@ Common commands:
   - `task test:integration` (integration tests only)
 
 - Filter tests:
-  - By class: `--filter "FullyQualifiedName~ClassName"`
-  - By method: `--filter "FullyQualifiedName~MethodName"`
-  - By display name pattern: `--filter "DisplayName~Pattern"`
+  - By class: `task test:unit filter=MyTestClass`
+  - By method: `task test:integration filter=MyMethodName`
 
 - Coverage and reports (preferred via Task):
   - `task coverage`, `task coverage:unit`, `task coverage:integration`

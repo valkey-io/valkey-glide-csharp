@@ -7,9 +7,15 @@ vars:
     UNIT_TEST_PROJECT: tests/Valkey.Glide.UnitTests/Valkey.Glide.UnitTests.csproj
     INTEGRATION_TEST_PROJECT: tests/Valkey.Glide.IntegrationTests/Valkey.Glide.IntegrationTests.csproj
 
-    # Build options
+    # Build the solution or a specific target.
+    # Usage: `task build target=lib`
     TARGET: '{{.target | default "all"}}'
-    TARGET_PATH: '{{if eq .TARGET "lib"}}sources/Valkey.Glide/{{end}}'
+    BUILD_TARGET: '{{if eq .TARGET "lib"}}sources/Valkey.Glide/{{end}}'
+
+    # Filter tests by class or method name.
+    # Usage: `task test:unit filter=MyTestClass`
+    FILTER: '{{.filter | default ""}}'
+    TEST_FILTER: "{{if .FILTER}}--filter FullyQualifiedName~{{.FILTER}}{{end}}"
 
 tasks:
     clean:
@@ -31,13 +37,19 @@ tasks:
         desc: Run unit tests only
         deps: [clean]
         cmds:
-            - dotnet test {{.UNIT_TEST_PROJECT}} --configuration Release --verbosity normal
+            - dotnet test {{.UNIT_TEST_PROJECT}}
+              --configuration Release
+              --verbosity normal
+              {{.TEST_FILTER}}
 
     test:integration:
         desc: Run integration tests only
         deps: [clean]
         cmds:
-            - dotnet test {{.INTEGRATION_TEST_PROJECT}} --configuration Release --verbosity normal
+            - dotnet test {{.INTEGRATION_TEST_PROJECT}}
+              --configuration Release
+              --verbosity normal
+              {{.TEST_FILTER}}
 
     test:coverage:unit:
         desc: Run unit tests with coverage collection
@@ -146,7 +158,7 @@ tasks:
 
     build:
         desc: Build the solution
-        cmd: dotnet build {{.TARGET_PATH}} --configuration Release
+        cmd: dotnet build {{.BUILD_TARGET}} --configuration Release
 
     test:
         desc: Build and run all tests
