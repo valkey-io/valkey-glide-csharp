@@ -196,8 +196,12 @@ In Windows, run from following commands from the appropriate Visual Studio Comma
     task test
 
     # Run specific test suites
-    task test:unit         # Unit tests only
-    task test:integration  # Integration tests only
+    task test:unit
+    task test:integration
+
+    # Run specific test classes or methods
+    task test:unit filter=MyTestClass
+    task test:integration filter=MyMethodName
 
     # Run tests with coverage and generate reports
     task coverage              # All tests with coverage
