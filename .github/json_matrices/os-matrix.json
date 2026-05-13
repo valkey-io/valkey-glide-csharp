@@ -40,6 +40,6 @@
         "os": "windows",
         "runner": "windows-11-arm",
         "target": "aarch64-pc-windows-msvc",
-        "profiles": ["standard", "full"]
+        "profiles": ["full"]
     }
 ]
