@@ -1,0 +1,35 @@
+name: Re-list NuGet Package
+
+on:
+    workflow_dispatch:
+        inputs:
+            version:
+                description: "Package version to re-list"
+                required: true
+
+permissions:
+    contents: read
+
+jobs:
+    relist:
+        environment: Release
+        runs-on: ubuntu-latest
+        steps:
+            - name: Re-list Valkey.Glide ${{ inputs.version }}
+              env:
+                  NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+                  PACKAGE_VERSION: ${{ inputs.version }}
+              run: |
+                  echo "Re-listing Valkey.Glide version $PACKAGE_VERSION..."
+                  HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+                    -H "X-NuGet-ApiKey: $NUGET_API_KEY" \
+                    "https://www.nuget.org/api/v2/package/Valkey.Glide/$PACKAGE_VERSION")
+
+                  echo "Response status: $HTTP_STATUS"
+
+                  if [ "$HTTP_STATUS" -eq 200 ]; then
+                    echo "✅ Successfully re-listed Valkey.Glide $PACKAGE_VERSION"
+                  else
+                    echo "❌ Failed to re-list. HTTP status: $HTTP_STATUS"
+                    exit 1
+                  fi
