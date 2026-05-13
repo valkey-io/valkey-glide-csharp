@@ -54,7 +54,7 @@ runs:
 
         # Always build from source first. This installs 'valkey-cli', which is
         # needed by 'start-valkey-docker' to start servers in Docker.
-        # Valkey servers cannot be install on Windows ARM runners - see #383.
+        # Valkey servers cannot be installed on Windows ARM runners - see #383.
         - name: Install server from source
           if: "${{ inputs.server-version && !(runner.os == 'Windows' && runner.arch == 'ARM64') }}"
           uses: ./.github/actions/install-server
