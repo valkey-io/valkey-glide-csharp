@@ -147,32 +147,34 @@ jobs:
                   --logger "console;verbosity=detailed"
                   --results-directory .
 
+            - name: Configure DNS for integration tests
+              if: ${{ matrix.host.target != 'aarch64-pc-windows-msvc' }}
+              shell: bash
+              run: |
+                  ENTRIES="127.0.0.1 valkey.glide.test.tls.com
+                  127.0.0.1 valkey.glide.test.no_tls.com
+                  ::1 valkey.glide.test.tls.com
+                  ::1 valkey.glide.test.no_tls.com"
+                  if [[ "${{ runner.os }}" == "Windows" ]]; then
+                      echo "$ENTRIES" >> /c/Windows/System32/drivers/etc/hosts
+                  else
+                      echo "$ENTRIES" | sudo tee -a /etc/hosts
+                  fi
+
             - name: Integration tests - dotnet ${{ matrix.dotnet }}
               if: ${{ matrix.host.target != 'aarch64-pc-windows-msvc' }}
               env:
                   AWS_ACCESS_KEY_ID: test_secret_key
                   AWS_SECRET_ACCESS_KEY: test_access_key
                   AWS_SESSION_TOKEN: test_session_token
-              shell: bash
-              run: |
-                  # Configure DNS entries for TLS/non-TLS test endpoints.
-                  ENTRIES="127.0.0.1 valkey.glide.test.tls.com
-                  127.0.0.1 valkey.glide.test.no_tls.com
-                  ::1 valkey.glide.test.tls.com
-                  ::1 valkey.glide.test.no_tls.com"
-                  if [[ "${{ matrix.host.os }}" == "windows" ]]; then
-                      echo "$ENTRIES" >> /c/Windows/System32/drivers/etc/hosts
-                  else
-                      echo "$ENTRIES" | sudo tee -a /etc/hosts
-                  fi
-
-                  dotnet test tests/Valkey.Glide.IntegrationTests/ \
-                      --configuration Debug \
-                      --framework net${{ matrix.dotnet }} \
-                      --logger "html;LogFileName=IntegrationTestReport.html" \
-                      --logger "trx;LogFileName=IntegrationTestResults.trx" \
-                      --logger "console;verbosity=detailed" \
-                      --results-directory .
+              run: >-
+                  dotnet test tests/Valkey.Glide.IntegrationTests/
+                  --configuration Debug
+                  --framework net${{ matrix.dotnet }}
+                  --logger "html;LogFileName=IntegrationTestReport.html"
+                  --logger "trx;LogFileName=IntegrationTestResults.trx"
+                  --logger "console;verbosity=detailed"
+                  --results-directory .
 
             - name: Upload test reports
               if: always()
