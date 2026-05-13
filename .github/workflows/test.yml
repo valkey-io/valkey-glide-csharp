@@ -59,7 +59,7 @@ jobs:
               run: python3 load_matrices.py "$PROFILE"
 
     test-with-runners:
-        name: net${{ matrix.dotnet }}, ${{ matrix.server.type }} ${{ matrix.server.version }}, ${{ matrix.host.TARGET }}
+        name: net${{ matrix.dotnet }}, ${{ matrix.server.type }} ${{ matrix.server.version }}, ${{ matrix.host.target }}
         needs: load-matrix
         timeout-minutes: 100
         strategy:
@@ -68,7 +68,7 @@ jobs:
                 dotnet: ${{ fromJson(needs.load-matrix.outputs.dotnet-matrix) }}
                 server: ${{ fromJson(needs.load-matrix.outputs.server-matrix) }}
                 host: ${{ fromJson(needs.load-matrix.outputs.host-matrix) }}
-        runs-on: ${{ matrix.host.RUNNER }}
+        runs-on: ${{ matrix.host.runner }}
         env:
             VALKEY_GLIDE_DNS_TESTS_ENABLED: "1"
 
@@ -127,15 +127,15 @@ jobs:
             - name: Install shared software dependencies
               uses: ./.github/actions/install-shared-dependencies
               with:
-                  os: ${{ matrix.host.OS }}
-                  target: ${{ matrix.host.TARGET }}
+                  os: ${{ matrix.host.os }}
+                  target: ${{ matrix.host.target }}
                   server-version: ${{ matrix.server.version }}
 
             - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
               if: ${{ inputs.package-version == '' }}
               with:
                   path: rust/target
-                  key: rust-${{ matrix.host.TARGET }}
+                  key: rust-${{ matrix.host.target }}
 
             - name: Unit tests - dotnet ${{ matrix.dotnet }}
               run: >-
@@ -147,20 +147,20 @@ jobs:
                   --logger "console;verbosity=detailed"
                   --results-directory .
 
-            - name: Integration tests dotnet ${{ matrix.dotnet }}
-              if: ${{ matrix.host.TARGET != 'aarch64-pc-windows-msvc' }}
+            - name: Integration tests - dotnet ${{ matrix.dotnet }}
+              if: ${{ matrix.host.target != 'aarch64-pc-windows-msvc' }}
               env:
                   AWS_ACCESS_KEY_ID: test_secret_key
                   AWS_SECRET_ACCESS_KEY: test_access_key
                   AWS_SESSION_TOKEN: test_session_token
               shell: bash
               run: |
-                  # Configure DNS entries.
+                  # Configure DNS entries for TLS/non-TLS test endpoints.
                   ENTRIES="127.0.0.1 valkey.glide.test.tls.com
                   127.0.0.1 valkey.glide.test.no_tls.com
                   ::1 valkey.glide.test.tls.com
                   ::1 valkey.glide.test.no_tls.com"
-                  if [[ "${{ matrix.host.OS }}" == "windows" ]]; then
+                  if [[ "${{ matrix.host.os }}" == "windows" ]]; then
                       echo "$ENTRIES" >> /c/Windows/System32/drivers/etc/hosts
                   else
                       echo "$ENTRIES" | sudo tee -a /etc/hosts
@@ -179,7 +179,7 @@ jobs:
               continue-on-error: true
               uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
               with:
-                  name: test-reports-dotnet-${{ matrix.dotnet }}-${{ matrix.server.type }}-${{ matrix.server.version }}-${{ matrix.host.OS }}-${{ matrix.host.ARCH }}
+                  name: test-reports-dotnet-${{ matrix.dotnet }}-${{ matrix.server.type }}-${{ matrix.server.version }}-${{ matrix.host.os }}-${{ matrix.host.arch }}
                   path: |
                       UnitTestReport.html
                       UnitTestResults.trx
@@ -188,7 +188,7 @@ jobs:
                       valkey-glide/utils/clusters/**
 
     test-with-containers:
-        name: net${{ matrix.dotnet }}, ${{ matrix.server.type }} ${{ matrix.server.version }}, ${{ matrix.host.IMAGE }}
+        name: net${{ matrix.dotnet }}, ${{ matrix.server.type }} ${{ matrix.server.version }}, ${{ matrix.host.image }}
         needs: load-matrix
         if: ${{ needs.load-matrix.outputs.container-host-matrix != '[]' }}
         timeout-minutes: 100
@@ -198,9 +198,9 @@ jobs:
                 dotnet: ${{ fromJson(needs.load-matrix.outputs.dotnet-matrix) }}
                 server: ${{ fromJson(needs.load-matrix.outputs.server-matrix) }}
                 host: ${{ fromJson(needs.load-matrix.outputs.container-host-matrix) }}
-        runs-on: ${{ matrix.host.RUNNER }}
+        runs-on: ${{ matrix.host.runner }}
         container:
-            image: ${{ matrix.host.IMAGE }}
+            image: ${{ matrix.host.image }}
         env:
             VALKEY_GLIDE_DNS_TESTS_ENABLED: "1"
 
@@ -235,8 +235,8 @@ jobs:
             - name: Install shared software dependencies
               uses: ./.github/actions/install-shared-dependencies
               with:
-                  os: ${{ matrix.host.OS }}
-                  target: ${{ matrix.host.TARGET }}
+                  os: ${{ matrix.host.os }}
+                  target: ${{ matrix.host.target }}
                   server-version: ${{ matrix.server.version }}
 
             - name: Configure DNS for tests
@@ -251,7 +251,7 @@ jobs:
             - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
               with:
                   path: rust/target
-                  key: rust-${{ matrix.host.IMAGE }}
+                  key: rust-${{ matrix.host.image }}
 
             - name: Test dotnet ${{ matrix.dotnet }}
               run: >-
@@ -267,7 +267,7 @@ jobs:
               continue-on-error: true
               uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
               with:
-                  name: test-reports-dotnet-${{ matrix.dotnet }}-${{ matrix.server.type }}-${{ matrix.server.version }}-${{ matrix.host.IMAGE }}-${{ matrix.host.ARCH }}
+                  name: test-reports-dotnet-${{ matrix.dotnet }}-${{ matrix.server.type }}-${{ matrix.server.version }}-${{ matrix.host.image }}-${{ matrix.host.arch }}
                   path: |
                       TestReport.html
                       TestResults.trx

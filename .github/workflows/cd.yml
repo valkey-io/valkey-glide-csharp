@@ -43,7 +43,7 @@ jobs:
               working-directory: .github/json_matrices
               # Select all VM runners (non-container) — each produces a unique native binary for the NuGet package.
               run: |
-                  PLATFORM_MATRIX=$(jq -c '[.[] | select(has("IMAGE") | not)]' < os-matrix.json)  
+                  PLATFORM_MATRIX=$(jq -c '[.[] | select(has("image") | not)]' < os-matrix.json)
                   echo "PLATFORM_MATRIX=$PLATFORM_MATRIX" | tee -a "$GITHUB_OUTPUT"
 
     set-release-version:
@@ -78,7 +78,7 @@ jobs:
             fail-fast: false
             matrix:
                 host: ${{ fromJson(needs.load-platform-matrix.outputs.PLATFORM_MATRIX) }}
-        runs-on: ${{ matrix.host.RUNNER }}
+        runs-on: ${{ matrix.host.runner }}
 
         steps:
             - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -94,36 +94,36 @@ jobs:
             - name: Install shared software dependencies
               uses: ./.github/actions/install-shared-dependencies
               with:
-                  os: ${{ matrix.host.OS }}
-                  target: ${{ matrix.host.TARGET }}
+                  os: ${{ matrix.host.os }}
+                  target: ${{ matrix.host.target }}
 
             - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
               with:
                   path: rust/target
-                  key: rust-${{ matrix.host.TARGET }}
+                  key: rust-${{ matrix.host.target }}
 
             - name: Build native libs (linux gnu)
-              if: ${{ contains(matrix.host.TARGET, 'linux-gnu') }}
+              if: ${{ contains(matrix.host.target, 'linux-gnu') }}
               working-directory: rust
               run: |
-                  cargo zigbuild -r --target ${{ matrix.host.TARGET }}.2.17
+                  cargo zigbuild -r --target ${{ matrix.host.target }}.2.17
                   mkdir -p target/release
 
             - name: Build native libs
-              if: ${{ !contains(matrix.host.TARGET, 'linux-gnu') }}
+              if: ${{ !contains(matrix.host.target, 'linux-gnu') }}
               working-directory: rust
-              run: cargo build --release --target ${{ matrix.host.TARGET }}
+              run: cargo build --release --target ${{ matrix.host.target }}
 
             - name: Upload artifacts to publish
               continue-on-error: true
               uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
               with:
-                  name: ${{ matrix.host.TARGET }}
+                  name: ${{ matrix.host.target }}
                   if-no-files-found: error
                   path: |
-                      rust/target/${{ matrix.host.TARGET }}/release/*.so
-                      rust/target/${{ matrix.host.TARGET }}/release/*.dylib
-                      rust/target/${{ matrix.host.TARGET }}/release/*.dll
+                      rust/target/${{ matrix.host.target }}/release/*.so
+                      rust/target/${{ matrix.host.target }}/release/*.dylib
+                      rust/target/${{ matrix.host.target }}/release/*.dll
 
     build-package-to-publish:
         needs: [set-release-version, create-binaries]
