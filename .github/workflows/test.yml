@@ -131,9 +131,31 @@ jobs:
                   target: ${{ matrix.host.TARGET }}
                   server-version: ${{ matrix.server.version }}
 
-            - name: Configure DNS for tests
+            - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+              if: ${{ inputs.package-version == '' }}
+              with:
+                  path: rust/target
+                  key: rust-${{ matrix.host.TARGET }}
+
+            - name: Unit tests - dotnet ${{ matrix.dotnet }}
+              run: >-
+                  dotnet test tests/Valkey.Glide.UnitTests/
+                  --configuration Debug
+                  --framework net${{ matrix.dotnet }}
+                  --logger "html;LogFileName=UnitTestReport.html"
+                  --logger "trx;LogFileName=UnitTestResults.trx"
+                  --logger "console;verbosity=detailed"
+                  --results-directory .
+
+            - name: Integration tests dotnet ${{ matrix.dotnet }}
+              if: ${{ matrix.host.TARGET != 'aarch64-pc-windows-msvc' }}
+              env:
+                  AWS_ACCESS_KEY_ID: test_secret_key
+                  AWS_SECRET_ACCESS_KEY: test_access_key
+                  AWS_SESSION_TOKEN: test_session_token
               shell: bash
               run: |
+                  # Configure DNS entries.
                   ENTRIES="127.0.0.1 valkey.glide.test.tls.com
                   127.0.0.1 valkey.glide.test.no_tls.com
                   ::1 valkey.glide.test.tls.com
@@ -144,41 +166,13 @@ jobs:
                       echo "$ENTRIES" | sudo tee -a /etc/hosts
                   fi
 
-            - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
-              if: ${{ inputs.package-version == '' }}
-              with:
-                  path: rust/target
-                  key: rust-${{ matrix.host.TARGET }}
-
-            - name: Test dotnet ${{ matrix.dotnet }}
-              env:
-                  AWS_ACCESS_KEY_ID: test_secret_key
-                  AWS_SECRET_ACCESS_KEY: test_access_key
-                  AWS_SESSION_TOKEN: test_session_token
-              run: >-
-                  dotnet test
-                  --configuration Debug
-                  --framework net${{ matrix.dotnet }}
-                  --logger "html;LogFileName=TestReport.html"
-                  --logger "trx;LogFileName=TestResults.trx"
-                  --logger "console;verbosity=detailed"
-                  --results-directory .
-
-            - name: Create failures.json from TRX
-              if: always()
-              shell: bash
-              env:
-                  TRX_FILE: TestResults.trx
-                  JOB_NAME: "net${{ matrix.dotnet }}, server ${{ matrix.server.version }}, ${{ matrix.host.TARGET }}"
-                  DOTNET: ${{ matrix.dotnet }}
-                  SERVER_TYPE: ${{ matrix.server.type }}
-                  SERVER_VERSION: ${{ matrix.server.version }}
-                  HOST_OS: ${{ matrix.host.OS }}
-                  HOST_ARCH: ${{ matrix.host.ARCH }}
-                  HOST_RUNNER: ${{ matrix.host.RUNNER }}
-                  RUN_ID: ${{ github.run_id }}
-                  RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-              run: .github/workflows/scripts/create_failures_json.sh
+                  dotnet test tests/Valkey.Glide.IntegrationTests/ \
+                      --configuration Debug \
+                      --framework net${{ matrix.dotnet }} \
+                      --logger "html;LogFileName=IntegrationTestReport.html" \
+                      --logger "trx;LogFileName=IntegrationTestResults.trx" \
+                      --logger "console;verbosity=detailed" \
+                      --results-directory .
 
             - name: Upload test reports
               if: always()
@@ -187,9 +181,10 @@ jobs:
               with:
                   name: test-reports-dotnet-${{ matrix.dotnet }}-${{ matrix.server.type }}-${{ matrix.server.version }}-${{ matrix.host.OS }}-${{ matrix.host.ARCH }}
                   path: |
-                      TestReport.html
-                      TestResults.trx
-                      failures.json
+                      UnitTestReport.html
+                      UnitTestResults.trx
+                      IntegrationTestReport.html
+                      IntegrationTestResults.trx
                       valkey-glide/utils/clusters/**
 
     test-with-containers:
@@ -267,22 +262,6 @@ jobs:
                   --logger "console;verbosity=detailed"
                   --results-directory .
 
-            - name: Create failures.json from TRX
-              if: always()
-              shell: bash
-              env:
-                  TRX_FILE: TestResults.trx
-                  JOB_NAME: "net${{ matrix.dotnet }}, server ${{ matrix.server.version }}, ${{ matrix.host.TARGET }}"
-                  DOTNET: ${{ matrix.dotnet }}
-                  SERVER_TYPE: ${{ matrix.server.type }}
-                  SERVER_VERSION: ${{ matrix.server.version }}
-                  HOST_OS: ${{ matrix.host.OS }}
-                  HOST_ARCH: ${{ matrix.host.ARCH }}
-                  HOST_RUNNER: ${{ matrix.host.RUNNER }}
-                  RUN_ID: ${{ github.run_id }}
-                  RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-              run: .github/workflows/scripts/create_failures_json.sh
-
             - name: Upload test reports
               if: always()
               continue-on-error: true
@@ -292,7 +271,6 @@ jobs:
                   path: |
                       TestReport.html
                       TestResults.trx
-                      failures.json
                       valkey-glide/utils/clusters/**
 
     # See: https://github.com/valkey-io/valkey-glide-csharp/issues/390
@@ -341,22 +319,6 @@ jobs:
                   --logger "console;verbosity=detailed"
                   --results-directory .
 
-            - name: Create failures.json from TRX
-              if: always()
-              shell: bash
-              env:
-                  TRX_FILE: ModuleTestResults.trx
-                  JOB_NAME: "Module tests (Docker, net${{ matrix.dotnet }})"
-                  DOTNET: ${{ matrix.dotnet }}
-                  SERVER_TYPE: valkey
-                  SERVER_VERSION: "9.0"
-                  HOST_OS: ubuntu
-                  HOST_ARCH: x64
-                  HOST_RUNNER: ubuntu-24.04
-                  RUN_ID: ${{ github.run_id }}
-                  RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-              run: .github/workflows/scripts/create_failures_json.sh
-
             - name: Upload test reports
               if: always()
               continue-on-error: true
@@ -366,4 +328,3 @@ jobs:
                   path: |
                       ModuleTestReport.html
                       ModuleTestResults.trx
-                      failures.json
