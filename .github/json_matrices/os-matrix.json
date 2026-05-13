@@ -26,7 +26,6 @@
     },
     {
         "os": "macos",
-        "named_os": "darwin",
         "runner": "macos-15-intel",
         "target": "x86_64-apple-darwin",
         "profiles": [ "full"]
@@ -39,7 +38,6 @@
     },
     {
         "os": "windows",
-        "named_os": "windows",
         "runner": "windows-11-arm",
         "target": "aarch64-pc-windows-msvc",
         "profiles": ["standard", "full"]
