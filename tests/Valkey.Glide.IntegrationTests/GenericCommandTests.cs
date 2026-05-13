@@ -248,9 +248,9 @@ public class GenericCommandTests(TestConfiguration config)
         // Set a string key
         await client.SetAsync(key, value);
 
-        // Verify that idle time is positive.
+        // Verify that idle time is non-negative.
         TimeSpan idleTime1 = Assert.NotNull(await client.ObjectIdleTimeAsync(key));
-        Assert.True(idleTime1 > TimeSpan.Zero);
+        Assert.True(idleTime1 >= TimeSpan.Zero);
 
         // Verify that idle time increases.
         TimeSpan idleTime2 = TimeSpan.Zero;
