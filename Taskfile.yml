@@ -229,7 +229,7 @@ tasks:
 
     format:yaml:
         desc: "Run YAML formatting"
-        cmd: npx prettier --write "**/*.yml"
+        cmd: npx prettier --write --cache "**/*.yml"
 
     format:markdown:
         desc: "Run Markdown formatting"

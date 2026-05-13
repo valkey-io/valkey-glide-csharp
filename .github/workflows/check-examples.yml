@@ -32,7 +32,7 @@ jobs:
                   python-version: "3.12"
 
             - name: Install Task
-              run: sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin
+              uses: go-task/setup-task@3be4020d41929789a01026e0e427a4321ce0ad44 # v2.0.0
 
             - name: Build Valkey.Glide
               run: task build target=lib
