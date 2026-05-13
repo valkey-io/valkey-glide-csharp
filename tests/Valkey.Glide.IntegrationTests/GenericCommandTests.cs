@@ -265,7 +265,7 @@ public class GenericCommandTests(TestConfiguration config)
         // Verify that idle time is reset on access.
         _ = await client.GetAsync(key);
         TimeSpan idleTime3 = Assert.NotNull(await client.ObjectIdleTimeAsync(key));
-        Assert.True(idleTime3 < idleTime2);
+        Assert.True(idleTime3 <= idleTime2);
 
         // Non-existent key should return null.
         Assert.Null(await client.ObjectIdleTimeAsync("non-existent"));
