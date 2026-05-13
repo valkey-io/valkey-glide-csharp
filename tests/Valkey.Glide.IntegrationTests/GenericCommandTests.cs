@@ -5,6 +5,7 @@ using Valkey.Glide.Commands.Options;
 using Valkey.Glide.TestUtils;
 
 namespace Valkey.Glide.IntegrationTests;
+
 public class GenericCommandTests(TestConfiguration config)
 {
     public TestConfiguration Config { get; } = config;
