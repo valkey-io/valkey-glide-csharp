@@ -177,7 +177,7 @@ jobs:
         needs: [build-package-to-publish, set-release-version]
         uses: ./.github/workflows/test.yml
         with:
-            profile: standard
+            profile: full
             package-version: ${{ needs.set-release-version.outputs.RELEASE_VERSION }}
             package-artifact-name: package
         secrets: inherit
