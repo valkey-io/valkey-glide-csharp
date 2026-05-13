@@ -26,31 +26,31 @@ public static class Polling
 
     /// <summary>
     /// Polls the given <paramref name="condition"/> until it returns <see langword="true"/>, or fails with
-    /// <paramref name="failureMessage"/> if the <paramref name="timeout"/> expires.
+    /// <paramref name="message"/> if the <paramref name="timeout"/> expires.
     /// </summary>
     /// <param name="condition">A function that returns <see langword="true"/> when the expected state is reached.</param>
-    /// <param name="failureMessage">The message to report if the condition is not met within the timeout.</param>
+    /// <param name="message">The message to report if the condition is not met within the timeout.</param>
     /// <param name="timeout">Maximum time to poll. Defaults to <see cref="DefaultTimeout"/>.</param>
     /// <param name="interval">Delay between attempts. Defaults to <see cref="DefaultInterval"/>.</param>
     public static Task AssertTrue(
         Func<bool> condition,
-        string failureMessage,
+        string message,
         TimeSpan? timeout = null,
         TimeSpan? interval = null)
         => AssertTrueAsync(()
-            => Task.FromResult(condition()), failureMessage, timeout, interval);
+            => Task.FromResult(condition()), message, timeout, interval);
 
     /// <summary>
     /// Polls the given <paramref name="condition"/> until it returns <see langword="true"/>, or fails with
-    /// <paramref name="failureMessage"/> if the <paramref name="timeout"/> expires.
+    /// <paramref name="message"/> if the <paramref name="timeout"/> expires.
     /// </summary>
     /// <param name="condition">An async function that returns <see langword="true"/> when the expected state is reached.</param>
-    /// <param name="failureMessage">The message to report if the condition is not met within the timeout.</param>
+    /// <param name="message">The message to report if the condition is not met within the timeout.</param>
     /// <param name="timeout">Maximum time to poll. Defaults to <see cref="DefaultTimeout"/>.</param>
     /// <param name="interval">Delay between attempts. Defaults to <see cref="DefaultInterval"/>.</param>
     public static async Task AssertTrueAsync(
         Func<Task<bool>> condition,
-        string failureMessage,
+        string message,
         TimeSpan? timeout = null,
         TimeSpan? interval = null)
     {
@@ -66,7 +66,7 @@ public static class Polling
             await Task.Delay(interval ?? DefaultInterval);
         }
 
-        Assert.Fail(failureMessage);
+        Assert.Fail(message);
     }
 
     #endregion
