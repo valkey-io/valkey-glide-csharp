@@ -23,6 +23,7 @@ jobs:
                   echo "Re-listing Valkey.Glide version $PACKAGE_VERSION..."
                   HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
                     -H "X-NuGet-ApiKey: $NUGET_API_KEY" \
+                    -H "Content-Length: 0" \
                     "https://www.nuget.org/api/v2/package/Valkey.Glide/$PACKAGE_VERSION")
 
                   echo "Response status: $HTTP_STATUS"
