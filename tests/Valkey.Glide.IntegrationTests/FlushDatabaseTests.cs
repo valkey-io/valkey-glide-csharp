@@ -54,7 +54,7 @@ public class FlushDatabaseTests(FlushDatabaseFixture fixture) : IClassFixture<Fl
         Assert.True(await client.ExistsAsync(key));
         Assert.Equal(1, await client.DatabaseSizeAsync());
 
-        await client.FlushDatabaseAsync();
+        await client.FlushDatabaseAsync(FlushMode.Sync);
 
         Assert.False(await client.ExistsAsync(key));
         Assert.Equal(0, await client.DatabaseSizeAsync());
@@ -71,7 +71,7 @@ public class FlushDatabaseTests(FlushDatabaseFixture fixture) : IClassFixture<Fl
         Assert.True(await client.ExistsAsync(key));
         Assert.Equal(1, await client.DatabaseSizeAsync());
 
-        await client.FlushDatabaseAsync(Route.AllPrimaries);
+        await client.FlushDatabaseAsync(FlushMode.Sync, Route.AllPrimaries);
 
         Assert.False(await client.ExistsAsync(key));
         Assert.Equal(0, await client.DatabaseSizeAsync());
