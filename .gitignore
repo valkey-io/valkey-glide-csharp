@@ -154,10 +154,9 @@ _NCrunch*
 
 glide-logs/
 
-# Code Coverage Reports
-[Rr]eports/
-
-testresults/
+# Code coverage
+dev/coverage/results/
+dev/coverage/reports/
 
 # Lychee link checker cache
 .lycheecache
