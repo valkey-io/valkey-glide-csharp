@@ -7,12 +7,17 @@ or both. When coverage is enabled, cleans stale results first and configures
 Coverlet to produce Cobertura XML output.
 
 Usage:
-    python dev/scripts/test.py                    # Run all tests, no coverage
-    python dev/scripts/test.py --unit             # Unit tests only
-    python dev/scripts/test.py --integration      # Integration tests only
-    python dev/scripts/test.py --coverage         # All tests with coverage
-    python dev/scripts/test.py --unit --coverage  # Unit tests with coverage
-    python dev/scripts/test.py --filter MyClass   # Filter by class/method name
+    python dev/scripts/test.py
+        [--unit]
+        [--integration]
+        [--coverage]
+        [--filter MyClass]
+
+Options:
+    --unit          Run unit tests.
+    --integration   Run integration tests.
+    --coverage      Enable Coverlet code coverage collection.
+    --filter NAME   Filter tests by class or method name (FullyQualifiedName~ match).
 """
 
 import argparse
@@ -117,11 +122,6 @@ def _parse_args() -> argparse.Namespace:
         action="store_true",
         help="Run integration tests",
     )
-    parser.add_argument(
-        "--all",
-        action="store_true",
-        help="Run all tests",
-    )
 
     parser.add_argument(
         "--coverage",
@@ -144,10 +144,8 @@ def main() -> int:
     args = _parse_args()
     coverage = args.coverage
 
-    # Determine which suites to run (default to all).
-    if args.all:
-        suites = ["unit", "integration"]
-    elif not args.unit and not args.integration:
+    # Determine which suites to run (default to both).
+    if not args.unit and not args.integration:
         suites = ["unit", "integration"]
     else:
         suites = []
