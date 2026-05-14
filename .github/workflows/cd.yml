@@ -172,10 +172,20 @@ jobs:
                   if-no-files-found: error
                   path: sources/Valkey.Glide/bin/Release/Valkey.Glide.*nupkg
 
+    # Test the package locally before publishing to nuget.org.
+    test:
+        needs: [build-package-to-publish, set-release-version]
+        uses: ./.github/workflows/test.yml
+        with:
+            profile: full
+            package-version: ${{ needs.set-release-version.outputs.RELEASE_VERSION }}
+            package-artifact-name: package
+        secrets: inherit
+
     publish:
         environment: Release
         if: ${{ (inputs.nuget_publish == true || github.event_name == 'push') && github.repository_owner == 'valkey-io' }}
-        needs: [build-package-to-publish, set-release-version]
+        needs: [test, set-release-version]
         runs-on: ubuntu-latest
         env:
             RELEASE_VERSION: ${{ needs.set-release-version.outputs.RELEASE_VERSION }}
@@ -191,50 +201,3 @@ jobs:
                   dotnet nuget push "Valkey.Glide.$RELEASE_VERSION.nupkg" \
                     --api-key ${{ secrets.NUGET_API_KEY }} \
                     --source https://api.nuget.org/v3/index.json
-
-            - name: Wait for package to be ready for download
-              run: |
-                  dotnet new console --name temp-check --output . --framework net8.0
-                  TIMEOUT=600  # 10 minutes
-                  INTERVAL=10  # 10 seconds
-                  ELAPSED=0
-
-                  while [ "$ELAPSED" -lt "$TIMEOUT" ]; do
-                      echo "Checking availability... (${ELAPSED}s elapsed)"
-                      if dotnet add package Valkey.Glide --version "$RELEASE_VERSION" ; then
-                          echo "Package is now available!"
-                          exit 0
-                      fi
-                      sleep "$INTERVAL"
-                      ELAPSED=$((ELAPSED + INTERVAL))
-                      dotnet nuget locals all --clear
-                  done
-
-                  echo "Timeout: Package is not available after ${TIMEOUT}s"
-                  exit 1
-
-    # Test the published package as users would install it from nuget.org.
-    # On dry-run (publish skipped), tests use the locally-built .nupkg artifact instead.
-    # If tests fail after a real publish, remove-package-if-validation-fails unlists the package.
-    test:
-        needs: [publish, set-release-version]
-        uses: ./.github/workflows/test.yml
-        with:
-            profile: full
-            package-version: ${{ needs.set-release-version.outputs.RELEASE_VERSION }}
-            package-artifact-name: ${{ needs.publish.result == 'skipped' && 'package' || '' }}
-        secrets: inherit
-
-    remove-package-if-validation-fails:
-        needs: [publish, test, set-release-version]
-        if: ${{ !cancelled() }}
-        runs-on: ubuntu-latest
-        env:
-            RELEASE_VERSION: ${{ needs.set-release-version.outputs.RELEASE_VERSION }}
-        steps:
-            - name: Remove package from NuGet due to test failures
-              if: ${{ (needs.test.result == 'failure' && needs.publish.result == 'success') || needs.publish.result == 'failure' }}
-              run: |
-                  dotnet nuget delete Valkey.Glide "$RELEASE_VERSION" \
-                      --api-key ${{ secrets.NUGET_API_KEY }} \
-                      --source https://api.nuget.org/v3/index.json --non-interactive
