@@ -143,9 +143,7 @@ public class ReadFromTests(TestConfiguration config)
         // Test that validation errors propagate correctly through the entire configuration pipeline
 
         // Arrange: Create configuration with invalid ReadFrom combination
-        var configOptions = new ConfigurationOptions();
-        configOptions.EndPoints.Add(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port);
-        configOptions.Ssl = TestConfiguration.TLS;
+        var configOptions = TestConfiguration.DefaultCompatibleConfig();
 
         // Act & Assert: Test invalid assignment through property setter
         _ = Assert.Throws<ArgumentException>(() => configOptions.ReadFrom = new ReadFrom(ReadFromStrategy.Primary, "invalid-az-for-primary"));
@@ -163,34 +161,30 @@ public class ReadFromTests(TestConfiguration config)
     [Fact]
     public async Task ConfigurationPipeline_ClonePreservesReadFromConfiguration()
     {
+        var azAffinity = new ReadFrom(ReadFromStrategy.AzAffinity, "us-east-1a");
+        var primary = new ReadFrom(ReadFromStrategy.Primary);
+
         // Arrange
-        var originalConfig = new ConfigurationOptions
-        {
-            ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinity, "us-east-1a")
-        };
-        originalConfig.EndPoints.Add(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port);
-        originalConfig.Ssl = TestConfiguration.TLS;
+        var config = TestConfiguration.DefaultCompatibleConfig();
+        config.ReadFrom = azAffinity;
 
         // Act
-        ConfigurationOptions clonedConfig = originalConfig.Clone();
+        ConfigurationOptions clone = config.Clone();
 
         // Modify original to ensure independence
-        originalConfig.ReadFrom = new ReadFrom(ReadFromStrategy.Primary);
+        config.ReadFrom = primary;
 
         // Connect using cloned configuration
-        await using var connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(clonedConfig);
+        await using var connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(clone);
 
         // Assert - Verify connection was created successfully
         Assert.NotNull(connectionMultiplexer);
 
         // Verify cloned configuration preserved the original ReadFrom settings
-        _ = Assert.NotNull(clonedConfig.ReadFrom);
-        Assert.Equal(ReadFromStrategy.AzAffinity, clonedConfig.ReadFrom.Value.Strategy);
-        Assert.Equal("us-east-1a", clonedConfig.ReadFrom.Value.Az);
+        Assert.Equal(azAffinity, Assert.NotNull(clone.ReadFrom));
 
         // Verify original configuration was modified independently
-        _ = Assert.NotNull(originalConfig.ReadFrom);
-        Assert.Equal(ReadFromStrategy.Primary, originalConfig.ReadFrom.Value.Strategy);
+        Assert.Equal(primary, Assert.NotNull(config.ReadFrom));
 
         // Test basic functionality
         IDatabase database = connectionMultiplexer.GetDatabase();
