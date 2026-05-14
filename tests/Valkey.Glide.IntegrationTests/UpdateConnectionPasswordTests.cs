@@ -4,6 +4,7 @@ using Valkey.Glide.TestUtils;
 
 using static Valkey.Glide.Errors;
 using static Valkey.Glide.TestUtils.Client;
+using static Valkey.Glide.TestUtils.Data;
 
 namespace Valkey.Glide.IntegrationTests;
 
@@ -12,8 +13,7 @@ public class UpdateConnectionPasswordTests()
     private static readonly string Password = "PASSWORD";
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
+    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
     public async Task UpdateConnectionPassword_DelayAuth(bool clusterMode)
     {
         using Server server = clusterMode ? new ClusterServer() : new StandaloneServer();
@@ -39,8 +39,7 @@ public class UpdateConnectionPasswordTests()
     }
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
+    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
     public async Task UpdateConnectionPassword_ImmediateAuth(bool clusterMode)
     {
         using Server server = clusterMode ? new ClusterServer() : new StandaloneServer();
@@ -58,8 +57,7 @@ public class UpdateConnectionPasswordTests()
     }
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
+    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
     public async Task UpdateConnectionPassword_InvalidPassword(bool clusterMode)
     {
         using Server server = clusterMode ? new ClusterServer() : new StandaloneServer();
