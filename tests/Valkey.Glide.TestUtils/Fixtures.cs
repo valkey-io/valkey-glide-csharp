@@ -7,19 +7,24 @@ namespace Valkey.Glide.TestUtils;
 /// </summary>
 public class ServerFixture : IDisposable
 {
-    /// <summary>
-    /// Standalone server instance.
-    /// </summary>
-    public StandaloneServer StandaloneServer { get; } = new();
+    #region Public Properties
 
-    /// <summary>
-    /// Cluster server instance.
-    /// </summary>
-    public ClusterServer ClusterServer { get; } = new();
+    // Standalone and cluster servers.
+    public StandaloneServer StandaloneServer { get; }
+    public ClusterServer ClusterServer { get; }
 
-    /// <summary>
-    /// Returns the server for the given mode.
-    /// </summary>
+    #endregion
+    #region Constructors
+
+    public ServerFixture()
+    {
+        StandaloneServer = CreateStandaloneServer();
+        ClusterServer = CreateClusterServer();
+    }
+
+    #endregion
+    #region Public Methods
+
     public Server GetServer(bool clusterMode)
         => clusterMode ? ClusterServer : StandaloneServer;
 
@@ -28,4 +33,13 @@ public class ServerFixture : IDisposable
         ClusterServer.Dispose();
         StandaloneServer.Dispose();
     }
+
+    #endregion
+    #region Protected Methods
+
+    // Creates standalone or cluster server.
+    protected virtual StandaloneServer CreateStandaloneServer() => new();
+    protected virtual ClusterServer CreateClusterServer() => new();
+
+    #endregion
 }
