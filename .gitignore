@@ -110,7 +110,6 @@ ClientBin/
 *.dbmdl
 *.[Pp]ublish.xml
 *.html
-.runsettings
 
 *.publishsettings
 

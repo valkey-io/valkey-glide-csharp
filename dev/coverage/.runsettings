@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  RunSettings for code coverage collection.
+
+  This configures the Coverlet "XPlat Code Coverage" data collector to output
+  in Cobertura XML format, which ReportGenerator consumes to produce HTML and
+  JSON summary reports.
+
+  See also: docs/coverage.md
+-->
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat Code Coverage">
+        <Configuration>
+          <Format>cobertura</Format>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>
