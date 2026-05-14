@@ -8,15 +8,20 @@ using static Valkey.Glide.TestUtils.Data;
 
 namespace Valkey.Glide.IntegrationTests;
 
-public class UpdateConnectionPasswordTests()
+public class UpdateConnectionPasswordTests(ServerFixture fixture) : IClassFixture<ServerFixture>
 {
+    #region Constants
+
     private static readonly string Password = "PASSWORD";
+
+    #endregion
+    #region Tests
 
     [Theory]
     [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
     public async Task UpdateConnectionPassword_DelayAuth(bool clusterMode)
     {
-        using Server server = clusterMode ? new ClusterServer() : new StandaloneServer();
+        Server server = fixture.GetServer(clusterMode);
         await using BaseClient client = await server.CreateClientAsync();
 
         // Update password and verify connection.
@@ -42,7 +47,7 @@ public class UpdateConnectionPasswordTests()
     [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
     public async Task UpdateConnectionPassword_ImmediateAuth(bool clusterMode)
     {
-        using Server server = clusterMode ? new ClusterServer() : new StandaloneServer();
+        Server server = fixture.GetServer(clusterMode);
         await using BaseClient client = await server.CreateClientAsync();
 
         // Update password and verify connection.
@@ -60,11 +65,13 @@ public class UpdateConnectionPasswordTests()
     [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
     public async Task UpdateConnectionPassword_InvalidPassword(bool clusterMode)
     {
-        using Server server = clusterMode ? new ClusterServer() : new StandaloneServer();
+        Server server = fixture.GetServer(clusterMode);
         await using BaseClient client = await server.CreateClientAsync();
 
         _ = await Assert.ThrowsAsync<ArgumentException>(() => client.UpdateConnectionPasswordAsync(null!, immediateAuth: true));
         _ = await Assert.ThrowsAsync<ArgumentException>(() => client.UpdateConnectionPasswordAsync("", immediateAuth: true));
         _ = await Assert.ThrowsAsync<RequestException>(() => client.UpdateConnectionPasswordAsync("INVALID", immediateAuth: true));
     }
+
+    #endregion
 }
