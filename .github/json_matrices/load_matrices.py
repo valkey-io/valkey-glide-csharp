@@ -31,12 +31,12 @@ def main() -> None:
     profile = sys.argv[1]
 
     os_matrix = filter_by_profile(load_json("os-matrix.json"), profile)
-    host = [h for h in os_matrix if "IMAGE" not in h]
-    container_host = [h for h in os_matrix if "IMAGE" in h]
+    host = [h for h in os_matrix if "image" not in h]
+    container_host = [h for h in os_matrix if "image" in h]
 
     server = filter_by_profile(load_json("server-matrix.json"), profile)
     assert server, "Given profile resulted in empty server matrix."
-    
+
     dotnet_entries = filter_by_profile(load_json("version-matrix.json"), profile)
     dotnet = [e["version"] for e in dotnet_entries]
     assert dotnet, "Given profile resulted in empty dotnet version matrix."
@@ -54,7 +54,7 @@ def main() -> None:
     if github_output:
         with open(github_output, "a") as f:
             for key, value in configs.items():
-               print(f"{key}={value}", file=f)
+                print(f"{key}={value}", file=f)
     else:
         for key, value in configs.items():
             print(f"{key}={value}")
