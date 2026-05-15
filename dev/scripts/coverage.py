@@ -12,7 +12,7 @@ Usage:
     python dev/scripts/coverage.py clean   [--unit] [--integration]
 
 Commands:
-    report          Generate HTML and JSON coverage reports from coverage data.
+    report          Generate coverage reports.
     check           Compare measured coverage against the baseline.
     update          Updates the coverage baseline.
     clean           Remove coverage results and reports.
@@ -58,20 +58,73 @@ _REPORTGENERATOR_TYPES = "Html;JsonSummary"
 
 
 # ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+
+def _get_coverage() -> dict:
+    """Read measured coverage and baseline, return comparison data.
+
+    Returns:
+        {
+            "line": {"measured": float, "baseline": float, "comparison": int},
+            "branch": {"measured": float, "baseline": float, "comparison": int},
+        }
+
+    comparison is -1 (regressed), 0 (unchanged), or 1 (improved).
+    """
+    if not os.path.exists(COVERAGE_SUMMARY_COMBINED):
+        raise FileNotFoundError(
+            f"Coverage summary not found at {COVERAGE_SUMMARY_COMBINED}. Run 'coverage.py report' first."
+        )
+
+    with open(COVERAGE_SUMMARY_COMBINED) as f:
+        summary = json.load(f)["summary"]
+
+    with open(COVERAGE_BASELINE_PATH) as f:
+        baseline = json.load(f)
+
+    measured_line = summary["linecoverage"]
+    measured_branch = summary["branchcoverage"]
+    baseline_line = baseline["linecoverage"]
+    baseline_branch = baseline["branchcoverage"]
+
+    return {
+        "line": {
+            "measured": measured_line,
+            "baseline": baseline_line,
+            "comparison": (measured_line > baseline_line) - (measured_line < baseline_line),
+        },
+        "branch": {
+            "measured": measured_branch,
+            "baseline": baseline_branch,
+            "comparison": (measured_branch > baseline_branch) - (measured_branch < baseline_branch),
+        },
+    }
+
+
+def _print_coverage_comparison(coverage: dict):
+    """Print coverage status for each metric."""
+
+    for key, entry in coverage.items():
+        if entry["comparison"] < 0:
+            print(f"FAILED: {key} coverage decreased ({entry['baseline']}% -> {entry['measured']}%)")
+        elif entry["comparison"] == 0:
+            print(f"PASSED: {key} coverage unchanged ({entry['baseline']}%)")
+        else:
+            print(f"PASSED: {key} coverage improved ({entry['baseline']}% -> {entry['measured']}%)")
+
+
+# ---------------------------------------------------------------------------
 # Commands
 # ---------------------------------------------------------------------------
 
 
-def _cmd_report(test_suites: list[TestSuite]) -> int:
+def _cmd_report(test_suites: list[TestSuite]) -> bool:
     """Generate HTML and JSON coverage reports from coverage data."""
-
-    # [A] Generate per-suite reports
-    # ------------------------------
-
     for test_suite in test_suites:
         coverage_dir = COVERAGE_RESULTS_DIR_FOR_TEST_SUITE[test_suite]
 
-        # Check if this test suite has data.
         has_data = any(
             f == "coverage.cobertura.xml"
             for _, _, files in os.walk(coverage_dir)
@@ -99,9 +152,6 @@ def _cmd_report(test_suites: list[TestSuite]) -> int:
             check=True,
         )
 
-    # [B] Generate combined report
-    # ----------------------------
-
     print("Generating combined coverage report...")
 
     subprocess.run(
@@ -117,8 +167,8 @@ def _cmd_report(test_suites: list[TestSuite]) -> int:
         check=True,
     )
 
-    # Print clickable file:// links to generated reports.
     print("\nCoverage reports generated:")
+
     for test_suite in test_suites:
         print(f"  {test_suite.value}:")
         print(f"    HTML:    file://{COVERAGE_REPORT_INDEX_FOR_TEST_SUITE[test_suite]}")
@@ -128,24 +178,44 @@ def _cmd_report(test_suites: list[TestSuite]) -> int:
     print(f"    HTML:    file://{COVERAGE_REPORT_INDEX_COMBINED}")
     print(f"    JSON:    file://{COVERAGE_SUMMARY_COMBINED}")
 
-    return 0
+    return True
 
 
-def _cmd_check(test_suites: list[TestSuite]) -> int:
+def _cmd_check() -> bool:
     """Compare measured coverage against the baseline."""
-    # TODO: Implement in Task 2.
-    print("coverage check not yet implemented")
-    return 0
+    coverage = _get_coverage()
+    _print_coverage_comparison()
+
+    return all(entry["comparison"] >= 0 for entry in coverage.values())
 
 
-def _cmd_update(test_suites: list[TestSuite]) -> int:
+def _cmd_update() -> bool:
     """Updates the coverage baseline."""
-    # TODO: Implement in Task 2.
-    print("coverage update not yet implemented")
-    return 0
+    coverage = _get_coverage()
+    _print_coverage_comparison()
+
+    if any(entry["comparison"] < 0 for entry in coverage.values()):
+        return False
+
+    if all(entry["comparison"] == 0 for entry in coverage.values()):
+        return True
+
+    with open(COVERAGE_BASELINE_PATH) as f:
+        baseline_data = json.load(f)
+
+    for key, entry in coverage.items():
+        json_key = "linecoverage" if key == "line" else "branchcoverage"
+        if entry["comparison"] > 0:
+            baseline_data[json_key] = entry["measured"]
+
+    with open(COVERAGE_BASELINE_PATH, "w") as f:
+        json.dump(baseline_data, f, indent=2)
+        f.write("\n")
+
+    return True
 
 
-def _cmd_clean(test_suites: list[TestSuite]) -> int:
+def _cmd_clean(test_suites: list[TestSuite]) -> bool:
     """Remove coverage results and reports."""
     for test_suite in test_suites:
         results_dir = COVERAGE_RESULTS_DIR_FOR_TEST_SUITE[test_suite]
@@ -156,13 +226,13 @@ def _cmd_clean(test_suites: list[TestSuite]) -> int:
         if os.path.exists(reports_dir):
             shutil.rmtree(reports_dir)
 
-    # Clean combined reports only when all test suites are targeted.
     if set(test_suites) == set(ALL_TEST_SUITES):
         if os.path.exists(COVERAGE_REPORTS_DIR_COMBINED):
             shutil.rmtree(COVERAGE_REPORTS_DIR_COMBINED)
 
     print("Coverage results and reports cleaned.")
-    return 0
+
+    return True
 
 
 # ---------------------------------------------------------------------------
@@ -204,7 +274,17 @@ def _parse_args() -> argparse.Namespace:
 def main() -> int:
     args = _parse_args()
 
-    # Determine target test suites (default to all).
+    # Check and update commands
+    if args.command in ("check", "update"):
+        if args.unit:
+            print(f"Error: --unit not supported for '{args.command}'")
+            return 1
+        if args.integration:
+            print(f"Error: --integration not supported for '{args.command}'")
+            return 1
+        return 0 if _COMMANDS[args.command]() else 1
+
+    # Report and clean commands
     if not args.unit and not args.integration:
         test_suites = ALL_TEST_SUITES
     else:
@@ -214,8 +294,7 @@ def main() -> int:
         if args.integration:
             test_suites.append(TestSuite.INTEGRATION)
 
-    return _COMMANDS[args.command](test_suites)
-
+    return 0 if _COMMANDS[args.command](test_suites) else 1
 
 if __name__ == "__main__":
     sys.exit(main())
