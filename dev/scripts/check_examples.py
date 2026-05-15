@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""Check Valkey GLIDE C# code examples by extracting and compiling them.
+"""Check code examples by extracting and compiling them.
 
 Usage:
     python scripts/check_examples.py

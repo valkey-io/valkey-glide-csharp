@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""Run .NET tests for the Valkey GLIDE C# client.
+"""Runs tests.
 
 Assembles and executes `dotnet test` commands for unit tests, integration tests,
 or both. When coverage is enabled, cleans stale results first and configures
@@ -26,34 +26,14 @@ import shutil
 import subprocess
 import sys
 
-# ---------------------------------------------------------------------------
-# Constants
-# ---------------------------------------------------------------------------
-
-_SCRIPTS_DIR = os.path.dirname(os.path.abspath(__file__))
-_PROJECT_ROOT = os.path.dirname(os.path.dirname(_SCRIPTS_DIR))
-
-_UNIT_TEST_PROJECT = os.path.join(
-    _PROJECT_ROOT,
-    "tests",
-    "Valkey.Glide.UnitTests",
-    "Valkey.Glide.UnitTests.csproj",
+from _constants import (
+    ALL_TEST_SUITES,
+    COVERAGE_RESULTS_DIR_FOR_TEST_SUITE,
+    COVERAGE_RUNSETTINGS_PATH,
+    PROJECT_ROOT,
+    TEST_PROJECT_FOR_TEST_SUITE,
+    TestSuite,
 )
-_INTEGRATION_TEST_PROJECT = os.path.join(
-    _PROJECT_ROOT,
-    "tests",
-    "Valkey.Glide.IntegrationTests",
-    "Valkey.Glide.IntegrationTests.csproj",
-)
-
-_PROJECT_MAP = {
-    "unit": _UNIT_TEST_PROJECT,
-    "integration": _INTEGRATION_TEST_PROJECT
-}
-
-_COVERAGE_DIR = os.path.join(_PROJECT_ROOT, "dev", "coverage")
-_COVERAGE_RESULTS_DIR = os.path.join(_COVERAGE_DIR, "results")
-_RUNSETTINGS_PATH = os.path.join(_COVERAGE_DIR, ".runsettings")
 
 
 # ---------------------------------------------------------------------------
@@ -61,12 +41,14 @@ _RUNSETTINGS_PATH = os.path.join(_COVERAGE_DIR, ".runsettings")
 # ---------------------------------------------------------------------------
 
 
-def _build_command(suite: str, *, coverage: bool, filter: str | None) -> list[str]:
+def _build_command(
+    test_suite: TestSuite, *, coverage: bool, filter: str | None
+) -> list[str]:
     """Assemble the dotnet test command."""
     cmd = [
         "dotnet",
         "test",
-        _PROJECT_MAP[suite],
+        TEST_PROJECT_FOR_TEST_SUITE[test_suite],
         "--configuration",
         "Release",
         "--verbosity",
@@ -74,13 +56,15 @@ def _build_command(suite: str, *, coverage: bool, filter: str | None) -> list[st
     ]
 
     if coverage:
-        cmd.extend([
-            "--collect:XPlat Code Coverage",
-            "--results-directory",
-            os.path.join(_COVERAGE_RESULTS_DIR, suite),
-            "--settings",
-            _RUNSETTINGS_PATH,
-        ])
+        cmd.extend(
+            [
+                "--collect:XPlat Code Coverage",
+                "--results-directory",
+                COVERAGE_RESULTS_DIR_FOR_TEST_SUITE[test_suite],
+                "--settings",
+                COVERAGE_RUNSETTINGS_PATH,
+            ]
+        )
 
     if filter:
         cmd.extend(["--filter", f"FullyQualifiedName~{filter}"])
@@ -88,16 +72,18 @@ def _build_command(suite: str, *, coverage: bool, filter: str | None) -> list[st
     return cmd
 
 
-def _run_suite(suite: str, *, coverage: bool, filter: str | None) -> int:
+def _run_test_suite(
+    test_suite: TestSuite, *, coverage: bool, filter: str | None
+) -> int:
     """Run a single test suite. Returns the process exit code."""
     if coverage:
-        results_dir = os.path.join(_COVERAGE_RESULTS_DIR, suite)
+        results_dir = COVERAGE_RESULTS_DIR_FOR_TEST_SUITE[test_suite]
         if os.path.exists(results_dir):
             shutil.rmtree(results_dir)
         os.makedirs(results_dir, exist_ok=True)
 
-    cmd = _build_command(suite, coverage=coverage, filter=filter)
-    result = subprocess.run(cmd, cwd=_PROJECT_ROOT, check=False)
+    cmd = _build_command(test_suite, coverage=coverage, filter=filter)
+    result = subprocess.run(cmd, cwd=PROJECT_ROOT, check=False)
 
     return result.returncode
 
@@ -109,7 +95,7 @@ def _run_suite(suite: str, *, coverage: bool, filter: str | None) -> int:
 
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Run .NET tests with optional coverage collection.",
+        description="Runs tests.",
     )
 
     parser.add_argument(
@@ -122,14 +108,12 @@ def _parse_args() -> argparse.Namespace:
         action="store_true",
         help="Run integration tests",
     )
-
     parser.add_argument(
         "--coverage",
         action="store_true",
         default=False,
         help="Enable code coverage collection",
     )
-
     parser.add_argument(
         "--filter",
         type=str,
@@ -142,27 +126,28 @@ def _parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = _parse_args()
-    coverage = args.coverage
 
-    # Determine which suites to run (default to both).
+    # Determine which test suites to run (default to all).
     if not args.unit and not args.integration:
-        suites = ["unit", "integration"]
+        test_suites = ALL_TEST_SUITES
     else:
-        suites = []
+        test_suites = []
         if args.unit:
-            suites.append("unit")
+            test_suites.append(TestSuite.UNIT)
         if args.integration:
-            suites.append("integration")
+            test_suites.append(TestSuite.INTEGRATION)
 
-    # Run all suites and report overall result.
-    failed_suites = []
-    for suite in suites:
-        exit_code = _run_suite(suite, coverage=coverage, filter=args.filter)
+    # Run all test suites and report overall result.
+    failed = []
+    for test_suite in test_suites:
+        exit_code = _run_test_suite(
+            test_suite, coverage=args.coverage, filter=args.filter
+        )
         if exit_code != 0:
-            failed_suites.append(suite)
+            failed.append(test_suite.value)
 
-    if failed_suites:
-        print(f"\nFailed suites: {', '.join(failed_suites)}")
+    if failed:
+        print(f"\nFailed: {', '.join(failed)}")
         return 1
 
     return 0

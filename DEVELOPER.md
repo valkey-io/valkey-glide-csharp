@@ -192,7 +192,7 @@ In Windows, run from following commands from the appropriate Visual Studio Comma
     Using Task (preferred):
 
     ```bash
-    # Run all tests with coverage (recommended)
+    # Run all tests
     task test
 
     # Run specific test suites
@@ -202,17 +202,6 @@ In Windows, run from following commands from the appropriate Visual Studio Comma
     # Run specific test classes or methods
     task test:unit filter=MyTestClass
     task test:integration filter=MyMethodName
-
-    # Run tests with coverage and generate reports
-    task coverage              # All tests with coverage
-    task coverage:unit         # Unit tests with coverage
-    task coverage:integration  # Integration tests with coverage
-
-    # Run tests for specific framework
-    task test framework=net8.0
-
-    # Clean test results and reports
-    task clean
     ```
 
     Using `dotnet`:
@@ -236,28 +225,26 @@ The project uses Task for standardized development workflows. Here are the key c
 # View all available tasks
 task --list
 
-# Default workflow (build + coverage)
-task default
-
 # Install required tools (coverage reporting)
 task install-tools
 
 # Build and test workflows
-task build                  # Build the solution
-task build target=lib       # Build only Valkey.Glide
-task test                   # Build and run all tests with coverage
-task coverage               # Run tests with coverage and generate HTML reports
+task build               # Build the solution
+task build target=lib    # Build only Valkey.Glide
+task test                # Run all tests
+task test coverage=true  # Run all tests with coverage
 
 # Specific test suites
-task test:unit              # Unit tests only
-task test:integration       # Integration tests only
-task coverage:unit          # Unit tests with coverage
-task coverage:integration   # Integration tests with coverage
+task test:unit                       # Unit tests only
+task test:integration                # Integration tests only
+task test:unit coverage=true         # Unit tests with coverage
+task test:integration coverage=true  # Integration tests with coverage
 
-# Coverage reporting
-task coverage:report        # Generate HTML coverage report
-task coverage:summary       # Display coverage summary
-task clean                  # Clean test results and reports
+# Coverage
+task coverage:report  # Generate HTML + JSON coverage reports
+task coverage:check   # Compare measured coverage against baseline
+task coverage:update  # Update the coverage baseline
+task coverage:clean   # Remove coverage results and reports
 
 # Linting and formatting
 task lint                   # Run all linters
