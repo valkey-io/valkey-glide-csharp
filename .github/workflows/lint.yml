@@ -36,7 +36,7 @@ jobs:
                   restore-keys: rust-lint-
 
             - name: Install cargo-deny
-              uses: taiki-e/install-action@735e5933943122c5ac182670a935f54a949265c1 # v2.52.4
+              uses: taiki-e/install-action@b550161ef8a7bc4f2a671c0b03a18ac9ccedea1e # v2.79.1
               with:
                   tool: cargo-deny@0.19
 
@@ -50,7 +50,7 @@ jobs:
                   dotnet-version: "8"
 
             - name: Install Task
-              uses: go-task/setup-task@3be4020d41929789a01026e0e427a4321ce0ad44 # v2.0.0
+              uses: go-task/setup-task@01a4adf9db2d14c1de7a560f09170b6e0df736aa # v2.1.0
 
             - name: Run lint
               run: task lint
