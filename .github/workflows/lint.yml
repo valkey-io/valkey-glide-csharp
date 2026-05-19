@@ -47,7 +47,7 @@ jobs:
             - name: Install dotnet
               uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
               with:
-                  dotnet-version: "8"
+                  dotnet-version: "10"
 
             - name: Install Task
               uses: go-task/setup-task@3be4020d41929789a01026e0e427a4321ce0ad44 # v2.0.0

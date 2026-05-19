@@ -54,17 +54,18 @@ choco install go-task
 
 [.NET](https://dotnet.microsoft.com/en-us/) is an open-source platform for building desktop, web, and mobile applications
 
-The Valkey GLIDE C# client requires .NET 8 and 9.
+The Valkey GLIDE C# client requires .NET 10 SDK for building and .NET 8 for testing.
 
 ```bash
 # Using Homebrew (macOS/Linux)
-brew install dotnet@8 dotnet@9
+brew install dotnet@8 dotnet@10
 
 # Using Chocolatey (Windows)
-choco install dotnet-8.0-sdk dotnet-9.0-sdk
+choco install dotnet-8.0-sdk dotnet-10.0-sdk
 
 # Direct download from Microsoft:
-# <https://dotnet.microsoft.com/en-us/download>
+# <https://dotnet.microsoft.com/en-us/download/dotnet/8.0>
+# <https://dotnet.microsoft.com/en-us/download/dotnet/10.0>
 ```
 
 ### Git Installation

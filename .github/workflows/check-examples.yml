@@ -24,7 +24,7 @@ jobs:
             - name: Setup .NET
               uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
               with:
-                  dotnet-version: "8.0.x"
+                  dotnet-version: "10"
 
             - name: Setup Python
               uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
