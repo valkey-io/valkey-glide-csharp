@@ -100,10 +100,7 @@ jobs:
             - name: Set up dotnet
               uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
               with:
-                  dotnet-version: |
-                      6
-                      8
-                      9
+                  dotnet-version: "10"
 
               # Install it somewhere outside of repo, otherwise ORT will try to process inspector's sources too
             - name: Set up nuget-inspector
