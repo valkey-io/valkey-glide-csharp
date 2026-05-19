@@ -71,6 +71,10 @@ jobs:
         runs-on: ${{ matrix.host.runner }}
         env:
             VALKEY_GLIDE_DNS_TESTS_ENABLED: "1"
+            RUN_COVERAGE: >-
+                ${{ matrix.dotnet == '8.0'
+                 && matrix.server.version == '9.0'
+                 && matrix.host.runner == 'ubuntu-24.04' }}
 
         steps:
             - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -146,6 +150,11 @@ jobs:
                   --logger "trx;LogFileName=UnitTestResults.trx"
                   --logger "console;verbosity=detailed"
                   --results-directory .
+                  ${{ env.RUN_COVERAGE == 'true'
+                   && '--collect:XPlat Code Coverage
+                       --results-directory dev/coverage/results/unit
+                       --settings dev/coverage/.runsettings'
+                   || '' }}
 
             - name: Configure DNS for integration tests
               if: ${{ matrix.host.target != 'aarch64-pc-windows-msvc' }}
@@ -175,6 +184,23 @@ jobs:
                   --logger "trx;LogFileName=IntegrationTestResults.trx"
                   --logger "console;verbosity=detailed"
                   --results-directory .
+                  ${{ env.RUN_COVERAGE == 'true'
+                   && '--collect:XPlat Code Coverage
+                       --results-directory dev/coverage/results/integration
+                       --settings dev/coverage/.runsettings'
+                   || '' }}
+
+            - name: Install Task
+              if: ${{ env.RUN_COVERAGE == 'true' }}
+              uses: go-task/setup-task@3be4020d41929789a01026e0e427a4321ce0ad44 # v2.0.0
+
+            - name: Generate coverage reports and check baseline
+              if: ${{ env.RUN_COVERAGE == 'true' }}
+              shell: bash
+              run: |
+                  task install-tools
+                  task coverage:report
+                  task coverage:check
 
             - name: Upload test reports
               if: always()
@@ -330,3 +356,4 @@ jobs:
                   path: |
                       ModuleTestReport.html
                       ModuleTestResults.trx
+

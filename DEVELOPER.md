@@ -1,5 +1,7 @@
 # Developer Guide
 
+![Coverage](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fvalkey-io%2Fvalkey-glide-csharp%2Fmain%2Fdev%2Fcoverage%2Fcoverage-baseline.json&query=%24.linecoverage&suffix=%25&label=coverage)
+
 This document describes how to set up your development environment to build and test the Valkey GLIDE C# wrapper.
 
 ## Development Overview
@@ -245,6 +247,8 @@ task coverage:report  # Generate HTML + JSON coverage reports
 task coverage:check   # Compare measured coverage against baseline
 task coverage:update  # Update the coverage baseline
 task coverage:clean   # Remove coverage results and reports
+
+# See docs/coverage.md for full coverage documentation.
 
 # Linting and formatting
 task lint                   # Run all linters
