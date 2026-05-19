@@ -184,7 +184,7 @@ def _cmd_report(test_suites: list[TestSuite]) -> bool:
 def _cmd_check() -> bool:
     """Compare measured coverage against the baseline."""
     coverage = _get_coverage()
-    _print_coverage_comparison()
+    _print_coverage_comparison(coverage)
 
     return all(entry["comparison"] >= 0 for entry in coverage.values())
 
@@ -192,7 +192,7 @@ def _cmd_check() -> bool:
 def _cmd_update() -> bool:
     """Updates the coverage baseline."""
     coverage = _get_coverage()
-    _print_coverage_comparison()
+    _print_coverage_comparison(coverage)
 
     if any(entry["comparison"] < 0 for entry in coverage.values()):
         return False
