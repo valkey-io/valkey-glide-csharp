@@ -67,7 +67,6 @@ body:
           label: .NET version
           options:
               - ".NET 8"
-              - ".NET 9"
               - Other
       validations:
           required: true

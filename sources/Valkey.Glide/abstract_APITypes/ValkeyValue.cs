@@ -881,10 +881,10 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
     DateTime IConvertible.ToDateTime(IFormatProvider? provider) => DateTime.Parse(((string?)this)!, provider);
     decimal IConvertible.ToDecimal(IFormatProvider? provider) => (decimal)this;
     double IConvertible.ToDouble(IFormatProvider? provider) => (double)this;
-    short IConvertible.ToInt16(IFormatProvider? provider) => (short)this;
+    short IConvertible.ToInt16(IFormatProvider? provider) => (short)(int)this;
     int IConvertible.ToInt32(IFormatProvider? provider) => (int)this;
     long IConvertible.ToInt64(IFormatProvider? provider) => (long)this;
-    sbyte IConvertible.ToSByte(IFormatProvider? provider) => (sbyte)this;
+    sbyte IConvertible.ToSByte(IFormatProvider? provider) => (sbyte)(int)this;
     float IConvertible.ToSingle(IFormatProvider? provider) => (float)this;
     string IConvertible.ToString(IFormatProvider? provider) => ((string?)this)!;
 
@@ -902,10 +902,10 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
             TypeCode.DateTime => DateTime.Parse(((string?)this)!, provider),
             TypeCode.Decimal => (decimal)this,
             TypeCode.Double => (double)this,
-            TypeCode.Int16 => (short)this,
+            TypeCode.Int16 => (short)(int)this,
             TypeCode.Int32 => (int)this,
             TypeCode.Int64 => (long)this,
-            TypeCode.SByte => (sbyte)this,
+            TypeCode.SByte => (sbyte)(int)this,
             TypeCode.Single => (float)this,
             TypeCode.String => ((string?)this)!,
             TypeCode.UInt16 => checked((ushort)(uint)this),
