@@ -29,18 +29,6 @@ body:
           required: true
 
     - type: dropdown
-      id: dotnet-version
-      attributes:
-          label: .NET version
-          options:
-              - ".NET 8"
-              - ".NET 9"
-              - Not Applicable
-              - Other
-      validations:
-          required: true
-
-    - type: dropdown
       id: engine-version
       attributes:
           label: Engine type and version
