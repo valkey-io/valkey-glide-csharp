@@ -1,6 +1,4 @@
 {
   "line_coverage": 0.0,
-  "branch_coverage": 0.0,
-  "server_name": "valkey",
-  "server_version": "9.0"
+  "branch_coverage": 0.0
 }

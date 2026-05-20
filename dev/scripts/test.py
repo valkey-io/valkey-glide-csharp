@@ -21,6 +21,7 @@ Options:
 """
 
 import argparse
+import json
 import os
 import shutil
 import subprocess
@@ -38,6 +39,30 @@ from _constants import (
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
+
+def _check_server_version() -> None:
+    """Verify valkey-server is installed and matches the highest supported version."""
+
+    # [1] Get required server version
+    server_matrix_path = os.path.join(PROJECT_ROOT, ".github", "json_matrices", "server-matrix.json")
+    with open(server_matrix_path) as f:
+        matrix = json.load(f)
+
+    required_server_version = max(
+        (entry["version"] for entry in matrix if entry["type"] == "valkey"),
+        key=lambda v: tuple(int(x) for x in v.split(".")),
+    )
+
+    # [2] Check server version
+    cmd_args = ["valkey-server", "--version"]
+    result = subprocess.run(cmd_args, capture_output=True, text=True)
+
+    if result.returncode != 0:
+        raise FileNotFoundError("valkey-server not found on PATH.")
+
+    if f"v={required_version}." not in result.stdout:
+        raise RuntimeError(f"Coverage requires valkey {required_version} but found: {result.stdout.strip()}")
 
 
 def _build_command(
@@ -125,6 +150,10 @@ def _parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = _parse_args()
+
+    # Verify server version when collecting coverage.
+    if args.coverage:
+        _check_server_version()
 
     # Determine which test suites to run (default to all).
     if not args.unit and not args.integration:
