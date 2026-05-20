@@ -30,15 +30,14 @@ import subprocess
 import sys
 
 from _constants import (
-    ALL_TEST_SUITES,
     COVERAGE_BASELINE_PATH,
-    COVERAGE_REPORT_INDEX_COMBINED,
+    COVERAGE_REPORT_COMBINED_INDEX_PATH,
     COVERAGE_REPORT_INDEX_FOR_TEST_SUITE,
-    COVERAGE_REPORTS_DIR_COMBINED,
+    COVERAGE_REPORTS_COMBINED_DIR,
     COVERAGE_REPORTS_DIR_FOR_TEST_SUITE,
     COVERAGE_RESULTS_DIR,
     COVERAGE_RESULTS_DIR_FOR_TEST_SUITE,
-    COVERAGE_SUMMARY_COMBINED,
+    COVERAGE_REPORT_COMBINED_SUMMARY_PATH,
     COVERAGE_SUMMARY_FOR_TEST_SUITE,
     PROJECT_ROOT,
     TestSuite,
@@ -73,21 +72,22 @@ def _get_coverage() -> dict:
 
     comparison is -1 (regressed), 0 (unchanged), or 1 (improved).
     """
-    if not os.path.exists(COVERAGE_SUMMARY_COMBINED):
+    if not os.path.exists(COVERAGE_REPORT_COMBINED_SUMMARY_PATH):
         raise FileNotFoundError(
-            f"Coverage summary not found at {COVERAGE_SUMMARY_COMBINED}. Run 'coverage.py report' first."
+            f"Coverage summary not found at {COVERAGE_REPORT_COMBINED_SUMMARY_PATH}. Run 'coverage.py report' first."
         )
 
-    with open(COVERAGE_SUMMARY_COMBINED) as f:
+    with open(COVERAGE_REPORT_COMBINED_SUMMARY_PATH) as f:
         summary = json.load(f)["summary"]
+
+    measured_line = summary["linecoverage"]
+    measured_branch = summary["branchcoverage"]
 
     with open(COVERAGE_BASELINE_PATH) as f:
         baseline = json.load(f)
 
-    measured_line = summary["linecoverage"]
-    measured_branch = summary["branchcoverage"]
-    baseline_line = baseline["linecoverage"]
-    baseline_branch = baseline["branchcoverage"]
+    baseline_line = baseline["line_coverage"]
+    baseline_branch = baseline["branch_coverage"]
 
     return {
         "line": {
@@ -158,7 +158,7 @@ def _cmd_report(test_suites: list[TestSuite]) -> bool:
         [
             "reportgenerator",
             f"-reports:{os.path.join(COVERAGE_RESULTS_DIR, '**', 'coverage.cobertura.xml')}",
-            f"-targetdir:{COVERAGE_REPORTS_DIR_COMBINED}",
+            f"-targetdir:{COVERAGE_REPORTS_COMBINED_DIR}",
             f"-reporttypes:{_REPORTGENERATOR_TYPES}",
             f"-assemblyfilters:{_REPORTGENERATOR_ASSEMBLY_FILTERS}",
             f"-classfilters:{_REPORTGENERATOR_CLASS_FILTERS}",
@@ -175,8 +175,8 @@ def _cmd_report(test_suites: list[TestSuite]) -> bool:
         print(f"    JSON:    file://{COVERAGE_SUMMARY_FOR_TEST_SUITE[test_suite]}")
 
     print("  combined:")
-    print(f"    HTML:    file://{COVERAGE_REPORT_INDEX_COMBINED}")
-    print(f"    JSON:    file://{COVERAGE_SUMMARY_COMBINED}")
+    print(f"    HTML:    file://{COVERAGE_REPORT_COMBINED_INDEX_PATH}")
+    print(f"    JSON:    file://{COVERAGE_REPORT_COMBINED_SUMMARY_PATH}")
 
     return True
 
@@ -204,7 +204,7 @@ def _cmd_update() -> bool:
         baseline_data = json.load(f)
 
     for key, entry in coverage.items():
-        json_key = "linecoverage" if key == "line" else "branchcoverage"
+        json_key = "line_coverage" if key == "line" else "branch_coverage"
         if entry["comparison"] > 0:
             baseline_data[json_key] = entry["measured"]
 
@@ -226,9 +226,9 @@ def _cmd_clean(test_suites: list[TestSuite]) -> bool:
         if os.path.exists(reports_dir):
             shutil.rmtree(reports_dir)
 
-    if set(test_suites) == set(ALL_TEST_SUITES):
-        if os.path.exists(COVERAGE_REPORTS_DIR_COMBINED):
-            shutil.rmtree(COVERAGE_REPORTS_DIR_COMBINED)
+    if set(test_suites) == set(TestSuite):
+        if os.path.exists(COVERAGE_REPORTS_COMBINED_DIR):
+            shutil.rmtree(COVERAGE_REPORTS_COMBINED_DIR)
 
     print("Coverage results and reports cleaned.")
 
@@ -286,7 +286,7 @@ def main() -> int:
 
     # Report and clean commands
     if not args.unit and not args.integration:
-        test_suites = ALL_TEST_SUITES
+        test_suites = list(TestSuite)
     else:
         test_suites = []
         if args.unit:

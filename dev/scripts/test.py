@@ -27,7 +27,6 @@ import subprocess
 import sys
 
 from _constants import (
-    ALL_TEST_SUITES,
     COVERAGE_RESULTS_DIR_FOR_TEST_SUITE,
     COVERAGE_RUNSETTINGS_PATH,
     PROJECT_ROOT,
@@ -129,7 +128,7 @@ def main() -> int:
 
     # Determine which test suites to run (default to all).
     if not args.unit and not args.integration:
-        test_suites = ALL_TEST_SUITES
+        test_suites = list(TestSuite)
     else:
         test_suites = []
         if args.unit:

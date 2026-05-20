@@ -16,11 +16,13 @@ COVERAGE_REPORTS_DIR = os.path.join(COVERAGE_DIR, "reports")
 COVERAGE_BASELINE_PATH = os.path.join(COVERAGE_DIR, "coverage-baseline.json")
 COVERAGE_RUNSETTINGS_PATH = os.path.join(COVERAGE_DIR, ".runsettings")
 
-COVERAGE_REPORTS_DIR_COMBINED = os.path.join(COVERAGE_REPORTS_DIR, "combined")
-COVERAGE_REPORT_INDEX_COMBINED = os.path.join(
-    COVERAGE_REPORTS_DIR_COMBINED, "index.html"
+COVERAGE_REPORTS_COMBINED_DIR = os.path.join(COVERAGE_REPORTS_DIR, "combined")
+COVERAGE_REPORT_COMBINED_INDEX_PATH = os.path.join(
+    COVERAGE_REPORTS_COMBINED_DIR, "index.html"
 )
-COVERAGE_SUMMARY_COMBINED = os.path.join(COVERAGE_REPORTS_DIR_COMBINED, "Summary.json")
+COVERAGE_REPORT_COMBINED_SUMMARY_PATH = os.path.join(
+    COVERAGE_REPORTS_COMBINED_DIR, "Summary.json"
+)
 
 # ---------------------------------------------------------------------------
 # Enums
@@ -32,9 +34,6 @@ class TestSuite(str, Enum):
 
     UNIT = "unit"
     INTEGRATION = "integration"
-
-
-ALL_TEST_SUITES = list(TestSuite)
 
 # ---------------------------------------------------------------------------
 # Maps
