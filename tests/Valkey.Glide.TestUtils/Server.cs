@@ -18,6 +18,12 @@ public abstract class Server : IDisposable
     protected static readonly TimeSpan ConnectionTimeout = TimeSpan.FromSeconds(30);
 
     /// <summary>
+    /// Retry strategy for client connections.
+    /// Allow retries for transient connection timeouts in CI environments.
+    /// </summary>
+    protected static readonly RetryStrategy RetryStrategy = new(numberOfRetries: 5, factor: 100, exponentBase: 2);
+
+    /// <summary>
     /// Custom command arguments to kill all normal clients.
     /// </summary>
     protected static readonly GlideString[] KillClientArgs = ["CLIENT", "KILL", "TYPE", "NORMAL"];
@@ -146,7 +152,8 @@ public sealed class ClusterServer(bool useTls = false) : Server(useClusterMode: 
         ClusterClientConfigurationBuilder configBuilder = new()
         {
             UseTls = UseTls,
-            ConnectionTimeout = ConnectionTimeout
+            ConnectionTimeout = ConnectionTimeout,
+            ConnectionRetryStrategy = RetryStrategy
         };
 
         if (UseTls)
@@ -167,6 +174,7 @@ public sealed class ClusterServer(bool useTls = false) : Server(useClusterMode: 
         return configBuilder;
     }
 
+    /// <inheritdoc cref="Server.CreateClientAsync()"/>
     public override async Task<BaseClient> CreateClientAsync()
         => await CreateClusterClientAsync();
 
@@ -214,7 +222,8 @@ public sealed class StandaloneServer(bool useTls = false) : Server(useClusterMod
         StandaloneClientConfigurationBuilder configBuilder = new()
         {
             UseTls = UseTls,
-            ConnectionTimeout = ConnectionTimeout
+            ConnectionTimeout = ConnectionTimeout,
+            ConnectionRetryStrategy = RetryStrategy
         };
 
         if (UseTls)
@@ -235,6 +244,7 @@ public sealed class StandaloneServer(bool useTls = false) : Server(useClusterMod
         return configBuilder;
     }
 
+    /// <inheritdoc cref="Server.CreateClientAsync()"/>
     public override async Task<BaseClient> CreateClientAsync()
         => await CreateStandaloneClientAsync();
 
