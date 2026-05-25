@@ -73,6 +73,7 @@ jobs:
             VALKEY_GLIDE_DNS_TESTS_ENABLED: "1"
             RUN_COVERAGE: >-
                 ${{ matrix.dotnet == '8.0'
+                 && matrix.server.type == 'valkey'
                  && matrix.server.version == '9.0'
                  && matrix.host.runner == 'ubuntu-24.04' }}
 

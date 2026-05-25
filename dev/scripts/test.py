@@ -28,6 +28,7 @@ import subprocess
 import sys
 
 from _constants import (
+    COVERAGE_BASELINE_PATH,
     COVERAGE_RESULTS_DIR_FOR_TEST_SUITE,
     COVERAGE_RUNSETTINGS_PATH,
     PROJECT_ROOT,
@@ -42,27 +43,27 @@ from _constants import (
 
 
 def _check_server_version() -> None:
-    """Verify valkey-server is installed and matches the highest supported version."""
+    """Verify the installed server matches the type and version specified in the coverage baseline."""
 
-    # [1] Get required server version
-    server_matrix_path = os.path.join(PROJECT_ROOT, ".github", "json_matrices", "server-matrix.json")
-    with open(server_matrix_path) as f:
-        matrix = json.load(f)
+    # [1] Get required server info from coverage baseline
+    with open(COVERAGE_BASELINE_PATH) as f:
+        baseline = json.load(f)
 
-    required_server_version = max(
-        (entry["version"] for entry in matrix if entry["type"] == "valkey"),
-        key=lambda v: tuple(int(x) for x in v.split(".")),
-    )
+    server_type = baseline["server_type"]
+    server_version = baseline["server_version"]
 
     # [2] Check server version
-    cmd_args = ["valkey-server", "--version"]
+    cmd_args = [f"{server_type}-server", "--version"]
     result = subprocess.run(cmd_args, capture_output=True, text=True)
 
     if result.returncode != 0:
-        raise FileNotFoundError("valkey-server not found on PATH.")
+        raise FileNotFoundError(f"{server_type}-server not found on PATH.")
 
-    if f"v={required_version}." not in result.stdout:
-        raise RuntimeError(f"Coverage requires valkey {required_version} but found: {result.stdout.strip()}")
+    if server_type.lower() not in result.stdout.lower():
+        raise RuntimeError(f"Coverage requires {server_type} but found: {result.stdout.strip()}")
+
+    if f"v={server_version}." not in result.stdout:
+        raise RuntimeError(f"Coverage requires version {server_version} but found: {result.stdout.strip()}")
 
 
 def _build_command(
