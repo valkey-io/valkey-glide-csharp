@@ -14,14 +14,15 @@ namespace Valkey.Glide.IntegrationTests;
 /// <summary>
 /// Tests for client configuration and connection with TLS.
 /// </summary>
-public class TlsTests(TlsFixture fixture) : IClassFixture<TlsFixture>
+public class TlsTests(ServerFixture serverFixture, TlsServerFixture tlsServerFixture)
+    : IClassFixture<ServerFixture>, IClassFixture<TlsServerFixture>
 {
     #region Cluster Tests
 
     [Fact]
     public async Task Cluster_WithCertificateData_NotTrusted_Throws()
     {
-        var server = fixture.TlsClusterServer;
+        var server = tlsServerFixture.ClusterServer;
         var address = server.Addresses.First();
 
         var config = new ClusterClientConfigurationBuilder()
@@ -37,7 +38,7 @@ public class TlsTests(TlsFixture fixture) : IClassFixture<TlsFixture>
     [Fact]
     public async Task Cluster_WithCertificateData_Malformed_Throws()
     {
-        var server = fixture.TlsClusterServer;
+        var server = tlsServerFixture.ClusterServer;
         var address = server.Addresses.First();
 
         var config = new ClusterClientConfigurationBuilder()
@@ -58,7 +59,7 @@ public class TlsTests(TlsFixture fixture) : IClassFixture<TlsFixture>
     [Fact]
     public async Task Cluster_NoCertificate_TlsServer_Throws()
     {
-        var server = fixture.TlsClusterServer;
+        var server = tlsServerFixture.ClusterServer;
         var address = server.Addresses.First();
 
         var config = new ClusterClientConfigurationBuilder()
@@ -73,12 +74,12 @@ public class TlsTests(TlsFixture fixture) : IClassFixture<TlsFixture>
     [Fact]
     public async Task Cluster_WithCertificate_NonTlsServer_Throws()
     {
-        var server = fixture.NonTlsClusterServer;
+        var server = serverFixture.ClusterServer;
         var address = server.Addresses.First();
 
         var config = new ClusterClientConfigurationBuilder()
             .WithAddress(address.Host, address.Port)
-            .WithTrustedCertificate(fixture.TlsClusterServer.CertificateData!)
+            .WithTrustedCertificate(tlsServerFixture.ClusterServer.CertificateData!)
             .Build();
 
         _ = await Assert.ThrowsAsync<ConnectionException>(async ()
@@ -88,7 +89,7 @@ public class TlsTests(TlsFixture fixture) : IClassFixture<TlsFixture>
     [Fact]
     public async Task Cluster_WithCertificateData_Trusted_Succeeds()
     {
-        var server = fixture.TlsClusterServer;
+        var server = tlsServerFixture.ClusterServer;
         var address = server.Addresses.First();
 
         var config = new ClusterClientConfigurationBuilder()
@@ -104,7 +105,7 @@ public class TlsTests(TlsFixture fixture) : IClassFixture<TlsFixture>
     [Fact]
     public async Task Cluster_WithCertificatePath_Trusted_Succeeds()
     {
-        var server = fixture.TlsClusterServer;
+        var server = tlsServerFixture.ClusterServer;
         var address = server.Addresses.First();
 
         var config = new ClusterClientConfigurationBuilder()
@@ -120,7 +121,7 @@ public class TlsTests(TlsFixture fixture) : IClassFixture<TlsFixture>
     [Fact]
     public async Task Cluster_WithInsecureTls_WithTlsServer_Succeeds()
     {
-        var server = fixture.TlsClusterServer;
+        var server = tlsServerFixture.ClusterServer;
         var address = server.Addresses.First();
 
         var config = new ClusterClientConfigurationBuilder()
@@ -136,7 +137,7 @@ public class TlsTests(TlsFixture fixture) : IClassFixture<TlsFixture>
     [Fact]
     public async Task Cluster_WithInsecureTls_WithNonTlsServer_Throws()
     {
-        var server = fixture.NonTlsClusterServer;
+        var server = serverFixture.ClusterServer;
         var address = server.Addresses.First();
 
         var config = new ClusterClientConfigurationBuilder()
@@ -153,7 +154,7 @@ public class TlsTests(TlsFixture fixture) : IClassFixture<TlsFixture>
     [MemberData(nameof(IpAddresses), MemberType = typeof(Data))]
     public async Task Cluster_WithIpAddress_Succeeds(string address)
     {
-        var server = fixture.TlsClusterServer;
+        var server = tlsServerFixture.ClusterServer;
         var port = server.Addresses.First().Port;
 
         var config = new ClusterClientConfigurationBuilder()
@@ -172,7 +173,7 @@ public class TlsTests(TlsFixture fixture) : IClassFixture<TlsFixture>
     [Fact]
     public async Task Standalone_WithCertificateData_NotTrusted_Throws()
     {
-        var server = fixture.TlsStandaloneServer;
+        var server = tlsServerFixture.StandaloneServer;
         var address = server.Addresses.First();
 
         var config = new StandaloneClientConfigurationBuilder()
@@ -188,7 +189,7 @@ public class TlsTests(TlsFixture fixture) : IClassFixture<TlsFixture>
     [Fact]
     public async Task Standalone_WithCertificateData_Malformed_Throws()
     {
-        var server = fixture.TlsStandaloneServer;
+        var server = tlsServerFixture.StandaloneServer;
         var address = server.Addresses.First();
 
         var config = new StandaloneClientConfigurationBuilder()
@@ -209,7 +210,7 @@ public class TlsTests(TlsFixture fixture) : IClassFixture<TlsFixture>
     [Fact]
     public async Task Standalone_NoCertificate_Throws()
     {
-        var server = fixture.TlsStandaloneServer;
+        var server = tlsServerFixture.StandaloneServer;
         var address = server.Addresses.First();
 
         var config = new StandaloneClientConfigurationBuilder()
@@ -224,13 +225,13 @@ public class TlsTests(TlsFixture fixture) : IClassFixture<TlsFixture>
     [Fact]
     public async Task Standalone_WithCertificate_NonTlsServer_Throws()
     {
-        var server = fixture.NonTlsStandaloneServer;
+        var server = serverFixture.StandaloneServer;
         var address = server.Addresses.First();
 
         var config = new StandaloneClientConfigurationBuilder()
             .WithAddress(address.Host, address.Port)
             .WithTls()
-            .WithTrustedCertificate(fixture.TlsStandaloneServer.CertificateData!)
+            .WithTrustedCertificate(tlsServerFixture.StandaloneServer.CertificateData!)
             .Build();
 
         _ = await Assert.ThrowsAsync<ConnectionException>(async ()
@@ -240,7 +241,7 @@ public class TlsTests(TlsFixture fixture) : IClassFixture<TlsFixture>
     [Fact]
     public async Task Standalone_WithCertificateData_Trusted_Succeeds()
     {
-        var server = fixture.TlsStandaloneServer;
+        var server = tlsServerFixture.StandaloneServer;
         var address = server.Addresses.First();
 
         var config = new StandaloneClientConfigurationBuilder()
@@ -256,7 +257,7 @@ public class TlsTests(TlsFixture fixture) : IClassFixture<TlsFixture>
     [Fact]
     public async Task Standalone_WithCertificatePath_Trusted_Succeeds()
     {
-        var server = fixture.TlsStandaloneServer;
+        var server = tlsServerFixture.StandaloneServer;
         var address = server.Addresses.First();
 
         var config = new StandaloneClientConfigurationBuilder()
@@ -272,7 +273,7 @@ public class TlsTests(TlsFixture fixture) : IClassFixture<TlsFixture>
     [Fact]
     public async Task Standalone_WithInsecureTls_WithTlsServer_Succeeds()
     {
-        var server = fixture.TlsStandaloneServer;
+        var server = tlsServerFixture.StandaloneServer;
         var address = server.Addresses.First();
 
         var config = new StandaloneClientConfigurationBuilder()
@@ -288,7 +289,7 @@ public class TlsTests(TlsFixture fixture) : IClassFixture<TlsFixture>
     [Fact]
     public async Task Standalone_WithInsecureTls_WithNonTlsServer_Throws()
     {
-        var server = fixture.NonTlsStandaloneServer;
+        var server = serverFixture.StandaloneServer;
         var address = server.Addresses.First();
 
         var config = new StandaloneClientConfigurationBuilder()
@@ -305,7 +306,7 @@ public class TlsTests(TlsFixture fixture) : IClassFixture<TlsFixture>
     [MemberData(nameof(IpAddresses), MemberType = typeof(Data))]
     public async Task Standalone_WithIpAddress_Succeeds(string address)
     {
-        var server = fixture.TlsStandaloneServer;
+        var server = tlsServerFixture.StandaloneServer;
         var port = server.Addresses.First().Port;
 
         var config = new StandaloneClientConfigurationBuilder()
@@ -379,20 +380,10 @@ public class TlsTests(TlsFixture fixture) : IClassFixture<TlsFixture>
 }
 
 /// <summary>
-/// Fixture class for TLS tests.
+/// Fixture with TLS-enabled standalone and cluster servers.
 /// </summary>
-public class TlsFixture : IDisposable
+public class TlsServerFixture : ServerFixture
 {
-    public ClusterServer TlsClusterServer = new(useTls: true);
-    public ClusterServer NonTlsClusterServer = new(useTls: false);
-    public StandaloneServer TlsStandaloneServer = new(useTls: true);
-    public StandaloneServer NonTlsStandaloneServer = new(useTls: false);
-
-    public void Dispose()
-    {
-        TlsClusterServer.Dispose();
-        NonTlsClusterServer.Dispose();
-        TlsStandaloneServer.Dispose();
-        NonTlsStandaloneServer.Dispose();
-    }
+    protected override StandaloneServer CreateStandaloneServer() => new(useTls: true);
+    protected override ClusterServer CreateClusterServer() => new(useTls: true);
 }

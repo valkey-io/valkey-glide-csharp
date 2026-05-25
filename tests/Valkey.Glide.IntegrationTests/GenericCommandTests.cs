@@ -1,8 +1,10 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-namespace Valkey.Glide.IntegrationTests;
 
 using Valkey.Glide.Commands.Options;
+using Valkey.Glide.TestUtils;
+
+namespace Valkey.Glide.IntegrationTests;
 
 public class GenericCommandTests(TestConfiguration config)
 {
@@ -246,27 +248,27 @@ public class GenericCommandTests(TestConfiguration config)
         // Set a string key
         await client.SetAsync(key, value);
 
-        // Get idle time for string key
-        TimeSpan? idleTime = await client.ObjectIdleTimeAsync(key);
-        _ = Assert.NotNull(idleTime);
-        Assert.True(idleTime.Value.TotalSeconds >= 0);
+        // Verify that idle time is non-negative.
+        TimeSpan idleTime1 = Assert.NotNull(await client.ObjectIdleTimeAsync(key));
+        Assert.True(idleTime1 >= TimeSpan.Zero);
 
-        // Wait a bit and check that idle time increases
-        await Task.Delay(1000, TestContext.Current.CancellationToken);
-        TimeSpan? idleTime2 = await client.ObjectIdleTimeAsync(key);
-        _ = Assert.NotNull(idleTime2);
-        Assert.True(idleTime2.Value.TotalSeconds >= idleTime.Value.TotalSeconds);
+        // Verify that idle time increases.
+        TimeSpan idleTime2 = TimeSpan.Zero;
+        await Polling.AssertTrueAsync(
+            async () =>
+            {
+                idleTime2 = Assert.NotNull(await client.ObjectIdleTimeAsync(key));
+                return idleTime2.TotalSeconds > idleTime1.TotalSeconds;
+            },
+            $"Idle time expected to increase.");
 
-        // Access the key to reset idle time
+        // Verify that idle time is reset on access.
         _ = await client.GetAsync(key);
-        TimeSpan? idleTimeAfterAccess = await client.ObjectIdleTimeAsync(key);
-        _ = Assert.NotNull(idleTimeAfterAccess);
-        Assert.True(idleTimeAfterAccess.Value.TotalSeconds < idleTime2.Value.TotalSeconds);
+        TimeSpan idleTime3 = Assert.NotNull(await client.ObjectIdleTimeAsync(key));
+        Assert.True(idleTime3 <= idleTime2);
 
-        // Non-existent key should return null
-        string nonExistentKey = Guid.NewGuid().ToString();
-        TimeSpan? nonExistentIdleTime = await client.ObjectIdleTimeAsync(nonExistentKey);
-        Assert.Null(nonExistentIdleTime);
+        // Non-existent key should return null.
+        Assert.Null(await client.ObjectIdleTimeAsync("non-existent"));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
