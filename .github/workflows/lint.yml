@@ -14,37 +14,43 @@ permissions:
 jobs:
     lint:
         runs-on: ubuntu-latest
-        timeout-minutes: 20
+        timeout-minutes: 10
 
         steps:
-            - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+            - name: Checkout
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
               with:
                   submodules: true
 
-            - name: Install Rust toolchain
+            - name: Install Rust
               uses: ./.github/actions/install-rust
 
             - name: Cache Rust
               uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
               with:
                   path: rust/target
-                  key: rust-x86_64-unknown-linux-gnu
+                  # Use 'Cargo.toml' hash so the cache invalidates when dependencies change.
+                  key: rust-lint-${{ hashFiles('rust/Cargo.toml') }}
+                  # On cache miss, restore the most recent cache with this prefix so cargo
+                  # only recompiles changed dependencies instead of building from scratch.
+                  restore-keys: rust-lint-
 
             - name: Install cargo-deny
-              run: cargo install --locked cargo-deny
+              uses: taiki-e/install-action@d9be7d8cda89035c9c843f78bd44d4f72d8403d4 # v2.79.7
+              with:
+                  tool: cargo-deny@0.19
+
+            - name: Install actionlint
+              run: |
+                  curl -fsSL https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz | tar xz -C /usr/local/bin actionlint
 
             - name: Install dotnet
               uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
               with:
-                  dotnet-version: "8"
-
-            - name: Install actionlint
-              run: |
-                  ACTIONLINT_URL=https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz
-                  curl -fsSL "$ACTIONLINT_URL" | tar xz -C /usr/local/bin actionlint
+                  dotnet-version: "10"
 
             - name: Install Task
-              run: sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin
+              uses: go-task/setup-task@01a4adf9db2d14c1de7a560f09170b6e0df736aa # v2.1.0
 
-            - name: Lint
+            - name: Run lint
               run: task lint

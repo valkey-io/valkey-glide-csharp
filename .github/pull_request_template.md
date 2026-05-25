@@ -1,50 +1,57 @@
+# Pull Request
+
 <!--
 Thanks for contributing to Valkey GLIDE!
 
 Please make sure you are aware of our [contributing guidelines](https://github.com/valkey-io/valkey-glide-csharp/blob/main/CONTRIBUTING.md).
 -->
 
-### Summary
+## Summary
 
 <!--
 Add a summary describing the changes.
 -->
 
-### Issue Link
+## Issue Link
 
-This pull request is linked to issue: [REPLACE ME]
+<!--
+Link to the corresponding GitHub issue. Please raise an issue if none exists.
+Use "Closes" to automatically close the issue when this pull request is merged.
+-->
 
-### Features and Behaviour Changes
+Closes #[GITHUB-ISSUE-ID].
+
+## Features and Behaviour Changes
 
 <!--
 Outline the feature support and behaviour changes included in this pull request.
 -->
 
-### Implementation
+## Implementation
 
 <!--
 Describe the implementation details. Highlight key code changes and call out any areas where you want reviewers to pay extra attention.
 -->
 
-### Limitations
+## Limitations
 
 <!--
 Describe any features or use cases that are not implemented or are only partially supported.
 -->
 
-### Testing
+## Testing
 
 <!--
 Describe what tests have been conducted and any relevant test results.
 -->
 
-### Related Issues
+## Related Issues
 
 <!--
 List related issues and pull request such closed pull requests and open issues.
 -->
 
-### Checklist
+## Checklist
 
 <!--
 Before submitting the PR make sure the following are checked.

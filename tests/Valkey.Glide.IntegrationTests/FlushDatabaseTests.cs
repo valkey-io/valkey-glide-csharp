@@ -7,7 +7,7 @@ namespace Valkey.Glide.IntegrationTests;
 /// <summary>
 /// Tests for flush database commands.
 /// </summary>
-public class FlushDatabaseTests(FlushDatabaseFixture fixture) : IClassFixture<FlushDatabaseFixture>
+public class FlushDatabaseTests(ServerFixture fixture) : IClassFixture<ServerFixture>
 {
     [Fact]
     public async Task FlushDatabaseAsync_Standalone_ClearsDatabase()
@@ -54,7 +54,7 @@ public class FlushDatabaseTests(FlushDatabaseFixture fixture) : IClassFixture<Fl
         Assert.True(await client.ExistsAsync(key));
         Assert.Equal(1, await client.DatabaseSizeAsync());
 
-        await client.FlushDatabaseAsync();
+        await client.FlushDatabaseAsync(FlushMode.Sync);
 
         Assert.False(await client.ExistsAsync(key));
         Assert.Equal(0, await client.DatabaseSizeAsync());
@@ -71,24 +71,9 @@ public class FlushDatabaseTests(FlushDatabaseFixture fixture) : IClassFixture<Fl
         Assert.True(await client.ExistsAsync(key));
         Assert.Equal(1, await client.DatabaseSizeAsync());
 
-        await client.FlushDatabaseAsync(Route.AllPrimaries);
+        await client.FlushDatabaseAsync(FlushMode.Sync, Route.AllPrimaries);
 
         Assert.False(await client.ExistsAsync(key));
         Assert.Equal(0, await client.DatabaseSizeAsync());
-    }
-}
-
-/// <summary>
-/// Fixture class for flush database tests.
-/// </summary>
-public class FlushDatabaseFixture : IDisposable
-{
-    public StandaloneServer StandaloneServer = new();
-    public ClusterServer ClusterServer = new();
-
-    public void Dispose()
-    {
-        StandaloneServer.Dispose();
-        ClusterServer.Dispose();
     }
 }

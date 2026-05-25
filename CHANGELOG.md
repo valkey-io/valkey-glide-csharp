@@ -1,17 +1,33 @@
 # Changelog
 
+All notable changes to the Valkey GLIDE C# client will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
+
+## 1.2.0
+
+### Added
+
+- Custom socket address resolution support via callback (#392)
+
 ## 1.1.0
 
-### Changes
+### Added
 
-- Add client-side caching support with TTL-based expiration, LRU/LFU eviction policies, and cache metrics (#330)
-- Add custom socket address resolution support via `AddressResolverDelegate` callback (#392)
+- Valkey JSON (JSON.*) command support for clients and batches (#358)
+- Valkey Search (FT.*) command support for clients (#225)
+- Client-side caching with TTL-based expiration, LRU/LFU eviction policies, and cache metrics API (#330)
+- Compression support for CustomCommand with incompatible command detection and improved error messages (#348)
 
-## 0.10.0
+### Security
 
-### Changes
+- Remove credential leakage vectors from FFI debug output (#371)
 
-- Add support for Windows CI and testing with WSL (#184)
-- Add StackExchange.Redis compatible pub/sub API (#202)
-- Add transparent compression support with Zstd and LZ4 backends (#213)
-- Add Valkey Search command support (#225)
+## 1.0.0
+
+### Added
+
+- StackExchange.Redis compatible pub/sub API (#202)
+- Transparent compression support with Zstd and LZ4 backends (#213)
+- Windows CI and testing with WSL (#184)

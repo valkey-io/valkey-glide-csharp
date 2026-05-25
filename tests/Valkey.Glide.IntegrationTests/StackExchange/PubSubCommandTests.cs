@@ -648,21 +648,14 @@ public class PubSubCommandTests(TestConfiguration config)
             return;
         }
 
-        using var cts = new CancellationTokenSource(AssertTimeout);
+        await Polling.AssertTrue(
+            () => actual.Count >= expected.Count,
+            "Expected messages not received.",
+            timeout: AssertTimeout,
+            interval: AssertRetryInterval);
 
-        while (!cts.Token.IsCancellationRequested)
-        {
-            if (actual.Count >= expected.Count)
-            {
-                Assert.Equivalent(expected, actual);
-                actual.Clear();
-                return;
-            }
-
-            await Task.Delay(AssertRetryInterval);
-        }
-
-        Assert.Fail("Expected messages not received within the timeout period.");
+        Assert.Equivalent(expected, actual);
+        actual.Clear();
     }
 
     #endregion

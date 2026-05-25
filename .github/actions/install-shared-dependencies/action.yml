@@ -38,12 +38,11 @@ runs:
               yum install -y gcc pkgconfig openssl openssl-devel which curl gettext libasan tar --allowerasing
 
         # In Windows runners, the Valkey servers run within WSL.
-        # These can be accessed via the WSL bash shell.
-        # See <https://github.com/Vampire/setup-wsl> for more details.
-        # WSL2 is not available on windows-11-arm runners (no Hyper-V), so skip for aarch64.
+        #   - Use WSL bash shell – see <https://github.com/Vampire/setup-wsl>.
+        #   - WSL is not available on Windows ARM runners – see #383.
         - name: Install software dependencies for Windows
-          if: "${{ inputs.os == 'windows' && !contains(inputs.target, 'aarch64') }}"
-          uses: Vampire/setup-wsl@v7
+          if: "${{ runner.os == 'Windows' && runner.arch != 'ARM64' }}"
+          uses: Vampire/setup-wsl@d1da7f2c0322a5ee4f24975344f67fc0f5baf364 # v7.0.0
           with:
               distribution: Ubuntu-22.04
               additional-packages: python3 build-essential git pkg-config libssl-dev
@@ -55,12 +54,11 @@ runs:
 
         # Always build from source first. This installs 'valkey-cli', which is
         # needed by 'start-valkey-docker' to start servers in Docker.
+        # Valkey servers cannot be installed on Windows ARM runners - see #383.
         - name: Install server from source
-          if: "${{ inputs.server-version }}"
+          if: "${{ inputs.server-version && !(runner.os == 'Windows' && runner.arch == 'ARM64') }}"
           uses: ./.github/actions/install-server
           with:
-              os: ${{ inputs.os }}
-              target: ${{ inputs.target }}
               server-version: ${{ inputs.server-version }}
 
         # For valkey 9.0 on ubuntu, also start Docker containers with the

@@ -54,17 +54,18 @@ choco install go-task
 
 [.NET](https://dotnet.microsoft.com/en-us/) is an open-source platform for building desktop, web, and mobile applications
 
-The Valkey GLIDE C# client requires .NET 8 and 9.
+The Valkey GLIDE C# client requires .NET 10 SDK for building and .NET 8 for testing.
 
 ```bash
 # Using Homebrew (macOS/Linux)
-brew install dotnet@8 dotnet@9
+brew install dotnet@8 dotnet@10
 
 # Using Chocolatey (Windows)
-choco install dotnet-8.0-sdk dotnet-9.0-sdk
+choco install dotnet-8.0-sdk dotnet-10.0-sdk
 
 # Direct download from Microsoft:
-# <https://dotnet.microsoft.com/en-us/download>
+# <https://dotnet.microsoft.com/en-us/download/dotnet/8.0>
+# <https://dotnet.microsoft.com/en-us/download/dotnet/10.0>
 ```
 
 ### Git Installation
@@ -196,8 +197,12 @@ In Windows, run from following commands from the appropriate Visual Studio Comma
     task test
 
     # Run specific test suites
-    task test:unit         # Unit tests only
-    task test:integration  # Integration tests only
+    task test:unit
+    task test:integration
+
+    # Run specific test classes or methods
+    task test:unit filter=MyTestClass
+    task test:integration filter=MyMethodName
 
     # Run tests with coverage and generate reports
     task coverage              # All tests with coverage
@@ -309,7 +314,8 @@ You can combine this with test filter as well:
 ```bash
 cluster-endpoints=localhost:7000 standalone-endpoints=localhost:6379 tls=true dotnet test --logger "console;verbosity=detailed" --filter "FullyQualifiedName~GetReturnsNull"
 ```
-#### IAM Authentication Tests
+
+### IAM Authentication Tests
 
 To run [IAM authentication tests](tests/Valkey.Glide.IntegrationTests/IamAuthTests.cs) locally, set the following environment variables:
 
@@ -355,10 +361,11 @@ Before making a contribution, ensure that all new user APIs and non-obvious code
 task lint
 
 # Run linters for specific languages:
-task lint:rust     # Run Rust linting
-task lint:csharp   # Run C# linting
-task lint:yaml     # Run YAML linting
-task lint:actions  # Run GitHub Actions linting
+task lint:rust      # Run Rust linting
+task lint:csharp    # Run C# linting
+task lint:yaml      # Run YAML linting
+task lint:actions   # Run GitHub Actions linting
+task lint:markdown  # Run Markdown linting
 
 # Run all formatters:
 task format
@@ -367,6 +374,7 @@ task format
 task format:rust
 task format:csharp
 task format:yaml
+task format:markdown
 
 # Check for broken links
 task check-links
@@ -391,7 +399,7 @@ Refer to the [resp-bench README](https://github.com/ikolomi/resp-bench/blob/main
 
 To update our GitHub workflow test runs, edit the JSON files in [`.github/json_matrices/`](.github/json_matrices/).
 
-It serves as a "test order", describing available properties and which `profiles` they belong to (`smoke`, `standard`, `full`). No workflow or script changes are needed.
+It serves as a "test order", describing available properties and which `profiles` they belong to (`standard`, `full`). No workflow or script changes are needed.
 
 Ex: To add a new platform to the `standard` profile, add a new entry to `.github/json_matrices/os_matrix.json` with `profiles: ['standard']`
 

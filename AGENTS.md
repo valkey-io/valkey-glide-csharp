@@ -16,7 +16,7 @@ This document gives AI agents the minimum, accurate context needed to work produ
 
 ## Build and Test Rules (Agents)
 
-- Always target `net8.0` when building or testing.
+- .NET 10 SDK is required to compile the solution.
 - Prefer `Task` runner commands when available; otherwise use `dotnet` directly with `--framework net8.0`.
 - Never pass individual `.cs` files to `dotnet test`; use project folders and filters.
 
@@ -33,9 +33,8 @@ Common commands:
   - `task test:integration` (integration tests only)
 
 - Filter tests:
-  - By class: `--filter "FullyQualifiedName~ClassName"`
-  - By method: `--filter "FullyQualifiedName~MethodName"`
-  - By display name pattern: `--filter "DisplayName~Pattern"`
+  - By class: `task test:unit filter=MyTestClass`
+  - By method: `task test:integration filter=MyMethodName`
 
 - Coverage and reports (preferred via Task):
   - `task coverage`, `task coverage:unit`, `task coverage:integration`
@@ -45,9 +44,9 @@ Common commands:
 
 - Prefer `task` commands for linting and formatting.
 - Lint checks (read-only, fail on issues):
-  - `task lint` (all checks), `task lint:rust`, `task lint:csharp`, `task lint:yaml`, `task lint:actions`
+  - `task lint` (all checks), `task lint:rust`, `task lint:csharp`, `task lint:yaml`, `task lint:actions`, `task lint:markdown`
 - Auto-fix formatting:
-  - `task format` (all languages), `task format:rust`, `task format:csharp`, `task format:yaml`
+  - `task format` (all languages), `task format:rust`, `task format:csharp`, `task format:yaml`, `task format:markdown`
 - Link checking (separate from lint, slower):
   - `task check-links`
 
@@ -163,7 +162,7 @@ Note: Conventional Commits apply to commit messages only. Do not enforce this fo
 ## Quality Gates (Agent Checklist)
 
 - Build passes on `net8.0`.
-- Lint passes: `task lint` (or individual `task lint:rust`, `task lint:csharp`, `task lint:yaml`).
+- Lint passes: `task lint` (or individual `task lint:rust`, `task lint:csharp`, `task lint:yaml`, `task lint:markdown`).
 - Tests pass; targeted via filters instead of per-file execution.
 - Generated outputs not committed.
 - Public API changes respect StackExchange.Redis compatibility.
