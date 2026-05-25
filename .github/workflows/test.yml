@@ -96,8 +96,10 @@ jobs:
             - name: Set up dotnet ${{ matrix.dotnet }}
               uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
               with:
+                  # .NET 10 SDK to build project
+                  # matrix.dotnet SDK for test execution
                   dotnet-version: |
-                      9
+                      10
                       ${{ matrix.dotnet }}
               env:
                   DOTNET_INSTALL_DIR: ~/.dotnet
@@ -257,8 +259,10 @@ jobs:
             - name: Set up dotnet ${{ matrix.dotnet }}
               uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
               with:
+                  # .NET 10 SDK to build project
+                  # matrix.dotnet SDK for test execution
                   dotnet-version: |
-                      9
+                      10
                       ${{ matrix.dotnet }}
 
             - name: Install shared software dependencies
@@ -320,8 +324,10 @@ jobs:
             - name: Set up dotnet ${{ matrix.dotnet }}
               uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
               with:
+                  # .NET 10 SDK to build project
+                  # matrix.dotnet SDK for test execution
                   dotnet-version: |
-                      9
+                      10
                       ${{ matrix.dotnet }}
               env:
                   DOTNET_INSTALL_DIR: ~/.dotnet

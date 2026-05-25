@@ -16,7 +16,7 @@ This document gives AI agents the minimum, accurate context needed to work produ
 
 ## Build and Test Rules (Agents)
 
-- Always target `net8.0` when building or testing.
+- .NET 10 SDK is required to compile the solution.
 - Prefer `Task` runner commands when available; otherwise use `dotnet` directly with `--framework net8.0`.
 - Never pass individual `.cs` files to `dotnet test`; use project folders and filters.
 

@@ -695,19 +695,11 @@ public static class PubSubUtils
         }
 
         // For lazy mode, retry until subscribed or timeout occurs.
-        using CancellationTokenSource cts = new(MaxDuration);
-
-        while (!cts.Token.IsCancellationRequested)
-        {
-            if (await IsSubscribedAsync(client, expectedSubscriptions))
-            {
-                return;
-            }
-
-            await Task.Delay(RetryInterval);
-        }
-
-        Assert.Fail("Expected subscriptions not found.");
+        await Polling.AssertTrueAsync(
+            () => IsSubscribedAsync(client, expectedSubscriptions),
+            "Expected subscriptions not found.",
+            timeout: MaxDuration,
+            interval: RetryInterval);
     }
 
     /// <summary>543
@@ -735,19 +727,11 @@ public static class PubSubUtils
         }
 
         // For lazy mode, retry until unsubscribed or timeout occurs.
-        using CancellationTokenSource cts = new(MaxDuration);
-
-        while (!cts.Token.IsCancellationRequested)
-        {
-            if (await IsNotSubscribedAsync(client, notExpected))
-            {
-                return;
-            }
-
-            await Task.Delay(RetryInterval);
-        }
-
-        Assert.Fail("Unexpected subscriptions found.");
+        await Polling.AssertTrueAsync(
+            () => IsNotSubscribedAsync(client, notExpected),
+            "Unexpected subscriptions found.",
+            timeout: MaxDuration,
+            interval: RetryInterval);
     }
 
     /// <summary>

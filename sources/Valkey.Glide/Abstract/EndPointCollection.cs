@@ -186,5 +186,5 @@ public sealed class EndPointCollection : Collection<EndPoint>, IEnumerable<EndPo
         return false;
     }
 
-    internal EndPointCollection Clone() => new([.. Items]);
+    internal EndPointCollection Clone() => [.. Items];
 }

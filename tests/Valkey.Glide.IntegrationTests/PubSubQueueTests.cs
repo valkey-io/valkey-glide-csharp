@@ -27,14 +27,13 @@ public class PubSubQueueTests
         // Verify that message is received.
         PubSubMessageQueue queue = subscriber.PubSubQueue!;
 
-        using var cts = new CancellationTokenSource(MaxDuration);
-        while (!cts.Token.IsCancellationRequested)
-        {
-            if (queue.Count > 0) break;
-            await Task.Delay(RetryInterval);
-        }
+        await Polling.AssertTrue(
+            () => queue.Count > 0,
+            "Expected message was not received.",
+            timeout: MaxDuration,
+            interval: RetryInterval);
 
-        var received = await queue.GetMessageAsync(cts.Token);
+        var received = await queue.GetMessageAsync(TestContext.Current.CancellationToken);
         Assert.Equal(message, received);
     }
 
@@ -56,12 +55,11 @@ public class PubSubQueueTests
         // Verify that all messages are received.
         PubSubMessageQueue queue = subscriber.PubSubQueue!;
 
-        using var cts = new CancellationTokenSource(MaxDuration);
-        while (!cts.Token.IsCancellationRequested)
-        {
-            if (queue!.Count >= messageCount) break;
-            await Task.Delay(RetryInterval);
-        }
+        await Polling.AssertTrue(
+            () => queue!.Count >= messageCount,
+            $"Expected {messageCount} messages but only received {queue.Count}.",
+            timeout: MaxDuration,
+            interval: RetryInterval);
 
         Assert.Equal(messageCount, queue.Count);
     }
