@@ -211,7 +211,7 @@ public abstract partial class BaseClient : IBaseClient
             {
                 try
                 {
-                    string host = Marshal.PtrToStringUTF8(hostPtr, (int)hostLen)!;
+                    string host = Marshal.PtrToStringUTF8(hostPtr, (int)hostLen);
                     var (resolvedHost, resolvedPort) = addressResolver(host, port);
 
                     if (string.IsNullOrEmpty(resolvedHost))
