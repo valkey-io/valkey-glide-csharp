@@ -96,8 +96,8 @@ public class ServerManagementFixture : IDisposable
     public ServerManagementFixture()
     {
         ConfigurationOptions config = new();
-        (string host, ushort port) = _standaloneServer.Addresses.First();
-        config.EndPoints.Add(host, port);
+        var address = _standaloneServer.Address;
+        config.EndPoints.Add(address.Host, address.Port);
         ConnectionMultiplexer conn = ConnectionMultiplexer.Connect(config);
         Server = conn.GetServers().First();
     }
