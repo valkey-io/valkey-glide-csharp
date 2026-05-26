@@ -16,12 +16,16 @@ tasks:
             Run unit tests.
 
             Options:
-              filter=MyClass   Filter tests by class or method name
-              coverage=true    Collect code coverage (produces .cobertura.xml)
+              filter=MyClass       Filter tests by class or method name
+              coverage=true        Collect code coverage
+              verbosity=detailed   Set verbosity (quiet|minimal|normal|detailed|diagnostic)
+              configuration=Debug  Set build configuration
         cmd: >-
             python3 dev/scripts/test.py --unit
             {{if (default "" .filter)}}--filter {{.filter}}{{end}}
             {{if eq (default "false" .coverage) "true"}}--coverage{{end}}
+            {{if (default "" .verbosity)}}--verbosity {{.verbosity}}{{end}}
+            {{if (default "" .configuration)}}--configuration {{.configuration}}{{end}}
 
     test:integration:
         desc: Run integration tests
@@ -29,12 +33,16 @@ tasks:
             Run integration tests.
 
             Options:
-              coverage=true    Collect code coverage
-              filter=MyClass   Filter tests by class or method name
+              filter=MyClass       Filter tests by class or method name
+              coverage=true        Collect code coverage
+              verbosity=detailed   Set verbosity (quiet|minimal|normal|detailed|diagnostic)
+              configuration=Debug  Set build configuration
         cmd: >-
             python3 dev/scripts/test.py --integration
             {{if (default "" .filter)}}--filter {{.filter}}{{end}}
             {{if eq (default "false" .coverage) "true"}}--coverage{{end}}
+            {{if (default "" .verbosity)}}--verbosity {{.verbosity}}{{end}}
+            {{if (default "" .configuration)}}--configuration {{.configuration}}{{end}}
 
     test:
         desc: Run all tests
@@ -42,12 +50,16 @@ tasks:
             Run all tests (unit + integration).
 
             Options:
-              coverage=true    Collect code coverage
-              filter=MyClass   Filter tests by class or method name
+              filter=MyClass       Filter tests by class or method name
+              coverage=true        Collect code coverage
+              verbosity=detailed   Set verbosity (quiet|minimal|normal|detailed|diagnostic)
+              configuration=Debug  Set build configuration
         cmd: >-
             python3 dev/scripts/test.py
             {{if (default "" .filter)}}--filter {{.filter}}{{end}}
             {{if eq (default "false" .coverage) "true"}}--coverage{{end}}
+            {{if (default "" .verbosity)}}--verbosity {{.verbosity}}{{end}}
+            {{if (default "" .configuration)}}--configuration {{.configuration}}{{end}}
 
     # Coverage
     # --------------------------------------------------------------------------------

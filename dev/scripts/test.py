@@ -12,12 +12,16 @@ Usage:
         [--integration]
         [--coverage]
         [--filter MyClass]
+        [--verbosity LEVEL]
+        [--configuration Debug]
 
 Options:
-    --unit          Run unit tests.
-    --integration   Run integration tests.
-    --coverage      Enable Coverlet code coverage collection.
-    --filter NAME   Filter tests by class or method name (FullyQualifiedName~ match).
+    --unit                  Run unit tests.
+    --integration           Run integration tests.
+    --coverage              Enable Coverlet code coverage collection.
+    --filter NAME           Filter tests by class or method name (FullyQualifiedName~ match).
+    --verbosity LEVEL       Set dotnet test verbosity (quiet|minimal|normal|detailed|diagnostic).
+    --configuration CFG     Build configuration (e.g. Debug, Release). Default: Release.
 """
 
 import argparse
@@ -67,7 +71,12 @@ def _check_server_version() -> None:
 
 
 def _build_command(
-    test_suite: TestSuite, *, coverage: bool, filter: str | None
+    test_suite: TestSuite,
+    *,
+    coverage: bool,
+    filter: str | None,
+    verbosity: str,
+    configuration: str,
 ) -> list[str]:
     """Assemble the dotnet test command."""
     cmd = [
@@ -75,9 +84,9 @@ def _build_command(
         "test",
         TEST_PROJECT_FOR_TEST_SUITE[test_suite],
         "--configuration",
-        "Release",
+        configuration,
         "--verbosity",
-        "normal",
+        verbosity,
     ]
 
     if coverage:
@@ -98,7 +107,12 @@ def _build_command(
 
 
 def _run_test_suite(
-    test_suite: TestSuite, *, coverage: bool, filter: str | None
+    test_suite: TestSuite,
+    *,
+    coverage: bool,
+    filter: str | None,
+    verbosity: str,
+    configuration: str,
 ) -> int:
     """Run a single test suite. Returns the process exit code."""
     if coverage:
@@ -107,7 +121,13 @@ def _run_test_suite(
             shutil.rmtree(results_dir)
         os.makedirs(results_dir, exist_ok=True)
 
-    cmd = _build_command(test_suite, coverage=coverage, filter=filter)
+    cmd = _build_command(
+        test_suite,
+        coverage=coverage,
+        filter=filter,
+        verbosity=verbosity,
+        configuration=configuration,
+    )
     result = subprocess.run(cmd, cwd=PROJECT_ROOT, check=False)
 
     return result.returncode
@@ -145,6 +165,19 @@ def _parse_args() -> argparse.Namespace:
         default=None,
         help="Filter tests by class or method name (FullyQualifiedName~ match)",
     )
+    parser.add_argument(
+        "--verbosity",
+        type=str,
+        default="normal",
+        choices=["quiet", "minimal", "normal", "detailed", "diagnostic"],
+        help="Set dotnet test verbosity level (default: normal)",
+    )
+    parser.add_argument(
+        "--configuration",
+        type=str,
+        default="Release",
+        help="Build configuration (default: Release)",
+    )
 
     return parser.parse_args()
 
@@ -170,8 +203,13 @@ def main() -> int:
     failed = []
     for test_suite in test_suites:
         exit_code = _run_test_suite(
-            test_suite, coverage=args.coverage, filter=args.filter
+            test_suite,
+            coverage=args.coverage,
+            filter=args.filter,
+            verbosity=args.verbosity,
+            configuration=args.configuration,
         )
+
         if exit_code != 0:
             failed.append(test_suite.value)
 
