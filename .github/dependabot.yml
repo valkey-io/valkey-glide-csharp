@@ -1,16 +1,13 @@
 version: 2
 
 updates:
-    # Enable version updates for NuGet (C#)
+    # Enable version updates for NuGet
     - package-ecosystem: "nuget"
       directory: "/"
       schedule:
           interval: "weekly"
           day: "monday"
           time: "09:00"
-      open-pull-requests-limit: 10
-      ignore:
-          - dependency-name: "StackExchange.Redis"
       groups:
           patch-updates:
               update-types:
@@ -20,8 +17,6 @@ updates:
                   - "minor"
       labels:
           - "dependencies"
-          - "nuget"
-          - "csharp"
 
     # Enable version updates for GitHub Actions
     - package-ecosystem: "github-actions"
@@ -30,7 +25,6 @@ updates:
           interval: "weekly"
           day: "monday"
           time: "09:00"
-      open-pull-requests-limit: 5
       groups:
           patch-updates:
               update-types:
@@ -40,4 +34,3 @@ updates:
                   - "minor"
       labels:
           - "dependencies"
-          - "github-actions"
