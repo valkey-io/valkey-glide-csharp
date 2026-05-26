@@ -56,7 +56,7 @@ public class ConnectionManagementCommandTests(TestConfiguration config)
             : await ((GlideClient)client).CustomCommand(InfoCommand);
 
         Assert.Contains($"name={clientName} ", result!.ToString()!);
-}
+    }
 
     #endregion
 }

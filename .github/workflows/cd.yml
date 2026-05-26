@@ -78,9 +78,9 @@ jobs:
             - name: Verify GLIDE_VERSION matches release version
               shell: bash
               run: |
-                  GLIDE_VERSION=$(grep 'GLIDE_VERSION' rust/.cargo/config.toml | sed 's/.*= *"\(.*\)"/\1/')
-                  if [ "$GLIDE_VERSION" != "$RELEASE_VERSION" ]; then
-                      echo "::error::GLIDE_VERSION in rust/.cargo/config.toml ($GLIDE_VERSION) does not match release version ($RELEASE_VERSION)"
+                  EXPECTED="GLIDE_VERSION = \"$RELEASE_VERSION\""
+                  if ! grep -qF "$EXPECTED" rust/.cargo/config.toml; then
+                      echo "::error::Expected '$EXPECTED' in rust/.cargo/config.toml but not found"
                       exit 1
                   fi
 
