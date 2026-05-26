@@ -70,6 +70,20 @@ jobs:
                   echo "Release version detected: $R_VERSION (raw: $RAW_VERSION)"
                   echo "RELEASE_VERSION=$R_VERSION" >> "$GITHUB_OUTPUT"
 
+            - name: Checkout
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+              with:
+                  sparse-checkout: rust/.cargo
+
+            - name: Verify GLIDE_VERSION matches release version
+              shell: bash
+              run: |
+                  GLIDE_VERSION=$(grep 'GLIDE_VERSION' rust/.cargo/config.toml | sed 's/.*= *"\(.*\)"/\1/')
+                  if [ "$GLIDE_VERSION" != "$RELEASE_VERSION" ]; then
+                      echo "::error::GLIDE_VERSION in rust/.cargo/config.toml ($GLIDE_VERSION) does not match release version ($RELEASE_VERSION)"
+                      exit 1
+                  fi
+
     create-binaries:
         needs: [load-platform-matrix]
         timeout-minutes: 35
