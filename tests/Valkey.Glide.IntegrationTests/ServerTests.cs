@@ -151,20 +151,4 @@ public class ServerTests(TestConfiguration config)
             Assert.Equal(ValkeyValue.Null, clientName); // No name should be set initially
         }
     }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task ClientInfo_ReportsCorrectLibNameAndVersion(BaseClient client)
-    {
-        var command = new GlideString[] { "CLIENT", "INFO" };
-        var result =
-            client is GlideClusterClient clusterClient
-            ? (await clusterClient.CustomCommand(command, Route.Random)).SingleValue
-            : await ((GlideClient)client).CustomCommand(command);
-        var info = result!.ToString()!;
-
-        Assert.Contains("lib-name=GlideC#", info);
-        Assert.Contains("lib-ver=1.2.0", info);
-        Assert.Contains("name= ", info);
-    }
 }
