@@ -12,11 +12,6 @@ vars:
     TARGET: '{{.target | default "all"}}'
     BUILD_TARGET: '{{if eq .TARGET "lib"}}sources/Valkey.Glide/{{end}}'
 
-    # Filter tests by class or method name.
-    # Usage: `task test:unit filter=MyTestClass`
-    FILTER: '{{.filter | default ""}}'
-    TEST_FILTER: '{{with .filter}}--filter FullyQualifiedName~{{.}}{{end}}'
-
 tasks:
     clean:
         desc: Clean test results and reports directories
@@ -36,20 +31,24 @@ tasks:
     test:unit:
         desc: Run unit tests only
         deps: [clean]
+        vars:
+            FILTER: '{{.filter | default ""}}'
         cmds:
             - dotnet test {{.UNIT_TEST_PROJECT}}
               --configuration Release
               --verbosity normal
-              {{.TEST_FILTER}}
+              {{if .FILTER}}--filter FullyQualifiedName~{{.FILTER}}{{end}}
 
     test:integration:
         desc: Run integration tests only
         deps: [clean]
+        vars:
+            FILTER: '{{.filter | default ""}}'
         cmds:
             - dotnet test {{.INTEGRATION_TEST_PROJECT}}
               --configuration Release
               --verbosity normal
-              {{.TEST_FILTER}}
+              {{if .FILTER}}--filter FullyQualifiedName~{{.FILTER}}{{end}}
 
     test:coverage:unit:
         desc: Run unit tests with coverage collection
