@@ -26,10 +26,22 @@ public class AddressResolverTests
             return (address.Host, address.Port);
         }
 
-        var config = BuildConfig(useCluster, address, useTls: TestConfiguration.TLS, addressResolver: Resolver);
+        var config = BuildConfig(useCluster, address, addressResolver: Resolver);
         await using var client = await CreateClient(config);
 
         await AssertConnected(client);
         Assert.True(count > 0);
+    }
+
+    [Theory]
+    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
+    public async Task AddressResolver_ThrowsException_FallsBackToOriginalAddress(bool useCluster)
+    {
+        var address = useCluster ? TestConfiguration.CLUSTER_ADDRESS : TestConfiguration.STANDALONE_ADDRESS;
+
+        var config = BuildConfig(useCluster, address, addressResolver: (_, _) => throw new InvalidOperationException("Resolution failed!"));
+        await using var client = await CreateClient(config);
+
+        await AssertConnected(client);
     }
 }
