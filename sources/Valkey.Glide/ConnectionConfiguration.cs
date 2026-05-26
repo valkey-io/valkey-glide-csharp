@@ -21,12 +21,21 @@ public abstract class ConnectionConfiguration
     public static readonly long CertificateMaxSize = 10 * 1024 * 1024; // 10 MB
 
     /// <summary>
-    /// Callback for resolving server addresses before connection.
-    /// Allows intercepting and rewriting host/port pairs before the client connects.
+    /// A callback for resolving server addresses before connection.
     /// </summary>
-    /// <param name="host">The configured host.</param>
-    /// <param name="port">The configured port.</param>
+    /// <param name="host">The configured host name or IP address.</param>
+    /// <param name="port">The configured port number.</param>
     /// <returns>The resolved (host, port) to use for the actual connection.</returns>
+    /// <remarks>
+    /// The resolver must be thread-safe and should avoid blocking operations, as it is
+    /// called synchronously during the connection process.
+    /// <para/>
+    /// If the resolver throws an exception, the client falls back to the original
+    /// (unresolved) address and logs the exception at <see cref="Level.Error"/>.
+    /// <para/>
+    /// The resolver is invoked once per address at initial connection time. It is not
+    /// invoked on subsequent reconnection attempts.
+    /// </remarks>
     public delegate (string host, ushort port) AddressResolverDelegate(string host, ushort port);
 
     #region Structs and Enums definitions
@@ -862,7 +871,6 @@ public abstract class ConnectionConfiguration
         }
 
         #endregion
-
         #region Client-Side Cache
 
         /// <summary>
@@ -886,13 +894,13 @@ public abstract class ConnectionConfiguration
         }
 
         #endregion
-
         #region Address Resolver
 
         /// <summary>
         /// Optional callback for resolving server addresses before connection.
         /// When set, the callback is invoked for each server address and can return a different host/port.
         /// </summary>
+        /// <seealso cref="AddressResolverDelegate"/>
         public AddressResolverDelegate? AddressResolver
         {
             get => Config.AddressResolver;
