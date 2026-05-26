@@ -229,7 +229,7 @@ public abstract partial class BaseClient : IBaseClient
                         return 0;
                     }
 
-                    if (resolvedPort <= 0)
+                    if (resolvedPort == 0)
                     {
                         var msg = $"Address resolver returned an invalid port ({resolvedPort}) for {host}:{port}";
                         Logger.Log(Level.Error, "AddressResolver", msg);
