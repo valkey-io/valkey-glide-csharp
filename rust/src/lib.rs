@@ -98,8 +98,27 @@ pub type FailureCallback = unsafe extern "C-unwind" fn(
 ) -> ();
 
 /// Callback for resolving server addresses before connection.
-/// Returns the resolved port (0 on error), and writes the resolved host into `resolved_host_buf`.
-/// `resolved_host_len` is set to the number of bytes written.
+///
+/// Invoked synchronously during connection setup to translate a configured (host, port) pair
+/// into the actual address to connect to. The callback writes the resolved hostname into the
+/// provided buffer and returns the resolved port.
+///
+/// # Arguments
+/// * `host` is a pointer to the UTF-8 encoded hostname to resolve.
+/// * `host_len` is the length of `host` in bytes.
+/// * `port` is the configured port number.
+/// * `resolved_host_buf` is a caller-allocated buffer to write the resolved hostname into.
+/// * `resolved_host_buf_len` is the size of `resolved_host_buf` in bytes.
+/// * `resolved_host_len` is an out-parameter set to the number of bytes written to `resolved_host_buf`.
+///
+/// # Returns
+/// The resolved port number, or `0` to signal an error (in which case the original address is used).
+///
+/// # Safety
+/// * `host` must be a valid pointer to `host_len` bytes of UTF-8 data.
+/// * `resolved_host_buf` must be a valid pointer to a writable buffer of at least `resolved_host_buf_len` bytes.
+/// * `resolved_host_len` must be a valid pointer to a writable `usize`.
+/// * The callback must not store any of the provided pointers beyond the duration of the call.
 pub type AddressResolverCallback = unsafe extern "C-unwind" fn(
     host: *const u8,
     host_len: usize,
@@ -109,6 +128,10 @@ pub type AddressResolverCallback = unsafe extern "C-unwind" fn(
     resolved_host_len: *mut usize,
 ) -> u16;
 
+/// Maximum resolved hostname length in bytes.
+const MAX_RESOLVED_HOST_LEN: usize = 1024;
+
+/// Implements the [`redis::AddressResolver`] trait.
 struct FFIAddressResolver {
     callback: AddressResolverCallback,
 }
@@ -124,9 +147,10 @@ impl std::fmt::Debug for FFIAddressResolver {
 
 impl redis::AddressResolver for FFIAddressResolver {
     /// Resolves the given host and port by invoking the C# callback.
+    ///
     /// On error, falls back to the original `(host, port)` unchanged.
     fn resolve(&self, host: &str, port: u16) -> (String, u16) {
-        let mut buf = vec![0u8; 1024];
+        let mut buf = [0u8; MAX_RESOLVED_HOST_LEN];
         let mut len: usize = 0;
         let resolved_port = unsafe {
             (self.callback)(

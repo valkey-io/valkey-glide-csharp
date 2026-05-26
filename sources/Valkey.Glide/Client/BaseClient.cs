@@ -205,12 +205,14 @@ public abstract partial class BaseClient : IBaseClient
         IntPtr addressResolverPointer = IntPtr.Zero;
         if (config.Request.AddressResolver != null)
         {
+            var addressResolver = config.Request.AddressResolver;
+
             client._addressResolverDelegate = (hostPtr, hostLen, port, bufPtr, bufLen, outLen) =>
             {
                 try
                 {
                     string host = Marshal.PtrToStringUTF8(hostPtr, (int)hostLen)!;
-                    var (resolvedHost, resolvedPort) = config.Request.AddressResolver(host, port);
+                    var (resolvedHost, resolvedPort) = addressResolver(host, port);
 
                     if (string.IsNullOrEmpty(resolvedHost))
                     {
