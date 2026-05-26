@@ -10,7 +10,7 @@ public class ConnectionManagementCommandTests(TestConfiguration config)
     #region Constants
 
     //TODO #414: Remove when ClientInfoAsync implemented.
-    private readonly GlideString[] InfoCommand = ["CLIENT", "INFO"];
+    private readonly GlideString[] _infoCommand = ["CLIENT", "INFO"];
 
     #endregion
     #region Public Properties
@@ -26,8 +26,8 @@ public class ConnectionManagementCommandTests(TestConfiguration config)
     public async Task TestClientInfo_ReportsCorrectLibNameAndVersion(BaseClient client)
     {
         var result = client is GlideClusterClient clusterClient
-            ? (await clusterClient.CustomCommand(InfoCommand, Route.Random)).SingleValue
-            : await ((GlideClient)client).CustomCommand(InfoCommand);
+            ? (await clusterClient.CustomCommand(_infoCommand, Route.Random)).SingleValue
+            : await ((GlideClient)client).CustomCommand(_infoCommand);
         var info = result!.ToString()!;
 
         Assert.Contains("lib-name=GlideC#", info);
@@ -52,8 +52,8 @@ public class ConnectionManagementCommandTests(TestConfiguration config)
                     .Build());
 
         var result = client is GlideClusterClient clusterClient
-            ? (await clusterClient.CustomCommand(InfoCommand, Route.Random)).SingleValue
-            : await ((GlideClient)client).CustomCommand(InfoCommand);
+            ? (await clusterClient.CustomCommand(_infoCommand, Route.Random)).SingleValue
+            : await ((GlideClient)client).CustomCommand(_infoCommand);
 
         Assert.Contains($"name={clientName} ", result!.ToString()!);
     }
