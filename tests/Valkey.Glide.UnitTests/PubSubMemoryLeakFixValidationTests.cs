@@ -17,12 +17,8 @@ public class PubSubMemoryLeakFixValidationTests
         // Arrange
         const int messageCount = 10_000;
 
-        // Force initial GC to get baseline
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
-
-        long initialMemory = GC.GetTotalMemory(false);
+        // Force initial GC to get a stable baseline
+        long initialMemory = GC.GetTotalMemory(forceFullCollection: true);
 
         // Act: Process multiple messages
         for (int i = 0; i < messageCount; i++)
@@ -33,12 +29,8 @@ public class PubSubMemoryLeakFixValidationTests
             ProcessSingleMessage(message, channel, null);
         }
 
-        // Force GC to clean up any leaked memory
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
-
-        long finalMemory = GC.GetTotalMemory(false);
+        // Force GC to clean up any leaked memory.
+        long finalMemory = GC.GetTotalMemory(forceFullCollection: true);
         long memoryGrowth = finalMemory - initialMemory;
 
         Console.WriteLine($"Processed {messageCount:N0} messages");
