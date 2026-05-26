@@ -728,7 +728,7 @@ public abstract class ConnectionConfiguration
         /// </summary>
         public string? ClientName
         {
-            get => Config.ClientName ?? "GlideC#";
+            get => Config.ClientName;
             set => Config.ClientName = value;
         }
 
