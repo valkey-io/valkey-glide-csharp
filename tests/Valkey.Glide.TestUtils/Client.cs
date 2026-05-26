@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using static Valkey.Glide.ConnectionConfiguration;
+
 namespace Valkey.Glide.TestUtils;
 
 /// <summary>
@@ -105,4 +107,16 @@ public static class Client
         string versionLine = lines.FirstOrDefault(static l => l.Contains("valkey_version")) ?? lines.First(static l => l.Contains("redis_version"));
         return new(versionLine.Split(':')[1]);
     }
+
+    /// <summary>
+    /// Creates a client for the given configuration.
+    /// </summary>
+    /// <param name="config">The client configuration.</param>
+    public static async Task<BaseClient> CreateClient(BaseClientConfiguration config)
+        => config switch
+        {
+            StandaloneClientConfiguration standalone => await GlideClient.CreateClient(standalone),
+            ClusterClientConfiguration cluster => await GlideClusterClient.CreateClient(cluster),
+            _ => throw new ArgumentException($"Unknown configuration type: {config.GetType().Name}")
+        };
 }

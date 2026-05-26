@@ -12,18 +12,6 @@ public abstract class Server : IDisposable
     #region Constants
 
     /// <summary>
-    /// Timeout for client connection and reconnection attempts.
-    /// Use a longer timeout to allow for slower connections in CI environments.
-    /// </summary>
-    protected static readonly TimeSpan ConnectionTimeout = TimeSpan.FromSeconds(30);
-
-    /// <summary>
-    /// Retry strategy for client connections.
-    /// Allow retries for transient connection timeouts in CI environments.
-    /// </summary>
-    protected static readonly RetryStrategy RetryStrategy = new(numberOfRetries: 5, factor: 100, exponentBase: 2);
-
-    /// <summary>
     /// Custom command arguments to kill all normal clients.
     /// </summary>
     protected static readonly GlideString[] KillClientArgs = ["CLIENT", "KILL", "TYPE", "NORMAL"];
@@ -37,7 +25,7 @@ public abstract class Server : IDisposable
     private readonly string _name = $"Server_{Guid.NewGuid():N}";
 
     /// <summary>
-    /// Indicates whether the server has been stopped.
+    /// Whether the server has been stopped.
     /// See <see cref="Dispose" />.
     /// </summary>
     private bool _disposed = false;
@@ -51,9 +39,9 @@ public abstract class Server : IDisposable
     #region Public Properties
 
     /// <summary>
-    /// Addresses of the server instances.
+    /// Address of the server.
     /// </summary>
-    public IList<Address> Addresses { get; init; }
+    public Address Address { get; init; }
 
     /// <summary>
     /// Indicates whether the server uses TLS.
@@ -81,7 +69,7 @@ public abstract class Server : IDisposable
     protected Server(bool useClusterMode, bool useTls)
     {
         UseTls = useTls;
-        Addresses = ServerManager.StartServer(_name, useClusterMode: useClusterMode, useTls: UseTls);
+        Address = ServerManager.StartServer(_name, useClusterMode: useClusterMode, useTls: UseTls).First();
 
         if (UseTls)
         {
@@ -148,31 +136,11 @@ public sealed class ClusterServer(bool useTls = false) : Server(useClusterMode: 
     /// Builds and returns a cluster client configuration builder for this server.
     /// </summary>
     public ClusterClientConfigurationBuilder CreateConfigBuilder()
-    {
-        ClusterClientConfigurationBuilder configBuilder = new()
-        {
-            UseTls = UseTls,
-            ConnectionTimeout = ConnectionTimeout,
-            ConnectionRetryStrategy = RetryStrategy
-        };
-
-        if (UseTls)
-        {
-            _ = configBuilder.WithTrustedCertificate(CertificateData!);
-        }
-
-        if (_password is not null)
-        {
-            _ = configBuilder.WithAuthentication(_password);
-        }
-
-        foreach ((string host, ushort port) in Addresses)
-        {
-            _ = configBuilder.WithAddress(host, port);
-        }
-
-        return configBuilder;
-    }
+        => Config.BuildClusterConfig(
+            address: Address,
+            useTls: UseTls,
+            trustedCertificate: UseTls ? CertificateData : null,
+            password: _password);
 
     /// <inheritdoc cref="Server.CreateClientAsync()"/>
     public override async Task<BaseClient> CreateClientAsync()
@@ -218,31 +186,11 @@ public sealed class StandaloneServer(bool useTls = false) : Server(useClusterMod
     /// Builds and returns a standalone client configuration builder for this server.
     /// </summary>
     public StandaloneClientConfigurationBuilder CreateConfigBuilder()
-    {
-        StandaloneClientConfigurationBuilder configBuilder = new()
-        {
-            UseTls = UseTls,
-            ConnectionTimeout = ConnectionTimeout,
-            ConnectionRetryStrategy = RetryStrategy
-        };
-
-        if (UseTls)
-        {
-            _ = configBuilder.WithTrustedCertificate(CertificateData!);
-        }
-
-        if (_password is not null)
-        {
-            _ = configBuilder.WithAuthentication(_password);
-        }
-
-        foreach ((string host, ushort port) in Addresses)
-        {
-            _ = configBuilder.WithAddress(host, port);
-        }
-
-        return configBuilder;
-    }
+        => Config.BuildStandaloneConfig(
+            address: Address,
+            useTls: UseTls,
+            trustedCertificate: UseTls ? CertificateData : null,
+            password: _password);
 
     /// <inheritdoc cref="Server.CreateClientAsync()"/>
     public override async Task<BaseClient> CreateClientAsync()

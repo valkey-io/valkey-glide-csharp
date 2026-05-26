@@ -88,10 +88,8 @@ public class DnsTests(DnsTestsFixture fixture) : IClassFixture<DnsTestsFixture>
         if (useCluster)
         {
             var server = useTls ? fixture.TlsClusterServer! : fixture.ClusterServer!;
-            var port = server.Addresses.First().Port;
-
             var builder = new ClusterClientConfigurationBuilder()
-                .WithAddress(host, port);
+                .WithAddress(host, server.Address.Port);
 
             if (useTls)
             {
@@ -105,10 +103,8 @@ public class DnsTests(DnsTestsFixture fixture) : IClassFixture<DnsTestsFixture>
         else
         {
             var server = useTls ? fixture.TlsStandaloneServer! : fixture.StandaloneServer!;
-            var port = server.Addresses.First().Port;
-
             var builder = new StandaloneClientConfigurationBuilder()
-                .WithAddress(host, port);
+                .WithAddress(host, server.Address.Port);
 
             if (useTls)
             {

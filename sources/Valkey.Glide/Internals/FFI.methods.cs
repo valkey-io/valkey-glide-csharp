@@ -49,7 +49,7 @@ internal partial class FFI
 
     [LibraryImport("libglide_rs", EntryPoint = "create_client")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial void CreateClientFfi(IntPtr config, IntPtr successCallback, IntPtr failureCallback, IntPtr pubsubCallback);
+    public static partial void CreateClientFfi(IntPtr config, IntPtr successCallback, IntPtr failureCallback, IntPtr pubsubCallback, IntPtr addressResolverCallback);
 
     [LibraryImport("libglide_rs", EntryPoint = "close_client")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -135,7 +135,7 @@ internal partial class FFI
     public static extern void FreeString(IntPtr strPtr);
 
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "create_client")]
-    public static extern void CreateClientFfi(IntPtr config, IntPtr successCallback, IntPtr failureCallback, IntPtr pubsubCallback);
+    public static extern void CreateClientFfi(IntPtr config, IntPtr successCallback, IntPtr failureCallback, IntPtr pubsubCallback, IntPtr addressResolverCallback);
 
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "close_client")]
     public static extern void CloseClientFfi(IntPtr client);

@@ -358,6 +358,7 @@ pub(crate) unsafe fn create_connection_request(
         periodic_checks: None,
         inflight_requests_limit: None,
         node_discovery_mode: glide_core::client::NodeDiscoveryMode::default(),
+        address_resolver: None,
     })
 }
 
