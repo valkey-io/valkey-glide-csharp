@@ -26,7 +26,7 @@ public class AddressResolverTests
             return (address.Host, address.Port);
         }
 
-        var config = BuildConfig(useCluster, [address], TestConfiguration.TLS, addressResolver: Resolver);
+        var config = BuildConfig(useCluster, address, useTls: TestConfiguration.TLS, addressResolver: Resolver);
         await using var client = await CreateClient(config);
 
         await AssertConnected(client);

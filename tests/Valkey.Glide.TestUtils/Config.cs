@@ -27,16 +27,16 @@ public static class Config
     #region Public Methods
 
     /// <summary>
-    /// Builds a standalone client configuration builder with the given addresses and options.
+    /// Builds a standalone client configuration builder with the given address and options.
     /// </summary>
     public static StandaloneClientConfigurationBuilder BuildStandaloneConfig(
-        IEnumerable<Address> addresses,
+        Address address,
+        AddressResolverDelegate? addressResolver = null,
         bool useTls = false,
         TimeSpan? connectionTimeout = null,
         RetryStrategy? retryStrategy = null,
         byte[]? trustedCertificate = null,
-        string? password = null,
-        AddressResolverDelegate? addressResolver = null)
+        string? password = null)
     {
         StandaloneClientConfigurationBuilder builder = new()
         {
@@ -45,10 +45,7 @@ public static class Config
             ConnectionRetryStrategy = retryStrategy ?? RetryStrategy,
         };
 
-        foreach ((string host, ushort port) in addresses)
-        {
-            _ = builder.WithAddress(host, port);
-        }
+        _ = builder.WithAddress(address.Host, address.Port);
 
         if (trustedCertificate is not null)
         {
@@ -69,16 +66,16 @@ public static class Config
     }
 
     /// <summary>
-    /// Builds a cluster client configuration builder with the given addresses and options.
+    /// Builds a cluster client configuration builder with the given address and options.
     /// </summary>
     public static ClusterClientConfigurationBuilder BuildClusterConfig(
-        IEnumerable<Address> addresses,
+        Address address,
+        AddressResolverDelegate? addressResolver = null,
         bool useTls = false,
         TimeSpan? connectionTimeout = null,
         RetryStrategy? retryStrategy = null,
         byte[]? trustedCertificate = null,
-        string? password = null,
-        AddressResolverDelegate? addressResolver = null)
+        string? password = null)
     {
         ClusterClientConfigurationBuilder builder = new()
         {
@@ -87,10 +84,7 @@ public static class Config
             ConnectionRetryStrategy = retryStrategy ?? RetryStrategy,
         };
 
-        foreach ((string host, ushort port) in addresses)
-        {
-            _ = builder.WithAddress(host, port);
-        }
+        _ = builder.WithAddress(address.Host, address.Port);
 
         if (trustedCertificate is not null)
         {
@@ -111,20 +105,20 @@ public static class Config
     }
 
     /// <summary>
-    /// Builds a client configuration for the given mode, addresses, and options.
+    /// Builds a client configuration for the given mode, address, and options.
     /// </summary>
     public static BaseClientConfiguration BuildConfig(
         bool clusterMode,
-        IEnumerable<Address> addresses,
+        Address address,
+        AddressResolverDelegate? addressResolver = null,
         bool useTls = false,
         TimeSpan? connectionTimeout = null,
         RetryStrategy? retryStrategy = null,
         byte[]? trustedCertificate = null,
-        string? password = null,
-        AddressResolverDelegate? addressResolver = null)
+        string? password = null)
         => clusterMode
-            ? BuildClusterConfig(addresses, useTls, connectionTimeout, retryStrategy, trustedCertificate, password, addressResolver).Build()
-            : BuildStandaloneConfig(addresses, useTls, connectionTimeout, retryStrategy, trustedCertificate, password, addressResolver).Build();
+            ? BuildClusterConfig(address, addressResolver, useTls, connectionTimeout, retryStrategy, trustedCertificate, password).Build()
+            : BuildStandaloneConfig(address, addressResolver, useTls, connectionTimeout, retryStrategy, trustedCertificate, password).Build();
 
     #endregion
 }

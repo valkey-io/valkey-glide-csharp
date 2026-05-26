@@ -794,15 +794,14 @@ public class GenericCommandsFixture : IDisposable
 {
     private readonly StandaloneServer _standaloneServer;
     private readonly ConnectionMultiplexer _connection;
-    private readonly GlideClient _client;
 
     public IDatabase Database { get; }
-    public GlideClient Client => _client;
+    public GlideClient Client { get; }
 
     public GenericCommandsFixture()
     {
         _standaloneServer = new();
-        var (host, port) = _standaloneServer.Addresses.First();
+        var (host, port) = _standaloneServer.Address;
 
         ConfigurationOptions config = new();
         config.EndPoints.Add(host, port);
@@ -814,12 +813,12 @@ public class GenericCommandsFixture : IDisposable
         var glideConfig = new StandaloneClientConfigurationBuilder()
             .WithAddress(host, port)
             .Build();
-        _client = GlideClient.CreateClient(glideConfig).GetAwaiter().GetResult();
+        Client = GlideClient.CreateClient(glideConfig).GetAwaiter().GetResult();
     }
 
     public void Dispose()
     {
-        _client.Dispose();
+        Client.Dispose();
         _connection.Dispose();
         _standaloneServer.Dispose();
     }

@@ -353,10 +353,8 @@ public class StandaloneClientTests(TestConfiguration config)
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
     public async Task ConfigResetStatisticsAsync_ResetsStats(GlideClient client)
-    {
         // This should not throw
-        await client.ConfigResetStatisticsAsync();
-    }
+        => await client.ConfigResetStatisticsAsync();
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
@@ -492,11 +490,10 @@ public class StandaloneClientTests(TestConfiguration config)
     public async Task Connect_WithIpAddress_Succeeds(string address)
     {
         using var server = new StandaloneServer(useTls: false);
-        var port = server.Addresses.First().Port;
-        var configBuilder = new ConnectionConfiguration.StandaloneClientConfigurationBuilder()
-            .WithAddress(address, port);
+        var builder = new ConnectionConfiguration.StandaloneClientConfigurationBuilder()
+            .WithAddress(address, server.Address.Port);
 
-        await using var client = await GlideClient.CreateClient(configBuilder.Build());
+        await using var client = await GlideClient.CreateClient(builder.Build());
         await AssertConnected(client);
     }
 }

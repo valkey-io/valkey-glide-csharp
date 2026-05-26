@@ -39,9 +39,9 @@ public abstract class Server : IDisposable
     #region Public Properties
 
     /// <summary>
-    /// Addresses of the server instances.
+    /// Address of the server.
     /// </summary>
-    public IList<Address> Addresses { get; init; }
+    public Address Address { get; init; }
 
     /// <summary>
     /// Indicates whether the server uses TLS.
@@ -69,7 +69,7 @@ public abstract class Server : IDisposable
     protected Server(bool useClusterMode, bool useTls)
     {
         UseTls = useTls;
-        Addresses = ServerManager.StartServer(_name, useClusterMode: useClusterMode, useTls: UseTls);
+        Address = ServerManager.StartServer(_name, useClusterMode: useClusterMode, useTls: UseTls).First();
 
         if (UseTls)
         {
@@ -136,7 +136,8 @@ public sealed class ClusterServer(bool useTls = false) : Server(useClusterMode: 
     /// Builds and returns a cluster client configuration builder for this server.
     /// </summary>
     public ClusterClientConfigurationBuilder CreateConfigBuilder()
-        => Config.BuildClusterConfig(Addresses,
+        => Config.BuildClusterConfig(
+            address: Address,
             useTls: UseTls,
             trustedCertificate: UseTls ? CertificateData : null,
             password: _password);
@@ -185,7 +186,8 @@ public sealed class StandaloneServer(bool useTls = false) : Server(useClusterMod
     /// Builds and returns a standalone client configuration builder for this server.
     /// </summary>
     public StandaloneClientConfigurationBuilder CreateConfigBuilder()
-        => Config.BuildStandaloneConfig(Addresses,
+        => Config.BuildStandaloneConfig(
+            address: Address,
             useTls: UseTls,
             trustedCertificate: UseTls ? CertificateData : null,
             password: _password);
