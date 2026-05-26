@@ -6,51 +6,48 @@ namespace Valkey.Glide.UnitTests;
 
 public class AddressResolverTests
 {
+    #region Constants
+
+    private static readonly (string, ushort) Resolved = ("resolved-host", 9999);
+    private static readonly AddressResolverDelegate Resolver = (host, port) => Resolved;
+
+    #endregion
+
+    #region Tests
+
     [Fact]
-    public void StandaloneBuilder_WithAddressResolver_SetsResolver()
+    public void WithAddressResolver_Standalone_SetsResolver()
     {
-        static (string, int) Resolver(string host, int port) => ("resolved-host", 9999);
-        var config = new StandaloneClientConfigurationBuilder()
-            .WithAddressResolver(Resolver)
-            .Build();
-        Assert.NotNull(config.Request.AddressResolver);
+        var config = new StandaloneClientConfigurationBuilder().WithAddressResolver(Resolver).Build();
+        Assert.Equal(Resolver, config.Request.AddressResolver);
+        Assert.Equal(Resolved, config.Request.AddressResolver!("localhost", 6379));
+
     }
 
     [Fact]
-    public void ClusterBuilder_WithAddressResolver_SetsResolver()
+    public void WithAddressResolver_Cluster_SetsResolver()
     {
-        static (string, int) Resolver(string host, int port) => (host, port);
-        var config = new ClusterClientConfigurationBuilder()
-            .WithAddressResolver(Resolver)
-            .Build();
-        Assert.NotNull(config.Request.AddressResolver);
+        var config = new ClusterClientConfigurationBuilder().WithAddressResolver(Resolver).Build();
+        Assert.Equal(Resolver, config.Request.AddressResolver);
+        Assert.Equal(Resolved, config.Request.AddressResolver!("localhost", 6379));
+
     }
 
     [Fact]
-    public void AddressResolver_DefaultIsNull()
-    {
-        var config = new StandaloneClientConfigurationBuilder().Build();
-        Assert.Null(config.Request.AddressResolver);
-    }
+    public void AddressResolver_Standalone_DefaultIsNull()
+        => Assert.Null(new StandaloneClientConfigurationBuilder().Build().Request.AddressResolver);
 
     [Fact]
-    public void AddressResolver_InvokesCallback()
-    {
-        static (string, int) Resolver(string host, int port) => ("proxy.example.com", 7000);
-        var config = new StandaloneClientConfigurationBuilder()
-            .WithAddressResolver(Resolver)
-            .Build();
-        var (resolvedHost, resolvedPort) = config.Request.AddressResolver!("localhost", 6379);
-        Assert.Equal("proxy.example.com", resolvedHost);
-        Assert.Equal(7000, resolvedPort);
-    }
+    public void AddressResolver_Cluster_DefaultIsNull()
+        => Assert.Null(new ClusterClientConfigurationBuilder().Build().Request.AddressResolver);
 
     [Fact]
-    public void AddressResolver_NullIsValid()
-    {
-        var builder = new StandaloneClientConfigurationBuilder();
-        builder.AddressResolver = null;
-        var config = builder.Build();
-        Assert.Null(config.Request.AddressResolver);
-    }
+    public void AddressResolver_Standalone_SetToNull()
+        => Assert.Null(new StandaloneClientConfigurationBuilder { AddressResolver = null }.Build().Request.AddressResolver);
+
+    [Fact]
+    public void AddressResolver_Cluster_SetToNull()
+        => Assert.Null(new ClusterClientConfigurationBuilder { AddressResolver = null }.Build().Request.AddressResolver);
+
+    #endregion
 }

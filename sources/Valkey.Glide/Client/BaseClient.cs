@@ -216,7 +216,7 @@ public abstract partial class BaseClient : IBaseClient
                     return 0;
                 Marshal.Copy(bytes, 0, bufPtr, bytes.Length);
                 unsafe { *(UIntPtr*)outLen = (UIntPtr)bytes.Length; }
-                return (ushort)resolvedPort;
+                return resolvedPort;
             };
             addressResolverPointer = Marshal.GetFunctionPointerForDelegate(client._addressResolverDelegate);
         }

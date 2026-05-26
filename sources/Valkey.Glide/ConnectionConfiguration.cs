@@ -27,7 +27,7 @@ public abstract class ConnectionConfiguration
     /// <param name="host">The configured host.</param>
     /// <param name="port">The configured port.</param>
     /// <returns>The resolved (host, port) to use for the actual connection.</returns>
-    public delegate (string host, int port) AddressResolverDelegate(string host, int port);
+    public delegate (string host, ushort port) AddressResolverDelegate(string host, ushort port);
 
     #region Structs and Enums definitions
 
