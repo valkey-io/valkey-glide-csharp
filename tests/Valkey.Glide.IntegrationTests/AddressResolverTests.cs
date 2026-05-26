@@ -44,4 +44,40 @@ public class AddressResolverTests
 
         await AssertConnected(client);
     }
+
+    [Theory]
+    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
+    public async Task AddressResolver_ReturnsEmptyHost_FallsBackToOriginalAddress(bool useCluster)
+    {
+        var address = useCluster ? TestConfiguration.CLUSTER_ADDRESS : TestConfiguration.STANDALONE_ADDRESS;
+
+        var config = BuildConfig(useCluster, address, addressResolver: (_, _) => ("", address.Port));
+        await using var client = await CreateClient(config);
+
+        await AssertConnected(client);
+    }
+
+    [Theory]
+    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
+    public async Task AddressResolver_ReturnsPortZero_FallsBackToOriginalAddress(bool useCluster)
+    {
+        var address = useCluster ? TestConfiguration.CLUSTER_ADDRESS : TestConfiguration.STANDALONE_ADDRESS;
+
+        var config = BuildConfig(useCluster, address, addressResolver: (_, _) => (address.Host, 0));
+        await using var client = await CreateClient(config);
+
+        await AssertConnected(client);
+    }
+
+    [Theory]
+    [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
+    public async Task AddressResolver_ReturnsOversizedHost_FallsBackToOriginalAddress(bool useCluster)
+    {
+        var address = useCluster ? TestConfiguration.CLUSTER_ADDRESS : TestConfiguration.STANDALONE_ADDRESS;
+
+        var config = BuildConfig(useCluster, address, addressResolver: (_, _) => (new string('a', 2048), address.Port));
+        await using var client = await CreateClient(config);
+
+        await AssertConnected(client);
+    }
 }

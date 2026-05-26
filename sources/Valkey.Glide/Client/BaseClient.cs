@@ -209,27 +209,40 @@ public abstract partial class BaseClient : IBaseClient
             {
                 try
                 {
-                    string host = Marshal.PtrToStringUTF8(hostPtr, (int)hostLen) ?? string.Empty;
+                    string host = Marshal.PtrToStringUTF8(hostPtr, (int)hostLen)!;
                     var (resolvedHost, resolvedPort) = config.Request.AddressResolver(host, port);
-                    if (resolvedPort <= 0 || string.IsNullOrEmpty(resolvedHost))
+
+                    if (string.IsNullOrEmpty(resolvedHost))
                     {
+                        var msg = $"Address resolver returned an empty or null host for {host}:{port}";
+                        Logger.Log(Level.Error, "AddressResolver", msg);
                         return 0;
                     }
 
                     byte[] bytes = System.Text.Encoding.UTF8.GetBytes(resolvedHost);
                     if (bytes.Length > (int)bufLen)
                     {
+                        var msg = $"Resolved host length ({bytes.Length} bytes) exceeds maximum length ({bufLen} bytes) for {host}:{port}";
+                        Logger.Log(Level.Error, "AddressResolver", msg);
+                        return 0;
+                    }
+
+                    if (resolvedPort <= 0)
+                    {
+                        var msg = $"Address resolver returned an invalid port ({resolvedPort}) for {host}:{port}";
+                        Logger.Log(Level.Error, "AddressResolver", msg);
                         return 0;
                     }
 
                     Marshal.Copy(bytes, 0, bufPtr, bytes.Length);
                     unsafe { *(UIntPtr*)outLen = (UIntPtr)bytes.Length; }
+
                     return resolvedPort;
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log(Level.Error, "AddressResolver",
-                        $"Address resolver callback threw an exception: {ex.Message}", ex);
+                    var msg = $"Address resolver callback threw an exception: {ex.Message}";
+                    Logger.Log(Level.Error, "AddressResolver", msg, ex);
                     return 0;
                 }
             };
