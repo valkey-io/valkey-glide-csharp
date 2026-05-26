@@ -123,6 +123,8 @@ impl std::fmt::Debug for FFIAddressResolver {
 }
 
 impl redis::AddressResolver for FFIAddressResolver {
+    /// Resolves the given host and port by invoking the C# callback.
+    /// On error, falls back to the original `(host, port)` unchanged.
     fn resolve(&self, host: &str, port: u16) -> (String, u16) {
         let mut buf = vec![0u8; 1024];
         let mut len: usize = 0;
@@ -202,6 +204,7 @@ impl Drop for PanicGuard {
 ///   See the safety documentation of [`SuccessCallback`] and [`FailureCallback`].
 /// * `pubsub_callback` is an optional callback. When provided, it must be a valid function pointer.
 ///   See the safety documentation in the FFI module for PubSubCallback.
+/// * `address_resolver` is an optional callback. When provided, it must be a valid function pointer.
 #[allow(rustdoc::private_intra_doc_links)]
 #[unsafe(no_mangle)]
 pub unsafe extern "C-unwind" fn create_client(
