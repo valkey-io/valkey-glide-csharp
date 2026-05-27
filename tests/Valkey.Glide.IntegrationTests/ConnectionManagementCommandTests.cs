@@ -10,7 +10,10 @@ public class ConnectionManagementCommandTests(TestConfiguration config)
     #region Constants
 
     //TODO #414: Remove when ClientInfoAsync implemented.
-    private readonly GlideString[] _infoCommand = ["CLIENT", "INFO"];
+    private static readonly GlideString[] InfoCommand = ["CLIENT", "INFO"];
+
+    private static readonly string LibVersion =
+        Environment.GetEnvironmentVariable("GLIDE_VERSION") ?? "unknown";
 
     #endregion
     #region Public Properties
@@ -26,12 +29,12 @@ public class ConnectionManagementCommandTests(TestConfiguration config)
     public async Task TestClientInfo_ReportsCorrectLibNameAndVersion(BaseClient client)
     {
         var result = client is GlideClusterClient clusterClient
-            ? (await clusterClient.CustomCommand(_infoCommand, Route.Random)).SingleValue
-            : await ((GlideClient)client).CustomCommand(_infoCommand);
+            ? (await clusterClient.CustomCommand(InfoCommand, Route.Random)).SingleValue
+            : await ((GlideClient)client).CustomCommand(InfoCommand);
         var info = result!.ToString()!;
 
         Assert.Contains("lib-name=GlideC#", info);
-        Assert.Contains("lib-ver=1.2.0", info);
+        Assert.Contains($"lib-ver={LibVersion}", info);
         Assert.Contains("name= ", info);
     }
 
@@ -52,8 +55,8 @@ public class ConnectionManagementCommandTests(TestConfiguration config)
                     .Build());
 
         var result = client is GlideClusterClient clusterClient
-            ? (await clusterClient.CustomCommand(_infoCommand, Route.Random)).SingleValue
-            : await ((GlideClient)client).CustomCommand(_infoCommand);
+            ? (await clusterClient.CustomCommand(InfoCommand, Route.Random)).SingleValue
+            : await ((GlideClient)client).CustomCommand(InfoCommand);
 
         Assert.Contains($"name={clientName} ", result!.ToString()!);
     }

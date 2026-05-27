@@ -70,22 +70,8 @@ jobs:
                   echo "Release version detected: $R_VERSION (raw: $RAW_VERSION)"
                   echo "RELEASE_VERSION=$R_VERSION" >> "$GITHUB_OUTPUT"
 
-            - name: Checkout
-              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-              with:
-                  sparse-checkout: rust/.cargo
-
-            - name: Verify GLIDE_VERSION matches release version
-              shell: bash
-              run: |
-                  EXPECTED="GLIDE_VERSION = \"$RELEASE_VERSION\""
-                  if ! grep -qF "$EXPECTED" rust/.cargo/config.toml; then
-                      echo "::error::Expected '$EXPECTED' in rust/.cargo/config.toml but not found"
-                      exit 1
-                  fi
-
     create-binaries:
-        needs: [load-platform-matrix]
+        needs: [load-platform-matrix, set-release-version]
         timeout-minutes: 35
         strategy:
             # Run all jobs
@@ -119,6 +105,8 @@ jobs:
             - name: Build native libs (linux gnu)
               if: ${{ contains(matrix.host.target, 'linux-gnu') }}
               working-directory: rust
+              env:
+                  GLIDE_VERSION: ${{ needs.set-release-version.outputs.RELEASE_VERSION }}
               run: |
                   cargo zigbuild -r --target ${{ matrix.host.target }}.2.17
                   mkdir -p target/release
@@ -126,6 +114,8 @@ jobs:
             - name: Build native libs
               if: ${{ !contains(matrix.host.target, 'linux-gnu') }}
               working-directory: rust
+              env:
+                  GLIDE_VERSION: ${{ needs.set-release-version.outputs.RELEASE_VERSION }}
               run: cargo build --release --target ${{ matrix.host.target }}
 
             - name: Upload artifacts to publish
