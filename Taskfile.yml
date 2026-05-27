@@ -1,11 +1,6 @@
 version: "3"
 
 tasks:
-    install-tools:
-        desc: Install required tools for coverage reporting
-        cmd: dotnet tool install --global dotnet-reportgenerator-globaltool --version 5.2.5
-        status:
-            - which reportgenerator
 
     # Test
     # --------------------------------------------------------------------------------
@@ -63,6 +58,12 @@ tasks:
 
     # Coverage
     # --------------------------------------------------------------------------------
+
+    coverage:install:
+        desc: Install coverage reporting tools
+        cmd: dotnet tool install --global dotnet-reportgenerator-globaltool --version 5.2.5
+        status:
+            - which reportgenerator
 
     coverage:report:
         desc: Generate coverage reports

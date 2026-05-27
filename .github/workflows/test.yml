@@ -184,7 +184,7 @@ jobs:
               if: ${{ env.RUN_COVERAGE == 'true' }}
               shell: bash
               run: |
-                  task install-tools
+                  task coverage:install
                   task coverage:report
                   task coverage:check
 

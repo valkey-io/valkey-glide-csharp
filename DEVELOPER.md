@@ -228,9 +228,6 @@ The project uses Task for standardized development workflows. Here are the key c
 # View all available tasks
 task --list
 
-# Install required tools (coverage reporting)
-task install-tools
-
 # Build and test workflows
 task build               # Build the solution
 task build target=lib    # Build only Valkey.Glide
@@ -244,6 +241,7 @@ task test:unit coverage=true         # Unit tests with coverage
 task test:integration coverage=true  # Integration tests with coverage
 
 # Coverage
+task coverage:install # Install coverage reporting tools
 task coverage:report  # Generate HTML + JSON coverage reports
 task coverage:check   # Compare measured coverage against baseline
 task coverage:update  # Update the coverage baseline
