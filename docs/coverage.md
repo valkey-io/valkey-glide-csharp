@@ -2,6 +2,9 @@
 
 This project includes support for measuring line and branch coverage, including a coverage baseline and checks to ensure coverage does not decrease.
 
+![Line coverage](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fvalkey-io%2Fvalkey-glide-csharp%2Fmain%2Fdev%2Fcoverage%2Fcoverage-baseline.json&query=%24.line_coverage&suffix=%25&label=Line%20Coverage)
+![Branch coverage](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fvalkey-io%2Fvalkey-glide-csharp%2Fmain%2Fdev%2Fcoverage%2Fcoverage-baseline.json&query=%24.branch_coverage&suffix=%25&label=Branch%20Coverage)
+
 ## How It Works
 
 The coverage pipeline has three stages:

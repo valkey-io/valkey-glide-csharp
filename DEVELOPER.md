@@ -1,7 +1,5 @@
 # Developer Guide
 
-![Coverage](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fvalkey-io%2Fvalkey-glide-csharp%2Fmain%2Fdev%2Fcoverage%2Fcoverage-baseline.json&query=%24.linecoverage&suffix=%25&label=coverage)
-
 This document describes how to set up your development environment to build and test the Valkey GLIDE C# wrapper.
 
 ## Development Overview
