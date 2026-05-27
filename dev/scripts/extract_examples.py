@@ -42,7 +42,7 @@ class ExamplesExtractor:
         """
         results: dict[str, str] = {}
 
-        for dirpath, _, filenames in os.walk(SOURCE_DIR):
+        for dirpath, _, filenames in os.walk(SOURCES_DIR):
             for filename in sorted(filenames):
                 if not filename.endswith(".cs"):
                     continue
