@@ -71,16 +71,27 @@ jobs:
         runs-on: ${{ matrix.host.runner }}
         env:
             VALKEY_GLIDE_DNS_TESTS_ENABLED: "1"
-            RUN_COVERAGE: >-
-                ${{ matrix.dotnet == '8.0'
-                 && matrix.server.type == 'valkey'
-                 && matrix.server.version == '9.0'
-                 && matrix.host.runner == 'ubuntu-24.04' }}
 
         steps:
             - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
               with:
                   submodules: true
+
+            - name: Determine whether to run with coverage
+              shell: bash
+              run: |
+                  SERVER_TYPE=$(jq -r '.server_type' dev/coverage/coverage-baseline.json)
+                  SERVER_VERSION=$(jq -r '.server_version' dev/coverage/coverage-baseline.json)
+
+                  RUN_COVERAGE=false
+                  if [[ "${{ matrix.dotnet }}" == "8.0" \
+                     && "${{ matrix.server.type }}" == "$SERVER_TYPE" \
+                     && "${{ matrix.server.version }}" == "$SERVER_VERSION" \
+                     && "${{ matrix.host.runner }}" == "ubuntu-24.04" ]]; then
+                      RUN_COVERAGE=true
+                  fi
+
+                  echo "RUN_COVERAGE=$RUN_COVERAGE" >> "$GITHUB_ENV"
 
             - name: Output matrix parameters
               env:
