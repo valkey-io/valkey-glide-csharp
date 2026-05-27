@@ -1,6 +1,6 @@
 # Code Coverage
 
-This project uses a coverage ratchet mechanism that prevents coverage from regressing. Coverage can only stay the same or go up.
+This project includes support for measuring line and branch coverage, including a coverage baseline and checks to ensure coverage does not decrease.
 
 ## How It Works
 
@@ -15,13 +15,15 @@ The coverage pipeline has three stages:
 ### Prerequisites
 
 - Python 3.10+
-- [ReportGenerator](https://github.com/danielpalme/ReportGenerator) (`task install-tools`)
 
 ### Running Coverage Locally
 
 ```bash
 # Run all tests with coverage collection
 task test coverage=true
+
+# Install coverage reporting tools
+task coverage:install
 
 # Generate reports (HTML + JSON)
 task coverage:report
@@ -38,45 +40,24 @@ task coverage:clean
 
 ## Threshold
 
-The coverage check passes when measured coverage is **at or above** the baseline value. Any decrease fails the check.
-
-The baseline is stored in `dev/coverage/coverage-baseline.json` and is automatically updated on the main branch when coverage improves.
+The coverage check passes only when measured coverage **exactly matches** the baseline. Any change (increase or decrease) fails the check — run `task coverage:update` to increase the baseline.
 
 ## CI Behavior
 
-- **Pull requests**: `coverage:check` runs in validation-only mode. The build fails if coverage regresses.
-- **Main branch pushes**: `coverage:update` runs, which validates and then ratchets the baseline upward if coverage improved.
+- `coverage:check` runs on pull requests after tests. The build fails if coverage differs from the baseline.
+- **Baseline updates**: Run `task coverage:update` locally and commit the updated `coverage-baseline.json`.
 
 ## File Layout
 
-```
+```text
 dev/coverage/
-├── coverage-baseline.json   # Committed baseline (ratchet floor)
+├── coverage-baseline.json   # Coverage baseline
 ├── .runsettings             # Coverlet configuration
-├── results/                 # Raw .cobertura.xml (gitignored)
+├── results/                 # Raw .cobertura.xml coverage results
 │   ├── unit/
 │   └── integration/
-└── reports/                 # Generated HTML/JSON (gitignored)
+└── reports/                 # Generated HTML/JSON reports
     ├── unit/
     ├── integration/
     └── combined/
 ```
-
-## Troubleshooting
-
-### Coverage check is failing
-
-1. Run `task test coverage=true` to collect fresh coverage data
-2. Run `task coverage:report` to generate reports
-3. Run `task coverage:check` to see which metric regressed
-4. Add tests to cover the missing lines/branches
-
-### Verifying the current baseline
-
-```bash
-cat dev/coverage/coverage-baseline.json
-```
-
-### Reports not generating
-
-Ensure `reportgenerator` is installed: `task install-tools`

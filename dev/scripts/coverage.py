@@ -112,7 +112,7 @@ def _print_coverage_comparison(coverage: dict):
         elif entry["comparison"] == 0:
             print(f"PASSED: {key} coverage unchanged ({entry['baseline']}%)")
         else:
-            print(f"PASSED: {key} coverage improved ({entry['baseline']}% -> {entry['measured']}%)")
+            print(f"FAILED: {key} coverage increased ({entry['baseline']}% -> {entry['measured']}%)")
 
 
 # ---------------------------------------------------------------------------
@@ -186,7 +186,7 @@ def _cmd_check() -> bool:
     coverage = _get_coverage()
     _print_coverage_comparison(coverage)
 
-    return all(entry["comparison"] >= 0 for entry in coverage.values())
+    return all(entry["comparison"] == 0 for entry in coverage.values())
 
 
 def _cmd_update() -> bool:
