@@ -165,7 +165,7 @@ public class ValkeyServerFixture : IDisposable
     public ValkeyServerFixture()
     {
         _standaloneServer = new();
-        var (host, port) = _standaloneServer.Addresses.First();
+        var (host, port) = _standaloneServer.Address;
 
         ConfigurationOptions config = new();
         config.EndPoints.Add(host, port);

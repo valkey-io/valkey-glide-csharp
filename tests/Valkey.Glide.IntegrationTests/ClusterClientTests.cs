@@ -627,11 +627,10 @@ public class ClusterClientTests(TestConfiguration config)
     public async Task Connect_WithIpAddress_Succeeds(string address)
     {
         using var server = new ClusterServer(useTls: false);
-        var port = server.Addresses.First().Port;
-        var configBuilder = new ConnectionConfiguration.ClusterClientConfigurationBuilder()
-            .WithAddress(address, port);
+        var builder = new ConnectionConfiguration.ClusterClientConfigurationBuilder()
+            .WithAddress(address, server.Address.Port);
 
-        await using var client = await GlideClusterClient.CreateClient(configBuilder.Build());
+        await using var client = await GlideClusterClient.CreateClient(builder.Build());
         await Client.AssertConnected(client);
     }
 }

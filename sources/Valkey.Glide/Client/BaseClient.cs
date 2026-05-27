@@ -201,7 +201,57 @@ public abstract partial class BaseClient : IBaseClient
         }
 
         Message message = client.MessageContainer.GetMessageForCall();
-        CreateClientFfi(request.ToPtr(), successCallbackPointer, failureCallbackPointer, pubsubCallbackPointer);
+
+        IntPtr addressResolverPointer = IntPtr.Zero;
+        if (config.Request.AddressResolver != null)
+        {
+            var addressResolver = config.Request.AddressResolver;
+
+            client._addressResolverDelegate = (hostPtr, hostLen, port, bufPtr, bufLen, outLen) =>
+            {
+                try
+                {
+                    string host = Marshal.PtrToStringUTF8(hostPtr, (int)hostLen);
+                    var (resolvedHost, resolvedPort) = addressResolver(host, port);
+
+                    if (string.IsNullOrEmpty(resolvedHost))
+                    {
+                        var msg = $"Address resolver returned an empty or null host for {host}:{port}";
+                        Logger.Log(Level.Error, "AddressResolver", msg);
+                        return 0;
+                    }
+
+                    byte[] bytes = System.Text.Encoding.UTF8.GetBytes(resolvedHost);
+                    if (bytes.Length > (int)bufLen)
+                    {
+                        var msg = $"Resolved host length ({bytes.Length} bytes) exceeds maximum length ({bufLen} bytes) for {host}:{port}";
+                        Logger.Log(Level.Error, "AddressResolver", msg);
+                        return 0;
+                    }
+
+                    if (resolvedPort == 0)
+                    {
+                        var msg = $"Address resolver returned an invalid port ({resolvedPort}) for {host}:{port}";
+                        Logger.Log(Level.Error, "AddressResolver", msg);
+                        return 0;
+                    }
+
+                    Marshal.Copy(bytes, 0, bufPtr, bytes.Length);
+                    unsafe { *(UIntPtr*)outLen = (UIntPtr)bytes.Length; }
+
+                    return resolvedPort;
+                }
+                catch (Exception ex)
+                {
+                    var msg = $"Address resolver callback threw an exception: {ex.Message}";
+                    Logger.Log(Level.Error, "AddressResolver", msg, ex);
+                    return 0;
+                }
+            };
+            addressResolverPointer = Marshal.GetFunctionPointerForDelegate(client._addressResolverDelegate);
+        }
+
+        CreateClientFfi(request.ToPtr(), successCallbackPointer, failureCallbackPointer, pubsubCallbackPointer, addressResolverPointer);
         client.ClientPointer = await message; // This will throw an error thru failure callback if any
 
         if (client.ClientPointer == IntPtr.Zero)
@@ -626,6 +676,12 @@ public abstract partial class BaseClient : IBaseClient
         ulong channelLen,
         IntPtr patternPtr,
         ulong patternLen);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate ushort AddressResolverAction(
+        IntPtr host, UIntPtr hostLen, ushort port,
+        IntPtr resolvedHostBuf, UIntPtr resolvedHostBufLen,
+        UIntPtr resolvedHostLen);
     #endregion private methods
 
     #region private fields
@@ -641,6 +697,9 @@ public abstract partial class BaseClient : IBaseClient
     /// Held as a measure to prevent the delegate being garbage collected. These are delegated once
     /// and held in order to prevent the cost of marshalling on each function call.
     private readonly PubSubAction _pubsubCallbackDelegate;
+
+    /// Held to prevent the delegate being garbage collected.
+    private AddressResolverAction? _addressResolverDelegate;
 
     private readonly object _lock = new();
     private string _clientInfo = ""; // used to distinguish and identify clients during tests

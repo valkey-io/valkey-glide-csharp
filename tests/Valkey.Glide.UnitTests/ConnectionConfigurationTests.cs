@@ -27,6 +27,10 @@ public class ConnectionConfigurationTests
     // IAM auth constants.
     private const uint RefreshInterval = 300;
 
+    // Address resolver constants.
+    private static readonly (string, ushort) Resolved = ("resolved-host", 9999);
+    private static readonly AddressResolverDelegate Resolver = (host, port) => Resolved;
+
     #endregion
     #region Authentication & Credentials Tests
 
@@ -671,6 +675,41 @@ public class ConnectionConfigurationTests
         Assert.Equal(ExponentBase, strategy.ExponentBase);
         Assert.Equal(JitterPercent, strategy.JitterPercent);
     }
+
+    #endregion
+    #region Address Resolver Tests
+
+    [Fact]
+    public void WithAddressResolver_Standalone_SetsResolver()
+    {
+        var config = new StandaloneClientConfigurationBuilder().WithAddressResolver(Resolver).Build();
+        Assert.Equal(Resolver, config.Request.AddressResolver);
+        Assert.Equal(Resolved, config.Request.AddressResolver!("localhost", 6379));
+    }
+
+    [Fact]
+    public void WithAddressResolver_Cluster_SetsResolver()
+    {
+        var config = new ClusterClientConfigurationBuilder().WithAddressResolver(Resolver).Build();
+        Assert.Equal(Resolver, config.Request.AddressResolver);
+        Assert.Equal(Resolved, config.Request.AddressResolver!("localhost", 6379));
+    }
+
+    [Fact]
+    public void AddressResolver_Standalone_NotSet_IsNull()
+        => Assert.Null(new StandaloneClientConfigurationBuilder().Build().Request.AddressResolver);
+
+    [Fact]
+    public void AddressResolver_Cluster_NotSet_IsNull()
+        => Assert.Null(new ClusterClientConfigurationBuilder().Build().Request.AddressResolver);
+
+    [Fact]
+    public void AddressResolver_Standalone_SetToNull_IsNull()
+        => Assert.Null(new StandaloneClientConfigurationBuilder { AddressResolver = null }.Build().Request.AddressResolver);
+
+    [Fact]
+    public void AddressResolver_Cluster_SetToNull_IsNull()
+        => Assert.Null(new ClusterClientConfigurationBuilder { AddressResolver = null }.Build().Request.AddressResolver);
 
     #endregion
     #region Helpers

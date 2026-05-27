@@ -97,6 +97,81 @@ pub type FailureCallback = unsafe extern "C-unwind" fn(
     error_type: RequestErrorType,
 ) -> ();
 
+/// Callback for resolving server addresses before connection.
+///
+/// Invoked synchronously during connection setup to translate a configured (host, port) pair
+/// into the actual address to connect to. The callback writes the resolved hostname into the
+/// provided buffer and returns the resolved port.
+///
+/// # Arguments
+/// * `host` is a pointer to the UTF-8 encoded hostname to resolve.
+/// * `host_len` is the length of `host` in bytes.
+/// * `port` is the configured port number.
+/// * `resolved_host_buf` is a caller-allocated buffer to write the resolved hostname into.
+/// * `resolved_host_buf_len` is the size of `resolved_host_buf` in bytes.
+/// * `resolved_host_len` is an out-parameter set to the number of bytes written to `resolved_host_buf`.
+///
+/// # Returns
+/// The resolved port number, or `0` to signal an error (in which case the original address is used).
+///
+/// # Safety
+/// * `host` must be a valid pointer to `host_len` bytes of UTF-8 data.
+/// * `resolved_host_buf` must be a valid pointer to a writable buffer of at least `resolved_host_buf_len` bytes.
+/// * `resolved_host_len` must be a valid pointer to a writable `usize`.
+/// * The callback must not store any of the provided pointers beyond the duration of the call.
+pub type AddressResolverCallback = unsafe extern "C-unwind" fn(
+    host: *const u8,
+    host_len: usize,
+    port: u16,
+    resolved_host_buf: *mut u8,
+    resolved_host_buf_len: usize,
+    resolved_host_len: *mut usize,
+) -> u16;
+
+/// Maximum resolved hostname length in bytes.
+const MAX_RESOLVED_HOST_LEN: usize = 1024;
+
+/// Implements the [`redis::AddressResolver`] trait.
+struct FFIAddressResolver {
+    callback: AddressResolverCallback,
+}
+
+unsafe impl Send for FFIAddressResolver {}
+unsafe impl Sync for FFIAddressResolver {}
+
+impl std::fmt::Debug for FFIAddressResolver {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "FFIAddressResolver")
+    }
+}
+
+impl redis::AddressResolver for FFIAddressResolver {
+    /// Resolves the given host and port by invoking the C# callback.
+    ///
+    /// On error, falls back to the original `(host, port)` unchanged.
+    fn resolve(&self, host: &str, port: u16) -> (String, u16) {
+        let mut buf = [0u8; MAX_RESOLVED_HOST_LEN];
+        let mut len: usize = 0;
+        let resolved_port = unsafe {
+            (self.callback)(
+                host.as_ptr(),
+                host.len(),
+                port,
+                buf.as_mut_ptr(),
+                buf.len(),
+                &mut len,
+            )
+        };
+        if resolved_port == 0 || len == 0 || len > buf.len() {
+            return (host.to_string(), port);
+        }
+        match std::str::from_utf8(&buf[..len]) {
+            Ok(h) => (h.to_string(), resolved_port),
+            Err(_) => (host.to_string(), port),
+        }
+    }
+}
+
 struct CommandExecutionCore {
     client: GlideClient,
     success_callback: SuccessCallback,
@@ -153,6 +228,7 @@ impl Drop for PanicGuard {
 ///   See the safety documentation of [`SuccessCallback`] and [`FailureCallback`].
 /// * `pubsub_callback` is an optional callback. When provided, it must be a valid function pointer.
 ///   See the safety documentation in the FFI module for PubSubCallback.
+/// * `address_resolver` is an optional callback. When provided, it must be a valid function pointer.
 #[allow(rustdoc::private_intra_doc_links)]
 #[unsafe(no_mangle)]
 pub unsafe extern "C-unwind" fn create_client(
@@ -160,6 +236,7 @@ pub unsafe extern "C-unwind" fn create_client(
     success_callback: SuccessCallback,
     failure_callback: FailureCallback,
     #[allow(unused_variables)] pubsub_callback: Option<PubSubCallback>,
+    address_resolver: Option<AddressResolverCallback>,
 ) {
     let mut panic_guard = PanicGuard {
         panicked: true,
@@ -167,7 +244,7 @@ pub unsafe extern "C-unwind" fn create_client(
         callback_index: 0,
     };
 
-    let request = match unsafe { create_connection_request(config) } {
+    let mut request = match unsafe { create_connection_request(config) } {
         Ok(req) => req,
         Err(err) => {
             panic_guard.panicked = false;
@@ -177,6 +254,11 @@ pub unsafe extern "C-unwind" fn create_client(
             return;
         }
     };
+
+    // Set address resolver if provided
+    if let Some(cb) = address_resolver {
+        request.address_resolver = Some(std::sync::Arc::new(FFIAddressResolver { callback: cb }));
+    }
 
     let runtime = Builder::new_multi_thread()
         .enable_all()
