@@ -71,7 +71,7 @@ jobs:
                   echo "RELEASE_VERSION=$R_VERSION" >> "$GITHUB_OUTPUT"
 
     create-binaries:
-        needs: [load-platform-matrix]
+        needs: [load-platform-matrix, set-release-version]
         timeout-minutes: 35
         strategy:
             # Run all jobs
@@ -105,6 +105,8 @@ jobs:
             - name: Build native libs (linux gnu)
               if: ${{ contains(matrix.host.target, 'linux-gnu') }}
               working-directory: rust
+              env:
+                  GLIDE_VERSION: ${{ needs.set-release-version.outputs.RELEASE_VERSION }}
               run: |
                   cargo zigbuild -r --target ${{ matrix.host.target }}.2.17
                   mkdir -p target/release
@@ -112,6 +114,8 @@ jobs:
             - name: Build native libs
               if: ${{ !contains(matrix.host.target, 'linux-gnu') }}
               working-directory: rust
+              env:
+                  GLIDE_VERSION: ${{ needs.set-release-version.outputs.RELEASE_VERSION }}
               run: cargo build --release --target ${{ matrix.host.target }}
 
             - name: Upload artifacts to publish

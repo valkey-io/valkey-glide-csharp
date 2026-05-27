@@ -26,6 +26,7 @@ on:
 
 env:
     CARGO_TERM_COLOR: always
+    GLIDE_VERSION: ${{ inputs.package-version || 'unknown' }}
 
 jobs:
     load-matrix:

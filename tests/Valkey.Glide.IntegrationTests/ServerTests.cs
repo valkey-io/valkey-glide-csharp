@@ -5,7 +5,7 @@ using System.Net;
 namespace Valkey.Glide.IntegrationTests;
 
 /// <summary>
-/// Tests for <see cref="ValkeyServer" /> class.
+/// Tests for <see cref="ValkeyServer"/> class.
 /// </summary>
 public class ServerTests(TestConfiguration config)
 {
