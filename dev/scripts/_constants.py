@@ -7,9 +7,10 @@ from enum import Enum
 # Paths
 # ---------------------------------------------------------------------------
 
-PROJECT_ROOT = os.path.dirname(os.path.dirname(SCRIPTS_DIR))
 SCRIPTS_DIR = os.path.dirname(os.path.abspath(__file__))
-LIBRARY_DIR = os.path.join(PROJECT_ROOT, "sources", "Valkey.Glide")
+PROJECT_ROOT = os.path.dirname(os.path.dirname(SCRIPTS_DIR))
+SOURCES_DIR = os.path.join(PROJECT_ROOT, "sources")
+LIBRARY_DIR = os.path.join(SOURCES_DIR, "Valkey.Glide")
 
 COVERAGE_DIR = os.path.join(PROJECT_ROOT, "dev", "coverage")
 COVERAGE_RESULTS_DIR = os.path.join(COVERAGE_DIR, "results")

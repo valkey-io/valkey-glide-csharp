@@ -17,10 +17,7 @@ import os
 import re
 import sys
 
-
-# Project root is one level up from this script's directory (scripts/).
-_PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
+from _constants import PROJECT_ROOT, SOURCES_DIR
 
 class ExamplesExtractor:
     """Extracts C# code examples from XML doc comments in .cs files."""
@@ -36,16 +33,6 @@ class ExamplesExtractor:
     # Matches the /// prefix on a doc comment line.
     _DOC_PREFIX = re.compile(r"^\s*/// ?", re.MULTILINE)
 
-    def __init__(self):
-        """Initialize the extractor using the project root."""
-        self._source_dir = os.path.join(_PROJECT_ROOT, "sources")
-
-        if not os.path.isdir(self._source_dir):
-            print(
-                f"Error: '{self._source_dir}' is not a directory", file=sys.stderr
-            )
-            sys.exit(1)
-
     def extract(self) -> dict[str, str]:
         """Extract all <example> code blocks from .cs files.
 
@@ -55,7 +42,7 @@ class ExamplesExtractor:
         """
         results: dict[str, str] = {}
 
-        for dirpath, _, filenames in os.walk(self._source_dir):
+        for dirpath, _, filenames in os.walk(SOURCE_DIR):
             for filename in sorted(filenames):
                 if not filename.endswith(".cs"):
                     continue
@@ -72,9 +59,7 @@ class ExamplesExtractor:
         with open(filepath, "r", encoding="utf-8-sig") as f:
             content = f.read()
 
-        relative_filepath = os.path.relpath(filepath, _PROJECT_ROOT).replace(
-            os.sep, "/"
-        )
+        relative_filepath = os.path.relpath(filepath, PROJECT_ROOT).replace(os.sep, "/")
 
         for match in self._EXAMPLE_PATTERN.finditer(content):
             line_number = content[: match.start()].count("\n") + 1
