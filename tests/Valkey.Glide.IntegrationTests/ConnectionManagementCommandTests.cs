@@ -12,6 +12,8 @@ public class ConnectionManagementCommandTests(TestConfiguration config)
     //TODO #414: Remove when ClientInfoAsync implemented.
     private static readonly GlideString[] InfoCommand = ["CLIENT", "INFO"];
 
+    // Library version is set dynamically by the CD workflow,
+    // and defaults to "unknown" for local and CI builds.
     private static readonly string LibVersion =
         Environment.GetEnvironmentVariable("GLIDE_VERSION") ?? "unknown";
 
