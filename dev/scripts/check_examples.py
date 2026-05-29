@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""Check Valkey GLIDE C# code examples by extracting and compiling them.
+"""Check code examples by extracting and compiling them.
 
 Usage:
     python scripts/check_examples.py
@@ -11,17 +11,14 @@ import subprocess
 import sys
 import tempfile
 
-_SCRIPTS_DIR = os.path.dirname(os.path.abspath(__file__))
-_PROJECT_ROOT = os.path.dirname(_SCRIPTS_DIR)
+from _constants import LIBRARY_DIR, SCRIPTS_DIR
 
 
 def _find_glide_dll() -> str | None:
     """Locate the built Valkey.Glide.dll, preferring Release over Debug."""
     for config in ("Release", "Debug"):
         path = os.path.join(
-            _PROJECT_ROOT,
-            "sources",
-            "Valkey.Glide",
+            LIBRARY_DIR,
             "bin",
             config,
             "net8.0",
@@ -52,7 +49,7 @@ def main():
         result = subprocess.run(
             [
                 sys.executable,
-                os.path.join(_SCRIPTS_DIR, "extract_examples.py"),
+                os.path.join(SCRIPTS_DIR, "extract_examples.py"),
                 "--examples",
                 tmp_path,
             ],
@@ -65,7 +62,7 @@ def main():
         result = subprocess.run(
             [
                 sys.executable,
-                os.path.join(_SCRIPTS_DIR, "validate_examples.py"),
+                os.path.join(SCRIPTS_DIR, "validate_examples.py"),
                 "--examples",
                 tmp_path,
                 "--glide-dll",

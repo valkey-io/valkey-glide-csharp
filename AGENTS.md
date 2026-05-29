@@ -37,8 +37,8 @@ Common commands:
   - By method: `task test:integration filter=MyMethodName`
 
 - Coverage and reports (preferred via Task):
-  - `task coverage`, `task coverage:unit`, `task coverage:integration`
-  - Reports go to `reports/`; test artifacts to `testresults/`
+  - `task test coverage=true` (collect), `task coverage:report` (generate)
+  - Coverage results go to `dev/coverage/results/`; reports to `dev/coverage/reports/`
 
 ## Lint and Format Rules (Agents)
 
@@ -130,8 +130,6 @@ Note: Conventional Commits apply to commit messages only. Do not enforce this fo
   - `valkey-glide/` is a read-only submodule.
   - Only `valkey-glide/glide-core/` is relevant to this repo; ignore other language folders.
   - Do not edit submodule code from this repository.
-- Generated outputs:
-  - Treat `reports/`, `testresults/`, `bin/`, `obj/` as generated; do not commit.
 - API compatibility:
   - Maintain StackExchange.Redis API compatibility (target version 2.8.58) in the public API surface whenever possible.
 - Documentation:

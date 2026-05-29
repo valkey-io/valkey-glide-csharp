@@ -1,169 +1,99 @@
 version: "3"
 
-vars:
-    TEST_RESULTS_DIR: testresults
-    REPORTS_DIR: reports
-    COVERAGE_FILE: "{{.TEST_RESULTS_DIR}}/coverage.cobertura.xml"
-    UNIT_TEST_PROJECT: tests/Valkey.Glide.UnitTests/Valkey.Glide.UnitTests.csproj
-    INTEGRATION_TEST_PROJECT: tests/Valkey.Glide.IntegrationTests/Valkey.Glide.IntegrationTests.csproj
-
-    # Build the solution or a specific target.
-    # Usage: `task build target=lib`
-    TARGET: '{{.target | default "all"}}'
-    BUILD_TARGET: '{{if eq .TARGET "lib"}}sources/Valkey.Glide/{{end}}'
-
 tasks:
-    clean:
-        desc: Clean test results and reports directories
-        cmds:
-            - rm -rf {{.TEST_RESULTS_DIR}}
-            - rm -rf {{.REPORTS_DIR}}
-            - mkdir -p {{.TEST_RESULTS_DIR}}
-            - mkdir -p {{.REPORTS_DIR}}
+    # Test
+    # --------------------------------------------------------------------------------
 
-    install-tools:
-        desc: Install required tools for coverage reporting
-        cmds:
-            - dotnet tool install --global dotnet-reportgenerator-globaltool --version 5.4.12
+    test:unit:
+        desc: Run unit tests
+        summary: |
+            Run unit tests.
+
+            Options:
+              filter=MyClass       Filter tests by class or method name
+              coverage=true        Collect code coverage
+              verbosity=detailed   Set verbosity (quiet|minimal|normal|detailed|diagnostic)
+              configuration=Debug  Set build configuration
+        cmd: >-
+            python3 dev/scripts/test.py --unit
+            {{if (default "" .filter)}}--filter {{.filter}}{{end}}
+            {{if eq (default "false" .coverage) "true"}}--coverage{{end}}
+            {{if (default "" .verbosity)}}--verbosity {{.verbosity}}{{end}}
+            {{if (default "" .configuration)}}--configuration {{.configuration}}{{end}}
+
+    test:integration:
+        desc: Run integration tests
+        summary: |
+            Run integration tests.
+
+            Options:
+              filter=MyClass       Filter tests by class or method name
+              coverage=true        Collect code coverage
+              verbosity=detailed   Set verbosity (quiet|minimal|normal|detailed|diagnostic)
+              configuration=Debug  Set build configuration
+        cmd: >-
+            python3 dev/scripts/test.py --integration
+            {{if (default "" .filter)}}--filter {{.filter}}{{end}}
+            {{if eq (default "false" .coverage) "true"}}--coverage{{end}}
+            {{if (default "" .verbosity)}}--verbosity {{.verbosity}}{{end}}
+            {{if (default "" .configuration)}}--configuration {{.configuration}}{{end}}
+
+    test:
+        desc: Run all tests
+        summary: |
+            Run all tests (unit + integration).
+
+            Options:
+              filter=MyClass       Filter tests by class or method name
+              coverage=true        Collect code coverage
+              verbosity=detailed   Set verbosity (quiet|minimal|normal|detailed|diagnostic)
+              configuration=Debug  Set build configuration
+        cmd: >-
+            python3 dev/scripts/test.py
+            {{if (default "" .filter)}}--filter {{.filter}}{{end}}
+            {{if eq (default "false" .coverage) "true"}}--coverage{{end}}
+            {{if (default "" .verbosity)}}--verbosity {{.verbosity}}{{end}}
+            {{if (default "" .configuration)}}--configuration {{.configuration}}{{end}}
+
+    # Coverage
+    # --------------------------------------------------------------------------------
+
+    coverage:install:
+        desc: Install coverage reporting tools
+        cmd: dotnet tool install --global dotnet-reportgenerator-globaltool --version 5.2.5
         status:
             - which reportgenerator
 
-    test:unit:
-        desc: Run unit tests only
-        deps: [clean]
-        vars:
-            FILTER: '{{.filter | default ""}}'
-        cmds:
-            - dotnet test {{.UNIT_TEST_PROJECT}}
-              --configuration Release
-              --verbosity normal
-              {{if .FILTER}}--filter FullyQualifiedName~{{.FILTER}}{{end}}
-
-    test:integration:
-        desc: Run integration tests only
-        deps: [clean]
-        vars:
-            FILTER: '{{.filter | default ""}}'
-        cmds:
-            - dotnet test {{.INTEGRATION_TEST_PROJECT}}
-              --configuration Release
-              --verbosity normal
-              {{if .FILTER}}--filter FullyQualifiedName~{{.FILTER}}{{end}}
-
-    test:coverage:unit:
-        desc: Run unit tests with coverage collection
-        deps: [clean]
-        cmds:
-            - dotnet test {{.UNIT_TEST_PROJECT}}
-              --configuration Release
-              --collect:"XPlat Code Coverage"
-              --results-directory {{.TEST_RESULTS_DIR}}
-              --logger trx
-              --logger "console;verbosity=detailed"
-              --logger "html;LogFileName=TestReport.html"
-              -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
-
-    test:coverage:integration:
-        desc: Run integration tests with coverage collection
-        deps: [clean]
-        cmds:
-            - dotnet test {{.INTEGRATION_TEST_PROJECT}}
-              --configuration Release
-              --collect:"XPlat Code Coverage"
-              --results-directory {{.TEST_RESULTS_DIR}}
-              --logger trx
-              --logger "console;verbosity=detailed"
-              --logger "html;LogFileName=TestReport.html"
-              -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
-
-    test:coverage:all:
-        desc: Run all tests with coverage collection
-        deps: [clean]
-        cmds:
-            - dotnet test
-              --configuration Release
-              --collect:"XPlat Code Coverage"
-              --results-directory {{.TEST_RESULTS_DIR}}
-              --logger trx
-              --logger "console;verbosity=detailed"
-              --logger "html;LogFileName=TestReport.html"
-              -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
-
-    coverage:merge:
-        desc: Merge coverage files if multiple exist
-        cmds:
-            - |
-                COVERAGE_FILES=$(find {{.TEST_RESULTS_DIR}} -name "coverage.cobertura.xml" -type f)
-                if [ $(echo "$COVERAGE_FILES" | wc -l) -gt 1 ]; then
-                  echo "Multiple coverage files found, merging..."
-                  reportgenerator \
-                    -reports:"{{.TEST_RESULTS_DIR}}/**/coverage.cobertura.xml" \
-                    -targetdir:{{.TEST_RESULTS_DIR}} \
-                    -reporttypes:Cobertura \
-                    -assemblyfilters:"+Valkey.Glide*"
-                  mv {{.TEST_RESULTS_DIR}}/Cobertura.xml {{.COVERAGE_FILE}}
-                else
-                  echo "Single coverage file found, copying..."
-                  cp $(echo "$COVERAGE_FILES" | head -1) {{.COVERAGE_FILE}}
-                fi
-
     coverage:report:
-        desc: Generate HTML coverage report from collected data
-        deps: [install-tools, coverage:merge]
-        cmds:
-            - reportgenerator
-              -reports:{{.COVERAGE_FILE}}
-              -targetdir:{{.REPORTS_DIR}}
-              -reporttypes:"Html;JsonSummary"
-              -assemblyfilters:"+Valkey.Glide*"
-              -classfilters:"-*.Tests*"
-            - echo "Coverage report generated in {{.REPORTS_DIR}}/index.html"
+        desc: Generate coverage reports
+        cmd: python3 dev/scripts/coverage.py report
 
-    coverage:summary:
-        desc: Display coverage summary from the report
-        cmds:
-            - |
-                if [ -f "{{.REPORTS_DIR}}/Summary.json" ]; then
-                  echo "=== Coverage Summary ==="
-                  LINE_COVERAGE=$(cat {{.REPORTS_DIR}}/Summary.json | jq -r '.summary.linecoverage')
-                  BRANCH_COVERAGE=$(cat {{.REPORTS_DIR}}/Summary.json | jq -r '.summary.branchcoverage')
-                  echo "Line Coverage: ${LINE_COVERAGE}%"
-                  echo "Branch Coverage: ${BRANCH_COVERAGE}%"
-                else
-                  echo "No coverage summary found. Run 'task coverage:report' first."
-                  exit 1
-                fi
+    coverage:check:
+        desc: Compare measured coverage against the baseline
+        cmd: python3 dev/scripts/coverage.py check
 
-    coverage:
-        desc: Run all tests with coverage and generate HTML report
-        cmds:
-            - task: test:coverage:all
-            - task: coverage:report
-            - task: coverage:summary
+    coverage:update:
+        desc: Updates the coverage baseline
+        cmd: python3 dev/scripts/coverage.py update
 
-    coverage:unit:
-        desc: Run unit tests with coverage and generate HTML report
-        cmds:
-            - task: test:coverage:unit
-            - task: coverage:report
-            - task: coverage:summary
+    coverage:clean:
+        desc: Remove coverage results and reports
+        cmd: python3 dev/scripts/coverage.py clean
 
-    coverage:integration:
-        desc: Run integration tests with coverage and generate HTML report
-        cmds:
-            - task: test:coverage:integration
-            - task: coverage:report
-            - task: coverage:summary
+    # Build
+    # --------------------------------------------------------------------------------
 
     build:
         desc: Build the solution
-        cmd: dotnet build {{.BUILD_TARGET}} --configuration Release
+        summary: |
+            Build the solution.
 
-    test:
-        desc: Build and run all tests
-        deps: [build]
-        cmds:
-            - task: test:coverage:all
+            Options:
+              target=lib    Build only the Valkey.Glide library
+        cmd: >-
+            dotnet build
+            {{if eq (default "" .target) "lib"}}sources/Valkey.Glide/{{end}}
+            --configuration Release
 
     # Lint
     # --------------------------------------------------------------------------------
@@ -243,4 +173,4 @@ tasks:
 
     check-examples:
         desc: "Check C# examples in doc comments"
-        cmd: python3 scripts/check_examples.py
+        cmd: python3 dev/scripts/check_examples.py

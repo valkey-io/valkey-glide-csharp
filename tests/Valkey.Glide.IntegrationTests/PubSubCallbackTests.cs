@@ -30,7 +30,7 @@ public class PubSubCallbackTests
         // Publish message and verify receipt via callback.
         using var publisher = BuildPublisher(isCluster);
         await PublishAsync(publisher, message);
-        Assert.Equal(message, await received.Task.WaitAsync(MaxDuration));
+        Assert.Equal(message, await received.Task.WaitAsync(MaxDuration, TestContext.Current.CancellationToken));
     }
 
     [Theory]
@@ -50,7 +50,7 @@ public class PubSubCallbackTests
         // Publish message and verify receipt via callback.
         using var publisher = BuildPublisher(isCluster);
         await PublishAsync(publisher, message);
-        Assert.Equal(message, await received.Task.WaitAsync(MaxDuration));
+        Assert.Equal(message, await received.Task.WaitAsync(MaxDuration, TestContext.Current.CancellationToken));
     }
 
 
@@ -75,12 +75,16 @@ public class PubSubCallbackTests
 
                     // Throw exception on first message, succeed on subsequent messages
                     if (invocation == 1)
+                    {
                         throw new InvalidOperationException("Test exception in callback");
+                    }
 
                     _ = Interlocked.Increment(ref succeededCount);
 
                     if (invocation >= 3)
+                    {
                         completed.Set();
+                    }
                 });
 
         using var publisher = BuildPublisher(isCluster);
@@ -124,7 +128,7 @@ public class PubSubCallbackTests
 
         // Publish all messages and verify they are received in order.
         await PublishAsync(publisher, messages);
-        _ = completed.Wait(MaxDuration);
+        _ = completed.Wait(MaxDuration, TestContext.Current.CancellationToken);
         Assert.Equivalent(messages, receivedMessages);
     }
 }

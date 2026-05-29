@@ -58,7 +58,7 @@ public class UpdateConnectionPasswordTests(ServerFixture fixture) : IClassFixtur
         // Clear passwords, kill clients, and verify reconnection.
         await server.ClearPasswordAsync();
         await server.KillClientsAsync();
-        await AssertConnected(client);
+        await AssertReconnected(client);
     }
 
     [Theory]
