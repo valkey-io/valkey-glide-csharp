@@ -214,7 +214,7 @@ def main() -> int:
             failed.append(test_suite.value)
 
     if failed:
-        print(f"\nFailed: {', '.join(failed)}")
+        print(f"\nTest suites failed: {', '.join(failed)}")
         return 1
 
     return 0
