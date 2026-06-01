@@ -64,3 +64,18 @@ dev/coverage/
     ├── integration/
     └── combined/
 ```
+
+## Baseline File
+
+The coverage baseline file (`dev/coverage/coverage-baseline.json`) stores the coverage baseline and the server configuration used to collect it.
+
+Example:
+
+```json
+{
+  "server_type": "valkey",
+  "server_version": "9.0",
+  "line_coverage": 70.6,
+  "branch_coverage": 50.9
+}
+```
