@@ -141,6 +141,7 @@ def _cmd_report(test_suites: list[TestSuite]) -> bool:
 
         subprocess.run(
             [
+                "dotnet",
                 "reportgenerator",
                 f"-reports:{os.path.join(coverage_dir, '**', 'coverage.cobertura.xml')}",
                 f"-targetdir:{COVERAGE_REPORTS_DIR_FOR_TEST_SUITE[test_suite]}",
@@ -156,6 +157,7 @@ def _cmd_report(test_suites: list[TestSuite]) -> bool:
 
     subprocess.run(
         [
+            "dotnet",
             "reportgenerator",
             f"-reports:{os.path.join(COVERAGE_RESULTS_DIR, '**', 'coverage.cobertura.xml')}",
             f"-targetdir:{COVERAGE_REPORTS_COMBINED_DIR}",

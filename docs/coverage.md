@@ -22,11 +22,11 @@ The coverage pipeline has three stages:
 ### Running Coverage Locally
 
 ```bash
-# Run all tests with coverage collection
-task test coverage=true
-
 # Install coverage reporting tools
 task coverage:install
+
+# Run all tests with coverage collection
+task test coverage=true
 
 # Generate reports (HTML + JSON)
 task coverage:report
