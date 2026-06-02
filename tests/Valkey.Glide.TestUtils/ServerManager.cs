@@ -12,7 +12,6 @@ public static class ServerManager
     // File and directory paths.
     private static readonly string ScriptsDirectoryPath;
     private static readonly string ScriptFilePath;
-    private static readonly string CertificateFilePath;
     private static readonly string ServerDirectoryPath;
 
     private static readonly string WslFileName = "wsl";
@@ -41,7 +40,7 @@ public static class ServerManager
 
         ScriptsDirectoryPath = Path.Combine(directory, "valkey-glide", "utils");
         ScriptFilePath = Path.Combine(ScriptsDirectoryPath, "cluster_manager.py");
-        CertificateFilePath = Path.Combine(ScriptsDirectoryPath, "tls_crts", "ca.crt");
+        ServerCertificatePath = Path.Combine(ScriptsDirectoryPath, "tls_crts", "ca.crt");
 
         // [C] Determine server directory path
         // -----------------------------------
@@ -63,7 +62,7 @@ public static class ServerManager
     /// Gets the path for the server certificate file.
     /// See valkey-glide/utils/cluster_manager.py for details.
     /// </summary>
-    public static string ServerCertificatePath => CertificateFilePath;
+    public static string ServerCertificatePath { get; private set; }
 
     /// <summary>
     /// Starts a Valkey server with the specified name, mode and TLS configuration.
@@ -75,7 +74,9 @@ public static class ServerManager
         List<string> args = [];
 
         if (useTls)
+        {
             args.Add("--tls");
+        }
 
         args.Add("start");
         args.AddRange(["--prefix", name]);
@@ -83,7 +84,9 @@ public static class ServerManager
         args.AddRange(["--folder-path", ServerDirectoryPath]);
 
         if (useClusterMode)
+        {
             args.Add("--cluster-mode");
+        }
 
         // Run cluster manager script.
         string startCommand = string.Join(" ", args);
@@ -109,7 +112,9 @@ public static class ServerManager
         args.AddRange(["--folder-path", ServerDirectoryPath]);
 
         if (keepLogs)
+        {
             args.Add("--keep-folder");
+        }
 
         string stopCommand = string.Join(" ", args);
         _ = RunClusterManager(stopCommand);
@@ -171,11 +176,8 @@ public static class ServerManager
         info.RedirectStandardOutput = true;
         info.RedirectStandardError = true;
 
-        using Process? script = Process.Start(info);
-        if (script == null)
-        {
-            throw new ApplicationException($"Failed to start process: {info.FileName} {info.Arguments}");
-        }
+        using Process script = Process.Start(info)
+            ?? throw new ApplicationException($"Failed to start process: {info.FileName} {info.Arguments}");
 
         script.WaitForExit();
         string error = script.StandardError.ReadToEnd();

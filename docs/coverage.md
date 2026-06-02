@@ -1,0 +1,81 @@
+# Code Coverage
+
+This project includes support for measuring line and branch coverage, including a coverage baseline and checks to ensure coverage does not decrease.
+
+![Line coverage](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fvalkey-io%2Fvalkey-glide-csharp%2Fmain%2Fdev%2Fcoverage%2Fcoverage-baseline.json&query=%24.line_coverage&suffix=%25&label=Line%20Coverage)
+![Branch coverage](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fvalkey-io%2Fvalkey-glide-csharp%2Fmain%2Fdev%2Fcoverage%2Fcoverage-baseline.json&query=%24.branch_coverage&suffix=%25&label=Branch%20Coverage)
+
+## How It Works
+
+The coverage pipeline has three stages:
+
+1. **Collect** — Run tests with coverage enabled: `task test coverage=true`
+2. **Report** — Generate HTML and JSON reports: `task coverage:report`
+3. **Enforce** — Validate against the baseline: `task coverage:check`
+
+## Local Usage
+
+### Prerequisites
+
+- Python 3.10+
+
+### Running Coverage Locally
+
+```bash
+# Install coverage reporting tools
+task coverage:install
+
+# Run all tests with coverage collection
+task test coverage=true
+
+# Generate reports (HTML + JSON)
+task coverage:report
+
+# Check coverage against baseline
+task coverage:check
+
+# Update baseline (if coverage improved)
+task coverage:update
+
+# Clean coverage artifacts
+task coverage:clean
+```
+
+## Threshold
+
+The coverage check passes only when measured coverage **exactly matches** the baseline. Any change (increase or decrease) fails the check — run `task coverage:update` to increase the baseline.
+
+## CI Behavior
+
+- `coverage:check` runs on pull requests after tests. The build fails if coverage differs from the baseline.
+- **Baseline updates**: Run `task coverage:update` locally and commit the updated `coverage-baseline.json`.
+
+## File Layout
+
+```text
+dev/coverage/
+├── coverage-baseline.json   # Coverage baseline
+├── .runsettings             # Coverlet configuration
+├── results/                 # Raw .cobertura.xml coverage results
+│   ├── unit/
+│   └── integration/
+└── reports/                 # Generated HTML/JSON reports
+    ├── unit/
+    ├── integration/
+    └── combined/
+```
+
+## Baseline File
+
+The coverage baseline file (`dev/coverage/coverage-baseline.json`) stores the coverage baseline and the server configuration used to collect it.
+
+Example:
+
+```json
+{
+  "server_type": "valkey",
+  "server_version": "9.0",
+  "line_coverage": 70.6,
+  "branch_coverage": 50.9
+}
+```
