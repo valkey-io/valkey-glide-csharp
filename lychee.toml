@@ -22,3 +22,7 @@ exclude_loopback = true
 
 cache = true
 verbose = "warn"
+
+# Increase retries and wait time to reduce CI flakiness.
+max_retries = 5
+retry_wait_time = 2
