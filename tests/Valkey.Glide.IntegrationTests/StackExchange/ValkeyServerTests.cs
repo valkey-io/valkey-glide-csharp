@@ -154,30 +154,31 @@ public class ValkeyServerTests(ValkeyServerFixture fixture) : IClassFixture<Valk
 /// <summary>
 /// Fixture class for <see cref="ValkeyServerTests" />.
 /// </summary>
-public class ValkeyServerFixture : IDisposable
+public class ValkeyServerFixture : IAsyncLifetime
 {
-    private readonly StandaloneServer _standaloneServer;
-    private readonly ConnectionMultiplexer _connection;
+    private StandaloneServer _standaloneServer = null!;
+    private ConnectionMultiplexer _connection = null!;
 
-    public IServer Server { get; }
-    public IDatabase Database { get; }
+    public IServer Server { get; private set; } = null!;
+    public IDatabase Database { get; private set; } = null!;
 
-    public ValkeyServerFixture()
+    public async ValueTask InitializeAsync()
     {
         _standaloneServer = new();
         var (host, port) = _standaloneServer.Address;
 
         ConfigurationOptions config = new();
         config.EndPoints.Add(host, port);
-        _connection = ConnectionMultiplexer.Connect(config);
+        _connection = await ConnectionMultiplexer.ConnectAsync(config);
 
         Server = _connection.GetServer(host, port);
         Database = _connection.GetDatabase();
     }
 
-    public void Dispose()
+    public ValueTask DisposeAsync()
     {
         _connection.Dispose();
         _standaloneServer.Dispose();
+        return ValueTask.CompletedTask;
     }
 }
