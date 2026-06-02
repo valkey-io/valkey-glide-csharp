@@ -374,7 +374,7 @@ The CSharp Valkey-Glide client uses xUnit v3 for testing code. The test code sty
 ## Documentation
 
 - [Valkey GLIDE](<https://glide.valkey.io/getting-started/quickstart/?lang=c%23>) – Official Valkey GLIDE documentation for users, including quick start guides, tutorials, and how-to guides.
-- [Documentation Guidelines](docs/documentation-guidelines.md) – Project documentation guidelines for developers.
+- [Documentation Guidelines](docs/documentation.md) – Project documentation guidelines for developers.
 
 ## Benchmarking
 
@@ -395,3 +395,12 @@ See the [CI/CD Test Matrices README](docs/ci-cd.md) for details.
 ## Community and Feedback
 
 We encourage you to join our community to support, share feedback, and ask questions. You can approach us for anything on our Valkey Slack: [Join Valkey Slack](https://valkey.io/slack/).
+
+## References
+
+Quick links to important project documentation:
+
+- [Reviewing Pull Requests](docs/reviewing.md) – How pull requests are reviewed and merged.
+- [Documentation Guidelines](docs/documentation.md) – Guidelines for documentation.
+- [Coverage](docs/coverage.md) – How to collect, report, and update test coverage baselines.
+- [Contributing Guidelines](CONTRIBUTING.md) – Introduction to the contribution process.
