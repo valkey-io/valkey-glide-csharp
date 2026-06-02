@@ -85,6 +85,8 @@ def _build_command(
         TEST_PROJECT_FOR_TEST_SUITE[test_suite],
         "--configuration",
         configuration,
+        "--framework",
+        "net8.0",
         "--verbosity",
         verbosity,
     ]
