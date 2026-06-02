@@ -41,7 +41,7 @@ If your work touches multiple areas, consider splitting it into separate pull re
 
 ## Pull Request Checklist
 
-Before requesting a review, make sure you've worked through the [pull request template](.github/pull_request_template.md) checklist.
+Before requesting a review, make sure you've worked through the [pull request template](../.github/pull_request_template.md) checklist.
 
 ## Merge Strategies
 
