@@ -122,14 +122,14 @@ public class DnsTests(DnsTestsFixture fixture) : IClassFixture<DnsTestsFixture>
 /// <summary>
 /// Fixture class for DNS tests.
 /// </summary>
-public class DnsTestsFixture : IDisposable
+public class DnsTestsFixture : IAsyncLifetime
 {
-    public ClusterServer? ClusterServer { get; }
-    public StandaloneServer? StandaloneServer { get; }
-    public ClusterServer? TlsClusterServer { get; }
-    public StandaloneServer? TlsStandaloneServer { get; }
+    public ClusterServer? ClusterServer { get; private set; }
+    public StandaloneServer? StandaloneServer { get; private set; }
+    public ClusterServer? TlsClusterServer { get; private set; }
+    public StandaloneServer? TlsStandaloneServer { get; private set; }
 
-    public DnsTestsFixture()
+    public ValueTask InitializeAsync()
     {
         // Only start the servers if DNS tests are enabled.
         if (DnsTests.IsDnsTestsEnabled())
@@ -139,14 +139,18 @@ public class DnsTestsFixture : IDisposable
             TlsClusterServer = new(useTls: true);
             TlsStandaloneServer = new(useTls: true);
         }
+
+        return ValueTask.CompletedTask;
     }
 
-    public void Dispose()
+    public ValueTask DisposeAsync()
     {
         ClusterServer?.Dispose();
         StandaloneServer?.Dispose();
         TlsClusterServer?.Dispose();
         TlsStandaloneServer?.Dispose();
+
+        return ValueTask.CompletedTask;
     }
 }
 
