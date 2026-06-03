@@ -93,9 +93,9 @@ def _get_coverage() -> dict:
         diff = measured - baseline
         coverage_tolerance = 0.1
 
-        if diff < -coverage_tolerance:
+        if diff <= -coverage_tolerance:
             return -1
-        elif diff > coverage_tolerance:
+        elif diff >= coverage_tolerance:
             return 1
 
         return 0
