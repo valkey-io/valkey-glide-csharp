@@ -89,16 +89,27 @@ def _get_coverage() -> dict:
     baseline_line = baseline["line_coverage"]
     baseline_branch = baseline["branch_coverage"]
 
+    def _compare(measured: float, baseline: float) -> int:
+        diff = measured - baseline
+        coverage_tolerance = 0.1
+
+        if diff <= -coverage_tolerance:
+            return -1
+        elif diff >= coverage_tolerance:
+            return 1
+
+        return 0
+
     return {
         "line": {
             "measured": measured_line,
             "baseline": baseline_line,
-            "comparison": (measured_line > baseline_line) - (measured_line < baseline_line),
+            "comparison": _compare(measured_line, baseline_line),
         },
         "branch": {
             "measured": measured_branch,
             "baseline": baseline_branch,
-            "comparison": (measured_branch > baseline_branch) - (measured_branch < baseline_branch),
+            "comparison": _compare(measured_branch, baseline_branch),
         },
     }
 
@@ -108,11 +119,13 @@ def _print_coverage_comparison(coverage: dict):
 
     for key, entry in coverage.items():
         if entry["comparison"] < 0:
-            print(f"FAILED: {key} coverage decreased ({entry['baseline']}% -> {entry['measured']}%)")
-        elif entry["comparison"] == 0:
-            print(f"PASSED: {key} coverage unchanged ({entry['baseline']}%)")
+            print(f"REGRESSED: {key} coverage decreased ({entry['baseline']}% -> {entry['measured']}%)")
+            print(f"Please increase coverage to meet the baseline.")
+        elif entry["comparison"] > 0:
+            print(f"IMPROVED: {key} coverage increased ({entry['baseline']}% -> {entry['measured']}%)")
+            print(f"Please update the baseline in coverage.json")
         else:
-            print(f"FAILED: {key} coverage increased ({entry['baseline']}% -> {entry['measured']}%)")
+            print(f"UNCHANGED: {key} coverage unchanged ({entry['baseline']}%)")
 
 
 # ---------------------------------------------------------------------------

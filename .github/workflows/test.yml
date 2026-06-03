@@ -106,7 +106,7 @@ jobs:
                   echo "Package version: $PACKAGE_VERSION"
 
             - name: Set up dotnet ${{ matrix.dotnet }}
-              uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
+              uses: actions/setup-dotnet@9a946fdbd5fb07b82b2f5a4466058b876ab72bb2 # v5.3.0
               with:
                   # .NET 10 SDK to build project
                   # matrix.dotnet SDK for test execution
@@ -157,7 +157,7 @@ jobs:
                   key: rust-${{ matrix.host.target }}
 
             - name: Install Task
-              uses: go-task/setup-task@3be4020d41929789a01026e0e427a4321ce0ad44 # v2.0.0
+              uses: go-task/setup-task@01a4adf9db2d14c1de7a560f09170b6e0df736aa # v2.1.0
 
             - name: Unit tests - dotnet ${{ matrix.dotnet }}
               run: >-
@@ -239,7 +239,7 @@ jobs:
                   echo "Package version: $PACKAGE_VERSION"
 
             - name: Set up dotnet ${{ matrix.dotnet }}
-              uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
+              uses: actions/setup-dotnet@9a946fdbd5fb07b82b2f5a4466058b876ab72bb2 # v5.3.0
               with:
                   # .NET 10 SDK to build project
                   # matrix.dotnet SDK for test execution
@@ -269,7 +269,7 @@ jobs:
                   key: rust-${{ matrix.host.image }}
 
             - name: Install Task
-              uses: go-task/setup-task@3be4020d41929789a01026e0e427a4321ce0ad44 # v2.0.0
+              uses: go-task/setup-task@01a4adf9db2d14c1de7a560f09170b6e0df736aa # v2.1.0
 
             - name: Test dotnet ${{ matrix.dotnet }}
               run: task test verbosity=detailed
@@ -290,7 +290,7 @@ jobs:
                   submodules: true
 
             - name: Set up dotnet ${{ matrix.dotnet }}
-              uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
+              uses: actions/setup-dotnet@9a946fdbd5fb07b82b2f5a4466058b876ab72bb2 # v5.3.0
               with:
                   # .NET 10 SDK to build project
                   # matrix.dotnet SDK for test execution
@@ -313,7 +313,7 @@ jobs:
                   key: rust-x86_64-unknown-linux-gnu
 
             - name: Install Task
-              uses: go-task/setup-task@3be4020d41929789a01026e0e427a4321ce0ad44 # v2.0.0
+              uses: go-task/setup-task@01a4adf9db2d14c1de7a560f09170b6e0df736aa # v2.1.0
 
             - name: Run module tests against Docker servers
               run: >-
