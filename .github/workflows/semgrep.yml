@@ -22,6 +22,3 @@ jobs:
   semgrep:
     # Call the reusable workflow from valkey-glide main repo
     uses: valkey-io/valkey-glide/.github/workflows/semgrep.yml@ci-cd-workflow-consolidation
-    with:
-      config: 'auto'
-      exclude-rules: 'generic.secrets.security.detected-private-key.detected-private-key'
