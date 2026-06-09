@@ -1,44 +1,27 @@
 name: Semgrep
 
 permissions:
-    contents: read
+  contents: read
 
 on:
-    # Scan changed files in PRs (diff-aware scanning):
-    pull_request: {}
-    # Scan on-demand through GitHub Actions interface:
-    workflow_dispatch:
-        inputs:
-            branch:
-                description: "The branch to run against the semgrep tool"
-                required: true
-    push:
-        branches:
-            - main
-            - release-*
-            - v*
-    # Schedule the CI job (this method uses cron syntax):
-    schedule:
-        - cron: "0 8 * * *" # Sets Semgrep to scan every day at 08:00 UTC.
+  pull_request: {}
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "The branch to run against the semgrep tool"
+        required: true
+  push:
+    branches:
+      - main
+      - release-*
+      - v*
+  schedule:
+    - cron: "0 8 * * *"
 
 jobs:
-    semgrep:
-        # User definable name of this GitHub Actions job.
-        name: semgrep/ci
-        # If you are self-hosting, change the following `runs-on` value:
-        runs-on: ubuntu-latest
-
-        container:
-            # Use pinned semgrep Docker image for supply chain security
-            image: semgrep/semgrep:1.45.0
-
-        # Skip any PR created by dependabot to avoid permission issues:
-        if: (github.actor != 'dependabot[bot]' && github.repository_owner == 'valkey-io')
-
-        steps:
-            # Fetch project source with GitHub Actions Checkout.
-            - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-              with:
-                  submodules: recursive
-            # Run the "semgrep ci" command on the command line of the docker image.
-            - run: semgrep ci --config auto --no-suppress-errors --exclude-rule generic.secrets.security.detected-private-key.detected-private-key
+  semgrep:
+    # Call the reusable workflow from valkey-glide main repo
+    uses: valkey-io/valkey-glide/.github/workflows/semgrep.yml@ci-cd-workflow-consolidation
+    with:
+      config: 'auto'
+      exclude-rules: 'generic.secrets.security.detected-private-key.detected-private-key'
