@@ -143,12 +143,55 @@ jobs:
                   dotnet add tests/Valkey.Glide.IntegrationTests package Valkey.Glide --version "$PACKAGE_VERSION"
                   git diff
 
-            - name: Install shared software dependencies
-              uses: ./.github/actions/install-shared-dependencies
+            # Platform-specific OS dependencies
+            - name: Install software dependencies for macOS
+              if: matrix.host.os == 'macos'
+              shell: bash
+              run: |
+                  brew update
+                  brew install openssl coreutils
+
+            - name: Install software dependencies for Ubuntu
+              if: matrix.host.os == 'ubuntu'
+              shell: bash
+              run: |
+                  sudo apt update -y
+                  sudo apt install -y git gcc pkg-config openssl libssl-dev
+
+            - name: Setup WSL (Windows only)
+              if: runner.os == 'Windows' && runner.arch != 'ARM64'
+              uses: Vampire/setup-wsl@887f39deb6c0976365e546926fe66f41b77d65ff # v6.0.0
               with:
-                  os: ${{ matrix.host.os }}
+                  distribution: Ubuntu-22.04
+                  use-cache: true
+                  update: true
+                  additional-packages: python3 python3-pip build-essential git pkg-config libssl-dev
+
+            # Shared actions from valkey-glide submodule
+            - name: Install Rust toolchain and protoc
+              uses: ./valkey-glide/.github/actions/install-rust-and-protoc
+              with:
                   target: ${{ matrix.host.target }}
-                  server-version: ${{ matrix.server.version }}
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Install Valkey engine
+              if: runner.os != 'Windows' || runner.arch != 'ARM64'
+              uses: ./valkey-glide/.github/actions/install-engine
+              with:
+                  engine-version: ${{ matrix.server.version }}
+                  target: ${{ matrix.host.target }}
+
+            - name: Start module servers via Docker (valkey 9.0, ubuntu)
+              if: matrix.server.version == '9.0' && matrix.host.os == 'ubuntu'
+              uses: ./valkey-glide/.github/actions/start-valkey-docker
+              with:
+                  engine-version: ${{ matrix.server.version }}
+
+            - name: Install zig
+              if: contains(matrix.host.target, 'linux-gnu')
+              uses: ./valkey-glide/.github/actions/install-zig
+              with:
+                  target: ${{ matrix.host.target }}
 
             - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
               if: ${{ inputs.package-version == '' }}
@@ -247,12 +290,25 @@ jobs:
                       10
                       ${{ matrix.dotnet }}
 
-            - name: Install shared software dependencies
-              uses: ./.github/actions/install-shared-dependencies
+            # Platform-specific OS dependencies for Amazon Linux container
+            - name: Install software dependencies for Amazon-Linux
+              if: matrix.host.os == 'amazon-linux'
+              shell: bash
+              run: |
+                  yum install -y gcc pkgconfig openssl openssl-devel which curl gettext libasan tar --allowerasing
+
+            # Shared actions from valkey-glide submodule
+            - name: Install Rust toolchain and protoc
+              uses: ./valkey-glide/.github/actions/install-rust-and-protoc
               with:
-                  os: ${{ matrix.host.os }}
                   target: ${{ matrix.host.target }}
-                  server-version: ${{ matrix.server.version }}
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Install Valkey engine
+              uses: ./valkey-glide/.github/actions/install-engine
+              with:
+                  engine-version: ${{ matrix.server.version }}
+                  target: ${{ matrix.host.target }}
 
             - name: Configure DNS for tests
               shell: bash
@@ -300,12 +356,35 @@ jobs:
               env:
                   DOTNET_INSTALL_DIR: ~/.dotnet
 
-            - name: Install shared software dependencies
-              uses: ./.github/actions/install-shared-dependencies
+            # Platform-specific OS dependencies
+            - name: Install software dependencies for Ubuntu
+              shell: bash
+              run: |
+                  sudo apt update -y
+                  sudo apt install -y git gcc pkg-config openssl libssl-dev
+
+            # Shared actions from valkey-glide submodule
+            - name: Install Rust toolchain and protoc
+              uses: ./valkey-glide/.github/actions/install-rust-and-protoc
               with:
-                  os: ubuntu
                   target: x86_64-unknown-linux-gnu
-                  server-version: "9.0"
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Install Valkey engine
+              uses: ./valkey-glide/.github/actions/install-engine
+              with:
+                  engine-version: "9.0"
+                  target: x86_64-unknown-linux-gnu
+
+            - name: Start module servers via Docker
+              uses: ./valkey-glide/.github/actions/start-valkey-docker
+              with:
+                  engine-version: "9.0"
+
+            - name: Install zig
+              uses: ./valkey-glide/.github/actions/install-zig
+              with:
+                  target: x86_64-unknown-linux-gnu
 
             - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
               with:

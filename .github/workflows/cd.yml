@@ -91,10 +91,41 @@ jobs:
                   echo "Job running with the following matrix configuration:"
                   echo "${{ toJson(matrix) }}"
 
-            - name: Install shared software dependencies
-              uses: ./.github/actions/install-shared-dependencies
+            # Platform-specific OS dependencies
+            - name: Install software dependencies for macOS
+              if: matrix.host.os == 'macos'
+              shell: bash
+              run: |
+                  brew update
+                  brew install openssl coreutils
+
+            - name: Install software dependencies for Ubuntu
+              if: matrix.host.os == 'ubuntu'
+              shell: bash
+              run: |
+                  sudo apt update -y
+                  sudo apt install -y git gcc pkg-config openssl libssl-dev
+
+            - name: Setup WSL (Windows only)
+              if: runner.os == 'Windows' && runner.arch != 'ARM64'
+              uses: Vampire/setup-wsl@887f39deb6c0976365e546926fe66f41b77d65ff # v6.0.0
               with:
-                  os: ${{ matrix.host.os }}
+                  distribution: Ubuntu-22.04
+                  use-cache: true
+                  update: true
+                  additional-packages: python3 python3-pip build-essential git pkg-config libssl-dev
+
+            # Shared actions from valkey-glide submodule
+            - name: Install Rust toolchain and protoc
+              uses: ./valkey-glide/.github/actions/install-rust-and-protoc
+              with:
+                  target: ${{ matrix.host.target }}
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Install zig
+              if: contains(matrix.host.target, 'linux-gnu')
+              uses: ./valkey-glide/.github/actions/install-zig
+              with:
                   target: ${{ matrix.host.target }}
 
             - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5

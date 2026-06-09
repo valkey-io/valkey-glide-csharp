@@ -23,7 +23,10 @@ jobs:
                   submodules: true
 
             - name: Install Rust
-              uses: ./.github/actions/install-rust
+              uses: ./valkey-glide/.github/actions/install-rust-and-protoc
+              with:
+                  target: x86_64-unknown-linux-gnu
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Cache Rust
               uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
