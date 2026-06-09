@@ -346,6 +346,7 @@ pub(crate) unsafe fn create_connection_request(
                     None
                 },
                 enable_metrics: csc.enable_metrics,
+                server_assisted: false, // TODO: Expose via FFI when server-assisted caching is needed
             })
         } else {
             None
