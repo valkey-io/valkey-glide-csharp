@@ -1,24 +1,24 @@
 name: Semgrep
 
 permissions:
-  contents: read
+    contents: read
 
 on:
-  pull_request: {}
-  workflow_dispatch:
-    inputs:
-      branch:
-        description: "The branch to run against the semgrep tool"
-        required: true
-  push:
-    branches:
-      - main
-      - release-*
-      - v*
-  schedule:
-    - cron: "0 8 * * *"
+    pull_request: {}
+    workflow_dispatch:
+        inputs:
+            branch:
+                description: "The branch to run against the semgrep tool"
+                required: true
+    push:
+        branches:
+            - main
+            - release-*
+            - v*
+    schedule:
+        - cron: "0 8 * * *"
 
 jobs:
-  semgrep:
-    # Call the reusable workflow from valkey-glide main repo
-    uses: valkey-io/valkey-glide/.github/workflows/semgrep.yml@ci-cd-workflow-consolidation
+    semgrep:
+        # Call the reusable workflow from valkey-glide main repo
+        uses: valkey-io/valkey-glide/.github/workflows/semgrep.yml@ci-cd-workflow-consolidation
