@@ -32,12 +32,12 @@ public static class Polling
     /// <param name="message">The message to report if the condition is not met within the timeout.</param>
     /// <param name="timeout">Maximum time to poll. Defaults to <see cref="DefaultTimeout"/>.</param>
     /// <param name="interval">Delay between attempts. Defaults to <see cref="DefaultInterval"/>.</param>
-    public static Task AssertTrue(
+    public static Task WaitForTrue(
         Func<bool> condition,
         string message,
         TimeSpan? timeout = null,
         TimeSpan? interval = null)
-        => AssertTrueAsync(()
+        => WaitForTrueAsync(()
             => Task.FromResult(condition()), message, timeout, interval);
 
     /// <summary>
@@ -48,14 +48,16 @@ public static class Polling
     /// <param name="message">The message to report if the condition is not met within the timeout.</param>
     /// <param name="timeout">Maximum time to poll. Defaults to <see cref="DefaultTimeout"/>.</param>
     /// <param name="interval">Delay between attempts. Defaults to <see cref="DefaultInterval"/>.</param>
-    public static async Task AssertTrueAsync(
+    public static async Task WaitForTrueAsync(
         Func<Task<bool>> condition,
         string message,
         TimeSpan? timeout = null,
         TimeSpan? interval = null)
     {
-        using CancellationTokenSource cts = new(timeout ?? DefaultTimeout);
+        timeout ??= DefaultTimeout;
+        interval ??= DefaultInterval;
 
+        using CancellationTokenSource cts = new(timeout.Value);
         while (!cts.Token.IsCancellationRequested)
         {
             if (await condition())
@@ -63,7 +65,7 @@ public static class Polling
                 return;
             }
 
-            await Task.Delay(interval ?? DefaultInterval);
+            await Task.Delay(interval.Value);
         }
 
         Assert.Fail(message);

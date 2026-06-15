@@ -695,7 +695,7 @@ public static class PubSubUtils
         }
 
         // For lazy mode, retry until subscribed or timeout occurs.
-        await Polling.AssertTrueAsync(
+        await Polling.WaitForTrueAsync(
             () => IsSubscribedAsync(client, expectedSubscriptions),
             "Expected subscriptions not found.",
             timeout: MaxDuration,
@@ -727,7 +727,7 @@ public static class PubSubUtils
         }
 
         // For lazy mode, retry until unsubscribed or timeout occurs.
-        await Polling.AssertTrueAsync(
+        await Polling.WaitForTrueAsync(
             () => IsNotSubscribedAsync(client, notExpected),
             "Unexpected subscriptions found.",
             timeout: MaxDuration,
