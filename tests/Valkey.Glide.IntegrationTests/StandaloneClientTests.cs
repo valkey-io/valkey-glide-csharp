@@ -487,11 +487,10 @@ public class StandaloneClientTests(TestConfiguration config)
 
     [Theory]
     [MemberData(nameof(IpAddresses), MemberType = typeof(Data))]
-    public async Task Connect_WithIpAddress_Succeeds(string address)
+    public async Task Connect_WithIpAddress_Succeeds(string host)
     {
         using var server = new StandaloneServer(useTls: false);
-        var builder = new ConnectionConfiguration.StandaloneClientConfigurationBuilder()
-            .WithAddress(address, server.Address.Port);
+        var builder = TestUtils.Config.BuildStandaloneConfig(address: new(host, server.Address.Port));
 
         await using var client = await GlideClient.CreateClient(builder.Build());
         await AssertConnected(client);
