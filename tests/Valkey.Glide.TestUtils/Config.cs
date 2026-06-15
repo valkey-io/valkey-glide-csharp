@@ -13,9 +13,15 @@ public static class Config
 
     /// <summary>
     /// Timeout for client connection and reconnection attempts.
-    /// Use a longer timeout to allow for slower connections in CI environments.
+    /// Use a longer timeout to allow for slower connection in CI environments.
     /// </summary>
     private static readonly TimeSpan ConnectionTimeout = TimeSpan.FromSeconds(30);
+
+    /// <summary>
+    /// Timeout for command requests.
+    /// Use a longer timeout to allow for slower execution in CI environments.
+    /// </summary>
+    private static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds(10);
 
     /// <summary>
     /// Retry strategy for client connections.
@@ -34,6 +40,7 @@ public static class Config
         AddressResolverDelegate? addressResolver = null,
         bool useTls = false,
         TimeSpan? connectionTimeout = null,
+        TimeSpan? requestTimeout = null,
         RetryStrategy? retryStrategy = null,
         byte[]? trustedCertificate = null,
         string? password = null)
@@ -42,6 +49,7 @@ public static class Config
         {
             UseTls = useTls,
             ConnectionTimeout = connectionTimeout ?? ConnectionTimeout,
+            RequestTimeout = requestTimeout ?? RequestTimeout,
             ConnectionRetryStrategy = retryStrategy ?? RetryStrategy,
         };
 
@@ -73,6 +81,7 @@ public static class Config
         AddressResolverDelegate? addressResolver = null,
         bool useTls = false,
         TimeSpan? connectionTimeout = null,
+        TimeSpan? requestTimeout = null,
         RetryStrategy? retryStrategy = null,
         byte[]? trustedCertificate = null,
         string? password = null)
@@ -81,6 +90,7 @@ public static class Config
         {
             UseTls = useTls,
             ConnectionTimeout = connectionTimeout ?? ConnectionTimeout,
+            RequestTimeout = requestTimeout ?? RequestTimeout,
             ConnectionRetryStrategy = retryStrategy ?? RetryStrategy,
         };
 
@@ -113,12 +123,13 @@ public static class Config
         AddressResolverDelegate? addressResolver = null,
         bool useTls = false,
         TimeSpan? connectionTimeout = null,
+        TimeSpan? requestTimeout = null,
         RetryStrategy? retryStrategy = null,
         byte[]? trustedCertificate = null,
         string? password = null)
         => clusterMode
-            ? BuildClusterConfig(address, addressResolver, useTls, connectionTimeout, retryStrategy, trustedCertificate, password).Build()
-            : BuildStandaloneConfig(address, addressResolver, useTls, connectionTimeout, retryStrategy, trustedCertificate, password).Build();
+            ? BuildClusterConfig(address, addressResolver, useTls, connectionTimeout, requestTimeout, retryStrategy, trustedCertificate, password).Build()
+            : BuildStandaloneConfig(address, addressResolver, useTls, connectionTimeout, requestTimeout, retryStrategy, trustedCertificate, password).Build();
 
     #endregion
 }
