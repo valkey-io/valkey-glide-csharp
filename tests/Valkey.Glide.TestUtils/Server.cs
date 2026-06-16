@@ -1,6 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using static Valkey.Glide.ConnectionConfiguration;
+using static Valkey.Glide.Errors;
 
 namespace Valkey.Glide.TestUtils;
 
@@ -15,6 +16,16 @@ public abstract class Server : IDisposable
     /// Custom command arguments to kill all normal clients.
     /// </summary>
     protected static readonly GlideString[] KillClientArgs = ["CLIENT", "KILL", "TYPE", "NORMAL"];
+
+    /// <summary>
+    /// Number of attempts to establish the initial client connection.
+    /// </summary>
+    private const int ConnectionAttempts = 5;
+
+    /// <summary>
+    /// Delay between initial connection attempts.
+    /// </summary>
+    private static readonly TimeSpan ConnectionRetryDelay = TimeSpan.FromMilliseconds(500);
 
     #endregion
     #region Fields
@@ -123,6 +134,44 @@ public abstract class Server : IDisposable
     public abstract Task KillClientsAsync();
 
     #endregion
+    #region Protected Methods
+
+    /// <summary>
+    /// Creates a client using the given factory.
+    /// </summary>
+    /// <typeparam name="T">The client type produced by the factory.</typeparam>
+    /// <param name="factory">Factory that builds and connects a client.</param>
+    /// <returns>The connected client.</returns>
+    /// <exception cref="ConnectionException">
+    /// Thrown when a connection could not be established after all attempts.
+    /// </exception>
+    protected static async Task<T> CreateClientAsync<T>(Func<Task<T>> factory)
+        where T : BaseClient
+    {
+        ConnectionException? lastException = null;
+
+        /// Retry the initial connection attempt if needed to handle flakiness in CI environment.
+        for (int attempt = 1; attempt <= ConnectionAttempts; attempt++)
+        {
+            try
+            {
+                return await factory();
+            }
+            catch (ConnectionException ex)
+            {
+                lastException = ex;
+
+                if (attempt < ConnectionAttempts)
+                {
+                    await Task.Delay(ConnectionRetryDelay);
+                }
+            }
+        }
+
+        throw lastException!;
+    }
+
+    #endregion
 }
 
 /// <summary>
@@ -150,7 +199,11 @@ public sealed class ClusterServer(bool useTls = false) : Server(useClusterMode: 
     /// Builds and returns a cluster client for this server.
     /// </summary>
     public async Task<GlideClusterClient> CreateClusterClientAsync()
-        => await GlideClusterClient.CreateClient(CreateConfigBuilder().Build());
+    {
+        var config = CreateConfigBuilder().Build();
+        Task<GlideClusterClient> factory() => GlideClusterClient.CreateClient(config);
+        return await CreateClientAsync(factory);
+    }
 
     public override async Task SetPasswordAsync(string password)
     {
@@ -200,7 +253,11 @@ public sealed class StandaloneServer(bool useTls = false) : Server(useClusterMod
     /// Builds and returns a standalone client for this server.
     /// </summary>
     public async Task<GlideClient> CreateStandaloneClientAsync()
-        => await GlideClient.CreateClient(CreateConfigBuilder().Build());
+    {
+        var config = CreateConfigBuilder().Build();
+        Task<GlideClient> factory() => GlideClient.CreateClient(config);
+        return await CreateClientAsync(factory);
+    }
 
     public override async Task SetPasswordAsync(string password)
     {
