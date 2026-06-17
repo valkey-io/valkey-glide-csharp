@@ -54,10 +54,14 @@ runs:
               additional-packages: python3 python3-pip build-essential git pkg-config libssl-dev
 
         # Shared actions from valkey-glide submodule
-        - name: Install Rust toolchain and protoc
-          uses: ./valkey-glide/.github/actions/install-rust-and-protoc
+        - name: Install Rust toolchain
+          uses: ./valkey-glide/.github/actions/install-rust
           with:
               target: ${{ inputs.target }}
+
+        - name: Install protoc
+          uses: ./valkey-glide/.github/actions/install-protoc
+          with:
               github-token: ${{ inputs.github-token }}
 
         # Always build from source first. This installs 'valkey-cli', which is
