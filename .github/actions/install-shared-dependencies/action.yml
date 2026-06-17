@@ -84,5 +84,3 @@ runs:
         - name: Install zig
           if: ${{ contains(inputs.target, 'linux-gnu') }}
           uses: ./valkey-glide/.github/actions/install-zig
-          with:
-              target: ${{ inputs.target }}
