@@ -360,6 +360,7 @@ pub(crate) unsafe fn create_connection_request(
         inflight_requests_limit: None,
         node_discovery_mode: glide_core::client::NodeDiscoveryMode::default(),
         address_resolver: None,
+        client_circuit_breaker: None,
     })
 }
 
