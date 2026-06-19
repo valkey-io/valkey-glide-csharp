@@ -254,13 +254,13 @@ public class GenericCommandTests(TestConfiguration config)
 
         // Verify that idle time increases.
         TimeSpan idleTime2 = TimeSpan.Zero;
-        await Polling.AssertTrueAsync(
+        await Polling.WaitForTrueAsync(
             async () =>
             {
                 idleTime2 = Assert.NotNull(await client.ObjectIdleTimeAsync(key));
                 return idleTime2.TotalSeconds > idleTime1.TotalSeconds;
             },
-            $"Idle time expected to increase.");
+            "Idle time expected to increase.");
 
         // Verify that idle time is reset on access.
         _ = await client.GetAsync(key);
