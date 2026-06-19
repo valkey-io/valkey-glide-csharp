@@ -346,6 +346,7 @@ pub(crate) unsafe fn create_connection_request(
                     None
                 },
                 enable_metrics: csc.enable_metrics,
+                server_assisted: false, // TODO(https://github.com/valkey-io/valkey-glide/issues/5961): Expose via FFI when server-assisted caching is needed
             })
         } else {
             None
@@ -359,6 +360,7 @@ pub(crate) unsafe fn create_connection_request(
         inflight_requests_limit: None,
         node_discovery_mode: glide_core::client::NodeDiscoveryMode::default(),
         address_resolver: None,
+        client_circuit_breaker: None,
     })
 }
 

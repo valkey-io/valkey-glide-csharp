@@ -12,6 +12,7 @@ exclude_path = [
 exclude = [
     "example",   # Example links - e.g. "https://example.com"
     "%7B.*%7D",  # Links with template placeholders – e.g. "https://valkey.io/commands/{command}/"
+    "dotnet\\.microsoft\\.com",  # Microsoft docs site returns 403 to automated tools
 ]
 
 # Check links inside code blocks

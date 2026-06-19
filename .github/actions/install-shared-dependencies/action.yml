@@ -13,6 +13,10 @@ inputs:
             Server version to install (see 'server-matrix.json').
             Skips server installation if not specified.
         required: false
+    github-token:
+        description: "GitHub token for protoc installation (defaults to GITHUB_TOKEN env var)"
+        required: false
+        default: ${{ github.token }}
 
 runs:
     using: "composite"
@@ -42,24 +46,33 @@ runs:
         #   - WSL is not available on Windows ARM runners – see #383.
         - name: Install software dependencies for Windows
           if: "${{ runner.os == 'Windows' && runner.arch != 'ARM64' }}"
-          uses: Vampire/setup-wsl@d1da7f2c0322a5ee4f24975344f67fc0f5baf364 # v7.0.0
+          uses: Vampire/setup-wsl@887f39deb6c0976365e546926fe66f41b77d65ff # v6.0.0
           with:
               distribution: Ubuntu-22.04
-              additional-packages: python3 build-essential git pkg-config libssl-dev
+              use-cache: true
+              update: true
+              additional-packages: python3 python3-pip build-essential git pkg-config libssl-dev
 
+        # Shared actions from valkey-glide submodule
         - name: Install Rust toolchain
-          uses: ./.github/actions/install-rust
+          uses: ./valkey-glide/.github/actions/install-rust
           with:
               target: ${{ inputs.target }}
+
+        - name: Install protoc
+          uses: ./valkey-glide/.github/actions/install-protoc
+          with:
+              github-token: ${{ inputs.github-token }}
 
         # Always build from source first. This installs 'valkey-cli', which is
         # needed by 'start-valkey-docker' to start servers in Docker.
         # Valkey servers cannot be installed on Windows ARM runners - see #383.
         - name: Install server from source
           if: "${{ inputs.server-version && !(runner.os == 'Windows' && runner.arch == 'ARM64') }}"
-          uses: ./.github/actions/install-server
+          uses: ./valkey-glide/.github/actions/install-engine
           with:
-              server-version: ${{ inputs.server-version }}
+              engine-version: ${{ inputs.server-version }}
+              target: ${{ inputs.target }}
 
         # For valkey 9.0 on ubuntu, also start Docker containers with the
         # valkey-bundle image (includes modules: Search, JSON, Bloom, LDAP) on
@@ -68,10 +81,10 @@ runs:
         # and modules-cluster-endpoints env vars.
         - name: Start module servers via Docker (valkey 9.0, ubuntu)
           if: "${{ inputs.server-version == '9.0' && inputs.os == 'ubuntu' }}"
-          uses: ./.github/actions/start-valkey-docker
+          uses: ./valkey-glide/.github/actions/start-valkey-docker
           with:
               engine-version: ${{ inputs.server-version }}
 
         - name: Install zig
           if: ${{ contains(inputs.target, 'linux-gnu') }}
-          uses: ./.github/actions/install-zig
+          uses: ./valkey-glide/.github/actions/install-zig
