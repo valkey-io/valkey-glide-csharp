@@ -22,4 +22,4 @@ on:
 jobs:
     semgrep:
         # Call the reusable workflow from valkey-glide main repo
-        uses: valkey-io/valkey-glide/.github/workflows/semgrep.yml@ci-cd-workflow-consolidation
+        uses: valkey-io/valkey-glide/.github/workflows/semgrep.yml@main
