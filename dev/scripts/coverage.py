@@ -90,9 +90,9 @@ def _get_coverage() -> dict:
     baseline_branch = baseline["branch_coverage"]
 
     def _compare(measured: float, baseline: float) -> int:
-        diff = measured - baseline
-        coverage_tolerance = 0.1
+        diff = round(measured - baseline, 1)
 
+        coverage_tolerance = 0.1
         if diff < -coverage_tolerance:
             return -1
         elif diff > coverage_tolerance:
