@@ -150,7 +150,7 @@ jobs:
                   target: ${{ matrix.host.target }}
                   server-version: ${{ matrix.server.version }}
 
-            - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+            - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
               if: ${{ inputs.package-version == '' }}
               with:
                   path: rust/target
@@ -263,7 +263,7 @@ jobs:
                   ::1 valkey.glide.test.no_tls.com"
                   echo "$ENTRIES" | tee -a /etc/hosts
 
-            - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+            - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
               with:
                   path: rust/target
                   key: rust-${{ matrix.host.image }}
@@ -307,7 +307,7 @@ jobs:
                   target: x86_64-unknown-linux-gnu
                   server-version: "9.0"
 
-            - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+            - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
               with:
                   path: rust/target
                   key: rust-x86_64-unknown-linux-gnu
