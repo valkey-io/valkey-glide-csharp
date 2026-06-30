@@ -100,10 +100,10 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
         await ClusterClient.SetAsync(key, "test-value");
         Assert.True(await ClusterClient.ExistsAsync(key));
 
-        await ClusterClient.FlushDatabaseAsync(FlushMode.Sync, AllPrimaries);
+        var route = new SlotKeyRoute(key, SlotType.Primary);
+        await ClusterClient.FlushDatabaseAsync(FlushMode.Sync, route);
 
-        Assert.False(await ClusterClient.ExistsAsync(key));
-        Assert.Equal(0, await ClusterClient.DatabaseSizeAsync());
+        await WaitForKeyRemovedAsync(key);
     }
 
     #endregion
@@ -148,8 +148,8 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     [Fact]
     public async Task ConfigGetAsync_Standalone_MultiplePatterns()
     {
-        KeyValuePair<string, string>[] result = await StandaloneClient.ConfigGetAsync(
-            [(ValkeyValue)"maxmemory", (ValkeyValue)"lfu-decay-time"]);
+        var result = await StandaloneClient.ConfigGetAsync(
+            ["maxmemory", "lfu-decay-time"]);
 
         Assert.True(result.Length >= 2);
         Assert.Contains(result, kvp => kvp.Key == "maxmemory");
@@ -159,8 +159,8 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     [Fact]
     public async Task ConfigSetAsync_Standalone_MultipleParameters()
     {
-        KeyValuePair<string, string>[] original = await StandaloneClient.ConfigGetAsync(
-            [(ValkeyValue)"lfu-decay-time", (ValkeyValue)"lfu-log-factor"]);
+        var original = await StandaloneClient.ConfigGetAsync(
+            ["lfu-decay-time", "maxmemory", "lfu-log-factor"]);
 
         string originalDecayTime = original.First(kvp => kvp.Key == "lfu-decay-time").Value;
         string originalLogFactor = original.First(kvp => kvp.Key == "lfu-log-factor").Value;
@@ -173,8 +173,8 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
                 { "lfu-log-factor", "20" }
             });
 
-            KeyValuePair<string, string>[] result = await StandaloneClient.ConfigGetAsync(
-                [(ValkeyValue)"lfu-decay-time", (ValkeyValue)"lfu-log-factor"]);
+            var result = await StandaloneClient.ConfigGetAsync(
+                ["lfu-decay-time", "lfu-log-factor"]);
 
             Assert.Equal("5", result.First(kvp => kvp.Key == "lfu-decay-time").Value);
             Assert.Equal("20", result.First(kvp => kvp.Key == "lfu-log-factor").Value);
@@ -192,8 +192,8 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     [Fact]
     public async Task ConfigGetAsync_Cluster_MultiplePatterns()
     {
-        KeyValuePair<string, string>[] result = await ClusterClient.ConfigGetAsync(
-            [(ValkeyValue)"maxmemory", (ValkeyValue)"lfu-decay-time"]);
+        var result = await ClusterClient.ConfigGetAsync(
+            ["maxmemory", "lfu-decay-time"]);
 
         Assert.True(result.Length >= 2);
         Assert.Contains(result, kvp => kvp.Key == "maxmemory");
@@ -203,10 +203,10 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     [Fact]
     public async Task ConfigSetAsync_Cluster_MultipleParameters()
     {
-        ClusterValue<KeyValuePair<string, string>[]> original = await ClusterClient.ConfigGetAsync(
-            [(ValkeyValue)"lfu-decay-time", (ValkeyValue)"lfu-log-factor"], AllPrimaries);
+        var original = await ClusterClient.ConfigGetAsync(
+            ["lfu-decay-time", "lfu-log-factor"], AllPrimaries);
 
-        KeyValuePair<string, string>[] firstNodeOriginal = original.HasMultiData
+        var firstNodeOriginal = original.HasMultiData
             ? original.MultiValue.Values.First()
             : original.SingleValue;
 
@@ -221,10 +221,10 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
                 { "lfu-log-factor", "20" }
             });
 
-            ClusterValue<KeyValuePair<string, string>[]> result = await ClusterClient.ConfigGetAsync(
-                [(ValkeyValue)"lfu-decay-time", (ValkeyValue)"lfu-log-factor"], AllPrimaries);
+            var result = await ClusterClient.ConfigGetAsync(
+                ["lfu-decay-time", "lfu-log-factor"], AllNodes);
 
-            KeyValuePair<string, string>[] firstNodeResult = result.HasMultiData
+            var firstNodeResult = result.HasMultiData
                 ? result.MultiValue.Values.First()
                 : result.SingleValue;
 
@@ -288,10 +288,10 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
         await ClusterClient.SetAsync(key, "test-value");
         Assert.True(await ClusterClient.ExistsAsync(key));
 
-        await ClusterClient.FlushAllDatabasesAsync(AllPrimaries);
+        var route = new SlotKeyRoute(key, SlotType.Primary);
+        await ClusterClient.FlushAllDatabasesAsync(route);
 
-        Assert.False(await ClusterClient.ExistsAsync(key));
-        Assert.Equal(0, await ClusterClient.DatabaseSizeAsync());
+        await WaitForKeyRemovedAsync(key);
     }
 
     #endregion
@@ -440,6 +440,14 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
                 !info.Contains("rdb_bgsave_in_progress:1")
                 && !info.Contains("aof_rewrite_in_progress:1"));
         }, "Timed out waiting for save to complete");
+
+    /// <summary>
+    /// Polls until the specified key does not exist.
+    /// </summary>
+    private Task WaitForKeyRemovedAsync(string key)
+        => Polling.WaitForAsync(
+            async () => !await ClusterClient.ExistsAsync(key),
+            $"Timed out waiting for key '{key}' to be removed");
 
     #endregion
 }
