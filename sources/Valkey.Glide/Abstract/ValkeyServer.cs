@@ -159,7 +159,7 @@ internal partial class ValkeyServer(Database conn, EndPoint endpoint) : IServer
             // TODO #435: Implement BGREWRITEAOF command
             SaveType.BackgroundRewriteAppendOnlyFile => throw new NotSupportedException($"SaveType '{type}' is not yet supported."),
 
-            // TODO #435: Implement BGREWRITEAOF command
+            // TODO #435: Implement SAVE command
 #pragma warning disable CS0618 // SaveType.ForegroundSave is obsolete
             SaveType.ForegroundSave => throw new NotSupportedException($"SaveType '{type}' is not yet supported."),
 #pragma warning restore CS0618
