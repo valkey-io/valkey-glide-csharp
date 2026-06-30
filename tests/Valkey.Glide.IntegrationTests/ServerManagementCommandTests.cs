@@ -113,9 +113,10 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
     public async Task LolwutAsync_WithVersion(bool clusterMode)
     {
+        var options = new LolwutOptions { Version = 5 };
         var result = clusterMode
-            ? await ClusterClient.LolwutAsync(new LolwutOptions { Version = 5 })
-            : await StandaloneClient.LolwutAsync(new LolwutOptions { Version = 5 });
+            ? await ClusterClient.LolwutAsync(options)
+            : await StandaloneClient.LolwutAsync(options);
 
         AssertContainsServerName(result);
     }
@@ -124,9 +125,10 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
     public async Task LolwutAsync_WithVersionAndParameters(bool clusterMode)
     {
+        var optipns = new LolwutOptions { Version = 5, Parameters = [40, 20] };
         var result = clusterMode
-            ? await ClusterClient.LolwutAsync(new LolwutOptions { Version = 5, Parameters = [40, 20] })
-            : await StandaloneClient.LolwutAsync(new LolwutOptions { Version = 5, Parameters = [40, 20] });
+            ? await ClusterClient.LolwutAsync(optipns)
+            : await StandaloneClient.LolwutAsync(optipns);
 
         AssertContainsServerName(result);
     }
@@ -135,9 +137,10 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
     public async Task LolwutAsync_WithParametersOnly(bool clusterMode)
     {
+        var options = new LolwutOptions { Parameters = [40, 20] };
         var result = clusterMode
-            ? await ClusterClient.LolwutAsync(new LolwutOptions { Parameters = [40, 20] })
-            : await StandaloneClient.LolwutAsync(new LolwutOptions { Parameters = [40, 20] });
+            ? await ClusterClient.LolwutAsync(options)
+            : await StandaloneClient.LolwutAsync(options);
 
         AssertContainsServerName(result);
     }
