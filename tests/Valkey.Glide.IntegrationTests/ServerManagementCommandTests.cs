@@ -359,27 +359,16 @@ public class ServerManagementCommandTests(ServerManagementCommandFixture fixture
     /// <summary>
     /// Polls until no RDB save or AOF rewrite is in progress.
     /// </summary>
-    private async Task WaitForSaveNotInProgressAsync(bool useCluster = false)
-    {
-        TimeSpan timeout = TimeSpan.FromSeconds(10);
-        DateTimeOffset deadline = DateTimeOffset.UtcNow + timeout;
-
-        while (DateTimeOffset.UtcNow < deadline)
+    private Task WaitForSaveNotInProgressAsync(bool useCluster = false)
+        => Polling.WaitForAsync(async () =>
         {
             string info = useCluster
                 ? (await ClusterClient.InfoAsync([Section.PERSISTENCE])).Values.First()
                 : await StandaloneClient.InfoAsync([Section.PERSISTENCE]);
 
-            if (!info.Contains("rdb_bgsave_in_progress:1") && !info.Contains("aof_rewrite_in_progress:1"))
-            {
-                return;
-            }
-
-            await Task.Delay(100);
-        }
-
-        Assert.Fail("Timed out waiting for save to complete");
-    }
+            return !info.Contains("rdb_bgsave_in_progress:1")
+                && !info.Contains("aof_rewrite_in_progress:1");
+        }, "Timed out waiting for save to complete");
 
     [Fact]
     public async Task BackgroundSaveAsync_Standalone_ReturnsStatusString()
