@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Add `BGSAVE`, `BGSAVE SCHEDULE`, and `BGSAVE CANCEL` commands (#435)
+- Support additional commands (#435):
+  - `BGSAVE`, `BGSAVE SCHEDULE`, and `BGSAVE CANCEL`
 - Custom socket address resolution support via callback (#392)
 
 ## 1.1.0
