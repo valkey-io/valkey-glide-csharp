@@ -45,7 +45,7 @@ internal static class Skip
     public static void IfBgSaveCancelNotSupported()
         => Assert.SkipWhen(
             TestConfiguration.SERVER_VERSION < Valkey8_1,
-            "Background save cancel commands requires Valkey 8.1+");
+            "Background save cancel commands require Valkey 8.1+");
 
     #endregion
     #region Module Checks
