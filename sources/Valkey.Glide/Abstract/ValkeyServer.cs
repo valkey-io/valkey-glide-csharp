@@ -155,10 +155,15 @@ internal partial class ValkeyServer(Database conn, EndPoint endpoint) : IServer
         _ = type switch
         {
             SaveType.BackgroundSave => await _conn.Command(Request.BackgroundSaveAsync(), MakeRoute()),
+
+            // TODO #435: Implement BGREWRITEAOF command
             SaveType.BackgroundRewriteAppendOnlyFile => throw new NotSupportedException($"SaveType '{type}' is not yet supported."),
-#pragma warning disable CS0618 // Type or member is obsolete
+
+            // TODO #435: Implement BGREWRITEAOF command
+#pragma warning disable CS0618 // SaveType.ForegroundSave is obsolete
             SaveType.ForegroundSave => throw new NotSupportedException($"SaveType '{type}' is not yet supported."),
 #pragma warning restore CS0618
+
             _ => throw new ArgumentOutOfRangeException(nameof(type), type, $"Unknown SaveType value '{type}'."),
         };
     }
