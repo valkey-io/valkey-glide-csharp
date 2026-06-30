@@ -23,7 +23,7 @@ public class FtDropIndexTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task DropIndexAsync_IndexExists_Succeeds(BaseClient client)
     {
-        await SkipUtils.IfSearchModuleNotLoaded(client);
+        await Skip.IfSearchModuleNotLoaded(client);
 
         string index = Guid.NewGuid().ToString();
         await Ft.CreateAsync(client, index, new Ft.CreateTextField("title"));
@@ -36,7 +36,7 @@ public class FtDropIndexTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task DropIndexAsync_IndexDoesNotExist_Throws(BaseClient client)
     {
-        await SkipUtils.IfSearchModuleNotLoaded(client);
+        await Skip.IfSearchModuleNotLoaded(client);
 
         _ = await Assert.ThrowsAsync<RequestException>(
             () => Ft.DropIndexAsync(client, Guid.NewGuid().ToString()));

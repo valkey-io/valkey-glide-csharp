@@ -402,7 +402,7 @@ public class ServerManagementCommandTests(ServerManagementCommandFixture fixture
     [Fact]
     public async Task BackgroundSaveCancelAsync_Standalone_ThrowsWhenNoSaveInProgress()
     {
-        SkipUtils.IfBgSaveCancelNotSupported();
+        Skip.IfBgSaveCancelNotSupported();
         await WaitForSaveNotInProgressAsync();
 
         var ex = await Assert.ThrowsAsync<RequestException>(StandaloneClient.BackgroundSaveCancelAsync);
@@ -446,7 +446,7 @@ public class ServerManagementCommandTests(ServerManagementCommandFixture fixture
     [Fact]
     public async Task BackgroundSaveCancelAsync_Cluster_ThrowsWhenNoSaveInProgress()
     {
-        SkipUtils.IfBgSaveCancelNotSupported();
+        Skip.IfBgSaveCancelNotSupported();
 
         await WaitForSaveNotInProgressAsync(useCluster: true);
 

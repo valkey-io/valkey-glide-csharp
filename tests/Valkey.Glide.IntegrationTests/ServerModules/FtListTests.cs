@@ -18,7 +18,7 @@ public class FtListTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task ListAsync_NewIndex_AppearsInList(BaseClient client)
     {
-        await SkipUtils.IfSearchModuleNotLoaded(client);
+        await Skip.IfSearchModuleNotLoaded(client);
 
         var index = Guid.NewGuid().ToString();
         await Ft.CreateAsync(client, index, new Ft.CreateTextField("field"));
@@ -33,7 +33,7 @@ public class FtListTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task ListAsync_DroppedIndex_DisappearsFromList(BaseClient client)
     {
-        await SkipUtils.IfSearchModuleNotLoaded(client);
+        await Skip.IfSearchModuleNotLoaded(client);
 
         var index = Guid.NewGuid().ToString();
         await Ft.CreateAsync(client, index, new Ft.CreateTextField("field"));

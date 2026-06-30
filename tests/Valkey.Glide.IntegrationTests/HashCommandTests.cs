@@ -373,7 +373,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestHashGetExpiry(BaseClient client)
     {
-        SkipUtils.IfHashExpireNotSupported();
+        Skip.IfHashExpireNotSupported();
 
         string key = Guid.NewGuid().ToString();
 
@@ -415,7 +415,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestHashGetExpiry_SingleField(BaseClient client)
     {
-        SkipUtils.IfHashExpireNotSupported();
+        Skip.IfHashExpireNotSupported();
 
         string key = Guid.NewGuid().ToString();
 
@@ -470,7 +470,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestHashSetExpiry(BaseClient client)
     {
-        SkipUtils.IfHashExpireNotSupported();
+        Skip.IfHashExpireNotSupported();
 
         string key = Guid.NewGuid().ToString();
 
@@ -505,7 +505,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestHashSetExpiry_SingleField(BaseClient client)
     {
-        SkipUtils.IfHashExpireNotSupported();
+        Skip.IfHashExpireNotSupported();
 
         string key = Guid.NewGuid().ToString();
 
@@ -565,7 +565,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestHashPersist(BaseClient client)
     {
-        SkipUtils.IfHashExpireNotSupported();
+        Skip.IfHashExpireNotSupported();
 
         string key = Guid.NewGuid().ToString();
 
@@ -601,7 +601,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestHashExpire(BaseClient client)
     {
-        SkipUtils.IfHashExpireNotSupported();
+        Skip.IfHashExpireNotSupported();
 
         string key = Guid.NewGuid().ToString();
 
@@ -635,7 +635,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestHashPExpire(BaseClient client)
     {
-        SkipUtils.IfHashExpireNotSupported();
+        Skip.IfHashExpireNotSupported();
 
         string key = Guid.NewGuid().ToString();
 
@@ -661,7 +661,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestHashExpireAt(BaseClient client)
     {
-        SkipUtils.IfHashExpireNotSupported();
+        Skip.IfHashExpireNotSupported();
 
         string key = Guid.NewGuid().ToString();
 
@@ -684,7 +684,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestHashPExpireAt(BaseClient client)
     {
-        SkipUtils.IfHashExpireNotSupported();
+        Skip.IfHashExpireNotSupported();
 
         string key = Guid.NewGuid().ToString();
 
@@ -710,7 +710,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestHashExpireTime(BaseClient client)
     {
-        SkipUtils.IfHashExpireNotSupported();
+        Skip.IfHashExpireNotSupported();
 
         string key = Guid.NewGuid().ToString();
 
@@ -746,7 +746,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestHashTimeToLive(BaseClient client)
     {
-        SkipUtils.IfHashExpireNotSupported();
+        Skip.IfHashExpireNotSupported();
 
         string key = Guid.NewGuid().ToString();
 

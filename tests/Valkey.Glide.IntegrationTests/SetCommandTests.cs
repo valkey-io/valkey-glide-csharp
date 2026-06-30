@@ -67,7 +67,7 @@ public class SetCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestSetInterCardAsync(BaseClient client)
     {
-        SkipUtils.IfSetInterCardNotSupported();
+        Skip.IfSetInterCardNotSupported();
         string key1 = "{prefix}-" + Guid.NewGuid().ToString();
         string key2 = "{prefix}-" + Guid.NewGuid().ToString();
 
