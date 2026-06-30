@@ -3,6 +3,10 @@
 using Valkey.Glide.Commands.Options;
 using Valkey.Glide.TestUtils;
 
+using static Valkey.Glide.Commands.Options.InfoOptions;
+using static Valkey.Glide.Errors;
+using static Valkey.Glide.Route;
+
 namespace Valkey.Glide.IntegrationTests;
 
 /// <summary>
@@ -120,14 +124,13 @@ public class ServerManagementCommandTests(ServerManagementCommandFixture fixture
         await ClusterClient.SetAsync(key, "test-value");
         Assert.True(await ClusterClient.ExistsAsync(key));
 
-        await ClusterClient.FlushDatabaseAsync(FlushMode.Sync, Route.AllPrimaries);
+        await ClusterClient.FlushDatabaseAsync(FlushMode.Sync, AllPrimaries);
 
         Assert.False(await ClusterClient.ExistsAsync(key));
         Assert.Equal(0, await ClusterClient.DatabaseSizeAsync());
     }
 
     #endregion
-
     #region LOLWUT Tests
 
     [Fact]
@@ -155,7 +158,6 @@ public class ServerManagementCommandTests(ServerManagementCommandFixture fixture
         => AssertContainsServerName(await ClusterClient.LolwutAsync(new LolwutOptions { Parameters = [40, 20] }));
 
     #endregion
-
     #region CONFIG GET/SET Multi-Parameter Tests
 
     [Fact]
@@ -217,8 +219,7 @@ public class ServerManagementCommandTests(ServerManagementCommandFixture fixture
     public async Task ConfigSetAsync_Cluster_MultipleParameters()
     {
         ClusterValue<KeyValuePair<string, string>[]> original = await ClusterClient.ConfigGetAsync(
-            [(ValkeyValue)"lfu-decay-time", (ValkeyValue)"lfu-log-factor"],
-            Route.AllPrimaries);
+            [(ValkeyValue)"lfu-decay-time", (ValkeyValue)"lfu-log-factor"], AllPrimaries);
 
         KeyValuePair<string, string>[] firstNodeOriginal = original.HasMultiData
             ? original.MultiValue.Values.First()
@@ -236,8 +237,7 @@ public class ServerManagementCommandTests(ServerManagementCommandFixture fixture
             });
 
             ClusterValue<KeyValuePair<string, string>[]> result = await ClusterClient.ConfigGetAsync(
-                [(ValkeyValue)"lfu-decay-time", (ValkeyValue)"lfu-log-factor"],
-                Route.AllPrimaries);
+                [(ValkeyValue)"lfu-decay-time", (ValkeyValue)"lfu-log-factor"], AllPrimaries);
 
             KeyValuePair<string, string>[] firstNodeResult = result.HasMultiData
                 ? result.MultiValue.Values.First()
@@ -257,7 +257,6 @@ public class ServerManagementCommandTests(ServerManagementCommandFixture fixture
     }
 
     #endregion
-
     #region FlushAllDatabases Cluster Tests
 
     [Fact]
@@ -305,14 +304,13 @@ public class ServerManagementCommandTests(ServerManagementCommandFixture fixture
         await ClusterClient.SetAsync(key, "test-value");
         Assert.True(await ClusterClient.ExistsAsync(key));
 
-        await ClusterClient.FlushAllDatabasesAsync(Route.AllPrimaries);
+        await ClusterClient.FlushAllDatabasesAsync(AllPrimaries);
 
         Assert.False(await ClusterClient.ExistsAsync(key));
         Assert.Equal(0, await ClusterClient.DatabaseSizeAsync());
     }
 
     #endregion
-
     #region WAITAOF Tests
 
     [Fact]
@@ -339,6 +337,121 @@ public class ServerManagementCommandTests(ServerManagementCommandFixture fixture
         Assert.Equal(2, result.Length);
         Assert.True(result[0] >= 0);
         Assert.True(result[1] >= 0);
+    }
+
+    #endregion
+    #region BgSave Tests
+
+    /// <summary>
+    /// Expected valid responses for <c>BGSAVE</c> and <c>BGSAVE SCHEDULE</c> commands.
+    /// </summary>
+    private static readonly string[] BgSaveResponses =
+    [
+        "Background saving started",
+        "Background saving scheduled",
+    ];
+
+    /// <summary>
+    /// Expected server error response for <c>BGSAVE CANCEL</c> when no save is in progress.
+    /// </summary>
+    private const string BgSaveNotCancelledResponse = "Background saving is currently not in progress or scheduled";
+
+    /// <summary>
+    /// Polls until no RDB save or AOF rewrite is in progress.
+    /// </summary>
+    private async Task WaitForSaveNotInProgressAsync(bool useCluster = false)
+    {
+        TimeSpan timeout = TimeSpan.FromSeconds(10);
+        DateTimeOffset deadline = DateTimeOffset.UtcNow + timeout;
+
+        while (DateTimeOffset.UtcNow < deadline)
+        {
+            string info = useCluster
+                ? (await ClusterClient.InfoAsync([Section.PERSISTENCE])).Values.First()
+                : await StandaloneClient.InfoAsync([Section.PERSISTENCE]);
+
+            if (!info.Contains("rdb_bgsave_in_progress:1") && !info.Contains("aof_rewrite_in_progress:1"))
+            {
+                return;
+            }
+
+            await Task.Delay(100);
+        }
+
+        Assert.Fail("Timed out waiting for save to complete");
+    }
+
+    [Fact]
+    public async Task BackgroundSaveAsync_Standalone_ReturnsStatusString()
+    {
+        await WaitForSaveNotInProgressAsync();
+
+        var response = await StandaloneClient.BackgroundSaveAsync();
+        Assert.True(BgSaveResponses.Contains(response));
+    }
+
+    [Fact]
+    public async Task BackgroundSaveScheduleAsync_Standalone_ReturnsStatusString()
+    {
+        await WaitForSaveNotInProgressAsync();
+
+        var response = await StandaloneClient.BackgroundSaveScheduleAsync();
+        Assert.True(BgSaveResponses.Contains(response));
+    }
+
+    [Fact]
+    public async Task BackgroundSaveCancelAsync_Standalone_ThrowsWhenNoSaveInProgress()
+    {
+        SkipUtils.IfBgSaveCancelNotSupported();
+        await WaitForSaveNotInProgressAsync();
+
+        var ex = await Assert.ThrowsAsync<RequestException>(StandaloneClient.BackgroundSaveCancelAsync);
+        Assert.Contains(BgSaveNotCancelledResponse, ex.Message);
+    }
+
+    [Fact]
+    public async Task BackgroundSaveAsync_Cluster_ReturnsClusterValue()
+    {
+        await WaitForSaveNotInProgressAsync(useCluster: true);
+
+        var result = await ClusterClient.BackgroundSaveAsync();
+        foreach (string value in result.MultiValue.Values)
+        {
+            Assert.Contains(value, BgSaveResponses);
+        }
+    }
+
+    [Fact]
+    public async Task BackgroundSaveAsync_Cluster_WithRoute_ReturnsSingleValue()
+    {
+        await WaitForSaveNotInProgressAsync(useCluster: true);
+
+        var route = new SlotKeyRoute("1", SlotType.Primary);
+        var result = await ClusterClient.BackgroundSaveAsync(route);
+        Assert.Contains(result.SingleValue, BgSaveResponses);
+    }
+
+    [Fact]
+    public async Task BackgroundSaveScheduleAsync_Cluster_ReturnsClusterValue()
+    {
+        await WaitForSaveNotInProgressAsync(useCluster: true);
+
+        var result = await ClusterClient.BackgroundSaveScheduleAsync();
+        foreach (string value in result.MultiValue.Values)
+        {
+            Assert.Contains(value, BgSaveResponses);
+        }
+    }
+
+    [Fact]
+    public async Task BackgroundSaveCancelAsync_Cluster_ThrowsWhenNoSaveInProgress()
+    {
+        SkipUtils.IfBgSaveCancelNotSupported();
+
+        await WaitForSaveNotInProgressAsync(useCluster: true);
+
+        var ex = await Assert.ThrowsAsync<RequestException>(ClusterClient.BackgroundSaveCancelAsync);
+        Assert.Contains(BgSaveNotCancelledResponse, ex.Message);
     }
 
     #endregion
