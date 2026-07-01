@@ -424,6 +424,72 @@ public class ClusterClientTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestClientPause_WithRoute_ThenExpires(GlideClusterClient client)
+    {
+        var (pausedKey, unpausedKey) = await GetKeysOnDifferentNodes(client);
+        await client.SetAsync(pausedKey, "before");
+        await client.SetAsync(unpausedKey, "before");
+
+        var pauseFor = TimeSpan.FromSeconds(2);
+        var pausedNodeRoute = new SlotKeyRoute(pausedKey, SlotType.Primary);
+        await client.ClientPauseAsync(pauseFor, pausedNodeRoute);
+
+        var pausedSetTask = client.SetAsync(pausedKey, "after");
+        var unpausedSetTask = client.SetAsync(unpausedKey, "after");
+
+        // Verify that commands on the paused node are blocked.
+        var completesDuringPause = TimeSpan.FromSeconds(1);
+        _ = await Assert.ThrowsAsync<System.TimeoutException>(
+            () => pausedSetTask.WaitAsync(completesDuringPause, TestContext.Current.CancellationToken));
+
+        // Verify that commands on the unpaused node complete normally.
+        await unpausedSetTask.WaitAsync(completesDuringPause, TestContext.Current.CancellationToken);
+        Assert.Equal("after", await client.GetAsync(unpausedKey));
+
+        // Verify that the paused node resumes once the pause expires.
+        var completesAfterPause = TimeSpan.FromSeconds(5);
+        await pausedSetTask.WaitAsync(completesAfterPause, TestContext.Current.CancellationToken);
+        Assert.Equal("after", await client.GetAsync(pausedKey));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestClientPauseWrite_WithRoute_ThenUnpause(GlideClusterClient client)
+    {
+        var (pausedKey, unpausedKey) = await GetKeysOnDifferentNodes(client);
+        await client.SetAsync(pausedKey, "before");
+        await client.SetAsync(unpausedKey, "before");
+
+        var pauseFor = TimeSpan.FromSeconds(2);
+        var pausedNodeRoute = new SlotKeyRoute(pausedKey, SlotType.Primary);
+        await client.ClientPauseWriteAsync(pauseFor, pausedNodeRoute);
+
+        var getTask = client.GetAsync(pausedKey);
+        var pausedSetTask = client.SetAsync(pausedKey, "after");
+        var unpausedSetTask = client.SetAsync(unpausedKey, "after");
+
+        // Verify that reads on the paused node still complete.
+        var completesDuringPause = TimeSpan.FromSeconds(1);
+        Assert.Equal("before", await getTask.WaitAsync(completesDuringPause, TestContext.Current.CancellationToken));
+
+        // Verify that writes on the paused node are blocked.
+        _ = await Assert.ThrowsAsync<System.TimeoutException>(
+            () => pausedSetTask.WaitAsync(completesDuringPause, TestContext.Current.CancellationToken));
+
+        // Verify that commands on the unpaused node complete normally.
+        await unpausedSetTask.WaitAsync(completesDuringPause, TestContext.Current.CancellationToken);
+        Assert.Equal("after", await client.GetAsync(unpausedKey));
+
+        await client.ClientUnpauseAsync(pausedNodeRoute);
+
+        // Verify that writes on the paused node complete once unpaused.
+        var completesAfterPause = TimeSpan.FromSeconds(5);
+        await pausedSetTask.WaitAsync(completesAfterPause, TestContext.Current.CancellationToken);
+        Assert.Equal("after", await client.GetAsync(pausedKey));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task TimeAsync_ReturnsTimePerNode(GlideClusterClient client)
     {
         // Get time from all nodes
@@ -632,4 +698,32 @@ public class ClusterClientTests(TestConfiguration config)
         await using var client = await GlideClusterClient.CreateClient(builder.Build());
         await Client.AssertConnected(client);
     }
+
+    #region Helpers
+
+    /// <summary>
+    /// Returns two keys that route to different primary nodes.
+    /// </summary>
+    private static async Task<(string key1, string key2)> GetKeysOnDifferentNodes(
+        GlideClusterClient client)
+    {
+        var key1 = Guid.NewGuid().ToString();
+        var route1 = new SlotKeyRoute(key1, SlotType.Primary);
+        var id1 = (await client.ClientIdAsync(route1)).SingleValue;
+
+        // Generate a new key until it routes to a different node.
+        string? key2 = null;
+        await Polling.WaitForTrueAsync(async () =>
+        {
+            key2 = Guid.NewGuid().ToString();
+            var route2 = new SlotKeyRoute(key2, SlotType.Primary);
+            var id2 = (await client.ClientIdAsync(route2)).SingleValue;
+
+            return id1 != id2;
+        }, "Could not find two keys on different nodes");
+
+        return (key1, key2!);
+    }
+
+    #endregion
 }

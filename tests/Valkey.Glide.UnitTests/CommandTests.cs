@@ -94,6 +94,11 @@ public class CommandTests
             () => Assert.Equal(["SELECT", "15"], Request.Select(15).GetArgs()),
             () => Assert.Equal(["SELECT", "-1"], Request.Select(-1).GetArgs()),
 
+            // Connection Management Commands - ClientPause and ClientUnpause
+            () => Assert.Equal(["CLIENTPAUSE", "1000"], Request.ClientPause(TimeSpan.FromMilliseconds(1000)).GetArgs()),
+            () => Assert.Equal(["CLIENTPAUSE", "1000", "WRITE"], Request.ClientPauseWrite(TimeSpan.FromMilliseconds(1000)).GetArgs()),
+            () => Assert.Equal(["CLIENTUNPAUSE"], Request.ClientUnpause().GetArgs()),
+
             // Server Management Commands
             () => Assert.Equal(["CLIENTGETNAME"], Request.ClientGetName().GetArgs()),
             () => Assert.Equal(["CLIENTID"], Request.ClientId().GetArgs()),
@@ -482,6 +487,9 @@ public class CommandTests
             () => Assert.Equal("test-connection", Request.ClientGetName().Converter(new GlideString("test-connection"))),
             () => Assert.Equal(12345L, Request.ClientId().Converter(12345L)),
             () => Assert.Equal(ValkeyValue.Ok, Request.Select(0).Converter("OK")),
+            () => Assert.Equal(ValkeyValue.Ok, Request.ClientPause(TimeSpan.FromMilliseconds(1000)).Converter("OK")),
+            () => Assert.Equal(ValkeyValue.Ok, Request.ClientPauseWrite(TimeSpan.FromMilliseconds(1000)).Converter("OK")),
+            () => Assert.Equal(ValkeyValue.Ok, Request.ClientUnpause().Converter("OK")),
 
             () => Assert.True(Request.SetAddAsync("key", "member").Converter(1L)),
             () => Assert.False(Request.SetAddAsync("key", "member").Converter(0L)),

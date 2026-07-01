@@ -127,6 +127,7 @@ internal static class ValkeyLiterals
         WITHSCORE = "WITHSCORE",
         WITHSCORES = "WITHSCORES",
         WITHVALUES = "WITHVALUES",
+        WRITE = "WRITE",
         XOR = "XOR",
         XX = "XX",
 

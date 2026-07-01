@@ -18,4 +18,13 @@ internal partial class Request
 
     public static Cmd<string, ValkeyValue> ClientSetName(string connectionName)
         => Ok(RequestType.ClientSetName, [connectionName.ToGlideString()]);
+
+    public static Cmd<string, ValkeyValue> ClientPause(TimeSpan timeout)
+        => Ok(RequestType.ClientPause, [ToMilliseconds(timeout)]);
+
+    public static Cmd<string, ValkeyValue> ClientPauseWrite(TimeSpan timeout)
+        => Ok(RequestType.ClientPause, [ToMilliseconds(timeout), ValkeyLiterals.WRITE.ToGlideString()]);
+
+    public static Cmd<string, ValkeyValue> ClientUnpause()
+        => Ok(RequestType.ClientUnpause, []);
 }
