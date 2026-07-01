@@ -173,7 +173,7 @@ public partial interface IGlideClusterClient :
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.ClientPauseAsync(TimeSpan.FromSeconds(1), Route.AllPrimaries);
+    /// await clusterClient.ClientPauseAsync(TimeSpan.FromSeconds(1), Route.AllPrimaries);
     /// </code>
     /// </example>
     /// </remarks>
@@ -189,7 +189,7 @@ public partial interface IGlideClusterClient :
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.ClientPauseWriteAsync(TimeSpan.FromSeconds(1), Route.AllPrimaries);
+    /// await clusterClient.ClientPauseWriteAsync(TimeSpan.FromSeconds(1), Route.AllPrimaries);
     /// </code>
     /// </example>
     /// </remarks>
@@ -203,7 +203,7 @@ public partial interface IGlideClusterClient :
     /// <remarks>
     /// <example>
     /// <code>
-    /// await client.ClientUnpauseAsync(Route.AllPrimaries);
+    /// await clusterClient.ClientUnpauseAsync(Route.AllPrimaries);
     /// </code>
     /// </example>
     /// </remarks>
