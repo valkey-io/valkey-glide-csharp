@@ -707,9 +707,13 @@ public class ClusterClientTests(TestConfiguration config)
     private static async Task<(string key1, string key2)> GetKeysOnDifferentNodes(
         GlideClusterClient client)
     {
+        // CLUSTER MYID returns the node's unique replication ID, which is guaranteed unique
+        // per node. CLIENT ID is not suitable here because different nodes can return the same ID.
+        GlideString[] myIdArgs = ["CLUSTER", "MYID"];
+
         var key1 = Guid.NewGuid().ToString();
         var route1 = new SlotKeyRoute(key1, SlotType.Primary);
-        var id1 = (await client.ClientIdAsync(route1)).SingleValue;
+        var nodeId1 = (await client.CustomCommand(myIdArgs, route1)).SingleValue;
 
         // Generate a new key until it routes to a different node.
         string? key2 = null;
@@ -717,9 +721,9 @@ public class ClusterClientTests(TestConfiguration config)
         {
             key2 = Guid.NewGuid().ToString();
             var route2 = new SlotKeyRoute(key2, SlotType.Primary);
-            var id2 = (await client.ClientIdAsync(route2)).SingleValue;
+            var nodeId2 = (await client.CustomCommand(myIdArgs, route2)).SingleValue;
 
-            return id1 != id2;
+            return nodeId1 != nodeId2;
         }, "Could not find two keys on different nodes");
 
         return (key1, key2!);

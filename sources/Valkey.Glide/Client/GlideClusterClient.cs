@@ -346,7 +346,7 @@ public sealed partial class GlideClusterClient :
 
     /// <inheritdoc cref="ITransactionBaseCommands.WatchAsync(IEnumerable{ValkeyKey})"/>
     public async Task WatchAsync(IEnumerable<ValkeyKey> keys)
-        => _ = await Command(Request.Watch(keys), AllPrimaries);
+        => _ = await Command(Request.Watch(keys));
 
     /// <inheritdoc cref="ITransactionClusterCommands.UnwatchAsync()"/>
     public async Task UnwatchAsync()
