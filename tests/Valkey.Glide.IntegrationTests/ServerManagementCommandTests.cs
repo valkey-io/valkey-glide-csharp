@@ -255,9 +255,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
         Assert.True(await ClusterClient.ExistsAsync(key));
 
         await ClusterClient.FlushAllDatabasesAsync();
-
-        Assert.False(await ClusterClient.ExistsAsync(key));
-        Assert.Equal(0, await ClusterClient.DatabaseSizeAsync());
+        await WaitForFlushedAsync(ClusterClient);
     }
 
     [Fact]
