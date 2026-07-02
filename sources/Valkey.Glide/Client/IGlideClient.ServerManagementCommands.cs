@@ -191,4 +191,51 @@ public partial interface IGlideClient
     /// </example>
     /// </remarks>
     Task<string> LolwutAsync();
+
+    /// <summary>
+    /// Asynchronously saves the dataset to disk in the background.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/bgsave/">Valkey commands – BGSAVE</seealso>
+    /// <returns>A non-empty status string.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var response = await client.BackgroundSaveAsync();
+    /// Console.WriteLine(response); // "Background saving started"
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<string> BackgroundSaveAsync();
+
+    /// <summary>
+    /// Schedules a background save of the database.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/bgsave/">Valkey commands – BGSAVE</seealso>
+    /// <returns>A non-empty status string.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var response = await client.BackgroundSaveScheduleAsync();
+    /// Console.WriteLine(response); // "Background saving scheduled"
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<string> BackgroundSaveScheduleAsync();
+
+    /// <summary>
+    /// Aborts all in-progress and scheduled background saves.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/bgsave/">Valkey commands – BGSAVE</seealso>
+    /// <note>Since Valkey 8.1.</note>
+    /// <returns>A non-empty status string.</returns>
+    /// <exception cref="Errors.RequestException">Thrown if no background save is currently in progress or scheduled.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var response = await client.BackgroundSaveCancelAsync();
+    /// Console.WriteLine(response); // "Background saving cancelled"
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<string> BackgroundSaveCancelAsync();
 }

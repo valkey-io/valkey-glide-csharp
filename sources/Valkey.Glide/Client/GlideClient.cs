@@ -163,6 +163,18 @@ public partial class GlideClient :
         return await Command(Request.ConfigGetAsync(patterns));
     }
 
+    /// <inheritdoc cref="IGlideClient.BackgroundSaveAsync()"/>
+    public async Task<string> BackgroundSaveAsync()
+        => await Command(Request.BackgroundSaveAsync());
+
+    /// <inheritdoc cref="IGlideClient.BackgroundSaveScheduleAsync()"/>
+    public async Task<string> BackgroundSaveScheduleAsync()
+        => await Command(Request.BackgroundSaveScheduleAsync());
+
+    /// <inheritdoc cref="IGlideClient.BackgroundSaveCancelAsync()"/>
+    public async Task<string> BackgroundSaveCancelAsync()
+        => await Command(Request.BackgroundSaveCancelAsync());
+
     /// <inheritdoc/>
     public async Task<(string cursor, ValkeyKey[] keys)> ScanAsync(string cursor, ScanOptions? options = null)
         => await Command(Request.ScanAsync(cursor, options));

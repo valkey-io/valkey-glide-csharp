@@ -26,7 +26,7 @@ public class FtCreateTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task CreateAsync_TextField_Succeeds(BaseClient client)
     {
-        await SkipUtils.IfSearchModuleNotLoaded(client);
+        await Skip.IfSearchModuleNotLoaded(client);
 
         var index = Guid.NewGuid().ToString();
         var field = new Ft.CreateTextField("title");
@@ -39,7 +39,7 @@ public class FtCreateTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task CreateAsync_TagField_Succeeds(BaseClient client)
     {
-        await SkipUtils.IfSearchModuleNotLoaded(client);
+        await Skip.IfSearchModuleNotLoaded(client);
 
         var index = Guid.NewGuid().ToString();
         var field = new Ft.CreateTagField("category");
@@ -52,7 +52,7 @@ public class FtCreateTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task CreateAsync_NumericField_Succeeds(BaseClient client)
     {
-        await SkipUtils.IfSearchModuleNotLoaded(client);
+        await Skip.IfSearchModuleNotLoaded(client);
 
         var index = Guid.NewGuid().ToString();
         var field = new Ft.CreateNumericField("price");
@@ -65,7 +65,7 @@ public class FtCreateTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task CreateAsync_VectorFieldFlat_Succeeds(BaseClient client)
     {
-        await SkipUtils.IfSearchModuleNotLoaded(client);
+        await Skip.IfSearchModuleNotLoaded(client);
 
         var index = Guid.NewGuid().ToString();
         var field = new Ft.CreateVectorFieldFlat
@@ -83,7 +83,7 @@ public class FtCreateTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task CreateAsync_VectorFieldHnsw_Succeeds(BaseClient client)
     {
-        await SkipUtils.IfSearchModuleNotLoaded(client);
+        await Skip.IfSearchModuleNotLoaded(client);
 
         var index = Guid.NewGuid().ToString();
         var field = new Ft.CreateVectorFieldHnsw
@@ -101,7 +101,7 @@ public class FtCreateTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task CreateAsync_MultipleFieldTypes_Succeeds(BaseClient client)
     {
-        await SkipUtils.IfSearchModuleNotLoaded(client);
+        await Skip.IfSearchModuleNotLoaded(client);
 
         var index = Guid.NewGuid().ToString();
         Ft.CreateField[] schema =
@@ -125,7 +125,7 @@ public class FtCreateTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task CreateAsync_DuplicateIndex_Throws(BaseClient client)
     {
-        await SkipUtils.IfSearchModuleNotLoaded(client);
+        await Skip.IfSearchModuleNotLoaded(client);
 
         var index = Guid.NewGuid().ToString();
         await Ft.CreateAsync(client, index, new Ft.CreateTextField("title"));
