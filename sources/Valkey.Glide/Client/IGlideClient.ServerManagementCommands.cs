@@ -191,4 +191,42 @@ public partial interface IGlideClient
     /// </example>
     /// </remarks>
     Task<string> LolwutAsync();
+
+    /// <summary>
+    /// Returns latency spike time series for the specified event.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/latency-history/">Valkey commands – LATENCY HISTORY</seealso>
+    /// <param name="event">The name of the event to get latency history for.</param>
+    /// <returns>An array of <see cref="LatencyEntry"/> representing the latency spike time series for the event.
+    /// Returns an empty array if the event does not exist.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var history = await client.LatencyHistoryAsync("command");
+    /// foreach (var entry in history)
+    /// {
+    ///     Console.WriteLine($"Time: {entry.Time}, Duration: {entry.Duration.TotalMilliseconds}ms");
+    /// }
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<LatencyEntry[]> LatencyHistoryAsync(ValkeyValue @event);
+
+    /// <summary>
+    /// Reports the latest latency events logged by the server.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/latency-latest/">Valkey commands – LATENCY LATEST</seealso>
+    /// <returns>An array of <see cref="LatencyEventInfo"/> for the latest latency events.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var latest = await client.LatencyLatestAsync();
+    /// foreach (var info in latest)
+    /// {
+    ///     Console.WriteLine($"Event: {info.EventName}, Latest: {info.LatestDuration.TotalMilliseconds}ms");
+    /// }
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<LatencyEventInfo[]> LatencyLatestAsync();
 }
