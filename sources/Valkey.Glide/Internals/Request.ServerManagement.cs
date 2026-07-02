@@ -154,4 +154,51 @@ internal partial class Request
 
     public static Cmd<string, ValkeyValue> Select(long index)
         => Ok(RequestType.Select, [index.ToString().ToGlideString()]);
+
+    public static Cmd<object, LatencyEntry[]> LatencyHistoryAsync(ValkeyValue @event)
+        => new(RequestType.LatencyHistory, [@event.ToGlideString()], false, ConvertLatencyHistoryResponse);
+
+    public static Cmd<object, LatencyEventInfo[]> LatencyLatestAsync()
+        => new(RequestType.LatencyLatest, [], false, ConvertLatencyLatestResponse);
+
+    public static Cmd<long, long> LatencyResetAsync(IEnumerable<ValkeyValue> events)
+        => new(RequestType.LatencyReset, events.ToGlideStrings(), false, l => l);
+
+    private static LatencyEntry[] ConvertLatencyHistoryResponse(object response)
+    {
+        object[] array = (object[])response;
+        LatencyEntry[] entries = new LatencyEntry[array.Length];
+
+        for (int i = 0; i < array.Length; i++)
+        {
+            object[] entry = (object[])array[i];
+            entries[i] = new()
+            {
+                Time = DateTimeOffset.FromUnixTimeSeconds(Convert.ToInt64(entry[0])),
+                Duration = TimeSpan.FromMilliseconds(Convert.ToInt64(entry[1])),
+            };
+        }
+        return entries;
+    }
+
+    private static LatencyEventInfo[] ConvertLatencyLatestResponse(object response)
+    {
+        object[] array = (object[])response;
+        LatencyEventInfo[] entries = new LatencyEventInfo[array.Length];
+
+        for (int i = 0; i < array.Length; i++)
+        {
+            object[] entry = (object[])array[i];
+            entries[i] = new()
+            {
+                EventName = ((GlideString)entry[0]).ToString(),
+                LatestTime = DateTimeOffset.FromUnixTimeSeconds(Convert.ToInt64(entry[1])),
+                LatestDuration = TimeSpan.FromMilliseconds(Convert.ToInt64(entry[2])),
+                MaxDuration = TimeSpan.FromMilliseconds(Convert.ToInt64(entry[3])),
+                Sum = entry.Length > 4 ? TimeSpan.FromMilliseconds(Convert.ToInt64(entry[4])) : null,
+                Count = entry.Length > 5 ? Convert.ToInt64(entry[5]) : null,
+            };
+        }
+        return entries;
+    }
 }

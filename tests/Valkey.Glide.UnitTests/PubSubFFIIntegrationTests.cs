@@ -223,5 +223,8 @@ public class PubSubFFIIntegrationTests
         public override Task FlushAllDatabasesAsync(FlushMode mode) => Task.CompletedTask;
         public override Task FlushDatabaseAsync(FlushMode mode) => Task.CompletedTask;
         public override Task<string> LolwutAsync(LolwutOptions options) => Task.FromResult(string.Empty);
+        public override Task<long> LatencyResetAsync() => Task.FromResult(0L);
+        public override Task<long> LatencyResetAsync(ValkeyValue eventName) => Task.FromResult(0L);
+        public override Task<long> LatencyResetAsync(IEnumerable<ValkeyValue> events) => Task.FromResult(0L);
     }
 }
