@@ -225,7 +225,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
             });
 
             var result = await ClusterClient.ConfigGetAsync(
-                ["lfu-decay-time", "lfu-log-factor"], AllNodes);
+                ["lfu-decay-time", "lfu-log-factor"], AllPrimaries);
 
             var firstNodeResult = result.HasMultiData
                 ? result.MultiValue.Values.First()
