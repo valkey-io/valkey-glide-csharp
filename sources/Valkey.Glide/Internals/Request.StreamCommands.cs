@@ -158,19 +158,17 @@ internal partial class Request
                             continue;
                         }
 
-                        // The value is an array containing a single element which is the field-value array
-                        if (outerArray[0] is not object[] fieldValues || fieldValues.Length == 0)
+                        var values = new NameValueEntry[outerArray.Length];
+                        for (int i = 0; i < outerArray.Length; i++)
                         {
-                            continue;
-                        }
-
-                        // Convert field-value array to NameValueEntry array
-                        var values = new NameValueEntry[fieldValues.Length / 2];
-                        for (int i = 0; i < values.Length; i++)
-                        {
+                            var field = outerArray[i];
+                            if (field is not object[] fieldValues || fieldValues.Length == 0)
+                            {
+                                continue;
+                            }
                             values[i] = new NameValueEntry(
-                                (GlideString)fieldValues[i * 2],
-                                (GlideString)fieldValues[(i * 2) + 1]
+                                (GlideString)fieldValues[0],
+                                (GlideString)fieldValues[1]
                             );
                         }
 
@@ -234,19 +232,17 @@ internal partial class Request
                             continue;
                         }
 
-                        // The value is an array containing a single element which is the field-value array
-                        if (outerArray[0] is not object[] fieldValues || fieldValues.Length == 0)
+                        var values = new NameValueEntry[outerArray.Length];
+                        for (int i = 0; i < outerArray.Length; i++)
                         {
-                            continue;
-                        }
-
-                        // Convert field-value array to NameValueEntry array
-                        var values = new NameValueEntry[fieldValues.Length / 2];
-                        for (int i = 0; i < values.Length; i++)
-                        {
+                            var field = outerArray[i];
+                            if (field is not object[] fieldValues || fieldValues.Length == 0)
+                            {
+                                continue;
+                            }
                             values[i] = new NameValueEntry(
-                                (GlideString)fieldValues[i * 2],
-                                (GlideString)fieldValues[(i * 2) + 1]
+                                (GlideString)fieldValues[0],
+                                (GlideString)fieldValues[1]
                             );
                         }
 
