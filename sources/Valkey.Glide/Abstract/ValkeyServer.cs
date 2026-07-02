@@ -149,6 +149,25 @@ internal partial class ValkeyServer(Database conn, EndPoint endpoint) : IServer
         return (await _conn.Command(Request.LastSaveAsync(), MakeRoute())).DateTime;
     }
 
+    public async Task SaveAsync(SaveType type, CommandFlags flags = CommandFlags.None)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+        _ = type switch
+        {
+            SaveType.BackgroundSave => await _conn.Command(Request.BackgroundSaveAsync(), MakeRoute()),
+
+            // TODO #435: Implement BGREWRITEAOF command
+            SaveType.BackgroundRewriteAppendOnlyFile => throw new NotSupportedException($"SaveType '{type}' is not yet supported."),
+
+            // TODO #435: Implement SAVE command
+#pragma warning disable CS0618 // SaveType.ForegroundSave is obsolete
+            SaveType.ForegroundSave => throw new NotSupportedException($"SaveType '{type}' is not yet supported."),
+#pragma warning restore CS0618
+
+            _ => throw new ArgumentOutOfRangeException(nameof(type), type, $"Unknown SaveType value '{type}'."),
+        };
+    }
+
     public async Task<DateTime> TimeAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);

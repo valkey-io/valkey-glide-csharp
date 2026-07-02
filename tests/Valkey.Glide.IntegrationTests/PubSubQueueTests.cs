@@ -27,7 +27,7 @@ public class PubSubQueueTests
         // Verify that message is received.
         PubSubMessageQueue queue = subscriber.PubSubQueue!;
 
-        await Polling.WaitForTrue(
+        await Polling.WaitFor(
             () => queue.Count > 0,
             "Expected message was not received.",
             timeout: MaxDuration,
@@ -55,7 +55,7 @@ public class PubSubQueueTests
         // Verify that all messages are received.
         PubSubMessageQueue queue = subscriber.PubSubQueue!;
 
-        await Polling.WaitForTrue(
+        await Polling.WaitFor(
             () => queue!.Count >= messageCount,
             $"Expected {messageCount} messages but only received {queue.Count}.",
             timeout: MaxDuration,

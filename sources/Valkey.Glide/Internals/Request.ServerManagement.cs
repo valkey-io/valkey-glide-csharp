@@ -154,4 +154,13 @@ internal partial class Request
 
     public static Cmd<string, ValkeyValue> Select(long index)
         => Ok(RequestType.Select, [index.ToString().ToGlideString()]);
+
+    public static Cmd<GlideString, string> BackgroundSaveAsync()
+        => new(RequestType.BgSave, [], false, gs => gs.ToString());
+
+    public static Cmd<GlideString, string> BackgroundSaveScheduleAsync()
+        => new(RequestType.BgSave, [ValkeyLiterals.SCHEDULE.ToGlideString()], false, gs => gs.ToString());
+
+    public static Cmd<GlideString, string> BackgroundSaveCancelAsync()
+        => new(RequestType.BgSave, [ValkeyLiterals.CANCEL.ToGlideString()], false, gs => gs.ToString());
 }

@@ -648,7 +648,7 @@ public class PubSubCommandTests(TestConfiguration config)
             return;
         }
 
-        await Polling.WaitForTrue(
+        await Polling.WaitFor(
             () => actual.Count >= expected.Count,
             "Expected messages not received.",
             timeout: AssertTimeout,

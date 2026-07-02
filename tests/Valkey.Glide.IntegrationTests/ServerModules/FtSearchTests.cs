@@ -22,7 +22,7 @@ public class FtSearchTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task SearchAsync_MatchAll_ReturnsAllDocuments(BaseClient client)
     {
-        await SkipUtils.IfSearchModuleNotLoaded(client);
+        await Skip.IfSearchModuleNotLoaded(client);
         (string index, _, string[] keys) = await FtUtils.CreateSearchIndexAsync(client);
 
         // Sort by price ascending for deterministic order: 10, 25, 50
@@ -63,7 +63,7 @@ public class FtSearchTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task SearchAsync_TextQuery_ReturnsMatchingDocuments(BaseClient client)
     {
-        await SkipUtils.IfSearchModuleNotLoaded(client);
+        await Skip.IfSearchModuleNotLoaded(client);
         (string index, _, _) = await FtUtils.CreateSearchIndexAsync(client);
 
         Ft.SearchResult result = await Ft.SearchAsync(client, index, "@title:Alpha");
@@ -82,7 +82,7 @@ public class FtSearchTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task SearchAsync_WithLimit_ReturnsPaginatedResults(BaseClient client)
     {
-        await SkipUtils.IfSearchModuleNotLoaded(client);
+        await Skip.IfSearchModuleNotLoaded(client);
         (string index, _, _) = await FtUtils.CreateSearchIndexAsync(client);
 
         Ft.SearchResult result = await Ft.SearchAsync(client, index, "@price:[-inf +inf]",
@@ -100,7 +100,7 @@ public class FtSearchTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task SearchAsync_WithSortBy_ReturnsSortedResults(BaseClient client)
     {
-        await SkipUtils.IfSearchModuleNotLoaded(client);
+        await Skip.IfSearchModuleNotLoaded(client);
         (string index, _, _) = await FtUtils.CreateSearchIndexAsync(client);
 
         Ft.SearchResult result = await Ft.SearchAsync(client, index, "@price:[-inf +inf]",
@@ -128,7 +128,7 @@ public class FtSearchTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task SearchAsync_WithReturnFields_ReturnsOnlySpecifiedFields(BaseClient client)
     {
-        await SkipUtils.IfSearchModuleNotLoaded(client);
+        await Skip.IfSearchModuleNotLoaded(client);
         (string index, _, _) = await FtUtils.CreateSearchIndexAsync(client);
 
         Ft.SearchResult result = await Ft.SearchAsync(client, index, "@price:[-inf +inf]",
@@ -151,7 +151,7 @@ public class FtSearchTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task SearchAsync_WithNumericFilter_ReturnsFilteredResults(BaseClient client)
     {
-        await SkipUtils.IfSearchModuleNotLoaded(client);
+        await Skip.IfSearchModuleNotLoaded(client);
         (string index, _, _) = await FtUtils.CreateSearchIndexAsync(client);
 
         Ft.SearchResult result = await Ft.SearchAsync(client, index, "@price:[20 +inf]");
@@ -164,7 +164,7 @@ public class FtSearchTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task SearchAsync_SearchDocumentFieldAccess_FieldsAreAccessible(BaseClient client)
     {
-        await SkipUtils.IfSearchModuleNotLoaded(client);
+        await Skip.IfSearchModuleNotLoaded(client);
         (string index, _, string[] keys) = await FtUtils.CreateSearchIndexAsync(client);
 
         Ft.SearchResult result = await Ft.SearchAsync(client, index, "@title:Alpha");
@@ -186,7 +186,7 @@ public class FtSearchTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task SearchAsync_TotalResults_ReflectsFullMatchCount(BaseClient client)
     {
-        await SkipUtils.IfSearchModuleNotLoaded(client);
+        await Skip.IfSearchModuleNotLoaded(client);
         (string index, _, _) = await FtUtils.CreateSearchIndexAsync(client);
 
         Ft.SearchResult result = await Ft.SearchAsync(client, index, "@price:[-inf +inf]",
