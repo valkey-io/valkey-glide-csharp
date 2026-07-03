@@ -632,5 +632,4 @@ public class ClusterClientTests(TestConfiguration config)
         await using var client = await GlideClusterClient.CreateClient(builder.Build());
         await Client.AssertConnected(client);
     }
-
 }
