@@ -247,7 +247,42 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     }
 
     #endregion
-    #region FlushAll/FlushDB with Route Tests
+    #region FlushAllDatabases Cluster Tests
+
+    [Fact]
+    public async Task FlushAllDatabasesAsync_Cluster_ClearsAllDatabases()
+    {
+        string key = $"flushall-cluster-test-{Guid.NewGuid()}";
+        await ClusterClient.SetAsync(key, "test-value");
+        Assert.True(await ClusterClient.ExistsAsync(key));
+
+        await ClusterClient.FlushAllDatabasesAsync();
+        await WaitForFlushedAsync(isCluster: true);
+    }
+
+    [Fact]
+    public async Task FlushAllDatabasesAsync_Cluster_WithSyncMode()
+    {
+        string key = $"flushall-cluster-sync-{Guid.NewGuid()}";
+        await ClusterClient.SetAsync(key, "test-value");
+        Assert.True(await ClusterClient.ExistsAsync(key));
+
+        await ClusterClient.FlushAllDatabasesAsync(FlushMode.Sync);
+
+        Assert.False(await ClusterClient.ExistsAsync(key));
+        Assert.Equal(0, await ClusterClient.DatabaseSizeAsync());
+    }
+
+    [Fact]
+    public async Task FlushAllDatabasesAsync_Cluster_WithAsyncMode()
+    {
+        string key = $"flushall-cluster-async-{Guid.NewGuid()}";
+        await ClusterClient.SetAsync(key, "test-value");
+        Assert.True(await ClusterClient.ExistsAsync(key));
+
+        await ClusterClient.FlushAllDatabasesAsync(FlushMode.Async);
+        await WaitForFlushedAsync(isCluster: true);
+    }
 
     [Fact]
     public async Task FlushAllDatabasesAsync_Cluster_WithRoute()
@@ -499,7 +534,6 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     [Fact]
     public async Task LatencyResetAsync_Cluster_WithRoute()
     {
-        // Reset returns an aggregated count for all routes.
         await TriggerLatencySpikeAsync(isCluster: true);
         Assert.True(await ClusterClient.LatencyResetAsync(PrimarySlotRoute) > 0);
 
@@ -579,6 +613,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     /// </summary>
     private async Task TriggerLatencySpikeAsync(bool isCluster)
     {
+        var latencyThresholdParam = "latency-monitor-threshold";
         BaseClient client = isCluster ? ClusterClient : StandaloneClient;
 
         // Reset any existing latency data first so the spike is recorded against a clean baseline.
@@ -588,27 +623,27 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
         KeyValuePair<string, string>[] prevConfigs;
         if (isCluster)
         {
-            var prev = await ClusterClient.ConfigGetAsync("latency-monitor-threshold");
+            var prev = await ClusterClient.ConfigGetAsync(latencyThresholdParam);
             prevConfigs = prev.HasSingleData ? prev.SingleValue : prev.MultiValue.Values.First();
         }
         else
         {
-            prevConfigs = await StandaloneClient.ConfigGetAsync("latency-monitor-threshold");
+            prevConfigs = await StandaloneClient.ConfigGetAsync(latencyThresholdParam);
         }
 
-        var prevThreshold = prevConfigs.FirstOrDefault(p => p.Key == "latency-monitor-threshold").Value ?? "0";
+        var prevThreshold = prevConfigs.FirstOrDefault(p => p.Key == latencyThresholdParam).Value ?? "0";
 
         // Enable latency monitoring with a 1 ms threshold and trigger a latency spike.
-        await client.ConfigSetAsync(new Dictionary<ValkeyValue, ValkeyValue> { { "latency-monitor-threshold", "1" } });
+        await client.ConfigSetAsync(new Dictionary<ValkeyValue, ValkeyValue> { { latencyThresholdParam, "1" } });
 
         // Trigger a latency spike for the "command" event.
         GlideString[] debugSleepArgs = ["DEBUG", "SLEEP", "0.05"];
         _ = isCluster
-            ? await ClusterClient.CustomCommand(debugSleepArgs, Route.AllNodes)
+            ? await ClusterClient.CustomCommand(debugSleepArgs, AllNodes)
             : await StandaloneClient.CustomCommand(debugSleepArgs);
 
         // Restore the original threshold.
-        await client.ConfigSetAsync(new Dictionary<ValkeyValue, ValkeyValue> { { "latency-monitor-threshold", prevThreshold } });
+        await client.ConfigSetAsync(new Dictionary<ValkeyValue, ValkeyValue> { { latencyThresholdParam, prevThreshold } });
     }
 
     #endregion
