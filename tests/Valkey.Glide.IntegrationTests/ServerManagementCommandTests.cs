@@ -24,7 +24,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     /// </summary>
     private static async Task WaitForSaveNotInProgressAsync(GlideClient client)
     {
-        await Polling.WaitForTrueAsync(async () =>
+        await Polling.WaitForAsync(async () =>
         {
             string info = await client.InfoAsync([InfoOptions.Section.PERSISTENCE]);
             return !info.Contains("rdb_bgsave_in_progress:1")
@@ -37,7 +37,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     /// </summary>
     private async Task WaitForClusterSaveNotInProgressAsync()
     {
-        await Polling.WaitForTrueAsync(async () =>
+        await Polling.WaitForAsync(async () =>
         {
             Dictionary<string, string> infos = await ClusterClient.InfoAsync([InfoOptions.Section.PERSISTENCE]);
             string combined = string.Join("\n", infos.Values);
