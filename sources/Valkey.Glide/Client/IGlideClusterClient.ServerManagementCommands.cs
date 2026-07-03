@@ -617,8 +617,9 @@ public partial interface IGlideClusterClient
     /// </code>
     /// </example>
     /// </remarks>
-
     Task<long> LatencyResetAsync(IEnumerable<ValkeyValue> events, Route route);
+
+    /// <summary>
     /// Asynchronously saves the dataset to disk in the background.<br />
     /// The command will be routed to all primary nodes.
     /// </summary>

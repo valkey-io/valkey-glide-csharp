@@ -228,8 +228,9 @@ public partial interface IGlideClient
     /// </code>
     /// </example>
     /// </remarks>
-
     Task<LatencyEventInfo[]> LatencyLatestAsync();
+
+    /// <summary>
     /// Asynchronously saves the dataset to disk in the background.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/bgsave/">Valkey commands – BGSAVE</seealso>
