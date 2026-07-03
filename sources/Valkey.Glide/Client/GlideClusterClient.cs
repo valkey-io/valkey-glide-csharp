@@ -220,6 +220,14 @@ public sealed partial class GlideClusterClient :
     public async Task FlushDatabaseAsync(FlushMode mode, Route route)
         => _ = await Command(Request.FlushDatabaseAsync(mode), route);
 
+    /// <inheritdoc cref="IGlideClusterClient.SaveAsync()"/>
+    public async Task SaveAsync()
+        => _ = await Command(Request.SaveAsync(), AllPrimaries);
+
+    /// <inheritdoc cref="IGlideClusterClient.SaveAsync(Route)"/>
+    public async Task SaveAsync(Route route)
+        => _ = await Command(Request.SaveAsync(), route);
+
     /// <inheritdoc cref="IGlideClusterClient.LastSaveAsync()"/>
     public async Task<Dictionary<string, DateTimeOffset>> LastSaveAsync()
     {

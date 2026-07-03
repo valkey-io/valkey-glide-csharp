@@ -421,6 +421,8 @@ public class CommandTests
             () => Assert.True(Request.GetExpiry("test_key", GetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60))).Converter(null!).IsNull),
 
             // Server Management Commands
+            () => Assert.Equal(["SAVE"], Request.SaveAsync().GetArgs()),
+            () => Assert.Equal(ValkeyValue.Ok, Request.SaveAsync().Converter("OK")),
             () => Assert.Equal(["CONFIGGET", "*"], Request.ConfigGetAsync("*").GetArgs()),
             () => Assert.Equal(["CONFIGGET", "maxmemory"], Request.ConfigGetAsync("maxmemory").GetArgs()),
             () => Assert.Equal(["CONFIGGET", "*"], Request.ConfigGetAsync().GetArgs()),

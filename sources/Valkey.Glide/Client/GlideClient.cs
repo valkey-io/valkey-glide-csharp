@@ -137,6 +137,10 @@ public partial class GlideClient :
         _ = await Command(Request.FlushDatabaseAsync(mode));
     }
 
+    /// <inheritdoc cref="IGlideClient.SaveAsync()"/>
+    public async Task SaveAsync()
+        => _ = await Command(Request.SaveAsync());
+
     /// <inheritdoc cref="IGlideClient.LastSaveAsync()"/>
     public Task<DateTimeOffset> LastSaveAsync()
         => Command(Request.LastSaveAsync());

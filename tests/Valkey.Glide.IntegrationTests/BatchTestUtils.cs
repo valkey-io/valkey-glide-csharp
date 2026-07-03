@@ -428,6 +428,10 @@ internal partial class BatchTestUtils
         _ = batch.DatabaseSizeAsync();
         testData.Add(new(1L, "DatabaseSizeAsync()", true));
 
+        // Save
+        _ = batch.SaveAsync();
+        testData.Add(new(ValkeyValue.Ok, "SaveAsync()", true));
+
         // LastSave
         _ = batch.LastSaveAsync();
         testData.Add(new(DateTimeOffset.MinValue, "LastSaveAsync()", true));

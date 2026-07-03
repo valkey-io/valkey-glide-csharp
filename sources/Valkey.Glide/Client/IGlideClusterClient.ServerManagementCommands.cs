@@ -290,6 +290,35 @@ public partial interface IGlideClusterClient
     Task FlushDatabaseAsync(Route route);
 
     /// <summary>
+    /// Synchronously saves the dataset to disk.<br />
+    /// The command is routed to all primary nodes.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/save/">Valkey commands – SAVE</seealso>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await clusterClient.SaveAsync();
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task SaveAsync();
+
+    /// <summary>
+    /// Synchronously saves the dataset to disk.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/save/">Valkey commands – SAVE</seealso>
+    /// <param name="route">Specifies the routing configuration for the command. The client will route the
+    /// command to the nodes defined by <paramref name="route" />.</param>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await clusterClient.SaveAsync(Route.AllPrimaries);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task SaveAsync(Route route);
+
+    /// <summary>
     /// Returns the time of the last DB save executed with success.
     /// A client may check if a <c>BGSAVE</c> command succeeded by reading the <c>LASTSAVE</c> value, then
     /// issuing a <c>BGSAVE</c> command and checking at regular intervals whether <c>LASTSAVE</c> changed.<br />

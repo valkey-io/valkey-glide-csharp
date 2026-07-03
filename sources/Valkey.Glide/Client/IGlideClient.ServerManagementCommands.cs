@@ -148,6 +148,19 @@ public partial interface IGlideClient
     Task FlushDatabaseAsync();
 
     /// <summary>
+    /// Synchronously saves the dataset to disk.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/save/">Valkey commands – SAVE</seealso>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.SaveAsync();
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task SaveAsync();
+
+    /// <summary>
     /// Returns the time of the last DB save executed with success.
     /// A client may check if a <c>BGSAVE</c> command succeeded by reading the <c>LASTSAVE</c> value, then
     /// issuing a <c>BGSAVE</c> command and checking at regular intervals whether <c>LASTSAVE</c> changed.

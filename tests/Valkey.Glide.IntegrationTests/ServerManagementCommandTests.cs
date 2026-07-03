@@ -19,6 +19,58 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     private GlideClient StandaloneClient => fixture.StandaloneClient;
     private GlideClusterClient ClusterClient => fixture.ClusterClient;
 
+    /// <summary>
+    /// Polls until no save (RDB or AOF rewrite) is in progress on the standalone client.
+    /// </summary>
+    private static async Task WaitForSaveNotInProgressAsync(GlideClient client)
+    {
+        await Polling.WaitForTrueAsync(async () =>
+        {
+            string info = await client.InfoAsync([InfoOptions.Section.PERSISTENCE]);
+            return !info.Contains("rdb_bgsave_in_progress:1")
+                && !info.Contains("aof_rewrite_in_progress:1");
+        }, "Timed out waiting for save to complete");
+    }
+
+    /// <summary>
+    /// Polls until no save (RDB or AOF rewrite) is in progress on the cluster client.
+    /// </summary>
+    private async Task WaitForClusterSaveNotInProgressAsync()
+    {
+        await Polling.WaitForTrueAsync(async () =>
+        {
+            Dictionary<string, string> infos = await ClusterClient.InfoAsync([InfoOptions.Section.PERSISTENCE]);
+            string combined = string.Join("\n", infos.Values);
+            return !combined.Contains("rdb_bgsave_in_progress:1")
+                && !combined.Contains("aof_rewrite_in_progress:1");
+        }, "Timed out waiting for save to complete");
+    }
+
+    #region SAVE Tests
+
+    [Fact]
+    public async Task SaveAsync_Standalone_Succeeds()
+    {
+        await WaitForSaveNotInProgressAsync(StandaloneClient);
+        await StandaloneClient.SaveAsync();
+    }
+
+    [Fact]
+    public async Task SaveAsync_Cluster_Succeeds()
+    {
+        await WaitForClusterSaveNotInProgressAsync();
+        await ClusterClient.SaveAsync();
+    }
+
+    [Fact]
+    public async Task SaveAsync_Cluster_WithRoute_Succeeds()
+    {
+        await WaitForClusterSaveNotInProgressAsync();
+        await ClusterClient.SaveAsync(Route.AllPrimaries);
+    }
+
+    #endregion
+
     #region FlushMode Tests
 
     [Fact]

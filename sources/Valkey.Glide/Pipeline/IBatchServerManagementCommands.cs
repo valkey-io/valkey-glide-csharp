@@ -50,6 +50,10 @@ internal interface IBatchServerManagementCommands
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.FlushDatabaseAsync(FlushMode)" /></returns>
     IBatch FlushDatabaseAsync(FlushMode mode);
 
+    /// <inheritdoc cref="IGlideClient.SaveAsync()" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IGlideClient.SaveAsync()" /></returns>
+    IBatch SaveAsync();
+
     /// <inheritdoc cref="IGlideClient.LastSaveAsync()" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IGlideClient.LastSaveAsync()" /></returns>
     IBatch LastSaveAsync();

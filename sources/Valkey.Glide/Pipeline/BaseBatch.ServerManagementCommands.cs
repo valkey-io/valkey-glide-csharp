@@ -40,6 +40,9 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
     /// <inheritdoc cref="IBatchServerManagementCommands.FlushDatabaseAsync(FlushMode)" />
     public T FlushDatabaseAsync(FlushMode mode) => AddCmd(Request.FlushDatabaseAsync(mode));
 
+    /// <inheritdoc cref="IBatchServerManagementCommands.SaveAsync()" />
+    public T SaveAsync() => AddCmd(Request.SaveAsync());
+
     /// <inheritdoc cref="IBatchServerManagementCommands.LastSaveAsync()" />
     public T LastSaveAsync() => AddCmd(Request.LastSaveAsync());
 
@@ -73,6 +76,7 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
     IBatch IBatchServerManagementCommands.FlushAllDatabasesAsync(FlushMode mode) => FlushAllDatabasesAsync(mode);
     IBatch IBatchServerManagementCommands.FlushDatabaseAsync() => FlushDatabaseAsync();
     IBatch IBatchServerManagementCommands.FlushDatabaseAsync(FlushMode mode) => FlushDatabaseAsync(mode);
+    IBatch IBatchServerManagementCommands.SaveAsync() => SaveAsync();
     IBatch IBatchServerManagementCommands.LastSaveAsync() => LastSaveAsync();
     IBatch IBatchServerManagementCommands.TimeAsync() => TimeAsync();
     IBatch IBatchServerManagementCommands.LolwutAsync() => LolwutAsync();
