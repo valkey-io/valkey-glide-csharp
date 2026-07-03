@@ -100,6 +100,7 @@ public class CommandTests
             () => Assert.Equal(["CLIENTUNPAUSE"], Request.ClientUnpause().GetArgs()),
 
             // Server Management Commands
+            () => Assert.Equal(["BGREWRITEAOF"], Request.BgRewriteAofAsync().GetArgs()),
             () => Assert.Equal(["CLIENTGETNAME"], Request.ClientGetName().GetArgs()),
             () => Assert.Equal(["CLIENTID"], Request.ClientId().GetArgs()),
             () => Assert.Equal(["BGSAVE"], Request.BackgroundSaveAsync().GetArgs()),
@@ -421,6 +422,7 @@ public class CommandTests
             () => Assert.True(Request.GetExpiry("test_key", GetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60))).Converter(null!).IsNull),
 
             // Server Management Commands
+            () => Assert.Equal(["BGREWRITEAOF"], Request.BgRewriteAofAsync().GetArgs()),
             () => Assert.Equal(["CONFIGGET", "*"], Request.ConfigGetAsync("*").GetArgs()),
             () => Assert.Equal(["CONFIGGET", "maxmemory"], Request.ConfigGetAsync("maxmemory").GetArgs()),
             () => Assert.Equal(["CONFIGGET", "*"], Request.ConfigGetAsync().GetArgs()),
@@ -448,6 +450,7 @@ public class CommandTests
             () => Assert.Equal(["CONFIGSET", "lfu-decay-time", "5", "lfu-log-factor", "20"], Request.ConfigSetAsync(new Dictionary<ValkeyValue, ValkeyValue> { { "lfu-decay-time", "5" }, { "lfu-log-factor", "20" } }).GetArgs()),
 
             // Server Management Command Converters
+            () => Assert.Equal("Background append only file rewriting started", Request.BgRewriteAofAsync().Converter("Background append only file rewriting started")),
             () => Assert.Equal([new("maxmemory", "100mb")], Request.ConfigGetAsync("maxmemory").Converter(new object[] { (gs)"maxmemory", "100mb" })),
             () => Assert.Equal([], Request.ConfigGetAsync("nonexistent").Converter(Array.Empty<object>())),
             () => Assert.Equal(100L, Request.DatabaseSizeAsync().Converter(100L)),

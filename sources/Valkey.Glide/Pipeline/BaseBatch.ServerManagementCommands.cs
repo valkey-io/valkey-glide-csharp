@@ -25,6 +25,9 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
     /// <inheritdoc cref="IBatchServerManagementCommands.ConfigGetAsync(IEnumerable{ValkeyValue})" />
     public T ConfigGetAsync(IEnumerable<ValkeyValue> patterns) => AddCmd(Request.ConfigGetAsync(patterns));
 
+    /// <inheritdoc cref="IBatchServerManagementCommands.BgRewriteAofAsync()" />
+    public T BgRewriteAofAsync() => AddCmd(Request.BgRewriteAofAsync());
+
     /// <inheritdoc cref="IBatchServerManagementCommands.DatabaseSizeAsync()" />
     public T DatabaseSizeAsync() => AddCmd(Request.DatabaseSizeAsync());
 
@@ -68,6 +71,7 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
     IBatch IBatchServerManagementCommands.ConfigSetAsync(ValkeyValue setting, ValkeyValue value) => ConfigSetAsync(setting, value);
     IBatch IBatchServerManagementCommands.ConfigSetAsync(IDictionary<ValkeyValue, ValkeyValue> parameters) => ConfigSetAsync(parameters);
     IBatch IBatchServerManagementCommands.ConfigGetAsync(IEnumerable<ValkeyValue> patterns) => ConfigGetAsync(patterns);
+    IBatch IBatchServerManagementCommands.BgRewriteAofAsync() => BgRewriteAofAsync();
     IBatch IBatchServerManagementCommands.DatabaseSizeAsync() => DatabaseSizeAsync();
     IBatch IBatchServerManagementCommands.FlushAllDatabasesAsync() => FlushAllDatabasesAsync();
     IBatch IBatchServerManagementCommands.FlushAllDatabasesAsync(FlushMode mode) => FlushAllDatabasesAsync(mode);

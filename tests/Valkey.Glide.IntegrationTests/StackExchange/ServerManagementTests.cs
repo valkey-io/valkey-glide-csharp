@@ -86,9 +86,8 @@ public class ServerManagementTests(ServerManagementFixture fixture) : IClassFixt
         => await fixture.Server.SaveAsync(SaveType.BackgroundSave);
 
     [Fact]
-    public async Task IServer_SaveAsync_BackgroundRewriteAppendOnlyFile_ThrowsNotSupported()
-        => await Assert.ThrowsAsync<NotSupportedException>(
-            () => fixture.Server.SaveAsync(SaveType.BackgroundRewriteAppendOnlyFile));
+    public async Task IServer_SaveAsync_BackgroundRewriteAppendOnlyFile_Succeeds()
+        => await fixture.Server.SaveAsync(SaveType.BackgroundRewriteAppendOnlyFile);
 
     [Fact]
     public async Task IServer_SaveAsync_ForegroundSave_ThrowsNotSupported()
@@ -96,7 +95,6 @@ public class ServerManagementTests(ServerManagementFixture fixture) : IClassFixt
         => _ = await Assert.ThrowsAsync<NotSupportedException>(
             () => fixture.Server.SaveAsync(SaveType.ForegroundSave));
 #pragma warning restore CS0618
-
 
     #endregion
 }

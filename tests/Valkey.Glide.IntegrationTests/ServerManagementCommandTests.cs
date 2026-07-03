@@ -402,6 +402,40 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     }
 
     #endregion
+    #region BGREWRITEAOF Tests
+
+    /// <summary>
+    /// Expected valid responses for <c>BGREWRITEAOF</c> command.
+    /// </summary>
+    private static readonly string[] BgRewriteAofResponses =
+    [
+        "Background append only file rewriting started",
+        "Background append only file rewriting scheduled",
+    ];
+
+    [Theory]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
+    public async Task BgRewriteAofAsync_ReturnsValidStatus(bool clusterMode)
+    {
+        await WaitForSaveNotInProgressAsync(clusterMode);
+
+        IEnumerable<string> responses = clusterMode
+            ? (await ClusterClient.BgRewriteAofAsync()).MultiValue.Values
+            : [await StandaloneClient.BgRewriteAofAsync()];
+
+        Assert.All(responses, r => Assert.Contains(r, BgRewriteAofResponses));
+    }
+
+    [Fact]
+    public async Task BgRewriteAofAsync_Cluster_WithRoute_ReturnsSingleValue()
+    {
+        await WaitForSaveNotInProgressAsync(true);
+
+        var result = await ClusterClient.BgRewriteAofAsync(Route.Random);
+        Assert.Contains(result.SingleValue, BgRewriteAofResponses);
+    }
+
+    #endregion
     #region Helpers
 
     /// <summary>

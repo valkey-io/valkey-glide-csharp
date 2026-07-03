@@ -148,6 +148,21 @@ public partial interface IGlideClient
     Task FlushDatabaseAsync();
 
     /// <summary>
+    /// Instructs Valkey to start an Append Only File rewrite process. The rewrite creates a small optimized
+    /// version of the current Append Only File.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/bgrewriteaof/">Valkey commands – BGREWRITEAOF</seealso>
+    /// <returns>A status string indicating whether the rewrite was started or scheduled.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// string result = await client.BgRewriteAofAsync();
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<string> BgRewriteAofAsync();
+
+    /// <summary>
     /// Returns the time of the last DB save executed with success.
     /// A client may check if a <c>BGSAVE</c> command succeeded by reading the <c>LASTSAVE</c> value, then
     /// issuing a <c>BGSAVE</c> command and checking at regular intervals whether <c>LASTSAVE</c> changed.

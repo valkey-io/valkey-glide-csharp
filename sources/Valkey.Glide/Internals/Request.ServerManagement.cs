@@ -152,6 +152,9 @@ internal partial class Request
         return new(RequestType.Lolwut, args, false, gs => gs.ToString());
     }
 
+    public static Cmd<GlideString, string> BgRewriteAofAsync()
+        => new(RequestType.BgRewriteAof, [], false, gs => gs.ToString());
+
     public static Cmd<string, ValkeyValue> Select(long index)
         => Ok(RequestType.Select, [index.ToString().ToGlideString()]);
 
