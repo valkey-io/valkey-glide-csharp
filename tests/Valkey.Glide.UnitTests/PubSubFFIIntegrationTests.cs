@@ -204,9 +204,7 @@ public class PubSubFFIIntegrationTests
     private class MockBaseClient : BaseClient
     {
         protected override Task<Version> GetServerVersionAsync()
-        {
-            return Task.FromResult(new Version(7, 2, 0));
-        }
+            => Task.FromResult(new Version(7, 2, 0));
 
         // Mock implementations
         internal override void HandlePubSubMessage(PubSubMessage message) { }
@@ -218,6 +216,9 @@ public class PubSubFFIIntegrationTests
         public override Task<ValkeyValue> PingAsync() => Task.FromResult((ValkeyValue)"PONG");
         public override Task<ValkeyValue> PingAsync(ValkeyValue message) => Task.FromResult(message);
         public override Task SelectAsync(long index) => Task.CompletedTask;
+        public override Task ClientPauseAsync(TimeSpan timeout) => Task.CompletedTask;
+        public override Task ClientPauseWriteAsync(TimeSpan timeout) => Task.CompletedTask;
+        public override Task ClientUnpauseAsync() => Task.CompletedTask;
         public override Task ConfigSetAsync(IDictionary<ValkeyValue, ValkeyValue> parameters) => Task.CompletedTask;
         public override Task<KeyValuePair<string, string>[]> ConfigGetAsync(IEnumerable<ValkeyValue> patterns) => Task.FromResult(Array.Empty<KeyValuePair<string, string>>());
         public override Task FlushAllDatabasesAsync(FlushMode mode) => Task.CompletedTask;

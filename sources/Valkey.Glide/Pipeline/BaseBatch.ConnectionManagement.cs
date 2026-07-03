@@ -24,10 +24,22 @@ public abstract partial class BaseBatch<T> : IBatchConnectionManagementCommands 
     /// <inheritdoc cref="IBatchConnectionManagementCommands.SelectAsync(long)" />
     public T SelectAsync(long index) => AddCmd(Request.Select(index));
 
+    /// <inheritdoc cref="IBatchConnectionManagementCommands.ClientPauseAsync(TimeSpan)" />
+    public T ClientPauseAsync(TimeSpan timeout) => AddCmd(Request.ClientPause(timeout));
+
+    /// <inheritdoc cref="IBatchConnectionManagementCommands.ClientPauseWriteAsync(TimeSpan)" />
+    public T ClientPauseWriteAsync(TimeSpan timeout) => AddCmd(Request.ClientPauseWrite(timeout));
+
+    /// <inheritdoc cref="IBatchConnectionManagementCommands.ClientUnpauseAsync()" />
+    public T ClientUnpauseAsync() => AddCmd(Request.ClientUnpause());
+
     IBatch IBatchConnectionManagementCommands.Ping() => Ping();
     IBatch IBatchConnectionManagementCommands.Ping(ValkeyValue message) => Ping(message);
     IBatch IBatchConnectionManagementCommands.Echo(ValkeyValue message) => Echo(message);
     IBatch IBatchConnectionManagementCommands.ClientGetNameAsync() => ClientGetNameAsync();
     IBatch IBatchConnectionManagementCommands.ClientIdAsync() => ClientIdAsync();
     IBatch IBatchConnectionManagementCommands.SelectAsync(long index) => SelectAsync(index);
+    IBatch IBatchConnectionManagementCommands.ClientPauseAsync(TimeSpan timeout) => ClientPauseAsync(timeout);
+    IBatch IBatchConnectionManagementCommands.ClientPauseWriteAsync(TimeSpan timeout) => ClientPauseWriteAsync(timeout);
+    IBatch IBatchConnectionManagementCommands.ClientUnpauseAsync() => ClientUnpauseAsync();
 }

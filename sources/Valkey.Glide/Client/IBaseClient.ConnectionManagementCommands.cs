@@ -87,4 +87,45 @@ public partial interface IBaseClient : IConnectionManagementBaseCommands
     /// </example>
     /// </remarks>
     Task<ValkeyValue> PingAsync(ValkeyValue message);
+
+    /// <summary>
+    /// Suspends all clients for the specified timeout.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/client-pause/">Valkey commands - CLIENT PAUSE</seealso>
+    /// <param name="timeout">The time to pause clients.</param>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.ClientPauseAsync(TimeSpan.FromSeconds(1));
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task ClientPauseAsync(TimeSpan timeout);
+
+    /// <summary>
+    /// Suspends write commands for all clients for the specified timeout.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/client-pause/">Valkey commands - CLIENT PAUSE</seealso>
+    /// <param name="timeout">The time to pause clients.</param>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.ClientPauseWriteAsync(TimeSpan.FromSeconds(1));
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task ClientPauseWriteAsync(TimeSpan timeout);
+
+    /// <summary>
+    /// Resumes processing commands on all clients.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/client-unpause/">Valkey commands - CLIENT UNPAUSE</seealso>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.ClientUnpauseAsync();
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task ClientUnpauseAsync();
 }

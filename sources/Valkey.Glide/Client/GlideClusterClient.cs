@@ -344,23 +344,41 @@ public sealed partial class GlideClusterClient :
     public override async Task SelectAsync(long index)
         => _ = await Command(Request.Select(index), Route.Random);
 
+    /// <inheritdoc cref="IBaseClient.ClientPauseAsync(TimeSpan)"/>
+    public override async Task ClientPauseAsync(TimeSpan timeout)
+        => _ = await Command(Request.ClientPause(timeout), AllPrimaries);
+
+    /// <inheritdoc cref="IGlideClusterClient.ClientPauseAsync(TimeSpan, Route)"/>
+    public async Task ClientPauseAsync(TimeSpan timeout, Route route)
+        => _ = await Command(Request.ClientPause(timeout), route);
+
+    /// <inheritdoc cref="IBaseClient.ClientPauseWriteAsync(TimeSpan)"/>
+    public override async Task ClientPauseWriteAsync(TimeSpan timeout)
+        => _ = await Command(Request.ClientPauseWrite(timeout), AllPrimaries);
+
+    /// <inheritdoc cref="IGlideClusterClient.ClientPauseWriteAsync(TimeSpan, Route)"/>
+    public async Task ClientPauseWriteAsync(TimeSpan timeout, Route route)
+        => _ = await Command(Request.ClientPauseWrite(timeout), route);
+
+    /// <inheritdoc cref="IBaseClient.ClientUnpauseAsync()"/>
+    public override async Task ClientUnpauseAsync()
+        => _ = await Command(Request.ClientUnpause(), AllPrimaries);
+
+    /// <inheritdoc cref="IGlideClusterClient.ClientUnpauseAsync(Route)"/>
+    public async Task ClientUnpauseAsync(Route route)
+        => _ = await Command(Request.ClientUnpause(), route);
+
     /// <inheritdoc cref="ITransactionBaseCommands.WatchAsync(IEnumerable{ValkeyKey})"/>
     public async Task WatchAsync(IEnumerable<ValkeyKey> keys)
-    {
-        _ = await Command(Request.Watch(keys));
-    }
+        => _ = await Command(Request.Watch(keys));
 
     /// <inheritdoc cref="ITransactionClusterCommands.UnwatchAsync()"/>
     public async Task UnwatchAsync()
-    {
-        _ = await Command(Request.Unwatch(), AllPrimaries);
-    }
+        => _ = await Command(Request.Unwatch(), AllPrimaries);
 
     /// <inheritdoc cref="ITransactionClusterCommands.UnwatchAsync(Route)"/>
     public async Task UnwatchAsync(Route route)
-    {
-        _ = await Command(Request.Unwatch(), route);
-    }
+        => _ = await Command(Request.Unwatch(), route);
 
     /// <inheritdoc cref="BaseClient.GetServerVersionAsync()"/>
     protected override async Task<Version> GetServerVersionAsync()

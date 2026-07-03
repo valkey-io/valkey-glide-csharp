@@ -76,8 +76,12 @@ csharp_style_var_elsewhere = false:none
 csharp_style_var_for_built_in_types = false:none
 csharp_style_var_when_type_is_apparent = false:none
 
-# IDE0008: Use explicit type - disabled to allow var usage
+# IDE0002: Name can be simplified - disabled to allow full type names for clarity
+dotnet_diagnostic.IDE0002.severity = none
+
+# IDE0008: Use explicit type - disabled to allow var usage for brevity
 dotnet_diagnostic.IDE0008.severity = none
+
 csharp_style_implicit_object_creation_when_type_is_apparent = true:suggestion
 
 # Expression-bodied members

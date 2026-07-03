@@ -163,4 +163,49 @@ public partial interface IGlideClusterClient :
     /// <seealso href="https://valkey.io/commands/scan/">SCAN command</seealso>
     /// <seealso href="https://glide.valkey.io/how-to/scan-cluster/">Valkey GLIDE – Scan a Cluster</seealso>
     IAsyncEnumerable<ValkeyKey> ScanAsync(ScanOptions? options = null);
+
+    /// <summary>
+    /// Suspends all clients for the specified timeout.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/client-pause/">Valkey commands - CLIENT PAUSE</seealso>
+    /// <param name="timeout">The time to pause clients.</param>
+    /// <param name="route">Specifies the routing configuration for the command.</param>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await clusterClient.ClientPauseAsync(TimeSpan.FromSeconds(1), Route.AllPrimaries);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task ClientPauseAsync(TimeSpan timeout, Route route);
+
+    /// <summary>
+    /// Suspends all clients for the specified timeout, blocking only write commands while
+    /// allowing reads to continue.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/client-pause/">Valkey commands - CLIENT PAUSE</seealso>
+    /// <param name="timeout">The time to pause clients.</param>
+    /// <param name="route">Specifies the routing configuration for the command.</param>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await clusterClient.ClientPauseWriteAsync(TimeSpan.FromSeconds(1), Route.AllPrimaries);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task ClientPauseWriteAsync(TimeSpan timeout, Route route);
+
+    /// <summary>
+    /// Resumes processing commands on all clients.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/client-unpause/">Valkey commands - CLIENT UNPAUSE</seealso>
+    /// <param name="route">Specifies the routing configuration for the command.</param>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await clusterClient.ClientUnpauseAsync(Route.AllPrimaries);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task ClientUnpauseAsync(Route route);
 }
