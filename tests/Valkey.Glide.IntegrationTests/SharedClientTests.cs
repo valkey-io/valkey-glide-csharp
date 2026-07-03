@@ -1,5 +1,7 @@
 ﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Diagnostics;
+
 namespace Valkey.Glide.IntegrationTests;
 
 [Collection(typeof(SharedClientTests))]
@@ -67,56 +69,74 @@ public class SharedClientTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task TestClientPause_ThenExpires(BaseClient client)
+    public async Task TestClientPause_ReadsPausedUntilExpires(BaseClient client)
     {
-        var key = $"client-pause-all-{Guid.NewGuid()}";
-        await client.SetAsync(key, "before");
+        var key = Guid.NewGuid().ToString();
+        await client.SetAsync(key, "value");
 
-        var pauseFor = TimeSpan.FromSeconds(5);
+        var pauseFor = TimeSpan.FromSeconds(2);
         await client.ClientPauseAsync(pauseFor);
 
-        var setTask = client.SetAsync(key, "after");
-        var getTask = client.GetAsync(key);
+        var sw = Stopwatch.StartNew();
 
-        // Verify that all commands are paused.
-        var completesDuringPause = TimeSpan.FromSeconds(2);
-        _ = await Assert.ThrowsAsync<TimeoutException>(
-            () => setTask.WaitAsync(completesDuringPause, TestContext.Current.CancellationToken));
-        _ = await Assert.ThrowsAsync<TimeoutException>(
-            () => getTask.WaitAsync(completesDuringPause, TestContext.Current.CancellationToken));
+        // Verify that read commands are blocked until the pause expires.
+        _ = await client.GetAsync(key);
+        Assert.True(sw.Elapsed > pauseFor);
+    }
 
-        // Verify that all of the commands complete once the pause expires.
-        var completesAfterPause = TimeSpan.FromSeconds(10);
-        await setTask.WaitAsync(completesAfterPause, TestContext.Current.CancellationToken);
-        _ = await getTask.WaitAsync(completesAfterPause, TestContext.Current.CancellationToken);
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestClientPause_WritesPausedUntilExpires(BaseClient client)
+    {
+        var key = Guid.NewGuid().ToString();
+        await client.SetAsync(key, "before");
+
+        var pauseFor = TimeSpan.FromSeconds(2);
+        await client.ClientPauseAsync(pauseFor);
+
+        var sw = Stopwatch.StartNew();
+
+        // Verify that write commands are blocked until the pause expires.
+        await client.SetAsync(key, "after");
+        Assert.True(sw.Elapsed > pauseFor);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestClientPauseWrite_ReadsNotPaused(BaseClient client)
+    {
+        var key = Guid.NewGuid().ToString();
+        await client.SetAsync(key, "before");
+
+        var pauseFor = TimeSpan.FromSeconds(2);
+        await client.ClientPauseWriteAsync(pauseFor);
+
+        var sw = Stopwatch.StartNew();
+
+        // Verify that read commands are not blocked.
+        Assert.Equal("before", await client.GetAsync(key));
+        Assert.True(sw.Elapsed < pauseFor);
+
+        await client.ClientUnpauseAsync();
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestClientPauseWrite_ThenUnpause(BaseClient client)
     {
-        var key = $"client-pause-write-{Guid.NewGuid()}";
+        var key = Guid.NewGuid().ToString();
         await client.SetAsync(key, "before");
 
-        var pauseFor = TimeSpan.FromSeconds(2);
-        await client.ClientPauseWriteAsync(pauseFor);
+        var pausedFor = TimeSpan.FromMinutes(1);
+        await client.ClientPauseWriteAsync(pausedFor);
 
-        var getTask = client.GetAsync(key);
-        var setTask = client.SetAsync(key, "after");
+        var sw = Stopwatch.StartNew();
 
-        // Verify that only write commands are paused.
-        var completesDuringPause = TimeSpan.FromSeconds(1);
-        Assert.Equal("before", await getTask.WaitAsync(completesDuringPause, TestContext.Current.CancellationToken));
-        _ = await Assert.ThrowsAsync<TimeoutException>(
-            () => setTask.WaitAsync(completesDuringPause, TestContext.Current.CancellationToken));
-
+        // Verify that write commands are unblocked once unpaused.
         await client.ClientUnpauseAsync();
-
-        // Verify that write commands completes once unpaused.
-        var completesAfterPause = TimeSpan.FromSeconds(5);
-        await setTask.WaitAsync(completesAfterPause, TestContext.Current.CancellationToken);
+        await client.SetAsync(key, "after");
+        Assert.True(sw.Elapsed < pausedFor);
     }
-
     // This test is slow, but it caught timing and releasing issues in the past,
     // so it's being kept.
     [Theory(DisableDiscoveryEnumeration = true)]
