@@ -223,6 +223,7 @@ public class PubSubFFIIntegrationTests
         public override Task<KeyValuePair<string, string>[]> ConfigGetAsync(IEnumerable<ValkeyValue> patterns) => Task.FromResult(Array.Empty<KeyValuePair<string, string>>());
         public override Task FlushAllDatabasesAsync(FlushMode mode) => Task.CompletedTask;
         public override Task FlushDatabaseAsync(FlushMode mode) => Task.CompletedTask;
+        public override Task SaveAsync() => Task.CompletedTask;
         public override Task<string> LolwutAsync(LolwutOptions options) => Task.FromResult(string.Empty);
     }
 }
