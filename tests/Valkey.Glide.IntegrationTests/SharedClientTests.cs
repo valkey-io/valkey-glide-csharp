@@ -65,6 +65,58 @@ public class SharedClientTests(TestConfiguration config)
         Assert.Equal((string[])[LargeString, LargeString], result.AsStringArray());
     }
 
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestClientPause_ThenExpires(BaseClient client)
+    {
+        var key = $"client-pause-all-{Guid.NewGuid()}";
+        await client.SetAsync(key, "before");
+
+        var pauseFor = TimeSpan.FromSeconds(5);
+        await client.ClientPauseAsync(pauseFor);
+
+        var setTask = client.SetAsync(key, "after");
+        var getTask = client.GetAsync(key);
+
+        // Verify that all commands are paused.
+        var completesDuringPause = TimeSpan.FromSeconds(2);
+        _ = await Assert.ThrowsAsync<TimeoutException>(
+            () => setTask.WaitAsync(completesDuringPause, TestContext.Current.CancellationToken));
+        _ = await Assert.ThrowsAsync<TimeoutException>(
+            () => getTask.WaitAsync(completesDuringPause, TestContext.Current.CancellationToken));
+
+        // Verify that all of the commands complete once the pause expires.
+        var completesAfterPause = TimeSpan.FromSeconds(10);
+        await setTask.WaitAsync(completesAfterPause, TestContext.Current.CancellationToken);
+        _ = await getTask.WaitAsync(completesAfterPause, TestContext.Current.CancellationToken);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestClientPauseWrite_ThenUnpause(BaseClient client)
+    {
+        var key = $"client-pause-write-{Guid.NewGuid()}";
+        await client.SetAsync(key, "before");
+
+        var pauseFor = TimeSpan.FromSeconds(2);
+        await client.ClientPauseWriteAsync(pauseFor);
+
+        var getTask = client.GetAsync(key);
+        var setTask = client.SetAsync(key, "after");
+
+        // Verify that only write commands are paused.
+        var completesDuringPause = TimeSpan.FromSeconds(1);
+        Assert.Equal("before", await getTask.WaitAsync(completesDuringPause, TestContext.Current.CancellationToken));
+        _ = await Assert.ThrowsAsync<TimeoutException>(
+            () => setTask.WaitAsync(completesDuringPause, TestContext.Current.CancellationToken));
+
+        await client.ClientUnpauseAsync();
+
+        // Verify that write commands completes once unpaused.
+        var completesAfterPause = TimeSpan.FromSeconds(5);
+        await setTask.WaitAsync(completesAfterPause, TestContext.Current.CancellationToken);
+    }
+
     // This test is slow, but it caught timing and releasing issues in the past,
     // so it's being kept.
     [Theory(DisableDiscoveryEnumeration = true)]
