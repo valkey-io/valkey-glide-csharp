@@ -430,7 +430,7 @@ public class ClusterClientTests(TestConfiguration config)
         await client.SetAsync(pausedKey, "before");
         await client.SetAsync(unpausedKey, "before");
 
-        var pauseFor = TimeSpan.FromSeconds(2);
+        var pauseFor = TimeSpan.FromSeconds(5);
         var pausedNodeRoute = new SlotKeyRoute(pausedKey, SlotType.Primary);
         await client.ClientPauseAsync(pauseFor, pausedNodeRoute);
 
@@ -441,13 +441,13 @@ public class ClusterClientTests(TestConfiguration config)
         var pausedSetTask = client.SetAsync(pausedKey, "after");
 
         // Verify that commands on the paused node are blocked.
-        var completesDuringPause = TimeSpan.FromSeconds(1);
+        var completesDuringPause = TimeSpan.FromSeconds(2);
         _ = await Assert.ThrowsAsync<System.TimeoutException>(
             () => pausedSetTask.WaitAsync(completesDuringPause, TestContext.Current.CancellationToken));
 
         // Unpause and verify the paused node resumes.
         await client.ClientUnpauseAsync(pausedNodeRoute);
-        var completesAfterPause = TimeSpan.FromSeconds(5);
+        var completesAfterPause = TimeSpan.FromSeconds(10);
         await pausedSetTask.WaitAsync(completesAfterPause, TestContext.Current.CancellationToken);
         Assert.Equal("after", await client.GetAsync(pausedKey));
     }

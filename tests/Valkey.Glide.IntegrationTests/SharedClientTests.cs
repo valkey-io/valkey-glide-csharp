@@ -72,21 +72,21 @@ public class SharedClientTests(TestConfiguration config)
         var key = $"client-pause-all-{Guid.NewGuid()}";
         await client.SetAsync(key, "before");
 
-        var pauseFor = TimeSpan.FromSeconds(2);
+        var pauseFor = TimeSpan.FromSeconds(5);
         await client.ClientPauseAsync(pauseFor);
 
         var setTask = client.SetAsync(key, "after");
         var getTask = client.GetAsync(key);
 
         // Verify that all commands are paused.
-        var completesDuringPause = TimeSpan.FromSeconds(1);
+        var completesDuringPause = TimeSpan.FromSeconds(2);
         _ = await Assert.ThrowsAsync<TimeoutException>(
             () => setTask.WaitAsync(completesDuringPause, TestContext.Current.CancellationToken));
         _ = await Assert.ThrowsAsync<TimeoutException>(
             () => getTask.WaitAsync(completesDuringPause, TestContext.Current.CancellationToken));
 
         // Verify that all of the commands complete once the pause expires.
-        var completesAfterPause = TimeSpan.FromSeconds(5);
+        var completesAfterPause = TimeSpan.FromSeconds(10);
         await setTask.WaitAsync(completesAfterPause, TestContext.Current.CancellationToken);
         _ = await getTask.WaitAsync(completesAfterPause, TestContext.Current.CancellationToken);
     }
