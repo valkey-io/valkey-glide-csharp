@@ -717,7 +717,7 @@ public class ClusterClientTests(TestConfiguration config)
 
         // Generate a new key until it routes to a different node.
         string? key2 = null;
-        await Polling.WaitForTrueAsync(async () =>
+        await Polling.WaitForAsync(async () =>
         {
             key2 = Guid.NewGuid().ToString();
             var route2 = new SlotKeyRoute(key2, SlotType.Primary);
