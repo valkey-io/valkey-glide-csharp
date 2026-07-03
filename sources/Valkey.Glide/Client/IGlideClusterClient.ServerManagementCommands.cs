@@ -617,5 +617,125 @@ public partial interface IGlideClusterClient
     /// </code>
     /// </example>
     /// </remarks>
+
     Task<long> LatencyResetAsync(IEnumerable<ValkeyValue> events, Route route);
+    /// Asynchronously saves the dataset to disk in the background.<br />
+    /// The command will be routed to all primary nodes.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/bgsave/">Valkey commands – BGSAVE</seealso>
+    /// <returns>A <see cref="ClusterValue{T}" /> containing status strings.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var response = await clusterClient.BackgroundSaveAsync();
+    /// foreach (var value in response.MultiValue.Values)
+    /// {
+    ///     Console.WriteLine(value); // "Background saving started"
+    /// }
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ClusterValue<string>> BackgroundSaveAsync();
+
+    /// <summary>
+    /// Asynchronously saves the dataset to disk in the background.<br />
+    /// The command will be routed to the nodes defined by <paramref name="route" />.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/bgsave/">Valkey commands – BGSAVE</seealso>
+    /// <param name="route">Specifies the routing configuration for the command.</param>
+    /// <returns>A <see cref="ClusterValue{T}" /> containing status strings.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var response = await clusterClient.BackgroundSaveAsync(Route.AllPrimaries);
+    /// foreach (var value in response.MultiValue.Values)
+    /// {
+    ///     Console.WriteLine(value); // "Background saving started"
+    /// }
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ClusterValue<string>> BackgroundSaveAsync(Route route);
+
+    /// <summary>
+    /// Schedules a background save of the database.<br />
+    /// The command will be routed to all primary nodes.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/bgsave/">Valkey commands – BGSAVE</seealso>
+    /// <returns>A <see cref="ClusterValue{T}" /> containing status strings.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var response = await clusterClient.BackgroundSaveScheduleAsync();
+    /// foreach (var value in response.MultiValue.Values)
+    /// {
+    ///     Console.WriteLine(value); // "Background saving scheduled"
+    /// }
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ClusterValue<string>> BackgroundSaveScheduleAsync();
+
+    /// <summary>
+    /// Schedules a background save of the database.<br />
+    /// The command will be routed to the nodes defined by <paramref name="route" />.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/bgsave/">Valkey commands – BGSAVE</seealso>
+    /// <param name="route">Specifies the routing configuration for the command.</param>
+    /// <returns>A <see cref="ClusterValue{T}" /> containing status strings.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var response = await clusterClient.BackgroundSaveScheduleAsync(Route.AllPrimaries);
+    /// foreach (var value in response.MultiValue.Values)
+    /// {
+    ///     Console.WriteLine(value); // "Background saving scheduled"
+    /// }
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ClusterValue<string>> BackgroundSaveScheduleAsync(Route route);
+
+    /// <summary>
+    /// Aborts all in-progress and scheduled background saves.<br />
+    /// The command will be routed to all primary nodes.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/bgsave/">Valkey commands – BGSAVE</seealso>
+    /// <note>Since Valkey 8.1.</note>
+    /// <returns>A <see cref="ClusterValue{T}" /> containing status strings.</returns>
+    /// <exception cref="Errors.RequestException">Thrown if no background save is currently in progress or scheduled.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var response = await clusterClient.BackgroundSaveCancelAsync();
+    /// foreach (var value in response.MultiValue.Values)
+    /// {
+    ///     Console.WriteLine(value); // "Background saving cancelled"
+    /// }
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ClusterValue<string>> BackgroundSaveCancelAsync();
+
+    /// <summary>
+    /// Aborts all in-progress and scheduled background saves.<br />
+    /// The command will be routed to the nodes defined by <paramref name="route" />.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/bgsave/">Valkey commands – BGSAVE</seealso>
+    /// <note>Since Valkey 8.1.</note>
+    /// <param name="route">Specifies the routing configuration for the command.</param>
+    /// <returns>A <see cref="ClusterValue{T}" /> containing status strings.</returns>
+    /// <exception cref="Errors.RequestException">Thrown if no background save is currently in progress or scheduled.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var response = await clusterClient.BackgroundSaveCancelAsync(Route.AllPrimaries);
+    /// foreach (var value in response.MultiValue.Values)
+    /// {
+    ///     Console.WriteLine(value); // "Background saving cancelled"
+    /// }
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ClusterValue<string>> BackgroundSaveCancelAsync(Route route);
 }

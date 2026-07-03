@@ -201,4 +201,13 @@ internal partial class Request
         }
         return entries;
     }
+
+    public static Cmd<GlideString, string> BackgroundSaveAsync()
+        => new(RequestType.BgSave, [], false, gs => gs.ToString());
+
+    public static Cmd<GlideString, string> BackgroundSaveScheduleAsync()
+        => new(RequestType.BgSave, [ValkeyLiterals.SCHEDULE.ToGlideString()], false, gs => gs.ToString());
+
+    public static Cmd<GlideString, string> BackgroundSaveCancelAsync()
+        => new(RequestType.BgSave, [ValkeyLiterals.CANCEL.ToGlideString()], false, gs => gs.ToString());
 }

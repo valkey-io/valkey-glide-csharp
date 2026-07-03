@@ -24,7 +24,7 @@ public class FtInfoTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task InfoLocalAsync_AllProperties(BaseClient client)
     {
-        await SkipUtils.IfSearchModuleNotLoaded(client);
+        await Skip.IfSearchModuleNotLoaded(client);
 
         var index = Guid.NewGuid().ToString();
         var prefix = $"{index}:";
@@ -98,7 +98,7 @@ public class FtInfoTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task InfoLocalAsync_TextFieldAttributes(BaseClient client)
     {
-        await SkipUtils.IfSearchModuleNotLoaded(client);
+        await Skip.IfSearchModuleNotLoaded(client);
 
         var index = Guid.NewGuid().ToString();
         var prefix = $"{index}:";
@@ -120,7 +120,7 @@ public class FtInfoTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task InfoLocalAsync_TagFieldAttributes(BaseClient client)
     {
-        await SkipUtils.IfSearchModuleNotLoaded(client);
+        await Skip.IfSearchModuleNotLoaded(client);
 
         var index = Guid.NewGuid().ToString();
         var prefix = $"{index}:";
@@ -143,7 +143,7 @@ public class FtInfoTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task InfoLocalAsync_NumericFieldAttributes(BaseClient client)
     {
-        await SkipUtils.IfSearchModuleNotLoaded(client);
+        await Skip.IfSearchModuleNotLoaded(client);
 
         var index = Guid.NewGuid().ToString();
         var prefix = $"{index}:";
@@ -162,7 +162,7 @@ public class FtInfoTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task InfoLocalAsync_VectorFieldFlatAttributes(BaseClient client)
     {
-        await SkipUtils.IfSearchModuleNotLoaded(client);
+        await Skip.IfSearchModuleNotLoaded(client);
 
         var index = Guid.NewGuid().ToString();
         var prefix = $"{index}:";
@@ -191,7 +191,7 @@ public class FtInfoTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task InfoLocalAsync_VectorFieldHnswAttributes(BaseClient client)
     {
-        await SkipUtils.IfSearchModuleNotLoaded(client);
+        await Skip.IfSearchModuleNotLoaded(client);
 
         var index = Guid.NewGuid().ToString();
         var prefix = $"{index}:";
@@ -226,7 +226,7 @@ public class FtInfoTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task InfoLocalAsync_MultipleFieldTypes_ReturnsCorrectSubclasses(BaseClient client)
     {
-        await SkipUtils.IfSearchModuleNotLoaded(client);
+        await Skip.IfSearchModuleNotLoaded(client);
 
         var index = Guid.NewGuid().ToString();
         Ft.CreateField[] schema =
@@ -255,8 +255,8 @@ public class FtInfoTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task InfoLocalAsync_JsonIndex_ReturnsJsonKeyType(BaseClient client)
     {
-        await SkipUtils.IfSearchModuleNotLoaded(client);
-        await SkipUtils.IfJsonModuleNotLoaded(client);
+        await Skip.IfSearchModuleNotLoaded(client);
+        await Skip.IfJsonModuleNotLoaded(client);
 
         var index = Guid.NewGuid().ToString();
         var field = new Ft.CreateTextField("$.title", "title");
@@ -271,7 +271,7 @@ public class FtInfoTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task InfoLocalAsync_NoStopWords(BaseClient client)
     {
-        await SkipUtils.IfSearchModuleNotLoaded(client);
+        await Skip.IfSearchModuleNotLoaded(client);
 
         var index = Guid.NewGuid().ToString();
         var field = new Ft.CreateTextField("title");
@@ -286,7 +286,7 @@ public class FtInfoTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task InfoLocalAsync_NoOffsets(BaseClient client)
     {
-        await SkipUtils.IfSearchModuleNotLoaded(client);
+        await Skip.IfSearchModuleNotLoaded(client);
 
         var index = Guid.NewGuid().ToString();
         var field = new Ft.CreateTextField("title");

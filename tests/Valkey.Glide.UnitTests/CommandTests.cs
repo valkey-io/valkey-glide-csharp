@@ -97,6 +97,9 @@ public class CommandTests
             // Server Management Commands
             () => Assert.Equal(["CLIENTGETNAME"], Request.ClientGetName().GetArgs()),
             () => Assert.Equal(["CLIENTID"], Request.ClientId().GetArgs()),
+            () => Assert.Equal(["BGSAVE"], Request.BackgroundSaveAsync().GetArgs()),
+            () => Assert.Equal(["BGSAVE", "SCHEDULE"], Request.BackgroundSaveScheduleAsync().GetArgs()),
+            () => Assert.Equal(["BGSAVE", "CANCEL"], Request.BackgroundSaveCancelAsync().GetArgs()),
 
             // Set Commands
             () => Assert.Equal(["SADD", "key", "member"], Request.SetAddAsync("key", "member").GetArgs()),

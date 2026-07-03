@@ -32,12 +32,12 @@ public static class Polling
     /// <param name="message">The message to report if the condition is not met within the timeout.</param>
     /// <param name="timeout">Maximum time to poll. Defaults to <see cref="DefaultTimeout"/>.</param>
     /// <param name="interval">Delay between attempts. Defaults to <see cref="DefaultInterval"/>.</param>
-    public static Task WaitForTrue(
+    public static Task WaitFor(
         Func<bool> condition,
         string message,
         TimeSpan? timeout = null,
         TimeSpan? interval = null)
-        => WaitForTrueAsync(()
+        => WaitForAsync(()
             => Task.FromResult(condition()), message, timeout, interval);
 
     /// <summary>
@@ -48,7 +48,7 @@ public static class Polling
     /// <param name="message">The message to report if the condition is not met within the timeout.</param>
     /// <param name="timeout">Maximum time to poll. Defaults to <see cref="DefaultTimeout"/>.</param>
     /// <param name="interval">Delay between attempts. Defaults to <see cref="DefaultInterval"/>.</param>
-    public static async Task WaitForTrueAsync(
+    public static async Task WaitForAsync(
         Func<Task<bool>> condition,
         string message,
         TimeSpan? timeout = null,

@@ -81,6 +81,23 @@ public class ServerManagementTests(ServerManagementFixture fixture) : IClassFixt
     public async Task IServer_FlushAllDatabasesAsync_Succeeds()
         => await fixture.Server.FlushAllDatabasesAsync();
 
+    [Fact]
+    public async Task IServer_SaveAsync_BackgroundSave_Succeeds()
+        => await fixture.Server.SaveAsync(SaveType.BackgroundSave);
+
+    [Fact]
+    public async Task IServer_SaveAsync_BackgroundRewriteAppendOnlyFile_ThrowsNotSupported()
+        => await Assert.ThrowsAsync<NotSupportedException>(
+            () => fixture.Server.SaveAsync(SaveType.BackgroundRewriteAppendOnlyFile));
+
+    [Fact]
+    public async Task IServer_SaveAsync_ForegroundSave_ThrowsNotSupported()
+#pragma warning disable CS0618 // SaveType.ForegroundSave is obsolete
+        => _ = await Assert.ThrowsAsync<NotSupportedException>(
+            () => fixture.Server.SaveAsync(SaveType.ForegroundSave));
+#pragma warning restore CS0618
+
+
     #endregion
 }
 

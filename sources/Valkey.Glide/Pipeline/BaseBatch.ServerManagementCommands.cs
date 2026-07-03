@@ -52,6 +52,15 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
     /// <inheritdoc cref="IBatchServerManagementCommands.LolwutAsync(LolwutOptions)" />
     public T LolwutAsync(LolwutOptions options) => AddCmd(Request.LolwutAsync(options));
 
+    /// <inheritdoc cref="IBatchServerManagementCommands.BackgroundSaveAsync()" />
+    public T BackgroundSaveAsync() => AddCmd(Request.BackgroundSaveAsync());
+
+    /// <inheritdoc cref="IBatchServerManagementCommands.BackgroundSaveScheduleAsync()" />
+    public T BackgroundSaveScheduleAsync() => AddCmd(Request.BackgroundSaveScheduleAsync());
+
+    /// <inheritdoc cref="IBatchServerManagementCommands.BackgroundSaveCancelAsync()" />
+    public T BackgroundSaveCancelAsync() => AddCmd(Request.BackgroundSaveCancelAsync());
+
     // Interface implementations
     IBatch IBatchServerManagementCommands.ConfigGetAsync(ValkeyValue pattern) => ConfigGetAsync(pattern);
     IBatch IBatchServerManagementCommands.ConfigResetStatisticsAsync() => ConfigResetStatisticsAsync();
@@ -68,4 +77,7 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
     IBatch IBatchServerManagementCommands.TimeAsync() => TimeAsync();
     IBatch IBatchServerManagementCommands.LolwutAsync() => LolwutAsync();
     IBatch IBatchServerManagementCommands.LolwutAsync(LolwutOptions options) => LolwutAsync(options);
+    IBatch IBatchServerManagementCommands.BackgroundSaveAsync() => BackgroundSaveAsync();
+    IBatch IBatchServerManagementCommands.BackgroundSaveScheduleAsync() => BackgroundSaveScheduleAsync();
+    IBatch IBatchServerManagementCommands.BackgroundSaveCancelAsync() => BackgroundSaveCancelAsync();
 }

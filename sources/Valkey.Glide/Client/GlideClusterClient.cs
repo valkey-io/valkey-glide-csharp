@@ -294,6 +294,30 @@ public sealed partial class GlideClusterClient :
         return await Command(Request.ConfigGetAsync(patterns).ToClusterValue(route is SingleNodeRoute), route);
     }
 
+    /// <inheritdoc cref="IGlideClusterClient.BackgroundSaveAsync()"/>
+    public Task<ClusterValue<string>> BackgroundSaveAsync()
+        => BackgroundSaveAsync(AllPrimaries);
+
+    /// <inheritdoc cref="IGlideClusterClient.BackgroundSaveAsync(Route)"/>
+    public Task<ClusterValue<string>> BackgroundSaveAsync(Route route)
+        => Command(Request.BackgroundSaveAsync().ToClusterValue(route is SingleNodeRoute), route);
+
+    /// <inheritdoc cref="IGlideClusterClient.BackgroundSaveScheduleAsync()"/>
+    public Task<ClusterValue<string>> BackgroundSaveScheduleAsync()
+        => BackgroundSaveScheduleAsync(AllPrimaries);
+
+    /// <inheritdoc cref="IGlideClusterClient.BackgroundSaveScheduleAsync(Route)"/>
+    public Task<ClusterValue<string>> BackgroundSaveScheduleAsync(Route route)
+        => Command(Request.BackgroundSaveScheduleAsync().ToClusterValue(route is SingleNodeRoute), route);
+
+    /// <inheritdoc cref="IGlideClusterClient.BackgroundSaveCancelAsync()"/>
+    public Task<ClusterValue<string>> BackgroundSaveCancelAsync()
+        => BackgroundSaveCancelAsync(AllPrimaries);
+
+    /// <inheritdoc cref="IGlideClusterClient.BackgroundSaveCancelAsync(Route)"/>
+    public Task<ClusterValue<string>> BackgroundSaveCancelAsync(Route route)
+        => Command(Request.BackgroundSaveCancelAsync().ToClusterValue(route is SingleNodeRoute), route);
+
     /// <inheritdoc cref="IGlideClusterClient.WaitAofAsync(bool, long, TimeSpan, Route)"/>
     public async Task<long[]> WaitAofAsync(bool localAof, long numreplicas, TimeSpan timeout, Route route)
         => await Command(Request.WaitAofAsync(localAof, numreplicas, timeout), route);
