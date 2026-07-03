@@ -559,43 +559,6 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
             : clusterValue.SingleValue;
 
     /// <summary>
-    /// Polls until the database is empty.
-    /// </summary>
-    private Task WaitForFlushedAsync(bool isCluster)
-        => Polling.WaitForAsync(async () =>
-        {
-            long size = isCluster
-                ? await ClusterClient.DatabaseSizeAsync()
-                : await StandaloneClient.DatabaseSizeAsync();
-
-            return size == 0;
-        }, "Timed out waiting for database empty");
-
-    /// <summary>
-    /// Polls until no RDB save or AOF rewrite is in progress on any node.
-    /// </summary>
-    private Task WaitForSaveNotInProgressAsync(bool clusterMode)
-        => Polling.WaitForAsync(async () =>
-        {
-            var args = new[] { Section.PERSISTENCE };
-            IEnumerable<string> infoValues = clusterMode
-                ? (await ClusterClient.InfoAsync(args)).Values
-                : [await StandaloneClient.InfoAsync(args)];
-
-            return infoValues.All(info =>
-                !info.Contains("rdb_bgsave_in_progress:1")
-                && !info.Contains("aof_rewrite_in_progress:1"));
-        }, "Timed out waiting for save to complete");
-
-    /// <summary>
-    /// Polls until the specified key does not exist.
-    /// </summary>
-    private Task WaitForKeyRemovedAsync(string key)
-        => Polling.WaitForAsync(
-            async () => !await ClusterClient.ExistsAsync(key),
-            $"Timed out waiting for key '{key}' to be removed");
-
-    /// <summary>
     /// Gets the current server time.
     /// </summary>
     private async Task<DateTimeOffset> GetServerTimeAsync(bool isCluster)
@@ -645,6 +608,43 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
         // Restore the original threshold.
         await client.ConfigSetAsync(new Dictionary<ValkeyValue, ValkeyValue> { { latencyThresholdParam, prevThreshold } });
     }
+
+    /// <summary>
+    /// Polls until the database is empty.
+    /// </summary>
+    private Task WaitForFlushedAsync(bool isCluster)
+        => Polling.WaitForAsync(async () =>
+        {
+            long size = isCluster
+                ? await ClusterClient.DatabaseSizeAsync()
+                : await StandaloneClient.DatabaseSizeAsync();
+
+            return size == 0;
+        }, "Timed out waiting for database empty");
+
+    /// <summary>
+    /// Polls until the specified key does not exist.
+    /// </summary>
+    private Task WaitForKeyRemovedAsync(string key)
+        => Polling.WaitForAsync(
+            async () => !await ClusterClient.ExistsAsync(key),
+            $"Timed out waiting for key '{key}' to be removed");
+
+    /// <summary>
+    /// Polls until no RDB save or AOF rewrite is in progress on any node.
+    /// </summary>
+    private Task WaitForSaveNotInProgressAsync(bool clusterMode)
+        => Polling.WaitForAsync(async () =>
+        {
+            var args = new[] { Section.PERSISTENCE };
+            IEnumerable<string> infoValues = clusterMode
+                ? (await ClusterClient.InfoAsync(args)).Values
+                : [await StandaloneClient.InfoAsync(args)];
+
+            return infoValues.All(info =>
+                !info.Contains("rdb_bgsave_in_progress:1")
+                && !info.Contains("aof_rewrite_in_progress:1"));
+        }, "Timed out waiting for save to complete");
 
     #endregion
 }
