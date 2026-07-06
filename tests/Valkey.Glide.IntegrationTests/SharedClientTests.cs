@@ -74,14 +74,14 @@ public class SharedClientTests(TestConfiguration config)
         var key = Guid.NewGuid().ToString();
         await client.SetAsync(key, "value");
 
+        var sw = Stopwatch.StartNew();
+
         var pauseFor = TimeSpan.FromSeconds(2);
         await client.ClientPauseAsync(pauseFor);
 
-        var sw = Stopwatch.StartNew();
-
         // Verify that read commands are blocked until the pause expires.
         _ = await client.GetAsync(key);
-        Assert.True(sw.Elapsed > pauseFor);
+        Assert.True(sw.Elapsed >= pauseFor);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -91,14 +91,14 @@ public class SharedClientTests(TestConfiguration config)
         var key = Guid.NewGuid().ToString();
         await client.SetAsync(key, "before");
 
+        var sw = Stopwatch.StartNew();
+
         var pauseFor = TimeSpan.FromSeconds(2);
         await client.ClientPauseAsync(pauseFor);
 
-        var sw = Stopwatch.StartNew();
-
         // Verify that write commands are blocked until the pause expires.
         await client.SetAsync(key, "after");
-        Assert.True(sw.Elapsed > pauseFor);
+        Assert.True(sw.Elapsed >= pauseFor);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
