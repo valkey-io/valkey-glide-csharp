@@ -129,7 +129,7 @@ public partial interface IBaseClient
     /// Resets the latency spike time series for the specified events.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/latency-reset/">Valkey commands – LATENCY RESET</seealso>
-    /// <param name="events">The event names to reset.</param>
+    /// <param name="events">The event names to reset. If empty, resets all events.</param>
     /// <returns>The number of event time series that were reset.</returns>
     /// <remarks>
     /// <example>

@@ -606,7 +606,7 @@ public partial interface IGlideClusterClient
     /// Resets the latency spike time series for the specified events.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/latency-reset/">Valkey commands – LATENCY RESET</seealso>
-    /// <param name="events">The event names to reset.</param>
+    /// <param name="events">The event names to reset. If empty, resets all events.</param>
     /// <param name="route">Specifies the routing configuration for the command. The client will route the
     /// command to the nodes defined by <paramref name="route"/>.</param>
     /// <returns>The number of event time series that were reset.</returns>
