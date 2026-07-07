@@ -19,59 +19,26 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     private GlideClient StandaloneClient => fixture.StandaloneClient;
     private GlideClusterClient ClusterClient => fixture.ClusterClient;
 
-    /// <summary>
-    /// Polls until no save (RDB or AOF rewrite) is in progress on the standalone client.
-    /// </summary>
-    private static async Task WaitForSaveNotInProgressAsync(GlideClient client)
-    {
-        await Polling.WaitForAsync(async () =>
-        {
-            string info = await client.InfoAsync([InfoOptions.Section.PERSISTENCE]);
-            return !info.Contains("rdb_bgsave_in_progress:1")
-                && !info.Contains("aof_rewrite_in_progress:1");
-        }, "Timed out waiting for save to complete");
-    }
+    #region SaveAsync Tests
 
-    /// <summary>
-    /// Polls until no save (RDB or AOF rewrite) is in progress on the cluster client.
-    /// </summary>
-    private async Task WaitForClusterSaveNotInProgressAsync()
+    [Theory]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
+    public async Task SaveAsync_Succeeds(bool clusterMode)
     {
-        await Polling.WaitForAsync(async () =>
-        {
-            Dictionary<string, string> infos = await ClusterClient.InfoAsync([InfoOptions.Section.PERSISTENCE]);
-            string combined = string.Join("\n", infos.Values);
-            return !combined.Contains("rdb_bgsave_in_progress:1")
-                && !combined.Contains("aof_rewrite_in_progress:1");
-        }, "Timed out waiting for save to complete");
-    }
-
-    #region SAVE Tests
-
-    [Fact]
-    public async Task SaveAsync_Standalone_Succeeds()
-    {
-        await WaitForSaveNotInProgressAsync(StandaloneClient);
-        await StandaloneClient.SaveAsync();
-    }
-
-    [Fact]
-    public async Task SaveAsync_Cluster_Succeeds()
-    {
-        await WaitForClusterSaveNotInProgressAsync();
-        await ClusterClient.SaveAsync();
+        await WaitForSaveNotInProgressAsync(clusterMode);
+        await fixture.GetClient(clusterMode).SaveAsync();
     }
 
     [Fact]
     public async Task SaveAsync_Cluster_WithRoute_Succeeds()
     {
-        await WaitForClusterSaveNotInProgressAsync();
-        await ClusterClient.SaveAsync(Route.AllPrimaries);
+        await WaitForSaveNotInProgressAsync(clusterMode: true);
+        await ClusterClient.SaveAsync(AllPrimaries);
     }
 
     #endregion
 
-    #region FlushMode Tests
+    #region FlushDatabaseAsync Tests
 
     [Fact]
     public async Task FlushDatabaseAsync_Standalone_WithSyncMode()
@@ -159,7 +126,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     }
 
     #endregion
-    #region LOLWUT Tests
+    #region LolwutAsync Tests
 
     [Theory]
     [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
@@ -198,7 +165,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     }
 
     #endregion
-    #region CONFIG GET/SET Multi-Parameter Tests
+    #region ConfigGetAsync Tests
 
     [Fact]
     public async Task ConfigGetAsync_Standalone_MultiplePatterns()
@@ -210,6 +177,20 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
         Assert.Contains(result, kvp => kvp.Key == "maxmemory");
         Assert.Contains(result, kvp => kvp.Key == "lfu-decay-time");
     }
+
+    [Fact]
+    public async Task ConfigGetAsync_Cluster_MultiplePatterns()
+    {
+        var result = await ClusterClient.ConfigGetAsync(
+            ["maxmemory", "lfu-decay-time"]);
+
+        Assert.True(result.Length >= 2);
+        Assert.Contains(result, kvp => kvp.Key == "maxmemory");
+        Assert.Contains(result, kvp => kvp.Key == "lfu-decay-time");
+    }
+
+    #endregion
+    #region ConfigSetAsync Tests
 
     [Fact]
     public async Task ConfigSetAsync_Standalone_MultipleParameters()
@@ -242,17 +223,6 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
                 { "lfu-log-factor", originalLogFactor }
             });
         }
-    }
-
-    [Fact]
-    public async Task ConfigGetAsync_Cluster_MultiplePatterns()
-    {
-        var result = await ClusterClient.ConfigGetAsync(
-            ["maxmemory", "lfu-decay-time"]);
-
-        Assert.True(result.Length >= 2);
-        Assert.Contains(result, kvp => kvp.Key == "maxmemory");
-        Assert.Contains(result, kvp => kvp.Key == "lfu-decay-time");
     }
 
     [Fact]
@@ -297,7 +267,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     }
 
     #endregion
-    #region FlushAllDatabases Cluster Tests
+    #region FlushAllDatabasesAsync Tests
 
     [Fact]
     public async Task FlushAllDatabasesAsync_Cluster_ClearsAllDatabases()
@@ -348,7 +318,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     }
 
     #endregion
-    #region WAITAOF Tests
+    #region WaitAofAsync Tests
 
     [Theory]
     [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
@@ -367,7 +337,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     }
 
     #endregion
-    #region BgSave Tests
+    #region BackgroundSaveAsync Tests
 
     /// <summary>
     /// Expected valid responses for <c>BGSAVE</c> and <c>BGSAVE SCHEDULE</c> commands.
