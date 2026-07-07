@@ -8,9 +8,7 @@ public class GlideStringTests
     public void Sorting()
     {
         gs[] arr = ["abc", "abcd", "abcde", "abd", "abb", "ab1"];
-#if NET8_0_OR_GREATER
         Assert.Equal(new gs[] { "ab1", "abb", "abc", "abd", "abcd", "abcde" }, [.. arr.Order()]);
-#endif
         Assert.Equal(new gs[] { "ab1", "abb", "abc", "abd", "abcd", "abcde" }, [.. arr.OrderBy(s => s)]);
     }
 
