@@ -108,4 +108,48 @@ public partial interface IBaseClient
     /// </example>
     /// </remarks>
     Task<string> LolwutAsync(LolwutOptions options);
+
+    /// <summary>
+    /// Resets the latency spike time series for all events.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/latency-reset/">Valkey commands – LATENCY RESET</seealso>
+    /// <returns>The number of event time series that were reset.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var resetCount = await client.LatencyResetAsync();
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<long> LatencyResetAsync();
+
+    /// <summary>
+    /// Resets the latency spike time series for the specified event.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/latency-reset/">Valkey commands – LATENCY RESET</seealso>
+    /// <param name="event">The event name to reset.</param>
+    /// <returns>The number of event time series that were reset.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.LatencyResetAsync("command");
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<long> LatencyResetAsync(ValkeyValue @event);
+
+    /// <summary>
+    /// Resets the latency spike time series for the specified events.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/latency-reset/">Valkey commands – LATENCY RESET</seealso>
+    /// <param name="events">The event names to reset. If empty, resets all events.</param>
+    /// <returns>The number of event time series that were reset.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.LatencyResetAsync(["command", "fast"]);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<long> LatencyResetAsync(IEnumerable<ValkeyValue> events);
 }
