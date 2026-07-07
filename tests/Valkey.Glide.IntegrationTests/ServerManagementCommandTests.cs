@@ -39,7 +39,6 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     }
 
     #endregion
-
     #region FlushDatabaseAsync Tests
 
     [Fact]
