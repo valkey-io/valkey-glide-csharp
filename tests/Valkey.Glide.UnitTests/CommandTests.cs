@@ -452,6 +452,12 @@ public class CommandTests
             () => Assert.Equal(["LOLWUT"], Request.LolwutAsync(options: null).GetArgs()),
             () => Assert.Equal(["TIME"], Request.TimeAsync().GetArgs()),
 
+            // TODD #435: Merge with section above and sort
+            () => Assert.Equal(["MEMORY", "DOCTOR"], Request.MemoryDoctorAsync().GetArgs()),
+            () => Assert.Equal(["MEMORY", "MALLOC-STATS"], Request.MemoryMallocStatsAsync().GetArgs()),
+            () => Assert.Equal(["MEMORY", "PURGE"], Request.MemoryPurgeAsync().GetArgs()),
+            () => Assert.Equal(["MEMORY", "STATS"], Request.MemoryStatsAsync().GetArgs()),
+
             // Server Management Command Converters
             () => Assert.Equal([new("maxmemory", "100mb")], Request.ConfigGetAsync("maxmemory").Converter(new object[] { (gs)"maxmemory", "100mb" })),
             () => Assert.Equal([], Request.ConfigGetAsync("nonexistent").Converter(Array.Empty<object>())),
@@ -481,6 +487,10 @@ public class CommandTests
             () => Assert.Equal("test_value", Request.GetExpiry("test_key", GetExpiryOptions.ExpireAt(new DateTimeOffset(2021, 1, 1, 0, 0, 0, TimeSpan.Zero))).Converter(new GlideString("test_value")).ToString()),
             () => Assert.Equal("common", Request.LongestCommonSubsequence("key1", "key2").Converter(new GlideString("common"))!.ToString()),
             () => Assert.Equal(5L, Request.LongestCommonSubsequenceLength("key1", "key2").Converter(5L)),
+
+            // TODD #435: Merge with section above and sort
+            () => Assert.Equal("Sam, I have no memory problems", Request.MemoryDoctorAsync().Converter("Sam, I have no memory problems")),
+            () => Assert.Equal("jemalloc stats", Request.MemoryMallocStatsAsync().Converter("jemalloc stats")),
 
             // Info Command Converters
             () => Assert.Equal("info", Request.Info([]).Converter("info")),
@@ -1055,4 +1065,149 @@ public class CommandTests
             () => Assert.Equal(2L, Request.StreamAcknowledgeAsync("key", "group", ["1-0", "2-0"]).Converter(2L))
         );
     }
+
+    #region MemoryStats Converter Tests
+
+    [Fact]
+    public void MemoryStatsConverter_WithAllFields()
+    {
+        Dictionary<GlideString, object> db0 = new()
+        {
+            ["overhead.hashtable.main"] = 100L,
+            ["overhead.hashtable.expires"] = 50L,
+        };
+        Dictionary<GlideString, object> db1 = new()
+        {
+            ["overhead.hashtable.main"] = 200L,
+            ["overhead.hashtable.expires"] = 75L,
+        };
+
+        Dictionary<GlideString, object> raw = new()
+        {
+            ["db.0"] = db0,
+            ["db.1"] = db1,
+            ["allocator.active"] = 1000L,
+            ["allocator.allocated"] = 900L,
+            ["allocator-fragmentation.bytes"] = 100L,
+            ["allocator.resident"] = 1100L,
+            ["allocator-rss.bytes"] = 200L,
+            ["aof.buffer"] = 0L,
+            ["clients.normal"] = 500L,
+            ["clients.slaves"] = 0L,
+            ["dataset.bytes"] = 300L,
+            ["fragmentation.bytes"] = 50L,
+            ["keys.bytes-per-key"] = 64L,
+            ["keys.count"] = 10L,
+            ["lua.caches"] = 0L,
+            ["overhead.total"] = 800L,
+            ["peak.allocated"] = 1200L,
+            ["replication.backlog"] = 0L,
+            ["rss-overhead.bytes"] = 150L,
+            ["startup.allocated"] = 400L,
+            ["total.allocated"] = 950L,
+            ["allocator-fragmentation.ratio"] = 1.5,
+            ["allocator-rss.ratio"] = 1.1,
+            ["dataset.percentage"] = 30.5,
+            ["fragmentation"] = 1.2,
+            ["peak.percentage"] = 95.0,
+            ["rss-overhead.ratio"] = 1.05,
+
+            // Optional 7.0+ fields
+            ["cluster.links"] = 0L,
+            ["functions.caches"] = 128L,
+
+            // Optional 8.0+ fields
+            ["allocator.muzzy"] = 64L,
+            ["db.dict.rehashing.count"] = 0L,
+            ["overhead.db.hashtable.lut"] = 256L,
+            ["overhead.db.hashtable.rehashing"] = 0L,
+        };
+
+        MemoryStats stats = Request.MemoryStatsAsync().Converter(raw);
+
+        Assert.Equal(2, stats.Db.Count);
+        Assert.Equal(100L, stats.Db[0].OverheadHashtableMain);
+        Assert.Equal(50L, stats.Db[0].OverheadHashtableExpires);
+        Assert.Equal(200L, stats.Db[1].OverheadHashtableMain);
+        Assert.Equal(75L, stats.Db[1].OverheadHashtableExpires);
+        Assert.Equal(1000L, stats.AllocatorActive);
+        Assert.Equal(900L, stats.AllocatorAllocated);
+        Assert.Equal(100L, stats.AllocatorFragmentationBytes);
+        Assert.Equal(1100L, stats.AllocatorResident);
+        Assert.Equal(200L, stats.AllocatorRssBytes);
+        Assert.Equal(0L, stats.AofBuffer);
+        Assert.Equal(500L, stats.ClientsNormal);
+        Assert.Equal(0L, stats.ClientsSlaves);
+        Assert.Equal(300L, stats.DatasetBytes);
+        Assert.Equal(50L, stats.FragmentationBytes);
+        Assert.Equal(64L, stats.KeysBytesPerKey);
+        Assert.Equal(10L, stats.KeysCount);
+        Assert.Equal(0L, stats.LuaCaches);
+        Assert.Equal(800L, stats.OverheadTotal);
+        Assert.Equal(1200L, stats.PeakAllocated);
+        Assert.Equal(0L, stats.ReplicationBacklog);
+        Assert.Equal(150L, stats.RssOverheadBytes);
+        Assert.Equal(400L, stats.StartupAllocated);
+        Assert.Equal(950L, stats.TotalAllocated);
+        Assert.Equal(1.5, stats.AllocatorFragmentationRatio);
+        Assert.Equal(1.1, stats.AllocatorRssRatio);
+        Assert.Equal(30.5, stats.DatasetPercentage);
+        Assert.Equal(1.2, stats.Fragmentation);
+        Assert.Equal(95.0, stats.PeakPercentage);
+        Assert.Equal(1.05, stats.RssOverheadRatio);
+        Assert.Equal(0L, stats.ClusterLinks);
+        Assert.Equal(128L, stats.FunctionsCaches);
+        Assert.Equal(64L, stats.AllocatorMuzzy);
+        Assert.Equal(0L, stats.DbDictRehashingCount);
+        Assert.Equal(256L, stats.OverheadDbHashtableLut);
+        Assert.Equal(0L, stats.OverheadDbHashtableRehashing);
+    }
+
+    [Fact]
+    public void MemoryStatsConverter_WithoutOptionalFields()
+    {
+        Dictionary<GlideString, object> raw = new()
+        {
+            ["allocator.active"] = 1000L,
+            ["allocator.allocated"] = 900L,
+            ["allocator-fragmentation.bytes"] = 100L,
+            ["allocator.resident"] = 1100L,
+            ["allocator-rss.bytes"] = 200L,
+            ["aof.buffer"] = 0L,
+            ["clients.normal"] = 500L,
+            ["clients.slaves"] = 0L,
+            ["dataset.bytes"] = 300L,
+            ["fragmentation.bytes"] = 50L,
+            ["keys.bytes-per-key"] = 64L,
+            ["keys.count"] = 10L,
+            ["lua.caches"] = 0L,
+            ["overhead.total"] = 800L,
+            ["peak.allocated"] = 1200L,
+            ["replication.backlog"] = 0L,
+            ["rss-overhead.bytes"] = 150L,
+            ["startup.allocated"] = 400L,
+            ["total.allocated"] = 950L,
+            ["allocator-fragmentation.ratio"] = 1.5,
+            ["allocator-rss.ratio"] = 1.1,
+            ["dataset.percentage"] = 30.5,
+            ["fragmentation"] = 1.2,
+            ["peak.percentage"] = 95.0,
+            ["rss-overhead.ratio"] = 1.05,
+        };
+
+        MemoryStats stats = Request.MemoryStatsAsync().Converter(raw);
+
+        Assert.Empty(stats.Db);
+        Assert.Equal(1000L, stats.AllocatorActive);
+        Assert.Equal(950L, stats.TotalAllocated);
+        Assert.Equal(1.5, stats.AllocatorFragmentationRatio);
+        Assert.Null(stats.ClusterLinks);
+        Assert.Null(stats.FunctionsCaches);
+        Assert.Null(stats.AllocatorMuzzy);
+        Assert.Null(stats.DbDictRehashingCount);
+        Assert.Null(stats.OverheadDbHashtableLut);
+        Assert.Null(stats.OverheadDbHashtableRehashing);
+    }
+
+    #endregion
 }

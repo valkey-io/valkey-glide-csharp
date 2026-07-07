@@ -8,6 +8,87 @@ namespace Valkey.Glide.Internals;
 
 internal partial class Request
 {
+    #region Memory Commands
+
+
+    public static Cmd<GlideString, string> MemoryDoctorAsync()
+        => new(RequestType.MemoryDoctor, [], false, gs => gs.ToString());
+
+    public static Cmd<GlideString, string> MemoryMallocStatsAsync()
+        => new(RequestType.MemoryMallocStats, [], false, gs => gs.ToString());
+
+    public static Cmd<string, ValkeyValue> MemoryPurgeAsync()
+        => Ok(RequestType.MemoryPurge, []);
+
+    public static Cmd<Dictionary<GlideString, object>, MemoryStats> MemoryStatsAsync()
+        => new(RequestType.MemoryStats, [], false, raw => ParseMemoryStats(ToStringMap(raw)));
+
+    private const string MemoryStatsDbPrefix = "db.";
+
+    private static MemoryStats ParseMemoryStats(Dictionary<string, object> map)
+    {
+        Dictionary<int, MemoryStatsDb> db = [];
+        foreach (KeyValuePair<string, object> kvp in map)
+        {
+            if (kvp.Key.StartsWith(MemoryStatsDbPrefix) && kvp.Key != "db.dict.rehashing.count")
+            {
+                string suffix = kvp.Key[MemoryStatsDbPrefix.Length..];
+                if (int.TryParse(suffix, out int dbIndex))
+                {
+                    db[dbIndex] = ParseMemoryStatsDb(kvp.Value);
+                }
+            }
+        }
+
+        return new MemoryStats
+        {
+            Db = db,
+            AllocatorActive = GetLong(map, "allocator.active"),
+            AllocatorAllocated = GetLong(map, "allocator.allocated"),
+            AllocatorFragmentationBytes = GetLong(map, "allocator-fragmentation.bytes"),
+            AllocatorResident = GetLong(map, "allocator.resident"),
+            AllocatorRssBytes = GetLong(map, "allocator-rss.bytes"),
+            AofBuffer = GetLong(map, "aof.buffer"),
+            ClientsNormal = GetLong(map, "clients.normal"),
+            ClientsSlaves = GetLong(map, "clients.slaves"),
+            DatasetBytes = GetLong(map, "dataset.bytes"),
+            FragmentationBytes = GetLong(map, "fragmentation.bytes"),
+            KeysBytesPerKey = GetLong(map, "keys.bytes-per-key"),
+            KeysCount = GetLong(map, "keys.count"),
+            LuaCaches = GetLong(map, "lua.caches"),
+            OverheadTotal = GetLong(map, "overhead.total"),
+            PeakAllocated = GetLong(map, "peak.allocated"),
+            ReplicationBacklog = GetLong(map, "replication.backlog"),
+            RssOverheadBytes = GetLong(map, "rss-overhead.bytes"),
+            StartupAllocated = GetLong(map, "startup.allocated"),
+            TotalAllocated = GetLong(map, "total.allocated"),
+            AllocatorFragmentationRatio = GetDouble(map, "allocator-fragmentation.ratio"),
+            AllocatorRssRatio = GetDouble(map, "allocator-rss.ratio"),
+            DatasetPercentage = GetDouble(map, "dataset.percentage"),
+            Fragmentation = GetDouble(map, "fragmentation"),
+            PeakPercentage = GetDouble(map, "peak.percentage"),
+            RssOverheadRatio = GetDouble(map, "rss-overhead.ratio"),
+            ClusterLinks = TryGetLong(map, "cluster.links"),
+            FunctionsCaches = TryGetLong(map, "functions.caches"),
+            AllocatorMuzzy = TryGetLong(map, "allocator.muzzy"),
+            DbDictRehashingCount = TryGetLong(map, "db.dict.rehashing.count"),
+            OverheadDbHashtableLut = TryGetLong(map, "overhead.db.hashtable.lut"),
+            OverheadDbHashtableRehashing = TryGetLong(map, "overhead.db.hashtable.rehashing"),
+        };
+    }
+
+    private static MemoryStatsDb ParseMemoryStatsDb(object value)
+    {
+        var map = ToStringMap(value);
+        return new MemoryStatsDb
+        {
+            OverheadHashtableMain = GetLong(map, "overhead.hashtable.main"),
+            OverheadHashtableExpires = GetLong(map, "overhead.hashtable.expires"),
+        };
+    }
+
+    #endregion
+
     public static Cmd<GlideString, string> Info(InfoOptions.Section[] sections)
         => new(RequestType.Info, sections.ToGlideStrings(), false, gs => gs.ToString());
 
