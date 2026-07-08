@@ -18,9 +18,13 @@ public abstract class Server : IDisposable
     protected static readonly GlideString[] KillClientArgs = ["CLIENT", "KILL", "TYPE", "NORMAL"];
 
     /// <summary>
-    /// Number of attempts to establish the initial client connection.
+    /// Maximum time to wait for the initial client connection to succeed.
     /// </summary>
-    private const int ConnectionAttempts = 5;
+    /// <remarks>
+    /// On Windows CI (WSL), cluster topology formation can take several seconds after the server
+    /// process starts.
+    /// </remarks>
+    private static readonly TimeSpan ConnectionTimeout = TimeSpan.FromSeconds(10);
 
     /// <summary>
     /// Delay between initial connection attempts.
@@ -150,8 +154,8 @@ public abstract class Server : IDisposable
     {
         ConnectionException? lastException = null;
 
-        /// Retry the initial connection attempt if needed to handle flakiness in CI environment.
-        for (int attempt = 1; attempt <= ConnectionAttempts; attempt++)
+        using CancellationTokenSource cts = new(ConnectionTimeout);
+        while (!cts.Token.IsCancellationRequested)
         {
             try
             {
@@ -160,11 +164,7 @@ public abstract class Server : IDisposable
             catch (ConnectionException ex)
             {
                 lastException = ex;
-
-                if (attempt < ConnectionAttempts)
-                {
-                    await Task.Delay(ConnectionRetryDelay);
-                }
+                await Task.Delay(ConnectionRetryDelay);
             }
         }
 

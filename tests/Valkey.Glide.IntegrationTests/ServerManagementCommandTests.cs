@@ -19,6 +19,23 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     private GlideClient StandaloneClient => fixture.StandaloneClient;
     private GlideClusterClient ClusterClient => fixture.ClusterClient;
 
+    #region Constants
+
+    /// <summary>
+    /// Expected valid responses for <c>BGREWRITEAOF</c> command.
+    /// </summary>
+    private static readonly string[] BgRewriteAofResponses =
+    [
+        "Background append only file rewriting started",
+        "Background append only file rewriting scheduled",
+    ];
+
+    ///  <summary>
+    /// Route to a primary node.
+    /// </summary>
+    private static readonly SlotKeyRoute PrimaryRoute = new("1", SlotType.Primary);
+
+    #endregion
     #region FlushMode Tests
 
     [Fact]
@@ -42,7 +59,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
         Assert.True(await StandaloneClient.ExistsAsync(key));
 
         await StandaloneClient.FlushDatabaseAsync(FlushMode.Async);
-        await WaitForFlushedAsync(StandaloneClient);
+        await WaitForFlushedAsync(isCluster: false);
     }
 
     [Fact]
@@ -66,7 +83,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
         Assert.True(await StandaloneClient.ExistsAsync(key));
 
         await StandaloneClient.FlushAllDatabasesAsync(FlushMode.Async);
-        await WaitForFlushedAsync(StandaloneClient);
+        await WaitForFlushedAsync(isCluster: false);
     }
 
     [Fact]
@@ -90,7 +107,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
         Assert.True(await ClusterClient.ExistsAsync(key));
 
         await ClusterClient.FlushDatabaseAsync(FlushMode.Async);
-        await WaitForFlushedAsync(ClusterClient);
+        await WaitForFlushedAsync(isCluster: true);
     }
 
     [Fact]
@@ -255,7 +272,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
         Assert.True(await ClusterClient.ExistsAsync(key));
 
         await ClusterClient.FlushAllDatabasesAsync();
-        await WaitForFlushedAsync(ClusterClient);
+        await WaitForFlushedAsync(isCluster: true);
     }
 
     [Fact]
@@ -279,7 +296,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
         Assert.True(await ClusterClient.ExistsAsync(key));
 
         await ClusterClient.FlushAllDatabasesAsync(FlushMode.Async);
-        await WaitForFlushedAsync(ClusterClient);
+        await WaitForFlushedAsync(isCluster: true);
     }
 
     [Fact]
@@ -404,15 +421,6 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     #endregion
     #region BGREWRITEAOF Tests
 
-    /// <summary>
-    /// Expected valid responses for <c>BGREWRITEAOF</c> command.
-    /// </summary>
-    private static readonly string[] BgRewriteAofResponses =
-    [
-        "Background append only file rewriting started",
-        "Background append only file rewriting scheduled",
-    ];
-
     [Theory]
     [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
     public async Task BgRewriteAofAsync_ReturnsValidStatus(bool clusterMode)
@@ -436,6 +444,144 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     }
 
     #endregion
+    #region Latency Tests
+
+    [Theory]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
+    public async Task LatencyHistoryAsync(bool isCluster)
+    {
+        var beforeSpike = await GetServerTimeAsync(isCluster);
+        await TriggerLatencySpikeAsync(isCluster);
+
+        LatencyEntry[] allEntries = isCluster
+            ? FlattenClusterValueLists(await ClusterClient.LatencyHistoryAsync("command"))
+            : await StandaloneClient.LatencyHistoryAsync("command");
+
+        Assert.NotEmpty(allEntries);
+        foreach (var entry in allEntries)
+        {
+            Assert.True(entry.Time >= beforeSpike);
+            Assert.True(entry.Duration > TimeSpan.Zero);
+        }
+
+        // Non-existent event returns empty.
+        var unknown = isCluster
+            ? FlattenClusterValueLists(await ClusterClient.LatencyHistoryAsync("nonexistent"))
+            : await StandaloneClient.LatencyHistoryAsync("nonexistent");
+        Assert.Empty(unknown);
+    }
+
+    [Theory]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
+    public async Task LatencyLatestAsync(bool isCluster)
+    {
+        var beforeSpike = await GetServerTimeAsync(isCluster);
+        await TriggerLatencySpikeAsync(isCluster);
+
+        // Verify latest events.
+        LatencyEventInfo[] allEntries = isCluster
+            ? FlattenClusterValueLists(await ClusterClient.LatencyLatestAsync())
+            : await StandaloneClient.LatencyLatestAsync();
+
+        Assert.True(allEntries.Length >= 1);
+
+        // Verify the "command" event.
+        var commandInfo = allEntries.First(e => e.EventName == "command");
+
+        Assert.True(commandInfo.LatestTime >= beforeSpike);
+        Assert.True(commandInfo.LatestDuration > TimeSpan.Zero);
+        Assert.True(commandInfo.MaxDuration >= commandInfo.LatestDuration);
+
+        BaseClient client = isCluster ? ClusterClient : StandaloneClient;
+        if (Client.GetVersion(client) >= new Version(8, 1, 0))
+        {
+            Assert.True(Assert.NotNull(commandInfo.Sum) > TimeSpan.Zero);
+            Assert.True(Assert.NotNull(commandInfo.Count) > 0);
+        }
+        else
+        {
+            Assert.Null(commandInfo.Sum);
+            Assert.Null(commandInfo.Count);
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
+    public async Task LatencyResetAsync(bool isCluster)
+    {
+        BaseClient client = isCluster ? ClusterClient : StandaloneClient;
+
+        // Trigger spike then reset all events.
+        await TriggerLatencySpikeAsync(isCluster);
+        Assert.True(await client.LatencyResetAsync() > 0);
+
+        var history = isCluster
+            ? FlattenClusterValueLists(await ClusterClient.LatencyHistoryAsync("command"))
+            : await StandaloneClient.LatencyHistoryAsync("command");
+        Assert.Empty(history);
+
+        // Trigger spike then reset specific event.
+        await TriggerLatencySpikeAsync(isCluster);
+        Assert.True(await client.LatencyResetAsync("command") > 0);
+
+        history = isCluster
+            ? FlattenClusterValueLists(await ClusterClient.LatencyHistoryAsync("command"))
+            : await StandaloneClient.LatencyHistoryAsync("command");
+        Assert.Empty(history);
+
+        // Trigger spike then reset unknown event.
+        await TriggerLatencySpikeAsync(isCluster);
+        Assert.Equal(0, await client.LatencyResetAsync("unknown"));
+
+        history = isCluster
+            ? FlattenClusterValueLists(await ClusterClient.LatencyHistoryAsync("command"))
+            : await StandaloneClient.LatencyHistoryAsync("command");
+        Assert.NotEmpty(history);
+    }
+
+    [Fact]
+    public async Task LatencyHistoryAsync_Cluster_WithRoute()
+    {
+        await TriggerLatencySpikeAsync(isCluster: true);
+
+        // Verify default route returns multiple values.
+        var multiHistory = await ClusterClient.LatencyHistoryAsync("command");
+        Assert.True(multiHistory.HasMultiData);
+        Assert.NotEmpty(FlattenClusterValueLists(multiHistory));
+
+        // Verify that primary node route returns single value.
+        var singleHistory = await ClusterClient.LatencyHistoryAsync("command", PrimaryRoute);
+        Assert.True(singleHistory.HasSingleData);
+        Assert.NotEmpty(singleHistory.SingleValue);
+    }
+
+    [Fact]
+    public async Task LatencyLatestAsync_Cluster_WithRoute()
+    {
+        await TriggerLatencySpikeAsync(isCluster: true);
+
+        // Verify default route returns multiple values.
+        var multiLatest = await ClusterClient.LatencyLatestAsync();
+        Assert.True(multiLatest.HasMultiData);
+        Assert.NotEmpty(FlattenClusterValueLists(multiLatest));
+
+        // Verify that single primary node route returns single value.
+        var singleLatest = await ClusterClient.LatencyLatestAsync(PrimaryRoute);
+        Assert.True(singleLatest.HasSingleData);
+        Assert.NotEmpty(singleLatest.SingleValue);
+    }
+
+    [Fact]
+    public async Task LatencyResetAsync_Cluster_WithRoute()
+    {
+        await TriggerLatencySpikeAsync(isCluster: true);
+        Assert.True(await ClusterClient.LatencyResetAsync(PrimaryRoute) > 0);
+
+        await TriggerLatencySpikeAsync(isCluster: true);
+        Assert.True(await ClusterClient.LatencyResetAsync(AllNodes) > 0);
+    }
+
+    #endregion
     #region Helpers
 
     /// <summary>
@@ -445,20 +591,84 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
         => Assert.Contains(["VALKEY", "REDIS"], name => result.Contains(name, StringComparison.OrdinalIgnoreCase));
 
     /// <summary>
+    /// Flattens a cluster value of arrays into a single flat array.
+    /// </summary>
+    private static T[] FlattenClusterValueLists<T>(ClusterValue<T[]> clusterValue)
+        => clusterValue.HasMultiData
+            ? [.. clusterValue.MultiValue.Values.SelectMany(v => v)]
+            : clusterValue.SingleValue;
+
+    /// <summary>
+    /// Gets the current server time.
+    /// </summary>
+    private async Task<DateTimeOffset> GetServerTimeAsync(bool isCluster)
+    {
+        DateTimeOffset time = isCluster
+            ? (await ClusterClient.TimeAsync(Route.Random)).SingleValue
+            : await StandaloneClient.TimeAsync();
+
+        // Truncate the result to second precision to match latency entry timestamps.
+        return DateTimeOffset.FromUnixTimeSeconds(time.ToUnixTimeSeconds());
+    }
+
+    /// <summary>
+    /// Triggers a latency spike for the "command" event.
+    /// </summary>
+    private async Task TriggerLatencySpikeAsync(bool isCluster)
+    {
+        var latencyThresholdParam = "latency-monitor-threshold";
+        BaseClient client = isCluster ? ClusterClient : StandaloneClient;
+
+        // Reset any existing latency data first so the spike is recorded against a clean baseline.
+        _ = await client.LatencyResetAsync();
+
+        // Save the current threshold so we can restore it after the spike.
+        KeyValuePair<string, string>[] prevConfigs;
+        if (isCluster)
+        {
+            var prev = await ClusterClient.ConfigGetAsync(latencyThresholdParam);
+            prevConfigs = prev.HasSingleData ? prev.SingleValue : prev.MultiValue.Values.First();
+        }
+        else
+        {
+            prevConfigs = await StandaloneClient.ConfigGetAsync(latencyThresholdParam);
+        }
+
+        var prevThreshold = prevConfigs.FirstOrDefault(p => p.Key == latencyThresholdParam).Value ?? "0";
+
+        // Enable latency monitoring with a 1 ms threshold and trigger a latency spike.
+        await client.ConfigSetAsync(new Dictionary<ValkeyValue, ValkeyValue> { { latencyThresholdParam, "1" } });
+
+        // Trigger a latency spike for the "command" event.
+        GlideString[] debugSleepArgs = ["DEBUG", "SLEEP", "0.05"];
+        _ = isCluster
+            ? await ClusterClient.CustomCommand(debugSleepArgs, AllNodes)
+            : await StandaloneClient.CustomCommand(debugSleepArgs);
+
+        // Restore the original threshold.
+        await client.ConfigSetAsync(new Dictionary<ValkeyValue, ValkeyValue> { { latencyThresholdParam, prevThreshold } });
+    }
+
+    /// <summary>
     /// Polls until the database is empty.
     /// </summary>
-    private static Task WaitForFlushedAsync(BaseClient client)
+    private Task WaitForFlushedAsync(bool isCluster)
         => Polling.WaitForAsync(async () =>
         {
-            long size = client switch
-            {
-                GlideClusterClient cluster => await cluster.DatabaseSizeAsync(),
-                GlideClient standalone => await standalone.DatabaseSizeAsync(),
-                _ => throw new ArgumentException("Unsupported client type", nameof(client)),
-            };
+            long size = isCluster
+                ? await ClusterClient.DatabaseSizeAsync()
+                : await StandaloneClient.DatabaseSizeAsync();
 
             return size == 0;
         }, "Timed out waiting for database empty");
+
+    /// <summary>
+    /// Polls until the specified key does not exist.
+    /// </summary>
+    private Task WaitForKeyRemovedAsync(string key)
+        => Polling.WaitForAsync(
+            async () => !await ClusterClient.ExistsAsync(key),
+            $"Timed out waiting for key '{key}' to be removed");
 
     /// <summary>
     /// Polls until no RDB save or AOF rewrite is in progress on any node.
@@ -475,14 +685,6 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
                 !info.Contains("rdb_bgsave_in_progress:1")
                 && !info.Contains("aof_rewrite_in_progress:1"));
         }, "Timed out waiting for save to complete");
-
-    /// <summary>
-    /// Polls until the specified key does not exist.
-    /// </summary>
-    private Task WaitForKeyRemovedAsync(string key)
-        => Polling.WaitForAsync(
-            async () => !await ClusterClient.ExistsAsync(key),
-            $"Timed out waiting for key '{key}' to be removed");
 
     #endregion
 }

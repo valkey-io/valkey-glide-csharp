@@ -20,4 +20,13 @@ public abstract partial class BaseClient
 
     /// <inheritdoc cref="IBaseClient.LolwutAsync(LolwutOptions)"/>
     public abstract Task<string> LolwutAsync(LolwutOptions options);
+
+    /// <inheritdoc cref="IBaseClient.LatencyResetAsync()"/>
+    public abstract Task<long> LatencyResetAsync();
+
+    /// <inheritdoc cref="IBaseClient.LatencyResetAsync(ValkeyValue)"/>
+    public abstract Task<long> LatencyResetAsync(ValkeyValue @event);
+
+    /// <inheritdoc cref="IBaseClient.LatencyResetAsync(IEnumerable{ValkeyValue})"/>
+    public abstract Task<long> LatencyResetAsync(IEnumerable<ValkeyValue> events);
 }

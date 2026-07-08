@@ -215,6 +215,26 @@ public partial class GlideClient :
         _ = await Command(Request.Unwatch());
     }
 
+    /// <inheritdoc cref="IGlideClient.LatencyHistoryAsync(ValkeyValue)"/>
+    public async Task<LatencyEntry[]> LatencyHistoryAsync(ValkeyValue @event)
+        => await Command(Request.LatencyHistoryAsync(@event));
+
+    /// <inheritdoc cref="IGlideClient.LatencyLatestAsync()"/>
+    public async Task<LatencyEventInfo[]> LatencyLatestAsync()
+        => await Command(Request.LatencyLatestAsync());
+
+    /// <inheritdoc cref="IBaseClient.LatencyResetAsync()"/>
+    public override async Task<long> LatencyResetAsync()
+        => await Command(Request.LatencyResetAsync([]));
+
+    /// <inheritdoc cref="IBaseClient.LatencyResetAsync(ValkeyValue)"/>
+    public override async Task<long> LatencyResetAsync(ValkeyValue @event)
+        => await Command(Request.LatencyResetAsync([@event]));
+
+    /// <inheritdoc cref="IBaseClient.LatencyResetAsync(IEnumerable{ValkeyValue})"/>
+    public override async Task<long> LatencyResetAsync(IEnumerable<ValkeyValue> events)
+        => await Command(Request.LatencyResetAsync(events));
+
     /// <inheritdoc cref="BaseClient.GetServerVersionAsync()"/>
     protected override async Task<Version> GetServerVersionAsync()
     {

@@ -542,6 +542,126 @@ public partial interface IGlideClusterClient
     Task<long[]> WaitAofAsync(bool localAof, long numreplicas, TimeSpan timeout, Route route);
 
     /// <summary>
+    /// Returns latency spike time series for a specific event.<br />
+    /// The command is routed to all primary nodes.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/latency-history/">Valkey commands – LATENCY HISTORY</seealso>
+    /// <param name="event">The name of the event to get latency history for.</param>
+    /// <returns>
+    /// A <see cref="ClusterValue{T}"/> containing an array of <see cref="LatencyEntry"/> per node.
+    /// </returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var history = await clusterClient.LatencyHistoryAsync("command");
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ClusterValue<LatencyEntry[]>> LatencyHistoryAsync(ValkeyValue @event);
+
+    /// <summary>
+    /// Returns latency spike time series for a specific event.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/latency-history/">Valkey commands – LATENCY HISTORY</seealso>
+    /// <param name="event">The name of the event to get latency history for.</param>
+    /// <param name="route">Specifies the routing configuration for the command.</param>
+    /// <returns>
+    /// A <see cref="ClusterValue{T}"/> containing an array of <see cref="LatencyEntry"/>.
+    /// </returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var history = await clusterClient.LatencyHistoryAsync("command", Route.AllPrimaries);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ClusterValue<LatencyEntry[]>> LatencyHistoryAsync(ValkeyValue @event, Route route);
+
+    /// <summary>
+    /// Reports the latest latency events logged by the server.<br />
+    /// The command is routed to all primary nodes.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/latency-latest/">Valkey commands – LATENCY LATEST</seealso>
+    /// <returns>
+    /// A <see cref="ClusterValue{T}"/> containing an array of <see cref="LatencyEventInfo"/> per node.
+    /// </returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var latest = await clusterClient.LatencyLatestAsync();
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ClusterValue<LatencyEventInfo[]>> LatencyLatestAsync();
+
+    /// <summary>
+    /// Reports the latest latency events logged by the server.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/latency-latest/">Valkey commands – LATENCY LATEST</seealso>
+    /// <param name="route">Specifies the routing configuration for the command.</param>
+    /// <returns>
+    /// A <see cref="ClusterValue{T}"/> containing an array of <see cref="LatencyEventInfo"/>.
+    /// </returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var latest = await clusterClient.LatencyLatestAsync(Route.AllPrimaries);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ClusterValue<LatencyEventInfo[]>> LatencyLatestAsync(Route route);
+
+    /// <summary>
+    /// Resets the latency spike time series for all events.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/latency-reset/">Valkey commands – LATENCY RESET</seealso>
+    /// <param name="route">Specifies the routing configuration for the command. The client will route the
+    /// command to the nodes defined by <paramref name="route"/>.</param>
+    /// <returns>The number of event time series that were reset.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await clusterClient.LatencyResetAsync(Route.AllNodes);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<long> LatencyResetAsync(Route route);
+
+    /// <summary>
+    /// Resets the latency spike time series for the specified event.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/latency-reset/">Valkey commands – LATENCY RESET</seealso>
+    /// <param name="event">The event name to reset.</param>
+    /// <param name="route">Specifies the routing configuration for the command. The client will route the
+    /// command to the nodes defined by <paramref name="route"/>.</param>
+    /// <returns>The number of event time series that were reset.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await clusterClient.LatencyResetAsync("command", Route.AllPrimaries);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<long> LatencyResetAsync(ValkeyValue @event, Route route);
+
+    /// <summary>
+    /// Resets the latency spike time series for the specified events.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/latency-reset/">Valkey commands – LATENCY RESET</seealso>
+    /// <param name="events">The event names to reset. If empty, resets all events.</param>
+    /// <param name="route">Specifies the routing configuration for the command. The client will route the
+    /// command to the nodes defined by <paramref name="route"/>.</param>
+    /// <returns>The number of event time series that were reset.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await clusterClient.LatencyResetAsync(["command", "fast"], Route.AllPrimaries);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<long> LatencyResetAsync(IEnumerable<ValkeyValue> events, Route route);
+
+    /// <summary>
     /// Asynchronously saves the dataset to disk in the background.<br />
     /// The command will be routed to all primary nodes.
     /// </summary>
