@@ -1021,10 +1021,6 @@ public class BatchTests(TestConfiguration config)
     {
         object[] arr = (object[])res!;
         return DateTime.UnixEpoch.AddSeconds(double.Parse((arr[0] as gs)!))
-#if NET8_0_OR_GREATER
             .AddMicroseconds(double.Parse((arr[1] as gs)!));
-#else
-            .AddMilliseconds(double.Parse((arr[1] as gs)!) / 1000);
-#endif
     }
 }
