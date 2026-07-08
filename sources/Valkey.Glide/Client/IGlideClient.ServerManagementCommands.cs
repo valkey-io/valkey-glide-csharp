@@ -148,15 +148,15 @@ public partial interface IGlideClient
     Task FlushDatabaseAsync();
 
     /// <summary>
-    /// Instructs Valkey to start an Append Only File rewrite process. The rewrite creates a small optimized
-    /// version of the current Append Only File.
+    /// Initiates a background rewrite of the append-only file (AOF).
     /// </summary>
     /// <seealso href="https://valkey.io/commands/bgrewriteaof/">Valkey commands – BGREWRITEAOF</seealso>
-    /// <returns>A status string indicating whether the rewrite was started or scheduled.</returns>
+    /// <returns>A status string.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// string result = await client.BgRewriteAofAsync();
+    /// var response = await client.BgRewriteAofAsync();
+    /// Console.WriteLine(response); // "Background append only file rewriting started"
     /// </code>
     /// </example>
     /// </remarks>
@@ -249,7 +249,7 @@ public partial interface IGlideClient
     /// Asynchronously saves the dataset to disk in the background.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/bgsave/">Valkey commands – BGSAVE</seealso>
-    /// <returns>A non-empty status string.</returns>
+    /// <returns>A status string.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -264,7 +264,7 @@ public partial interface IGlideClient
     /// Schedules a background save of the database.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/bgsave/">Valkey commands – BGSAVE</seealso>
-    /// <returns>A non-empty status string.</returns>
+    /// <returns>A status string.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -280,7 +280,7 @@ public partial interface IGlideClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/bgsave/">Valkey commands – BGSAVE</seealso>
     /// <note>Since Valkey 8.1.</note>
-    /// <returns>A non-empty status string.</returns>
+    /// <returns>A status string.</returns>
     /// <exception cref="Errors.RequestException">Thrown if no background save is currently in progress or scheduled.</exception>
     /// <remarks>
     /// <example>

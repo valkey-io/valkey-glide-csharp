@@ -290,9 +290,8 @@ public partial interface IGlideClusterClient
     Task FlushDatabaseAsync(Route route);
 
     /// <summary>
-    /// Instructs Valkey to start an Append Only File rewrite process. The rewrite creates a small optimized
-    /// version of the current Append Only File.<br />
-    /// The command is routed to all primary nodes.
+    /// Initiates a background rewrite of the append-only file (AOF).<br />
+    /// The command will be routed to all primary nodes.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/bgrewriteaof/">Valkey commands – BGREWRITEAOF</seealso>
     /// <returns>A <see cref="ClusterValue{T}" /> containing status strings.</returns>
@@ -310,22 +309,21 @@ public partial interface IGlideClusterClient
     Task<ClusterValue<string>> BgRewriteAofAsync();
 
     /// <summary>
-    /// Instructs Valkey to start an Append Only File rewrite process. The rewrite creates a small optimized
-    /// version of the current Append Only File.
+    /// Initiates a background rewrite of the append-only file (AOF).<br />
+    /// The command will be routed to the nodes defined by <paramref name="route" />.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/bgrewriteaof/">Valkey commands – BGREWRITEAOF</seealso>
     /// <param name="route">Specifies the routing configuration for the command. The client will route the
     /// command to the nodes defined by <paramref name="route" />.</param>
-    /// <returns>
-    /// A <see cref="ClusterValue{T}" /> containing the status string.<br />
-    /// When specifying a <paramref name="route" /> other than a single node, it returns a multi-value <see cref="ClusterValue{T}" />
-    /// with a <c>Dictionary&lt;string, string&gt;</c> with each address as the key and its corresponding
-    /// status string. For a single node route it returns a <see cref="ClusterValue{T}" /> with a single value.
-    /// </returns>
+    /// <returns>A <see cref="ClusterValue{T}" /> containing status strings.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// var result = await clusterClient.BgRewriteAofAsync(Route.AllPrimaries);
+    /// var response = await clusterClient.BgRewriteAofAsync(Route.AllPrimaries);
+    /// foreach (var value in response.MultiValue.Values)
+    /// {
+    ///     Console.WriteLine(value); // "Background append only file rewriting started"
+    /// }
     /// </code>
     /// </example>
     /// </remarks>
