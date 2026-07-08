@@ -8,6 +8,7 @@ updates:
           interval: "weekly"
           day: "monday"
           time: "09:00"
+      open-pull-requests-limit: 10
       groups:
           patch-updates:
               update-types:
@@ -18,13 +19,14 @@ updates:
       labels:
           - "dependencies"
 
-    # Enable version updates for GitHub Actions
-    - package-ecosystem: "github-actions"
-      directory: "/"
+    # Enable version updates for Cargo
+    - package-ecosystem: "cargo"
+      directory: "/rust"
       schedule:
           interval: "weekly"
           day: "monday"
           time: "09:00"
+      open-pull-requests-limit: 10
       groups:
           patch-updates:
               update-types:
@@ -34,3 +36,23 @@ updates:
                   - "minor"
       labels:
           - "dependencies"
+          - "rust"
+
+    # Enable version updates for GitHub Actions
+    - package-ecosystem: "github-actions"
+      directory: "/"
+      schedule:
+          interval: "weekly"
+          day: "monday"
+          time: "09:00"
+      open-pull-requests-limit: 10
+      groups:
+          patch-updates:
+              update-types:
+                  - "patch"
+          minor-updates:
+              update-types:
+                  - "minor"
+      labels:
+          - "dependencies"
+          - "ci"
