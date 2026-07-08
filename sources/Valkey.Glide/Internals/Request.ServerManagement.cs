@@ -8,9 +8,6 @@ namespace Valkey.Glide.Internals;
 
 internal partial class Request
 {
-    #region Memory Commands
-
-
     public static Cmd<GlideString, string> MemoryDoctorAsync()
         => new(RequestType.MemoryDoctor, [], false, gs => gs.ToString());
 
@@ -21,21 +18,22 @@ internal partial class Request
         => Ok(RequestType.MemoryPurge, []);
 
     public static Cmd<Dictionary<GlideString, object>, MemoryStats> MemoryStatsAsync()
-        => new(RequestType.MemoryStats, [], false, raw => ParseMemoryStats(ToStringMap(raw)));
+        => new(RequestType.MemoryStats, [], false, ParseMemoryStats);
 
     private const string MemoryStatsDbPrefix = "db.";
 
-    private static MemoryStats ParseMemoryStats(Dictionary<string, object> map)
+    private static MemoryStats ParseMemoryStats(Dictionary<GlideString, object> map)
     {
         Dictionary<int, MemoryStatsDb> db = [];
-        foreach (KeyValuePair<string, object> kvp in map)
+        foreach (KeyValuePair<GlideString, object> kvp in map)
         {
-            if (kvp.Key.StartsWith(MemoryStatsDbPrefix) && kvp.Key != "db.dict.rehashing.count")
+            string key = kvp.Key.ToString();
+            if (key.StartsWith(MemoryStatsDbPrefix) && key != "db.dict.rehashing.count")
             {
-                string suffix = kvp.Key[MemoryStatsDbPrefix.Length..];
+                string suffix = key[MemoryStatsDbPrefix.Length..];
                 if (int.TryParse(suffix, out int dbIndex))
                 {
-                    db[dbIndex] = ParseMemoryStatsDb(kvp.Value);
+                    db[dbIndex] = ParseMemoryStatsDb((Dictionary<GlideString, object>)kvp.Value);
                 }
             }
         }
@@ -77,17 +75,12 @@ internal partial class Request
         };
     }
 
-    private static MemoryStatsDb ParseMemoryStatsDb(object value)
-    {
-        var map = ToStringMap(value);
-        return new MemoryStatsDb
+    private static MemoryStatsDb ParseMemoryStatsDb(Dictionary<GlideString, object> map)
+        => new()
         {
             OverheadHashtableMain = GetLong(map, "overhead.hashtable.main"),
             OverheadHashtableExpires = GetLong(map, "overhead.hashtable.expires"),
         };
-    }
-
-    #endregion
 
     public static Cmd<GlideString, string> Info(InfoOptions.Section[] sections)
         => new(RequestType.Info, sections.ToGlideStrings(), false, gs => gs.ToString());

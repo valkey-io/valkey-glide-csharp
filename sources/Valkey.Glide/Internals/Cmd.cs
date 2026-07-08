@@ -118,6 +118,10 @@ internal class Cmd<R, T> : ICmd
         RequestType.LatencyHistory => ["LATENCY", "HISTORY"],
         RequestType.LatencyLatest => ["LATENCY", "LATEST"],
         RequestType.LatencyReset => ["LATENCY", "RESET"],
+        RequestType.MemoryDoctor => ["MEMORY", "DOCTOR"],
+        RequestType.MemoryMallocStats => ["MEMORY", "MALLOC-STATS"],
+        RequestType.MemoryPurge => ["MEMORY", "PURGE"],
+        RequestType.MemoryStats => ["MEMORY", "STATS"],
         _ => [requestType.ToString().ToUpper()]
     };
 #pragma warning restore IDE0072 // Populate switch

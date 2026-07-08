@@ -77,4 +77,20 @@ internal interface IBatchServerManagementCommands
     /// <inheritdoc cref="IGlideClient.BackgroundSaveCancelAsync()" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IGlideClient.BackgroundSaveCancelAsync()" /></returns>
     IBatch BackgroundSaveCancelAsync();
+
+    /// <inheritdoc cref="IGlideClient.MemoryDoctorAsync()" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IGlideClient.MemoryDoctorAsync()" /></returns>
+    IBatch MemoryDoctorAsync();
+
+    /// <inheritdoc cref="IGlideClient.MemoryMallocStatsAsync()" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IGlideClient.MemoryMallocStatsAsync()" /></returns>
+    IBatch MemoryMallocStatsAsync();
+
+    /// <inheritdoc cref="IGlideClient.MemoryPurgeAsync()" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IGlideClient.MemoryPurgeAsync()" /></returns>
+    IBatch MemoryPurgeAsync();
+
+    /// <inheritdoc cref="IGlideClient.MemoryStatsAsync()" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IGlideClient.MemoryStatsAsync()" /></returns>
+    IBatch MemoryStatsAsync();
 }

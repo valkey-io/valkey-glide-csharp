@@ -452,7 +452,7 @@ public class CommandTests
             () => Assert.Equal(["LOLWUT"], Request.LolwutAsync(options: null).GetArgs()),
             () => Assert.Equal(["TIME"], Request.TimeAsync().GetArgs()),
 
-            // TODD #435: Merge with section above and sort
+            // TODO #435: Merge with section above and sort
             () => Assert.Equal(["MEMORY", "DOCTOR"], Request.MemoryDoctorAsync().GetArgs()),
             () => Assert.Equal(["MEMORY", "MALLOC-STATS"], Request.MemoryMallocStatsAsync().GetArgs()),
             () => Assert.Equal(["MEMORY", "PURGE"], Request.MemoryPurgeAsync().GetArgs()),
@@ -488,7 +488,7 @@ public class CommandTests
             () => Assert.Equal("common", Request.LongestCommonSubsequence("key1", "key2").Converter(new GlideString("common"))!.ToString()),
             () => Assert.Equal(5L, Request.LongestCommonSubsequenceLength("key1", "key2").Converter(5L)),
 
-            // TODD #435: Merge with section above and sort
+            // TODO #435: Merge with section above and sort
             () => Assert.Equal("Sam, I have no memory problems", Request.MemoryDoctorAsync().Converter("Sam, I have no memory problems")),
             () => Assert.Equal("jemalloc stats", Request.MemoryMallocStatsAsync().Converter("jemalloc stats")),
 
