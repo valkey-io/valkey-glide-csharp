@@ -313,8 +313,7 @@ public partial interface IGlideClusterClient
     /// The command will be routed to the nodes defined by <paramref name="route" />.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/bgrewriteaof/">Valkey commands – BGREWRITEAOF</seealso>
-    /// <param name="route">Specifies the routing configuration for the command. The client will route the
-    /// command to the nodes defined by <paramref name="route" />.</param>
+    /// <param name="route">Specifies the routing configuration for the command.</param>
     /// <returns>A <see cref="ClusterValue{T}" /> containing status strings.</returns>
     /// <remarks>
     /// <example>
