@@ -30,10 +30,6 @@ internal interface IBatchServerManagementCommands
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.ConfigGetAsync(IEnumerable{ValkeyValue})" /></returns>
     IBatch ConfigGetAsync(IEnumerable<ValkeyValue> patterns);
 
-    /// <inheritdoc cref="IGlideClient.BgRewriteAofAsync()" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IGlideClient.BgRewriteAofAsync()" /></returns>
-    IBatch BgRewriteAofAsync();
-
     /// <inheritdoc cref="IGlideClient.DatabaseSizeAsync()" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IGlideClient.DatabaseSizeAsync()" /></returns>
     IBatch DatabaseSizeAsync();

@@ -428,10 +428,6 @@ internal partial class BatchTestUtils
         _ = batch.DatabaseSizeAsync();
         testData.Add(new(1L, "DatabaseSizeAsync()", true));
 
-        // BgRewriteAof
-        _ = batch.BgRewriteAofAsync();
-        testData.Add(new("", "BgRewriteAofAsync()", true));
-
         // LastSave
         _ = batch.LastSaveAsync();
         testData.Add(new(DateTimeOffset.MinValue, "LastSaveAsync()", true));
