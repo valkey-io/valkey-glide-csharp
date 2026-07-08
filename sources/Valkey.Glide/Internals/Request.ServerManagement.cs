@@ -213,11 +213,7 @@ internal partial class Request
             long seconds = long.Parse(arr[0] is GlideString gs1 ? gs1.ToString() : arr[0].ToString()!);
             long microseconds = long.Parse(arr[1] is GlideString gs2 ? gs2.ToString() : arr[1].ToString()!);
             return DateTimeOffset.FromUnixTimeSeconds(seconds)
-#if NET8_0_OR_GREATER
                 .AddMicroseconds(microseconds);
-#else
-                .AddTicks(microseconds * 10);
-#endif
         });
 
     public static Cmd<GlideString, string> LolwutAsync(LolwutOptions? options = null)
