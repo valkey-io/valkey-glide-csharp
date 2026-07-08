@@ -50,10 +50,6 @@ internal interface IBatchServerManagementCommands
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.FlushDatabaseAsync(FlushMode)" /></returns>
     IBatch FlushDatabaseAsync(FlushMode mode);
 
-    /// <inheritdoc cref="IBaseClient.SaveAsync()" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IBaseClient.SaveAsync()" /></returns>
-    IBatch SaveAsync();
-
     /// <inheritdoc cref="IGlideClient.LastSaveAsync()" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IGlideClient.LastSaveAsync()" /></returns>
     IBatch LastSaveAsync();
@@ -69,16 +65,4 @@ internal interface IBatchServerManagementCommands
     /// <inheritdoc cref="IBaseClient.LolwutAsync(LolwutOptions)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.LolwutAsync(LolwutOptions)" /></returns>
     IBatch LolwutAsync(LolwutOptions options);
-
-    /// <inheritdoc cref="IGlideClient.BackgroundSaveAsync()" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IGlideClient.BackgroundSaveAsync()" /></returns>
-    IBatch BackgroundSaveAsync();
-
-    /// <inheritdoc cref="IGlideClient.BackgroundSaveScheduleAsync()" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IGlideClient.BackgroundSaveScheduleAsync()" /></returns>
-    IBatch BackgroundSaveScheduleAsync();
-
-    /// <inheritdoc cref="IGlideClient.BackgroundSaveCancelAsync()" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IGlideClient.BackgroundSaveCancelAsync()" /></returns>
-    IBatch BackgroundSaveCancelAsync();
 }
