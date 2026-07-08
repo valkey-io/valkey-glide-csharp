@@ -30,7 +30,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
         "Background append only file rewriting scheduled",
     ];
 
-    ///  <summary>
+    /// <summary>
     /// Route to a primary node.
     /// </summary>
     private static readonly SlotKeyRoute PrimaryRoute = new("1", SlotType.Primary);
