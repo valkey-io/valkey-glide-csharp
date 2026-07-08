@@ -34,7 +34,6 @@ public enum CommandFlags
     /// </summary>
     PreferMaster = 0,
 
-#if NET8_0_OR_GREATER
     /// <summary>
     /// This operation should be performed on the replica if it is available, but will be performed on
     /// a primary if no replicas are available. Suitable for read operations only.
@@ -42,22 +41,11 @@ public enum CommandFlags
     [Obsolete("Starting with Valkey version 5, Valkey has moved to 'replica' terminology. Please use " + nameof(PreferReplica) + " instead, this will be removed in 3.0.")]
     [Browsable(false), EditorBrowsable(EditorBrowsableState.Never)]
     PreferSlave = 8,
-#endif
 
     /// <summary>
     /// This operation should only be performed on the primary.
     /// </summary>
     DemandMaster = 4,
-
-#if !NET8_0_OR_GREATER
-    /// <summary>
-    /// This operation should be performed on the replica if it is available, but will be performed on
-    /// a primary if no replicas are available. Suitable for read operations only.
-    /// </summary>
-    [Obsolete("Starting with Valkey version 5, Valkey has moved to 'replica' terminology. Please use " + nameof(PreferReplica) + " instead, this will be removed in 3.0.")]
-    [Browsable(false), EditorBrowsable(EditorBrowsableState.Never)]
-    PreferSlave = 8,
-#endif
 
     /// <summary>
     /// This operation should be performed on the replica if it is available, but will be performed on
@@ -65,28 +53,17 @@ public enum CommandFlags
     /// </summary>
     PreferReplica = 8, // note: we're using a 2-bit set here, which [Flags] formatting hates; position is doing the best we can for reasonable outcomes here
 
-#if NET8_0_OR_GREATER
     /// <summary>
     /// This operation should only be performed on a replica. Suitable for read operations only.
     /// </summary>
     [Obsolete("Starting with Valkey version 5, Valkey has moved to 'replica' terminology. Please use " + nameof(DemandReplica) + " instead, this will be removed in 3.0.")]
     [Browsable(false), EditorBrowsable(EditorBrowsableState.Never)]
     DemandSlave = 12,
-#endif
 
     /// <summary>
     /// This operation should only be performed on a replica. Suitable for read operations only.
     /// </summary>
     DemandReplica = 12, // note: we're using a 2-bit set here, which [Flags] formatting hates; position is doing the best we can for reasonable outcomes here
-
-#if !NET8_0_OR_GREATER
-    /// <summary>
-    /// This operation should only be performed on a replica. Suitable for read operations only.
-    /// </summary>
-    [Obsolete("Starting with Valkey version 5, Valkey has moved to 'replica' terminology. Please use " + nameof(DemandReplica) + " instead, this will be removed in 3.0.")]
-    [Browsable(false), EditorBrowsable(EditorBrowsableState.Never)]
-    DemandSlave = 12,
-#endif
 
     // 16: reserved for additional "demand/prefer" options
 
