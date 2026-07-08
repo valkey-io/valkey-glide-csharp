@@ -61,18 +61,6 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
     /// <inheritdoc cref="IBatchServerManagementCommands.BackgroundSaveCancelAsync()" />
     public T BackgroundSaveCancelAsync() => AddCmd(Request.BackgroundSaveCancelAsync());
 
-    /// <inheritdoc cref="IBatchServerManagementCommands.MemoryDoctorAsync()" />
-    public T MemoryDoctorAsync() => AddCmd(Request.MemoryDoctorAsync());
-
-    /// <inheritdoc cref="IBatchServerManagementCommands.MemoryMallocStatsAsync()" />
-    public T MemoryMallocStatsAsync() => AddCmd(Request.MemoryMallocStatsAsync());
-
-    /// <inheritdoc cref="IBatchServerManagementCommands.MemoryPurgeAsync()" />
-    public T MemoryPurgeAsync() => AddCmd(Request.MemoryPurgeAsync());
-
-    /// <inheritdoc cref="IBatchServerManagementCommands.MemoryStatsAsync()" />
-    public T MemoryStatsAsync() => AddCmd(Request.MemoryStatsAsync());
-
     // Interface implementations
     IBatch IBatchServerManagementCommands.ConfigGetAsync(ValkeyValue pattern) => ConfigGetAsync(pattern);
     IBatch IBatchServerManagementCommands.ConfigResetStatisticsAsync() => ConfigResetStatisticsAsync();
@@ -92,8 +80,4 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
     IBatch IBatchServerManagementCommands.BackgroundSaveAsync() => BackgroundSaveAsync();
     IBatch IBatchServerManagementCommands.BackgroundSaveScheduleAsync() => BackgroundSaveScheduleAsync();
     IBatch IBatchServerManagementCommands.BackgroundSaveCancelAsync() => BackgroundSaveCancelAsync();
-    IBatch IBatchServerManagementCommands.MemoryDoctorAsync() => MemoryDoctorAsync();
-    IBatch IBatchServerManagementCommands.MemoryMallocStatsAsync() => MemoryMallocStatsAsync();
-    IBatch IBatchServerManagementCommands.MemoryPurgeAsync() => MemoryPurgeAsync();
-    IBatch IBatchServerManagementCommands.MemoryStatsAsync() => MemoryStatsAsync();
 }
