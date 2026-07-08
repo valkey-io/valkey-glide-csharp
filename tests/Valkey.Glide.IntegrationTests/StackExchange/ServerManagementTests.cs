@@ -103,6 +103,7 @@ public class ServerManagementTests(ServerManagementFixture fixture) : IClassFixt
 #pragma warning restore CS0618
 
     #endregion
+    #region Helpers
 
     private Task WaitForSaveNotInProgressAsync()
         => Polling.WaitForAsync(async () =>
@@ -112,6 +113,8 @@ public class ServerManagementTests(ServerManagementFixture fixture) : IClassFixt
                 && !info.Contains("rdb_bgsave_in_progress:1")
                 && !info.Contains("aof_rewrite_in_progress:1");
         }, "Timed out waiting for save to complete");
+
+    #endregion
 }
 
 /// <summary>
