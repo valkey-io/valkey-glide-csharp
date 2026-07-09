@@ -121,6 +121,10 @@ public partial class GlideClient :
     public override async Task SaveAsync()
         => _ = await Command(Request.SaveAsync());
 
+    /// <inheritdoc cref="IGlideClient.BgRewriteAofAsync()"/>
+    public async Task<string> BgRewriteAofAsync()
+        => await Command(Request.BgRewriteAofAsync());
+
     /// <inheritdoc cref="IGlideClient.LastSaveAsync()"/>
     public Task<DateTimeOffset> LastSaveAsync()
         => Command(Request.LastSaveAsync());

@@ -16,11 +16,29 @@ namespace Valkey.Glide.IntegrationTests;
 [CollectionDefinition(DisableParallelization = true)]
 public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture<ClientFixture>
 {
-    private static readonly SlotKeyRoute PrimarySlotRoute = new("1", SlotType.Primary);
+    #region Private Fields
 
     private GlideClient StandaloneClient => fixture.StandaloneClient;
     private GlideClusterClient ClusterClient => fixture.ClusterClient;
 
+    #endregion
+    #region Constants
+
+    /// <summary>
+    /// Expected valid responses for a <c>BGREWRITEAOF</c> command.
+    /// </summary>
+    private static readonly string[] BgRewriteAofResponses =
+    [
+        "Background append only file rewriting started",
+        "Background append only file rewriting scheduled",
+    ];
+
+    /// <summary>
+    /// Route to a primary node.
+    /// </summary>
+    private static readonly SlotKeyRoute PrimaryRoute = new("1", SlotType.Primary);
+
+    #endregion
     #region SaveAsync Tests
 
     [Theory]
@@ -425,6 +443,31 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     }
 
     #endregion
+    #region BGREWRITEAOF Tests
+
+    [Theory]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
+    public async Task BgRewriteAofAsync_ReturnsValidStatus(bool clusterMode)
+    {
+        await WaitForSaveNotInProgressAsync(clusterMode);
+
+        IEnumerable<string> responses = clusterMode
+            ? (await ClusterClient.BgRewriteAofAsync()).MultiValue.Values
+            : [await StandaloneClient.BgRewriteAofAsync()];
+
+        Assert.All(responses, r => Assert.Contains(r, BgRewriteAofResponses));
+    }
+
+    [Fact]
+    public async Task BgRewriteAofAsync_Cluster_WithRoute_ReturnsSingleValue()
+    {
+        await WaitForSaveNotInProgressAsync(true);
+
+        var result = await ClusterClient.BgRewriteAofAsync(Route.Random);
+        Assert.Contains(result.SingleValue, BgRewriteAofResponses);
+    }
+
+    #endregion
     #region Latency Tests
 
     [Theory]
@@ -531,7 +574,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
         Assert.NotEmpty(FlattenClusterValueLists(multiHistory));
 
         // Verify that primary node route returns single value.
-        var singleHistory = await ClusterClient.LatencyHistoryAsync("command", PrimarySlotRoute);
+        var singleHistory = await ClusterClient.LatencyHistoryAsync("command", PrimaryRoute);
         Assert.True(singleHistory.HasSingleData);
         Assert.NotEmpty(singleHistory.SingleValue);
     }
@@ -547,7 +590,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
         Assert.NotEmpty(FlattenClusterValueLists(multiLatest));
 
         // Verify that single primary node route returns single value.
-        var singleLatest = await ClusterClient.LatencyLatestAsync(PrimarySlotRoute);
+        var singleLatest = await ClusterClient.LatencyLatestAsync(PrimaryRoute);
         Assert.True(singleLatest.HasSingleData);
         Assert.NotEmpty(singleLatest.SingleValue);
     }
@@ -556,7 +599,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     public async Task LatencyResetAsync_Cluster_WithRoute()
     {
         await TriggerLatencySpikeAsync(isCluster: true);
-        Assert.True(await ClusterClient.LatencyResetAsync(PrimarySlotRoute) > 0);
+        Assert.True(await ClusterClient.LatencyResetAsync(PrimaryRoute) > 0);
 
         await TriggerLatencySpikeAsync(isCluster: true);
         Assert.True(await ClusterClient.LatencyResetAsync(AllNodes) > 0);
