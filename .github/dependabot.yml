@@ -1,3 +1,12 @@
+# Dependabot version updates configuration.
+#
+# - All updates run weekly on Monday at 09:00 UTC.
+# - All updates use a 7-day cooldown period. This delays proposing updates to
+#   newly published package versions, reducing exposure to malicious or unstable
+#   releases. See: https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file#cooldown
+# - Open pull requests are limited to 10 per ecosystem to avoid flooding the
+#   repository with dependency update PRs.
+
 version: 2
 
 updates:
@@ -8,6 +17,9 @@ updates:
           interval: "weekly"
           day: "monday"
           time: "09:00"
+      cooldown:
+          default-days: 7
+      open-pull-requests-limit: 10
       groups:
           patch-updates:
               update-types:
@@ -18,13 +30,16 @@ updates:
       labels:
           - "dependencies"
 
-    # Enable version updates for GitHub Actions
-    - package-ecosystem: "github-actions"
-      directory: "/"
+    # Enable version updates for Cargo
+    - package-ecosystem: "cargo"
+      directory: "/rust"
       schedule:
           interval: "weekly"
           day: "monday"
           time: "09:00"
+      cooldown:
+          default-days: 7
+      open-pull-requests-limit: 10
       groups:
           patch-updates:
               update-types:
@@ -34,3 +49,25 @@ updates:
                   - "minor"
       labels:
           - "dependencies"
+          - "rust"
+
+    # Enable version updates for GitHub Actions
+    - package-ecosystem: "github-actions"
+      directory: "/"
+      schedule:
+          interval: "weekly"
+          day: "monday"
+          time: "09:00"
+      cooldown:
+          default-days: 7
+      open-pull-requests-limit: 10
+      groups:
+          patch-updates:
+              update-types:
+                  - "patch"
+          minor-updates:
+              update-types:
+                  - "minor"
+      labels:
+          - "dependencies"
+          - "ci"
