@@ -448,11 +448,11 @@ public class CommandTests
             () => Assert.True(Request.SetIfNotExists([new KeyValuePair<ValkeyKey, ValkeyValue>("key1", "value1")]).Converter(true)),
             () => Assert.False(Request.SetIfNotExists([new KeyValuePair<ValkeyKey, ValkeyValue>("key1", "value1")]).Converter(false)),
             () => Assert.Equal("test_value", Request.GetDelete("test_key").Converter(new GlideString("test_value")).ToString()),
-            () => Assert.Null(Request.GetDelete("test_key").Converter(null!)),
+            () => Assert.True(Request.GetDelete("test_key").Converter(null!).IsNull),
             () => Assert.Equal("test_value", Request.GetExpiry("test_key", GetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60))).Converter(new GlideString("test_value")).ToString()),
-            () => Assert.Null(Request.GetExpiry("test_key", GetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60))).Converter(null!)),
+            () => Assert.True(Request.GetExpiry("test_key", GetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60))).Converter(null!).IsNull),
             () => Assert.Equal("test_value", Request.GetExpiry("test_key", GetExpiryOptions.ExpireAt(new DateTimeOffset(2021, 1, 1, 0, 0, 0, TimeSpan.Zero))).Converter(new GlideString("test_value")).ToString()),
-            () => Assert.Null(Request.GetExpiry("test_key", GetExpiryOptions.ExpireAt(new DateTimeOffset(2021, 1, 1, 0, 0, 0, TimeSpan.Zero))).Converter(null!)),
+            () => Assert.True(Request.GetExpiry("test_key", GetExpiryOptions.ExpireAt(new DateTimeOffset(2021, 1, 1, 0, 0, 0, TimeSpan.Zero))).Converter(null!).IsNull),
 
             // Server Management Command Converters
             () => Assert.Equal("Background append only file rewriting started", Request.BgRewriteAofAsync().Converter("Background append only file rewriting started")),
