@@ -10,10 +10,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Support additional commands (#435):
-  - `BGSAVE`, `BGSAVE SCHEDULE`, and `BGSAVE CANCEL` (#436)
-  - `CLIENT PAUSE` and `CLIENT UNPAUSE` (#437)
+  - `BGREWRITEAOF` (#444)
+  - `BGSAVE CANCEL` (#436)
+  - `BGSAVE SCHEDULE` (#436)
+  - `BGSAVE` (#436)
+  - `CLIENT PAUSE` (#437)
+  - `CLIENT UNPAUSE` (#437)
+  - `MEMORY DOCTOR` (#443)
+  - `MEMORY MALLOC-STATS` (#443)
+  - `MEMORY PURGE` (#443)
+  - `MEMORY STATS` (#443)
   - `SAVE` (#440)
-  - `MEMORY DOCTOR`, `MEMORY MALLOC-STATS`, `MEMORY PURGE`, and `MEMORY STATS` (#443)
 - Custom socket address resolution support via callback (#392)
 
 ## 1.1.0
