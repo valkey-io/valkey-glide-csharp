@@ -239,7 +239,7 @@ public partial interface IGlideClient
     /// Returns detailed memory consumption statistics of the server.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/memory-stats/">Valkey commands – MEMORY STATS</seealso>
-    /// <returns>A <see cref="MemoryStats" /> object containing detailed memory usage statistics.</returns>
+    /// <returns>A <see cref="MemoryStats" /> containing detailed memory usage statistics.</returns>
     /// <remarks>
     /// <example>
     /// <code>
