@@ -115,6 +115,9 @@ internal partial class Request
     public static Cmd<string, ValkeyValue> FlushDatabaseAsync(FlushMode mode)
         => Ok(RequestType.FlushDB, [mode == FlushMode.Sync ? ValkeyLiterals.SYNC : ValkeyLiterals.ASYNC]);
 
+    public static Cmd<string, ValkeyValue> SaveAsync()
+        => Ok(RequestType.Save, []);
+
     public static Cmd<long, DateTimeOffset> LastSaveAsync()
         => new(RequestType.LastSave, [], false, DateTimeOffset.FromUnixTimeSeconds);
 
@@ -129,6 +132,9 @@ internal partial class Request
 
     public static Cmd<GlideString, string> LolwutAsync(LolwutOptions? options = null)
         => new(RequestType.Lolwut, options is null ? [] : [.. options.ToArgs()], false, gs => gs.ToString());
+
+    public static Cmd<GlideString, string> BgRewriteAofAsync()
+        => new(RequestType.BgRewriteAof, [], false, gs => gs.ToString());
 
     public static Cmd<string, ValkeyValue> Select(long index)
         => Ok(RequestType.Select, [index.ToGlideString()]);

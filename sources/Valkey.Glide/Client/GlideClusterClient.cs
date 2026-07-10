@@ -93,9 +93,7 @@ public sealed partial class GlideClusterClient :
 
     /// <inheritdoc cref="IGlideClusterClient.EchoAsync(ValkeyValue, Route)"/>
     public async Task<ClusterValue<ValkeyValue>> EchoAsync(ValkeyValue message, Route route)
-    {
-        return await Command(Request.Echo(message).ToClusterValue(route is SingleNodeRoute), route);
-    }
+        => await Command(Request.Echo(message).ToClusterValue(route is SingleNodeRoute), route);
 
     /// <inheritdoc cref="IBaseClient.EchoAsync(ValkeyValue)"/>
     public override async Task<ValkeyValue> EchoAsync(ValkeyValue message)
@@ -119,63 +117,43 @@ public sealed partial class GlideClusterClient :
 
     /// <inheritdoc cref="IGlideClusterClient.ConfigGetAsync(ValkeyValue)"/>
     public async Task<ClusterValue<KeyValuePair<string, string>[]>> ConfigGetAsync(ValkeyValue pattern = default)
-    {
-        return await Command(Request.ConfigGetAsync(pattern).ToClusterValue(false), Route.AllPrimaries);
-    }
+        => await Command(Request.ConfigGetAsync(pattern).ToClusterValue(false), AllPrimaries);
 
     /// <inheritdoc cref="IGlideClusterClient.ConfigGetAsync(ValkeyValue, Route)"/>
     public async Task<ClusterValue<KeyValuePair<string, string>[]>> ConfigGetAsync(ValkeyValue pattern, Route route)
-    {
-        return await Command(Request.ConfigGetAsync(pattern).ToClusterValue(route is SingleNodeRoute), route);
-    }
+        => await Command(Request.ConfigGetAsync(pattern).ToClusterValue(route is SingleNodeRoute), route);
 
     /// <inheritdoc cref="IGlideClusterClient.ConfigResetStatisticsAsync()"/>
     public async Task ConfigResetStatisticsAsync()
-    {
-        _ = await Command(Request.ConfigResetStatisticsAsync(), AllPrimaries);
-    }
+        => _ = await Command(Request.ConfigResetStatisticsAsync(), AllPrimaries);
 
     /// <inheritdoc cref="IGlideClusterClient.ConfigResetStatisticsAsync(Route)"/>
     public async Task ConfigResetStatisticsAsync(Route route)
-    {
-        _ = await Command(Request.ConfigResetStatisticsAsync(), route);
-    }
+        => _ = await Command(Request.ConfigResetStatisticsAsync(), route);
 
     /// <inheritdoc cref="IGlideClusterClient.ConfigRewriteAsync()"/>
     public async Task ConfigRewriteAsync()
-    {
-        _ = await Command(Request.ConfigRewriteAsync(), Route.Random);
-    }
+        => _ = await Command(Request.ConfigRewriteAsync(), Route.Random);
 
     /// <inheritdoc cref="IGlideClusterClient.ConfigRewriteAsync(Route)"/>
     public async Task ConfigRewriteAsync(Route route)
-    {
-        _ = await Command(Request.ConfigRewriteAsync(), route);
-    }
+        => _ = await Command(Request.ConfigRewriteAsync(), route);
 
     /// <inheritdoc cref="IGlideClusterClient.ConfigSetAsync(ValkeyValue, ValkeyValue)"/>
     public async Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value)
-    {
-        _ = await Command(Request.ConfigSetAsync(setting, value), AllPrimaries);
-    }
+        => _ = await Command(Request.ConfigSetAsync(setting, value), AllPrimaries);
 
     /// <inheritdoc cref="IGlideClusterClient.ConfigSetAsync(ValkeyValue, ValkeyValue, Route)"/>
     public async Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value, Route route)
-    {
-        _ = await Command(Request.ConfigSetAsync(setting, value), route);
-    }
+        => _ = await Command(Request.ConfigSetAsync(setting, value), route);
 
     /// <inheritdoc cref="IBaseClient.ConfigSetAsync(IDictionary{ValkeyValue, ValkeyValue})"/>
     public override async Task ConfigSetAsync(IDictionary<ValkeyValue, ValkeyValue> parameters)
-    {
-        _ = await Command(Request.ConfigSetAsync(parameters), AllPrimaries);
-    }
+        => _ = await Command(Request.ConfigSetAsync(parameters), AllPrimaries);
 
     /// <inheritdoc cref="IGlideClusterClient.ConfigSetAsync(IDictionary{ValkeyValue, ValkeyValue}, Route)"/>
     public async Task ConfigSetAsync(IDictionary<ValkeyValue, ValkeyValue> parameters, Route route)
-    {
-        _ = await Command(Request.ConfigSetAsync(parameters), route);
-    }
+        => _ = await Command(Request.ConfigSetAsync(parameters), route);
 
     /// <inheritdoc cref="IGlideClusterClient.DatabaseSizeAsync()"/>
     public async Task<long> DatabaseSizeAsync()
@@ -219,6 +197,22 @@ public sealed partial class GlideClusterClient :
     /// <inheritdoc cref="IGlideClusterClient.FlushDatabaseAsync(FlushMode, Route)"/>
     public async Task FlushDatabaseAsync(FlushMode mode, Route route)
         => _ = await Command(Request.FlushDatabaseAsync(mode), route);
+
+    /// <inheritdoc cref="IBaseClient.SaveAsync()"/>
+    public override async Task SaveAsync()
+        => _ = await Command(Request.SaveAsync(), AllPrimaries);
+
+    /// <inheritdoc cref="IGlideClusterClient.SaveAsync(Route)"/>
+    public async Task SaveAsync(Route route)
+        => _ = await Command(Request.SaveAsync(), route);
+
+    /// <inheritdoc cref="IGlideClusterClient.BgRewriteAofAsync()"/>
+    public Task<ClusterValue<string>> BgRewriteAofAsync()
+        => BgRewriteAofAsync(AllPrimaries);
+
+    /// <inheritdoc cref="IGlideClusterClient.BgRewriteAofAsync(Route)"/>
+    public Task<ClusterValue<string>> BgRewriteAofAsync(Route route)
+        => Command(Request.BgRewriteAofAsync().ToClusterValue(route is SingleNodeRoute), route);
 
     /// <inheritdoc cref="IGlideClusterClient.LastSaveAsync()"/>
     public async Task<Dictionary<string, DateTimeOffset>> LastSaveAsync()
@@ -266,33 +260,23 @@ public sealed partial class GlideClusterClient :
 
     /// <inheritdoc cref="IBaseClient.LolwutAsync(LolwutOptions)"/>
     public override async Task<string> LolwutAsync(LolwutOptions options)
-    {
-        return await Command(Request.LolwutAsync(options), Route.Random);
-    }
+        => await Command(Request.LolwutAsync(options), Route.Random);
 
     /// <inheritdoc cref="IGlideClusterClient.LolwutAsync(Route)"/>
     public async Task<ClusterValue<string>> LolwutAsync(Route route)
-    {
-        return await Command(Request.LolwutAsync().ToClusterValue(route is SingleNodeRoute), route);
-    }
+        => await Command(Request.LolwutAsync().ToClusterValue(route is SingleNodeRoute), route);
 
     /// <inheritdoc cref="IGlideClusterClient.LolwutAsync(LolwutOptions, Route)"/>
     public async Task<ClusterValue<string>> LolwutAsync(LolwutOptions options, Route route)
-    {
-        return await Command(Request.LolwutAsync(options).ToClusterValue(route is SingleNodeRoute), route);
-    }
+        => await Command(Request.LolwutAsync(options).ToClusterValue(route is SingleNodeRoute), route);
 
     /// <inheritdoc cref="IBaseClient.ConfigGetAsync(IEnumerable{ValkeyValue})"/>
     public override async Task<KeyValuePair<string, string>[]> ConfigGetAsync(IEnumerable<ValkeyValue> patterns)
-    {
-        return await Command(Request.ConfigGetAsync(patterns));
-    }
+        => await Command(Request.ConfigGetAsync(patterns));
 
     /// <inheritdoc cref="IGlideClusterClient.ConfigGetAsync(IEnumerable{ValkeyValue}, Route)"/>
     public async Task<ClusterValue<KeyValuePair<string, string>[]>> ConfigGetAsync(IEnumerable<ValkeyValue> patterns, Route route)
-    {
-        return await Command(Request.ConfigGetAsync(patterns).ToClusterValue(route is SingleNodeRoute), route);
-    }
+        => await Command(Request.ConfigGetAsync(patterns).ToClusterValue(route is SingleNodeRoute), route);
 
     /// <inheritdoc cref="IGlideClusterClient.BackgroundSaveAsync()"/>
     public Task<ClusterValue<string>> BackgroundSaveAsync()
@@ -376,9 +360,7 @@ public sealed partial class GlideClusterClient :
 
     /// <inheritdoc cref="IGlideClusterClient.ClientIdAsync(Route)"/>
     public async Task<ClusterValue<long>> ClientIdAsync(Route route)
-    {
-        return await Command(Request.ClientId().ToClusterValue(route is SingleNodeRoute), route);
-    }
+        => await Command(Request.ClientId().ToClusterValue(route is SingleNodeRoute), route);
 
     /// <inheritdoc cref="IConnectionManagementBaseCommands.SelectAsync(long)"/>
     public override async Task SelectAsync(long index)
