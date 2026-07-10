@@ -290,6 +290,20 @@ public partial interface IGlideClusterClient
     Task FlushDatabaseAsync(Route route);
 
     /// <summary>
+    /// Synchronously saves the dataset to disk.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/save/">Valkey commands – SAVE</seealso>
+    /// <param name="route">Specifies the routing configuration for the command.</param>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await clusterClient.SaveAsync(Route.AllPrimaries);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task SaveAsync(Route route);
+
+    /// <summary>
     /// Initiates a background rewrite of the append-only file (AOF).<br />
     /// The command will be routed to all primary nodes.
     /// </summary>

@@ -135,6 +135,7 @@ public class CommandTests
             () => Assert.Equal(["LOLWUT", "VERSION", "6", "40", "20"], Request.LolwutAsync(new LolwutOptions { Version = 6, Parameters = [40, 20] }).GetArgs()),
             () => Assert.Equal(["LOLWUT"], Request.LolwutAsync().GetArgs()),
             () => Assert.Equal(["LOLWUT"], Request.LolwutAsync(options: null).GetArgs()),
+            () => Assert.Equal(["SAVE"], Request.SaveAsync().GetArgs()),
             () => Assert.Equal(["TIME"], Request.TimeAsync().GetArgs()),
 
             // Set Commands
@@ -450,21 +451,23 @@ public class CommandTests
             () => Assert.True(Request.GetDelete("test_key").Converter(null!).IsNull),
             () => Assert.Equal("test_value", Request.GetExpiry("test_key", GetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60))).Converter(new GlideString("test_value")).ToString()),
             () => Assert.True(Request.GetExpiry("test_key", GetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60))).Converter(null!).IsNull),
+            () => Assert.Equal("test_value", Request.GetExpiry("test_key", GetExpiryOptions.ExpireAt(new DateTimeOffset(2021, 1, 1, 0, 0, 0, TimeSpan.Zero))).Converter(new GlideString("test_value")).ToString()),
+            () => Assert.True(Request.GetExpiry("test_key", GetExpiryOptions.ExpireAt(new DateTimeOffset(2021, 1, 1, 0, 0, 0, TimeSpan.Zero))).Converter(null!).IsNull),
 
             // Server Management Command Converters
             () => Assert.Equal("Background append only file rewriting started", Request.BgRewriteAofAsync().Converter("Background append only file rewriting started")),
             () => Assert.Equal([new("maxmemory", "100mb")], Request.ConfigGetAsync("maxmemory").Converter(new object[] { (gs)"maxmemory", "100mb" })),
-            () => Assert.Equal([], Request.ConfigGetAsync("nonexistent").Converter(Array.Empty<object>())),
+            () => Assert.Empty(Request.ConfigGetAsync("nonexistent").Converter(Array.Empty<object>())),
             () => Assert.Equal(100L, Request.DatabaseSizeAsync().Converter(100L)),
             () => Assert.Equal(0L, Request.DatabaseSizeAsync().Converter(0L)),
             () => Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(1609459200), Request.LastSaveAsync().Converter(1609459200L)),
-            () => Assert.Equal([], Request.LatencyHistoryAsync("command").Converter(Array.Empty<object>())),
+            () => Assert.Empty(Request.LatencyHistoryAsync("command").Converter(Array.Empty<object>())),
             () => Assert.Equal(
                 [new LatencyEntry {
                     Time = DateTimeOffset.FromUnixTimeSeconds(1609459200),
                     Duration = TimeSpan.FromMilliseconds(50) }],
                 Request.LatencyHistoryAsync("command").Converter(new object[] { new object[] { 1609459200L, 50L } })),
-            () => Assert.Equal([], Request.LatencyLatestAsync().Converter(Array.Empty<object>())),
+            () => Assert.Empty(Request.LatencyLatestAsync().Converter(Array.Empty<object>())),
             () => Assert.Equal(
                 [new LatencyEventInfo {
                     EventName = "command",
@@ -472,13 +475,21 @@ public class CommandTests
                     LatestDuration = TimeSpan.FromMilliseconds(50),
                     MaxDuration = TimeSpan.FromMilliseconds(100) }],
                 Request.LatencyLatestAsync().Converter(new object[] { new object[] { new GlideString("command"), 1609459200L, 50L, 100L } })),
-            () => Assert.Equal(TimeSpan.FromMilliseconds(200), Request.LatencyLatestAsync().Converter(new object[] { new object[] { new GlideString("command"), 1609459200L, 50L, 100L, 200L, 5L } })[0].Sum),
-            () => Assert.Equal(5L, Request.LatencyLatestAsync().Converter(new object[] { new object[] { new GlideString("command"), 1609459200L, 50L, 100L, 200L, 5L } })[0].Count),
+            () => Assert.Equal(
+                [new LatencyEventInfo {
+                    EventName = "command",
+                    LatestTime = DateTimeOffset.FromUnixTimeSeconds(1609459200),
+                    LatestDuration = TimeSpan.FromMilliseconds(50),
+                    MaxDuration = TimeSpan.FromMilliseconds(100),
+                    Sum = TimeSpan.FromMilliseconds(200),
+                    Count = 5L, }],
+                Request.LatencyLatestAsync().Converter(new object[] { new object[] { new GlideString("command"), 1609459200L, 50L, 100L, 200L, 5L } })),
             () => Assert.Equal(0L, Request.LatencyResetAsync([]).Converter(0L)),
             () => Assert.Equal(3L, Request.LatencyResetAsync(["command"]).Converter(3L)),
             () => Assert.Equal("Valkey 7.0.0", Request.LolwutAsync().Converter("Valkey 7.0.0")),
+            () => Assert.Equal(ValkeyValue.Ok, Request.SaveAsync().Converter("OK")),
             () => Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(1609459200).AddTicks(123456 * 10), Request.TimeAsync().Converter(["1609459200", "123456"])),
-            () => Assert.Equal("test_value", Request.GetExpiry("test_key", GetExpiryOptions.ExpireAt(new DateTimeOffset(2021, 1, 1, 0, 0, 0, TimeSpan.Zero))).Converter(new GlideString("test_value")).ToString()),
+
             () => Assert.Equal("common", Request.LongestCommonSubsequence("key1", "key2").Converter(new GlideString("common"))!.ToString()),
             () => Assert.Equal(5L, Request.LongestCommonSubsequenceLength("key1", "key2").Converter(5L)),
 

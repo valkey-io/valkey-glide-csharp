@@ -130,6 +130,9 @@ internal partial class Request
     public static Cmd<string, ValkeyValue> FlushDatabaseAsync(FlushMode mode)
         => Ok(RequestType.FlushDB, [mode == FlushMode.Sync ? ValkeyLiterals.SYNC : ValkeyLiterals.ASYNC]);
 
+    public static Cmd<string, ValkeyValue> SaveAsync()
+        => Ok(RequestType.Save, []);
+
     public static Cmd<long, DateTimeOffset> LastSaveAsync()
         => new(RequestType.LastSave, [], false, DateTimeOffset.FromUnixTimeSeconds);
 

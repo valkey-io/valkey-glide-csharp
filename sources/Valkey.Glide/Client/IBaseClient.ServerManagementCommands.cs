@@ -80,6 +80,19 @@ public partial interface IBaseClient
     Task FlushDatabaseAsync(FlushMode mode);
 
     /// <summary>
+    /// Synchronously saves the dataset to disk.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/save/">Valkey commands – SAVE</seealso>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.SaveAsync();
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task SaveAsync();
+
+    /// <summary>
     /// Displays generative computer art and the Valkey version.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/lolwut/">Valkey commands – LOLWUT</seealso>

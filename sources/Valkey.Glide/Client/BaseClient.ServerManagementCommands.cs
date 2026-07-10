@@ -18,6 +18,9 @@ public abstract partial class BaseClient
     /// <inheritdoc cref="IBaseClient.FlushDatabaseAsync(FlushMode)"/>
     public abstract Task FlushDatabaseAsync(FlushMode mode);
 
+    /// <inheritdoc cref="IBaseClient.SaveAsync()"/>
+    public abstract Task SaveAsync();
+
     /// <inheritdoc cref="IBaseClient.LolwutAsync(LolwutOptions)"/>
     public abstract Task<string> LolwutAsync(LolwutOptions options);
 

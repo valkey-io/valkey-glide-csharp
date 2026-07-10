@@ -16,13 +16,16 @@ namespace Valkey.Glide.IntegrationTests;
 [CollectionDefinition(DisableParallelization = true)]
 public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture<ClientFixture>
 {
+    #region Private Fields
+
     private GlideClient StandaloneClient => fixture.StandaloneClient;
     private GlideClusterClient ClusterClient => fixture.ClusterClient;
 
+    #endregion
     #region Constants
 
     /// <summary>
-    /// Expected valid responses for <c>BGREWRITEAOF</c> command.
+    /// Expected valid responses for a <c>BGREWRITEAOF</c> command.
     /// </summary>
     private static readonly string[] BgRewriteAofResponses =
     [
@@ -36,7 +39,25 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     private static readonly SlotKeyRoute PrimaryRoute = new("1", SlotType.Primary);
 
     #endregion
-    #region FlushMode Tests
+    #region SaveAsync Tests
+
+    [Theory]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
+    public async Task SaveAsync_Succeeds(bool clusterMode)
+    {
+        await WaitForSaveNotInProgressAsync(clusterMode);
+        await fixture.GetClient(clusterMode).SaveAsync();
+    }
+
+    [Fact]
+    public async Task SaveAsync_Cluster_WithRoute_Succeeds()
+    {
+        await WaitForSaveNotInProgressAsync(clusterMode: true);
+        await ClusterClient.SaveAsync(AllPrimaries);
+    }
+
+    #endregion
+    #region FlushDatabaseAsync Tests
 
     [Fact]
     public async Task FlushDatabaseAsync_Standalone_WithSyncMode()
@@ -124,7 +145,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     }
 
     #endregion
-    #region LOLWUT Tests
+    #region LolwutAsync Tests
 
     [Theory]
     [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
@@ -163,7 +184,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     }
 
     #endregion
-    #region CONFIG GET/SET Multi-Parameter Tests
+    #region ConfigGetAsync Tests
 
     [Fact]
     public async Task ConfigGetAsync_Standalone_MultiplePatterns()
@@ -175,6 +196,20 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
         Assert.Contains(result, kvp => kvp.Key == "maxmemory");
         Assert.Contains(result, kvp => kvp.Key == "lfu-decay-time");
     }
+
+    [Fact]
+    public async Task ConfigGetAsync_Cluster_MultiplePatterns()
+    {
+        var result = await ClusterClient.ConfigGetAsync(
+            ["maxmemory", "lfu-decay-time"]);
+
+        Assert.True(result.Length >= 2);
+        Assert.Contains(result, kvp => kvp.Key == "maxmemory");
+        Assert.Contains(result, kvp => kvp.Key == "lfu-decay-time");
+    }
+
+    #endregion
+    #region ConfigSetAsync Tests
 
     [Fact]
     public async Task ConfigSetAsync_Standalone_MultipleParameters()
@@ -207,17 +242,6 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
                 { "lfu-log-factor", originalLogFactor }
             });
         }
-    }
-
-    [Fact]
-    public async Task ConfigGetAsync_Cluster_MultiplePatterns()
-    {
-        var result = await ClusterClient.ConfigGetAsync(
-            ["maxmemory", "lfu-decay-time"]);
-
-        Assert.True(result.Length >= 2);
-        Assert.Contains(result, kvp => kvp.Key == "maxmemory");
-        Assert.Contains(result, kvp => kvp.Key == "lfu-decay-time");
     }
 
     [Fact]
@@ -262,7 +286,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     }
 
     #endregion
-    #region FlushAllDatabases Cluster Tests
+    #region FlushAllDatabasesAsync Tests
 
     [Fact]
     public async Task FlushAllDatabasesAsync_Cluster_ClearsAllDatabases()
@@ -313,7 +337,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     }
 
     #endregion
-    #region WAITAOF Tests
+    #region WaitAofAsync Tests
 
     [Theory]
     [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
@@ -332,7 +356,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     }
 
     #endregion
-    #region BgSave Tests
+    #region BackgroundSaveAsync Tests
 
     /// <summary>
     /// Expected valid responses for <c>BGSAVE</c> and <c>BGSAVE SCHEDULE</c> commands.
