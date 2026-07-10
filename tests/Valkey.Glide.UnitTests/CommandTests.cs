@@ -142,7 +142,7 @@ public class CommandTests
             () => Assert.Equal(["LOLWUT"], Request.LolwutAsync().GetArgs()),
             () => Assert.Equal(["LOLWUT"], Request.LolwutAsync(options: null).GetArgs()),
             () => Assert.Equal(["REPLICAOF", "localhost", "6379"], Request.ReplicaOfAsync("localhost", 6379).GetArgs()),
-            () => Assert.Equal(["REPLICAOF", "NO", "ONE"], Request.ReplicaOfNoOneAsync().GetArgs())
+            () => Assert.Equal(["REPLICAOF", "NO", "ONE"], Request.ReplicaOfNoOneAsync().GetArgs()),
             () => Assert.Equal(["SAVE"], Request.SaveAsync().GetArgs()),
             () => Assert.Equal(["TIME"], Request.TimeAsync().GetArgs()),
 
