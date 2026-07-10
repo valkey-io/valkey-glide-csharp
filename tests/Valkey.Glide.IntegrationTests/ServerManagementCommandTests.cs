@@ -16,12 +16,48 @@ namespace Valkey.Glide.IntegrationTests;
 [CollectionDefinition(DisableParallelization = true)]
 public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture<ClientFixture>
 {
-    private static readonly SlotKeyRoute PrimarySlotRoute = new("1", SlotType.Primary);
+    #region Private Fields
 
     private GlideClient StandaloneClient => fixture.StandaloneClient;
     private GlideClusterClient ClusterClient => fixture.ClusterClient;
 
-    #region FlushMode Tests
+    #endregion
+    #region Constants
+
+    /// <summary>
+    /// Expected valid responses for a <c>BGREWRITEAOF</c> command.
+    /// </summary>
+    private static readonly string[] BgRewriteAofResponses =
+    [
+        "Background append only file rewriting started",
+        "Background append only file rewriting scheduled",
+    ];
+
+    /// <summary>
+    /// Route to a primary node.
+    /// </summary>
+    private static readonly SlotKeyRoute PrimaryRoute = new("1", SlotType.Primary);
+
+    #endregion
+    #region SaveAsync Tests
+
+    [Theory]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
+    public async Task SaveAsync_Succeeds(bool clusterMode)
+    {
+        await WaitForSaveNotInProgressAsync(clusterMode);
+        await fixture.GetClient(clusterMode).SaveAsync();
+    }
+
+    [Fact]
+    public async Task SaveAsync_Cluster_WithRoute_Succeeds()
+    {
+        await WaitForSaveNotInProgressAsync(clusterMode: true);
+        await ClusterClient.SaveAsync(AllPrimaries);
+    }
+
+    #endregion
+    #region FlushDatabaseAsync Tests
 
     [Fact]
     public async Task FlushDatabaseAsync_Standalone_WithSyncMode()
@@ -109,7 +145,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     }
 
     #endregion
-    #region LOLWUT Tests
+    #region LolwutAsync Tests
 
     [Theory]
     [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
@@ -148,7 +184,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     }
 
     #endregion
-    #region CONFIG GET/SET Multi-Parameter Tests
+    #region ConfigGetAsync Tests
 
     [Fact]
     public async Task ConfigGetAsync_Standalone_MultiplePatterns()
@@ -160,6 +196,20 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
         Assert.Contains(result, kvp => kvp.Key == "maxmemory");
         Assert.Contains(result, kvp => kvp.Key == "lfu-decay-time");
     }
+
+    [Fact]
+    public async Task ConfigGetAsync_Cluster_MultiplePatterns()
+    {
+        var result = await ClusterClient.ConfigGetAsync(
+            ["maxmemory", "lfu-decay-time"]);
+
+        Assert.True(result.Length >= 2);
+        Assert.Contains(result, kvp => kvp.Key == "maxmemory");
+        Assert.Contains(result, kvp => kvp.Key == "lfu-decay-time");
+    }
+
+    #endregion
+    #region ConfigSetAsync Tests
 
     [Fact]
     public async Task ConfigSetAsync_Standalone_MultipleParameters()
@@ -192,17 +242,6 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
                 { "lfu-log-factor", originalLogFactor }
             });
         }
-    }
-
-    [Fact]
-    public async Task ConfigGetAsync_Cluster_MultiplePatterns()
-    {
-        var result = await ClusterClient.ConfigGetAsync(
-            ["maxmemory", "lfu-decay-time"]);
-
-        Assert.True(result.Length >= 2);
-        Assert.Contains(result, kvp => kvp.Key == "maxmemory");
-        Assert.Contains(result, kvp => kvp.Key == "lfu-decay-time");
     }
 
     [Fact]
@@ -247,7 +286,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     }
 
     #endregion
-    #region FlushAllDatabases Cluster Tests
+    #region FlushAllDatabasesAsync Tests
 
     [Fact]
     public async Task FlushAllDatabasesAsync_Cluster_ClearsAllDatabases()
@@ -298,7 +337,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     }
 
     #endregion
-    #region WAITAOF Tests
+    #region WaitAofAsync Tests
 
     [Theory]
     [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
@@ -317,7 +356,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     }
 
     #endregion
-    #region BgSave Tests
+    #region BackgroundSaveAsync Tests
 
     /// <summary>
     /// Expected valid responses for <c>BGSAVE</c> and <c>BGSAVE SCHEDULE</c> commands.
@@ -401,6 +440,31 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
 
         var ex = await Assert.ThrowsAsync<RequestException>(() => ClusterClient.BackgroundSaveCancelAsync(Route.Random));
         Assert.Contains(BgSaveNotCancelledResponse, ex.Message);
+    }
+
+    #endregion
+    #region BGREWRITEAOF Tests
+
+    [Theory]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
+    public async Task BgRewriteAofAsync_ReturnsValidStatus(bool clusterMode)
+    {
+        await WaitForSaveNotInProgressAsync(clusterMode);
+
+        IEnumerable<string> responses = clusterMode
+            ? (await ClusterClient.BgRewriteAofAsync()).MultiValue.Values
+            : [await StandaloneClient.BgRewriteAofAsync()];
+
+        Assert.All(responses, r => Assert.Contains(r, BgRewriteAofResponses));
+    }
+
+    [Fact]
+    public async Task BgRewriteAofAsync_Cluster_WithRoute_ReturnsSingleValue()
+    {
+        await WaitForSaveNotInProgressAsync(true);
+
+        var result = await ClusterClient.BgRewriteAofAsync(Route.Random);
+        Assert.Contains(result.SingleValue, BgRewriteAofResponses);
     }
 
     #endregion
@@ -510,7 +574,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
         Assert.NotEmpty(FlattenClusterValueLists(multiHistory));
 
         // Verify that primary node route returns single value.
-        var singleHistory = await ClusterClient.LatencyHistoryAsync("command", PrimarySlotRoute);
+        var singleHistory = await ClusterClient.LatencyHistoryAsync("command", PrimaryRoute);
         Assert.True(singleHistory.HasSingleData);
         Assert.NotEmpty(singleHistory.SingleValue);
     }
@@ -526,7 +590,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
         Assert.NotEmpty(FlattenClusterValueLists(multiLatest));
 
         // Verify that single primary node route returns single value.
-        var singleLatest = await ClusterClient.LatencyLatestAsync(PrimarySlotRoute);
+        var singleLatest = await ClusterClient.LatencyLatestAsync(PrimaryRoute);
         Assert.True(singleLatest.HasSingleData);
         Assert.NotEmpty(singleLatest.SingleValue);
     }
@@ -535,7 +599,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     public async Task LatencyResetAsync_Cluster_WithRoute()
     {
         await TriggerLatencySpikeAsync(isCluster: true);
-        Assert.True(await ClusterClient.LatencyResetAsync(PrimarySlotRoute) > 0);
+        Assert.True(await ClusterClient.LatencyResetAsync(PrimaryRoute) > 0);
 
         await TriggerLatencySpikeAsync(isCluster: true);
         Assert.True(await ClusterClient.LatencyResetAsync(AllNodes) > 0);

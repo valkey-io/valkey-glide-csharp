@@ -83,12 +83,17 @@ public class ServerManagementTests(ServerManagementFixture fixture) : IClassFixt
 
     [Fact]
     public async Task IServer_SaveAsync_BackgroundSave_Succeeds()
-        => await fixture.Server.SaveAsync(SaveType.BackgroundSave);
+    {
+        await WaitForSaveNotInProgressAsync();
+        await fixture.Server.SaveAsync(SaveType.BackgroundSave);
+    }
 
     [Fact]
-    public async Task IServer_SaveAsync_BackgroundRewriteAppendOnlyFile_ThrowsNotSupported()
-        => await Assert.ThrowsAsync<NotSupportedException>(
-            () => fixture.Server.SaveAsync(SaveType.BackgroundRewriteAppendOnlyFile));
+    public async Task IServer_SaveAsync_BackgroundRewriteAppendOnlyFile_Succeeds()
+    {
+        await WaitForSaveNotInProgressAsync();
+        await fixture.Server.SaveAsync(SaveType.BackgroundRewriteAppendOnlyFile);
+    }
 
     [Fact]
     public async Task IServer_SaveAsync_ForegroundSave_ThrowsNotSupported()
@@ -97,6 +102,17 @@ public class ServerManagementTests(ServerManagementFixture fixture) : IClassFixt
             () => fixture.Server.SaveAsync(SaveType.ForegroundSave));
 #pragma warning restore CS0618
 
+    #endregion
+    #region Helpers
+
+    private Task WaitForSaveNotInProgressAsync()
+        => Polling.WaitForAsync(async () =>
+        {
+            string? info = await fixture.Server.InfoRawAsync("persistence");
+            return info is not null
+                && !info.Contains("rdb_bgsave_in_progress:1")
+                && !info.Contains("aof_rewrite_in_progress:1");
+        }, "Timed out waiting for save to complete");
 
     #endregion
 }

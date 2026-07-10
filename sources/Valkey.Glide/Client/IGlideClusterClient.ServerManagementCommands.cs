@@ -290,6 +290,59 @@ public partial interface IGlideClusterClient
     Task FlushDatabaseAsync(Route route);
 
     /// <summary>
+    /// Synchronously saves the dataset to disk.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/save/">Valkey commands – SAVE</seealso>
+    /// <param name="route">Specifies the routing configuration for the command.</param>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await clusterClient.SaveAsync(Route.AllPrimaries);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task SaveAsync(Route route);
+
+    /// <summary>
+    /// Initiates a background rewrite of the append-only file (AOF).<br />
+    /// The command will be routed to all primary nodes.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/bgrewriteaof/">Valkey commands – BGREWRITEAOF</seealso>
+    /// <returns>A <see cref="ClusterValue{T}" /> containing status strings.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var response = await clusterClient.BgRewriteAofAsync();
+    /// foreach (var value in response.MultiValue.Values)
+    /// {
+    ///     Console.WriteLine(value); // "Background append only file rewriting started"
+    /// }
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ClusterValue<string>> BgRewriteAofAsync();
+
+    /// <summary>
+    /// Initiates a background rewrite of the append-only file (AOF).<br />
+    /// The command will be routed to the nodes defined by <paramref name="route" />.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/bgrewriteaof/">Valkey commands – BGREWRITEAOF</seealso>
+    /// <param name="route">Specifies the routing configuration for the command.</param>
+    /// <returns>A <see cref="ClusterValue{T}" /> containing status strings.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var response = await clusterClient.BgRewriteAofAsync(Route.AllPrimaries);
+    /// foreach (var value in response.MultiValue.Values)
+    /// {
+    ///     Console.WriteLine(value); // "Background append only file rewriting started"
+    /// }
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ClusterValue<string>> BgRewriteAofAsync(Route route);
+
+    /// <summary>
     /// Returns the time of the last DB save executed with success.
     /// A client may check if a <c>BGSAVE</c> command succeeded by reading the <c>LASTSAVE</c> value, then
     /// issuing a <c>BGSAVE</c> command and checking at regular intervals whether <c>LASTSAVE</c> changed.<br />
