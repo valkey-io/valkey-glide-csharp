@@ -647,4 +647,77 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
         }, "Timed out waiting for save to complete");
 
     #endregion
+    #region Failover Tests
+
+    private static readonly string FailoverErrorMessageExpected = "FAILOVER requires connected replicas.";
+    private static readonly string FailoverAbortErrorMessageExpected = "No failover in progress.";
+
+    [Fact]
+    public async Task FailoverAsync_NoReplicas_ThrowsRequestException()
+    {
+        using var server = new StandaloneServer(replicaCount: 0);
+        await using GlideClient client = await server.CreateStandaloneClientAsync();
+
+        var ex = await Assert.ThrowsAsync<RequestException>(client.FailoverAsync);
+        Assert.Contains(FailoverErrorMessageExpected, ex.Message);
+    }
+
+    [Fact]
+    public async Task FailoverAsync_AbortNoFailoverInProgress_ThrowsRequestException()
+    {
+        var ex = await Assert.ThrowsAsync<RequestException>(
+            () => StandaloneClient.FailoverAsync(FailoverOptions.Abort()));
+        Assert.Contains(FailoverAbortErrorMessageExpected, ex.Message);
+    }
+
+    [Fact]
+    public async Task FailoverAsync_Succeeds()
+    {
+        using var server = new StandaloneServer(replicaCount: 1);
+        await using GlideClient client = await server.CreateStandaloneClientAsync();
+
+        await client.FailoverAsync();
+        await WaitForSlaveAsync(client);
+    }
+
+    #endregion
+    #region ReplicaOf Tests
+
+    [Fact]
+    public async Task ReplicaOfAsync_AndReplicaOfNoOneAsync()
+    {
+        // Start primary and secondary servers with no replicas.
+        using var primaryServer = new StandaloneServer(replicaCount: 0);
+        using var secondaryServer = new StandaloneServer(replicaCount: 0);
+
+        await using GlideClient client = await secondaryServer.CreateStandaloneClientAsync();
+        await WaitForMasterAsync(client);
+
+        // Verify that secondary server becomes a replica of the primary server.
+        var (host, port) = primaryServer.Address;
+        await client.ReplicaOfAsync(host, port);
+        await WaitForSlaveAsync(client);
+
+        // Verify that secondary server becomes a primary server.
+        await client.ReplicaOfNoOneAsync();
+        await WaitForMasterAsync(client);
+    }
+
+    #endregion
+    #region Helpers
+
+    private static Task WaitForMasterAsync(GlideClient client)
+        => WaitForRoleAsync(client, "master");
+
+    private static Task WaitForSlaveAsync(GlideClient client)
+        => WaitForRoleAsync(client, "slave");
+
+    private static Task WaitForRoleAsync(GlideClient client, string expectedRole)
+        => Polling.WaitForAsync(async () =>
+        {
+            string info = await client.InfoAsync([Section.REPLICATION]);
+            return info.Contains($"role:{expectedRole}");
+        }, $"Timed out waiting for role to become '{expectedRole}'");
+
+    #endregion
 }

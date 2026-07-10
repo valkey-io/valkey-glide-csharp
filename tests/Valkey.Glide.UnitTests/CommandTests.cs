@@ -100,11 +100,19 @@ public class CommandTests
             () => Assert.Equal(["CLIENTUNPAUSE"], Request.ClientUnpause().GetArgs()),
 
             // Server Management Commands
+            () => Assert.Equal(["BGSAVE", "CANCEL"], Request.BackgroundSaveCancelAsync().GetArgs()),
+            () => Assert.Equal(["BGSAVE", "SCHEDULE"], Request.BackgroundSaveScheduleAsync().GetArgs()),
+            () => Assert.Equal(["BGSAVE"], Request.BackgroundSaveAsync().GetArgs()),
             () => Assert.Equal(["CLIENTGETNAME"], Request.ClientGetName().GetArgs()),
             () => Assert.Equal(["CLIENTID"], Request.ClientId().GetArgs()),
-            () => Assert.Equal(["BGSAVE"], Request.BackgroundSaveAsync().GetArgs()),
-            () => Assert.Equal(["BGSAVE", "SCHEDULE"], Request.BackgroundSaveScheduleAsync().GetArgs()),
-            () => Assert.Equal(["BGSAVE", "CANCEL"], Request.BackgroundSaveCancelAsync().GetArgs()),
+            () => Assert.Equal(["FAILOVER", "ABORT"], Request.FailoverAsync(FailoverOptions.Abort()).GetArgs()),
+            () => Assert.Equal(["FAILOVER", "TIMEOUT", "5000"], Request.FailoverAsync(FailoverOptions.Timeout(TimeSpan.FromSeconds(5))).GetArgs()),
+            () => Assert.Equal(["FAILOVER", "TO", "localhost", "6380", "FORCE", "TIMEOUT", "5000"], Request.FailoverAsync(FailoverOptions.Forced("localhost", 6380, TimeSpan.FromSeconds(5))).GetArgs()),
+            () => Assert.Equal(["FAILOVER", "TO", "localhost", "6380", "TIMEOUT", "5000"], Request.FailoverAsync(FailoverOptions.To("localhost", 6380, TimeSpan.FromSeconds(5))).GetArgs()),
+            () => Assert.Equal(["FAILOVER", "TO", "localhost", "6380"], Request.FailoverAsync(FailoverOptions.To("localhost", 6380)).GetArgs()),
+            () => Assert.Equal(["FAILOVER"], Request.FailoverAsync().GetArgs()),
+            () => Assert.Equal(["REPLICAOF", "localhost", "6379"], Request.ReplicaOfAsync("localhost", 6379).GetArgs()),
+            () => Assert.Equal(["REPLICAOF", "NO", "ONE"], Request.ReplicaOfNoOneAsync().GetArgs()),
 
             // Set Commands
             () => Assert.Equal(["SADD", "key", "member"], Request.SetAddAsync("key", "member").GetArgs()),

@@ -329,6 +329,18 @@ public partial interface IServer : IRedisAsync
     Task ScriptFlushAsync(CommandFlags flags = CommandFlags.None);
 
     /// <summary>
+    /// The REPLICAOF command can change the replication settings of a replica on the fly.
+    /// If a Valkey server is already acting as replica, specifying a null primary will turn off the replication,
+    /// turning the Valkey server into a PRIMARY. Specifying a non-null primary will make the server a replica
+    /// of another server listening at the specified hostname and port.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/replicaof/"/>
+    /// <param name="master">The primary to replicate.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    Task ReplicaOfAsync(EndPoint? master, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
     /// Returns all keys matching <paramref name="pattern"/>.
     /// Uses <c>SCAN</c> internally for cursor-based iteration.
     /// Note: to resume an iteration via <paramref name="cursor"/>, pass the cursor value from a previous iteration.

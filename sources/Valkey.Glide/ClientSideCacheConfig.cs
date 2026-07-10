@@ -128,7 +128,7 @@ public sealed class ClientSideCacheConfig
     /// <summary>
     /// Converts to the FFI representation for marshalling to Rust core.
     /// </summary>
-    internal Internals.FFI.ClientSideCacheConfig ToFfi() => new(
+    internal FFI.ClientSideCacheConfig ToFfi() => new(
         CacheId,
         MaxCacheKb,
         Utils.ToMillisecondsUlong(EntryTtl),

@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Net;
+
 using Valkey.Glide.TestUtils;
 
 namespace Valkey.Glide.IntegrationTests.StackExchange;
@@ -97,6 +99,43 @@ public class ServerManagementTests(ServerManagementFixture fixture) : IClassFixt
             () => fixture.Server.SaveAsync(SaveType.ForegroundSave));
 #pragma warning restore CS0618
 
+
+    #endregion
+    #region ReplicaOf Tests
+
+    [Fact]
+    public async Task IServer_ReplicaOfAsync_AndReplicaOfNoOneAsync()
+    {
+        // Start primary and secondary servers with no replicas.
+        using var primary = new StandaloneServer(replicaCount: 0);
+        using var secondary = new StandaloneServer(replicaCount: 0);
+
+        // Connect to secondary server.
+        var config = new ConfigurationOptions();
+        config.EndPoints.Add(secondary.Address.Host, secondary.Address.Port);
+
+        using var conn = await ConnectionMultiplexer.ConnectAsync(config);
+        var server = conn.GetServers().First();
+        await WaitForRoleAsync(server, "master");
+
+        // Verify that secondary server becomes a replica of the primary server.
+        var primaryAddress = IPAddress.Parse(primary.Address.Host);
+        var primaryEndpoint = new IPEndPoint(primaryAddress, primary.Address.Port);
+
+        await server.ReplicaOfAsync(primaryEndpoint);
+        await WaitForRoleAsync(server, "slave");
+
+        // Verify that secondary server becomes a primary server.
+        await server.ReplicaOfAsync(null);
+        await WaitForRoleAsync(server, "master");
+    }
+
+    private static Task WaitForRoleAsync(IServer server, string expectedRole)
+        => Polling.WaitForAsync(async () =>
+        {
+            var info = await server.InfoRawAsync("replication");
+            return info?.Contains($"role:{expectedRole}") == true;
+        }, $"Timed out waiting for role to become '{expectedRole}'");
 
     #endregion
 }

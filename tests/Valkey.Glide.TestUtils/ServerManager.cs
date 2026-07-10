@@ -17,7 +17,7 @@ public static class ServerManager
     private static readonly string WslFileName = "wsl";
     private static readonly string PythonFileName = "python3";
 
-    private static readonly int ReplicaCount = 3;
+    private static readonly int DEFAULT_REPLICA_COUNT = 3;
 
     static ServerManager()
     {
@@ -68,7 +68,11 @@ public static class ServerManager
     /// Starts a Valkey server with the specified name, mode and TLS configuration.
     /// </summary>
     /// <returns>A list of server addresses started.</returns>
-    public static IList<Address> StartServer(string name, bool useClusterMode = false, bool useTls = false)
+    public static IList<Address> StartServer(
+        string name,
+        bool useClusterMode = false,
+        bool useTls = false,
+        int? replicaCount = null)
     {
         // Build command arguments.
         List<string> args = [];
@@ -80,7 +84,7 @@ public static class ServerManager
 
         args.Add("start");
         args.AddRange(["--prefix", name]);
-        args.AddRange(["-r", ReplicaCount.ToString()]);
+        args.AddRange(["-r", (replicaCount ?? DEFAULT_REPLICA_COUNT).ToString()]);
         args.AddRange(["--folder-path", ServerDirectoryPath]);
 
         if (useClusterMode)
