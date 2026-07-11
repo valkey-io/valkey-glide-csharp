@@ -2,7 +2,7 @@
 
 using Valkey.Glide.Internals;
 
-using static Valkey.Glide.Internals.TimeSpanUtils;
+using static Valkey.Glide.Internals.TimeUtils;
 
 namespace Valkey.Glide;
 

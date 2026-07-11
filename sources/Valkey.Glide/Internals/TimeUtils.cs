@@ -3,9 +3,9 @@
 namespace Valkey.Glide.Internals;
 
 /// <summary>
-/// Utility methods for converting <see cref="TimeSpan"/> values to Valkey command arguments.
+/// Time utility methods.
 /// </summary>
-internal static class TimeSpanUtils
+internal static class TimeUtils
 {
     /// <summary>
     /// Converts a <see cref="TimeSpan"/> to <see cref="ulong"/> milliseconds.

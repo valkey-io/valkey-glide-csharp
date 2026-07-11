@@ -3,7 +3,7 @@
 using Valkey.Glide.Commands.Options;
 
 using static Valkey.Glide.Internals.FFI;
-using static Valkey.Glide.Internals.TimeSpanUtils;
+using static Valkey.Glide.Internals.TimeUtils;
 
 namespace Valkey.Glide.Internals;
 
