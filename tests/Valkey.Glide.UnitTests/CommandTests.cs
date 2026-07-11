@@ -1075,139 +1075,144 @@ public class CommandTests
 
     #region MemoryStats Converter Tests
 
+    // Reponse values for testing converters.
+    private static readonly long ConvertLong = 100L;
+    private static readonly double ConvertDouble = 1.5;
+
     [Fact]
     public void MemoryStatsConverter_WithAllFields()
     {
-        Dictionary<GlideString, object> db0 = new()
+        var db0 = new Dictionary<GlideString, object>()
         {
-            ["overhead.hashtable.main"] = 100L,
-            ["overhead.hashtable.expires"] = 50L,
-        };
-        Dictionary<GlideString, object> db1 = new()
-        {
-            ["overhead.hashtable.main"] = 200L,
-            ["overhead.hashtable.expires"] = 75L,
+            ["overhead.hashtable.main"] = ConvertLong,
+            ["overhead.hashtable.expires"] = ConvertLong,
         };
 
-        Dictionary<GlideString, object> raw = new()
+        var db1 = new Dictionary<GlideString, object>()
+        {
+            ["overhead.hashtable.main"] = ConvertLong,
+            ["overhead.hashtable.expires"] = ConvertLong,
+        };
+
+        var raw = new Dictionary<GlideString, object>()
         {
             ["db.0"] = db0,
             ["db.1"] = db1,
-            ["allocator.active"] = 1000L,
-            ["allocator.allocated"] = 900L,
-            ["allocator-fragmentation.bytes"] = 100L,
-            ["allocator.resident"] = 1100L,
-            ["allocator-rss.bytes"] = 200L,
-            ["aof.buffer"] = 0L,
-            ["clients.normal"] = 500L,
-            ["clients.slaves"] = 0L,
-            ["dataset.bytes"] = 300L,
-            ["fragmentation.bytes"] = 50L,
-            ["keys.bytes-per-key"] = 64L,
-            ["keys.count"] = 10L,
-            ["lua.caches"] = 0L,
-            ["overhead.total"] = 800L,
-            ["peak.allocated"] = 1200L,
-            ["replication.backlog"] = 0L,
-            ["rss-overhead.bytes"] = 150L,
-            ["startup.allocated"] = 400L,
-            ["total.allocated"] = 950L,
-            ["allocator-fragmentation.ratio"] = 1.5,
-            ["allocator-rss.ratio"] = 1.1,
-            ["dataset.percentage"] = 30.5,
-            ["fragmentation"] = 1.2,
-            ["peak.percentage"] = 95.0,
-            ["rss-overhead.ratio"] = 1.05,
+            ["allocator.active"] = ConvertLong,
+            ["allocator.allocated"] = ConvertLong,
+            ["allocator-fragmentation.bytes"] = ConvertLong,
+            ["allocator.resident"] = ConvertLong,
+            ["allocator-rss.bytes"] = ConvertLong,
+            ["aof.buffer"] = ConvertLong,
+            ["clients.normal"] = ConvertLong,
+            ["clients.slaves"] = ConvertLong,
+            ["dataset.bytes"] = ConvertLong,
+            ["fragmentation.bytes"] = ConvertLong,
+            ["keys.bytes-per-key"] = ConvertLong,
+            ["keys.count"] = ConvertLong,
+            ["lua.caches"] = ConvertLong,
+            ["overhead.total"] = ConvertLong,
+            ["peak.allocated"] = ConvertLong,
+            ["replication.backlog"] = ConvertLong,
+            ["rss-overhead.bytes"] = ConvertLong,
+            ["startup.allocated"] = ConvertLong,
+            ["total.allocated"] = ConvertLong,
+            ["allocator-fragmentation.ratio"] = ConvertDouble,
+            ["allocator-rss.ratio"] = ConvertDouble,
+            ["dataset.percentage"] = ConvertDouble,
+            ["fragmentation"] = ConvertDouble,
+            ["peak.percentage"] = ConvertDouble,
+            ["rss-overhead.ratio"] = ConvertDouble,
 
             // Optional 7.0+ fields
-            ["cluster.links"] = 0L,
-            ["functions.caches"] = 128L,
+            ["cluster.links"] = ConvertLong,
+            ["functions.caches"] = ConvertLong,
 
             // Optional 8.0+ fields
-            ["allocator.muzzy"] = 64L,
-            ["db.dict.rehashing.count"] = 0L,
-            ["overhead.db.hashtable.lut"] = 256L,
-            ["overhead.db.hashtable.rehashing"] = 0L,
+            ["allocator.muzzy"] = ConvertLong,
+            ["db.dict.rehashing.count"] = ConvertLong,
+            ["overhead.db.hashtable.lut"] = ConvertLong,
+            ["overhead.db.hashtable.rehashing"] = ConvertLong,
         };
 
-        MemoryStats stats = Request.MemoryStatsAsync().Converter(raw);
+        var stats = Request.MemoryStatsAsync().Converter(raw);
 
         Assert.Equal(2, stats.Db.Count);
-        Assert.Equal(100L, stats.Db[0].OverheadHashtableMain);
-        Assert.Equal(50L, stats.Db[0].OverheadHashtableExpires);
-        Assert.Equal(200L, stats.Db[1].OverheadHashtableMain);
-        Assert.Equal(75L, stats.Db[1].OverheadHashtableExpires);
-        Assert.Equal(1000L, stats.AllocatorActive);
-        Assert.Equal(900L, stats.AllocatorAllocated);
-        Assert.Equal(100L, stats.AllocatorFragmentationBytes);
-        Assert.Equal(1100L, stats.AllocatorResident);
-        Assert.Equal(200L, stats.AllocatorRssBytes);
-        Assert.Equal(0L, stats.AofBuffer);
-        Assert.Equal(500L, stats.ClientsNormal);
-        Assert.Equal(0L, stats.ClientsSlaves);
-        Assert.Equal(300L, stats.DatasetBytes);
-        Assert.Equal(50L, stats.FragmentationBytes);
-        Assert.Equal(64L, stats.KeysBytesPerKey);
-        Assert.Equal(10L, stats.KeysCount);
-        Assert.Equal(0L, stats.LuaCaches);
-        Assert.Equal(800L, stats.OverheadTotal);
-        Assert.Equal(1200L, stats.PeakAllocated);
-        Assert.Equal(0L, stats.ReplicationBacklog);
-        Assert.Equal(150L, stats.RssOverheadBytes);
-        Assert.Equal(400L, stats.StartupAllocated);
-        Assert.Equal(950L, stats.TotalAllocated);
-        Assert.Equal(1.5, stats.AllocatorFragmentationRatio);
-        Assert.Equal(1.1, stats.AllocatorRssRatio);
-        Assert.Equal(30.5, stats.DatasetPercentage);
-        Assert.Equal(1.2, stats.Fragmentation);
-        Assert.Equal(95.0, stats.PeakPercentage);
-        Assert.Equal(1.05, stats.RssOverheadRatio);
-        Assert.Equal(0L, stats.ClusterLinks);
-        Assert.Equal(128L, stats.FunctionsCaches);
-        Assert.Equal(64L, stats.AllocatorMuzzy);
-        Assert.Equal(0L, stats.DbDictRehashingCount);
-        Assert.Equal(256L, stats.OverheadDbHashtableLut);
-        Assert.Equal(0L, stats.OverheadDbHashtableRehashing);
+        Assert.Equal(ConvertLong, stats.Db[0].OverheadHashtableMain);
+        Assert.Equal(ConvertLong, stats.Db[0].OverheadHashtableExpires);
+        Assert.Equal(ConvertLong, stats.Db[1].OverheadHashtableMain);
+        Assert.Equal(ConvertLong, stats.Db[1].OverheadHashtableExpires);
+        Assert.Equal(ConvertLong, stats.AllocatorActive);
+        Assert.Equal(ConvertLong, stats.AllocatorAllocated);
+        Assert.Equal(ConvertLong, stats.AllocatorFragmentationBytes);
+        Assert.Equal(ConvertLong, stats.AllocatorResident);
+        Assert.Equal(ConvertLong, stats.AllocatorRssBytes);
+        Assert.Equal(ConvertLong, stats.AofBuffer);
+        Assert.Equal(ConvertLong, stats.ClientsNormal);
+        Assert.Equal(ConvertLong, stats.ClientsSlaves);
+        Assert.Equal(ConvertLong, stats.DatasetBytes);
+        Assert.Equal(ConvertLong, stats.FragmentationBytes);
+        Assert.Equal(ConvertLong, stats.KeysBytesPerKey);
+        Assert.Equal(ConvertLong, stats.KeysCount);
+        Assert.Equal(ConvertLong, stats.LuaCaches);
+        Assert.Equal(ConvertLong, stats.OverheadTotal);
+        Assert.Equal(ConvertLong, stats.PeakAllocated);
+        Assert.Equal(ConvertLong, stats.ReplicationBacklog);
+        Assert.Equal(ConvertLong, stats.RssOverheadBytes);
+        Assert.Equal(ConvertLong, stats.StartupAllocated);
+        Assert.Equal(ConvertLong, stats.TotalAllocated);
+        Assert.Equal(ConvertDouble, stats.AllocatorFragmentationRatio);
+        Assert.Equal(ConvertDouble, stats.AllocatorRssRatio);
+        Assert.Equal(ConvertDouble, stats.DatasetPercentage);
+        Assert.Equal(ConvertDouble, stats.Fragmentation);
+        Assert.Equal(ConvertDouble, stats.PeakPercentage);
+        Assert.Equal(ConvertDouble, stats.RssOverheadRatio);
+        Assert.Equal(ConvertLong, stats.ClusterLinks);
+        Assert.Equal(ConvertLong, stats.FunctionsCaches);
+        Assert.Equal(ConvertLong, stats.AllocatorMuzzy);
+        Assert.Equal(ConvertLong, stats.DbDictRehashingCount);
+        Assert.Equal(ConvertLong, stats.OverheadDbHashtableLut);
+        Assert.Equal(ConvertLong, stats.OverheadDbHashtableRehashing);
     }
 
     [Fact]
     public void MemoryStatsConverter_WithoutOptionalFields()
     {
-        Dictionary<GlideString, object> raw = new()
+        var raw = new Dictionary<GlideString, object>()
         {
-            ["allocator.active"] = 1000L,
-            ["allocator.allocated"] = 900L,
-            ["allocator-fragmentation.bytes"] = 100L,
-            ["allocator.resident"] = 1100L,
-            ["allocator-rss.bytes"] = 200L,
-            ["aof.buffer"] = 0L,
-            ["clients.normal"] = 500L,
-            ["clients.slaves"] = 0L,
-            ["dataset.bytes"] = 300L,
-            ["fragmentation.bytes"] = 50L,
-            ["keys.bytes-per-key"] = 64L,
-            ["keys.count"] = 10L,
-            ["lua.caches"] = 0L,
-            ["overhead.total"] = 800L,
-            ["peak.allocated"] = 1200L,
-            ["replication.backlog"] = 0L,
-            ["rss-overhead.bytes"] = 150L,
-            ["startup.allocated"] = 400L,
-            ["total.allocated"] = 950L,
-            ["allocator-fragmentation.ratio"] = 1.5,
-            ["allocator-rss.ratio"] = 1.1,
-            ["dataset.percentage"] = 30.5,
-            ["fragmentation"] = 1.2,
-            ["peak.percentage"] = 95.0,
-            ["rss-overhead.ratio"] = 1.05,
+            ["allocator.active"] = ConvertLong,
+            ["allocator.allocated"] = ConvertLong,
+            ["allocator-fragmentation.bytes"] = ConvertLong,
+            ["allocator.resident"] = ConvertLong,
+            ["allocator-rss.bytes"] = ConvertLong,
+            ["aof.buffer"] = ConvertLong,
+            ["clients.normal"] = ConvertLong,
+            ["clients.slaves"] = ConvertLong,
+            ["dataset.bytes"] = ConvertLong,
+            ["fragmentation.bytes"] = ConvertLong,
+            ["keys.bytes-per-key"] = ConvertLong,
+            ["keys.count"] = ConvertLong,
+            ["lua.caches"] = ConvertLong,
+            ["overhead.total"] = ConvertLong,
+            ["peak.allocated"] = ConvertLong,
+            ["replication.backlog"] = ConvertLong,
+            ["rss-overhead.bytes"] = ConvertLong,
+            ["startup.allocated"] = ConvertLong,
+            ["total.allocated"] = ConvertLong,
+            ["allocator-fragmentation.ratio"] = ConvertDouble,
+            ["allocator-rss.ratio"] = ConvertDouble,
+            ["dataset.percentage"] = ConvertDouble,
+            ["fragmentation"] = ConvertDouble,
+            ["peak.percentage"] = ConvertDouble,
+            ["rss-overhead.ratio"] = ConvertDouble,
         };
 
-        MemoryStats stats = Request.MemoryStatsAsync().Converter(raw);
+        var stats = Request.MemoryStatsAsync().Converter(raw);
 
         Assert.Empty(stats.Db);
-        Assert.Equal(1000L, stats.AllocatorActive);
-        Assert.Equal(950L, stats.TotalAllocated);
-        Assert.Equal(1.5, stats.AllocatorFragmentationRatio);
+        Assert.Equal(ConvertLong, stats.AllocatorActive);
+        Assert.Equal(ConvertLong, stats.TotalAllocated);
+        Assert.Equal(ConvertDouble, stats.AllocatorFragmentationRatio);
         Assert.Null(stats.ClusterLinks);
         Assert.Null(stats.FunctionsCaches);
         Assert.Null(stats.AllocatorMuzzy);
