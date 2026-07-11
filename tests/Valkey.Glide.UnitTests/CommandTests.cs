@@ -101,9 +101,9 @@ public class CommandTests
 
             // Server Management Commands
             () => Assert.Equal(["BGREWRITEAOF"], Request.BgRewriteAofAsync().GetArgs()),
-            () => Assert.Equal(["BGSAVE"], Request.BackgroundSaveAsync().GetArgs()),
-            () => Assert.Equal(["BGSAVE", "SCHEDULE"], Request.BackgroundSaveScheduleAsync().GetArgs()),
             () => Assert.Equal(["BGSAVE", "CANCEL"], Request.BackgroundSaveCancelAsync().GetArgs()),
+            () => Assert.Equal(["BGSAVE", "SCHEDULE"], Request.BackgroundSaveScheduleAsync().GetArgs()),
+            () => Assert.Equal(["BGSAVE"], Request.BackgroundSaveAsync().GetArgs()),
             () => Assert.Equal(["CLIENTGETNAME"], Request.ClientGetName().GetArgs()),
             () => Assert.Equal(["CLIENTID"], Request.ClientId().GetArgs()),
             () => Assert.Equal(["CONFIGGET", "*"], Request.ConfigGetAsync("*").GetArgs()),
@@ -135,6 +135,10 @@ public class CommandTests
             () => Assert.Equal(["LOLWUT", "VERSION", "6", "40", "20"], Request.LolwutAsync(new LolwutOptions { Version = 6, Parameters = [40, 20] }).GetArgs()),
             () => Assert.Equal(["LOLWUT"], Request.LolwutAsync().GetArgs()),
             () => Assert.Equal(["LOLWUT"], Request.LolwutAsync(options: null).GetArgs()),
+            () => Assert.Equal(["MEMORY", "DOCTOR"], Request.MemoryDoctorAsync().GetArgs()),
+            () => Assert.Equal(["MEMORY", "MALLOC-STATS"], Request.MemoryMallocStatsAsync().GetArgs()),
+            () => Assert.Equal(["MEMORY", "PURGE"], Request.MemoryPurgeAsync().GetArgs()),
+            () => Assert.Equal(["MEMORY", "STATS"], Request.MemoryStatsAsync().GetArgs()),
             () => Assert.Equal(["SAVE"], Request.SaveAsync().GetArgs()),
             () => Assert.Equal(["TIME"], Request.TimeAsync().GetArgs()),
 
@@ -454,12 +458,6 @@ public class CommandTests
             () => Assert.Equal("test_value", Request.GetExpiry("test_key", GetExpiryOptions.ExpireAt(new DateTimeOffset(2021, 1, 1, 0, 0, 0, TimeSpan.Zero))).Converter(new GlideString("test_value")).ToString()),
             () => Assert.True(Request.GetExpiry("test_key", GetExpiryOptions.ExpireAt(new DateTimeOffset(2021, 1, 1, 0, 0, 0, TimeSpan.Zero))).Converter(null!).IsNull),
 
-            // TODO #435: Merge with section above and sort
-            () => Assert.Equal(["MEMORY", "DOCTOR"], Request.MemoryDoctorAsync().GetArgs()),
-            () => Assert.Equal(["MEMORY", "MALLOC-STATS"], Request.MemoryMallocStatsAsync().GetArgs()),
-            () => Assert.Equal(["MEMORY", "PURGE"], Request.MemoryPurgeAsync().GetArgs()),
-            () => Assert.Equal(["MEMORY", "STATS"], Request.MemoryStatsAsync().GetArgs()),
-
             // Server Management Command Converters
             () => Assert.Equal("Background append only file rewriting started", Request.BgRewriteAofAsync().Converter("Background append only file rewriting started")),
             () => Assert.Equal([new("maxmemory", "100mb")], Request.ConfigGetAsync("maxmemory").Converter(new object[] { (gs)"maxmemory", "100mb" })),
@@ -493,15 +491,13 @@ public class CommandTests
             () => Assert.Equal(0L, Request.LatencyResetAsync([]).Converter(0L)),
             () => Assert.Equal(3L, Request.LatencyResetAsync(["command"]).Converter(3L)),
             () => Assert.Equal("Valkey 7.0.0", Request.LolwutAsync().Converter("Valkey 7.0.0")),
+            () => Assert.Equal("Sam, I have no memory problems", Request.MemoryDoctorAsync().Converter("Sam, I have no memory problems")),
+            () => Assert.Equal("jemalloc stats", Request.MemoryMallocStatsAsync().Converter("jemalloc stats")),
             () => Assert.Equal(ValkeyValue.Ok, Request.SaveAsync().Converter("OK")),
             () => Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(1609459200).AddTicks(123456 * 10), Request.TimeAsync().Converter(["1609459200", "123456"])),
 
             () => Assert.Equal("common", Request.LongestCommonSubsequence("key1", "key2").Converter(new GlideString("common"))!.ToString()),
             () => Assert.Equal(5L, Request.LongestCommonSubsequenceLength("key1", "key2").Converter(5L)),
-
-            // TODO #435: Merge with section above and sort
-            () => Assert.Equal("Sam, I have no memory problems", Request.MemoryDoctorAsync().Converter("Sam, I have no memory problems")),
-            () => Assert.Equal("jemalloc stats", Request.MemoryMallocStatsAsync().Converter("jemalloc stats")),
 
             // Info Command Converters
             () => Assert.Equal("info", Request.Info([]).Converter("info")),
