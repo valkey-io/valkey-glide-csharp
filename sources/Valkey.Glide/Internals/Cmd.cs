@@ -98,23 +98,14 @@ internal class Cmd<R, T> : ICmd
 #pragma warning disable IDE0072 // Populate switch
     private static string[] GetCommandParts(RequestType requestType) => requestType switch
     {
-        RequestType.ObjectEncoding => ["OBJECT", "ENCODING"],
-        RequestType.ObjectFreq => ["OBJECT", "FREQ"],
-        RequestType.ObjectIdleTime => ["OBJECT", "IDLETIME"],
-        RequestType.ObjectRefCount => ["OBJECT", "REFCOUNT"],
         RequestType.Command_ => ["COMMAND"],
-        RequestType.PubSubChannels => ["PUBSUB", "CHANNELS"],
-        RequestType.PubSubNumSub => ["PUBSUB", "NUMSUB"],
-        RequestType.PubSubNumPat => ["PUBSUB", "NUMPAT"],
-        RequestType.PubSubShardChannels => ["PUBSUB", "SHARDCHANNELS"],
-        RequestType.PubSubShardNumSub => ["PUBSUB", "SHARDNUMSUB"],
-        RequestType.GetSubscriptions => ["GET_SUBSCRIPTIONS"],
-        RequestType.FtList => ["FT._LIST"],
         RequestType.FtAggregate => ["FT.AGGREGATE"],
         RequestType.FtCreate => ["FT.CREATE"],
         RequestType.FtDropIndex => ["FT.DROPINDEX"],
         RequestType.FtInfo => ["FT.INFO"],
+        RequestType.FtList => ["FT._LIST"],
         RequestType.FtSearch => ["FT.SEARCH"],
+        RequestType.GetSubscriptions => ["GET_SUBSCRIPTIONS"],
         RequestType.LatencyHistory => ["LATENCY", "HISTORY"],
         RequestType.LatencyLatest => ["LATENCY", "LATEST"],
         RequestType.LatencyReset => ["LATENCY", "RESET"],
@@ -122,6 +113,15 @@ internal class Cmd<R, T> : ICmd
         RequestType.MemoryMallocStats => ["MEMORY", "MALLOC-STATS"],
         RequestType.MemoryPurge => ["MEMORY", "PURGE"],
         RequestType.MemoryStats => ["MEMORY", "STATS"],
+        RequestType.ObjectEncoding => ["OBJECT", "ENCODING"],
+        RequestType.ObjectFreq => ["OBJECT", "FREQ"],
+        RequestType.ObjectIdleTime => ["OBJECT", "IDLETIME"],
+        RequestType.ObjectRefCount => ["OBJECT", "REFCOUNT"],
+        RequestType.PubSubChannels => ["PUBSUB", "CHANNELS"],
+        RequestType.PubSubNumPat => ["PUBSUB", "NUMPAT"],
+        RequestType.PubSubNumSub => ["PUBSUB", "NUMSUB"],
+        RequestType.PubSubShardChannels => ["PUBSUB", "SHARDCHANNELS"],
+        RequestType.PubSubShardNumSub => ["PUBSUB", "SHARDNUMSUB"],
         _ => [requestType.ToString().ToUpper()]
     };
 #pragma warning restore IDE0072 // Populate switch
