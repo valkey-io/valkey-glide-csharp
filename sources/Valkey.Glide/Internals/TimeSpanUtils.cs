@@ -12,9 +12,12 @@ internal static class TimeSpanUtils
     /// </summary>
     /// <exception cref="ArgumentException">Thrown if <paramref name="timeSpan"/> is negative.</exception>
     public static ulong ToUlongMilliseconds(TimeSpan timeSpan)
-        => timeSpan < TimeSpan.Zero
-            ? throw new ArgumentException("Time span cannot be negative.")
-            : (ulong)(timeSpan.Ticks / TimeSpan.TicksPerMillisecond);
+    {
+        GuardClauses.ThrowIfNegative(timeSpan);
+
+        // Use tick-based arithmetic to avoid floating-point precision loss.
+        return (ulong)(timeSpan.Ticks / TimeSpan.TicksPerMillisecond);
+    }
 
     /// <summary>
     /// Converts a <see cref="TimeSpan"/> to <see cref="GlideString"/> milliseconds.
@@ -28,7 +31,8 @@ internal static class TimeSpanUtils
     /// </summary>
     /// <exception cref="ArgumentException">Thrown if <paramref name="timeSpan"/> is negative.</exception>
     public static GlideString ToGlideStringSeconds(TimeSpan timeSpan)
-        => timeSpan < TimeSpan.Zero
-            ? throw new ArgumentException("Time span cannot be negative.")
-            : timeSpan.TotalSeconds.ToGlideString();
+    {
+        GuardClauses.ThrowIfNegative(timeSpan);
+        return timeSpan.TotalSeconds.ToGlideString();
+    }
 }

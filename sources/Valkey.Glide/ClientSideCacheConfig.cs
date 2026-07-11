@@ -97,6 +97,8 @@ public sealed class ClientSideCacheConfig
             throw new ArgumentOutOfRangeException(nameof(maxCacheKb), "maxCacheKb must be positive.");
         }
 
+        GuardClauses.ThrowIfNegative(entryTtl);
+
         MaxCacheKb = maxCacheKb;
         EntryTtl = entryTtl;
     }
