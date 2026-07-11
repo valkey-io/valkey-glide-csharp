@@ -50,17 +50,4 @@ internal static class GuardClauses
             throw new NotImplementedException("Async state is not supported by GLIDE");
         }
     }
-
-    /// <summary>
-    /// Throws an <see cref="ArgumentException"/> if the given time span is negative.
-    /// </summary>
-    /// <param name="value">The time span value to validate.</param>
-    /// <exception cref="ArgumentException">Thrown if <paramref name="value"/> is negative.</exception>
-    public static void ThrowIfTimeSpanNegative(TimeSpan value)
-    {
-        if (value < TimeSpan.Zero)
-        {
-            throw new ArgumentException("Time span cannot be negative.");
-        }
-    }
 }

@@ -260,7 +260,7 @@ internal partial class Request
 
     public static Cmd<object?, SortedSetEntry?> SortedSetPopMinAsync(IEnumerable<ValkeyKey> keys, TimeSpan timeout)
     {
-        List<GlideString> args = [ToSeconds(timeout)];
+        List<GlideString> args = [TimeSpanUtils.ToGlideStringSeconds(timeout)];
         AddKeys(args, keys);
         args.Add(ValkeyLiterals.MIN);
         args.Add(ValkeyLiterals.COUNT);
@@ -271,7 +271,7 @@ internal partial class Request
 
     public static Cmd<object?, SortedSetEntry?> SortedSetPopMaxAsync(IEnumerable<ValkeyKey> keys, TimeSpan timeout)
     {
-        List<GlideString> args = [ToSeconds(timeout)];
+        List<GlideString> args = [TimeSpanUtils.ToGlideStringSeconds(timeout)];
         AddKeys(args, keys);
         args.Add(ValkeyLiterals.MAX);
         args.Add(ValkeyLiterals.COUNT);
@@ -282,7 +282,7 @@ internal partial class Request
 
     public static Cmd<object?, SortedSetPopResult> SortedSetPopMinAsync(IEnumerable<ValkeyKey> keys, long count, TimeSpan timeout)
     {
-        List<GlideString> args = [ToSeconds(timeout)];
+        List<GlideString> args = [TimeSpanUtils.ToGlideStringSeconds(timeout)];
         AddKeys(args, keys);
         args.Add(ValkeyLiterals.MIN);
         args.Add(ValkeyLiterals.COUNT);
@@ -293,7 +293,7 @@ internal partial class Request
 
     public static Cmd<object?, SortedSetPopResult> SortedSetPopMaxAsync(IEnumerable<ValkeyKey> keys, long count, TimeSpan timeout)
     {
-        List<GlideString> args = [ToSeconds(timeout)];
+        List<GlideString> args = [TimeSpanUtils.ToGlideStringSeconds(timeout)];
         AddKeys(args, keys);
         args.Add(ValkeyLiterals.MAX);
         args.Add(ValkeyLiterals.COUNT);

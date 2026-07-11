@@ -135,8 +135,7 @@ public class ServerManagementTests(ServerManagementFixture fixture) : IClassFixt
         await WaitForRoleAsync(server, "master");
 
         // Verify that secondary server becomes a replica of the primary server.
-        var primaryAddress = IPAddress.Parse(primary.Address.Host);
-        var primaryEndpoint = new IPEndPoint(primaryAddress, primary.Address.Port);
+        var primaryEndpoint = new DnsEndPoint(primary.Address.Host, primary.Address.Port);
 
         await server.ReplicaOfAsync(primaryEndpoint);
         await WaitForRoleAsync(server, "slave");

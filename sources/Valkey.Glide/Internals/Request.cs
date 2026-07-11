@@ -121,18 +121,6 @@ internal partial class Request
         return result;
     }
 
-    /// <summary>
-    /// Converts the given time span to milliseconds as a <see cref="GlideString"/>.
-    /// </summary>
-    private static GlideString ToMilliseconds(TimeSpan timeSpan)
-        => (timeSpan.Ticks / TimeSpan.TicksPerMillisecond).ToGlideString();
-
-    /// <summary>
-    /// Converts the given time span to seconds as a <see cref="GlideString"/>.
-    /// </summary>
-    private static GlideString ToSeconds(TimeSpan timeSpan)
-        => timeSpan.TotalSeconds.ToGlideString();
-
     // TODO should not be internal. Move all related logic to requests.
     /// <summary>
     /// Converts scan options to an array of arguments.
@@ -186,7 +174,7 @@ internal partial class Request
         if (options.Duration.HasValue)
         {
             args.Add(ValkeyLiterals.PX);
-            args.Add(ToMilliseconds(options.Duration.Value));
+            args.Add(TimeSpanUtils.ToGlideStringMilliseconds(options.Duration.Value));
         }
         else if (options.Timestamp.HasValue)
         {

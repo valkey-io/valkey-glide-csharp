@@ -27,17 +27,11 @@ public abstract partial class BaseClient
 
     /// <inheritdoc cref="IBaseClient.SubscribeAsync(ValkeyKey, TimeSpan)"/>
     public async Task SubscribeAsync(ValkeyKey channel, TimeSpan timeout)
-    {
-        GuardClauses.ThrowIfTimeSpanNegative(timeout);
-        _ = await Command(Request.SubscribeBlocking([channel], timeout));
-    }
+        => _ = await Command(Request.SubscribeBlocking([channel], timeout));
 
     /// <inheritdoc cref="IBaseClient.SubscribeAsync(IEnumerable{ValkeyKey}, TimeSpan)"/>
     public async Task SubscribeAsync(IEnumerable<ValkeyKey> channels, TimeSpan timeout)
-    {
-        GuardClauses.ThrowIfTimeSpanNegative(timeout);
-        _ = await Command(Request.SubscribeBlocking(channels.ToGlideStrings(), timeout));
-    }
+        => _ = await Command(Request.SubscribeBlocking(channels.ToGlideStrings(), timeout));
 
     /// <inheritdoc cref="IBaseClient.SubscribeLazyAsync(ValkeyKey)"/>
     public async Task SubscribeLazyAsync(ValkeyKey channel)
@@ -49,17 +43,11 @@ public abstract partial class BaseClient
 
     /// <inheritdoc cref="IBaseClient.PSubscribeAsync(ValkeyKey, TimeSpan)"/>
     public async Task PSubscribeAsync(ValkeyKey pattern, TimeSpan timeout)
-    {
-        GuardClauses.ThrowIfTimeSpanNegative(timeout);
-        _ = await Command(Request.PSubscribeBlocking([pattern], timeout));
-    }
+        => _ = await Command(Request.PSubscribeBlocking([pattern], timeout));
 
     /// <inheritdoc cref="IBaseClient.PSubscribeAsync(IEnumerable{ValkeyKey}, TimeSpan)"/>
     public async Task PSubscribeAsync(IEnumerable<ValkeyKey> patterns, TimeSpan timeout)
-    {
-        GuardClauses.ThrowIfTimeSpanNegative(timeout);
-        _ = await Command(Request.PSubscribeBlocking(patterns.ToGlideStrings(), timeout));
-    }
+        => _ = await Command(Request.PSubscribeBlocking(patterns.ToGlideStrings(), timeout));
 
     /// <inheritdoc cref="IBaseClient.PSubscribeLazyAsync(ValkeyKey)"/>
     public async Task PSubscribeLazyAsync(ValkeyKey pattern)
@@ -74,24 +62,15 @@ public abstract partial class BaseClient
 
     /// <inheritdoc cref="IBaseClient.UnsubscribeAsync(TimeSpan)"/>
     public async Task UnsubscribeAsync(TimeSpan timeout)
-    {
-        GuardClauses.ThrowIfTimeSpanNegative(timeout);
-        _ = await Command(Request.UnsubscribeBlocking([], timeout));
-    }
+        => _ = await Command(Request.UnsubscribeBlocking([], timeout));
 
     /// <inheritdoc cref="IBaseClient.UnsubscribeAsync(ValkeyKey, TimeSpan)"/>
     public async Task UnsubscribeAsync(ValkeyKey channel, TimeSpan timeout)
-    {
-        GuardClauses.ThrowIfTimeSpanNegative(timeout);
-        _ = await Command(Request.UnsubscribeBlocking([channel], timeout));
-    }
+        => _ = await Command(Request.UnsubscribeBlocking([channel], timeout));
 
     /// <inheritdoc cref="IBaseClient.UnsubscribeAsync(IEnumerable{ValkeyKey}, TimeSpan)"/>
     public async Task UnsubscribeAsync(IEnumerable<ValkeyKey> channels, TimeSpan timeout)
-    {
-        GuardClauses.ThrowIfTimeSpanNegative(timeout);
-        _ = await Command(Request.UnsubscribeBlocking(channels.ToGlideStrings(), timeout));
-    }
+        => _ = await Command(Request.UnsubscribeBlocking(channels.ToGlideStrings(), timeout));
 
     /// <inheritdoc cref="IBaseClient.UnsubscribeLazyAsync()"/>
     public async Task UnsubscribeLazyAsync()
@@ -107,24 +86,15 @@ public abstract partial class BaseClient
 
     /// <inheritdoc cref="IBaseClient.PUnsubscribeAsync(TimeSpan)"/>
     public async Task PUnsubscribeAsync(TimeSpan timeout)
-    {
-        GuardClauses.ThrowIfTimeSpanNegative(timeout);
-        _ = await Command(Request.PUnsubscribeBlocking([], timeout));
-    }
+        => _ = await Command(Request.PUnsubscribeBlocking([], timeout));
 
     /// <inheritdoc cref="IBaseClient.PUnsubscribeAsync(ValkeyKey, TimeSpan)"/>
     public async Task PUnsubscribeAsync(ValkeyKey pattern, TimeSpan timeout)
-    {
-        GuardClauses.ThrowIfTimeSpanNegative(timeout);
-        _ = await Command(Request.PUnsubscribeBlocking([pattern], timeout));
-    }
+        => _ = await Command(Request.PUnsubscribeBlocking([pattern], timeout));
 
     /// <inheritdoc cref="IBaseClient.PUnsubscribeAsync(IEnumerable{ValkeyKey}, TimeSpan)"/>
     public async Task PUnsubscribeAsync(IEnumerable<ValkeyKey> patterns, TimeSpan timeout)
-    {
-        GuardClauses.ThrowIfTimeSpanNegative(timeout);
-        _ = await Command(Request.PUnsubscribeBlocking(patterns.ToGlideStrings(), timeout));
-    }
+        => _ = await Command(Request.PUnsubscribeBlocking(patterns.ToGlideStrings(), timeout));
 
     /// <inheritdoc cref="IBaseClient.PUnsubscribeLazyAsync()"/>
     public async Task PUnsubscribeLazyAsync()

@@ -97,7 +97,7 @@ internal partial class Request
         if (options.Duration.HasValue)
         {
             args.Add(ValkeyLiterals.PX);
-            args.Add(ToMilliseconds(options.Duration.Value));
+            args.Add(TimeSpanUtils.ToGlideStringMilliseconds(options.Duration.Value));
         }
         else if (options.Timestamp.HasValue)
         {
@@ -196,7 +196,7 @@ internal partial class Request
 
     public static Cmd<object[], HashExpireResult[]> HashExpireAsync(ValkeyKey key, TimeSpan expiry, ValkeyValue[] hashFields, ExpireCondition condition)
     {
-        List<GlideString> args = [key, ToMilliseconds(expiry)];
+        List<GlideString> args = [key, TimeSpanUtils.ToGlideStringMilliseconds(expiry)];
 
         AddExpireCondition(args, condition);
         args.AddRange(ToArgs(ValkeyLiterals.FIELDS, hashFields));

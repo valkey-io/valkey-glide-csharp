@@ -214,7 +214,7 @@ internal partial class Request
         if (options.Timeout.HasValue)
         {
             args.Add(ValkeyLiterals.TIMEOUT);
-            args.Add(ToMilliseconds(options.Timeout.Value));
+            args.Add(TimeSpanUtils.ToGlideStringMilliseconds(options.Timeout.Value));
         }
 
         return [.. args];
@@ -272,7 +272,7 @@ internal partial class Request
         if (options.Timeout.HasValue)
         {
             args.Add(ValkeyLiterals.TIMEOUT);
-            args.Add(ToMilliseconds(options.Timeout.Value));
+            args.Add(TimeSpanUtils.ToGlideStringMilliseconds(options.Timeout.Value));
         }
 
         foreach (var clause in options.Clauses)
@@ -804,7 +804,7 @@ internal partial class Request
         {
             object[] arr => arr,
             HashSet<object> set => set,
-            _ => throw new Errors.RequestException($"FT.INFO field '{key}' expected array, got {value.GetType()}"),
+            _ => throw new RequestException($"FT.INFO field '{key}' expected array, got {value.GetType()}"),
         };
 
         return [.. items.Cast<GlideString>().Select(gs => (ValkeyValue)gs)];

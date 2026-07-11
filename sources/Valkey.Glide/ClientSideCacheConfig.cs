@@ -97,8 +97,6 @@ public sealed class ClientSideCacheConfig
             throw new ArgumentOutOfRangeException(nameof(maxCacheKb), "maxCacheKb must be positive.");
         }
 
-        GuardClauses.ThrowIfTimeSpanNegative(entryTtl);
-
         MaxCacheKb = maxCacheKb;
         EntryTtl = entryTtl;
     }
@@ -131,7 +129,7 @@ public sealed class ClientSideCacheConfig
     internal FFI.ClientSideCacheConfig ToFfi() => new(
         CacheId,
         MaxCacheKb,
-        Utils.ToMillisecondsUlong(EntryTtl),
+        TimeSpanUtils.ToUlongMilliseconds(EntryTtl),
         EvictionPolicy.HasValue,
         EvictionPolicy ?? default,
         EnableMetrics

@@ -142,7 +142,7 @@ internal partial class Request
     {
         if (options.Duration.HasValue)
         {
-            return [ValkeyLiterals.PX, ToMilliseconds(options.Duration.Value)];
+            return [ValkeyLiterals.PX, TimeSpanUtils.ToGlideStringMilliseconds(options.Duration.Value)];
         }
 
         if (options.Timestamp.HasValue)

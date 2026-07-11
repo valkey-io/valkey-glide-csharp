@@ -17,7 +17,7 @@ public static class ServerManager
     private static readonly string WslFileName = "wsl";
     private static readonly string PythonFileName = "python3";
 
-    private static readonly int DEFAULT_REPLICA_COUNT = 3;
+    private static readonly int DefaultReplicaCount = 3;
 
     static ServerManager()
     {
@@ -48,14 +48,9 @@ public static class ServerManager
         // #184: On Windows, servers cannot synchronize when the server directory exists on a Windows
         // filesystem mounted in WSL (e.g. /mnt/c/), so use a directory inside WSL filesystem instead.
         // Use a unique directory to avoid conflicts with other test runs.
-        if (OperatingSystem.IsWindows())
-        {
-            ServerDirectoryPath = $"~/valkey_glide_test_{Guid.NewGuid():N}";
-        }
-        else
-        {
-            ServerDirectoryPath = Path.Combine(ScriptsDirectoryPath, "clusters");
-        }
+        ServerDirectoryPath = OperatingSystem.IsWindows()
+            ? $"~/valkey_glide_test_{Guid.NewGuid():N}"
+            : Path.Combine(ScriptsDirectoryPath, "clusters");
     }
 
     /// <summary>
@@ -84,7 +79,7 @@ public static class ServerManager
 
         args.Add("start");
         args.AddRange(["--prefix", name]);
-        args.AddRange(["-r", (replicaCount ?? DEFAULT_REPLICA_COUNT).ToString()]);
+        args.AddRange(["-r", (replicaCount ?? DefaultReplicaCount).ToString()]);
         args.AddRange(["--folder-path", ServerDirectoryPath]);
 
         if (useClusterMode)
