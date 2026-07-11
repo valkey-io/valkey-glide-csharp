@@ -617,7 +617,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     {
         // Default route (multi-node).
         var multi = await ClusterClient.MemoryDoctorAsync();
-        foreach (string report in multi.MultiValue.Values)
+        foreach (var report in multi.MultiValue.Values)
         {
             Assert.NotEmpty(report);
         }
@@ -636,7 +636,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     {
         // Default route (multi-node).
         var multi = await ClusterClient.MemoryMallocStatsAsync();
-        foreach (string report in multi.MultiValue.Values)
+        foreach (var report in multi.MultiValue.Values)
         {
             Assert.NotEmpty(report);
         }
@@ -664,10 +664,10 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     public async Task MemoryStatsAsync_Standalone()
     {
         // Write a key to ensure db entry exists.
-        string key = $"memory-stats-test-{Guid.NewGuid()}";
+        var key = $"memory-stats-test-{Guid.NewGuid()}";
         await StandaloneClient.SetAsync(key, "value");
 
-        MemoryStats stats = await StandaloneClient.MemoryStatsAsync();
+        var stats = await StandaloneClient.MemoryStatsAsync();
 
         AssertMemoryStatsFields(stats);
         AssertMemoryStatsDbEntry(stats.Db[0]);
@@ -691,9 +691,8 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
         string key = $"memory-stats-cluster-{Guid.NewGuid()}";
         await ClusterClient.SetAsync(key, "value");
 
-        var result = await ClusterClient.MemoryStatsAsync(new SlotKeyRoute(key, SlotType.Primary));
+        var stats = (await ClusterClient.MemoryStatsAsync(new SlotKeyRoute(key, SlotType.Primary))).SingleValue;
 
-        MemoryStats stats = result.SingleValue;
         AssertMemoryStatsFields(stats);
         AssertMemoryStatsDbEntry(stats.Db[0]);
     }
@@ -730,7 +729,6 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
             AssertMemoryStatsDbEntry(entry.Value);
         }
 
-        // Required int fields (> 0)
         Assert.True(stats.AllocatorActive > 0);
         Assert.True(stats.AllocatorAllocated > 0);
         Assert.True(stats.AllocatorResident > 0);
@@ -739,7 +737,6 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
         Assert.True(stats.StartupAllocated > 0);
         Assert.True(stats.TotalAllocated > 0);
 
-        // Required int fields (>= 0)
         Assert.True(stats.AllocatorFragmentationBytes >= 0);
         Assert.True(stats.AllocatorRssBytes >= 0);
         Assert.True(stats.AofBuffer >= 0);
@@ -753,7 +750,6 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
         Assert.True(stats.ReplicationBacklog >= 0);
         Assert.True(stats.RssOverheadBytes >= 0);
 
-        // Required float fields
         Assert.True(stats.AllocatorFragmentationRatio >= 0);
         Assert.True(stats.AllocatorRssRatio >= 0);
         Assert.True(stats.DatasetPercentage >= 0);
