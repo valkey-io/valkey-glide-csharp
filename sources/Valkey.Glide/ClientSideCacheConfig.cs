@@ -133,7 +133,7 @@ public sealed class ClientSideCacheConfig
     internal FFI.ClientSideCacheConfig ToFfi() => new(
         CacheId,
         MaxCacheKb,
-        ToUlongMilliseconds(EntryTtl),
+        ToMilliseconds(EntryTtl),
         EvictionPolicy.HasValue,
         EvictionPolicy ?? default,
         EnableMetrics

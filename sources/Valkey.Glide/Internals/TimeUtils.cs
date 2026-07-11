@@ -11,7 +11,7 @@ internal static class TimeUtils
     /// Converts a <see cref="TimeSpan"/> to <see cref="ulong"/> milliseconds.
     /// </summary>
     /// <exception cref="ArgumentException">Thrown if <paramref name="timeSpan"/> is negative.</exception>
-    public static ulong ToUlongMilliseconds(TimeSpan timeSpan)
+    public static ulong ToMilliseconds(TimeSpan timeSpan)
     {
         GuardClauses.ThrowIfNegative(timeSpan);
 
@@ -20,19 +20,12 @@ internal static class TimeUtils
     }
 
     /// <summary>
-    /// Converts a <see cref="TimeSpan"/> to <see cref="GlideString"/> milliseconds.
-    /// </summary>
-    /// <exception cref="ArgumentException">Thrown if <paramref name="timeSpan"/> is negative.</exception>
-    public static GlideString ToGlideStringMilliseconds(TimeSpan timeSpan)
-        => ToUlongMilliseconds(timeSpan).ToGlideString();
-
-    /// <summary>
     /// Converts a <see cref="TimeSpan"/> to <see cref="GlideString"/> seconds.
     /// </summary>
     /// <exception cref="ArgumentException">Thrown if <paramref name="timeSpan"/> is negative.</exception>
-    public static GlideString ToGlideStringSeconds(TimeSpan timeSpan)
+    public static double ToSeconds(TimeSpan timeSpan)
     {
         GuardClauses.ThrowIfNegative(timeSpan);
-        return timeSpan.TotalSeconds.ToGlideString();
+        return timeSpan.TotalSeconds;
     }
 }

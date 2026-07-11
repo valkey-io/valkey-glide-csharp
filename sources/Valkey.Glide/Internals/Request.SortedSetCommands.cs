@@ -1,20 +1,16 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using static Valkey.Glide.Internals.TimeUtils;
-
 using Valkey.Glide.Commands.Options;
 
 using static Valkey.Glide.Internals.FFI;
+using static Valkey.Glide.Internals.TimeUtils;
 
 namespace Valkey.Glide.Internals;
 
 internal partial class Request
 {
     public static Cmd<long, bool> SortedSetAddAsync(ValkeyKey key, ValkeyValue member, double score, SortedSetAddOptions options = default)
-    {
-        List<GlideString> args = [key, .. options.ToArgs(), .. new SortedSetEntry(member, score).ToArgs()];
-        return new(RequestType.ZAdd, [.. args], false, response => response == 1);
-    }
+        => new(RequestType.ZAdd, [key, .. options.ToArgs(), .. new SortedSetEntry(member, score).ToArgs()], false, response => response == 1);
 
     public static Cmd<long, long> SortedSetAddAsync(ValkeyKey key, IEnumerable<SortedSetEntry> members, SortedSetAddOptions options = default)
     {
@@ -189,19 +185,10 @@ internal partial class Request
     }
 
     public static Cmd<long, long> SortedSetLexCountAsync(ValkeyKey key, LexRange range)
-    {
-        GlideString[] rangeArgs = range.ToArgs();
-        List<GlideString> args = [key, .. rangeArgs];
-        return Simple<long>(RequestType.ZLexCount, [.. args]);
-    }
+        => Simple<long>(RequestType.ZLexCount, [key, .. range.ToArgs()]);
 
     public static Cmd<object[], double?[]> SortedSetScoresAsync(ValkeyKey key, IEnumerable<ValkeyValue> members)
-    {
-        List<GlideString> args = [key];
-        args.AddRange(members.Select(m => (GlideString)m));
-
-        return new(RequestType.ZMScore, [.. args], false, ToNullableDoubleArray);
-    }
+        => new(RequestType.ZMScore, [key, .. members], false, ToNullableDoubleArray);
 
     public static Cmd<object?, SortedSetEntry?> SortedSetPopMinAsync(ValkeyKey key)
         => new(RequestType.ZPopMin, [key], true, ToSortedSetEntry, true);
@@ -261,62 +248,22 @@ internal partial class Request
     }
 
     public static Cmd<object?, SortedSetEntry?> SortedSetPopMinAsync(IEnumerable<ValkeyKey> keys, TimeSpan timeout)
-    {
-        List<GlideString> args = [ToGlideStringSeconds(timeout)];
-        AddKeys(args, keys);
-        args.Add(ValkeyLiterals.MIN);
-        args.Add(ValkeyLiterals.COUNT);
-        args.Add(1.ToGlideString());
-
-        return new(RequestType.BZMPop, [.. args], true, ToSortedSetEntryFromPopResult, true);
-    }
+        => new(RequestType.BZMPop, [ToSeconds(timeout).ToGlideString(), .. keys, ValkeyLiterals.MIN, ValkeyLiterals.COUNT, "1"], true, ToSortedSetEntryFromPopResult, true);
 
     public static Cmd<object?, SortedSetEntry?> SortedSetPopMaxAsync(IEnumerable<ValkeyKey> keys, TimeSpan timeout)
-    {
-        List<GlideString> args = [ToGlideStringSeconds(timeout)];
-        AddKeys(args, keys);
-        args.Add(ValkeyLiterals.MAX);
-        args.Add(ValkeyLiterals.COUNT);
-        args.Add(1.ToGlideString());
-
-        return new(RequestType.BZMPop, [.. args], true, ToSortedSetEntryFromPopResult, true);
-    }
+        => new(RequestType.BZMPop, [ToSeconds(timeout).ToGlideString(), .. keys, ValkeyLiterals.MAX, ValkeyLiterals.MAX, "1"], true, ToSortedSetEntryFromPopResult, true);
 
     public static Cmd<object?, SortedSetPopResult> SortedSetPopMinAsync(IEnumerable<ValkeyKey> keys, long count, TimeSpan timeout)
-    {
-        List<GlideString> args = [ToGlideStringSeconds(timeout)];
-        AddKeys(args, keys);
-        args.Add(ValkeyLiterals.MIN);
-        args.Add(ValkeyLiterals.COUNT);
-        args.Add(count.ToGlideString());
-
-        return new(RequestType.BZMPop, [.. args], true, HandleSortedSetPopResultResponse, true);
-    }
+        => new(RequestType.BZMPop, [ToSeconds(timeout).ToGlideString(), .. keys, ValkeyLiterals.MIN, ValkeyLiterals.COUNT, count.ToGlideString()], true, HandleSortedSetPopResultResponse, true);
 
     public static Cmd<object?, SortedSetPopResult> SortedSetPopMaxAsync(IEnumerable<ValkeyKey> keys, long count, TimeSpan timeout)
-    {
-        List<GlideString> args = [ToGlideStringSeconds(timeout)];
-        AddKeys(args, keys);
-        args.Add(ValkeyLiterals.MAX);
-        args.Add(ValkeyLiterals.COUNT);
-        args.Add(count.ToGlideString());
-
-        return new(RequestType.BZMPop, [.. args], true, HandleSortedSetPopResultResponse, true);
-    }
+        => new(RequestType.BZMPop, [ToSeconds(timeout).ToGlideString(), .. keys, ValkeyLiterals.MAX, ValkeyLiterals.COUNT, count.ToGlideString()], true, HandleSortedSetPopResultResponse, true);
 
     public static Cmd<object[], SortedSetEntry?> SortedSetRandomMemberWithScoreAsync(ValkeyKey key)
-    {
-        List<GlideString> args = [key, 1.ToGlideString(), ValkeyLiterals.WITHSCORES];
-
-        return new(RequestType.ZRandMember, [.. args], false, ToSortedSetEntryFromPairArray);
-    }
+        => new(RequestType.ZRandMember, [key, "1", ValkeyLiterals.WITHSCORES], false, ToSortedSetEntryFromPairArray);
 
     public static Cmd<object[], SortedSetEntry[]> SortedSetRandomMembersWithScoreAsync(ValkeyKey key, long count)
-    {
-        List<GlideString> args = [key, count.ToGlideString(), ValkeyLiterals.WITHSCORES];
-
-        return new(RequestType.ZRandMember, [.. args], false, ToSortedSetEntriesFromPairArray);
-    }
+        => new(RequestType.ZRandMember, [key, count.ToGlideString(), ValkeyLiterals.WITHSCORES], false, ToSortedSetEntriesFromPairArray);
 
     public static Cmd<GlideString?, ValkeyValue> SortedSetRandomMemberAsync(ValkeyKey key) =>
         new(RequestType.ZRandMember, [key], true, response =>
@@ -326,11 +273,7 @@ internal partial class Request
         => new(RequestType.ZRandMember, [key, count.ToGlideString()], false, ToValkeyValues);
 
     public static Cmd<object[], SortedSetEntry[]> SortedSetRandomMembersWithScoresAsync(ValkeyKey key, long count)
-    {
-        List<GlideString> args = [key, count.ToGlideString(), ValkeyLiterals.WITHSCORES];
-
-        return new(RequestType.ZRandMember, [.. args], false, ToSortedSetEntriesFromPairArray);
-    }
+        => new(RequestType.ZRandMember, [key, count.ToGlideString(), ValkeyLiterals.WITHSCORES], false, ToSortedSetEntriesFromPairArray);
 
     public static Cmd<long?, long?> SortedSetRankAsync(ValkeyKey key, ValkeyValue member, Order order = Order.Ascending)
     {
@@ -348,36 +291,17 @@ internal partial class Request
         => new(RequestType.ZScan, [key, cursor.ToGlideString(), .. ToScanArgs(options)], false, ParseScanResponse);
 
     public static Cmd<object[], ValkeyValue[]> SortedSetRangeAsync(ValkeyKey key, RangeOptions options)
-    {
-        List<GlideString> args = [key];
-        args.AddRange(options.ToArgs());
-
-        return new(RequestType.ZRange, [.. args], false, ToValkeyValues);
-    }
+        => new(RequestType.ZRange, [key, .. options.ToArgs()], false, ToValkeyValues);
 
     public static Cmd<Dictionary<GlideString, object>, SortedSetEntry[]> SortedSetRangeWithScoresAsync(ValkeyKey key, RangeOptions options)
-    {
-        List<GlideString> args = [key];
-        args.AddRange(options.ToArgs());
-        args.Add(ValkeyLiterals.WITHSCORES);
-
-        return new(RequestType.ZRange, [.. args], false, ToScoreResults);
-    }
+        => new(RequestType.ZRange, [key, .. options.ToArgs(), ValkeyLiterals.WITHSCORES], false, ToScoreResults);
 
     public static Cmd<long, long> SortedSetRangeAndStoreAsync(ValkeyKey source, ValkeyKey destination, RangeOptions options)
-    {
-        List<GlideString> args = [destination, source];
-        args.AddRange(options.ToArgs());
-
-        return Simple<long>(RequestType.ZRangeStore, [.. args]);
-    }
+        => Simple<long>(RequestType.ZRangeStore, [destination, source, .. options.ToArgs()]);
 
     public static Cmd<long, long> SortedSetRemoveRangeAsync(ValkeyKey key, Range range)
     {
-        List<GlideString> args = [key];
-        args.AddRange(range.ToArgs());
-
-        RequestType requestType = range switch
+        var requestType = range switch
         {
             IndexRange => RequestType.ZRemRangeByRank,
             ScoreRange => RequestType.ZRemRangeByScore,
@@ -385,7 +309,7 @@ internal partial class Request
             _ => throw new ArgumentException($"Unsupported range type: {range.GetType()}")
         };
 
-        return Simple<long>(requestType, [.. args]);
+        return Simple<long>(requestType, [key, .. range.ToArgs()]);
     }
 
     public static Cmd<double?, double?> SortedSetScoreAsync(ValkeyKey key, ValkeyValue member)

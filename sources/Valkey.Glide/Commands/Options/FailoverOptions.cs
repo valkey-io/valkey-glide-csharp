@@ -93,7 +93,7 @@ public sealed class FailoverOptions
             if (_timeout is not null)
             {
                 args.Add(ValkeyLiterals.TIMEOUT);
-                args.Add(ToGlideStringMilliseconds(_timeout.Value));
+                args.Add(ToMilliseconds(_timeout.Value).ToGlideString());
             }
         }
 
