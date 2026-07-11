@@ -1,6 +1,6 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using Valkey.Glide.Internals;
+using static Valkey.Glide.Internals.TimeSpanUtils;
 
 namespace Valkey.Glide.Commands.Options;
 
@@ -93,7 +93,7 @@ public sealed class FailoverOptions
             if (_timeout is not null)
             {
                 args.Add(ValkeyLiterals.TIMEOUT);
-                args.Add(TimeSpanUtils.ToGlideStringMilliseconds(_timeout.Value));
+                args.Add(ToGlideStringMilliseconds(_timeout.Value));
             }
         }
 

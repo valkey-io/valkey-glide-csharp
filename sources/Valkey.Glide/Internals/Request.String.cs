@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using static Valkey.Glide.Internals.TimeSpanUtils;
+
 using Valkey.Glide.Commands.Options;
 
 using static Valkey.Glide.Internals.FFI;
@@ -142,7 +144,7 @@ internal partial class Request
     {
         if (options.Duration.HasValue)
         {
-            return [ValkeyLiterals.PX, TimeSpanUtils.ToGlideStringMilliseconds(options.Duration.Value)];
+            return [ValkeyLiterals.PX, ToGlideStringMilliseconds(options.Duration.Value)];
         }
 
         if (options.Timestamp.HasValue)

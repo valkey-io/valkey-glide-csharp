@@ -2,6 +2,8 @@
 
 using Valkey.Glide.Internals;
 
+using static Valkey.Glide.Internals.TimeSpanUtils;
+
 namespace Valkey.Glide;
 
 /// <summary>
@@ -131,7 +133,7 @@ public sealed class ClientSideCacheConfig
     internal FFI.ClientSideCacheConfig ToFfi() => new(
         CacheId,
         MaxCacheKb,
-        TimeSpanUtils.ToUlongMilliseconds(EntryTtl),
+        ToUlongMilliseconds(EntryTtl),
         EvictionPolicy.HasValue,
         EvictionPolicy ?? default,
         EnableMetrics

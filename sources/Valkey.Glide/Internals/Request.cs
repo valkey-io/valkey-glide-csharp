@@ -3,6 +3,7 @@
 using Valkey.Glide.Commands.Options;
 
 using static Valkey.Glide.Internals.FFI;
+using static Valkey.Glide.Internals.TimeSpanUtils;
 
 namespace Valkey.Glide.Internals;
 
@@ -174,7 +175,7 @@ internal partial class Request
         if (options.Duration.HasValue)
         {
             args.Add(ValkeyLiterals.PX);
-            args.Add(TimeSpanUtils.ToGlideStringMilliseconds(options.Duration.Value));
+            args.Add(ToGlideStringMilliseconds(options.Duration.Value));
         }
         else if (options.Timestamp.HasValue)
         {

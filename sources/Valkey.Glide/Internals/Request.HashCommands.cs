@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using static Valkey.Glide.Internals.TimeSpanUtils;
+
 using Valkey.Glide.Commands.Options;
 
 using static Valkey.Glide.Internals.FFI;
@@ -97,7 +99,7 @@ internal partial class Request
         if (options.Duration.HasValue)
         {
             args.Add(ValkeyLiterals.PX);
-            args.Add(TimeSpanUtils.ToGlideStringMilliseconds(options.Duration.Value));
+            args.Add(ToGlideStringMilliseconds(options.Duration.Value));
         }
         else if (options.Timestamp.HasValue)
         {
@@ -196,7 +198,7 @@ internal partial class Request
 
     public static Cmd<object[], HashExpireResult[]> HashExpireAsync(ValkeyKey key, TimeSpan expiry, ValkeyValue[] hashFields, ExpireCondition condition)
     {
-        List<GlideString> args = [key, TimeSpanUtils.ToGlideStringMilliseconds(expiry)];
+        List<GlideString> args = [key, ToGlideStringMilliseconds(expiry)];
 
         AddExpireCondition(args, condition);
         args.AddRange(ToArgs(ValkeyLiterals.FIELDS, hashFields));
