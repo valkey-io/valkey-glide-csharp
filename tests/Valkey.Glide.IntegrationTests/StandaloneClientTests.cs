@@ -1,5 +1,6 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands.Options;
 using Valkey.Glide.Pipeline;
 using Valkey.Glide.TestUtils;
 
@@ -225,40 +226,69 @@ public class StandaloneClientTests(TestConfiguration config)
     }
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task BatchKeyCopyAndKeyMove(bool isAtomic)
+    [MemberData(nameof(IsAtomic), MemberType = typeof(Data))]
+    public async Task BatchCopy(bool isAtomic)
     {
         await using var client = TestConfiguration.DefaultStandaloneClient();
 
         string sourceKey = Guid.NewGuid().ToString();
         string destKey = Guid.NewGuid().ToString();
-        string moveKey = Guid.NewGuid().ToString();
         string value = "test-value";
 
-        Pipeline.IBatch batch = new Batch(isAtomic);
+        await client.SetAsync(sourceKey, value);
 
-        // Set up keys
-        _ = batch.Set(sourceKey, value);
-        _ = batch.Set(moveKey, value);
+        Batch batch = new(isAtomic);
+        _ = batch.Copy(sourceKey, destKey, 1, false);
 
-        Batch batch2 = new(isAtomic);
+        object?[] results = (await client.Exec(batch, false))!;
+        Assert.True((bool)results[0]!);
+    }
 
-        // Test KeyCopy with database parameter
-        _ = batch2.Copy(sourceKey, destKey, 1, false);
+    [Theory]
+    [MemberData(nameof(IsAtomic), MemberType = typeof(Data))]
+    public async Task BatchMove(bool isAtomic)
+    {
+        await using var client = TestConfiguration.DefaultStandaloneClient();
 
-        // Test KeyMove
-        _ = batch2.Move(moveKey, 2);
+        string key = Guid.NewGuid().ToString();
+        string value = "test-value";
 
-        object?[] results = (await client.Exec((Batch)batch, false))!;
-        object?[] results2 = (await client.Exec(batch2, false))!;
+        await client.SetAsync(key, value);
 
-        Assert.Multiple(
-            () => Assert.True((bool)results[0]!), // Set sourceKey
-            () => Assert.True((bool)results[1]!), // Set moveKey
-            () => Assert.True((bool)results2[0]!), // KeyCopy result
-            () => Assert.True((bool)results2[1]!)  // KeyMove result
-        );
+        Batch batch = new(isAtomic);
+        _ = batch.Move(key, 2);
+
+        object?[] results = (await client.Exec(batch, false))!;
+        Assert.True((bool)results[0]!);
+    }
+
+    [Theory]
+    [MemberData(nameof(IsAtomic), MemberType = typeof(Data))]
+    public async Task BatchMigrateMultiKey(bool isAtomic)
+    {
+        using var destServer = new StandaloneServer();
+        await using var sourceClient = TestConfiguration.DefaultStandaloneClient();
+        await using var destClient = await destServer.CreateStandaloneClientAsync();
+
+        string key1 = Guid.NewGuid().ToString();
+        string key2 = Guid.NewGuid().ToString();
+        string value = "batch-migrate-value";
+
+        await sourceClient.SetAsync(key1, value);
+        await sourceClient.SetAsync(key2, value);
+
+        using var options = new MigrateOptions(destServer.Address.Host, destServer.Address.Port, 0, TimeSpan.FromSeconds(10));
+
+        Batch batch = new(isAtomic);
+        _ = batch.Migrate([key1, key2], options);
+
+        object?[] results = (await sourceClient.Exec(batch, false))!;
+        Assert.True((bool)results[0]!);
+
+        Assert.False(await sourceClient.ExistsAsync(key1));
+        Assert.False(await sourceClient.ExistsAsync(key2));
+        Assert.Equal(value, await destClient.GetAsync(key1));
+        Assert.Equal(value, await destClient.GetAsync(key2));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]

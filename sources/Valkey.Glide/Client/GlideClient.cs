@@ -70,6 +70,10 @@ public partial class GlideClient :
     public async Task<object?> CustomCommand(IEnumerable<GlideString> args)
         => await Command(Request.CustomCommand([.. args]));
 
+    /// <inheritdoc cref="IGlideClient.MigrateAsync(IEnumerable{ValkeyKey}, MigrateOptions)"/>
+    public async Task<bool> MigrateAsync(IEnumerable<ValkeyKey> keys, MigrateOptions options)
+        => await Command(Request.MigrateAsync(keys, options));
+
     /// <inheritdoc cref="IGlideClient.InfoAsync()"/>
     public async Task<string> InfoAsync() => await InfoAsync([]);
 

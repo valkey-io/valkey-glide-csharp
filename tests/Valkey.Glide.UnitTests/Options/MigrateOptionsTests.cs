@@ -1,0 +1,36 @@
+// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
+
+using Valkey.Glide.Commands.Options;
+
+namespace Valkey.Glide.UnitTests;
+
+public class MigrateOptionsTests
+{
+    [Fact]
+    public void ToArgs_Success()
+    {
+        // Single key
+        Assert.Equal(["host", "6379", "key", "0", "5000"], new MigrateOptions("host", 6379, 0, TimeSpan.FromSeconds(5)).ToArgs(["key"]));
+        Assert.Equal(["host", "6379", "key", "0", "0", "COPY"], new MigrateOptions("host", 6379, 0, TimeSpan.Zero) { Copy = true }.ToArgs(["key"]));
+        Assert.Equal(["host", "6379", "key", "0", "0", "REPLACE"], new MigrateOptions("host", 6379, 0, TimeSpan.Zero) { Replace = true }.ToArgs(["key"]));
+        Assert.Equal(["host", "6379", "key", "0", "0", "COPY", "REPLACE"], new MigrateOptions("host", 6379, 0, TimeSpan.Zero) { Copy = true, Replace = true }.ToArgs(["key"]));
+        Assert.Equal(["host", "6379", "key", "0", "0", "AUTH", "secret"], new MigrateOptions("host", 6379, 0, TimeSpan.Zero).WithAuth("secret").ToArgs(["key"]));
+        Assert.Equal(["host", "6379", "key", "0", "0", "AUTH2", "user", "pass"], new MigrateOptions("host", 6379, 0, TimeSpan.Zero).WithAuth("user", "pass").ToArgs(["key"]));
+        Assert.Equal(["host", "6379", "key", "2", "10000", "COPY", "REPLACE", "AUTH2", "admin", "pass"], new MigrateOptions("host", 6379, 2, TimeSpan.FromSeconds(10)) { Copy = true, Replace = true }.WithAuth("admin", "pass").ToArgs(["key"]));
+
+        // Multiple keys
+        Assert.Equal(["host", "6379", "", "0", "5000", "KEYS", "k1", "k2"], new MigrateOptions("host", 6379, 0, TimeSpan.FromSeconds(5)).ToArgs(["k1", "k2"]));
+        Assert.Equal(["host", "6379", "", "0", "0", "COPY", "REPLACE", "KEYS", "k1", "k2"], new MigrateOptions("host", 6379, 0, TimeSpan.Zero) { Copy = true, Replace = true }.ToArgs(["k1", "k2"]));
+        Assert.Equal(["host", "6379", "", "1", "3000", "AUTH", "secret", "KEYS", "k1", "k2"], new MigrateOptions("host", 6379, 1, TimeSpan.FromSeconds(3)).WithAuth("secret").ToArgs(["k1", "k2"]));
+        Assert.Equal(["host", "6379", "", "0", "0", "AUTH2", "user", "pass", "KEYS", "k1", "k2", "k3"], new MigrateOptions("host", 6379, 0, TimeSpan.Zero).WithAuth("user", "pass").ToArgs(["k1", "k2", "k3"]));
+    }
+
+    [Fact]
+    public void ToArgs_Failure()
+    {
+        _ = Assert.Throws<ArgumentException>(() => new MigrateOptions("host", 6379, 0, TimeSpan.Zero).ToArgs([]));
+        _ = Assert.Throws<ArgumentNullException>(() => new MigrateOptions("host", 6379, 0, TimeSpan.Zero).WithAuth(null!));
+        _ = Assert.Throws<ArgumentNullException>(() => new MigrateOptions("host", 6379, 0, TimeSpan.Zero).WithAuth(null!, "pass"));
+        _ = Assert.Throws<ArgumentNullException>(() => new MigrateOptions("host", 6379, 0, TimeSpan.Zero).WithAuth("user", null!));
+    }
+}

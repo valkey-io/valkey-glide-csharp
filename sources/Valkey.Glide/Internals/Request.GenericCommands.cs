@@ -310,6 +310,9 @@ internal partial class Request
         });
     }
 
+    public static Cmd<string, bool> MigrateAsync(IEnumerable<ValkeyKey> keys, MigrateOptions options)
+        => new(RequestType.Migrate, options.ToArgs(keys.ToGlideStrings()), false, response => response == "OK");
+
     public static Cmd<long, long> WaitAsync(long numreplicas, TimeSpan timeout)
         => Simple<long>(RequestType.Wait, [numreplicas.ToGlideString(), ToMilliseconds(timeout)]);
 

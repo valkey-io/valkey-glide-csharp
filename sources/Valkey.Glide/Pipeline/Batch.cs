@@ -1,5 +1,8 @@
 ﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands.Options;
+using Valkey.Glide.Internals;
+
 namespace Valkey.Glide.Pipeline;
 
 /// <summary>
@@ -24,10 +27,22 @@ namespace Valkey.Glide.Pipeline;
 /// <seealso href="https://glide.valkey.io/how-to/send-batch-commands/">Valkey GLIDE – Send Batch Commands</seealso>
 public sealed class Batch(bool isAtomic) : BaseBatch<Batch>(isAtomic), IBatch, IBatchStandalone
 {
+    /// <inheritdoc cref="IBatchStandalone.Copy(ValkeyKey, ValkeyKey, int, bool)" />
+    public Batch Copy(ValkeyKey source, ValkeyKey destination, int destinationDatabase, bool replace = false)
+        => AddCmd(Request.CopyAsync(source, destination, destinationDatabase, replace));
+
+    /// <inheritdoc cref="IBatchStandalone.Migrate(IEnumerable{ValkeyKey}, MigrateOptions)" />
+    public Batch Migrate(IEnumerable<ValkeyKey> keys, MigrateOptions options)
+        => AddCmd(Request.MigrateAsync(keys, options));
+
+    /// <inheritdoc cref="IBatchStandalone.Move(ValkeyKey, int)" />
+    public Batch Move(ValkeyKey key, int database)
+        => AddCmd(Request.MoveAsync(key, database));
+
     // Explicit interface implementations for IBatchStandalone
     IBatch IBatchStandalone.Move(ValkeyKey key, int database) => Move(key, database);
     IBatch IBatchStandalone.Copy(ValkeyKey source, ValkeyKey destination, int destinationDatabase, bool replace) => Copy(source, destination, destinationDatabase, replace);
-    IBatch IBatchStandalone.SelectAsync(long index) => SelectAsync(index);
+    IBatch IBatchStandalone.Migrate(IEnumerable<ValkeyKey> keys, MigrateOptions options) => Migrate(keys, options);
 
     // All other command implementations are inherited from BaseBatch<T> partials.
 }
