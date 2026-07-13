@@ -30,7 +30,6 @@ internal partial class Request
     private static Cmd<T, bool> Boolean<T>(RequestType request, GlideString[] args)
         => new(request, args, false, response => Convert.ToInt64(response) == 1);
 
-    private static readonly string OK = "OK";
     private static readonly Func<string, ValkeyValue> ToOkConverter = _ => ValkeyValue.Ok;
 
     /// <summary>
@@ -40,7 +39,7 @@ internal partial class Request
     /// <param name="args">The command arguments</param>
     /// <returns>A command that converts the response to a boolean value (true if response equals OK)</returns>
     private static Cmd<string, bool> StringOKToBool(RequestType request, GlideString[] args)
-        => new(request, args, false, response => response == OK);
+        => new(request, args, false, response => response == "OK");
 
     /// <summary>
     /// Create a Cmd which returns a Boolean value based on the response being OK or not.
@@ -49,7 +48,7 @@ internal partial class Request
     /// <param name="args">The command arguments</param>
     /// <returns>A command that converts the response to a boolean value (true if response equals OK)</returns>
     private static Cmd<object, bool> ObjectOKToBool(RequestType request, GlideString[] args)
-        => new(request, args, false, response => response.ToString() == OK);
+        => new(request, args, false, response => (response is string s && s == "OK") || (response is GlideString gs && gs.ToString() == "OK"));
 
     /// <summary>
     /// Create a Cmd which returns a Boolean value based on the response being OK or not, allowing null responses.
