@@ -4,6 +4,8 @@
 using Valkey.Glide.Commands.Options;
 using Valkey.Glide.TestUtils;
 
+using static Valkey.Glide.TestUtils.Options;
+
 namespace Valkey.Glide.IntegrationTests;
 
 public class GenericCommandTests(TestConfiguration config)
@@ -825,7 +827,7 @@ public class GenericCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
         await client.SetAsync(key, "value");
 
-        using var options = BuildMigrateOptions(host: "invalid-host");
+        using var options = BuildMigrateOptions(new Address("invalid-host", 9999));
         _ = await Assert.ThrowsAsync<Errors.RequestException>(
             () => client.MigrateAsync(key, options));
     }
@@ -930,19 +932,6 @@ public class GenericCommandTests(TestConfiguration config)
 
         Assert.False(await sourceClient.ExistsAsync(key));
         Assert.Equal(sourceValue, await destClient.GetAsync(key));
-    }
-
-    /// <summary>
-    /// Builds and returns migrate options for testing.
-    /// If not specified, required arguments are populated with default values.
-    /// </summary>
-    private static MigrateOptions BuildMigrateOptions(
-        Address? address = null,
-        int db = 0,
-        TimeSpan? timeout = null)
-    {
-        address ??= new("localhost", 1234);
-        return new(address.Host, address.Port, db, timeout ?? TimeSpan.FromSeconds(10));
     }
 
     #endregion

@@ -5,6 +5,7 @@ using Valkey.Glide.Pipeline;
 using Valkey.Glide.TestUtils;
 
 using static Valkey.Glide.Errors;
+using static Valkey.Glide.TestUtils.Options;
 
 namespace Valkey.Glide.IntegrationTests;
 
@@ -214,7 +215,7 @@ public class SharedBatchTests
 
         await client.SetAsync(key, value);
 
-        using var options = new MigrateOptions(destServer.Address.Host, destServer.Address.Port, 0, TimeSpan.FromSeconds(10));
+        using var options = BuildMigrateOptions(address: destServer.Address);
 
         object?[] results;
         if (client is GlideClusterClient clusterClient)
