@@ -744,7 +744,7 @@ public class CommandTests
         Assert.Equal(-1L, offInfo.Redirect);
         Assert.Empty(offInfo.Prefixes);
 
-        // Tracking on with prefixes
+        // Tracking on
         var onResponse = new Dictionary<GlideString, object>()
         {
             ["flags"] = new HashSet<object> {
