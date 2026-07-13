@@ -15,22 +15,22 @@ internal partial class Request
     #region Command Builders
 
     public static Cmd<GlideString, ValkeyValue> ClientGetName()
-        => new(RequestType.ClientGetName, [], true, gs => gs is null ? ValkeyValue.Null : (ValkeyValue)gs, allowConverterToHandleNull: true);
+        => ToValkeyValue(RequestType.ClientGetName, [], isNullable: true);
 
-    public static Cmd<object, ClusterValue<ValkeyValue>> ClientGetNameCluster(Route? route = null)
-        => new(RequestType.ClientGetName, [], true, ResponseConverters.MakeClusterValueHandler<object?, ValkeyValue>(ValkeyValue.Unbox, route is SingleNodeRoute), allowConverterToHandleNull: true);
+    public static Cmd<object, ClusterValue<ValkeyValue>> ClientGetName(Route route)
+        => ClientGetName().ToClusterValue(route);
 
     public static Cmd<long, long> ClientId()
         => Simple<long>(RequestType.ClientId, []);
 
-    public static Cmd<string, ValkeyValue> ClientSetName(string connectionName)
-        => Ok(RequestType.ClientSetName, [connectionName.ToGlideString()]);
+    public static Cmd<string, ValkeyValue> ClientSetName(string name)
+        => Ok(RequestType.ClientSetName, [name]);
 
     public static Cmd<string, ValkeyValue> ClientPause(TimeSpan timeout)
         => Ok(RequestType.ClientPause, [ToMilliseconds(timeout)]);
 
     public static Cmd<string, ValkeyValue> ClientPauseWrite(TimeSpan timeout)
-        => Ok(RequestType.ClientPause, [ToMilliseconds(timeout), ValkeyLiterals.WRITE.ToGlideString()]);
+        => Ok(RequestType.ClientPause, [ToMilliseconds(timeout), ValkeyLiterals.WRITE]);
 
     public static Cmd<string, ValkeyValue> ClientUnpause()
         => Ok(RequestType.ClientUnpause, []);

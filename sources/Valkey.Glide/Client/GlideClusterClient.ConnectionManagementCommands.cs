@@ -15,7 +15,7 @@ public sealed partial class GlideClusterClient
 
     /// <inheritdoc cref="IGlideClusterClient.ClientGetNameAsync(Route)"/>
     public async Task<ClusterValue<ValkeyValue>> ClientGetNameAsync(Route route)
-        => await Command(Request.ClientGetNameCluster(route), route);
+        => await Command(Request.ClientGetName(route), route);
 
     /// <inheritdoc cref="IBaseClient.ClientIdAsync()"/>
     public override async Task<long> ClientIdAsync()
