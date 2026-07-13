@@ -12,7 +12,7 @@ namespace Valkey.Glide.Commands.Options;
 /// <param name="port">The port number of the destination server.</param>
 /// <param name="destinationDb">The database number on the destination server.</param>
 /// <param name="timeout">The timeout for the migration.</param>
-public class MigrateOptions(string host, ushort port, int destinationDb, TimeSpan timeout) : IDisposable
+public sealed class MigrateOptions(string host, ushort port, int destinationDb, TimeSpan timeout) : IDisposable
 {
     #region Private Fields
 
