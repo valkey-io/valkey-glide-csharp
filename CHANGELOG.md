@@ -10,8 +10,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Support additional commands (#435):
-  - `BGSAVE`, `BGSAVE SCHEDULE`, and `BGSAVE CANCEL` (#436)
-  - `CLIENT PAUSE` and `CLIENT UNPAUSE` (#437)
+  - `BGSAVE CANCEL` (#436)
+  - `BGSAVE SCHEDULE` (#436)
+  - `BGSAVE` (#436)
+  - `CLIENT CACHING` (#451)
+  - `CLIENT PAUSE` (#437)
+  - `CLIENT TRACKING` (#451)
+  - `CLIENT TRACKINGINFO` (#451)
+  - `CLIENT UNPAUSE` (#437)
   - `SAVE` (#440)
 - Custom socket address resolution support via callback (#392)
 
