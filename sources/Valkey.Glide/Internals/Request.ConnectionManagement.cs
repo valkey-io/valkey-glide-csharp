@@ -27,4 +27,24 @@ internal partial class Request
 
     public static Cmd<string, ValkeyValue> ClientUnpause()
         => Ok(RequestType.ClientUnpause, []);
+
+    public static Cmd<Dictionary<GlideString, object>, ClientTrackingInfo> ClientTrackingInfo()
+        => new(RequestType.ClientTrackingInfo, [], false, ConvertClientTrackingInfoResponse);
+
+    private static ClientTrackingInfo ConvertClientTrackingInfoResponse(Dictionary<GlideString, object> map)
+    {
+        ISet<string> flags = map.TryGetValue("flags", out object? flagsObj) && flagsObj is IEnumerable<object> flagsItems
+            ? ToStringSet(flagsItems)
+            : new HashSet<string>();
+
+        long redirect = map.TryGetValue("redirect", out object? redirectObj)
+            ? Convert.ToInt64(redirectObj)
+            : -1;
+
+        ISet<string> prefixes = map.TryGetValue("prefixes", out object? prefixesObj) && prefixesObj is IEnumerable<object> prefixItems
+            ? ToStringSet(prefixItems)
+            : new HashSet<string>();
+
+        return new ClientTrackingInfo(flags, redirect, prefixes);
+    }
 }

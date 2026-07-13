@@ -42,4 +42,8 @@ public partial class GlideClient
     /// <inheritdoc cref="IBaseClient.ClientUnpauseAsync()"/>
     public override async Task ClientUnpauseAsync()
         => _ = await Command(Request.ClientUnpause());
+
+    /// <inheritdoc cref="IBaseClient.ClientTrackingInfoAsync()"/>
+    public override async Task<ClientTrackingInfo> ClientTrackingInfoAsync()
+        => await Command(Request.ClientTrackingInfo());
 }

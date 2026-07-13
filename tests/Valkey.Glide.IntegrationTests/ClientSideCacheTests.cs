@@ -17,7 +17,6 @@ public class ClientSideCacheTests
             : await GlideClient.CreateClient(TestConfiguration.DefaultClientConfig().WithClientSideCache(cache).Build());
 
     #endregion
-
     #region Basic Cache Hit With Metrics
 
     [Theory]
@@ -67,7 +66,6 @@ public class ClientSideCacheTests
     }
 
     #endregion
-
     #region Without Metrics
 
     [Theory]
@@ -103,7 +101,6 @@ public class ClientSideCacheTests
     }
 
     #endregion
-
     #region No Cache Configured
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -120,7 +117,6 @@ public class ClientSideCacheTests
     }
 
     #endregion
-
     #region Multiple Keys
 
     [Theory]
@@ -166,7 +162,6 @@ public class ClientSideCacheTests
     }
 
     #endregion
-
     #region TTL Expiration
 
     [Theory]
@@ -210,7 +205,6 @@ public class ClientSideCacheTests
     }
 
     #endregion
-
     #region Eviction Policy LRU
 
     [Theory]
@@ -274,7 +268,6 @@ public class ClientSideCacheTests
     }
 
     #endregion
-
     #region Eviction Policy LFU
 
     [Theory]
@@ -357,6 +350,51 @@ public class ClientSideCacheTests
         Assert.Equal(largeValue, retrieved.ToString());
         newHitRate = await client.GetCacheHitRateAsync();
         Assert.True(newHitRate > oldHitRate, "key2 (medium frequency) should still be cached");
+    }
+
+    #endregion
+    #region Server Assisted Invalidation
+
+    [Theory]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
+    public async Task ServerAssisted_Invalidation(bool clusterMode)
+    {
+        // TODO #435: Add builder to Options once #447 is merged.
+        var cache = new ClientSideCacheConfig(1024, TimeSpan.FromMinutes(5))
+            .WithMetrics(true)
+            .WithServerAssisted();
+
+        await using BaseClient clientA = clusterMode
+            ? await GlideClusterClient.CreateClient(
+                TestConfiguration.DefaultClusterClientConfig()
+                    .WithClientSideCache(cache)
+                    .Build())
+            : await GlideClient.CreateClient(
+                TestConfiguration.DefaultClientConfig()
+                    .WithClientSideCache(cache)
+                    .Build());
+
+        // Client B is a separate client without caching — used to modify the key
+        await using BaseClient clientB = clusterMode
+            ? await GlideClusterClient.CreateClient(TestConfiguration.DefaultClusterClientConfig().Build())
+            : await GlideClient.CreateClient(TestConfiguration.DefaultClientConfig().Build());
+
+        string key = $"invalidation_{Guid.NewGuid()}";
+
+        // Client A sets and caches the key.
+        await clientA.SetAsync(key, "original");
+        _ = await clientA.GetAsync(key); // miss — populates cache
+        _ = await clientA.GetAsync(key); // hit — served from cache
+
+        Assert.Equal(1, await clientA.GetCacheEntryCountAsync());
+
+        // Client B modifies the key.
+        await clientB.SetAsync(key, "updated");
+
+        // Poll until invalidation.
+        await Polling.WaitForAsync(
+            async () => await clientA.GetCacheEntryCountAsync() == 0,
+            "Cache entry should be invalidated by server notification");
     }
 
     #endregion

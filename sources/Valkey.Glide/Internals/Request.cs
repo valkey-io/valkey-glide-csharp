@@ -80,26 +80,6 @@ internal partial class Request
         => new(request, args, false, set => [.. set.Cast<GlideString>().Select(gs => gs)]);
 
     /// <summary>
-    /// Converts a <see cref="HashSet{Object}"/> response to an <see cref="ISet{ValkeyValue}"/>.
-    /// </summary>
-    private static ISet<ValkeyValue> ToValkeyValueSet(HashSet<object> set)
-        => new HashSet<ValkeyValue>(set.Cast<GlideString>().Select(gs => (ValkeyValue)gs));
-
-    /// <summary>
-    /// Converts an object array to an <see cref="ISet{ValkeyKey}"/>.
-    /// </summary>
-    /// <param name="objects">The object array to convert.</param>
-    /// <returns>A converted <see cref="ValkeyKey"/> set.</returns>
-    private static ISet<ValkeyKey> ToValkeyKeySet(object[] objects)
-        => new HashSet<ValkeyKey>(objects.Cast<GlideString>().Select(gs => (ValkeyKey)gs.Bytes));
-
-    /// <summary>
-    /// Converts an object array to an <see cref="ISet{ValkeyValue}"/>.
-    /// </summary>
-    private static ISet<ValkeyValue> ToValkeyValueSet(object[] objects)
-        => new HashSet<ValkeyValue>(objects.Cast<GlideString>().Select(s => (ValkeyValue)s));
-
-    /// <summary>
     /// Converts a keyword and items into a counted array: <c>keyword count item1 item2 ...</c>.
     /// </summary>
     private static GlideString[] ToArgs(GlideString keyword, IEnumerable<ValkeyValue> items)
@@ -198,4 +178,26 @@ internal partial class Request
             args.Add(ValkeyLiterals.KEEPTTL);
         }
     }
+
+    #region Set Converters
+
+    /// <summary>
+    /// Converts the given objects to an <see cref="ISet{ValkeyKey}"/>.
+    /// </summary>
+    private static ISet<ValkeyKey> ToValkeyKeySet(IEnumerable<object> items)
+        => new HashSet<ValkeyKey>(items.Cast<GlideString>().Select(gs => (ValkeyKey)gs.Bytes));
+
+    /// <summary>
+    /// Converts the given objects to an <see cref="ISet{ValkeyValue}"/>.
+    /// </summary>
+    private static ISet<ValkeyValue> ToValkeyValueSet(IEnumerable<object> items)
+        => new HashSet<ValkeyValue>(items.Cast<GlideString>().Select(gs => (ValkeyValue)gs));
+
+    /// <summary>
+    /// Converts the given objects to an <see cref="ISet{String}"/>.
+    /// </summary>
+    private static ISet<string> ToStringSet(IEnumerable<object> items)
+        => new HashSet<string>(items.Cast<GlideString>().Select(gs => gs.ToString()));
+
+    #endregion
 }

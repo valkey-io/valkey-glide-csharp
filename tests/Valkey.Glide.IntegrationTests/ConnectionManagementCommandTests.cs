@@ -64,4 +64,89 @@ public class ConnectionManagementCommandTests(TestConfiguration config)
     }
 
     #endregion
+    #region ClientTrackingInfo
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task ClientTrackingInfo_Off(BaseClient client)
+        => AssertTrackingInfoOff(await client.ClientTrackingInfoAsync());
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
+    public async Task ClientTrackingInfo_Off_WithRoute(GlideClusterClient client)
+    {
+        var response = await client.ClientTrackingInfoAsync(Route.AllNodes);
+
+        Assert.NotEmpty(response.MultiValue);
+        foreach (var info in response.MultiValue.Values)
+        {
+            AssertTrackingInfoOff(info);
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
+    public async Task ClientTrackingInfo_On(bool clusterMode)
+    {
+        // TODO #435: Add builder to Options once #447 is merged.
+        var cache = new ClientSideCacheConfig(1024, TimeSpan.FromMinutes(1))
+            .WithServerAssisted();
+
+        await using BaseClient client = clusterMode
+            ? await GlideClusterClient.CreateClient(
+                TestConfiguration.DefaultClusterClientConfig()
+                    .WithClientSideCache(cache)
+                    .Build())
+            : await GlideClient.CreateClient(
+                TestConfiguration.DefaultClientConfig()
+                    .WithClientSideCache(cache)
+                    .Build());
+
+        AssertTrackingInfoOn(await client.ClientTrackingInfoAsync());
+    }
+
+    [Fact]
+    public async Task ClientTrackingInfo_On_WithRoute()
+    {
+        // TODO #435: Add builder to Options once #447 is merged.
+        var cache = new ClientSideCacheConfig(1024, TimeSpan.FromMinutes(1))
+            .WithServerAssisted();
+
+        await using var client = await GlideClusterClient.CreateClient(
+            TestConfiguration.DefaultClusterClientConfig()
+                .WithClientSideCache(cache)
+                .Build());
+
+        var response = await client.ClientTrackingInfoAsync(Route.AllNodes);
+
+        Assert.NotEmpty(response.MultiValue);
+        foreach (var multiInfo in response.MultiValue.Values)
+        {
+            AssertTrackingInfoOn(multiInfo);
+        }
+    }
+
+    /// <summary>
+    /// Asserts that the given <see cref="ClientTrackingInfo"/>
+    /// contains the expected values when tracking is turned off.
+    /// </summary>
+    private static void AssertTrackingInfoOff(ClientTrackingInfo info)
+    {
+        Assert.Equivalent(new HashSet<string> { "off" }, info.Flags);
+        Assert.Equal(-1, info.Redirect);
+        Assert.Empty(info.Prefixes);
+    }
+
+    /// <summary>
+    /// Asserts that the given <see cref="ClientTrackingInfo"/>
+    /// contains the expected values when tracking is turned on.
+    /// </summary>
+    private static void AssertTrackingInfoOn(ClientTrackingInfo info)
+    {
+        Assert.Equivalent(new HashSet<string> { "on", "bcast" }, info.Flags);
+        Assert.Equal(0, info.Redirect);
+        Assert.Equivalent(new HashSet<string> { "" }, info.Prefixes);
+    }
+
+    #endregion
 }

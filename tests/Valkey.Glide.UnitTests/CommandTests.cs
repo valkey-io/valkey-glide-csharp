@@ -82,22 +82,21 @@ public class CommandTests
             () => Assert.Equal(["INFO", "CLIENTS", "CPU"], Request.Info([InfoOptions.Section.CLIENTS, InfoOptions.Section.CPU]).GetArgs()),
             () => Assert.Equal(["INFO", "SERVER", "MEMORY", "STATS"], Request.Info([InfoOptions.Section.SERVER, InfoOptions.Section.MEMORY, InfoOptions.Section.STATS]).GetArgs()),
 
-            // Connection Management Commands - Ping
-            () => Assert.Equal(["PING"], Request.Ping().GetArgs()),
-            () => Assert.Equal(["PING", "Hello"], Request.Ping("Hello").GetArgs()),
-            () => Assert.Equal(["PING", "test message"], Request.Ping("test message").GetArgs()),
-            () => Assert.Equal(["PING", ""], Request.Ping("").GetArgs()),
-            () => Assert.Equal(["PING", "PONG"], Request.Ping("PONG").GetArgs()),
+            // Connection Management Commands
+            () => Assert.Equal(["CLIENTPAUSE", "1000", "WRITE"], Request.ClientPauseWrite(TimeSpan.FromMilliseconds(1000)).GetArgs()),
+            () => Assert.Equal(["CLIENTPAUSE", "1000"], Request.ClientPause(TimeSpan.FromMilliseconds(1000)).GetArgs()),
+            () => Assert.Equal(["CLIENTTRACKINGINFO"], Request.ClientTrackingInfo().GetArgs()),
+            () => Assert.Equal(["CLIENTUNPAUSE"], Request.ClientUnpause().GetArgs()),
             () => Assert.Equal(["ECHO", "message"], Request.Echo("message").GetArgs()),
+            () => Assert.Equal(["PING", ""], Request.Ping("").GetArgs()),
+            () => Assert.Equal(["PING", "Hello"], Request.Ping("Hello").GetArgs()),
+            () => Assert.Equal(["PING", "PONG"], Request.Ping("PONG").GetArgs()),
+            () => Assert.Equal(["PING", "test message"], Request.Ping("test message").GetArgs()),
+            () => Assert.Equal(["PING"], Request.Ping().GetArgs()),
+            () => Assert.Equal(["SELECT", "-1"], Request.Select(-1).GetArgs()),
             () => Assert.Equal(["SELECT", "0"], Request.Select(0).GetArgs()),
             () => Assert.Equal(["SELECT", "1"], Request.Select(1).GetArgs()),
             () => Assert.Equal(["SELECT", "15"], Request.Select(15).GetArgs()),
-            () => Assert.Equal(["SELECT", "-1"], Request.Select(-1).GetArgs()),
-
-            // Connection Management Commands - ClientPause and ClientUnpause
-            () => Assert.Equal(["CLIENTPAUSE", "1000"], Request.ClientPause(TimeSpan.FromMilliseconds(1000)).GetArgs()),
-            () => Assert.Equal(["CLIENTPAUSE", "1000", "WRITE"], Request.ClientPauseWrite(TimeSpan.FromMilliseconds(1000)).GetArgs()),
-            () => Assert.Equal(["CLIENTUNPAUSE"], Request.ClientUnpause().GetArgs()),
 
             // Server Management Commands
             () => Assert.Equal(["CLIENTGETNAME"], Request.ClientGetName().GetArgs()),
@@ -717,6 +716,40 @@ public class CommandTests
             () => Assert.Equal([65L, null, 100L], Request.BitFieldAsync("key", [new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(0)), new BitFieldOptions.BitFieldSet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(0), 100)]).Converter([65L, null!, 100L])),
             () => Assert.Equal([65L, 4L], Request.BitFieldReadOnlyAsync("key", [new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(0)), new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Unsigned(4), new BitFieldOptions.BitOffset(0))]).Converter([65L, 4L]))
         );
+
+    [Fact]
+    public void ValidateClientTrackingInfoConverter()
+    {
+        // Tracking off
+        var offResponse = new Dictionary<GlideString, object>()
+        {
+            ["flags"] = new HashSet<object> { new GlideString("off") },
+            ["redirect"] = -1L,
+            ["prefixes"] = new HashSet<object>(),
+        };
+
+        var offInfo = Request.ClientTrackingInfo().Converter(offResponse);
+        Assert.Equivalent(new HashSet<string> { "off" }, offInfo.Flags);
+        Assert.Equal(-1L, offInfo.Redirect);
+        Assert.Empty(offInfo.Prefixes);
+
+        // Tracking on with prefixes
+        var onResponse = new Dictionary<GlideString, object>()
+        {
+            ["flags"] = new HashSet<object> {
+                new GlideString("on"),
+                new GlideString("bcast") },
+            ["redirect"] = 0L,
+            ["prefixes"] = new HashSet<object> {
+                new GlideString("user:"),
+                new GlideString("session:") },
+        };
+
+        var onInfo = Request.ClientTrackingInfo().Converter(onResponse);
+        Assert.Equivalent(new HashSet<string> { "on", "bcast" }, onInfo.Flags);
+        Assert.Equal(0L, onInfo.Redirect);
+        Assert.Equivalent(new HashSet<string> { "user:", "session:" }, onInfo.Prefixes);
+    }
 
     [Fact]
     public void BitField_AutoOptimization_UsesCorrectRequestType()
