@@ -194,9 +194,9 @@ internal partial class Request
         => new HashSet<ValkeyValue>(items.Cast<GlideString>().Select(gs => (ValkeyValue)gs));
 
     /// <summary>
-    /// Converts the given objects to an <see cref="ISet{String}"/>.
+    /// Converts the given objects to an <see cref="IReadOnlySet{String}"/>.
     /// </summary>
-    private static ISet<string> ToStringSet(IEnumerable<object> items)
+    private static IReadOnlySet<string> ToReadOnlyStringSet(IEnumerable<object> items)
         => new HashSet<string>(items.Cast<GlideString>().Select(gs => gs.ToString()));
 
     #endregion

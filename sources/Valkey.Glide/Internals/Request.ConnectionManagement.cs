@@ -7,6 +7,13 @@ namespace Valkey.Glide.Internals;
 
 internal partial class Request
 {
+    #region Constants
+
+    private static readonly IReadOnlySet<string> EmptyStringSet = new HashSet<string>();
+
+    #endregion
+    #region Command Builders
+
     public static Cmd<GlideString, ValkeyValue> ClientGetName()
         => new(RequestType.ClientGetName, [], true, gs => gs is null ? ValkeyValue.Null : (ValkeyValue)gs, allowConverterToHandleNull: true);
 
@@ -31,20 +38,27 @@ internal partial class Request
     public static Cmd<Dictionary<GlideString, object>, ClientTrackingInfo> ClientTrackingInfo()
         => new(RequestType.ClientTrackingInfo, [], false, ConvertClientTrackingInfoResponse);
 
+    #endregion
+    #region Response Converters
+
     private static ClientTrackingInfo ConvertClientTrackingInfoResponse(Dictionary<GlideString, object> map)
     {
-        ISet<string> flags = map.TryGetValue("flags", out object? flagsObj) && flagsObj is IEnumerable<object> flagsItems
-            ? ToStringSet(flagsItems)
-            : new HashSet<string>();
+        IReadOnlySet<string> flags =
+            map.TryGetValue("flags", out object? flagsObj) && flagsObj is IEnumerable<object> flagsItems
+            ? ToReadOnlyStringSet(flagsItems)
+            : EmptyStringSet;
 
         long redirect = map.TryGetValue("redirect", out object? redirectObj)
             ? Convert.ToInt64(redirectObj)
             : -1;
 
-        ISet<string> prefixes = map.TryGetValue("prefixes", out object? prefixesObj) && prefixesObj is IEnumerable<object> prefixItems
-            ? ToStringSet(prefixItems)
-            : new HashSet<string>();
+        IReadOnlySet<string> prefixes =
+            map.TryGetValue("prefixes", out object? prefixesObj) && prefixesObj is IEnumerable<object> prefixItems
+            ? ToReadOnlyStringSet(prefixItems)
+            : EmptyStringSet;
 
         return new ClientTrackingInfo(flags, redirect, prefixes);
     }
+
+    #endregion
 }

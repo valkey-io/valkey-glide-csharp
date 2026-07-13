@@ -13,7 +13,7 @@ public sealed class ClientTrackingInfo
     /// <summary>
     /// The set of tracking flags.
     /// </summary>
-    public ISet<string> Flags { get; }
+    public IReadOnlySet<string> Flags { get; }
 
     /// <summary>
     /// The client ID receiving invalidation messages, or <c>-1</c> if not redirecting.
@@ -23,12 +23,15 @@ public sealed class ClientTrackingInfo
     /// <summary>
     /// The set of key prefixes monitored for invalidation.
     /// </summary>
-    public ISet<string> Prefixes { get; }
+    public IReadOnlySet<string> Prefixes { get; }
 
     #endregion
     #region Constructors
 
-    internal ClientTrackingInfo(ISet<string> flags, long redirect, ISet<string> prefixes)
+    internal ClientTrackingInfo(
+        IReadOnlySet<string> flags,
+        long redirect,
+        IReadOnlySet<string> prefixes)
     {
         Flags = flags;
         Redirect = redirect;
