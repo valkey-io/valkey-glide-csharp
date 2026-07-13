@@ -82,7 +82,7 @@ internal partial class Request
         });
 
     public static Cmd<string, bool> RenameAsync(ValkeyKey key, ValkeyKey newKey)
-        => OKToBool(RequestType.Rename, [key.ToGlideString(), newKey.ToGlideString()]);
+        => StringOKToBool(RequestType.Rename, [key.ToGlideString(), newKey.ToGlideString()]);
 
     public static Cmd<bool, bool> RenameIfNotExistsAsync(ValkeyKey key, ValkeyKey newKey)
         => Simple<bool>(RequestType.RenameNX, [key.ToGlideString(), newKey.ToGlideString()]);
@@ -310,8 +310,8 @@ internal partial class Request
         });
     }
 
-    public static Cmd<string, bool> MigrateAsync(IEnumerable<ValkeyKey> keys, MigrateOptions options)
-        => new(RequestType.Migrate, options.ToArgs(keys.ToGlideStrings()), false, response => response == "OK");
+    public static Cmd<object, bool> MigrateAsync(IEnumerable<ValkeyKey> keys, MigrateOptions options)
+        => ObjectOKToBool(RequestType.Migrate, options.ToArgs(keys.ToGlideStrings()));
 
     public static Cmd<long, long> WaitAsync(long numreplicas, TimeSpan timeout)
         => Simple<long>(RequestType.Wait, [numreplicas.ToGlideString(), ToMilliseconds(timeout)]);

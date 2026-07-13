@@ -22,7 +22,7 @@ internal partial class Request
         => ToValkeyValue(RequestType.Set, [key, value, .. ToSetOptionsArgs(options), ValkeyLiterals.GET], isNullable: true);
 
     public static Cmd<string, bool> Set(KeyValuePair<ValkeyKey, ValkeyValue>[] values)
-        => OKToBool(RequestType.MSet, values.ToGlideStrings());
+        => StringOKToBool(RequestType.MSet, values.ToGlideStrings());
 
     public static Cmd<bool, bool> SetIfNotExists(KeyValuePair<ValkeyKey, ValkeyValue>[] values)
         => Simple<bool>(RequestType.MSetNX, values.ToGlideStrings());
