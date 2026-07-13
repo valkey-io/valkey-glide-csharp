@@ -816,6 +816,8 @@ public class GenericCommandTests(TestConfiguration config)
         Assert.Equal(["Bob", "Alice"], [.. result.Select(v => v.ToString())]);
     }
 
+    #region MigrateAsync Tests
+
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestMigrate_InvalidHost_ThrowsException(BaseClient client)
@@ -823,7 +825,7 @@ public class GenericCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
         await client.SetAsync(key, "value");
 
-        using var options = new MigrateOptions("invalid-host", 9999, 0, TimeSpan.FromSeconds(10));
+        using var options = BuildMigrateOptions(host: "invalid-host");
         _ = await Assert.ThrowsAsync<Errors.RequestException>(
             () => client.MigrateAsync(key, options));
     }
@@ -831,43 +833,34 @@ public class GenericCommandTests(TestConfiguration config)
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
     public async Task TestMigrate_MultiKey_EmptyKeys_ThrowsException(GlideClient client)
-    {
-        using var options = new MigrateOptions("localhost", 6379, 0, TimeSpan.Zero);
-        _ = await Assert.ThrowsAsync<ArgumentException>(
-            () => client.MigrateAsync([], options));
-    }
+        => _ = await Assert.ThrowsAsync<ArgumentException>(
+            () => client.MigrateAsync([], BuildMigrateOptions()));
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestMigrate_NonExistentKey_ReturnsFalse(BaseClient client)
-    {
-        ValkeyKey key = Guid.NewGuid().ToString();
-        using var options = new MigrateOptions("localhost", 6379, 0, TimeSpan.FromSeconds(10));
-        Assert.False(await client.MigrateAsync(key, options));
-    }
+        => Assert.False(await client.MigrateAsync(Guid.NewGuid().ToString(), BuildMigrateOptions()));
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
     public async Task TestMigrate_MultiKey_NonExistentKeys_ReturnsFalse(GlideClient client)
-    {
-        ValkeyKey[] keys = [Guid.NewGuid().ToString(), Guid.NewGuid().ToString()];
-        using var options = new MigrateOptions("localhost", 6379, 0, TimeSpan.FromSeconds(10));
-        Assert.False(await client.MigrateAsync(keys, options));
-    }
+        => Assert.False(await client.MigrateAsync(
+            [Guid.NewGuid().ToString(), Guid.NewGuid().ToString()],
+            BuildMigrateOptions()));
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestMigrate_SingleKey_Success(BaseClient sourceClient)
     {
-        using var sourceServer = new StandaloneServer();
-        await using var destClient = await sourceServer.CreateStandaloneClientAsync();
+        using var destServer = new StandaloneServer();
+        await using var destClient = await destServer.CreateStandaloneClientAsync();
 
         string key = Guid.NewGuid().ToString();
         string value = "migrate_test_value";
 
         await sourceClient.SetAsync(key, value);
 
-        using var options = new MigrateOptions(sourceServer.Address.Host, sourceServer.Address.Port, 0, TimeSpan.FromSeconds(10));
+        using var options = BuildMigrateOptions(address: destServer.Address);
         Assert.True(await sourceClient.MigrateAsync(key, options));
 
         Assert.False(await sourceClient.ExistsAsync(key));
@@ -889,7 +882,7 @@ public class GenericCommandTests(TestConfiguration config)
         await sourceClient.SetAsync(key1, val1);
         await sourceClient.SetAsync(key2, val2);
 
-        using var options = new MigrateOptions(destServer.Address.Host, destServer.Address.Port, 0, TimeSpan.FromSeconds(10));
+        using var options = BuildMigrateOptions(address: destServer.Address);
         Assert.True(await sourceClient.MigrateAsync([key1, key2], options));
 
         Assert.False(await sourceClient.ExistsAsync(key1));
@@ -910,7 +903,7 @@ public class GenericCommandTests(TestConfiguration config)
 
         await sourceClient.SetAsync(key, value);
 
-        using var options = new MigrateOptions(destServer.Address.Host, destServer.Address.Port, 0, TimeSpan.FromSeconds(10)) { Copy = true };
+        using var options = BuildMigrateOptions(address: destServer.Address).WithCopy();
         Assert.True(await sourceClient.MigrateAsync(key, options));
 
         Assert.True(await sourceClient.ExistsAsync(key));
@@ -932,10 +925,25 @@ public class GenericCommandTests(TestConfiguration config)
         await sourceClient.SetAsync(key, sourceValue);
         await destClient.SetAsync(key, destValue);
 
-        using var options = new MigrateOptions(destServer.Address.Host, destServer.Address.Port, 0, TimeSpan.FromSeconds(10)) { Replace = true };
+        using var options = BuildMigrateOptions(address: destServer.Address).WithReplace();
         Assert.True(await sourceClient.MigrateAsync(key, options));
 
         Assert.False(await sourceClient.ExistsAsync(key));
         Assert.Equal(sourceValue, await destClient.GetAsync(key));
     }
+
+    /// <summary>
+    /// Builds and returns migrate options for testing.
+    /// If not specified, required arguments are populated with default values.
+    /// </summary>
+    private static MigrateOptions BuildMigrateOptions(
+        Address? address = null,
+        int db = 0,
+        TimeSpan? timeout = null)
+    {
+        address ??= new("localhost", 1234);
+        return new(address.Host, address.Port, db, timeout ?? TimeSpan.FromSeconds(10));
+    }
+
+    #endregion
 }

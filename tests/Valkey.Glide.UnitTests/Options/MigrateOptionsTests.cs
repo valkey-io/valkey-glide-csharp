@@ -11,16 +11,16 @@ public class MigrateOptionsTests
     {
         // Single key
         Assert.Equal(["host", "6379", "key", "0", "5000"], new MigrateOptions("host", 6379, 0, TimeSpan.FromSeconds(5)).ToArgs(["key"]));
-        Assert.Equal(["host", "6379", "key", "0", "0", "COPY"], new MigrateOptions("host", 6379, 0, TimeSpan.Zero) { Copy = true }.ToArgs(["key"]));
-        Assert.Equal(["host", "6379", "key", "0", "0", "REPLACE"], new MigrateOptions("host", 6379, 0, TimeSpan.Zero) { Replace = true }.ToArgs(["key"]));
-        Assert.Equal(["host", "6379", "key", "0", "0", "COPY", "REPLACE"], new MigrateOptions("host", 6379, 0, TimeSpan.Zero) { Copy = true, Replace = true }.ToArgs(["key"]));
+        Assert.Equal(["host", "6379", "key", "0", "0", "COPY"], new MigrateOptions("host", 6379, 0, TimeSpan.Zero).WithCopy().ToArgs(["key"]));
+        Assert.Equal(["host", "6379", "key", "0", "0", "REPLACE"], new MigrateOptions("host", 6379, 0, TimeSpan.Zero).WithReplace().ToArgs(["key"]));
+        Assert.Equal(["host", "6379", "key", "0", "0", "COPY", "REPLACE"], new MigrateOptions("host", 6379, 0, TimeSpan.Zero).WithCopy().WithReplace().ToArgs(["key"]));
         Assert.Equal(["host", "6379", "key", "0", "0", "AUTH", "secret"], new MigrateOptions("host", 6379, 0, TimeSpan.Zero).WithAuth("secret").ToArgs(["key"]));
         Assert.Equal(["host", "6379", "key", "0", "0", "AUTH2", "user", "pass"], new MigrateOptions("host", 6379, 0, TimeSpan.Zero).WithAuth("user", "pass").ToArgs(["key"]));
-        Assert.Equal(["host", "6379", "key", "2", "10000", "COPY", "REPLACE", "AUTH2", "admin", "pass"], new MigrateOptions("host", 6379, 2, TimeSpan.FromSeconds(10)) { Copy = true, Replace = true }.WithAuth("admin", "pass").ToArgs(["key"]));
+        Assert.Equal(["host", "6379", "key", "2", "10000", "COPY", "REPLACE", "AUTH2", "admin", "pass"], new MigrateOptions("host", 6379, 2, TimeSpan.FromSeconds(10)).WithCopy().WithReplace().WithAuth("admin", "pass").ToArgs(["key"]));
 
         // Multiple keys
         Assert.Equal(["host", "6379", "", "0", "5000", "KEYS", "k1", "k2"], new MigrateOptions("host", 6379, 0, TimeSpan.FromSeconds(5)).ToArgs(["k1", "k2"]));
-        Assert.Equal(["host", "6379", "", "0", "0", "COPY", "REPLACE", "KEYS", "k1", "k2"], new MigrateOptions("host", 6379, 0, TimeSpan.Zero) { Copy = true, Replace = true }.ToArgs(["k1", "k2"]));
+        Assert.Equal(["host", "6379", "", "0", "0", "COPY", "REPLACE", "KEYS", "k1", "k2"], new MigrateOptions("host", 6379, 0, TimeSpan.Zero).WithCopy().WithReplace().ToArgs(["k1", "k2"]));
         Assert.Equal(["host", "6379", "", "1", "3000", "AUTH", "secret", "KEYS", "k1", "k2"], new MigrateOptions("host", 6379, 1, TimeSpan.FromSeconds(3)).WithAuth("secret").ToArgs(["k1", "k2"]));
         Assert.Equal(["host", "6379", "", "0", "0", "AUTH2", "user", "pass", "KEYS", "k1", "k2", "k3"], new MigrateOptions("host", 6379, 0, TimeSpan.Zero).WithAuth("user", "pass").ToArgs(["k1", "k2", "k3"]));
     }

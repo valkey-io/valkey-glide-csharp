@@ -197,7 +197,7 @@ public class CommandTests
             () => Assert.Equal(["EXISTS", "key"], Request.ExistsAsync("key").GetArgs()),
             () => Assert.Equal(["EXISTS", "key1", "key2"], Request.ExistsAsync(["key1", "key2"]).GetArgs()),
             () => Assert.Equal(["MIGRATE", "host", "6379", "", "0", "5000", "KEYS", "k1", "k2"], Request.MigrateAsync(["k1", "k2"], new MigrateOptions("host", 6379, 0, TimeSpan.FromSeconds(5))).GetArgs()),
-            () => Assert.Equal(["MIGRATE", "host", "6379", "key", "0", "5000", "COPY", "REPLACE"], Request.MigrateAsync(["key"], new MigrateOptions("host", 6379, 0, TimeSpan.FromSeconds(5)) { Copy = true, Replace = true }).GetArgs()),
+            () => Assert.Equal(["MIGRATE", "host", "6379", "key", "0", "5000", "COPY", "REPLACE"], Request.MigrateAsync(["key"], new MigrateOptions("host", 6379, 0, TimeSpan.FromSeconds(5)).WithCopy().WithReplace()).GetArgs()),
             () => Assert.Equal(["MOVE", "key", "1"], Request.MoveAsync("key", 1).GetArgs()),
             () => Assert.Equal(["OBJECT", "ENCODING", "key"], Request.ObjectEncodingAsync("key").GetArgs()),
             () => Assert.Equal(["OBJECT", "FREQ", "key"], Request.ObjectFrequencyAsync("key").GetArgs()),

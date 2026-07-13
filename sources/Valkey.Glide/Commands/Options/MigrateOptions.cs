@@ -47,12 +47,12 @@ public class MigrateOptions(string host, ushort port, int destinationDb, TimeSpa
     /// <summary>
     /// When <see langword="true"/>, do not remove the key from the local instance.
     /// </summary>
-    public bool Copy { get; set; } = false;
+    public bool Copy { get; private set; } = false;
 
     /// <summary>
     /// When <see langword="true"/>, replace existing key on the remote instance.
     /// </summary>
-    public bool Replace { get; set; } = false;
+    public bool Replace { get; private set; } = false;
 
     /// <summary>
     /// The username to authenticate with the destination server.
@@ -69,6 +69,26 @@ public class MigrateOptions(string host, ushort port, int destinationDb, TimeSpa
 
     #endregion
     #region Public Methods
+
+    /// <summary>
+    /// Configures the migration to retain the specified key(s) on the source server.
+    /// </summary>
+    /// <returns>This instance for fluent chaining.</returns>
+    public MigrateOptions WithCopy()
+    {
+        Copy = true;
+        return this;
+    }
+
+    /// <summary>
+    /// Configures the migration to overwrite the specified key(s) on the destination server.
+    /// </summary>
+    /// <returns>This instance for fluent chaining.</returns>
+    public MigrateOptions WithReplace()
+    {
+        Replace = true;
+        return this;
+    }
 
     /// <summary>
     /// Configures password-only authentication (AUTH) with the destination server.

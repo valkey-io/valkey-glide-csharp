@@ -235,11 +235,17 @@ internal partial class Database
         GuardClauses.ThrowIfCommandFlags(flags);
 
         (string host, ushort port) = Utils.SplitEndpoint(toServer);
-        using var options = new MigrateOptions(host, port, toDatabase, TimeSpan.FromMilliseconds(timeoutMilliseconds))
+        using var options = new MigrateOptions(host, port, toDatabase, TimeSpan.FromMilliseconds(timeoutMilliseconds));
+
+        if (migrateOptions.HasFlag(KeyMigrateOptions.Copy))
         {
-            Copy = migrateOptions.HasFlag(KeyMigrateOptions.Copy),
-            Replace = migrateOptions.HasFlag(KeyMigrateOptions.Replace),
-        };
+            _ = options.WithCopy();
+        }
+
+        if (migrateOptions.HasFlag(KeyMigrateOptions.Replace))
+        {
+            _ = options.WithReplace();
+        }
 
         return await MigrateAsync(key, options);
     }
