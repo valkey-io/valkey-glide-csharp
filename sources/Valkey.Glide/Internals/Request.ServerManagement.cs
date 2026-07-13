@@ -93,24 +93,21 @@ internal partial class Request
     }
 
     public static Cmd<string, ValkeyValue> ConfigResetStatisticsAsync()
-        => Ok(RequestType.ConfigResetStat, []);
+        => Ok(RequestType.ConfigResetStat);
 
     public static Cmd<string, ValkeyValue> ConfigRewriteAsync()
-        => Ok(RequestType.ConfigRewrite, []);
+        => Ok(RequestType.ConfigRewrite);
 
     public static Cmd<string, ValkeyValue> ConfigSetAsync(ValkeyValue setting, ValkeyValue value)
-    {
-        GlideString[] args = [setting.ToGlideString(), value.ToGlideString()];
-        return Ok(RequestType.ConfigSet, args);
-    }
+        => Ok(RequestType.ConfigSet, [setting, value]);
 
     public static Cmd<string, ValkeyValue> ConfigSetAsync(IDictionary<ValkeyValue, ValkeyValue> parameters)
     {
         List<GlideString> args = [];
         foreach (KeyValuePair<ValkeyValue, ValkeyValue> kvp in parameters)
         {
-            args.Add(kvp.Key.ToGlideString());
-            args.Add(kvp.Value.ToGlideString());
+            args.Add(kvp.Key);
+            args.Add(kvp.Value);
         }
         return Ok(RequestType.ConfigSet, [.. args]);
     }
@@ -119,19 +116,19 @@ internal partial class Request
         => new(RequestType.DBSize, [], false, l => l);
 
     public static Cmd<string, ValkeyValue> FlushAllDatabasesAsync()
-        => Ok(RequestType.FlushAll, []);
+        => Ok(RequestType.FlushAll);
 
     public static Cmd<string, ValkeyValue> FlushAllDatabasesAsync(FlushMode mode)
         => Ok(RequestType.FlushAll, [mode == FlushMode.Sync ? ValkeyLiterals.SYNC : ValkeyLiterals.ASYNC]);
 
     public static Cmd<string, ValkeyValue> FlushDatabaseAsync()
-        => Ok(RequestType.FlushDB, []);
+        => Ok(RequestType.FlushDB);
 
     public static Cmd<string, ValkeyValue> FlushDatabaseAsync(FlushMode mode)
         => Ok(RequestType.FlushDB, [mode == FlushMode.Sync ? ValkeyLiterals.SYNC : ValkeyLiterals.ASYNC]);
 
     public static Cmd<string, ValkeyValue> SaveAsync()
-        => Ok(RequestType.Save, []);
+        => Ok(RequestType.Save);
 
     public static Cmd<long, DateTimeOffset> LastSaveAsync()
         => new(RequestType.LastSave, [], false, DateTimeOffset.FromUnixTimeSeconds);
@@ -155,7 +152,7 @@ internal partial class Request
         => new(RequestType.BgRewriteAof, [], false, gs => gs.ToString());
 
     public static Cmd<string, ValkeyValue> Select(long index)
-        => Ok(RequestType.Select, [index.ToString().ToGlideString()]);
+        => Ok(RequestType.Select, [index.ToGlideString()]);
 
     public static Cmd<object, LatencyEntry[]> LatencyHistoryAsync(ValkeyValue @event)
         => new(RequestType.LatencyHistory, [@event.ToGlideString()], false, ConvertLatencyHistoryResponse);

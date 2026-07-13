@@ -33,7 +33,7 @@ internal partial class Request
         => Ok(RequestType.ClientPause, [ToMilliseconds(timeout), ValkeyLiterals.WRITE]);
 
     public static Cmd<string, ValkeyValue> ClientUnpause()
-        => Ok(RequestType.ClientUnpause, []);
+        => Ok(RequestType.ClientUnpause);
 
     public static Cmd<Dictionary<GlideString, object>, ClientTrackingInfo> ClientTrackingInfo()
         => new(RequestType.ClientTrackingInfo, [], false, ConvertClientTrackingInfoResponse);

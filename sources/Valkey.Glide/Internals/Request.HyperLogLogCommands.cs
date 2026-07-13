@@ -56,7 +56,7 @@ internal partial class Request
     /// <param name="second">The key of the second source HyperLogLog.</param>
     /// <returns>A command that merges the HyperLogLogs.</returns>
     public static Cmd<string, ValkeyValue> HyperLogLogMergeAsync(ValkeyKey destination, ValkeyKey first, ValkeyKey second)
-        => Ok(RequestType.PfMerge, [destination.ToGlideString(), first.ToGlideString(), second.ToGlideString()]);
+        => Ok(RequestType.PfMerge, [destination, first, second]);
 
     /// <summary>
     /// Creates a command to merge multiple HyperLogLog data structures.
