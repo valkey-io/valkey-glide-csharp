@@ -79,6 +79,8 @@ public class MigrateOptions(string host, ushort port, int destinationDb, TimeSpa
     {
         ArgumentNullException.ThrowIfNull(password, nameof(password));
 
+        ClearPassword();
+
         Username = null;
         Password = password.ToCharArray();
 
@@ -95,6 +97,8 @@ public class MigrateOptions(string host, ushort port, int destinationDb, TimeSpa
     {
         ArgumentNullException.ThrowIfNull(username, nameof(username));
         ArgumentNullException.ThrowIfNull(password, nameof(password));
+
+        ClearPassword();
 
         Username = username;
         Password = password.ToCharArray();
@@ -115,18 +119,24 @@ public class MigrateOptions(string host, ushort port, int destinationDb, TimeSpa
     {
         if (!_disposed)
         {
+            ClearPassword();
             Username = null;
-
-            if (Password is not null)
-            {
-                Array.Clear(Password);
-                Password = null;
-            }
-
             _disposed = true;
         }
 
         GC.SuppressFinalize(this);
+    }
+
+    #endregion
+    #region Private Methods
+
+    private void ClearPassword()
+    {
+        if (Password is not null)
+        {
+            Array.Clear(Password);
+            Password = null;
+        }
     }
 
     #endregion

@@ -40,9 +40,9 @@ public sealed class Batch(bool isAtomic) : BaseBatch<Batch>(isAtomic), IBatch, I
         => AddCmd(Request.MoveAsync(key, database));
 
     // Explicit interface implementations for IBatchStandalone
-    IBatch IBatchStandalone.Move(ValkeyKey key, int database) => Move(key, database);
     IBatch IBatchStandalone.Copy(ValkeyKey source, ValkeyKey destination, int destinationDatabase, bool replace) => Copy(source, destination, destinationDatabase, replace);
     IBatch IBatchStandalone.Migrate(IEnumerable<ValkeyKey> keys, MigrateOptions options) => Migrate(keys, options);
+    IBatch IBatchStandalone.Move(ValkeyKey key, int database) => Move(key, database);
 
     // All other command implementations are inherited from BaseBatch<T> partials.
 }
