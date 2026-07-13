@@ -55,18 +55,10 @@ internal partial class Request
     /// Create a Cmd which returns "OK" when it completes.
     /// </summary>
     /// <param name="request">The request type</param>
-    /// <returns>A command that returns <see cref="ValkeyValue.Ok"/></returns>
-    private static Cmd<string, ValkeyValue> Ok(RequestType request)
-        => new(request, [], false, ToOkConverter);
-
-    /// <summary>
-    /// Create a Cmd which returns "OK" when it completes.
-    /// </summary>
-    /// <param name="request">The request type</param>
     /// <param name="args">The command arguments</param>
     /// <returns>A command that returns <see cref="ValkeyValue.Ok"/></returns>
-    private static Cmd<string, ValkeyValue> Ok(RequestType request, GlideString[] args)
-        => new(request, args, false, ToOkConverter);
+    private static Cmd<string, ValkeyValue> Ok(RequestType request, GlideString[]? args = null)
+        => new(request, args ?? [], false, ToOkConverter);
 
     /// <summary>
     /// Create a Cmd which converts the response to a ValkeyValue.
