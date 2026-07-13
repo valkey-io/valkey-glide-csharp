@@ -2,6 +2,8 @@
 
 using Valkey.Glide.Commands.Options;
 
+using static Valkey.Glide.TestUtils.Options;
+
 namespace Valkey.Glide.UnitTests;
 
 public class MigrateOptionsTests
@@ -28,9 +30,22 @@ public class MigrateOptionsTests
     [Fact]
     public void ToArgs_Failure()
     {
-        _ = Assert.Throws<ArgumentException>(() => new MigrateOptions("host", 6379, 0, TimeSpan.Zero).ToArgs([]));
-        _ = Assert.Throws<ArgumentNullException>(() => new MigrateOptions("host", 6379, 0, TimeSpan.Zero).WithAuth(null!));
-        _ = Assert.Throws<ArgumentNullException>(() => new MigrateOptions("host", 6379, 0, TimeSpan.Zero).WithAuth(null!, "pass"));
-        _ = Assert.Throws<ArgumentNullException>(() => new MigrateOptions("host", 6379, 0, TimeSpan.Zero).WithAuth("user", null!));
+        _ = Assert.Throws<ArgumentException>(() => BuildMigrateOptions(timeout: TimeSpan.Zero).ToArgs([]));
+        _ = Assert.Throws<ArgumentNullException>(() => BuildMigrateOptions().WithAuth(null!));
+        _ = Assert.Throws<ArgumentNullException>(() => BuildMigrateOptions().WithAuth(null!, "pass"));
+        _ = Assert.Throws<ArgumentNullException>(() => BuildMigrateOptions().WithAuth("user", null!));
+    }
+
+    [Fact]
+    public void Dispose_ClearsPasswordArray()
+    {
+        var options = BuildMigrateOptions().WithAuth("user", "secret");
+        char[] passwordRef = options.Password!;
+
+        options.Dispose();
+
+        Assert.Null(options.Password);
+        Assert.Null(options.Username);
+        Assert.All(passwordRef, c => Assert.Equal('\0', c));
     }
 }

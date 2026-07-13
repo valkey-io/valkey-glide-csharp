@@ -14,6 +14,12 @@ public static class Options
     /// If not specified, required arguments are populated w ith default values.
     /// </summary>
     /// <param name="address">The destination address.</param>
-    public static MigrateOptions BuildMigrateOptions(Address? address = null)
-        => new(address?.Host ?? "localhost", address?.Port ?? 1234, 0, TimeSpan.FromSeconds(10));
+    public static MigrateOptions BuildMigrateOptions(
+        Address? address = null,
+        TimeSpan? timeout = null)
+        => new(
+            host: address?.Host ?? "localhost",
+            port: address?.Port ?? 1234,
+            destinationDb: 0,
+            timeout: timeout ?? TimeSpan.FromSeconds(10));
 }
