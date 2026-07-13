@@ -67,8 +67,7 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var echoed = (await client.EchoAsync("Hello World", Route.Random)).SingleValue;
-    /// Console.WriteLine(response);  // "Hello World"
+    /// var echoed = (await client.EchoAsync("Hello World", Route.Random)).SingleValue;  // "Hello World"
     /// </code>
     /// </example>
     /// </remarks>
