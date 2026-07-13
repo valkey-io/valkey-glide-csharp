@@ -66,8 +66,12 @@ internal partial class Request
             Fragmentation = GetDouble(map, "fragmentation"),
             PeakPercentage = GetDouble(map, "peak.percentage"),
             RssOverheadRatio = GetDouble(map, "rss-overhead.ratio"),
+
+            // Optional Valkey 7.0+ fields
             ClusterLinks = TryGetLong(map, "cluster.links"),
             FunctionsCaches = TryGetLong(map, "functions.caches"),
+
+            // Optional Valkey 8.0+ fields
             AllocatorMuzzy = TryGetLong(map, "allocator.muzzy"),
             DbDictRehashingCount = TryGetLong(map, "db.dict.rehashing.count"),
             OverheadDbHashtableLut = TryGetLong(map, "overhead.db.hashtable.lut"),
