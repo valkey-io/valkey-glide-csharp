@@ -17,7 +17,7 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var name = (await client.ClientGetNameAsync(Route.Random)).SingleValue;
+    /// var name = (await clusterClient.ClientGetNameAsync(Route.Random)).SingleValue;
     /// Console.WriteLine($"Connection name: {name}");
     /// </code>
     /// </example>
@@ -33,7 +33,7 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var id = (await client.ClientIdAsync(Route.Random)).SingleValue;
+    /// var id = (await clusterClient.ClientIdAsync(Route.Random)).SingleValue;
     /// Console.WriteLine($"Connection ID: {id}");
     /// </code>
     /// </example>
@@ -50,7 +50,7 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var info = (await client.ClientTrackingInfoAsync(Route.Random)).SingleValue;
+    /// var info = (await clusterClient.ClientTrackingInfoAsync(Route.Random)).SingleValue;
     /// Console.WriteLine($"Flags: {string.Join(", ", info.Flags)}");  // "Flags: off"
     /// </code>
     /// </example>
@@ -67,7 +67,7 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var echoed = (await client.EchoAsync("Hello World", Route.Random)).SingleValue;  // "Hello World"
+    /// var echoed = (await clusterClient.EchoAsync("Hello World", Route.Random)).SingleValue;  // "Hello World"
     /// </code>
     /// </example>
     /// </remarks>
@@ -82,7 +82,7 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var response = await client.PingAsync(Route.AllPrimaries);
+    /// var response = await clusterClient.PingAsync(Route.AllPrimaries);
     /// Console.WriteLine(response);  // "PONG"
     /// </code>
     /// </example>
@@ -99,7 +99,7 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var response = await client.PingAsync("Hello World", Route.AllPrimaries);
+    /// var response = await clusterClient.PingAsync("Hello World", Route.AllPrimaries);
     /// Console.WriteLine(response);  // "Hello World"
     /// </code>
     /// </example>
