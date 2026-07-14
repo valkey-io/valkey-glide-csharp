@@ -17,14 +17,14 @@ permissions:
 
 jobs:
     update-cargo-lock:
-        # Security: restrict to dependabot[bot] to prevent arbitrary PRs from
+        # Restrict to dependabot[bot] to prevent arbitrary PRs from
         # triggering this workflow with elevated pull_request_target permissions.
         if: github.actor == 'dependabot[bot]'
         runs-on: ubuntu-latest
         timeout-minutes: 10
 
         steps:
-            # Security: only dependabot[bot] can trigger; no checked-out code is executed.
+            # Only dependabot[bot] can trigger; no checked-out code is executed.
             - name: Checkout # nosemgrep: yaml.github-actions.security.pull-request-target-code-checkout
               uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
               with:
@@ -32,8 +32,8 @@ jobs:
                   ref: ${{ github.head_ref }}
                   token: ${{ secrets.GITHUB_TOKEN }}
 
-            # Security: use pinned external action instead of install-rust action because
-            # pull_request_target runs with elevated permissions and must not execute PR code.
+            # Use pinned external action instead of install-rust action to avoid executing
+            # PR code with elevated permissions from pull_request_target.
             - name: Install Rust
               uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9 # v1
               with:
