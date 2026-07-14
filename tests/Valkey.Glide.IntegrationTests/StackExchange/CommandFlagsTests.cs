@@ -1379,6 +1379,12 @@ public class CommandFlagsTests(TestConfiguration config)
         => _ = await Assert.ThrowsAsync<NotImplementedException>(
             async () => { await foreach (var _ in server.KeysAsync(flags: UnsupportedFlag)) { } });
 
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task IServer_ReplicaOfAsync_UnsupportedFlags_Throws(IServer server)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => server.ReplicaOfAsync(null, flags: UnsupportedFlag));
+
     #endregion
     #region IDatabaseAsync Commands
 

@@ -81,10 +81,19 @@ public abstract class Server : IDisposable
     /// </summary>
     /// <param name="useClusterMode">Whether to start in cluster mode.</param>
     /// <param name="useTls">Whether to enable TLS.</param>
-    protected Server(bool useClusterMode, bool useTls)
+    /// <param name="replicaCount">Number of replicas per primary, or <see langword="null"/> to use the default.</param>
+    protected Server(
+        bool useClusterMode,
+        bool useTls = false,
+        int? replicaCount = null)
     {
         UseTls = useTls;
-        Address = ServerManager.StartServer(_name, useClusterMode: useClusterMode, useTls: UseTls).First();
+
+        Address = ServerManager.StartServer(
+            name: _name,
+            useClusterMode: useClusterMode,
+            useTls: UseTls,
+            replicaCount: replicaCount).First();
 
         if (UseTls)
         {
@@ -231,7 +240,9 @@ public sealed class ClusterServer(bool useTls = false) : Server(useClusterMode: 
 /// <summary>
 /// Valkey standalone server.
 /// </summary>
-public sealed class StandaloneServer(bool useTls = false) : Server(useClusterMode: false, useTls: useTls)
+public sealed class StandaloneServer(
+    bool useTls = false,
+    int? replicaCount = null) : Server(useClusterMode: false, useTls: useTls, replicaCount: replicaCount)
 {
     #region Public Methods
 

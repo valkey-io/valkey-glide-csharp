@@ -93,28 +93,16 @@ internal partial class Request
         => new(RequestType.Ping, [], false, gs => (ValkeyValue)gs);
 
     public static Cmd<GlideString, ValkeyValue> Ping(ValkeyValue message)
-    {
-        GlideString[] args = [message.ToGlideString()];
-        return new(RequestType.Ping, args, false, gs => (ValkeyValue)gs);
-    }
+        => new(RequestType.Ping, [message], false, gs => (ValkeyValue)gs);
 
     public static Cmd<GlideString, ValkeyValue> Echo(ValkeyValue message)
-    {
-        GlideString[] args = [message.ToGlideString()];
-        return new(RequestType.Echo, args, false, gs => (ValkeyValue)gs);
-    }
+        => new(RequestType.Echo, [message], false, gs => (ValkeyValue)gs);
 
     public static Cmd<object, KeyValuePair<string, string>[]> ConfigGetAsync(ValkeyValue pattern = default)
-    {
-        GlideString[] args = pattern.IsNull ? ["*"] : [pattern.ToGlideString()];
-        return ConfigGetAsyncInternal(args);
-    }
+        => ConfigGetAsyncInternal(pattern.IsNull ? ["*"] : [pattern]);
 
     public static Cmd<object, KeyValuePair<string, string>[]> ConfigGetAsync(IEnumerable<ValkeyValue> patterns)
-    {
-        GlideString[] args = [.. patterns.Select(p => p.ToGlideString())];
-        return ConfigGetAsyncInternal(args);
-    }
+        => ConfigGetAsyncInternal([.. patterns.Select(static p => (GlideString)p)]);
 
     private static Cmd<object, KeyValuePair<string, string>[]> ConfigGetAsyncInternal(GlideString[] args)
     {
@@ -177,18 +165,15 @@ internal partial class Request
         => Ok(RequestType.ConfigRewrite, []);
 
     public static Cmd<string, ValkeyValue> ConfigSetAsync(ValkeyValue setting, ValkeyValue value)
-    {
-        GlideString[] args = [setting.ToGlideString(), value.ToGlideString()];
-        return Ok(RequestType.ConfigSet, args);
-    }
+        => Ok(RequestType.ConfigSet, [setting, value]);
 
     public static Cmd<string, ValkeyValue> ConfigSetAsync(IDictionary<ValkeyValue, ValkeyValue> parameters)
     {
         List<GlideString> args = [];
         foreach (KeyValuePair<ValkeyValue, ValkeyValue> kvp in parameters)
         {
-            args.Add(kvp.Key.ToGlideString());
-            args.Add(kvp.Value.ToGlideString());
+            args.Add(kvp.Key);
+            args.Add(kvp.Value);
         }
         return Ok(RequestType.ConfigSet, [.. args]);
     }
@@ -224,19 +209,16 @@ internal partial class Request
         });
 
     public static Cmd<GlideString, string> LolwutAsync(LolwutOptions? options = null)
-    {
-        GlideString[] args = options is null ? [] : [.. options.ToArgs().Select(a => a.ToGlideString())];
-        return new(RequestType.Lolwut, args, false, gs => gs.ToString());
-    }
+        => new(RequestType.Lolwut, options is null ? [] : [.. options.ToArgs()], false, gs => gs.ToString());
 
     public static Cmd<GlideString, string> BgRewriteAofAsync()
         => new(RequestType.BgRewriteAof, [], false, gs => gs.ToString());
 
     public static Cmd<string, ValkeyValue> Select(long index)
-        => Ok(RequestType.Select, [index.ToString().ToGlideString()]);
+        => Ok(RequestType.Select, [index.ToGlideString()]);
 
     public static Cmd<object, LatencyEntry[]> LatencyHistoryAsync(ValkeyValue @event)
-        => new(RequestType.LatencyHistory, [@event.ToGlideString()], false, ConvertLatencyHistoryResponse);
+        => new(RequestType.LatencyHistory, [@event], false, ConvertLatencyHistoryResponse);
 
     public static Cmd<object, LatencyEventInfo[]> LatencyLatestAsync()
         => new(RequestType.LatencyLatest, [], false, ConvertLatencyLatestResponse);
@@ -286,8 +268,20 @@ internal partial class Request
         => new(RequestType.BgSave, [], false, gs => gs.ToString());
 
     public static Cmd<GlideString, string> BackgroundSaveScheduleAsync()
-        => new(RequestType.BgSave, [ValkeyLiterals.SCHEDULE.ToGlideString()], false, gs => gs.ToString());
+        => new(RequestType.BgSave, [ValkeyLiterals.SCHEDULE], false, gs => gs.ToString());
 
     public static Cmd<GlideString, string> BackgroundSaveCancelAsync()
-        => new(RequestType.BgSave, [ValkeyLiterals.CANCEL.ToGlideString()], false, gs => gs.ToString());
+        => new(RequestType.BgSave, [ValkeyLiterals.CANCEL], false, gs => gs.ToString());
+
+    public static Cmd<string, ValkeyValue> FailoverAsync()
+        => Ok(RequestType.FailOver, []);
+
+    public static Cmd<string, ValkeyValue> FailoverAsync(FailoverOptions options)
+        => Ok(RequestType.FailOver, options.ToArgs());
+
+    public static Cmd<string, ValkeyValue> ReplicaOfAsync(string host, int port)
+        => Ok(RequestType.ReplicaOf, [host, port.ToGlideString()]);
+
+    public static Cmd<string, ValkeyValue> ReplicaOfNoOneAsync()
+        => Ok(RequestType.ReplicaOf, [ValkeyLiterals.NO, ValkeyLiterals.ONE]);
 }

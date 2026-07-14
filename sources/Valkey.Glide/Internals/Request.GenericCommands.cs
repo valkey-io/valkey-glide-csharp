@@ -3,6 +3,7 @@
 using Valkey.Glide.Commands.Options;
 
 using static Valkey.Glide.Internals.FFI;
+using static Valkey.Glide.Internals.TimeUtils;
 
 namespace Valkey.Glide.Internals;
 
@@ -32,7 +33,7 @@ internal partial class Request
 
         if (expiry.HasValue)
         {
-            args.Add(ToMilliseconds(expiry.Value));
+            args.Add(ToMilliseconds(expiry.Value).ToGlideString());
         }
         else
         {
@@ -314,10 +315,10 @@ internal partial class Request
         => ObjectOKToBool(RequestType.Migrate, options.ToArgs(keys.ToGlideStrings()));
 
     public static Cmd<long, long> WaitAsync(long numreplicas, TimeSpan timeout)
-        => Simple<long>(RequestType.Wait, [numreplicas.ToGlideString(), ToMilliseconds(timeout)]);
+        => Simple<long>(RequestType.Wait, [numreplicas.ToGlideString(), ToMilliseconds(timeout).ToGlideString()]);
 
     public static Cmd<object[], long[]> WaitAofAsync(bool localAof, long numreplicas, TimeSpan timeout)
-        => new(RequestType.WaitAof, [(localAof ? 1L : 0L).ToGlideString(), numreplicas.ToGlideString(), ToMilliseconds(timeout)], false, arr =>
+        => new(RequestType.WaitAof, [(localAof ? 1L : 0L).ToGlideString(), numreplicas.ToGlideString(), ToMilliseconds(timeout).ToGlideString()], false, arr =>
             {
                 long local = Convert.ToInt64(arr[0] is GlideString gs0 ? gs0.ToString() : arr[0]);
                 long replicas = Convert.ToInt64(arr[1] is GlideString gs1 ? gs1.ToString() : arr[1]);

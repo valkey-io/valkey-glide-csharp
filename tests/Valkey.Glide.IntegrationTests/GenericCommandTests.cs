@@ -662,12 +662,8 @@ public class GenericCommandTests(TestConfiguration config)
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestWait_NegativeTimeout(BaseClient client)
-    {
-        // Test negative timeout should throw exception
-        var exception = await Assert.ThrowsAsync<Errors.RequestException>(
+        => await Assert.ThrowsAsync<ArgumentException>(
             () => client.WaitAsync(1, TimeSpan.FromMilliseconds(-1)));
-        Assert.Contains("Timeout cannot be negative", exception.Message, StringComparison.OrdinalIgnoreCase);
-    }
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]

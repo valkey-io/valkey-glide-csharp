@@ -177,6 +177,22 @@ public partial class GlideClient :
     public async Task<string> BackgroundSaveCancelAsync()
         => await Command(Request.BackgroundSaveCancelAsync());
 
+    /// <inheritdoc cref="IGlideClient.FailoverAsync()"/>
+    public async Task FailoverAsync()
+        => _ = await Command(Request.FailoverAsync());
+
+    /// <inheritdoc cref="IGlideClient.FailoverAsync(FailoverOptions)"/>
+    public async Task FailoverAsync(FailoverOptions options)
+        => _ = await Command(Request.FailoverAsync(options));
+
+    /// <inheritdoc cref="IGlideClient.ReplicaOfAsync(string, int)"/>
+    public async Task ReplicaOfAsync(string host, int port)
+        => _ = await Command(Request.ReplicaOfAsync(host, port));
+
+    /// <inheritdoc cref="IGlideClient.ReplicaOfNoOneAsync()"/>
+    public async Task ReplicaOfNoOneAsync()
+        => _ = await Command(Request.ReplicaOfNoOneAsync());
+
     /// <inheritdoc/>
     public async Task<(string cursor, ValkeyKey[] keys)> ScanAsync(string cursor, ScanOptions? options = null)
         => await Command(Request.ScanAsync(cursor, options));

@@ -42,6 +42,13 @@ public static class GlideStringExtensions
     public static GlideString ToGlideString(this long @long) => new(@long.ToString());
 
     /// <summary>
+    /// Convert a <paramref name="ulong"/> to a <see cref="GlideString" />.
+    /// </summary>
+    /// <param name="ulong">A <see langword="ulong" /> to convert.</param>
+    /// <returns>A <see cref="GlideString" />.</returns>
+    public static GlideString ToGlideString(this ulong @ulong) => new(@ulong.ToString());
+
+    /// <summary>
     /// Convert a <paramref name="double"/> to a <see cref="GlideString" />.
     /// </summary>
     /// <param name="double">A <see langword="double" /> to convert.</param>
