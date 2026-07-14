@@ -91,6 +91,7 @@ pub struct ClientSideCacheConfig {
     pub has_eviction_policy: bool,
     pub eviction_policy: EvictionPolicy,
     pub enable_metrics: bool,
+    pub server_assisted: bool,
 }
 
 /// A mirror of [`ConnectionRequest`] adopted for FFI.
@@ -346,7 +347,7 @@ pub(crate) unsafe fn create_connection_request(
                     None
                 },
                 enable_metrics: csc.enable_metrics,
-                server_assisted: false, // TODO(https://github.com/valkey-io/valkey-glide/issues/5961): Expose via FFI when server-assisted caching is needed
+                server_assisted: csc.server_assisted,
             })
         } else {
             None

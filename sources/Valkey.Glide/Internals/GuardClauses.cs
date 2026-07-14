@@ -56,7 +56,7 @@ internal static class GuardClauses
     /// </summary>
     /// <param name="value">The time span value to validate.</param>
     /// <exception cref="ArgumentException">Thrown if <paramref name="value"/> is negative.</exception>
-    public static void ThrowIfTimeSpanNegative(TimeSpan value)
+    public static void ThrowIfNegative(TimeSpan value)
     {
         if (value < TimeSpan.Zero)
         {

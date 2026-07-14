@@ -79,7 +79,7 @@ internal class Cmd<R, T> : ICmd
     /// </summary>
     /// <param name="isSingleValue">Whether current command call returns a single value.</param>
     public Cmd<object, ClusterValue<T>> ToClusterValue(bool isSingleValue)
-        => new(Request, ArgsArray.Args, IsNullable, ResponseConverters.MakeClusterValueHandler(Converter, isSingleValue));
+        => new(Request, ArgsArray.Args, IsNullable, ResponseConverters.MakeClusterValueHandler(Converter, isSingleValue), AllowConverterToHandleNull);
 
     /// <summary>
     /// Convert a command to one which handles a <see cref="ClusterValue{T}" />.
