@@ -1,5 +1,14 @@
 name: Update Cargo.lock
 
+# Uses pull_request_target instead of pull_request so GITHUB_TOKEN has write access
+# to push commits to Dependabot pull requests. Regular pull_request gives Dependabot a
+# read-only token, which would cause git push to fail.
+#
+# Risk: pull_request_target grants elevated permissions and access to secrets when
+# checking out PR code. Mitigations:
+#   1. Job is gated on github.actor == 'dependabot[bot]'.
+#   2. All actions use pinned external references (no code from the PR is executed).
+#   3. Only cargo update is run (fetches registry metadata, not PR build scripts).
 on:
     pull_request_target:
 
@@ -15,9 +24,8 @@ jobs:
         timeout-minutes: 10
 
         steps:
-            # nosemgrep: yaml.github-actions.security.pull-request-target-code-checkout
-            # Safe: only dependabot[bot] can trigger; no checked-out code is executed.
-            - name: Checkout
+            # Security: only dependabot[bot] can trigger; no checked-out code is executed.
+            - name: Checkout # nosemgrep: yaml.github-actions.security.pull-request-target-code-checkout
               uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
               with:
                   submodules: true
