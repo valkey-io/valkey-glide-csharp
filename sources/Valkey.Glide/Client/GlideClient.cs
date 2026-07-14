@@ -145,6 +145,22 @@ public partial class GlideClient :
     public override async Task<string> LolwutAsync(LolwutOptions options)
         => await Command(Request.LolwutAsync(options));
 
+    /// <inheritdoc cref="IGlideClient.MemoryDoctorAsync()"/>
+    public async Task<string> MemoryDoctorAsync()
+        => await Command(Request.MemoryDoctorAsync());
+
+    /// <inheritdoc cref="IGlideClient.MemoryMallocStatsAsync()"/>
+    public async Task<string> MemoryMallocStatsAsync()
+        => await Command(Request.MemoryMallocStatsAsync());
+
+    /// <inheritdoc cref="IGlideClient.MemoryPurgeAsync()"/>
+    public async Task MemoryPurgeAsync()
+        => _ = await Command(Request.MemoryPurgeAsync());
+
+    /// <inheritdoc cref="IGlideClient.MemoryStatsAsync()"/>
+    public async Task<MemoryStats> MemoryStatsAsync()
+        => await Command(Request.MemoryStatsAsync());
+
     /// <inheritdoc cref="IBaseClient.ConfigGetAsync(IEnumerable{ValkeyValue})"/>
     public override async Task<KeyValuePair<string, string>[]> ConfigGetAsync(IEnumerable<ValkeyValue> patterns)
         => await Command(Request.ConfigGetAsync(patterns));

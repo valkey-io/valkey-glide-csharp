@@ -155,6 +155,38 @@ public sealed partial class GlideClusterClient :
     public async Task ConfigSetAsync(IDictionary<ValkeyValue, ValkeyValue> parameters, Route route)
         => _ = await Command(Request.ConfigSetAsync(parameters), route);
 
+    /// <inheritdoc cref="IGlideClusterClient.MemoryDoctorAsync()"/>
+    public async Task<ClusterValue<string>> MemoryDoctorAsync()
+        => await Command(Request.MemoryDoctorAsync().ToClusterValue(false), AllPrimaries);
+
+    /// <inheritdoc cref="IGlideClusterClient.MemoryDoctorAsync(Route)"/>
+    public async Task<ClusterValue<string>> MemoryDoctorAsync(Route route)
+        => await Command(Request.MemoryDoctorAsync().ToClusterValue(route is SingleNodeRoute), route);
+
+    /// <inheritdoc cref="IGlideClusterClient.MemoryMallocStatsAsync()"/>
+    public async Task<ClusterValue<string>> MemoryMallocStatsAsync()
+        => await Command(Request.MemoryMallocStatsAsync().ToClusterValue(false), AllPrimaries);
+
+    /// <inheritdoc cref="IGlideClusterClient.MemoryMallocStatsAsync(Route)"/>
+    public async Task<ClusterValue<string>> MemoryMallocStatsAsync(Route route)
+        => await Command(Request.MemoryMallocStatsAsync().ToClusterValue(route is SingleNodeRoute), route);
+
+    /// <inheritdoc cref="IGlideClusterClient.MemoryPurgeAsync()"/>
+    public async Task MemoryPurgeAsync()
+        => _ = await Command(Request.MemoryPurgeAsync(), AllPrimaries);
+
+    /// <inheritdoc cref="IGlideClusterClient.MemoryPurgeAsync(Route)"/>
+    public async Task MemoryPurgeAsync(Route route)
+        => _ = await Command(Request.MemoryPurgeAsync(), route);
+
+    /// <inheritdoc cref="IGlideClusterClient.MemoryStatsAsync()"/>
+    public async Task<ClusterValue<MemoryStats>> MemoryStatsAsync()
+        => await Command(Request.MemoryStatsAsync().ToClusterValue(false), AllPrimaries);
+
+    /// <inheritdoc cref="IGlideClusterClient.MemoryStatsAsync(Route)"/>
+    public async Task<ClusterValue<MemoryStats>> MemoryStatsAsync(Route route)
+        => await Command(Request.MemoryStatsAsync().ToClusterValue(route is SingleNodeRoute), route);
+
     /// <inheritdoc cref="IGlideClusterClient.DatabaseSizeAsync()"/>
     public async Task<long> DatabaseSizeAsync()
         => await DatabaseSizeAsync(AllPrimaries);

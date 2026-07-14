@@ -553,6 +553,133 @@ public partial interface IGlideClusterClient
     Task<long[]> WaitAofAsync(bool localAof, long numreplicas, TimeSpan timeout, Route route);
 
     /// <summary>
+    /// Returns a report about memory problems detected by the server.<br />
+    /// The command is routed to all primary nodes.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/memory-doctor/">Valkey commands – MEMORY DOCTOR</seealso>
+    /// <returns>A <see cref="ClusterValue{T}" /> containing the memory diagnostic report(s).</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var reports = await clusterClient.MemoryDoctorAsync();
+    /// foreach (var (node, report) in reports.MultiValue)
+    ///     Console.WriteLine($"Node [{node}]: {report}");
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ClusterValue<string>> MemoryDoctorAsync();
+
+    /// <summary>
+    /// Returns a report about memory problems detected by the server.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/memory-doctor/">Valkey commands – MEMORY DOCTOR</seealso>
+    /// <param name="route">Specifies the routing configuration for the command.</param>
+    /// <returns>A <see cref="ClusterValue{T}" /> containing the memory diagnostic report(s).</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var report = (await clusterClient.MemoryDoctorAsync(Route.Random)).SingleValue;
+    /// Console.WriteLine("Memory report: " + report);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ClusterValue<string>> MemoryDoctorAsync(Route route);
+
+    /// <summary>
+    /// Returns the internal statistics of the memory allocator.<br />
+    /// The command is routed to all primary nodes.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/memory-malloc-stats/">Valkey commands – MEMORY MALLOC-STATS</seealso>
+    /// <returns>A <see cref="ClusterValue{T}" /> containing the memory allocator statistics.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var statsAll = await clusterClient.MemoryMallocStatsAsync();
+    /// foreach (var (node, stats) in statsAll.MultiValue)
+    ///     Console.WriteLine($"Node [{node}]: {stats}");
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ClusterValue<string>> MemoryMallocStatsAsync();
+
+    /// <summary>
+    /// Returns the internal statistics of the memory allocator.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/memory-malloc-stats/">Valkey commands – MEMORY MALLOC-STATS</seealso>
+    /// <param name="route">Specifies the routing configuration for the command.</param>
+    /// <returns>A <see cref="ClusterValue{T}" /> containing the memory allocator statistics.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var stats = (await clusterClient.MemoryMallocStatsAsync(Route.Random)).SingleValue;
+    /// Console.WriteLine("Allocator stats: " + stats);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ClusterValue<string>> MemoryMallocStatsAsync(Route route);
+
+    /// <summary>
+    /// Asks the server to reclaim memory from the allocator back to the operating system.<br />
+    /// The command is routed to all primary nodes.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/memory-purge/">Valkey commands – MEMORY PURGE</seealso>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await clusterClient.MemoryPurgeAsync();
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task MemoryPurgeAsync();
+
+    /// <summary>
+    /// Asks the server to reclaim memory from the allocator back to the operating system.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/memory-purge/">Valkey commands – MEMORY PURGE</seealso>
+    /// <param name="route">Specifies the routing configuration for the command.</param>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await clusterClient.MemoryPurgeAsync(Route.AllPrimaries);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task MemoryPurgeAsync(Route route);
+
+    /// <summary>
+    /// Returns detailed memory consumption statistics of the server.<br />
+    /// The command is routed to all primary nodes.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/memory-stats/">Valkey commands – MEMORY STATS</seealso>
+    /// <returns>A <see cref="ClusterValue{T}" /> containing detailed memory usage statistics.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var statsAll = await clusterClient.MemoryStatsAsync();
+    /// foreach (var (node, nodeStats) in statsAll.MultiValue)
+    ///     Console.WriteLine($"Node [{node}]: peak={nodeStats.PeakAllocated}");
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ClusterValue<MemoryStats>> MemoryStatsAsync();
+
+    /// <summary>
+    /// Returns detailed memory consumption statistics of the server.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/memory-stats/">Valkey commands – MEMORY STATS</seealso>
+    /// <param name="route">Specifies the routing configuration for the command.</param>
+    /// <returns>A <see cref="ClusterValue{T}" /> containing detailed memory usage statistics.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var stats = (await clusterClient.MemoryStatsAsync(Route.Random)).SingleValue;
+    /// Console.WriteLine($"Peak allocated: {stats.PeakAllocated}");
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ClusterValue<MemoryStats>> MemoryStatsAsync(Route route);
+
+    /// <summary>
     /// Returns latency spike time series for a specific event.<br />
     /// The command is routed to all primary nodes.
     /// </summary>

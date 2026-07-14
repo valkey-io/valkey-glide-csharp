@@ -606,6 +606,98 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     }
 
     #endregion
+    #region Memory Command Tests
+
+    [Fact]
+    public async Task MemoryDoctorAsync_Standalone()
+        => Assert.NotEmpty(await StandaloneClient.MemoryDoctorAsync());
+
+    [Fact]
+    public async Task MemoryDoctorAsync_Cluster()
+    {
+        // Default route (multi-node).
+        var multi = await ClusterClient.MemoryDoctorAsync();
+        foreach (var report in multi.MultiValue.Values)
+        {
+            Assert.NotEmpty(report);
+        }
+
+        // Single-node route.
+        var single = await ClusterClient.MemoryDoctorAsync(Route.Random);
+        Assert.NotEmpty(single.SingleValue);
+    }
+
+    [Fact]
+    public async Task MemoryMallocStatsAsync_Standalone()
+        => Assert.NotEmpty(await StandaloneClient.MemoryMallocStatsAsync());
+
+    [Fact]
+    public async Task MemoryMallocStatsAsync_Cluster()
+    {
+        // Default route (multi-node).
+        var multi = await ClusterClient.MemoryMallocStatsAsync();
+        foreach (var report in multi.MultiValue.Values)
+        {
+            Assert.NotEmpty(report);
+        }
+
+        // Single-node route.
+        var single = await ClusterClient.MemoryMallocStatsAsync(Route.Random);
+        Assert.NotEmpty(single.SingleValue);
+    }
+
+    [Fact]
+    public async Task MemoryPurgeAsync_Standalone()
+        => await StandaloneClient.MemoryPurgeAsync();
+
+    [Fact]
+    public async Task MemoryPurgeAsync_Cluster()
+    {
+        // Default route (multi-node).
+        await ClusterClient.MemoryPurgeAsync();
+
+        // Single-node route.
+        await ClusterClient.MemoryPurgeAsync(Route.Random);
+    }
+
+    [Fact]
+    public async Task MemoryStatsAsync_Standalone()
+    {
+        // Write a key to ensure db entry exists.
+        var key = $"memory-stats-test-{Guid.NewGuid()}";
+        await StandaloneClient.SetAsync(key, "value");
+
+        var stats = await StandaloneClient.MemoryStatsAsync();
+
+        AssertMemoryStatsFields(stats);
+        AssertMemoryStatsDbEntry(stats.Db[0]);
+    }
+
+    [Fact]
+    public async Task MemoryStatsAsync_Cluster()
+    {
+        // Default route (multi-node).
+        var multi = await ClusterClient.MemoryStatsAsync();
+        foreach (MemoryStats stats in multi.MultiValue.Values)
+        {
+            AssertMemoryStatsFields(stats);
+        }
+    }
+
+    [Fact]
+    public async Task MemoryStatsAsync_Cluster_SingleNode()
+    {
+        // Write a key and route to its node to ensure db entry exists.
+        string key = $"memory-stats-cluster-{Guid.NewGuid()}";
+        await ClusterClient.SetAsync(key, "value");
+
+        var stats = (await ClusterClient.MemoryStatsAsync(new SlotKeyRoute(key, SlotType.Primary))).SingleValue;
+
+        AssertMemoryStatsFields(stats);
+        AssertMemoryStatsDbEntry(stats.Db[0]);
+    }
+
+    #endregion
     #region Helpers
 
     /// <summary>
@@ -613,6 +705,86 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     /// </summary>
     private static void AssertContainsServerName(string result)
         => Assert.Contains(["VALKEY", "REDIS"], name => result.Contains(name, StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>
+    /// Validate that a MemoryStatsDb instance has expected field types and values.
+    /// </summary>
+    private static void AssertMemoryStatsDbEntry(MemoryStatsDb dbEntry)
+    {
+        Assert.True(dbEntry.OverheadHashtableExpires >= 0);
+        Assert.True(dbEntry.OverheadHashtableMain >= 0);
+    }
+
+    /// <summary>
+    /// Validate that a MemoryStats instance has expected field types and values.
+    /// </summary>
+    private static void AssertMemoryStatsFields(MemoryStats stats)
+    {
+        // Db entries are only populated if the node has at least one key. In cluster mode, an entry
+        // will only be present if that key is stored on that node. Standalone and single-node cluster
+        // tests validate db entries directly via AssertMemoryStatsDbEntry.
+        foreach (KeyValuePair<int, MemoryStatsDb> entry in stats.Db)
+        {
+            Assert.True(entry.Key >= 0);
+            AssertMemoryStatsDbEntry(entry.Value);
+        }
+
+        Assert.True(stats.AllocatorActive > 0);
+        Assert.True(stats.AllocatorAllocated > 0);
+        Assert.True(stats.AllocatorResident > 0);
+        Assert.True(stats.OverheadTotal > 0);
+        Assert.True(stats.PeakAllocated > 0);
+        Assert.True(stats.StartupAllocated > 0);
+        Assert.True(stats.TotalAllocated > 0);
+
+        Assert.True(stats.AllocatorFragmentationBytes >= 0);
+        Assert.True(stats.AllocatorRssBytes >= 0);
+        Assert.True(stats.AofBuffer >= 0);
+        Assert.True(stats.ClientsNormal >= 0);
+        Assert.True(stats.ClientsSlaves >= 0);
+        Assert.True(stats.DatasetBytes >= 0);
+        Assert.True(stats.FragmentationBytes >= 0);
+        Assert.True(stats.KeysBytesPerKey >= 0);
+        Assert.True(stats.KeysCount >= 0);
+        Assert.True(stats.LuaCaches >= 0);
+        Assert.True(stats.ReplicationBacklog >= 0);
+        Assert.True(stats.RssOverheadBytes >= 0);
+
+        Assert.True(stats.AllocatorFragmentationRatio >= 0);
+        Assert.True(stats.AllocatorRssRatio >= 0);
+        Assert.True(stats.DatasetPercentage >= 0);
+        Assert.True(stats.Fragmentation >= 0);
+        Assert.True(stats.PeakPercentage >= 0);
+        Assert.True(stats.RssOverheadRatio >= 0);
+
+        // Optional Valkey 7.0+ fields
+        if (TestConfiguration.IsVersionAtLeast("7.0.0"))
+        {
+            Assert.True(stats.ClusterLinks is not null and >= 0);
+            Assert.True(stats.FunctionsCaches is not null and >= 0);
+        }
+        else
+        {
+            Assert.Null(stats.ClusterLinks);
+            Assert.Null(stats.FunctionsCaches);
+        }
+
+        // Optional Valkey 8.0+ fields
+        if (TestConfiguration.IsVersionAtLeast("8.0.0"))
+        {
+            Assert.True(stats.AllocatorMuzzy is not null and >= 0);
+            Assert.True(stats.DbDictRehashingCount is not null);
+            Assert.True(stats.OverheadDbHashtableLut is not null);
+            Assert.True(stats.OverheadDbHashtableRehashing is not null);
+        }
+        else
+        {
+            Assert.Null(stats.AllocatorMuzzy);
+            Assert.Null(stats.DbDictRehashingCount);
+            Assert.Null(stats.OverheadDbHashtableLut);
+            Assert.Null(stats.OverheadDbHashtableRehashing);
+        }
+    }
 
     /// <summary>
     /// Flattens a cluster value of arrays into a single flat array.
