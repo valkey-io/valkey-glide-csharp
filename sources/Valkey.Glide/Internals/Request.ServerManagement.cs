@@ -8,6 +8,84 @@ namespace Valkey.Glide.Internals;
 
 internal partial class Request
 {
+    public static Cmd<GlideString, string> MemoryDoctorAsync()
+        => new(RequestType.MemoryDoctor, [], false, gs => gs.ToString());
+
+    public static Cmd<GlideString, string> MemoryMallocStatsAsync()
+        => new(RequestType.MemoryMallocStats, [], false, gs => gs.ToString());
+
+    public static Cmd<string, ValkeyValue> MemoryPurgeAsync()
+        => Ok(RequestType.MemoryPurge, []);
+
+    public static Cmd<Dictionary<GlideString, object>, MemoryStats> MemoryStatsAsync()
+        => new(RequestType.MemoryStats, [], false, ParseMemoryStats);
+
+    private const string MemoryStatsDbPrefix = "db.";
+
+    private static MemoryStats ParseMemoryStats(Dictionary<GlideString, object> map)
+    {
+        Dictionary<int, MemoryStatsDb> db = [];
+        foreach (KeyValuePair<GlideString, object> kvp in map)
+        {
+            string key = kvp.Key.ToString();
+            if (key.StartsWith(MemoryStatsDbPrefix) && key != "db.dict.rehashing.count")
+            {
+                string suffix = key[MemoryStatsDbPrefix.Length..];
+                if (int.TryParse(suffix, out int dbIndex))
+                {
+                    db[dbIndex] = ParseMemoryStatsDb((Dictionary<GlideString, object>)kvp.Value);
+                }
+            }
+        }
+
+        return new MemoryStats
+        {
+            Db = db,
+            AllocatorActive = GetLong(map, "allocator.active"),
+            AllocatorAllocated = GetLong(map, "allocator.allocated"),
+            AllocatorFragmentationBytes = GetLong(map, "allocator-fragmentation.bytes"),
+            AllocatorResident = GetLong(map, "allocator.resident"),
+            AllocatorRssBytes = GetLong(map, "allocator-rss.bytes"),
+            AofBuffer = GetLong(map, "aof.buffer"),
+            ClientsNormal = GetLong(map, "clients.normal"),
+            ClientsSlaves = GetLong(map, "clients.slaves"),
+            DatasetBytes = GetLong(map, "dataset.bytes"),
+            FragmentationBytes = GetLong(map, "fragmentation.bytes"),
+            KeysBytesPerKey = GetLong(map, "keys.bytes-per-key"),
+            KeysCount = GetLong(map, "keys.count"),
+            LuaCaches = GetLong(map, "lua.caches"),
+            OverheadTotal = GetLong(map, "overhead.total"),
+            PeakAllocated = GetLong(map, "peak.allocated"),
+            ReplicationBacklog = GetLong(map, "replication.backlog"),
+            RssOverheadBytes = GetLong(map, "rss-overhead.bytes"),
+            StartupAllocated = GetLong(map, "startup.allocated"),
+            TotalAllocated = GetLong(map, "total.allocated"),
+            AllocatorFragmentationRatio = GetDouble(map, "allocator-fragmentation.ratio"),
+            AllocatorRssRatio = GetDouble(map, "allocator-rss.ratio"),
+            DatasetPercentage = GetDouble(map, "dataset.percentage"),
+            Fragmentation = GetDouble(map, "fragmentation"),
+            PeakPercentage = GetDouble(map, "peak.percentage"),
+            RssOverheadRatio = GetDouble(map, "rss-overhead.ratio"),
+
+            // Optional Valkey 7.0+ fields
+            ClusterLinks = TryGetLong(map, "cluster.links"),
+            FunctionsCaches = TryGetLong(map, "functions.caches"),
+
+            // Optional Valkey 8.0+ fields
+            AllocatorMuzzy = TryGetLong(map, "allocator.muzzy"),
+            DbDictRehashingCount = TryGetLong(map, "db.dict.rehashing.count"),
+            OverheadDbHashtableLut = TryGetLong(map, "overhead.db.hashtable.lut"),
+            OverheadDbHashtableRehashing = TryGetLong(map, "overhead.db.hashtable.rehashing"),
+        };
+    }
+
+    private static MemoryStatsDb ParseMemoryStatsDb(Dictionary<GlideString, object> map)
+        => new()
+        {
+            OverheadHashtableMain = GetLong(map, "overhead.hashtable.main"),
+            OverheadHashtableExpires = GetLong(map, "overhead.hashtable.expires"),
+        };
+
     public static Cmd<GlideString, string> Info(InfoOptions.Section[] sections)
         => new(RequestType.Info, sections.ToGlideStrings(), false, gs => gs.ToString());
 
