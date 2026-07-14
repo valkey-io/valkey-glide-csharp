@@ -7,7 +7,7 @@ using static Valkey.Glide.Internals.TimeUtils;
 namespace Valkey.Glide;
 
 /// <summary>
-/// Configuration for client-side caching with TTL-based expiration.
+/// Configuration for client-side caching.
 /// <para />
 /// Configures a local cache that stores read command responses on the client side
 /// to reduce network round-trips and server load. The cache uses Time-To-Live (TTL)
@@ -16,9 +16,11 @@ namespace Valkey.Glide;
 /// <remarks>
 /// <list type="bullet">
 ///   <item>
-///     Valkey GLIDE supports TTL-based caching only. Invalidation-based client-side
-///     caching (where the server notifies clients of key changes) is not supported.
-///     This means cached values may become stale if updated on the server before the TTL expires.
+///     Valkey GLIDE supports both TTL-based and server-assisted (invalidation-based)
+///     client-side caching. With TTL-based caching, entries expire after a configured
+///     duration and may become stale if updated on the server before the TTL expires.
+///     With server-assisted caching, the server sends invalidation messages when tracked
+///     keys are modified, keeping the cache coherent.
 ///   </item>
 ///   <item>
 ///     Valkey GLIDE client-side cache supports lazy eviction only. Expired entries
@@ -72,6 +74,16 @@ public sealed class ClientSideCacheConfig
     /// Whether collection of cache metrics (hit/miss rates, evictions, etc.) is enabled.
     /// </summary>
     public bool EnableMetrics { get; private set; }
+
+    /// <summary>
+    /// Whether server-assisted client-side caching is enabled.
+    /// When enabled, GLIDE sends <c>CLIENT TRACKING ON BCAST</c> during connection setup
+    /// and the server sends invalidation messages when tracked keys are modified.
+    /// </summary>
+    /// <note>
+    /// RESP3 protocol only.
+    /// </note>
+    public bool ServerAssisted { get; private set; }
 
     /// <summary>
     /// Creates a new <see cref="ClientSideCacheConfig"/> with an auto-generated unique cache ID.
@@ -128,6 +140,17 @@ public sealed class ClientSideCacheConfig
     }
 
     /// <summary>
+    /// Enables or disables server-assisted client-side caching.
+    /// </summary>
+    /// <param name="enable">Whether to enable server-assisted caching.</param>
+    /// <returns>This instance for method chaining.</returns>
+    public ClientSideCacheConfig WithServerAssisted(bool enable = true)
+    {
+        ServerAssisted = enable;
+        return this;
+    }
+
+    /// <summary>
     /// Converts to the FFI representation for marshalling to Rust core.
     /// </summary>
     internal FFI.ClientSideCacheConfig ToFfi() => new(
@@ -136,6 +159,7 @@ public sealed class ClientSideCacheConfig
         ToMilliseconds(EntryTtl),
         EvictionPolicy.HasValue,
         EvictionPolicy ?? default,
-        EnableMetrics
+        EnableMetrics,
+        ServerAssisted
     );
 }

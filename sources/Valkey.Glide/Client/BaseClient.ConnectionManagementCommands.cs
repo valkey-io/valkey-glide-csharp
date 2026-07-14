@@ -32,4 +32,7 @@ public abstract partial class BaseClient
 
     /// <inheritdoc cref="IBaseClient.ClientUnpauseAsync()"/>
     public abstract Task ClientUnpauseAsync();
+
+    /// <inheritdoc cref="IBaseClient.ClientTrackingInfoAsync()"/>
+    public abstract Task<ClientTrackingInfo> ClientTrackingInfoAsync();
 }

@@ -1217,28 +1217,47 @@ internal partial class FFI
         ulong entryTtlMs,
         bool hasEvictionPolicy,
         EvictionPolicy evictionPolicy,
-        bool enableMetrics)
+        bool enableMetrics,
+        bool serverAssisted)
     {
-        /// <summary>Unique identifier for the cache instance.</summary>
+        /// <summary>
+        /// Unique identifier for the cache instance.
+        /// </summary>
         [MarshalAs(UnmanagedType.LPStr)]
         public readonly string CacheId = cacheId;
 
-        /// <summary>Maximum size of the cache in kilobytes.</summary>
+        /// <summary>
+        /// Maximum size of the cache in kilobytes.
+        /// </summary>
         public readonly ulong MaxCacheKb = maxCacheKb;
 
-        /// <summary>Time-To-Live for cached entries in milliseconds (0 = no expiration).</summary>
+        /// <summary>
+        /// Time-To-Live for cached entries in milliseconds (0 = no expiration).
+        /// </summary>
         public readonly ulong EntryTtlMs = entryTtlMs;
 
-        /// <summary>Whether an eviction policy was explicitly specified.</summary>
+        /// <summary>
+        /// Whether an eviction policy was explicitly specified.
+        /// </summary>
         [MarshalAs(UnmanagedType.U1)]
         public readonly bool HasEvictionPolicy = hasEvictionPolicy;
 
-        /// <summary>The eviction policy for the cache.</summary>
+        /// <summary>
+        /// The eviction policy for the cache.
+        /// </summary>
         public readonly EvictionPolicy EvictionPolicy = evictionPolicy;
 
-        /// <summary>Whether cache metrics collection is enabled.</summary>
+        /// <summary>
+        /// Whether cache metrics collection is enabled.
+        /// </summary>
         [MarshalAs(UnmanagedType.U1)]
         public readonly bool EnableMetrics = enableMetrics;
+
+        /// <summary>
+        /// Whether server-assisted client-side caching is enabled.
+        /// </summary>
+        [MarshalAs(UnmanagedType.U1)]
+        public readonly bool ServerAssisted = serverAssisted;
     }
 
     [StructLayout(LayoutKind.Sequential)]

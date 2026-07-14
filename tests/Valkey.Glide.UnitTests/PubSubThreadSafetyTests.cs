@@ -238,6 +238,7 @@ public class PubSubThreadSafetyTests
         public override Task ClientPauseAsync(TimeSpan timeout) => Task.CompletedTask;
         public override Task ClientPauseWriteAsync(TimeSpan timeout) => Task.CompletedTask;
         public override Task ClientUnpauseAsync() => Task.CompletedTask;
+        public override Task<ClientTrackingInfo> ClientTrackingInfoAsync() => Task.FromResult(new ClientTrackingInfo(new HashSet<string>(), -1, new HashSet<string>()));
         public override Task ConfigSetAsync(IDictionary<ValkeyValue, ValkeyValue> parameters) => Task.CompletedTask;
         public override Task<KeyValuePair<string, string>[]> ConfigGetAsync(IEnumerable<ValkeyValue> patterns) => Task.FromResult(Array.Empty<KeyValuePair<string, string>>());
         public override Task FlushAllDatabasesAsync(FlushMode mode) => Task.CompletedTask;
