@@ -25,7 +25,7 @@ jobs:
 
         steps:
             # Only dependabot[bot] can trigger; no checked-out code is executed.
-            - name: Checkout # nosemgrep: yaml.github-actions.security.pull-request-target-code-checkout
+            - name: Checkout # nosemgrep: yaml.github-actions.security.pull-request-target-code-checkout.pull-request-target-code-checkout
               uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
               with:
                   submodules: true
