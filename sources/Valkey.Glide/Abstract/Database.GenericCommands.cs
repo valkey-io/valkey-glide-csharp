@@ -235,7 +235,7 @@ internal partial class Database
         GuardClauses.ThrowIfCommandFlags(flags);
 
         (string host, ushort port) = Utils.SplitEndpoint(toServer);
-        using var options = new MigrateOptions(host, port, toDatabase, TimeSpan.FromMilliseconds(timeoutMilliseconds));
+        using var options = new MigrateOptions(host, port, (ushort)toDatabase, TimeSpan.FromMilliseconds(timeoutMilliseconds));
 
         if (migrateOptions.HasFlag(KeyMigrateOptions.Copy))
         {
