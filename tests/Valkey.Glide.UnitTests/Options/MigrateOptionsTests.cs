@@ -44,7 +44,6 @@ public class MigrateOptionsTests
         _ = Assert.Throws<ObjectDisposedException>(() => options.WithAuth("user", "pass"));
         _ = Assert.Throws<ObjectDisposedException>(options.WithCopy);
         _ = Assert.Throws<ObjectDisposedException>(options.WithReplace);
-        _ = Assert.Throws<ObjectDisposedException>(options.ToString);
         _ = Assert.Throws<ObjectDisposedException>(() => options.ToArgs(["key"]));
     }
 

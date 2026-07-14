@@ -3,6 +3,7 @@
 using static Valkey.Glide.Internals.TimeUtils;
 
 namespace Valkey.Glide.Commands.Options;
+
 /// <summary>
 /// Options for the MIGRATE command.
 /// </summary>
@@ -135,10 +136,7 @@ public sealed class MigrateOptions(string host, ushort port, ushort destinationD
     /// Returns a string representation with sensitive data omitted.
     /// </summary>
     public override string ToString()
-    {
-        ObjectDisposedException.ThrowIf(_disposed, this);
-        return $"MigrateOptions {{ Host = {Host}, Port = {Port}, DestinationDb = {DestinationDb}, Timeout = {Timeout}, Copy = {Copy}, Replace = {Replace} }}";
-    }
+        => $"MigrateOptions {{ Host = {Host}, Port = {Port}, DestinationDb = {DestinationDb}, Timeout = {Timeout}, Copy = {Copy}, Replace = {Replace} }}";
 
     /// <summary>
     /// Clears sensitive data.
