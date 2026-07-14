@@ -168,6 +168,8 @@ public sealed class MigrateOptions(string host, ushort port, ushort destinationD
     /// </summary>
     internal GlideString[] ToArgs(GlideString[] keys)
     {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+
         if (keys.Length == 0)
         {
             throw new ArgumentException("Keys must not be empty.", nameof(keys));

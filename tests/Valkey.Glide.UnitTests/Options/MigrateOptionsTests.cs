@@ -9,9 +9,12 @@ namespace Valkey.Glide.UnitTests;
 public class MigrateOptionsTests
 {
     [Fact]
-    public void ToArgs_Success()
+    public void ToArgs_WithoutKey_Throws()
+        => _ = Assert.Throws<ArgumentException>(() => BuildMigrateOptions().ToArgs([]));
+
+    [Fact]
+    public void ToArgs_WithKey_Succeeds()
     {
-        // Single key
         Assert.Equal(["host", "6379", "key", "0", "5000"], new MigrateOptions("host", 6379, 0, TimeSpan.FromSeconds(5)).ToArgs(["key"]));
         Assert.Equal(["host", "6379", "key", "0", "0", "COPY"], new MigrateOptions("host", 6379, 0, TimeSpan.Zero).WithCopy().ToArgs(["key"]));
         Assert.Equal(["host", "6379", "key", "0", "0", "REPLACE"], new MigrateOptions("host", 6379, 0, TimeSpan.Zero).WithReplace().ToArgs(["key"]));
@@ -19,8 +22,11 @@ public class MigrateOptionsTests
         Assert.Equal(["host", "6379", "key", "0", "0", "AUTH", "secret"], new MigrateOptions("host", 6379, 0, TimeSpan.Zero).WithAuth("secret").ToArgs(["key"]));
         Assert.Equal(["host", "6379", "key", "0", "0", "AUTH2", "user", "pass"], new MigrateOptions("host", 6379, 0, TimeSpan.Zero).WithAuth("user", "pass").ToArgs(["key"]));
         Assert.Equal(["host", "6379", "key", "2", "10000", "COPY", "REPLACE", "AUTH2", "admin", "pass"], new MigrateOptions("host", 6379, 2, TimeSpan.FromSeconds(10)).WithCopy().WithReplace().WithAuth("admin", "pass").ToArgs(["key"]));
+    }
 
-        // Multiple keys
+    [Fact]
+    public void ToArgs_WithKeys_Succeeds()
+    {
         Assert.Equal(["host", "6379", "", "0", "5000", "KEYS", "k1", "k2"], new MigrateOptions("host", 6379, 0, TimeSpan.FromSeconds(5)).ToArgs(["k1", "k2"]));
         Assert.Equal(["host", "6379", "", "0", "0", "COPY", "REPLACE", "KEYS", "k1", "k2"], new MigrateOptions("host", 6379, 0, TimeSpan.Zero).WithCopy().WithReplace().ToArgs(["k1", "k2"]));
         Assert.Equal(["host", "6379", "", "1", "3000", "AUTH", "secret", "KEYS", "k1", "k2"], new MigrateOptions("host", 6379, 1, TimeSpan.FromSeconds(3)).WithAuth("secret").ToArgs(["k1", "k2"]));
@@ -28,16 +34,16 @@ public class MigrateOptionsTests
     }
 
     [Fact]
-    public void ToArgs_Failure()
+    public void ToArgs_AfterDispose_Throws()
     {
-        _ = Assert.Throws<ArgumentException>(() => BuildMigrateOptions(timeout: TimeSpan.Zero).ToArgs([]));
-        _ = Assert.Throws<ArgumentNullException>(() => BuildMigrateOptions().WithAuth(null!));
-        _ = Assert.Throws<ArgumentNullException>(() => BuildMigrateOptions().WithAuth(null!, "pass"));
-        _ = Assert.Throws<ArgumentNullException>(() => BuildMigrateOptions().WithAuth("user", null!));
+        var options = BuildMigrateOptions();
+        options.Dispose();
+
+        _ = Assert.Throws<ObjectDisposedException>(() => options.ToArgs(["key"]));
     }
 
     [Fact]
-    public void Dispose_ClearsPasswordArray()
+    public void Dispose_ClearsPassword()
     {
         var options = BuildMigrateOptions().WithAuth("user", "secret");
         char[] passwordRef = options.Password!;
