@@ -59,8 +59,8 @@ internal partial class Request
     /// <param name="request">The request type</param>
     /// <param name="args">The command arguments</param>
     /// <returns>A command that returns <see cref="ValkeyValue.Ok"/></returns>
-    private static Cmd<string, ValkeyValue> Ok(RequestType request, GlideString[] args)
-        => new(request, args, false, ToOkConverter);
+    private static Cmd<string, ValkeyValue> Ok(RequestType request, GlideString[]? args = null)
+        => new(request, args ?? [], false, ToOkConverter);
 
     /// <summary>
     /// Create a Cmd which converts the response to a ValkeyValue.
@@ -80,26 +80,6 @@ internal partial class Request
     /// <returns>A command that converts an array to a ValkeyValue array</returns>
     private static Cmd<object[], ValkeyValue[]> ObjectArrayToValkeyValueArray(RequestType request, GlideString[] args)
         => new(request, args, false, set => [.. set.Cast<GlideString>().Select(gs => gs)]);
-
-    /// <summary>
-    /// Converts a <see cref="HashSet{Object}"/> response to an <see cref="ISet{ValkeyValue}"/>.
-    /// </summary>
-    private static ISet<ValkeyValue> ToValkeyValueSet(HashSet<object> set)
-        => new HashSet<ValkeyValue>(set.Cast<GlideString>().Select(gs => (ValkeyValue)gs));
-
-    /// <summary>
-    /// Converts an object array to an <see cref="ISet{ValkeyKey}"/>.
-    /// </summary>
-    /// <param name="objects">The object array to convert.</param>
-    /// <returns>A converted <see cref="ValkeyKey"/> set.</returns>
-    private static ISet<ValkeyKey> ToValkeyKeySet(object[] objects)
-        => new HashSet<ValkeyKey>(objects.Cast<GlideString>().Select(gs => (ValkeyKey)gs.Bytes));
-
-    /// <summary>
-    /// Converts an object array to an <see cref="ISet{ValkeyValue}"/>.
-    /// </summary>
-    private static ISet<ValkeyValue> ToValkeyValueSet(object[] objects)
-        => new HashSet<ValkeyValue>(objects.Cast<GlideString>().Select(s => (ValkeyValue)s));
 
     /// <summary>
     /// Converts a keyword and items into a counted array: <c>keyword count item1 item2 ...</c>.
@@ -189,6 +169,27 @@ internal partial class Request
         }
     }
 
+    #region Set Converters
+
+    /// <summary>
+    /// Converts the given objects to an <see cref="ISet{ValkeyKey}"/>.
+    /// </summary>
+    private static ISet<ValkeyKey> ToValkeyKeySet(IEnumerable<object> items)
+        => new HashSet<ValkeyKey>(items.Cast<GlideString>().Select(gs => (ValkeyKey)gs.Bytes));
+
+    /// <summary>
+    /// Converts the given objects to an <see cref="ISet{ValkeyValue}"/>.
+    /// </summary>
+    private static ISet<ValkeyValue> ToValkeyValueSet(IEnumerable<object> items)
+        => new HashSet<ValkeyValue>(items.Cast<GlideString>().Select(gs => (ValkeyValue)gs));
+
+    /// <summary>
+    /// Converts the given objects to an <see cref="IReadOnlySet{String}"/>.
+    /// </summary>
+    private static IReadOnlySet<string> ToReadOnlyStringSet(IEnumerable<object> items)
+        => new HashSet<string>(items.Cast<GlideString>().Select(gs => gs.ToString()));
+
+    #endregion
     #region Response Map Helpers
 
     /// <summary>

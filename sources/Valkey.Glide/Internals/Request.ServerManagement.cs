@@ -159,10 +159,10 @@ internal partial class Request
     }
 
     public static Cmd<string, ValkeyValue> ConfigResetStatisticsAsync()
-        => Ok(RequestType.ConfigResetStat, []);
+        => Ok(RequestType.ConfigResetStat);
 
     public static Cmd<string, ValkeyValue> ConfigRewriteAsync()
-        => Ok(RequestType.ConfigRewrite, []);
+        => Ok(RequestType.ConfigRewrite);
 
     public static Cmd<string, ValkeyValue> ConfigSetAsync(ValkeyValue setting, ValkeyValue value)
         => Ok(RequestType.ConfigSet, [setting, value]);
@@ -182,19 +182,19 @@ internal partial class Request
         => new(RequestType.DBSize, [], false, l => l);
 
     public static Cmd<string, ValkeyValue> FlushAllDatabasesAsync()
-        => Ok(RequestType.FlushAll, []);
+        => Ok(RequestType.FlushAll);
 
     public static Cmd<string, ValkeyValue> FlushAllDatabasesAsync(FlushMode mode)
         => Ok(RequestType.FlushAll, [mode == FlushMode.Sync ? ValkeyLiterals.SYNC : ValkeyLiterals.ASYNC]);
 
     public static Cmd<string, ValkeyValue> FlushDatabaseAsync()
-        => Ok(RequestType.FlushDB, []);
+        => Ok(RequestType.FlushDB);
 
     public static Cmd<string, ValkeyValue> FlushDatabaseAsync(FlushMode mode)
         => Ok(RequestType.FlushDB, [mode == FlushMode.Sync ? ValkeyLiterals.SYNC : ValkeyLiterals.ASYNC]);
 
     public static Cmd<string, ValkeyValue> SaveAsync()
-        => Ok(RequestType.Save, []);
+        => Ok(RequestType.Save);
 
     public static Cmd<long, DateTimeOffset> LastSaveAsync()
         => new(RequestType.LastSave, [], false, DateTimeOffset.FromUnixTimeSeconds);

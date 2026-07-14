@@ -128,4 +128,20 @@ public partial interface IBaseClient : IConnectionManagementBaseCommands
     /// </example>
     /// </remarks>
     Task ClientUnpauseAsync();
+
+    /// <summary>
+    /// Returns information about the current client connection's use of the
+    /// server-assisted client-side caching feature.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/client-trackinginfo/">Valkey commands – CLIENT TRACKINGINFO</seealso>
+    /// <returns>The tracking state for this connection.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var info = await client.ClientTrackingInfoAsync();
+    /// Console.WriteLine($"Flags: {string.Join(", ", info.Flags)}");  // "Flags: off"
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ClientTrackingInfo> ClientTrackingInfoAsync();
 }

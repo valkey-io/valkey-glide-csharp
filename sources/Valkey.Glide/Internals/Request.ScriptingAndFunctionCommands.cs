@@ -53,7 +53,7 @@ internal partial class Request
     /// Creates a command to flush all scripts from the cache.
     /// </summary>
     public static Cmd<string, ValkeyValue> ScriptFlushAsync()
-        => Ok(RequestType.ScriptFlush, []);
+        => Ok(RequestType.ScriptFlush);
 
     /// <summary>
     /// Creates a command to flush all scripts from the cache with specified mode.
@@ -71,7 +71,7 @@ internal partial class Request
     /// Creates a command to kill a currently executing script.
     /// </summary>
     public static Cmd<string, ValkeyValue> ScriptKillAsync()
-        => Ok(RequestType.ScriptKill, []);
+        => Ok(RequestType.ScriptKill);
 
     // ===== Function Execution =====
 
@@ -126,7 +126,7 @@ internal partial class Request
     /// Creates a command to flush all functions.
     /// </summary>
     public static Cmd<string, ValkeyValue> FunctionFlushAsync()
-        => Ok(RequestType.FunctionFlush, []);
+        => Ok(RequestType.FunctionFlush);
 
     /// <summary>
     /// Creates a command to flush all functions with specified mode.
@@ -173,7 +173,7 @@ internal partial class Request
     /// Creates a command to kill a currently executing function.
     /// </summary>
     public static Cmd<string, ValkeyValue> FunctionKillAsync()
-        => Ok(RequestType.FunctionKill, []);
+        => Ok(RequestType.FunctionKill);
 
     /// <summary>
     /// Creates a command to dump all functions to a binary payload.
