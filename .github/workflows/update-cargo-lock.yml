@@ -5,12 +5,21 @@ on:
         paths:
             - valkey-glide
 
+    # TODO #449: Remove workflow_dispatch after validating.
+    workflow_dispatch:
+        inputs:
+            pr-branch:
+                description: "PR branch to update Cargo.lock on"
+                required: true
+                type: string
+
 permissions:
     contents: write
 
 jobs:
     update-cargo-lock:
-        if: github.actor == 'dependabot[bot]'
+        # TODO #449: Remove github.actor check after validating.
+        if: github.actor == 'dependabot[bot]' || github.event_name == 'workflow_dispatch'
         runs-on: ubuntu-latest
         timeout-minutes: 10
 
@@ -19,7 +28,9 @@ jobs:
               uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
               with:
                   submodules: true
-                  ref: ${{ github.head_ref }}
+
+                  # TODO #449: Remove github.event.inputs.pr-branch  after validating.
+                  ref: ${{ github.event.inputs.pr-branch || github.head_ref }}
                   token: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Install Rust
