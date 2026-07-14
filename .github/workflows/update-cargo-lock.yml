@@ -6,11 +6,14 @@ name: Update Cargo.lock
 #
 # Risk: pull_request_target grants elevated permissions and access to secrets when
 # checking out PR code. Mitigations:
-#   1. Job is gated on github.actor == 'dependabot[bot]'.
-#   2. All actions use pinned external references (no code from the PR is executed).
-#   3. Only cargo update is run (fetches registry metadata, not PR build scripts).
+#   1. Paths filter limits triggers to 'valkey-glide' submodule changes only.
+#   2. Job is gated on github.actor == 'dependabot[bot]'.
+#   3. All actions use pinned external references (no code from the PR is executed).
+#   4. Only cargo update is run (fetches registry metadata, not PR build scripts).
 on:
     pull_request_target:
+        paths:
+            - valkey-glide
 
 permissions:
     contents: write
