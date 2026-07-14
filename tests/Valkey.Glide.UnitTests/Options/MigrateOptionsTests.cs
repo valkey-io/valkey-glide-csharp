@@ -9,7 +9,7 @@ namespace Valkey.Glide.UnitTests;
 public class MigrateOptionsTests
 {
     [Fact]
-    public void ToArgs_WithoutKey_Throws()
+    public void ToArgs_EmptyArray_Throws()
         => _ = Assert.Throws<ArgumentException>(() => BuildMigrateOptions().ToArgs([]));
 
     [Fact]
@@ -34,11 +34,17 @@ public class MigrateOptionsTests
     }
 
     [Fact]
-    public void ToArgs_AfterDispose_Throws()
+    public void Dispose_ThrowsAfter()
     {
         var options = BuildMigrateOptions();
+
         options.Dispose();
 
+        _ = Assert.Throws<ObjectDisposedException>(() => options.WithAuth("pass"));
+        _ = Assert.Throws<ObjectDisposedException>(() => options.WithAuth("user", "pass"));
+        _ = Assert.Throws<ObjectDisposedException>(options.WithCopy);
+        _ = Assert.Throws<ObjectDisposedException>(options.WithReplace);
+        _ = Assert.Throws<ObjectDisposedException>(options.ToString);
         _ = Assert.Throws<ObjectDisposedException>(() => options.ToArgs(["key"]));
     }
 

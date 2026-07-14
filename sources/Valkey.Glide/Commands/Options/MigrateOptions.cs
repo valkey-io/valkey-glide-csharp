@@ -77,6 +77,7 @@ public sealed class MigrateOptions(string host, ushort port, ushort destinationD
     /// <returns>This instance for fluent chaining.</returns>
     public MigrateOptions WithCopy()
     {
+        ObjectDisposedException.ThrowIf(_disposed, this);
         Copy = true;
         return this;
     }
@@ -87,6 +88,7 @@ public sealed class MigrateOptions(string host, ushort port, ushort destinationD
     /// <returns>This instance for fluent chaining.</returns>
     public MigrateOptions WithReplace()
     {
+        ObjectDisposedException.ThrowIf(_disposed, this);
         Replace = true;
         return this;
     }
@@ -98,6 +100,7 @@ public sealed class MigrateOptions(string host, ushort port, ushort destinationD
     /// <returns>This instance for fluent chaining.</returns>
     public MigrateOptions WithAuth(string password)
     {
+        ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentNullException.ThrowIfNull(password, nameof(password));
 
         ClearPassword();
@@ -116,6 +119,7 @@ public sealed class MigrateOptions(string host, ushort port, ushort destinationD
     /// <returns>This instance for fluent chaining.</returns>
     public MigrateOptions WithAuth(string username, string password)
     {
+        ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentNullException.ThrowIfNull(username, nameof(username));
         ArgumentNullException.ThrowIfNull(password, nameof(password));
 
@@ -131,7 +135,10 @@ public sealed class MigrateOptions(string host, ushort port, ushort destinationD
     /// Returns a string representation with sensitive data omitted.
     /// </summary>
     public override string ToString()
-        => $"MigrateOptions {{ Host = {Host}, Port = {Port}, DestinationDb = {DestinationDb}, Timeout = {Timeout}, Copy = {Copy}, Replace = {Replace} }}";
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        return $"MigrateOptions {{ Host = {Host}, Port = {Port}, DestinationDb = {DestinationDb}, Timeout = {Timeout}, Copy = {Copy}, Replace = {Replace} }}";
+    }
 
     /// <summary>
     /// Clears sensitive data.
