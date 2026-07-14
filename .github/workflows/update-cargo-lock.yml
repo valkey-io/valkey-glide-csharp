@@ -21,9 +21,10 @@ jobs:
                   token: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Install Rust
-              uses: ./valkey-glide/.github/actions/install-rust
+              uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9 # v1
               with:
-                  target: x86_64-unknown-linux-gnu
+                  toolchain: stable
+                  targets: x86_64-unknown-linux-gnu
 
             - name: Update Cargo.lock
               working-directory: rust
