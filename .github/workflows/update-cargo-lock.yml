@@ -18,8 +18,8 @@ permissions:
 
 jobs:
     update-cargo-lock:
-        # TODO #449: Remove github.actor check after validating.
-        if: github.actor == 'dependabot[bot]' || github.event_name == 'workflow_dispatch'
+        # TODO #449: Restore github.actor check after validating.
+        # if: github.actor == 'dependabot[bot]' || github.event_name == 'workflow_dispatch'
         runs-on: ubuntu-latest
         timeout-minutes: 10
 
