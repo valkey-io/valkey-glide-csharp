@@ -1,6 +1,6 @@
 {
   "server_type": "valkey",
   "server_version": "9.0",
-  "line_coverage": 70.4,
-  "branch_coverage": 51.3
+  "line_coverage": 71.3,
+  "branch_coverage": 51.7
 }

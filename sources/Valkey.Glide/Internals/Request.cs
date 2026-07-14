@@ -2,6 +2,7 @@
 
 using Valkey.Glide.Commands.Options;
 
+using static Valkey.Glide.Errors;
 using static Valkey.Glide.Internals.FFI;
 using static Valkey.Glide.Internals.TimeUtils;
 
@@ -187,4 +188,125 @@ internal partial class Request
             args.Add(ValkeyLiterals.KEEPTTL);
         }
     }
+
+    #region Response Map Helpers
+
+    /// <summary>
+    /// Returns a required <see langword="bool"/> value from the given response dictionary.
+    /// </summary>
+    private static bool GetBool(Dictionary<GlideString, object> map, string key)
+        => TryGetBool(map, key) ?? throw new RequestException($"Response missing required field '{key}'");
+
+    /// <summary>
+    /// Returns an optional <see langword="bool"/> value from the given response dictionary.
+    /// </summary>
+    private static bool? TryGetBool(Dictionary<GlideString, object> map, string key)
+        => map.TryGetValue(key, out var value) ? ((GlideString)value).ToString() == "1" : null;
+
+    /// <summary>
+    /// Returns a required <see langword="char"/> value from the given response dictionary.
+    /// </summary>
+    private static char GetChar(Dictionary<GlideString, object> map, string key)
+    {
+        var s = GetString(map, key);
+        return s.Length == 1 ? s[0] : throw new RequestException($"Response field '{key}' expected single character, got '{s}'");
+    }
+
+    /// <summary>
+    /// Returns a required <see langword="double"/> value from the given response dictionary.
+    /// </summary>
+    private static double GetDouble(Dictionary<GlideString, object> map, string key)
+        => TryGetDouble(map, key) ?? throw new RequestException($"Response missing required field '{key}'");
+
+    /// <summary>
+    /// Returns an optional <see langword="double"/> value from the given response dictionary.
+    /// </summary>
+    private static double? TryGetDouble(Dictionary<GlideString, object> map, string key)
+        => map.TryGetValue(key, out var value)
+            ? value switch
+            {
+                double d => d,
+                GlideString gs => double.Parse(gs.ToString()),
+                _ => throw new RequestException($"Response field '{key}' expected double or string, got {value.GetType()}"),
+            } : null;
+
+    /// <summary>
+    /// Returns a required <see langword="long"/> value from the given response dictionary.
+    /// </summary>
+    private static long GetLong(Dictionary<GlideString, object> map, string key)
+        => TryGetLong(map, key) ?? throw new RequestException($"Response missing required field '{key}'");
+
+    /// <summary>
+    /// Returns an optional <see langword="long"/> value from the given response dictionary.
+    /// </summary>
+    private static long? TryGetLong(Dictionary<GlideString, object> map, string key)
+        => map.TryGetValue(key, out var value)
+            ? value switch
+            {
+                long l => l,
+                GlideString gs => long.Parse(gs.ToString()),
+                _ => throw new RequestException($"Response field '{key}' expected long or string, got {value.GetType()}"),
+            } : null;
+
+    /// <summary>
+    /// Returns a required <see langword="string"/> value from the given response dictionary.
+    /// </summary>
+    private static string GetString(Dictionary<GlideString, object> map, string key)
+        => TryGetString(map, key) ?? throw new RequestException($"Response missing required field '{key}'");
+
+    /// <summary>
+    /// Returns an optional <see langword="string"/> value from the given response dictionary.
+    /// </summary>
+    private static string? TryGetString(Dictionary<GlideString, object> map, string key)
+        => map.TryGetValue(key, out var value) ? ((GlideString)value).ToString() : null;
+
+    /// <summary>
+    /// Returns a required <see cref="TimeSpan"/> value from the given response dictionary.
+    /// </summary>
+    private static TimeSpan GetTimeSpan(Dictionary<GlideString, object> map, string key)
+        // Expects a server duration string (e.g. "0.123 sec").
+        => TimeSpan.FromSeconds(double.Parse(GetString(map, key).Replace(" sec", "")));
+
+    /// <summary>
+    /// Returns a required <see cref="ValkeyValue"/> from the given response dictionary.
+    /// </summary>
+    private static ValkeyValue GetValkeyValue(Dictionary<GlideString, object> map, string key)
+    {
+        var result = TryGetValkeyValue(map, key);
+        return result != ValkeyValue.Null ? result : throw new RequestException($"Response missing required field '{key}'");
+    }
+
+    /// <summary>
+    /// Returns an optional <see cref="ValkeyValue"/> from the given response dictionary.
+    /// </summary>
+    private static ValkeyValue TryGetValkeyValue(Dictionary<GlideString, object> map, string key)
+        => map.TryGetValue(key, out var value) ? (GlideString)value : ValkeyValue.Null;
+
+    /// <summary>
+    /// Returns a required <see cref="ValkeyValue"/> array from the given response dictionary.
+    /// </summary>
+    private static ValkeyValue[] GetValkeyValues(Dictionary<GlideString, object> map, string key)
+        => TryGetValkeyValues(map, key) ?? throw new RequestException($"Response missing required field '{key}'");
+
+    /// <summary>
+    /// Returns an optional <see cref="ValkeyValue"/> array from the given response dictionary.
+    /// </summary>
+    private static ValkeyValue[]? TryGetValkeyValues(Dictionary<GlideString, object> map, string key)
+    {
+        if (!map.TryGetValue(key, out var value))
+        {
+            return null;
+        }
+
+        IEnumerable<object> items = value switch
+        {
+            object[] arr => arr,
+            HashSet<object> set => set,
+            _ => throw new RequestException($"Response field '{key}' expected array, got {value.GetType()}"),
+        };
+
+        return [.. items.Cast<GlideString>().Select(gs => (ValkeyValue)gs)];
+    }
+
+    #endregion
 }

@@ -210,6 +210,64 @@ public partial interface IGlideClient
     Task<string> LolwutAsync();
 
     /// <summary>
+    /// Returns a report about memory problems detected by the server.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/memory-doctor/">Valkey commands – MEMORY DOCTOR</seealso>
+    /// <returns>The memory diagnostic report.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var report = await client.MemoryDoctorAsync();
+    /// Console.WriteLine("Memory report: " + report);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<string> MemoryDoctorAsync();
+
+    /// <summary>
+    /// Returns the internal statistics of the memory allocator.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/memory-malloc-stats/">Valkey commands – MEMORY MALLOC-STATS</seealso>
+    /// <returns>The memory allocator statistics.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var report = await client.MemoryMallocStatsAsync();
+    /// Console.WriteLine("Allocator stats: " + report);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<string> MemoryMallocStatsAsync();
+
+    /// <summary>
+    /// Asks the server to reclaim memory from the allocator back to the operating system.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/memory-purge/">Valkey commands – MEMORY PURGE</seealso>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.MemoryPurgeAsync();
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task MemoryPurgeAsync();
+
+    /// <summary>
+    /// Returns detailed memory consumption statistics of the server.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/memory-stats/">Valkey commands – MEMORY STATS</seealso>
+    /// <returns>A <see cref="MemoryStats" /> containing detailed memory usage statistics.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var stats = await client.MemoryStatsAsync();
+    /// Console.WriteLine($"Peak allocated: {stats.PeakAllocated}");
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<MemoryStats> MemoryStatsAsync();
+
+    /// <summary>
     /// Returns latency spike time series for the specified event.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/latency-history/">Valkey commands – LATENCY HISTORY</seealso>
