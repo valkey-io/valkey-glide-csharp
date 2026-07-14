@@ -8,7 +8,9 @@ permissions:
 
 jobs:
     update-cargo-lock:
-        # TODO: Restore after testing: if: github.actor == 'dependabot[bot]'
+        # Security: restrict to dependabot[bot] to prevent arbitrary PRs from
+        # triggering this workflow with elevated pull_request_target permissions.
+        if: github.actor == 'dependabot[bot]'
         runs-on: ubuntu-latest
         timeout-minutes: 10
 
