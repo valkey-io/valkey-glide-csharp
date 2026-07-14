@@ -1,6 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using static Valkey.Glide.Internals.FFI;
+using static Valkey.Glide.Internals.TimeUtils;
 using static Valkey.Glide.Route;
 
 namespace Valkey.Glide.Internals;
@@ -20,10 +21,10 @@ internal partial class Request
         => Ok(RequestType.ClientSetName, [connectionName.ToGlideString()]);
 
     public static Cmd<string, ValkeyValue> ClientPause(TimeSpan timeout)
-        => Ok(RequestType.ClientPause, [ToMilliseconds(timeout)]);
+        => Ok(RequestType.ClientPause, [ToMilliseconds(timeout).ToGlideString()]);
 
     public static Cmd<string, ValkeyValue> ClientPauseWrite(TimeSpan timeout)
-        => Ok(RequestType.ClientPause, [ToMilliseconds(timeout), ValkeyLiterals.WRITE.ToGlideString()]);
+        => Ok(RequestType.ClientPause, [ToMilliseconds(timeout).ToGlideString(), ValkeyLiterals.WRITE.ToGlideString()]);
 
     public static Cmd<string, ValkeyValue> ClientUnpause()
         => Ok(RequestType.ClientUnpause, []);
