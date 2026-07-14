@@ -5,7 +5,6 @@ on:
         paths:
             - valkey-glide
 
-    # TODO #449: Remove workflow_dispatch after validating.
     workflow_dispatch:
         inputs:
             pr-branch:
@@ -18,8 +17,7 @@ permissions:
 
 jobs:
     update-cargo-lock:
-        # TODO #449: Restore github.actor check after validating.
-        # if: github.actor == 'dependabot[bot]' || github.event_name == 'workflow_dispatch'
+        if: github.actor == 'dependabot[bot]' || github.event_name == 'workflow_dispatch'
         runs-on: ubuntu-latest
         timeout-minutes: 10
 
@@ -29,7 +27,6 @@ jobs:
               with:
                   submodules: true
 
-                  # TODO #449: Remove github.event.inputs.pr-branch  after validating.
                   ref: ${{ github.event.inputs.pr-branch || github.head_ref }}
                   token: ${{ secrets.GITHUB_TOKEN }}
 
