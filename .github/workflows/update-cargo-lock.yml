@@ -2,8 +2,6 @@ name: Update Cargo.lock
 
 on:
     pull_request_target:
-        paths:
-            - valkey-glide
 
 permissions:
     contents: write
