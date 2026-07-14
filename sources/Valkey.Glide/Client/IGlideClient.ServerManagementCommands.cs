@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands.Options;
+
 using static Valkey.Glide.Commands.Options.InfoOptions;
 
 namespace Valkey.Glide;
@@ -349,4 +351,64 @@ public partial interface IGlideClient
     /// </example>
     /// </remarks>
     Task<string> BackgroundSaveCancelAsync();
+
+    /// <summary>
+    /// Starts a coordinated failover from the connected primary to one of its replicas.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/failover/">Valkey commands – FAILOVER</seealso>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.FailoverAsync();
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task FailoverAsync();
+
+    /// <summary>
+    /// Starts a coordinated failover from the connected primary to one of its replicas.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/failover/">Valkey commands – FAILOVER</seealso>
+    /// <param name="options">The failover options.</param>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.FailoverAsync(FailoverOptions.Abort());
+    /// </code>
+    /// </example>
+    /// <example>
+    /// <code>
+    /// await client.FailoverAsync(FailoverOptions.To("localhost", 6380, TimeSpan.FromSeconds(1)));
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task FailoverAsync(FailoverOptions options);
+
+    /// <summary>
+    /// Makes the server a replica of the specified primary.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/replicaof/">Valkey commands – REPLICAOF</seealso>
+    /// <param name="host">The host of the primary to replicate.</param>
+    /// <param name="port">The port of the primary to replicate.</param>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.ReplicaOfAsync("localhost", 6379);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task ReplicaOfAsync(string host, int port);
+
+    /// <summary>
+    /// Promotes the current server to a primary by stopping replication.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/replicaof/">Valkey commands – REPLICAOF</seealso>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.ReplicaOfNoOneAsync();
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task ReplicaOfNoOneAsync();
 }

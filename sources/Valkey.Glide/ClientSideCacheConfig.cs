@@ -2,6 +2,8 @@
 
 using Valkey.Glide.Internals;
 
+using static Valkey.Glide.Internals.TimeUtils;
+
 namespace Valkey.Glide;
 
 /// <summary>
@@ -109,7 +111,7 @@ public sealed class ClientSideCacheConfig
             throw new ArgumentOutOfRangeException(nameof(maxCacheKb), "maxCacheKb must be positive.");
         }
 
-        GuardClauses.ThrowIfTimeSpanNegative(entryTtl);
+        GuardClauses.ThrowIfNegative(entryTtl);
 
         MaxCacheKb = maxCacheKb;
         EntryTtl = entryTtl;
@@ -154,7 +156,7 @@ public sealed class ClientSideCacheConfig
     internal FFI.ClientSideCacheConfig ToFfi() => new(
         CacheId,
         MaxCacheKb,
-        Utils.ToMillisecondsUlong(EntryTtl),
+        ToMilliseconds(EntryTtl),
         EvictionPolicy.HasValue,
         EvictionPolicy ?? default,
         EnableMetrics,
