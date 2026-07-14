@@ -1,7 +1,8 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-namespace Valkey.Glide.Commands.Options;
+using static Valkey.Glide.Internals.TimeUtils;
 
+namespace Valkey.Glide.Commands.Options;
 /// <summary>
 /// Options for the MIGRATE command.
 /// </summary>
@@ -180,9 +181,7 @@ public sealed class MigrateOptions(string host, ushort port, int destinationDb, 
             Port.ToGlideString(),
             isMultiKey ? "" : keys.First(),
             DestinationDb.ToGlideString(),
-
-            // TODO: Update once #446 is merged.
-            Timeout.TotalMilliseconds.ToGlideString()
+            ToMilliseconds(Timeout).ToGlideString()
         ];
 
         if (Copy)
