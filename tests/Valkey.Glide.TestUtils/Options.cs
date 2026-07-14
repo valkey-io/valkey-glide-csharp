@@ -11,7 +11,7 @@ public static class Options
 {
     /// <summary>
     /// Builds and returns migrate options for testing.
-    /// If not specified, required arguments are populated w ith default values.
+    /// If not specified, required arguments are populated with default values.
     /// </summary>
     /// <param name="address">The destination address.</param>
     public static MigrateOptions BuildMigrateOptions(
