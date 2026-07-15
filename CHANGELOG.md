@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `MEMORY PURGE` (#443)
   - `MEMORY STATS` (#443)
   - `REPLICAOF` (#446)
+  - `RESET` (#435)
   - `SAVE` (#440)
 - Custom socket address resolution support via callback (#392)
 
