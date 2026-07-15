@@ -9,7 +9,7 @@ namespace Valkey.Glide;
 /// by both should be added to <see cref="IConnectionManagementBaseCommands"/> instead.
 
 /// <seealso href="https://valkey.io/commands/#connection">Valkey – Connection Management Commands</seealso>
-public sealed partial interface IBaseClient : IConnectionManagementBaseCommands
+public partial interface IBaseClient : IConnectionManagementBaseCommands
 {
     /// <summary>
     /// Gets the name of the current connection.
