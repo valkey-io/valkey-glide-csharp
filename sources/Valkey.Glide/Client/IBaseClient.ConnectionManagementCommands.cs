@@ -144,4 +144,17 @@ public partial interface IBaseClient : IConnectionManagementBaseCommands
     /// </example>
     /// </remarks>
     Task<ClientTrackingInfo> ClientTrackingInfoAsync();
+
+    /// <summary>
+    /// Resets the connection state.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/reset/">Valkey commands – RESET</seealso>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.ResetAsync();
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task ResetAsync();
 }

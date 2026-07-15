@@ -137,6 +137,39 @@ public class SharedClientTests(TestConfiguration config)
         await client.SetAsync(key, "after");
         Assert.True(sw.Elapsed < pausedFor);
     }
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestReset_ResetsConnectionState(BaseClient client)
+    {
+        // Verify that ResetAsync completes without error and the client recovers.
+        await client.ResetAsync();
+        Assert.Equal("PONG", (await client.PingAsync()).ToString());
+
+        // For standalone, verify that RESET clears WATCH state.
+        if (client is GlideClient standaloneClient)
+        {
+            var key = Guid.NewGuid().ToString();
+
+            // WATCH a key, then modify it — normally this aborts a subsequent transaction.
+            await standaloneClient.WatchAsync([key]);
+            await client.SetAsync(key, "modified");
+
+            // RESET clears the watch.
+            await client.ResetAsync();
+
+            // Transaction should succeed because RESET cleared the watch.
+            var batch = new Pipeline.Batch(true);
+            _ = batch.SetAsync(key, "after-reset");
+            object?[]? execResult = await standaloneClient.Exec(batch, true);
+
+            Assert.NotNull(execResult);
+            Assert.Equal("after-reset", await client.GetAsync(key));
+
+            // Cleanup.
+            _ = await client.DeleteAsync(key);
+        }
+    }
+
     // This test is slow, but it caught timing and releasing issues in the past,
     // so it's being kept.
     [Theory(DisableDiscoveryEnumeration = true)]

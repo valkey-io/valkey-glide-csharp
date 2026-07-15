@@ -229,24 +229,25 @@ public class PubSubThreadSafetyTests
         }
 
         // Mock abstract methods.
-        public override Task<ValkeyValue> ClientGetNameAsync() => Task.FromResult(ValkeyValue.Null);
-        public override Task<long> ClientIdAsync() => Task.FromResult(0L);
-        public override Task<ValkeyValue> EchoAsync(ValkeyValue message) => Task.FromResult(message);
-        public override Task<ValkeyValue> PingAsync() => Task.FromResult((ValkeyValue)"PONG");
-        public override Task<ValkeyValue> PingAsync(ValkeyValue message) => Task.FromResult(message);
-        public override Task SelectAsync(long index) => Task.CompletedTask;
         public override Task ClientPauseAsync(TimeSpan timeout) => Task.CompletedTask;
         public override Task ClientPauseWriteAsync(TimeSpan timeout) => Task.CompletedTask;
         public override Task ClientUnpauseAsync() => Task.CompletedTask;
-        public override Task<ClientTrackingInfo> ClientTrackingInfoAsync() => Task.FromResult(new ClientTrackingInfo(new HashSet<string>(), -1, new HashSet<string>()));
         public override Task ConfigSetAsync(IDictionary<ValkeyValue, ValkeyValue> parameters) => Task.CompletedTask;
-        public override Task<KeyValuePair<string, string>[]> ConfigGetAsync(IEnumerable<ValkeyValue> patterns) => Task.FromResult(Array.Empty<KeyValuePair<string, string>>());
         public override Task FlushAllDatabasesAsync(FlushMode mode) => Task.CompletedTask;
         public override Task FlushDatabaseAsync(FlushMode mode) => Task.CompletedTask;
+        public override Task ResetAsync() => Task.CompletedTask;
         public override Task SaveAsync() => Task.CompletedTask;
-        public override Task<string> LolwutAsync(LolwutOptions options) => Task.FromResult(string.Empty);
+        public override Task SelectAsync(long index) => Task.CompletedTask;
+        public override Task<ClientTrackingInfo> ClientTrackingInfoAsync() => Task.FromResult(new ClientTrackingInfo(new HashSet<string>(), -1, new HashSet<string>()));
+        public override Task<KeyValuePair<string, string>[]> ConfigGetAsync(IEnumerable<ValkeyValue> patterns) => Task.FromResult(Array.Empty<KeyValuePair<string, string>>());
+        public override Task<long> ClientIdAsync() => Task.FromResult(0L);
         public override Task<long> LatencyResetAsync() => Task.FromResult(0L);
-        public override Task<long> LatencyResetAsync(ValkeyValue @event) => Task.FromResult(0L);
         public override Task<long> LatencyResetAsync(IEnumerable<ValkeyValue> events) => Task.FromResult(0L);
+        public override Task<long> LatencyResetAsync(ValkeyValue @event) => Task.FromResult(0L);
+        public override Task<string> LolwutAsync(LolwutOptions options) => Task.FromResult(string.Empty);
+        public override Task<ValkeyValue> ClientGetNameAsync() => Task.FromResult(ValkeyValue.Null);
+        public override Task<ValkeyValue> EchoAsync(ValkeyValue message) => Task.FromResult(message);
+        public override Task<ValkeyValue> PingAsync() => Task.FromResult((ValkeyValue)"PONG");
+        public override Task<ValkeyValue> PingAsync(ValkeyValue message) => Task.FromResult(message);
     }
 }

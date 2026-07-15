@@ -7,7 +7,7 @@ using static Valkey.Glide.Route;
 
 namespace Valkey.Glide;
 
-public sealed partial class GlideClusterClient
+public partial class GlideClusterClient
 {
     /// <inheritdoc cref="IBaseClient.ClientGetNameAsync()"/>
     public override async Task<ValkeyValue> ClientGetNameAsync()
@@ -68,6 +68,10 @@ public sealed partial class GlideClusterClient
     /// <inheritdoc cref="IGlideClusterClient.PingAsync(ValkeyValue, Route)"/>
     public async Task<ValkeyValue> PingAsync(ValkeyValue message, Route route)
         => await Command(Request.Ping(message), route);
+
+    /// <inheritdoc cref="IBaseClient.ResetAsync()"/>
+    public override async Task ResetAsync()
+        => _ = await Command(Request.Reset(), Route.Random);
 
     /// <inheritdoc cref="IConnectionManagementBaseCommands.SelectAsync(long)"/>
     public override async Task SelectAsync(long index)

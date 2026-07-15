@@ -35,4 +35,7 @@ public abstract partial class BaseClient
 
     /// <inheritdoc cref="IBaseClient.ClientTrackingInfoAsync()"/>
     public abstract Task<ClientTrackingInfo> ClientTrackingInfoAsync();
+
+    /// <inheritdoc cref="IBaseClient.ResetAsync()"/>
+    public abstract Task ResetAsync();
 }
