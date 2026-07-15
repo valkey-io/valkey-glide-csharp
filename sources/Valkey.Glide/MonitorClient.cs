@@ -122,6 +122,8 @@ public sealed class MonitorClient : IAsyncDisposable, IDisposable
     /// <remarks>
     /// <example>
     /// <code>
+    /// using var config = new MonitorConfig("localhost", 6379);
+    /// await using var monitor = await MonitorClient.CreateClient(config);
     /// await foreach (var msg in monitor.GetMessagesAsync())
     /// {
     ///     Console.WriteLine($"{msg.Timestamp}: {msg.Command} {string.Join(" ", msg.Args)}");
