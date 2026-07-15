@@ -159,12 +159,14 @@ Note: Conventional Commits apply to commit messages only. Do not enforce this fo
 
 ## Quality Gates (Agent Checklist)
 
-- Build passes on `net8.0`.
-- Lint passes: `task lint` (or individual `task lint:rust`, `task lint:csharp`, `task lint:yaml`, `task lint:markdown`).
-- Tests pass; targeted via filters instead of per-file execution.
-- Generated outputs not committed.
-- Public API changes respect StackExchange.Redis compatibility.
-- Commits include DCO signoff.
+- [ ] Build passes
+- [ ] Format passes
+- [ ] Lint passes
+- [ ] All unit tests pass
+- [ ] Relevant integration tests pass
+- [ ] Documentation examples compile
+- [ ] Public API changes respect StackExchange.Redis compatibility.
+- [ ] All commits include DCO signoff.
 
 ## Quick Facts for Reasoners
 

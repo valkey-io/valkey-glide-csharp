@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Net;
+
 using Valkey.Glide.Commands;
 
 namespace Valkey.Glide;
@@ -323,6 +325,34 @@ public partial interface IDatabaseAsync
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<bool> KeyMoveAsync(ValkeyKey key, int database, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Atomically transfers a key from the source instance to the destination instance.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/migrate/">Valkey commands – MIGRATE</seealso>
+    /// <param name="key">The key to migrate.</param>
+    /// <param name="toServer">The endpoint of the destination server.</param>
+    /// <param name="toDatabase">The database number on the destination server.</param>
+    /// <param name="timeoutMilliseconds">The timeout in milliseconds for the migration.</param>
+    /// <param name="migrateOptions">Additional migrate options (copy, replace).</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns><see langword="true"/> if the key was migrated successfully, <see langword="false"/> if the key was not found.</returns>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await db.StringSetAsync("key", "value");
+    /// var migrated = await db.KeyMigrateAsync("key", new DnsEndPoint("desthost", 6379), 0, 5000);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<bool> KeyMigrateAsync(
+        ValkeyKey key,
+        EndPoint toServer,
+        int toDatabase = 0,
+        int timeoutMilliseconds = 0,
+        KeyMigrateOptions migrateOptions = KeyMigrateOptions.None,
+        CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Returns a random key from the database.

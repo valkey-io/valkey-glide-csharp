@@ -120,6 +120,10 @@ public abstract partial class BaseClient
     public async Task<long> SortAndStoreAsync(ValkeyKey destination, ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, IEnumerable<ValkeyValue>? get = null)
         => await Command(Request.SortAndStoreAsync(destination, key, skip, take, order, sortType, by, get?.ToArray()));
 
+    /// <inheritdoc cref="IBaseClient.MigrateAsync(ValkeyKey, MigrateOptions)"/>
+    public async Task<bool> MigrateAsync(ValkeyKey key, MigrateOptions options)
+        => await Command(Request.MigrateAsync([key], options));
+
     /// <inheritdoc cref="IBaseClient.WaitAsync(long, TimeSpan)"/>
     public async Task<long> WaitAsync(long numreplicas, TimeSpan timeout)
         => await Command(Request.WaitAsync(numreplicas, timeout));

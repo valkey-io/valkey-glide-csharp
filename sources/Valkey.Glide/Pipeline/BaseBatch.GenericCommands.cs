@@ -81,12 +81,9 @@ public abstract partial class BaseBatch<T>
     public T Copy(ValkeyKey source, ValkeyKey destination, bool replace = false)
         => AddCmd(CopyAsync(source, destination, replace));
 
-    /// <inheritdoc cref="IBatchStandalone.Copy(ValkeyKey, ValkeyKey, int, bool)" />
-    public T Copy(ValkeyKey source, ValkeyKey destination, int destinationDatabase, bool replace = false)
-        => AddCmd(CopyAsync(source, destination, destinationDatabase, replace));
-
-    /// <inheritdoc cref="IBatchStandalone.Move(ValkeyKey, int)" />
-    public T Move(ValkeyKey key, int database) => AddCmd(MoveAsync(key, database));
+    /// <inheritdoc cref="IBatchGenericCommands.Migrate(ValkeyKey, MigrateOptions)" />
+    public T Migrate(ValkeyKey key, MigrateOptions options)
+        => AddCmd(MigrateAsync([key], options));
 
     /// <inheritdoc cref="IBatchGenericCommands.RandomKey()" />
     public T RandomKey() => AddCmd(RandomKeyAsync());
@@ -122,34 +119,35 @@ public abstract partial class BaseBatch<T>
     public T Wait(long numreplicas, TimeSpan timeout) => AddCmd(WaitAsync(numreplicas, timeout));
 
     // Explicit interface implementations for IBatchGenericCommands
-    IBatch IBatchGenericCommands.Delete(ValkeyKey key) => Delete(key);
+    IBatch IBatchGenericCommands.Copy(ValkeyKey source, ValkeyKey destination, bool replace) => Copy(source, destination, replace);
     IBatch IBatchGenericCommands.Delete(IEnumerable<ValkeyKey> keys) => Delete(keys);
-    IBatch IBatchGenericCommands.Unlink(ValkeyKey key) => Unlink(key);
-    IBatch IBatchGenericCommands.Unlink(IEnumerable<ValkeyKey> keys) => Unlink(keys);
-    IBatch IBatchGenericCommands.Exists(ValkeyKey key) => Exists(key);
-    IBatch IBatchGenericCommands.Exists(IEnumerable<ValkeyKey> keys) => Exists(keys);
-    IBatch IBatchGenericCommands.Expire(ValkeyKey key, TimeSpan? expiry, ExpireCondition condition) => Expire(key, expiry, condition);
-    IBatch IBatchGenericCommands.Expire(ValkeyKey key, DateTimeOffset? expiry, ExpireCondition condition) => Expire(key, expiry, condition);
-    IBatch IBatchGenericCommands.TimeToLive(ValkeyKey key) => TimeToLive(key);
-    IBatch IBatchGenericCommands.Type(ValkeyKey key) => Type(key);
-    IBatch IBatchGenericCommands.Rename(ValkeyKey key, ValkeyKey newKey) => Rename(key, newKey);
-    IBatch IBatchGenericCommands.RenameIfNotExists(ValkeyKey key, ValkeyKey newKey) => RenameIfNotExists(key, newKey);
-    IBatch IBatchGenericCommands.Persist(ValkeyKey key) => Persist(key);
+    IBatch IBatchGenericCommands.Delete(ValkeyKey key) => Delete(key);
     IBatch IBatchGenericCommands.Dump(ValkeyKey key) => Dump(key);
-    IBatch IBatchGenericCommands.Restore(ValkeyKey key, byte[] value, RestoreOptions? options) => Restore(key, value, options);
-    IBatch IBatchGenericCommands.Touch(ValkeyKey key) => Touch(key);
-    IBatch IBatchGenericCommands.Touch(IEnumerable<ValkeyKey> keys) => Touch(keys);
+    IBatch IBatchGenericCommands.Exists(IEnumerable<ValkeyKey> keys) => Exists(keys);
+    IBatch IBatchGenericCommands.Exists(ValkeyKey key) => Exists(key);
+    IBatch IBatchGenericCommands.Expire(ValkeyKey key, DateTimeOffset? expiry, ExpireCondition condition) => Expire(key, expiry, condition);
+    IBatch IBatchGenericCommands.Expire(ValkeyKey key, TimeSpan? expiry, ExpireCondition condition) => Expire(key, expiry, condition);
     IBatch IBatchGenericCommands.ExpireTime(ValkeyKey key) => ExpireTime(key);
+    IBatch IBatchGenericCommands.Migrate(ValkeyKey key, MigrateOptions options) => Migrate(key, options);
     IBatch IBatchGenericCommands.ObjectEncoding(ValkeyKey key) => ObjectEncoding(key);
     IBatch IBatchGenericCommands.ObjectFrequency(ValkeyKey key) => ObjectFrequency(key);
     IBatch IBatchGenericCommands.ObjectIdleTime(ValkeyKey key) => ObjectIdleTime(key);
     IBatch IBatchGenericCommands.ObjectRefCount(ValkeyKey key) => ObjectRefCount(key);
-    IBatch IBatchGenericCommands.Copy(ValkeyKey source, ValkeyKey destination, bool replace) => Copy(source, destination, replace);
+    IBatch IBatchGenericCommands.Persist(ValkeyKey key) => Persist(key);
     IBatch IBatchGenericCommands.RandomKey() => RandomKey();
+    IBatch IBatchGenericCommands.Rename(ValkeyKey key, ValkeyKey newKey) => Rename(key, newKey);
+    IBatch IBatchGenericCommands.RenameIfNotExists(ValkeyKey key, ValkeyKey newKey) => RenameIfNotExists(key, newKey);
+    IBatch IBatchGenericCommands.Restore(ValkeyKey key, byte[] value, RestoreOptions? options) => Restore(key, value, options);
     IBatch IBatchGenericCommands.Sort(ValkeyKey key, long skip, long take, Order order, SortType sortType, ValkeyValue by, IEnumerable<ValkeyValue>? get) => Sort(key, skip, take, order, sortType, by, get);
     IBatch IBatchGenericCommands.Sort(ValkeyKey key, SortOptions? options) => Sort(key, options);
     IBatch IBatchGenericCommands.SortAndStore(ValkeyKey destination, ValkeyKey key, SortOptions? options) => SortAndStore(destination, key, options);
     IBatch IBatchGenericCommands.SortReadOnly(ValkeyKey key, long skip, long take, Order order, SortType sortType, ValkeyValue by, IEnumerable<ValkeyValue>? get) => SortReadOnly(key, skip, take, order, sortType, by, get);
     IBatch IBatchGenericCommands.SortReadOnly(ValkeyKey key, SortOptions? options) => SortReadOnly(key, options);
+    IBatch IBatchGenericCommands.TimeToLive(ValkeyKey key) => TimeToLive(key);
+    IBatch IBatchGenericCommands.Touch(IEnumerable<ValkeyKey> keys) => Touch(keys);
+    IBatch IBatchGenericCommands.Touch(ValkeyKey key) => Touch(key);
+    IBatch IBatchGenericCommands.Type(ValkeyKey key) => Type(key);
+    IBatch IBatchGenericCommands.Unlink(IEnumerable<ValkeyKey> keys) => Unlink(keys);
+    IBatch IBatchGenericCommands.Unlink(ValkeyKey key) => Unlink(key);
     IBatch IBatchGenericCommands.Wait(long numreplicas, TimeSpan timeout) => Wait(numreplicas, timeout);
 }
