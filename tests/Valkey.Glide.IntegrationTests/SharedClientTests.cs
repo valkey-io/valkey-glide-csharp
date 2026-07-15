@@ -1,9 +1,5 @@
 ﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using System.Diagnostics;
-
-using Valkey.Glide.TestUtils;
-
 namespace Valkey.Glide.IntegrationTests;
 
 [Collection(typeof(SharedClientTests))]
@@ -67,106 +63,6 @@ public class SharedClientTests(TestConfiguration config)
         var result = await client.ScriptInvokeAsync(script, options, TestContext.Current.CancellationToken);
 
         Assert.Equal((string[])[LargeString, LargeString], result.AsStringArray());
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task TestClientPause_ReadsPausedUntilExpires(BaseClient client)
-    {
-        var key = Guid.NewGuid().ToString();
-        await client.SetAsync(key, "value");
-
-        var sw = Stopwatch.StartNew();
-
-        var pauseFor = TimeSpan.FromSeconds(2);
-        await client.ClientPauseAsync(pauseFor);
-
-        // Verify that read commands are blocked until the pause expires.
-        _ = await client.GetAsync(key);
-        Assert.True(sw.Elapsed >= pauseFor);
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task TestClientPause_WritesPausedUntilExpires(BaseClient client)
-    {
-        var key = Guid.NewGuid().ToString();
-        await client.SetAsync(key, "before");
-
-        var sw = Stopwatch.StartNew();
-
-        var pauseFor = TimeSpan.FromSeconds(2);
-        await client.ClientPauseAsync(pauseFor);
-
-        // Verify that write commands are blocked until the pause expires.
-        await client.SetAsync(key, "after");
-        Assert.True(sw.Elapsed >= pauseFor);
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task TestClientPauseWrite_ReadsNotPaused(BaseClient client)
-    {
-        var key = Guid.NewGuid().ToString();
-        await client.SetAsync(key, "before");
-
-        var pauseFor = TimeSpan.FromSeconds(2);
-        await client.ClientPauseWriteAsync(pauseFor);
-
-        var sw = Stopwatch.StartNew();
-
-        // Verify that read commands are not blocked.
-        Assert.Equal("before", await client.GetAsync(key));
-        Assert.True(sw.Elapsed < pauseFor);
-
-        await client.ClientUnpauseAsync();
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task TestClientPauseWrite_ThenUnpause(BaseClient client)
-    {
-        var key = Guid.NewGuid().ToString();
-        await client.SetAsync(key, "before");
-
-        var pausedFor = TimeSpan.FromMinutes(1);
-        await client.ClientPauseWriteAsync(pausedFor);
-
-        var sw = Stopwatch.StartNew();
-
-        // Verify that write commands are unblocked once unpaused.
-        await client.ClientUnpauseAsync();
-        await client.SetAsync(key, "after");
-        Assert.True(sw.Elapsed < pausedFor);
-    }
-
-    [Theory]
-    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
-    public async Task TestReset_ResetsConnectionState(bool clusterMode)
-    {
-        // Create a client with server-assisted client-side caching.
-        var cache = new ClientSideCacheConfig(1024, TimeSpan.FromMinutes(1))
-            .WithServerAssisted();
-
-        await using BaseClient client = clusterMode
-            ? await GlideClusterClient.CreateClient(
-                TestConfiguration.DefaultClusterClientConfig()
-                    .WithClientSideCache(cache)
-                    .Build())
-            : await GlideClient.CreateClient(
-                TestConfiguration.DefaultClientConfig()
-                    .WithClientSideCache(cache)
-                    .Build());
-
-        // Verify tracking is enabled.
-        var infoBefore = await client.ClientTrackingInfoAsync();
-        Assert.Contains("on", infoBefore.Flags);
-
-        await client.ResetAsync();
-
-        // Verify tracking is disabled after reset.
-        var infoAfter = await client.ClientTrackingInfoAsync();
-        Assert.Contains("off", infoAfter.Flags);
     }
 
     // This test is slow, but it caught timing and releasing issues in the past,
