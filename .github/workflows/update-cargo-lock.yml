@@ -1,0 +1,67 @@
+name: Update Cargo.lock
+
+# Uses pull_request_target instead of pull_request so GITHUB_TOKEN has write access
+# to push commits to Dependabot pull requests. Regular pull_request gives Dependabot a
+# read-only token, which would cause git push to fail.
+#
+# Risk: pull_request_target grants elevated permissions and access to secrets when
+# checking out PR code. Mitigations:
+#   1. Paths filter limits triggers to 'valkey-glide' submodule changes only.
+#   2. Job is gated on github.actor == 'dependabot[bot]'.
+#   3. All actions use pinned external references (no code from the PR is executed).
+#   4. Only cargo update is run (fetches registry metadata, not PR build scripts).
+on:
+    pull_request_target:
+        paths:
+            - valkey-glide
+
+permissions:
+    contents: write
+
+jobs:
+    update-cargo-lock:
+        # Restrict to dependabot[bot] to prevent arbitrary PRs from
+        # triggering this workflow with elevated pull_request_target permissions.
+        if: github.actor == 'dependabot[bot]'
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+
+        steps:
+            # Only dependabot[bot] can trigger; no checked-out code is executed.
+            - name: Checkout # nosemgrep: yaml.github-actions.security.pull-request-target-code-checkout.pull-request-target-code-checkout
+              uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+              with:
+                  submodules: true
+                  ref: ${{ github.head_ref }}
+                  token: ${{ secrets.GITHUB_TOKEN }}
+
+            # Use pinned external action instead of install-rust action to avoid executing
+            # PR code with elevated permissions from pull_request_target.
+            - name: Install Rust
+              uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9 # v1
+              with:
+                  toolchain: stable
+                  targets: x86_64-unknown-linux-gnu
+
+            - name: Update Cargo.lock
+              working-directory: rust
+              run: cargo update --workspace
+
+            - name: Check for changes
+              id: check
+              run: |
+                  git add rust/Cargo.lock
+                  if git diff --cached --quiet; then
+                    echo "No changes to Cargo.lock"
+                    echo "changed=false" >> "$GITHUB_OUTPUT"
+                  else
+                    echo "changed=true" >> "$GITHUB_OUTPUT"
+                  fi
+
+            - name: Commit and push changes
+              if: steps.check.outputs.changed == 'true'
+              run: |
+                  git config user.name "github-actions[bot]"
+                  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+                  git commit -m "chore(deps): update Cargo.lock"
+                  git push
