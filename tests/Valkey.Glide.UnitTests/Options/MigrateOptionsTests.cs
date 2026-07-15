@@ -34,7 +34,7 @@ public class MigrateOptionsTests
     }
 
     [Fact]
-    public void Dispose_ThrowsAfter()
+    public void Dispose_ThrowsOnSensitiveAccess()
     {
         var options = BuildMigrateOptions();
 
