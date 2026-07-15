@@ -8,6 +8,8 @@ using static Valkey.Glide.TestUtils.Data;
 
 namespace Valkey.Glide.IntegrationTests;
 
+[Collection(typeof(UpdateConnectionPasswordTests))]
+[CollectionDefinition(DisableParallelization = true)]
 public class UpdateConnectionPasswordTests(ServerFixture fixture) : IClassFixture<ServerFixture>
 {
     #region Constants
