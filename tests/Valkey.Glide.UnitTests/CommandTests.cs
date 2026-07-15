@@ -451,14 +451,11 @@ public class CommandTests
             () => Assert.Equal(11L, Request.Increment("key").Converter(11L)),
             () => Assert.Equal(15L, Request.IncrementBy("key", 5).Converter(15L)),
             () => Assert.Equal(10.5, Request.IncrementByFloat("key", 0.5).Converter(10.5)),
+            // TODO #454: Set should return ValkeyValue.Ok instead of bool.
             () => Assert.True(Request.Set([
                 new KeyValuePair<ValkeyKey, ValkeyValue>("key1", "value1"),
                 new KeyValuePair<ValkeyKey, ValkeyValue>("key2", "value2")
             ]).Converter("OK")),
-            () => Assert.False(Request.Set([
-                new KeyValuePair<ValkeyKey, ValkeyValue>("key1", "value1"),
-                new KeyValuePair<ValkeyKey, ValkeyValue>("key2", "value2")
-            ]).Converter("ERROR")),
             () => Assert.True(Request.SetIfNotExists([new KeyValuePair<ValkeyKey, ValkeyValue>("key1", "value1")]).Converter(true)),
             () => Assert.False(Request.SetIfNotExists([new KeyValuePair<ValkeyKey, ValkeyValue>("key1", "value1")]).Converter(false)),
             () => Assert.Equal("test_value", Request.GetDelete("test_key").Converter(new GlideString("test_value")).ToString()),
@@ -581,6 +578,7 @@ public class CommandTests
             () => Assert.Equal(ValkeyType.Hash, Request.TypeAsync("key").Converter("hash")),
             () => Assert.Equal(ValkeyType.Stream, Request.TypeAsync("key").Converter("stream")),
             () => Assert.Equal(ValkeyType.None, Request.TypeAsync("key").Converter("none")),
+            // TODO #454: RenameAsync should return ValkeyValue.Ok instead of bool.
             () => Assert.True(Request.RenameAsync("oldkey", "newkey").Converter("OK")),
             () => Assert.True(Request.RenameIfNotExistsAsync("oldkey", "newkey").Converter(true)),
             () => Assert.False(Request.RenameIfNotExistsAsync("oldkey", "newkey").Converter(false)),

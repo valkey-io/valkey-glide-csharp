@@ -82,8 +82,9 @@ internal partial class Request
             };
         });
 
+    // TODO #454: Should return ValkeyValue.Ok instead of bool.
     public static Cmd<string, bool> RenameAsync(ValkeyKey key, ValkeyKey newKey)
-        => StringOKToBool(RequestType.Rename, [key.ToGlideString(), newKey.ToGlideString()]);
+        => new(RequestType.Rename, [key, newKey], false, _ => true);
 
     public static Cmd<bool, bool> RenameIfNotExistsAsync(ValkeyKey key, ValkeyKey newKey)
         => Simple<bool>(RequestType.RenameNX, [key.ToGlideString(), newKey.ToGlideString()]);
@@ -312,7 +313,7 @@ internal partial class Request
     }
 
     public static Cmd<object, bool> MigrateAsync(IEnumerable<ValkeyKey> keys, MigrateOptions options)
-        => ObjectOKToBool(RequestType.Migrate, options.ToArgs(keys.ToGlideStrings()));
+        => new(RequestType.Migrate, options.ToArgs(keys.ToGlideStrings()), false, response => response is string s && s == "OK");
 
     public static Cmd<long, long> WaitAsync(long numreplicas, TimeSpan timeout)
         => Simple<long>(RequestType.Wait, [numreplicas.ToGlideString(), ToMilliseconds(timeout).ToGlideString()]);
