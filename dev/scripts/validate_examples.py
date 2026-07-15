@@ -44,6 +44,7 @@ class ExamplesValidator:
 
     # Namespace imports to include when --add-imports is specified.
     _USING_NAMESPACES = [
+        "System.Net",
         "Valkey.Glide",
         "Valkey.Glide.Pipeline",
         "Valkey.Glide.Commands",

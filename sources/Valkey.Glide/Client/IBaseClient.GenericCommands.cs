@@ -557,6 +557,24 @@ public partial interface IBaseClient
     Task<long[]> WaitAofAsync(bool localAof, long numreplicas, TimeSpan timeout);
 
     /// <summary>
+    /// Atomically transfers a key from the source instance to the destination instance.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/migrate/">Valkey commands – MIGRATE</seealso>
+    /// <param name="key">The key to migrate.</param>
+    /// <param name="options">The migrate options.</param>
+    /// <returns><see langword="true"/> if the key was migrated successfully, <see langword="false"/> if the key was not found.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.SetAsync("key", "value");
+    /// using var options = new MigrateOptions("desthost", 6379, 0, TimeSpan.FromSeconds(5));
+    /// var migrated = await client.MigrateAsync("key", options);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<bool> MigrateAsync(ValkeyKey key, MigrateOptions options);
+
+    /// <summary>
     /// Sorts the elements in a list, set, or sorted set and returns the result.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/sort/">Valkey commands – SORT</seealso>

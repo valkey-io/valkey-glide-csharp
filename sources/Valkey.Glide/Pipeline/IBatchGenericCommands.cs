@@ -126,4 +126,8 @@ internal interface IBatchGenericCommands
     /// <inheritdoc cref="IBaseClient.WaitAsync(long, TimeSpan)" />
     /// <returns>Command Response - The number of replicas that acknowledged the write commands.</returns>
     IBatch Wait(long numreplicas, TimeSpan timeout);
+
+    /// <inheritdoc cref="IBaseClient.MigrateAsync(ValkeyKey, MigrateOptions)" />
+    /// <returns>Command Response - <see langword="true"/> if the key was migrated successfully, <see langword="false"/> if the key was not found.</returns>
+    IBatch Migrate(ValkeyKey key, MigrateOptions options);
 }
