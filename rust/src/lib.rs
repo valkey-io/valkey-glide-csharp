@@ -2087,8 +2087,7 @@ pub unsafe extern "C-unwind" fn create_monitor_client(
     let host = match unsafe { CStr::from_ptr(config.host) }.to_str() {
         Ok(s) => s.to_owned(),
         Err(e) => {
-            let err_msg =
-                CString::new(format!("Invalid UTF-8 in host: {e}")).unwrap_or_default();
+            let err_msg = CString::new(format!("Invalid UTF-8 in host: {e}")).unwrap_or_default();
             return Box::into_raw(Box::new(MonitorConnectionResponse {
                 conn_ptr: std::ptr::null(),
                 connection_error_message: err_msg.into_raw(),
