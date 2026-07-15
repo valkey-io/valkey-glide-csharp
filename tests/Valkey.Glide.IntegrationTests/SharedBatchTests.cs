@@ -88,8 +88,7 @@ public class SharedBatchTests
     [MemberData(nameof(GetTestClientWithAtomic))]
     public async Task BatchReset(BaseClient client, bool isAtomic)
     {
-        bool isCluster = client is GlideClusterClient;
-        Pipeline.IBatch batch = isCluster
+        Pipeline.IBatch batch = client is GlideClusterClient
             ? new ClusterBatch(isAtomic)
             : new Batch(isAtomic);
 
@@ -98,14 +97,15 @@ public class SharedBatchTests
         if (isAtomic)
         {
             // RESET cannot be used in atomic batches.
-            _ = await Assert.ThrowsAsync<RequestException>(async () => _ = isCluster
-                ? await ((GlideClusterClient)client).Exec((ClusterBatch)batch, true)
+            _ = await Assert.ThrowsAsync<RequestException>(async () => _ =
+                client is GlideClusterClient clusterClient
+                ? await clusterClient.Exec((ClusterBatch)batch, true)
                 : await ((GlideClient)client).Exec((Batch)batch, true));
         }
         else
         {
-            var res = isCluster
-                ? (await ((GlideClusterClient)client).Exec((ClusterBatch)batch, false))!
+            var res = client is GlideClusterClient clusterClient
+                ? (await clusterClient.Exec((ClusterBatch)batch, false))!
                 : (await ((GlideClient)client).Exec((Batch)batch, false))!;
 
             Assert.Equal("RESET", Assert.Single(res)?.ToString());
