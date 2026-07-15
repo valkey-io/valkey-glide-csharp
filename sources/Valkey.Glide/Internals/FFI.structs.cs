@@ -1585,4 +1585,69 @@ internal partial class FFI
         Expirations = 4,
         TotalLookups = 5,
     }
+
+    #region Monitor
+
+    /// <summary>
+    /// FFI-safe configuration struct passed to <see cref="CreateMonitorClientFfi"/>.
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    internal struct MonitorConfigFfi
+    {
+        /// <summary>
+        /// The server host.
+        /// </summary>
+        [MarshalAs(UnmanagedType.LPStr)]
+        public string Host;
+
+        /// <summary>
+        /// The server port.
+        /// </summary>
+        public ushort Port;
+
+        /// <summary>
+        /// Whether to use TLS for the connection.
+        /// </summary>
+        [MarshalAs(UnmanagedType.U1)]
+        public bool UseTls;
+
+        /// <summary>
+        /// The database number to select.
+        /// </summary>
+        public uint DatabaseId;
+
+        /// <summary>
+        /// The username for authentication,
+        /// or <see langword="null"/> if not set.
+        /// </summary>
+        [MarshalAs(UnmanagedType.LPStr)]
+        public string? Username;
+
+        /// <summary>
+        /// The password for authentication,
+        /// or <see langword="null"/> if not set.</summary>
+        [MarshalAs(UnmanagedType.LPStr)]
+        public string? Password;
+    }
+
+    /// <summary>
+    /// Response struct returned by <see cref="CreateMonitorClientFfi"/>.
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct MonitorConnectionResponse
+    {
+        /// <summary>
+        /// Pointer to the monitor client on success,
+        /// or <see cref="IntPtr.Zero"/> on failure.
+        /// </summary>
+        public IntPtr ConnPtr;
+
+        /// <summary>
+        /// Error message on failure,
+        /// or <see cref="IntPtr.Zero"/> on success.
+        /// </summary>
+        public IntPtr ConnectionErrorMessage;
+    }
+
+    #endregion
 }

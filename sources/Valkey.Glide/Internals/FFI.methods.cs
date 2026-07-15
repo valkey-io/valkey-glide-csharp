@@ -94,6 +94,16 @@ internal partial class FFI
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial void RefreshIamTokenFfi(IntPtr client, ulong index);
 
+    [LibraryImport("libglide_rs", EntryPoint = "get_statistics")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial Statistics GetStatisticsFfi();
+
+    [LibraryImport("libglide_rs", EntryPoint = "get_cache_metrics")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial void GetCacheMetricsFfi(IntPtr client, ulong index, uint metricsType);
+
+    #region OpenTelemetry
+
     [LibraryImport("libglide_rs", EntryPoint = "init_otel")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial IntPtr InitOpenTelemetryFfi(IntPtr config);
@@ -110,11 +120,44 @@ internal partial class FFI
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial void DropOpenTelemetrySpanFfi(IntPtr spanPtr);
 
-    [LibraryImport("libglide_rs", EntryPoint = "get_statistics")]
-    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial Statistics GetStatisticsFfi();
+    #endregion
+    #region Monitor
 
-    [LibraryImport("libglide_rs", EntryPoint = "get_cache_metrics")]
+    /// <summary>
+    /// FFI callback delegate for monitor message reception matching the Rust FFI signature.
+    /// </summary>
+    /// <param name="timestamp">Unix timestamp when the command was processed.</param>
+    /// <param name="db">Database number the command was issued against.</param>
+    /// <param name="clientAddrPtr">Pointer to the client address that issued the command.</param>
+    /// <param name="clientAddrLen">Length of the client address in bytes.</param>
+    /// <param name="commandPtr">Pointer to the command name.</param>
+    /// <param name="commandLen">Length of the command name in bytes.</param>
+    /// <param name="argsCount">Number of command arguments.</param>
+    /// <param name="argsPtrs">Pointer to an array of pointers to argument bytes.</param>
+    /// <param name="argsLens">Pointer to an array of argument lengths.</param>
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    internal delegate void MonitorMessageCallback(
+        double timestamp,
+        long db,
+        IntPtr clientAddrPtr,
+        long clientAddrLen,
+        IntPtr commandPtr,
+        long commandLen,
+        long argsCount,
+        IntPtr argsPtrs,
+        IntPtr argsLens);
+
+    [LibraryImport("libglide_rs", EntryPoint = "create_monitor_client")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial void GetCacheMetricsFfi(IntPtr client, ulong index, uint metricsType);
+    public static partial IntPtr CreateMonitorClientFfi(IntPtr config, IntPtr monitorCallback);
+
+    [LibraryImport("libglide_rs", EntryPoint = "close_monitor_client")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial void CloseMonitorClientFfi(IntPtr clientPtr);
+
+    [LibraryImport("libglide_rs", EntryPoint = "free_monitor_connection_response")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial void FreeMonitorConnectionResponseFfi(IntPtr responsePtr);
+
+    #endregion
 }

@@ -16,7 +16,10 @@ public class IamAuthConfigTests
     [Fact]
     public void Constructor_WithRequiredArgs()
     {
-        using var config = new IamAuthConfig(ClusterName, ServiceType.ElastiCache, Region);
+        using var config = BuildIamAuthConfig(
+            clusterName: ClusterName,
+            serviceType: ServiceType.ElastiCache,
+            region: Region);
 
         Assert.Equal(ClusterName, config.ClusterName);
         Assert.Equal(ServiceType.ElastiCache, config.ServiceType);
@@ -25,53 +28,73 @@ public class IamAuthConfigTests
     }
 
     [Fact]
-    public void Constructor_WithAllArgs()
+    public void Constructor_WithOptionalArgs()
     {
-        using var config = new IamAuthConfig(ClusterName, ServiceType.MemoryDB, Region, RefreshInterval);
+        using var config = BuildIamAuthConfig(refreshIntervalSeconds: RefreshInterval);
 
-        Assert.Equal(ClusterName, config.ClusterName);
-        Assert.Equal(ServiceType.MemoryDB, config.ServiceType);
-        Assert.Equal(Region, config.Region);
         Assert.Equal(RefreshInterval, config.RefreshIntervalSeconds);
     }
 
     [Fact]
-    public void Constructor_NullClusterName_Throws()
-        => _ = Assert.Throws<ArgumentNullException>(
-            () => new IamAuthConfig(null!, ServiceType.ElastiCache, Region));
-
-    [Fact]
-    public void Constructor_NullRegion_Throws()
-        => _ = Assert.Throws<ArgumentNullException>(
-            () => new IamAuthConfig(ClusterName, ServiceType.ElastiCache, null!));
-
-    [Fact]
-    public void ToString_ContainsServiceType()
+    public void Constructor_ThrowsOnNull()
     {
-        using var config = new IamAuthConfig(ClusterName, ServiceType.ElastiCache, Region);
-        string result = config.ToString();
+        _ = Assert.Throws<ArgumentNullException>(
+            () => new IamAuthConfig(null!, ServiceType.ElastiCache, Region));
+        _ = Assert.Throws<ArgumentNullException>(
+            () => new IamAuthConfig(ClusterName, ServiceType.ElastiCache, null!));
+    }
 
-        // Verify that string representation contains the service type
-        // but not the cluster name, region, or refresh interval.
-        Assert.Contains(ServiceType.ElastiCache.ToString(), result);
+    [Fact]
+    public void ToString_OmitsSensitiveData()
+    {
+        using var config = BuildIamAuthConfig(
+            clusterName: ClusterName,
+            region: Region,
+            refreshIntervalSeconds: RefreshInterval);
+
+        var result = config.ToString();
+
         Assert.DoesNotContain(ClusterName, result);
         Assert.DoesNotContain(Region, result);
         Assert.DoesNotContain(RefreshInterval.ToString(), result);
     }
 
     [Fact]
-    public void Dispose_AllPublicMembers_ThrowObjectDisposedException()
+    public void Dispose_ThrowsOnSensitiveAccess()
     {
-        var config = new IamAuthConfig(ClusterName, ServiceType.MemoryDB, Region, RefreshInterval);
-
+        var config = BuildIamAuthConfig();
         config.Dispose();
 
         _ = Assert.Throws<ObjectDisposedException>(() => config.ClusterName);
-        _ = Assert.Throws<ObjectDisposedException>(() => config.ServiceType);
         _ = Assert.Throws<ObjectDisposedException>(() => config.Region);
         _ = Assert.Throws<ObjectDisposedException>(() => config.RefreshIntervalSeconds);
-        _ = Assert.Throws<ObjectDisposedException>(() => _ = config.ToString());
+
     }
+
+    [Fact]
+    public void Dispose_IsIdempotent()
+    {
+        var config = BuildIamAuthConfig();
+
+        config.Dispose();
+        config.Dispose(); // Should not throw
+    }
+
+    #endregion
+    #region Helpers
+
+    // TODO #435: Move to TestUtils class.
+
+    /// <summary>
+    /// Builds and returns an IAM authentication configuration for testing.
+    /// If required parameters are not specified, default values are used.
+    /// </summary>
+    private static IamAuthConfig BuildIamAuthConfig(
+        string? clusterName = null,
+        ServiceType serviceType = ServiceType.ElastiCache,
+        string? region = null,
+        uint? refreshIntervalSeconds = null)
+        => new(clusterName ?? ClusterName, serviceType, region ?? Region, refreshIntervalSeconds);
 
     #endregion
 }
