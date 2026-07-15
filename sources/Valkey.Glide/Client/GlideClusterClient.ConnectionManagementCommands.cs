@@ -69,10 +69,6 @@ public partial class GlideClusterClient
     public async Task<ValkeyValue> PingAsync(ValkeyValue message, Route route)
         => await Command(Request.Ping(message), route);
 
-    /// <inheritdoc cref="IBaseClient.ResetAsync()"/>
-    public override async Task ResetAsync()
-        => _ = await Command(Request.Reset(), Route.Random);
-
     /// <inheritdoc cref="IConnectionManagementBaseCommands.SelectAsync(long)"/>
     public override async Task SelectAsync(long index)
         => _ = await Command(Request.Select(index), Route.Random);

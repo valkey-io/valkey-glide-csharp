@@ -216,7 +216,6 @@ public class PubSubFFIIntegrationTests
         public override Task ConfigSetAsync(IDictionary<ValkeyValue, ValkeyValue> parameters) => Task.CompletedTask;
         public override Task FlushAllDatabasesAsync(FlushMode mode) => Task.CompletedTask;
         public override Task FlushDatabaseAsync(FlushMode mode) => Task.CompletedTask;
-        public override Task ResetAsync() => Task.CompletedTask;
         public override Task SaveAsync() => Task.CompletedTask;
         public override Task SelectAsync(long index) => Task.CompletedTask;
         public override Task<ClientTrackingInfo> ClientTrackingInfoAsync() => Task.FromResult(new ClientTrackingInfo(new HashSet<string>(), -1, new HashSet<string>()));

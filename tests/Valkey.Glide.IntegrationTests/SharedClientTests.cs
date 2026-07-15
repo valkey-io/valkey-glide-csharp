@@ -2,6 +2,8 @@
 
 using System.Diagnostics;
 
+using Valkey.Glide.TestUtils;
+
 namespace Valkey.Glide.IntegrationTests;
 
 [Collection(typeof(SharedClientTests))]
@@ -137,37 +139,34 @@ public class SharedClientTests(TestConfiguration config)
         await client.SetAsync(key, "after");
         Assert.True(sw.Elapsed < pausedFor);
     }
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task TestReset_ResetsConnectionState(BaseClient client)
+
+    [Theory]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
+    public async Task TestReset_ResetsConnectionState(bool clusterMode)
     {
-        // Verify that ResetAsync completes without error and the client recovers.
+        // Create a client with server-assisted client-side caching.
+        var cache = new ClientSideCacheConfig(1024, TimeSpan.FromMinutes(1))
+            .WithServerAssisted();
+
+        await using BaseClient client = clusterMode
+            ? await GlideClusterClient.CreateClient(
+                TestConfiguration.DefaultClusterClientConfig()
+                    .WithClientSideCache(cache)
+                    .Build())
+            : await GlideClient.CreateClient(
+                TestConfiguration.DefaultClientConfig()
+                    .WithClientSideCache(cache)
+                    .Build());
+
+        // Verify tracking is enabled.
+        var infoBefore = await client.ClientTrackingInfoAsync();
+        Assert.Contains("on", infoBefore.Flags);
+
         await client.ResetAsync();
-        Assert.Equal("PONG", (await client.PingAsync()).ToString());
 
-        // For standalone, verify that RESET clears WATCH state.
-        if (client is GlideClient standaloneClient)
-        {
-            var key = Guid.NewGuid().ToString();
-
-            // WATCH a key, then modify it — normally this aborts a subsequent transaction.
-            await standaloneClient.WatchAsync([key]);
-            await client.SetAsync(key, "modified");
-
-            // RESET clears the watch.
-            await client.ResetAsync();
-
-            // Transaction should succeed because RESET cleared the watch.
-            var batch = new Pipeline.Batch(true);
-            _ = batch.SetAsync(key, "after-reset");
-            object?[]? execResult = await standaloneClient.Exec(batch, true);
-
-            Assert.NotNull(execResult);
-            Assert.Equal("after-reset", await client.GetAsync(key));
-
-            // Cleanup.
-            _ = await client.DeleteAsync(key);
-        }
+        // Verify tracking is disabled after reset.
+        var infoAfter = await client.ClientTrackingInfoAsync();
+        Assert.Contains("off", infoAfter.Flags);
     }
 
     // This test is slow, but it caught timing and releasing issues in the past,
