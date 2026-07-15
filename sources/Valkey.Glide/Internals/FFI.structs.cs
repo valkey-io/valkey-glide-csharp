@@ -219,6 +219,7 @@ internal partial class FFI
             uint? pubSubReconciliationIntervalMs,
             CompressionConfig? compressionConfig,
             bool readOnly,
+            ConnectionConfiguration.NodeDiscoveryMode nodeDiscoveryMode,
             ClientSideCacheConfig? clientSideCacheConfig)
         {
             _request = new()
@@ -253,6 +254,7 @@ internal partial class FFI
                 HasCompressionConfig = compressionConfig.HasValue,
                 CompressionConfig = compressionConfig ?? default,
                 ReadOnly = readOnly,
+                NodeDiscoveryMode = nodeDiscoveryMode,
                 HasClientSideCacheConfig = clientSideCacheConfig.HasValue,
                 ClientSideCacheConfig = clientSideCacheConfig ?? default,
             };
@@ -1129,6 +1131,8 @@ internal partial class FFI
         public CompressionConfig CompressionConfig;
         [MarshalAs(UnmanagedType.U1)]
         public bool ReadOnly;
+
+        public ConnectionConfiguration.NodeDiscoveryMode NodeDiscoveryMode;
 
         [MarshalAs(UnmanagedType.U1)]
         public bool HasClientSideCacheConfig;

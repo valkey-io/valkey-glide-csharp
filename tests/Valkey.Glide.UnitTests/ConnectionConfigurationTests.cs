@@ -269,6 +269,48 @@ public class ConnectionConfigurationTests
     }
 
     #endregion
+    #region Node Discovery Mode Tests
+
+    [Fact]
+    public void NodeDiscoveryMode_Default_IsStandard()
+    {
+        var builder = new StandaloneClientConfigurationBuilder();
+        Assert.Equal(NodeDiscoveryMode.Standard, builder.Build().Request.NodeDiscoveryMode);
+    }
+
+    [Theory]
+    [InlineData(NodeDiscoveryMode.Standard)]
+    [InlineData(NodeDiscoveryMode.Static)]
+    [InlineData(NodeDiscoveryMode.DiscoverAll)]
+    public void WithNodeDiscoveryMode_SetsMode(NodeDiscoveryMode mode)
+    {
+        var builder = new StandaloneClientConfigurationBuilder()
+            .WithNodeDiscoveryMode(mode);
+        Assert.Equal(mode, builder.Build().Request.NodeDiscoveryMode);
+    }
+
+    [Fact]
+    public void NodeDiscoveryMode_Property_SetsMode()
+    {
+        var builder = new StandaloneClientConfigurationBuilder
+        {
+            NodeDiscoveryMode = NodeDiscoveryMode.DiscoverAll,
+        };
+        Assert.Equal(NodeDiscoveryMode.DiscoverAll, builder.NodeDiscoveryMode);
+        Assert.Equal(NodeDiscoveryMode.DiscoverAll, builder.Build().Request.NodeDiscoveryMode);
+    }
+
+    [Fact]
+    public void NodeDiscoveryMode_EnumValues_MatchFfiContract()
+    {
+        // These discriminants must stay aligned with the Rust FFI `NodeDiscoveryMode` enum and
+        // the glide-core protobuf values.
+        Assert.Equal(0u, (uint)NodeDiscoveryMode.Standard);
+        Assert.Equal(1u, (uint)NodeDiscoveryMode.Static);
+        Assert.Equal(2u, (uint)NodeDiscoveryMode.DiscoverAll);
+    }
+
+    #endregion
     #region TLS Configuration Tests
 
     [Fact]
