@@ -13,6 +13,11 @@ public static class Data
     public static TheoryData<bool> ClusterMode => [true, false];
 
     /// <summary>
+    /// Batch atomicity modes for testing.
+    /// </summary>
+    public static TheoryData<bool> IsAtomic => [true, false];
+
+    /// <summary>
     /// Server IP addresses for testing.
     /// </summary>
     public static TheoryData<string> IpAddresses => [

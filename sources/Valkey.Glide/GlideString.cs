@@ -28,6 +28,13 @@ public static class GlideStringExtensions
     public static GlideString ToGlideString(this int @int) => new(@int.ToString());
 
     /// <summary>
+    /// Convert a <paramref name="ushort"/> to a <see cref="GlideString" />.
+    /// </summary>
+    /// <param name="ushort">A <see langword="ushort" /> to convert.</param>
+    /// <returns>A <see cref="GlideString" />.</returns>
+    public static GlideString ToGlideString(this ushort @ushort) => new(@ushort.ToString());
+
+    /// <summary>
     /// Convert a <paramref name="long"/> to a <see cref="GlideString" />.
     /// </summary>
     /// <param name="long">A <see langword="long" /> to convert.</param>

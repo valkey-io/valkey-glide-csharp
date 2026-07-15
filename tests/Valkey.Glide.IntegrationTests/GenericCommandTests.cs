@@ -4,6 +4,8 @@
 using Valkey.Glide.Commands.Options;
 using Valkey.Glide.TestUtils;
 
+using static Valkey.Glide.TestUtils.Options;
+
 namespace Valkey.Glide.IntegrationTests;
 
 public class GenericCommandTests(TestConfiguration config)
@@ -811,4 +813,122 @@ public class GenericCommandTests(TestConfiguration config)
         });
         Assert.Equal(["Bob", "Alice"], [.. result.Select(v => v.ToString())]);
     }
+
+    #region MigrateAsync Tests
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestMigrate_InvalidHost_ThrowsException(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        await client.SetAsync(key, "value");
+
+        using var options = BuildMigrateOptions(new Address("invalid-host", 9999));
+        _ = await Assert.ThrowsAsync<Errors.RequestException>(
+            () => client.MigrateAsync(key, options));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestMigrate_MultiKey_EmptyKeys_ThrowsException(GlideClient client)
+        => _ = await Assert.ThrowsAsync<ArgumentException>(
+            () => client.MigrateAsync([], BuildMigrateOptions()));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestMigrate_NonExistentKey_ReturnsFalse(BaseClient client)
+        => Assert.False(await client.MigrateAsync(Guid.NewGuid().ToString(), BuildMigrateOptions()));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestMigrate_MultiKey_NonExistentKeys_ReturnsFalse(GlideClient client)
+        => Assert.False(await client.MigrateAsync(
+            [Guid.NewGuid().ToString(), Guid.NewGuid().ToString()],
+            BuildMigrateOptions()));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestMigrate_SingleKey_Success(BaseClient sourceClient)
+    {
+        using var destServer = new StandaloneServer();
+        await using var destClient = await destServer.CreateStandaloneClientAsync();
+
+        string key = Guid.NewGuid().ToString();
+        string value = "migrate_test_value";
+
+        await sourceClient.SetAsync(key, value);
+
+        using var options = BuildMigrateOptions(address: destServer.Address);
+        Assert.True(await sourceClient.MigrateAsync(key, options));
+
+        Assert.False(await sourceClient.ExistsAsync(key));
+        Assert.Equal(value, await destClient.GetAsync(key));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestMigrate_MultiKey_Success(GlideClient sourceClient)
+    {
+        using var destServer = new StandaloneServer();
+        await using var destClient = await destServer.CreateStandaloneClientAsync();
+
+        string key1 = Guid.NewGuid().ToString();
+        string key2 = Guid.NewGuid().ToString();
+        string val1 = "value1";
+        string val2 = "value2";
+
+        await sourceClient.SetAsync(key1, val1);
+        await sourceClient.SetAsync(key2, val2);
+
+        using var options = BuildMigrateOptions(address: destServer.Address);
+        Assert.True(await sourceClient.MigrateAsync([key1, key2], options));
+
+        Assert.False(await sourceClient.ExistsAsync(key1));
+        Assert.False(await sourceClient.ExistsAsync(key2));
+        Assert.Equal(val1, await destClient.GetAsync(key1));
+        Assert.Equal(val2, await destClient.GetAsync(key2));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestMigrate_WithCopy_KeyRemainsAtSource(BaseClient sourceClient)
+    {
+        using var destServer = new StandaloneServer();
+        await using var destClient = await destServer.CreateStandaloneClientAsync();
+
+        string key = Guid.NewGuid().ToString();
+        string value = "copy_test_value";
+
+        await sourceClient.SetAsync(key, value);
+
+        using var options = BuildMigrateOptions(address: destServer.Address).WithCopy();
+        Assert.True(await sourceClient.MigrateAsync(key, options));
+
+        Assert.True(await sourceClient.ExistsAsync(key));
+        Assert.Equal(value, await sourceClient.GetAsync(key));
+        Assert.Equal(value, await destClient.GetAsync(key));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestMigrate_WithReplace_OverwritesDestination(BaseClient sourceClient)
+    {
+        using var destServer = new StandaloneServer();
+        await using var destClient = await destServer.CreateStandaloneClientAsync();
+
+        string key = Guid.NewGuid().ToString();
+        string sourceValue = "source_value";
+        string destValue = "dest_value";
+
+        await sourceClient.SetAsync(key, sourceValue);
+        await destClient.SetAsync(key, destValue);
+
+        using var options = BuildMigrateOptions(address: destServer.Address).WithReplace();
+        Assert.True(await sourceClient.MigrateAsync(key, options));
+
+        Assert.False(await sourceClient.ExistsAsync(key));
+        Assert.Equal(sourceValue, await destClient.GetAsync(key));
+    }
+
+    #endregion
 }
