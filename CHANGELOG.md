@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `REPLICAOF` (#446)
   - `SAVE` (#440)
   - `MIGRATE` (#447)
+  - `MONITOR` (#456)
 - Custom socket address resolution support via callback (#392)
 
 ## 1.1.0
