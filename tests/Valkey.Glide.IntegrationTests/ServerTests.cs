@@ -2,6 +2,8 @@
 
 using System.Net;
 
+using Valkey.Glide.TestUtils;
+
 namespace Valkey.Glide.IntegrationTests;
 
 /// <summary>
@@ -13,7 +15,7 @@ public class ServerTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestConnections), MemberType = typeof(TestConfiguration))]
-    public void CanGetServers(ConnectionMultiplexer conn, bool isCluster)
+    public async Task CanGetServers(ConnectionMultiplexer conn, bool isCluster)
     {
         (string host, ushort port) = isCluster ? TestConfiguration.CLUSTER_ADDRESS : TestConfiguration.STANDALONE_ADDRESS;
 
@@ -22,10 +24,10 @@ public class ServerTests(TestConfiguration config)
         Assert.Equal($"{host}:{port}", Format.ToString(conn.GetServer(IPAddress.Parse(host), port).EndPoint));
         Assert.Equal($"{host}:{port}", Format.ToString(conn.GetServer(new IPEndPoint(IPAddress.Parse(host), port)).EndPoint));
 
-        // TODO currently this returns only primary node on standalone
-        // https://github.com/valkey-io/valkey-glide/issues/4293
-        var expectedServerCount = isCluster ? TestConfiguration.CLUSTER_ADDRESSES.Count : 1;
-        Assert.Equal(expectedServerCount, conn.GetServers().Length);
+        var count = isCluster ? TestConfiguration.CLUSTER_ADDRESSES.Count : 1;
+        await Polling.WaitForAsync(
+            () => Task.FromResult(conn.GetServers().Length == count),
+            $"Expected {count} servers, got {conn.GetServers().Length}");
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
