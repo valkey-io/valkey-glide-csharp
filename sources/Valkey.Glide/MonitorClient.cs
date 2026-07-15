@@ -180,29 +180,36 @@ public sealed class MonitorClient : IAsyncDisposable, IDisposable
         IntPtr argsPtrs,
         IntPtr argsLens)
     {
-        var clientAddrBytes = new byte[clientAddrLen];
-        Marshal.Copy(clientAddrPtr, clientAddrBytes, 0, (int)clientAddrLen);
-        var clientAddr = System.Text.Encoding.UTF8.GetString(clientAddrBytes);
-
-        var commandBytes = new byte[commandLen];
-        Marshal.Copy(commandPtr, commandBytes, 0, (int)commandLen);
-        var command = System.Text.Encoding.UTF8.GetString(commandBytes);
-
-        var args = new string[argsCount];
-        for (int i = 0; i < (int)argsCount; i++)
+        try
         {
-            var argPtr = Marshal.ReadIntPtr(argsPtrs, i * IntPtr.Size);
-            var argLen = Marshal.ReadInt64(argsLens, i * sizeof(long));
+            var clientAddrBytes = new byte[clientAddrLen];
+            Marshal.Copy(clientAddrPtr, clientAddrBytes, 0, (int)clientAddrLen);
+            var clientAddr = System.Text.Encoding.UTF8.GetString(clientAddrBytes);
 
-            var argBytes = new byte[argLen];
-            Marshal.Copy(argPtr, argBytes, 0, (int)argLen);
-            args[i] = System.Text.Encoding.UTF8.GetString(argBytes);
+            var commandBytes = new byte[commandLen];
+            Marshal.Copy(commandPtr, commandBytes, 0, (int)commandLen);
+            var command = System.Text.Encoding.UTF8.GetString(commandBytes);
+
+            var args = new string[argsCount];
+            for (int i = 0; i < argsCount; i++)
+            {
+                var argPtr = Marshal.ReadIntPtr(argsPtrs, i * IntPtr.Size);
+                var argLen = Marshal.ReadInt64(argsLens, i * sizeof(long));
+
+                var argBytes = new byte[argLen];
+                Marshal.Copy(argPtr, argBytes, 0, (int)argLen);
+                args[i] = System.Text.Encoding.UTF8.GetString(argBytes);
+            }
+
+            var ts = DateTimeOffset.UnixEpoch.AddSeconds(timestamp);
+
+            var message = new MonitorMessage(ts, db, clientAddr, command, args);
+            _ = _channel.Writer.TryWrite(message);
         }
-
-        var ts = DateTimeOffset.UnixEpoch.AddSeconds(timestamp);
-
-        var message = new MonitorMessage(ts, db, clientAddr, command, args);
-        _ = _channel.Writer.TryWrite(message);
+        catch (Exception ex)
+        {
+            Logger.Log(Level.Error, "MonitorClient", $"Failed to process monitor message: {ex.Message}");
+        }
     }
 
     #endregion
