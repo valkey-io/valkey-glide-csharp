@@ -290,5 +290,17 @@ public sealed class StandaloneServer(
         _ = await client.CustomCommand(KillClientArgs);
     }
 
+    /// <summary>
+    /// Returns an <see cref="IServer"/> instance for this server.
+    /// </summary>
+    public async Task<IServer> CreateIServerAsync()
+    {
+        var config = new ConfigurationOptions();
+        config.EndPoints.Add(Address.Host, Address.Port);
+
+        var connection = await ConnectionMultiplexer.ConnectAsync(config);
+        return connection.GetServers().First();
+    }
+
     #endregion
 }
