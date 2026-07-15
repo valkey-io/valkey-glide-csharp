@@ -51,6 +51,20 @@ updates:
           - "dependencies"
           - "rust"
 
+    # Enable version updates for git submodules
+    - package-ecosystem: "gitsubmodule"
+      directory: "/"
+      schedule:
+          interval: "weekly"
+          day: "monday"
+          time: "09:00"
+      cooldown:
+          default-days: 7
+      open-pull-requests-limit: 1 # Only one submodule to track.
+      labels:
+          - "dependencies"
+          - "rust"
+
     # Enable version updates for GitHub Actions
     - package-ecosystem: "github-actions"
       directory: "/"
