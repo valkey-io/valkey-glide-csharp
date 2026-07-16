@@ -127,7 +127,7 @@ internal partial class FFI
     /// FFI callback delegate for monitor message reception matching the Rust FFI signature.
     /// </summary>
     /// <param name="timestamp">Unix timestamp when the command was processed.</param>
-    /// <param name="db">Database number the command was issued against.</param>
+    /// <param name="database">Database number the command was issued against.</param>
     /// <param name="clientAddrPtr">Pointer to the client address that issued the command.</param>
     /// <param name="clientAddrLen">Length of the client address in bytes.</param>
     /// <param name="commandPtr">Pointer to the command name.</param>
