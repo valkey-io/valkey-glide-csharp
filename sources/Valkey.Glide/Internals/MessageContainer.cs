@@ -63,7 +63,7 @@ internal class MessageContainer(BaseClient client)
     private readonly List<Message> _messages = [];
 
     /// This queue contains the messages that were created and are currently unused by any task,
-    /// so they can be reused y new tasks instead of allocating new messages.
+    /// so they can be reused by new tasks instead of allocating new messages.
     private readonly ConcurrentQueue<Message> _availableMessages = new();
 
     // Holding the client prevents it from being GC'd until all operations complete.

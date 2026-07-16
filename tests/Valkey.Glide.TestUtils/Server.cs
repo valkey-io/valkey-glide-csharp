@@ -24,7 +24,7 @@ public abstract class Server : IDisposable
     /// On Windows CI (WSL), cluster topology formation can take several seconds after the server
     /// process starts.
     /// </remarks>
-    private static readonly TimeSpan ConnectionTimeout = TimeSpan.FromSeconds(10);
+    private static readonly TimeSpan ConnectionTimeout = TimeSpan.FromSeconds(30);
 
     /// <summary>
     /// Delay between initial connection attempts.

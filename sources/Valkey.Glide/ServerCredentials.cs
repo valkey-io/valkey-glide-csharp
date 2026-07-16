@@ -18,19 +18,17 @@ public sealed class ServerCredentials : IDisposable
 
     /// <summary>
     /// The username to use for authenticating connections.
-    /// If not specified, "default" will be used.
     /// </summary>
-    public string? Username
-    {
-        get { ThrowIfDisposed(); return field; }
-        private set;
-    }
+    public string? Username { get; private set; }
 
     /// <summary>
     /// IAM authentication configuration to use for authenticating connections.
     /// Required for IAM authentication, must be <c>null</c> for password-based authentication.
-    /// It is not owned by the <see cref="ServerCredentials"/> instance - the caller is responsible for disposing it.
     /// </summary>
+    /// <remarks>
+    /// The IAM authentication configuration instance is not owned by the
+    /// <see cref="ServerCredentials"/> instance - the caller is responsible for disposing it.
+    /// </remarks>
     public IamAuthConfig? IamAuthConfig
     {
         get { ThrowIfDisposed(); return field; }

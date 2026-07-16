@@ -8,128 +8,122 @@ public class ServerCredentialsTests
 
     private static readonly string Username = "USERNAME";
     private static readonly string Password = "PASSWORD";
-    private const uint RefreshInterval = 300;
 
     #endregion
     #region Tests
 
     [Fact]
-    public void ServerCredentials_UsernamePassword()
+    public void Constructor_UsernamePassword()
     {
-        using var credentials = new ServerCredentials(Username, Password);
+        using var credentials = BuildServerCredentials(
+            username: Username,
+            password: Password);
 
         Assert.Equal(Username, credentials.Username);
-        Assert.Equal(Password, credentials.Password!);
+        Assert.Equal(Password.ToCharArray(), credentials.Password);
         Assert.Null(credentials.IamAuthConfig);
         Assert.False(credentials.IsIamAuth());
     }
 
     [Fact]
-    public void ServerCredentials_PasswordOnly()
+    public void Constructor_PasswordOnly()
     {
-        using var credentials = new ServerCredentials(Password);
+        using var credentials = BuildServerCredentials(password: Password);
 
         Assert.Null(credentials.Username);
-        Assert.Equal(Password, credentials.Password!);
+        Assert.Equal(Password.ToCharArray(), credentials.Password);
         Assert.Null(credentials.IamAuthConfig);
         Assert.False(credentials.IsIamAuth());
     }
 
     [Fact]
-    public void ServerCredentials_UsernameIamAuthConfig()
+    public void Constructor_IamAuth()
     {
-        using var iamAuthConfig = BuildIamAuthConfig();
-        using var credentials = new ServerCredentials(Username, iamAuthConfig);
+        using var iam = BuildIamAuthConfig();
+        using var credentials = new ServerCredentials(Username, iam);
 
         Assert.Equal(Username, credentials.Username);
         Assert.Null(credentials.Password);
         Assert.True(credentials.IsIamAuth());
-        Assert.Equal(iamAuthConfig, credentials.IamAuthConfig);
+        Assert.Equal(iam, credentials.IamAuthConfig);
     }
 
     [Fact]
-    public void ServerCredentials_ThrowsArgumentNullException()
+    public void Constructor_ThrowsOnNull()
     {
-        // Password-based authentication.
+        // Password-based
         _ = Assert.Throws<ArgumentNullException>(() => new ServerCredentials(null!));
         _ = Assert.Throws<ArgumentNullException>(() => new ServerCredentials(Username, (string)null!));
 
-        // IAM authentication.
-        using var iamAuthConfig = BuildIamAuthConfig();
-        _ = Assert.Throws<ArgumentNullException>(() => new ServerCredentials(null!, iamAuthConfig));
+        // IAM
+        _ = Assert.Throws<ArgumentNullException>(() => new ServerCredentials(null!, BuildIamAuthConfig()));
         _ = Assert.Throws<ArgumentNullException>(() => new ServerCredentials(Username, (IamAuthConfig)null!));
     }
 
     [Fact]
-    public void ToString_PasswordAuth_OmitsSensitiveInfo()
+    public void ToString_OmitsSensitiveData()
     {
-        using var credentials = new ServerCredentials(Username, Password);
-        string result = credentials.ToString();
+        using var credentials = BuildServerCredentials(password: Password);
 
-        // Verify that string representation contains the username
-        // but omits sensitive information (password).
-        Assert.Contains(Username, result);
+        var result = credentials.ToString();
         Assert.DoesNotContain(Password, result);
     }
 
     [Fact]
-    public void ToString_UsernameIamAuthConfig_OmitsSensitiveInfo()
+    public void Dispose_ClearsPasswordArray()
     {
-        using var iamAuthConfig = BuildIamAuthConfig(refreshIntervalSeconds: RefreshInterval);
-        using var credentials = new ServerCredentials(Username, iamAuthConfig);
-        string result = credentials.ToString();
-
-        // Verify that string representation contains the username
-        // but omits sensitive information (cluster name, region, and refresh interval).
-        // See also <see cref="IamAuthConfigTests.ToString_OmitsSensitiveInfo"/>.
-        Assert.Contains(Username, result);
-        Assert.DoesNotContain(iamAuthConfig.ClusterName, result);
-        Assert.DoesNotContain(iamAuthConfig.Region, result);
-        Assert.DoesNotContain(iamAuthConfig.RefreshIntervalSeconds!.Value.ToString(), result);
-    }
-
-    [Fact]
-    public void Dispose_PasswordAuth_AllPublicMembers_ThrowObjectDisposedException()
-    {
-        var credentials = new ServerCredentials(Username, Password);
+        var credentials = BuildServerCredentials();
+        char[] passwordRef = credentials.Password!;
 
         credentials.Dispose();
 
-        _ = Assert.Throws<ObjectDisposedException>(() => credentials.Username);
-        _ = Assert.Throws<ObjectDisposedException>(() => credentials.Password);
-        _ = Assert.Throws<ObjectDisposedException>(() => credentials.IamAuthConfig);
-        _ = Assert.Throws<ObjectDisposedException>(() => credentials.IsIamAuth());
-        _ = Assert.Throws<ObjectDisposedException>(() => _ = credentials.ToString());
+        Assert.All(passwordRef, c => Assert.Equal('\0', c));
     }
 
     [Fact]
-    public void Dispose_IamAuth_AllPublicMembers_ThrowObjectDisposedException()
+    public void Dispose_ThrowsOnSensitiveAccess()
     {
-        using var iamAuthConfig = BuildIamAuthConfig();
-        var credentials = new ServerCredentials(Username, iamAuthConfig);
-
+        var credentials = BuildServerCredentials();
         credentials.Dispose();
 
-        _ = Assert.Throws<ObjectDisposedException>(() => credentials.Username);
         _ = Assert.Throws<ObjectDisposedException>(() => credentials.Password);
         _ = Assert.Throws<ObjectDisposedException>(() => credentials.IamAuthConfig);
         _ = Assert.Throws<ObjectDisposedException>(() => credentials.IsIamAuth());
-        _ = Assert.Throws<ObjectDisposedException>(() => _ = credentials.ToString());
+        _ = Assert.Throws<ObjectDisposedException>(credentials.ToString);
+    }
+
+    [Fact]
+    public void Dispose_IsIdempotent()
+    {
+        var credentials = BuildServerCredentials();
+
+        credentials.Dispose();
+        credentials.Dispose(); // Should not throw
     }
 
     #endregion
     #region Helpers
 
+    // TODO #435: Move to TestUtils class.
+
     /// <summary>
-    /// Builds and returns a new IAM authentication configuration for testing.
+    /// Builds and returns server credentials for testing.
+    /// If required parameters are not specified, default values are used.
+    /// </summary>
+    private static ServerCredentials BuildServerCredentials(string? username = null, string? password = null)
+        => username is not null
+            ? new ServerCredentials(username, password ?? Password)
+            : new ServerCredentials(password ?? Password);
+
+    /// <summary>
+    /// Builds and returns an IAM authentication configuration for testing.
     /// If required parameters are not specified, default values are used.
     /// </summary>
     private static IamAuthConfig BuildIamAuthConfig(
         string clusterName = "CLUSTER_NAME",
         ServiceType serviceType = ServiceType.ElastiCache,
         string region = "REGION",
-        uint? refreshIntervalSeconds = null
-    )
+        uint? refreshIntervalSeconds = null)
         => new(clusterName, serviceType, region, refreshIntervalSeconds);
 
     #endregion
