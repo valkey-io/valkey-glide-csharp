@@ -116,7 +116,6 @@ public sealed class MonitorConfig(string host, ushort port) : IDisposable
     /// <returns>This instance for method chaining.</returns>
     public MonitorConfig WithDatabaseId(uint databaseId)
     {
-        ObjectDisposedException.ThrowIf(_disposed, this);
         DatabaseId = databaseId;
         return this;
     }

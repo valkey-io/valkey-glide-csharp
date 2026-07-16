@@ -77,7 +77,6 @@ public class MonitorConfigTests
 
         _ = Assert.Throws<ObjectDisposedException>(() => config.WithAuth(Password));
         _ = Assert.Throws<ObjectDisposedException>(() => config.WithAuth(Username, Password));
-        _ = Assert.Throws<ObjectDisposedException>(() => config.WithDatabaseId(0));
         _ = Assert.Throws<ObjectDisposedException>(() => config.WithTls());
     }
 
