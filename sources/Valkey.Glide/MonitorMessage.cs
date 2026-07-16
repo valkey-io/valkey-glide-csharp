@@ -18,7 +18,7 @@ public sealed class MonitorMessage
     /// <summary>
     /// The database number the command was issued against.
     /// </summary>
-    public long Database { get; }
+    public ushort Database { get; }
 
     /// <summary>
     /// The address of the client that issued the command.
@@ -38,7 +38,12 @@ public sealed class MonitorMessage
     #endregion
     #region Constructors
 
-    internal MonitorMessage(DateTimeOffset timestamp, long database, string clientAddress, string command, IReadOnlyList<string> args)
+    internal MonitorMessage(
+        DateTimeOffset timestamp,
+        ushort database,
+        string clientAddress,
+        string command,
+        IReadOnlyList<string> args)
     {
         Timestamp = timestamp;
         Database = database;

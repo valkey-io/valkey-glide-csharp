@@ -10,7 +10,7 @@ public class MonitorConfigTests
     private const ushort Port = 1234;
     private static readonly string Username = "USERNAME";
     private static readonly string Password = "PASSWORD";
-    private static readonly ushort DatabaseId = 5;
+    private static readonly ushort Database = 5;
 
     #endregion
     #region Tests
@@ -25,7 +25,7 @@ public class MonitorConfigTests
         Assert.False(config.UseTls);
         Assert.Null(config.Username);
         Assert.Null(config.Password);
-        Assert.Equal(0u, config.DatabaseId);
+        Assert.Equal(0, config.Database);
 
         _ = Assert.Throws<ArgumentNullException>(() => new MonitorConfig(null!, Port));
     }
@@ -50,10 +50,10 @@ public class MonitorConfigTests
     }
 
     [Fact]
-    public void WithDatabaseId()
+    public void WithDatabase()
     {
-        using var config = BuildMonitorConfig().WithDatabaseId(DatabaseId);
-        Assert.Equal(DatabaseId, config.DatabaseId);
+        using var config = BuildMonitorConfig().WithDatabase(Database);
+        Assert.Equal(Database, config.Database);
     }
 
     [Fact]

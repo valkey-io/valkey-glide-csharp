@@ -33,7 +33,7 @@ public sealed class MonitorConfig(string host, ushort port) : IDisposable
     /// <summary>
     /// The database number to select.
     /// </summary>
-    public uint DatabaseId { get; private set; } = 0;
+    public ushort Database { get; private set; } = 0;
 
     /// <summary>
     /// The username for authentication.
@@ -112,11 +112,11 @@ public sealed class MonitorConfig(string host, ushort port) : IDisposable
     /// <summary>
     /// Sets the database number to select.
     /// </summary>
-    /// <param name="databaseId">The database number.</param>
+    /// <param name="database">The database number.</param>
     /// <returns>This instance for method chaining.</returns>
-    public MonitorConfig WithDatabaseId(uint databaseId)
+    public MonitorConfig WithDatabase(ushort database)
     {
-        DatabaseId = databaseId;
+        Database = database;
         return this;
     }
 
@@ -124,7 +124,7 @@ public sealed class MonitorConfig(string host, ushort port) : IDisposable
     /// Returns a string representation with sensitive data omitted.
     /// </summary>
     public override string ToString()
-        => $"MonitorConfig {{ Host = {Host}, Port = {Port}, UseTls = {UseTls}, DatabaseId = {DatabaseId} }}";
+        => $"MonitorConfig {{ Host = {Host}, Port = {Port}, UseTls = {UseTls}, Database = {Database} }}";
 
     /// <summary>
     /// Clears sensitive data.

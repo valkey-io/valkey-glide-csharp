@@ -60,7 +60,7 @@ public sealed class MonitorClient : IAsyncDisposable, IDisposable
             Host = config.Host,
             Port = config.Port,
             UseTls = config.UseTls,
-            DatabaseId = config.DatabaseId,
+            Database = config.Database,
             Username = config.Username,
             Password = config.Password is not null ? new string(config.Password) : null,
         };
@@ -178,8 +178,8 @@ public sealed class MonitorClient : IAsyncDisposable, IDisposable
     #region Private Methods
 
     private void OnMonitorMessage(
-        double timestamp,
-        long db,
+        double timestampUnix,
+        ushort database,
         IntPtr clientAddrPtr,
         long clientAddrLen,
         IntPtr commandPtr,
@@ -190,9 +190,9 @@ public sealed class MonitorClient : IAsyncDisposable, IDisposable
     {
         try
         {
-            var clientAddrBytes = new byte[clientAddrLen];
-            Marshal.Copy(clientAddrPtr, clientAddrBytes, 0, (int)clientAddrLen);
-            var clientAddr = System.Text.Encoding.UTF8.GetString(clientAddrBytes);
+            var clientAddressBytes = new byte[clientAddrLen];
+            Marshal.Copy(clientAddrPtr, clientAddressBytes, 0, (int)clientAddrLen);
+            var clientAddress = System.Text.Encoding.UTF8.GetString(clientAddressBytes);
 
             var commandBytes = new byte[commandLen];
             Marshal.Copy(commandPtr, commandBytes, 0, (int)commandLen);
@@ -209,9 +209,9 @@ public sealed class MonitorClient : IAsyncDisposable, IDisposable
                 args[i] = System.Text.Encoding.UTF8.GetString(argBytes);
             }
 
-            var ts = DateTimeOffset.UnixEpoch.AddSeconds(timestamp);
+            var timestamp = DateTimeOffset.UnixEpoch.AddSeconds(timestampUnix);
 
-            var message = new MonitorMessage(ts, db, clientAddr, command, args);
+            var message = new MonitorMessage(timestamp, database, clientAddress, command, args);
             _ = _channel.Writer.TryWrite(message);
         }
         catch (Exception ex)

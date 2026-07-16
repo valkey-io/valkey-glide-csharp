@@ -2030,7 +2030,7 @@ use glide_core::client::{MonitorClient, MonitorLine, MonitorLineCallback, NodeAd
 /// They must not be stored or accessed after the callback returns.
 pub type MonitorCallback = unsafe extern "C-unwind" fn(
     timestamp: f64,
-    db: i64,
+    database: u16,
     client_addr: *const u8,
     client_addr_len: i64,
     command: *const u8,
@@ -2046,7 +2046,7 @@ pub struct MonitorConfig {
     pub host: *const c_char,
     pub port: u16,
     pub use_tls: bool,
-    pub database_id: u32,
+    pub database: u16,
     pub username: *const c_char,
     pub password: *const c_char,
 }
@@ -2125,7 +2125,7 @@ pub unsafe extern "C-unwind" fn create_monitor_client(
     };
 
     let redis_conn_info = redis::RedisConnectionInfo {
-        db: config.database_id as i64,
+        db: config.database as i64,
         username,
         password,
         protocol: redis::ProtocolVersion::RESP2,
@@ -2158,7 +2158,7 @@ pub unsafe extern "C-unwind" fn create_monitor_client(
         unsafe {
             monitor_callback(
                 line.timestamp,
-                line.db,
+                line.db as u16,
                 client_addr_bytes.as_ptr(),
                 client_addr_bytes.len() as i64,
                 command_bytes.as_ptr(),

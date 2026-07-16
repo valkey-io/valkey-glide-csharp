@@ -1614,7 +1614,7 @@ internal partial class FFI
         /// <summary>
         /// The database number to select.
         /// </summary>
-        public uint DatabaseId;
+        public ushort Database;
 
         /// <summary>
         /// The username for authentication,

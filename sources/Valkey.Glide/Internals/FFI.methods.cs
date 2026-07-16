@@ -138,7 +138,7 @@ internal partial class FFI
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     internal delegate void MonitorMessageCallback(
         double timestamp,
-        long db,
+        ushort database,
         IntPtr clientAddrPtr,
         long clientAddrLen,
         IntPtr commandPtr,
