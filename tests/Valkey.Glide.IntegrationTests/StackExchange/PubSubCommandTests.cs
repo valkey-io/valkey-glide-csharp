@@ -500,7 +500,9 @@ public class PubSubCommandTests(TestConfiguration config)
     public async Task SubscriptionChannelsAsync_NoSubscribers_ReturnsEmpty()
     {
         using var standalone = new StandaloneServer();
-        var server = await standalone.CreateIServerAsync();
+        using var connection = await standalone.CreateConnectionMultiplexerAsync();
+        var server = connection.GetServers().First();
+
         Assert.Empty(await server.SubscriptionChannelsAsync());
     }
 

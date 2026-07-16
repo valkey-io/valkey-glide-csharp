@@ -291,15 +291,14 @@ public sealed class StandaloneServer(
     }
 
     /// <summary>
-    /// Returns an <see cref="IServer"/> instance for this server.
+    /// Creates a <see cref="ConnectionMultiplexer"/> connected to this server.
+    /// The caller is responsible for disposing the returned connection.
     /// </summary>
-    public async Task<IServer> CreateIServerAsync()
+    public async Task<ConnectionMultiplexer> CreateConnectionMultiplexerAsync()
     {
         var config = new ConfigurationOptions();
         config.EndPoints.Add(Address.Host, Address.Port);
-
-        var connection = await ConnectionMultiplexer.ConnectAsync(config);
-        return connection.GetServers().First();
+        return await ConnectionMultiplexer.ConnectAsync(config);
     }
 
     #endregion
