@@ -7,7 +7,7 @@ using static Valkey.Glide.Route;
 
 namespace Valkey.Glide;
 
-public sealed partial class GlideClusterClient
+public partial class GlideClusterClient
 {
     /// <inheritdoc cref="IBaseClient.ClientGetNameAsync()"/>
     public override async Task<ValkeyValue> ClientGetNameAsync()

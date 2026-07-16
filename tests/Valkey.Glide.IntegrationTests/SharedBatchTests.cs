@@ -87,6 +87,34 @@ public class SharedBatchTests
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(GetTestClientWithAtomic))]
+    public async Task BatchReset(BaseClient client, bool isAtomic)
+    {
+        Pipeline.IBatch batch = client is GlideClusterClient
+            ? new ClusterBatch(isAtomic)
+            : new Batch(isAtomic);
+
+        _ = batch.ResetAsync();
+
+        if (isAtomic)
+        {
+            // RESET cannot be used in atomic batches.
+            _ = await Assert.ThrowsAsync<RequestException>(async () => _ =
+                client is GlideClusterClient clusterClient
+                ? await clusterClient.Exec((ClusterBatch)batch, true)
+                : await ((GlideClient)client).Exec((Batch)batch, true));
+        }
+        else
+        {
+            var res = client is GlideClusterClient clusterClient
+                ? (await clusterClient.Exec((ClusterBatch)batch, false))!
+                : (await ((GlideClient)client).Exec((Batch)batch, false))!;
+
+            Assert.Equal("RESET", Assert.Single(res)?.ToString());
+        }
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task WatchTransactionTest(BaseClient client)
     {

@@ -290,5 +290,16 @@ public sealed class StandaloneServer(
         _ = await client.CustomCommand(KillClientArgs);
     }
 
+    /// <summary>
+    /// Creates a <see cref="ConnectionMultiplexer"/> connected to this server.
+    /// The caller is responsible for disposing the returned connection.
+    /// </summary>
+    public async Task<ConnectionMultiplexer> CreateConnectionMultiplexerAsync()
+    {
+        var config = new ConfigurationOptions();
+        config.EndPoints.Add(Address.Host, Address.Port);
+        return await ConnectionMultiplexer.ConnectAsync(config);
+    }
+
     #endregion
 }

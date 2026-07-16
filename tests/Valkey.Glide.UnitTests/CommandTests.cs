@@ -6,6 +6,8 @@ namespace Valkey.Glide.UnitTests;
 
 public class CommandTests
 {
+    private static readonly TimeSpan OneSecond = TimeSpan.FromSeconds(1);
+
     [Fact]
     public void ValidateCommandArgs() => Assert.Multiple(
             () => Assert.Equal(["get", "a"], Request.CustomCommand(["get", "a"]).GetArgs()),
@@ -83,8 +85,10 @@ public class CommandTests
             () => Assert.Equal(["INFO", "SERVER", "MEMORY", "STATS"], Request.Info([InfoOptions.Section.SERVER, InfoOptions.Section.MEMORY, InfoOptions.Section.STATS]).GetArgs()),
 
             // Connection Management Commands
-            () => Assert.Equal(["CLIENTPAUSE", "1000", "WRITE"], Request.ClientPauseWrite(TimeSpan.FromMilliseconds(1000)).GetArgs()),
-            () => Assert.Equal(["CLIENTPAUSE", "1000"], Request.ClientPause(TimeSpan.FromMilliseconds(1000)).GetArgs()),
+            () => Assert.Equal(["CLIENTGETNAME"], Request.ClientGetName().GetArgs()),
+            () => Assert.Equal(["CLIENTID"], Request.ClientId().GetArgs()),
+            () => Assert.Equal(["CLIENTPAUSE", "1000", "WRITE"], Request.ClientPauseWrite(OneSecond).GetArgs()),
+            () => Assert.Equal(["CLIENTPAUSE", "1000"], Request.ClientPause(OneSecond).GetArgs()),
             () => Assert.Equal(["CLIENTTRACKINGINFO"], Request.ClientTrackingInfo().GetArgs()),
             () => Assert.Equal(["CLIENTUNPAUSE"], Request.ClientUnpause().GetArgs()),
             () => Assert.Equal(["ECHO", "message"], Request.Echo("message").GetArgs()),
@@ -103,8 +107,6 @@ public class CommandTests
             () => Assert.Equal(["BGSAVE", "CANCEL"], Request.BackgroundSaveCancelAsync().GetArgs()),
             () => Assert.Equal(["BGSAVE", "SCHEDULE"], Request.BackgroundSaveScheduleAsync().GetArgs()),
             () => Assert.Equal(["BGSAVE"], Request.BackgroundSaveAsync().GetArgs()),
-            () => Assert.Equal(["CLIENTGETNAME"], Request.ClientGetName().GetArgs()),
-            () => Assert.Equal(["CLIENTID"], Request.ClientId().GetArgs()),
             () => Assert.Equal(["CONFIGGET", "*"], Request.ConfigGetAsync("*").GetArgs()),
             () => Assert.Equal(["CONFIGGET", "*"], Request.ConfigGetAsync().GetArgs()),
             () => Assert.Equal(["CONFIGGET", "maxmemory", "lfu-decay-time"], Request.ConfigGetAsync([(ValkeyValue)"maxmemory", (ValkeyValue)"lfu-decay-time"]).GetArgs()),
@@ -146,6 +148,7 @@ public class CommandTests
             () => Assert.Equal(["MEMORY", "STATS"], Request.MemoryStatsAsync().GetArgs()),
             () => Assert.Equal(["REPLICAOF", "localhost", "6379"], Request.ReplicaOfAsync("localhost", 6379).GetArgs()),
             () => Assert.Equal(["REPLICAOF", "NO", "ONE"], Request.ReplicaOfNoOneAsync().GetArgs()),
+            () => Assert.Equal(["RESET"], Request.Reset().GetArgs()),
             () => Assert.Equal(["SAVE"], Request.SaveAsync().GetArgs()),
             () => Assert.Equal(["TIME"], Request.TimeAsync().GetArgs()),
 
@@ -260,10 +263,10 @@ public class CommandTests
             () => Assert.Equal(["SCAN", "10", "MATCH", "key*", "COUNT", "20", "TYPE", "string"], Request.ScanAsync("10", new ScanOptions { MatchPattern = "key*", Count = 20, Type = ValkeyType.String }).GetArgs()),
 
             // WAIT Commands
-            () => Assert.Equal(["WAIT", "1", "1000"], Request.WaitAsync(1, TimeSpan.FromMilliseconds(1000)).GetArgs()),
+            () => Assert.Equal(["WAIT", "1", "1000"], Request.WaitAsync(1, OneSecond).GetArgs()),
             () => Assert.Equal(["WAIT", "0", "0"], Request.WaitAsync(0, TimeSpan.Zero).GetArgs()),
             () => Assert.Equal(["WAIT", "3", "5000"], Request.WaitAsync(3, TimeSpan.FromMilliseconds(5000)).GetArgs()),
-            () => Assert.Equal(["WAITAOF", "1", "1", "1000"], Request.WaitAofAsync(true, 1, TimeSpan.FromMilliseconds(1000)).GetArgs()),
+            () => Assert.Equal(["WAITAOF", "1", "1", "1000"], Request.WaitAofAsync(true, 1, OneSecond).GetArgs()),
             () => Assert.Equal(["WAITAOF", "0", "0", "0"], Request.WaitAofAsync(false, 0, TimeSpan.Zero).GetArgs()),
             () => Assert.Equal(["WAITAOF", "1", "2", "5000"], Request.WaitAofAsync(true, 2, TimeSpan.FromMilliseconds(5000)).GetArgs()),
 
@@ -537,8 +540,8 @@ public class CommandTests
             () => Assert.Equal("test-connection", Request.ClientGetName().Converter(new GlideString("test-connection"))),
             () => Assert.Equal(12345L, Request.ClientId().Converter(12345L)),
             () => Assert.Equal(ValkeyValue.Ok, Request.Select(0).Converter("OK")),
-            () => Assert.Equal(ValkeyValue.Ok, Request.ClientPause(TimeSpan.FromMilliseconds(1000)).Converter("OK")),
-            () => Assert.Equal(ValkeyValue.Ok, Request.ClientPauseWrite(TimeSpan.FromMilliseconds(1000)).Converter("OK")),
+            () => Assert.Equal(ValkeyValue.Ok, Request.ClientPause(OneSecond).Converter("OK")),
+            () => Assert.Equal(ValkeyValue.Ok, Request.ClientPauseWrite(OneSecond).Converter("OK")),
             () => Assert.Equal(ValkeyValue.Ok, Request.ClientUnpause().Converter("OK")),
 
             () => Assert.True(Request.SetAddAsync("key", "member").Converter(1L)),
@@ -629,10 +632,10 @@ public class CommandTests
             },
 
             // WAIT Commands Converters
-            () => Assert.Equal(2L, Request.WaitAsync(1, TimeSpan.FromMilliseconds(1000)).Converter(2L)),
+            () => Assert.Equal(2L, Request.WaitAsync(1, OneSecond).Converter(2L)),
             () => Assert.Equal(0L, Request.WaitAsync(0, TimeSpan.Zero).Converter(0L)),
             () => Assert.Equal(1L, Request.WaitAsync(3, TimeSpan.FromMilliseconds(5000)).Converter(1L)),
-            () => Assert.Equal(new long[] { 1L, 0L }, Request.WaitAofAsync(true, 1, TimeSpan.FromMilliseconds(1000)).Converter([1L, 0L])),
+            () => Assert.Equal(new long[] { 1L, 0L }, Request.WaitAofAsync(true, 1, OneSecond).Converter([1L, 0L])),
             () => Assert.Equal(new long[] { 0L, 0L }, Request.WaitAofAsync(false, 0, TimeSpan.Zero).Converter([0L, 0L])),
 
             () => Assert.Equal("one", Request.ListLeftPopAsync("a").Converter("one")),
@@ -1038,22 +1041,22 @@ public class CommandTests
 
             // StreamPendingMessages
             () => Assert.Equal(["XPENDING", "key", "group", "-", "+", "10", "consumer"], Request.StreamPendingMessagesAsync("key", "group", "-", "+", 10, "consumer", null).GetArgs()),
-            () => Assert.Equal(["XPENDING", "key", "group", "IDLE", "1000", "-", "+", "10", "consumer"], Request.StreamPendingMessagesAsync("key", "group", "-", "+", 10, "consumer", TimeSpan.FromMilliseconds(1000)).GetArgs()),
+            () => Assert.Equal(["XPENDING", "key", "group", "IDLE", "1000", "-", "+", "10", "consumer"], Request.StreamPendingMessagesAsync("key", "group", "-", "+", 10, "consumer", OneSecond).GetArgs()),
 
             // StreamClaim
-            () => Assert.Equal(["XCLAIM", "key", "group", "consumer", "1000", "1-0"], Request.StreamClaimAsync("key", "group", "consumer", TimeSpan.FromMilliseconds(1000), ["1-0"]).GetArgs()),
-            () => Assert.Equal(["XCLAIM", "key", "group", "consumer", "1000", "1-0", "IDLE", "500"], Request.StreamClaimAsync("key", "group", "consumer", TimeSpan.FromMilliseconds(1000), ["1-0"], new StreamClaimOptions { Idle = TimeSpan.FromMilliseconds(500) }).GetArgs()),
-            () => Assert.Equal(["XCLAIM", "key", "group", "consumer", "1000", "1-0", "FORCE"], Request.StreamClaimAsync("key", "group", "consumer", TimeSpan.FromMilliseconds(1000), ["1-0"], new StreamClaimOptions { Force = true }).GetArgs()),
+            () => Assert.Equal(["XCLAIM", "key", "group", "consumer", "1000", "1-0"], Request.StreamClaimAsync("key", "group", "consumer", OneSecond, ["1-0"]).GetArgs()),
+            () => Assert.Equal(["XCLAIM", "key", "group", "consumer", "1000", "1-0", "IDLE", "500"], Request.StreamClaimAsync("key", "group", "consumer", OneSecond, ["1-0"], new StreamClaimOptions { Idle = TimeSpan.FromMilliseconds(500) }).GetArgs()),
+            () => Assert.Equal(["XCLAIM", "key", "group", "consumer", "1000", "1-0", "FORCE"], Request.StreamClaimAsync("key", "group", "consumer", OneSecond, ["1-0"], new StreamClaimOptions { Force = true }).GetArgs()),
 
             // StreamClaimIdsOnly
-            () => Assert.Equal(["XCLAIM", "key", "group", "consumer", "1000", "1-0", "JUSTID"], Request.StreamClaimIdsOnlyAsync("key", "group", "consumer", TimeSpan.FromMilliseconds(1000), ["1-0"]).GetArgs()),
+            () => Assert.Equal(["XCLAIM", "key", "group", "consumer", "1000", "1-0", "JUSTID"], Request.StreamClaimIdsOnlyAsync("key", "group", "consumer", OneSecond, ["1-0"]).GetArgs()),
 
             // StreamAutoClaim
-            () => Assert.Equal(["XAUTOCLAIM", "key", "group", "consumer", "1000", "0-0"], Request.StreamAutoClaimAsync("key", "group", "consumer", TimeSpan.FromMilliseconds(1000), "0-0", null).GetArgs()),
-            () => Assert.Equal(["XAUTOCLAIM", "key", "group", "consumer", "1000", "0-0", "COUNT", "10"], Request.StreamAutoClaimAsync("key", "group", "consumer", TimeSpan.FromMilliseconds(1000), "0-0", 10).GetArgs()),
+            () => Assert.Equal(["XAUTOCLAIM", "key", "group", "consumer", "1000", "0-0"], Request.StreamAutoClaimAsync("key", "group", "consumer", OneSecond, "0-0", null).GetArgs()),
+            () => Assert.Equal(["XAUTOCLAIM", "key", "group", "consumer", "1000", "0-0", "COUNT", "10"], Request.StreamAutoClaimAsync("key", "group", "consumer", OneSecond, "0-0", 10).GetArgs()),
 
             // StreamAutoClaimJustId
-            () => Assert.Equal(["XAUTOCLAIM", "key", "group", "consumer", "1000", "0-0", "JUSTID"], Request.StreamAutoClaimJustIdAsync("key", "group", "consumer", TimeSpan.FromMilliseconds(1000), "0-0", null).GetArgs()),
+            () => Assert.Equal(["XAUTOCLAIM", "key", "group", "consumer", "1000", "0-0", "JUSTID"], Request.StreamAutoClaimJustIdAsync("key", "group", "consumer", OneSecond, "0-0", null).GetArgs()),
 
             // StreamInfo
             () => Assert.Equal(["XINFOSTREAM", "key"], Request.StreamInfoAsync("key").GetArgs()),

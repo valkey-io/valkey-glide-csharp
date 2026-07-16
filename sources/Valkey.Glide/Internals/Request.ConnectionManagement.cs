@@ -38,6 +38,9 @@ internal partial class Request
     public static Cmd<Dictionary<GlideString, object>, ClientTrackingInfo> ClientTrackingInfo()
         => new(RequestType.ClientTrackingInfo, [], false, ConvertClientTrackingInfoResponse);
 
+    public static Cmd<GlideString, ValkeyValue> Reset()
+        => ToValkeyValue(RequestType.Reset, []);
+
     #endregion
     #region Response Converters
 

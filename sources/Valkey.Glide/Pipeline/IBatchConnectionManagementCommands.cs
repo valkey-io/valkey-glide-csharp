@@ -41,4 +41,11 @@ internal interface IBatchConnectionManagementCommands
     /// <inheritdoc cref="IBaseClient.ClientUnpauseAsync()" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.ClientUnpauseAsync()" /></returns>
     IBatch ClientUnpauseAsync();
+
+    /// <inheritdoc cref="IBaseClient.ResetAsync()" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - The string <c>"RESET"</c>.</returns>
+    /// <remarks>
+    /// <b>Note:</b> This command is not supported for atomic batches (transactions).
+    /// </remarks>
+    IBatch ResetAsync();
 }

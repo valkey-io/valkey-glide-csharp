@@ -1,6 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using Valkey.Glide.Commands;
+using Valkey.Glide.Internals;
 
 namespace Valkey.Glide;
 
@@ -35,4 +36,8 @@ public abstract partial class BaseClient
 
     /// <inheritdoc cref="IBaseClient.ClientTrackingInfoAsync()"/>
     public abstract Task<ClientTrackingInfo> ClientTrackingInfoAsync();
+
+    /// <inheritdoc cref="IBaseClient.ResetAsync()"/>
+    public async Task ResetAsync()
+        => _ = await Command(Request.Reset());
 }

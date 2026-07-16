@@ -496,10 +496,15 @@ public class PubSubCommandTests(TestConfiguration config)
     #endregion
     #region SubscriptionChannelsAsync
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
-    public async Task SubscriptionChannelsAsync_NoSubscribers_ReturnsEmpty(IServer server)
-        => Assert.Empty(await server.SubscriptionChannelsAsync());
+    [Fact]
+    public async Task SubscriptionChannelsAsync_NoSubscribers_ReturnsEmpty()
+    {
+        using var standalone = new StandaloneServer();
+        using var connection = await standalone.CreateConnectionMultiplexerAsync();
+        var server = connection.GetServers().First();
+
+        Assert.Empty(await server.SubscriptionChannelsAsync());
+    }
 
     [Fact]
     public async Task SubscriptionChannelsAsync_WithSubscriber_ReturnsChannel()
@@ -515,7 +520,7 @@ public class PubSubCommandTests(TestConfiguration config)
         try
         {
             await Task.Delay(500, TestContext.Current.CancellationToken);
-            ValkeyChannel[] channels = await server.SubscriptionChannelsAsync();
+            var channels = await server.SubscriptionChannelsAsync();
             Assert.Contains(channels, c => c.ToString() == channelName);
         }
         finally
@@ -545,7 +550,7 @@ public class PubSubCommandTests(TestConfiguration config)
             await Task.Delay(500, TestContext.Current.CancellationToken);
 
             var pattern = ValkeyChannel.Literal($"{prefix}-*");
-            ValkeyChannel[] channels = await server.SubscriptionChannelsAsync(pattern);
+            var channels = await server.SubscriptionChannelsAsync(pattern);
 
             Assert.Equal(2, channels.Length);
             Assert.Contains(channels, c => c.ToString() == $"{prefix}-a");

@@ -33,6 +33,9 @@ public abstract partial class BaseBatch<T> : IBatchConnectionManagementCommands 
     /// <inheritdoc cref="IBatchConnectionManagementCommands.ClientUnpauseAsync()" />
     public T ClientUnpauseAsync() => AddCmd(Request.ClientUnpause());
 
+    /// <inheritdoc cref="IBatchConnectionManagementCommands.ResetAsync()" />
+    public T ResetAsync() => AddCmd(Request.Reset());
+
     IBatch IBatchConnectionManagementCommands.Ping() => Ping();
     IBatch IBatchConnectionManagementCommands.Ping(ValkeyValue message) => Ping(message);
     IBatch IBatchConnectionManagementCommands.Echo(ValkeyValue message) => Echo(message);
@@ -42,4 +45,5 @@ public abstract partial class BaseBatch<T> : IBatchConnectionManagementCommands 
     IBatch IBatchConnectionManagementCommands.ClientPauseAsync(TimeSpan timeout) => ClientPauseAsync(timeout);
     IBatch IBatchConnectionManagementCommands.ClientPauseWriteAsync(TimeSpan timeout) => ClientPauseWriteAsync(timeout);
     IBatch IBatchConnectionManagementCommands.ClientUnpauseAsync() => ClientUnpauseAsync();
+    IBatch IBatchConnectionManagementCommands.ResetAsync() => ResetAsync();
 }
