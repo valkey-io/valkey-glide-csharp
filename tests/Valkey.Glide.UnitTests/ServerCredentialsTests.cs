@@ -39,13 +39,13 @@ public class ServerCredentialsTests
     [Fact]
     public void Constructor_IamAuth()
     {
-        using var iamConfig = BuildIamAuthConfig();
-        using var credentials = new ServerCredentials(Username, iamConfig);
+        using var iam = BuildIamAuthConfig();
+        using var credentials = new ServerCredentials(Username, iam);
 
         Assert.Equal(Username, credentials.Username);
         Assert.Null(credentials.Password);
         Assert.True(credentials.IsIamAuth());
-        Assert.Equal(iamConfig, credentials.IamAuthConfig);
+        Assert.Equal(iam, credentials.IamAuthConfig);
     }
 
     [Fact]
@@ -56,8 +56,7 @@ public class ServerCredentialsTests
         _ = Assert.Throws<ArgumentNullException>(() => new ServerCredentials(Username, (string)null!));
 
         // IAM
-        using var iamConfig = BuildIamAuthConfig();
-        _ = Assert.Throws<ArgumentNullException>(() => new ServerCredentials(null!, iamConfig));
+        _ = Assert.Throws<ArgumentNullException>(() => new ServerCredentials(null!, BuildIamAuthConfig()));
         _ = Assert.Throws<ArgumentNullException>(() => new ServerCredentials(Username, (IamAuthConfig)null!));
     }
 
