@@ -4,6 +4,8 @@ using System.Diagnostics;
 
 using Valkey.Glide.TestUtils;
 
+using static Valkey.Glide.TestUtils.Builders;
+
 namespace Valkey.Glide.IntegrationTests;
 
 [Collection("GlideTests")]
@@ -93,9 +95,7 @@ public class ConnectionManagementCommandTests(TestConfiguration config)
     [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
     public async Task ClientTrackingInfo_On(bool clusterMode)
     {
-        // TODO #435: Add builder to Options once #447 is merged.
-        var cache = new ClientSideCacheConfig(1024, TimeSpan.FromMinutes(1))
-            .WithServerAssisted();
+        var cache = BuildClientSideCacheConfig().WithServerAssisted();
 
         await using BaseClient client = clusterMode
             ? await GlideClusterClient.CreateClient(
@@ -113,9 +113,7 @@ public class ConnectionManagementCommandTests(TestConfiguration config)
     [Fact]
     public async Task ClientTrackingInfo_On_WithRoute()
     {
-        // TODO #435: Add builder to Options once #447 is merged.
-        var cache = new ClientSideCacheConfig(1024, TimeSpan.FromMinutes(1))
-            .WithServerAssisted();
+        var cache = BuildClientSideCacheConfig().WithServerAssisted();
 
         await using var client = await GlideClusterClient.CreateClient(
             TestConfiguration.DefaultClusterClientConfig()
@@ -234,10 +232,8 @@ public class ConnectionManagementCommandTests(TestConfiguration config)
     [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
     public async Task TestReset_ResetsConnectionState(bool clusterMode)
     {
-        // TODO #435: Add builder to Options once #447 is merged.
         // Create a client with server-assisted client-side caching.
-        var cache = new ClientSideCacheConfig(1024, TimeSpan.FromMinutes(1))
-            .WithServerAssisted();
+        var cache = BuildClientSideCacheConfig().WithServerAssisted();
 
         await using BaseClient client = clusterMode
             ? await GlideClusterClient.CreateClient(

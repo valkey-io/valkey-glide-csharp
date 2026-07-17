@@ -4,7 +4,7 @@
 using Valkey.Glide.Commands.Options;
 using Valkey.Glide.TestUtils;
 
-using static Valkey.Glide.TestUtils.Options;
+using static Valkey.Glide.TestUtils.Builders;
 
 namespace Valkey.Glide.IntegrationTests;
 
