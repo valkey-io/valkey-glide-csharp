@@ -3,7 +3,7 @@
 namespace Valkey.Glide;
 
 /// <summary>
-/// Represents a <c>CLIENT TRACKINGINFO</c> response containing the client's tracking state.
+/// Represents a <see href="https://valkey.io/commands/client-trackinginfo/">CLIENT TRACKINGINFO</see> response.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/client-trackinginfo/"/>
 public sealed class ClientTrackingInfo

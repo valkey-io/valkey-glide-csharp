@@ -10,9 +10,9 @@ using static Valkey.Glide.Internals.FFI;
 namespace Valkey.Glide;
 
 /// <summary>
-/// A client that monitors all commands processed by the server.
+/// A client for the <see href="https://valkey.io/commands/monitor/">MONITOR</see> command stream.
 /// </summary>
-/// <seealso href="https://valkey.io/commands/monitor/">Valkey commands - MONITOR</seealso>
+/// <seealso href="https://valkey.io/commands/monitor/"/>
 public sealed class MonitorClient : IAsyncDisposable, IDisposable
 {
     #region Private Fields

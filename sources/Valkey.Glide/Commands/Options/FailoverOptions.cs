@@ -5,7 +5,7 @@ using static Valkey.Glide.Internals.TimeUtils;
 namespace Valkey.Glide.Commands.Options;
 
 /// <summary>
-/// Options for the <c>FAILOVER</c> command.
+/// Options for the <see href="https://valkey.io/commands/failover/">FAILOVER</see> command.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/failover/"/>
 public sealed class FailoverOptions

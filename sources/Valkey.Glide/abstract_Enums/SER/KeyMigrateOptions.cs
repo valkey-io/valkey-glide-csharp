@@ -3,8 +3,9 @@ using System;
 namespace Valkey.Glide;
 
 /// <summary>
-/// Additional options for the <see cref="IDatabaseAsync.KeyMigrateAsync"/> command.
+/// Options for the <see cref="IDatabaseAsync.KeyMigrateAsync"/> command.
 /// </summary>
+/// <seealso href="https://valkey.io/commands/migrate/"/>
 [Flags]
 public enum KeyMigrateOptions
 {

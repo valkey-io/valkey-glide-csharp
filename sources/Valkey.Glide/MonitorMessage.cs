@@ -3,9 +3,9 @@
 namespace Valkey.Glide;
 
 /// <summary>
-/// Represents a command received through the <c>MONITOR</c> stream.
+/// Represents a message received through the <see href="https://valkey.io/commands/monitor/">MONITOR</see> stream.
 /// </summary>
-/// <seealso href="https://valkey.io/commands/monitor/">Valkey commands - MONITOR</seealso>
+/// <seealso href="https://valkey.io/commands/monitor/"/>
 public sealed class MonitorMessage
 {
     #region Public Properties

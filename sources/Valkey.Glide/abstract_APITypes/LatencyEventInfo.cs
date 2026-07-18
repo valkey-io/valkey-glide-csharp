@@ -3,8 +3,9 @@
 namespace Valkey.Glide;
 
 /// <summary>
-/// Represents information about an event's latency spike time series.
+/// Represents a <see href="https://valkey.io/commands/latency-latest/">LATENCY LATEST</see> entry.
 /// </summary>
+/// <seealso href="https://valkey.io/commands/latency-latest/"/>
 public readonly record struct LatencyEventInfo
 {
     /// <summary>
