@@ -1,13 +1,10 @@
-﻿using System;
-
-namespace Valkey.Glide;
+﻿namespace Valkey.Glide;
 
 /// <summary>
 /// The type of save operation to perform.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/bgrewriteaof/"/>
 /// <seealso href="https://valkey.io/commands/bgsave/"/>
-/// <seealso href="https://valkey.io/commands/save/"/>
 public enum SaveType
 {
     /// <summary>
@@ -24,13 +21,4 @@ public enum SaveType
     /// </summary>
     /// <seealso href="https://valkey.io/commands/bgsave/" />
     BackgroundSave,
-
-    /// <summary>
-    /// Save the DB in foreground.
-    /// This is almost never a good thing to do, and could cause significant blocking.
-    /// Only do this if you know you need to save.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/save/" />
-    [Obsolete("Saving on the foreground can cause significant blocking; use with extreme caution")]
-    ForegroundSave,
 }
