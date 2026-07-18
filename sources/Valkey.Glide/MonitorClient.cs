@@ -178,7 +178,7 @@ public sealed class MonitorClient : IAsyncDisposable, IDisposable
     #region Private Methods
 
     private void OnMonitorMessage(
-        double timestampUnix,
+        double timestamp,
         ushort database,
         IntPtr clientAddrPtr,
         long clientAddrLen,
@@ -209,9 +209,14 @@ public sealed class MonitorClient : IAsyncDisposable, IDisposable
                 args[i] = System.Text.Encoding.UTF8.GetString(argBytes);
             }
 
-            var timestamp = DateTimeOffset.UnixEpoch.AddSeconds(timestampUnix);
-
-            var message = new MonitorMessage(timestamp, database, clientAddress, command, args);
+            var message = new MonitorMessage
+            {
+                Timestamp = DateTimeOffset.UnixEpoch.AddSeconds(timestamp),
+                Database = database,
+                ClientAddress = clientAddress,
+                Command = command,
+                Args = args,
+            };
             _ = _channel.Writer.TryWrite(message);
         }
         catch (Exception ex)

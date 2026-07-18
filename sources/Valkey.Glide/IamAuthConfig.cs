@@ -8,7 +8,7 @@ namespace Valkey.Glide;
 /// <seealso href="https://glide.valkey.io/how-to/security/iam-integration/">Valkey GLIDE – Configure AWS IAM Authentication</seealso>
 public sealed class IamAuthConfig : IDisposable
 {
-    #region Fields
+    #region Private Fields
 
     private bool _disposed;
 
@@ -48,7 +48,7 @@ public sealed class IamAuthConfig : IDisposable
     }
 
     #endregion
-    #region Constructors
+    #region Constructors & Builders
 
     /// <summary>
     /// Creates a new <see cref="IamAuthConfig"/> instance.

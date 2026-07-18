@@ -9,7 +9,7 @@ namespace Valkey.Glide;
 /// <seealso href="https://glide.valkey.io/how-to/security/authentication/">Valkey GLIDE – Configure Valkey Authentication</seealso>
 public sealed class ServerCredentials : IDisposable
 {
-    #region Fields
+    #region Private Fields
 
     private bool _disposed;
 
@@ -49,7 +49,7 @@ public sealed class ServerCredentials : IDisposable
     }
 
     #endregion
-    #region Constructors
+    #region Constructors & Builders
 
     /// <summary>
     /// Creates server credentials for password-based authentication.
