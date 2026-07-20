@@ -5,26 +5,17 @@ namespace Valkey.Glide;
 /// <summary>
 /// Database memory overhead statistics from <see href="https://valkey.io/commands/memory-stats/">MEMORY STATS</see>.
 /// </summary>
-public sealed record MemoryStatsDb
+public readonly record struct MemoryStatsDb
 {
-    #region Public Properties
-
     /// <summary>
     /// Overhead of the main dictionary hashtable.
     /// </summary>
-    public required long OverheadHashtableMain { get; init; }
+    public long OverheadHashtableMain { get; init; }
 
     /// <summary>
     /// Overhead of the expires dictionary hashtable.
     /// </summary>
-    public required long OverheadHashtableExpires { get; init; }
-
-    #endregion
-    #region Constructors & Builders
-
-    internal MemoryStatsDb() { }
-
-    #endregion
+    public long OverheadHashtableExpires { get; init; }
 }
 
 /// <summary>
