@@ -101,7 +101,7 @@ public partial class GlideClusterClient
         return result.HasMultiData ? result.MultiValue.Values.Sum() : result.SingleValue;
     }
 
-    /// <inheritdoc cref="IBaseClient.FlushAllDatabasesAsync(FlushMode)"/>
+    /// <inheritdoc cref="IGlideClient.FlushAllDatabasesAsync()"/>
     public async Task FlushAllDatabasesAsync()
         => await FlushAllDatabasesAsync(AllPrimaries);
 
@@ -117,7 +117,7 @@ public partial class GlideClusterClient
     public async Task FlushAllDatabasesAsync(FlushMode mode, Route route)
         => _ = await Command(Request.FlushAllDatabasesAsync(mode), route);
 
-    /// <inheritdoc cref="IBaseClient.FlushDatabaseAsync(FlushMode)"/>
+    /// <inheritdoc cref="IGlideClient.FlushDatabaseAsync()"/>
     public async Task FlushDatabaseAsync()
         => await FlushDatabaseAsync(AllPrimaries);
 
