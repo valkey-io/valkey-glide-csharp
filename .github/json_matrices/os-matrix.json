@@ -34,7 +34,7 @@
         "os": "windows",
         "runner": "windows-2025",
         "target": "x86_64-pc-windows-msvc",
-        "profiles": [ "standard", "full"]
+        "profiles": ["full"]
     },
     {
         "os": "windows",
