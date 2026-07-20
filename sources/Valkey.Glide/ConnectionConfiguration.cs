@@ -60,7 +60,7 @@ public abstract class ConnectionConfiguration
         public TimeSpan? PubSubReconciliationInterval;
         public CompressionConfig? CompressionConfig;
         public bool ReadOnly;
-        public NodeDiscoveryMode NodeDiscoveryMode;
+        public NodeDiscoveryMode NodeDiscoveryMode = NodeDiscoveryMode.Standard;
         public ClientSideCacheConfig? ClientSideCacheConfig;
         public AddressResolverDelegate? AddressResolver;
 
@@ -223,40 +223,6 @@ public abstract class ConnectionConfiguration
         /// Use RESP3 to communicate with the server nodes.
         /// </summary>
         RESP3 = 1,
-    }
-
-    /// <summary>
-    /// Controls how the client discovers node roles and topology in standalone mode.
-    /// <para />
-    /// This option is only relevant for standalone clients; it is ignored in cluster mode, which
-    /// has its own topology discovery mechanism.
-    /// </summary>
-    public enum NodeDiscoveryMode : uint
-    {
-        /// <summary>
-        /// Default: verify node roles via <c>INFO REPLICATION</c>, use only the provided addresses.
-        /// This is the fully backward-compatible behavior.
-        /// </summary>
-        Standard = 0,
-        /// <summary>
-        /// Skip role detection entirely. Trust the provided addresses as-is; the first address is
-        /// treated as the primary. Use when connecting through a proxy (e.g., Envoy) or when the
-        /// topology is known and static.
-        /// <para />
-        /// <b>Note</b>: Do not set <see cref="ClientConfigurationBuilder{T}.ClientName"/> when using
-        /// this mode with a proxy, as the proxy may not support the <c>CLIENT SETNAME</c> command
-        /// sent during connection setup.
-        /// </summary>
-        Static = 1,
-        /// <summary>
-        /// Discover the full topology (primary + all replicas) from any starting node. Provide any
-        /// single node address (primary or replica) and the client will find and connect to all
-        /// other nodes.
-        /// <para />
-        /// Discovery happens only at client creation time; topology changes after creation are not
-        /// re-discovered until the client is recreated.
-        /// </summary>
-        DiscoverAll = 2,
     }
 
     #endregion
@@ -974,12 +940,7 @@ public abstract class ConnectionConfiguration
         /// <summary>
         /// Controls how the client discovers node roles and topology during connection
         /// initialization. If not set, defaults to <see cref="NodeDiscoveryMode.Standard" />.
-        /// <para />
-        /// <see cref="NodeDiscoveryMode.DiscoverAll" /> is mutually exclusive with read-only mode
-        /// (read-only skips the <c>INFO REPLICATION</c> call that discovery requires); this
-        /// combination is rejected at client creation time.
-        /// <para />
-        /// See also <seealso cref="NodeDiscoveryMode" />.
+        /// See <see cref="NodeDiscoveryMode" /> for the available modes and their details.
         /// </summary>
         public NodeDiscoveryMode NodeDiscoveryMode
         {

@@ -279,9 +279,7 @@ public class ConnectionConfigurationTests
     }
 
     [Theory]
-    [InlineData(NodeDiscoveryMode.Standard)]
-    [InlineData(NodeDiscoveryMode.Static)]
-    [InlineData(NodeDiscoveryMode.DiscoverAll)]
+    [MemberData(nameof(Data.NodeDiscoveryModes), MemberType = typeof(Data))]
     public void WithNodeDiscoveryMode_SetsMode(NodeDiscoveryMode mode)
     {
         var builder = new StandaloneClientConfigurationBuilder()
@@ -298,6 +296,18 @@ public class ConnectionConfigurationTests
         };
         Assert.Equal(NodeDiscoveryMode.DiscoverAll, builder.NodeDiscoveryMode);
         Assert.Equal(NodeDiscoveryMode.DiscoverAll, builder.Build().Request.NodeDiscoveryMode);
+    }
+
+    [Theory]
+    [MemberData(nameof(Data.NodeDiscoveryModes), MemberType = typeof(Data))]
+    public void WithNodeDiscoveryMode_ToFfi_PassesModeToFfiLayer(NodeDiscoveryMode mode)
+    {
+        var config = new StandaloneClientConfigurationBuilder()
+            .WithNodeDiscoveryMode(mode)
+            .Build();
+
+        using FFI.ConnectionConfig ffi = config.Request.ToFfi();
+        Assert.Equal(mode, ffi.NodeDiscoveryMode);
     }
 
     [Fact]

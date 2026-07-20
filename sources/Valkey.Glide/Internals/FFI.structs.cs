@@ -200,6 +200,12 @@ internal partial class FFI
     {
         private ConnectionRequest _request;
 
+        /// <summary>
+        /// The node discovery mode marshalled into the underlying FFI request. Exposed for testing
+        /// that the value is correctly wired through to the FFI layer.
+        /// </summary>
+        internal NodeDiscoveryMode NodeDiscoveryMode => _request.NodeDiscoveryMode;
+
         public ConnectionConfig(
             List<NodeAddress> addresses,
             TlsMode tlsMode,
@@ -219,7 +225,7 @@ internal partial class FFI
             uint? pubSubReconciliationIntervalMs,
             CompressionConfig? compressionConfig,
             bool readOnly,
-            ConnectionConfiguration.NodeDiscoveryMode nodeDiscoveryMode,
+            NodeDiscoveryMode nodeDiscoveryMode,
             ClientSideCacheConfig? clientSideCacheConfig)
         {
             _request = new()
@@ -1129,10 +1135,11 @@ internal partial class FFI
         [MarshalAs(UnmanagedType.U1)]
         public bool HasCompressionConfig;
         public CompressionConfig CompressionConfig;
+
         [MarshalAs(UnmanagedType.U1)]
         public bool ReadOnly;
 
-        public ConnectionConfiguration.NodeDiscoveryMode NodeDiscoveryMode;
+        public NodeDiscoveryMode NodeDiscoveryMode;
 
         [MarshalAs(UnmanagedType.U1)]
         public bool HasClientSideCacheConfig;
