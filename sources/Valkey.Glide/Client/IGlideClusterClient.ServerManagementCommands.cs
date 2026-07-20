@@ -17,85 +17,164 @@ namespace Valkey.Glide;
 public partial interface IGlideClusterClient
 {
     /// <summary>
-    /// Returns information and statistics about the server using the <see cref="Section.DEFAULT" /> option.<br />
-    /// The command is routed to all primary nodes.
+    /// Asynchronously saves the dataset to disk in the background.<br />
+    /// The command will be routed to all primary nodes.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/info/">Valkey commands – INFO</seealso>
-    /// <returns>A dictionary mapping each node address to the information returned by that node.</returns>
+    /// <seealso href="https://valkey.io/commands/bgsave/">Valkey commands – BGSAVE</seealso>
+    /// <returns>A <see cref="ClusterValue{T}" /> containing status strings.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// var response = await clusterClient.InfoAsync();
-    /// var firstNodeInfo = response.Values.First();
+    /// var response = await clusterClient.BackgroundSaveAsync();
+    /// foreach (var value in response.MultiValue.Values)
+    /// {
+    ///     Console.WriteLine(value); // "Background saving started"
+    /// }
     /// </code>
     /// </example>
     /// </remarks>
-    Task<Dictionary<string, string>> InfoAsync();
+    Task<ClusterValue<string>> BackgroundSaveAsync();
 
     /// <summary>
-    /// Returns information and statistics about the server.<br />
-    /// Starting from server version 7, the command supports multiple <see cref="Section" /> arguments.<br />
-    /// The command is routed to all primary nodes.
+    /// Asynchronously saves the dataset to disk in the background.<br />
+    /// The command will be routed to the nodes defined by <paramref name="route" />.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/info/">Valkey commands – INFO</seealso>
-    /// <inheritdoc cref="InfoAsync(IEnumerable{Section}, Route)" path="/param[@name='sections']" />
-    /// <returns>A dictionary mapping each node address to the information returned by that node.</returns>
+    /// <seealso href="https://valkey.io/commands/bgsave/">Valkey commands – BGSAVE</seealso>
+    /// <param name="route">Specifies the routing configuration for the command.</param>
+    /// <returns>A <see cref="ClusterValue{T}" /> containing status strings.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// var response = await clusterClient.InfoAsync([Section.STATS]);
-    /// var firstNodeInfo = response.Values.First();
+    /// var response = await clusterClient.BackgroundSaveAsync(Route.AllPrimaries);
+    /// foreach (var value in response.MultiValue.Values)
+    /// {
+    ///     Console.WriteLine(value); // "Background saving started"
+    /// }
     /// </code>
     /// </example>
     /// </remarks>
-    Task<Dictionary<string, string>> InfoAsync(IEnumerable<Section> sections);
+    Task<ClusterValue<string>> BackgroundSaveAsync(Route route);
 
     /// <summary>
-    /// Returns information and statistics about the server using the <see cref="Section.DEFAULT" /> option.
+    /// Aborts all in-progress and scheduled background saves.<br />
+    /// The command will be routed to all primary nodes.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/info/">Valkey commands – INFO</seealso>
-    /// <inheritdoc cref="InfoAsync(IEnumerable{Section}, Route)" path="/param[@name='route']" />
-    /// <returns>
-    /// <inheritdoc cref="InfoAsync(IEnumerable{Section}, Route)" path="/returns" />
-    /// </returns>
+    /// <seealso href="https://valkey.io/commands/bgsave/">Valkey commands – BGSAVE</seealso>
+    /// <note>Since Valkey 8.1.</note>
+    /// <returns>A <see cref="ClusterValue{T}" /> containing status strings.</returns>
+    /// <exception cref="Errors.RequestException">Thrown if no background save is currently in progress or scheduled.</exception>
     /// <remarks>
     /// <example>
     /// <code>
-    /// var response = (await clusterClient.InfoAsync(Route.AllNodes)).MultiValue;
-    /// var filtered = response.Select(pair =>
-    ///         (Node: pair.Key, Value: pair.Value.Split('\n').First(l => l.Contains("total_net_input_bytes")))
-    ///     ).ToDictionary(p => p.Node, p => p.Value);
+    /// var response = await clusterClient.BackgroundSaveCancelAsync();
+    /// foreach (var value in response.MultiValue.Values)
+    /// {
+    ///     Console.WriteLine(value); // "Background saving cancelled"
+    /// }
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ClusterValue<string>> InfoAsync(Route route);
+    Task<ClusterValue<string>> BackgroundSaveCancelAsync();
 
     /// <summary>
-    /// Returns information and statistics about the server.<br />
-    /// Starting from server version 7, the command supports multiple <see cref="Section" /> arguments.
+    /// Aborts all in-progress and scheduled background saves.<br />
+    /// The command will be routed to the nodes defined by <paramref name="route" />.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/info/">Valkey commands – INFO</seealso>
-    /// <param name="sections">A list of <see cref="Section" /> values specifying which sections of information to
-    /// retrieve. When no parameter is provided, the <see cref="Section.DEFAULT" /> option is assumed.</param>
-    /// <param name="route">Specifies the routing configuration for the command. The client will route the
-    /// command to the nodes defined by <paramref name="route" />.</param>
-    /// <returns>
-    /// A <see cref="ClusterValue{T}" /> containing the information for the sections requested.<br />
-    /// When specifying a <paramref name="route" /> other than a single node, it returns a multi-value <see cref="ClusterValue{T}" />
-    /// with a <c>Dictionary&lt;string, string&gt;</c> with each address as the key and its corresponding
-    /// value is the information for the node. For a single node route it returns a <see cref="ClusterValue{T}" /> with a single value.
-    /// </returns>
+    /// <seealso href="https://valkey.io/commands/bgsave/">Valkey commands – BGSAVE</seealso>
+    /// <note>Since Valkey 8.1.</note>
+    /// <param name="route">Specifies the routing configuration for the command.</param>
+    /// <returns>A <see cref="ClusterValue{T}" /> containing status strings.</returns>
+    /// <exception cref="Errors.RequestException">Thrown if no background save is currently in progress or scheduled.</exception>
     /// <remarks>
     /// <example>
     /// <code>
-    /// var response = (await clusterClient.InfoAsync([Section.STATS], Route.AllNodes));
-    /// var filtered = response.MultiValue.Select(pair =>
-    ///         (Node: pair.Key, Value: pair.Value.Split('\n').First(l => l.Contains("total_net_input_bytes")))
-    ///     ).ToDictionary(p => p.Node, p => p.Value);
+    /// var response = await clusterClient.BackgroundSaveCancelAsync(Route.AllPrimaries);
+    /// foreach (var value in response.MultiValue.Values)
+    /// {
+    ///     Console.WriteLine(value); // "Background saving cancelled"
+    /// }
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ClusterValue<string>> InfoAsync(IEnumerable<Section> sections, Route route);
+    Task<ClusterValue<string>> BackgroundSaveCancelAsync(Route route);
+
+    /// <summary>
+    /// Schedules a background save of the database.<br />
+    /// The command will be routed to all primary nodes.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/bgsave/">Valkey commands – BGSAVE</seealso>
+    /// <returns>A <see cref="ClusterValue{T}" /> containing status strings.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var response = await clusterClient.BackgroundSaveScheduleAsync();
+    /// foreach (var value in response.MultiValue.Values)
+    /// {
+    ///     Console.WriteLine(value); // "Background saving scheduled"
+    /// }
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ClusterValue<string>> BackgroundSaveScheduleAsync();
+
+    /// <summary>
+    /// Schedules a background save of the database.<br />
+    /// The command will be routed to the nodes defined by <paramref name="route" />.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/bgsave/">Valkey commands – BGSAVE</seealso>
+    /// <param name="route">Specifies the routing configuration for the command.</param>
+    /// <returns>A <see cref="ClusterValue{T}" /> containing status strings.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var response = await clusterClient.BackgroundSaveScheduleAsync(Route.AllPrimaries);
+    /// foreach (var value in response.MultiValue.Values)
+    /// {
+    ///     Console.WriteLine(value); // "Background saving scheduled"
+    /// }
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ClusterValue<string>> BackgroundSaveScheduleAsync(Route route);
+
+    /// <summary>
+    /// Initiates a background rewrite of the append-only file (AOF).<br />
+    /// The command will be routed to all primary nodes.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/bgrewriteaof/">Valkey commands – BGREWRITEAOF</seealso>
+    /// <returns>A <see cref="ClusterValue{T}" /> containing status strings.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var response = await clusterClient.BgRewriteAofAsync();
+    /// foreach (var value in response.MultiValue.Values)
+    /// {
+    ///     Console.WriteLine(value); // "Background append only file rewriting started"
+    /// }
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ClusterValue<string>> BgRewriteAofAsync();
+
+    /// <summary>
+    /// Initiates a background rewrite of the append-only file (AOF).<br />
+    /// The command will be routed to the nodes defined by <paramref name="route" />.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/bgrewriteaof/">Valkey commands – BGREWRITEAOF</seealso>
+    /// <param name="route">Specifies the routing configuration for the command.</param>
+    /// <returns>A <see cref="ClusterValue{T}" /> containing status strings.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var response = await clusterClient.BgRewriteAofAsync(Route.AllPrimaries);
+    /// foreach (var value in response.MultiValue.Values)
+    /// {
+    ///     Console.WriteLine(value); // "Background append only file rewriting started"
+    /// }
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ClusterValue<string>> BgRewriteAofAsync(Route route);
 
     /// <summary>
     /// Gets the values of configuration parameters.<br />
@@ -134,6 +213,22 @@ public partial interface IGlideClusterClient
     /// </example>
     /// </remarks>
     Task<ClusterValue<KeyValuePair<string, string>[]>> ConfigGetAsync(ValkeyValue pattern, Route route);
+
+    /// <summary>
+    /// Gets the values of configuration parameters matching multiple patterns.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/config-get/">Valkey commands – CONFIG GET</seealso>
+    /// <param name="patterns">The patterns of config values to get.</param>
+    /// <param name="route">Specifies the routing configuration for the command.</param>
+    /// <returns>All matching configuration parameters.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var config = await clusterClient.ConfigGetAsync(["max*", "bind*"], Route.AllPrimaries);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ClusterValue<KeyValuePair<string, string>[]>> ConfigGetAsync(IEnumerable<ValkeyValue> patterns, Route route);
 
     /// <summary>
     /// Resets the statistics reported by the server using the INFO and LATENCY HISTOGRAM.<br />
@@ -233,6 +328,27 @@ public partial interface IGlideClusterClient
     Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value, Route route);
 
     /// <summary>
+    /// Reconfigures the server at runtime without the need to restart Valkey.
+    /// This overload allows setting multiple configuration parameters in a single call.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/config-set/">Valkey commands – CONFIG SET</seealso>
+    /// <param name="parameters">A dictionary of configuration parameter names and their new values.</param>
+    /// <param name="route">Specifies the routing configuration for the command. The client will route the
+    /// command to the nodes defined by <paramref name="route" />.</param>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await clusterClient.ConfigSetAsync(new Dictionary&lt;ValkeyValue, ValkeyValue&gt;
+    /// {
+    ///     { "maxmemory", "100mb" },
+    ///     { "maxmemory-policy", "allkeys-lru" }
+    /// }, Route.AllPrimaries);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task ConfigSetAsync(IDictionary<ValkeyValue, ValkeyValue> parameters, Route route);
+
+    /// <summary>
     /// Returns the number of keys in the database across all primary nodes.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/dbsize/">Valkey commands – DBSIZE</seealso>
@@ -276,6 +392,22 @@ public partial interface IGlideClusterClient
     Task FlushAllDatabasesAsync(Route route);
 
     /// <summary>
+    /// Deletes all the keys of all the existing databases across all routed nodes, with the specified flush mode.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/flushall/">Valkey commands – FLUSHALL</seealso>
+    /// <param name="mode">The flush mode. <see cref="FlushMode.Sync"/> waits for completion,
+    /// <see cref="FlushMode.Async"/> returns immediately while the flush continues in the background.</param>
+    /// <param name="route">Specifies the routing configuration for the command.</param>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await clusterClient.FlushAllDatabasesAsync(FlushMode.Async, Route.AllPrimaries);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task FlushAllDatabasesAsync(FlushMode mode, Route route);
+
+    /// <summary>
     /// Deletes all the keys in the database across all routed nodes.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/flushdb/">Valkey commands – FLUSHDB</seealso>
@@ -290,57 +422,101 @@ public partial interface IGlideClusterClient
     Task FlushDatabaseAsync(Route route);
 
     /// <summary>
-    /// Synchronously saves the dataset to disk.
+    /// Deletes all the keys in the database across all routed nodes, with the specified flush mode.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/save/">Valkey commands – SAVE</seealso>
+    /// <seealso href="https://valkey.io/commands/flushdb/">Valkey commands – FLUSHDB</seealso>
+    /// <param name="mode">The flush mode. <see cref="FlushMode.Sync"/> waits for completion,
+    /// <see cref="FlushMode.Async"/> returns immediately while the flush continues in the background.</param>
     /// <param name="route">Specifies the routing configuration for the command.</param>
     /// <remarks>
     /// <example>
     /// <code>
-    /// await clusterClient.SaveAsync(Route.AllPrimaries);
+    /// await clusterClient.FlushDatabaseAsync(FlushMode.Async, Route.AllPrimaries);
     /// </code>
     /// </example>
     /// </remarks>
-    Task SaveAsync(Route route);
+    Task FlushDatabaseAsync(FlushMode mode, Route route);
 
     /// <summary>
-    /// Initiates a background rewrite of the append-only file (AOF).<br />
-    /// The command will be routed to all primary nodes.
+    /// Returns information and statistics about the server using the <see cref="Section.DEFAULT" /> option.<br />
+    /// The command is routed to all primary nodes.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/bgrewriteaof/">Valkey commands – BGREWRITEAOF</seealso>
-    /// <returns>A <see cref="ClusterValue{T}" /> containing status strings.</returns>
+    /// <seealso href="https://valkey.io/commands/info/">Valkey commands – INFO</seealso>
+    /// <returns>A dictionary mapping each node address to the information returned by that node.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// var response = await clusterClient.BgRewriteAofAsync();
-    /// foreach (var value in response.MultiValue.Values)
-    /// {
-    ///     Console.WriteLine(value); // "Background append only file rewriting started"
-    /// }
+    /// var response = await clusterClient.InfoAsync();
+    /// var firstNodeInfo = response.Values.First();
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ClusterValue<string>> BgRewriteAofAsync();
+    Task<Dictionary<string, string>> InfoAsync();
 
     /// <summary>
-    /// Initiates a background rewrite of the append-only file (AOF).<br />
-    /// The command will be routed to the nodes defined by <paramref name="route" />.
+    /// Returns information and statistics about the server.<br />
+    /// Starting from server version 7, the command supports multiple <see cref="Section" /> arguments.<br />
+    /// The command is routed to all primary nodes.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/bgrewriteaof/">Valkey commands – BGREWRITEAOF</seealso>
-    /// <param name="route">Specifies the routing configuration for the command.</param>
-    /// <returns>A <see cref="ClusterValue{T}" /> containing status strings.</returns>
+    /// <seealso href="https://valkey.io/commands/info/">Valkey commands – INFO</seealso>
+    /// <inheritdoc cref="InfoAsync(IEnumerable{Section}, Route)" path="/param[@name='sections']" />
+    /// <returns>A dictionary mapping each node address to the information returned by that node.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// var response = await clusterClient.BgRewriteAofAsync(Route.AllPrimaries);
-    /// foreach (var value in response.MultiValue.Values)
-    /// {
-    ///     Console.WriteLine(value); // "Background append only file rewriting started"
-    /// }
+    /// var response = await clusterClient.InfoAsync([Section.STATS]);
+    /// var firstNodeInfo = response.Values.First();
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ClusterValue<string>> BgRewriteAofAsync(Route route);
+    Task<Dictionary<string, string>> InfoAsync(IEnumerable<Section> sections);
+
+    /// <summary>
+    /// Returns information and statistics about the server using the <see cref="Section.DEFAULT" /> option.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/info/">Valkey commands – INFO</seealso>
+    /// <inheritdoc cref="InfoAsync(IEnumerable{Section}, Route)" path="/param[@name='route']" />
+    /// <returns>
+    /// <inheritdoc cref="InfoAsync(IEnumerable{Section}, Route)" path="/returns" />
+    /// </returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var response = (await clusterClient.InfoAsync(Route.AllNodes)).MultiValue;
+    /// var filtered = response.Select(pair =>
+    ///         (Node: pair.Key, Value: pair.Value.Split('\n').First(l => l.Contains("total_net_input_bytes")))
+    ///     ).ToDictionary(p => p.Node, p => p.Value);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ClusterValue<string>> InfoAsync(Route route);
+
+    /// <summary>
+    /// Returns information and statistics about the server.<br />
+    /// Starting from server version 7, the command supports multiple <see cref="Section" /> arguments.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/info/">Valkey commands – INFO</seealso>
+    /// <param name="sections">A list of <see cref="Section" /> values specifying which sections of information to
+    /// retrieve. When no parameter is provided, the <see cref="Section.DEFAULT" /> option is assumed.</param>
+    /// <param name="route">Specifies the routing configuration for the command. The client will route the
+    /// command to the nodes defined by <paramref name="route" />.</param>
+    /// <returns>
+    /// A <see cref="ClusterValue{T}" /> containing the information for the sections requested.<br />
+    /// When specifying a <paramref name="route" /> other than a single node, it returns a multi-value <see cref="ClusterValue{T}" />
+    /// with a <c>Dictionary&lt;string, string&gt;</c> with each address as the key and its corresponding
+    /// value is the information for the node. For a single node route it returns a <see cref="ClusterValue{T}" /> with a single value.
+    /// </returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var response = (await clusterClient.InfoAsync([Section.STATS], Route.AllNodes));
+    /// var filtered = response.MultiValue.Select(pair =>
+    ///         (Node: pair.Key, Value: pair.Value.Split('\n').First(l => l.Contains("total_net_input_bytes")))
+    ///     ).ToDictionary(p => p.Node, p => p.Value);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ClusterValue<string>> InfoAsync(IEnumerable<Section> sections, Route route);
 
     /// <summary>
     /// Returns the time of the last DB save executed with success.
@@ -383,45 +559,127 @@ public partial interface IGlideClusterClient
     Task<ClusterValue<DateTimeOffset>> LastSaveAsync(Route route);
 
     /// <summary>
-    /// Returns the current server time in UTC format.
-    /// Use the <see cref="DateTimeOffset.ToLocalTime"/> method to get local time.<br />
-    /// The command is routed to a random node.
+    /// Returns latency spike time series for a specific event.<br />
+    /// The command is routed to all primary nodes.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/time/">Valkey commands – TIME</seealso>
-    /// <returns>The server's current time per cluster node.</returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// var times = await clusterClient.TimeAsync();
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<Dictionary<string, DateTimeOffset>> TimeAsync();
-
-    /// <summary>
-    /// Returns the current server time in UTC format.
-    /// Use the <see cref="DateTimeOffset.ToLocalTime"/> method to get local time.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/time/">Valkey commands – TIME</seealso>
-    /// <param name="route">Specifies the routing configuration for the command. The client will route the
-    /// command to the nodes defined by <paramref name="route" />.</param>
+    /// <seealso href="https://valkey.io/commands/latency-history/">Valkey commands – LATENCY HISTORY</seealso>
+    /// <param name="event">The name of the event to get latency history for.</param>
     /// <returns>
-    /// A <see cref="ClusterValue{T}" /> containing the server's current time.<br />
-    /// When specifying a <paramref name="route" /> other than a single node, it returns a multi-value <see cref="ClusterValue{T}" />
-    /// with a <c>Dictionary&lt;string, DateTimeOffset&gt;</c> with each address as the key and its corresponding
-    /// server time. For a single node route it returns a <see cref="ClusterValue{T}" /> with a single value.
+    /// A <see cref="ClusterValue{T}"/> containing an array of <see cref="LatencyEntry"/> per node.
     /// </returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// var time = await clusterClient.TimeAsync(Route.AllPrimaries);
+    /// var history = await clusterClient.LatencyHistoryAsync("command");
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ClusterValue<DateTimeOffset>> TimeAsync(Route route);
+    Task<ClusterValue<LatencyEntry[]>> LatencyHistoryAsync(ValkeyValue @event);
 
     /// <summary>
-    /// Displays a piece of generative computer art of the specific Valkey version and its optional arguments.
+    /// Returns latency spike time series for a specific event.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/latency-history/">Valkey commands – LATENCY HISTORY</seealso>
+    /// <param name="event">The name of the event to get latency history for.</param>
+    /// <param name="route">Specifies the routing configuration for the command.</param>
+    /// <returns>
+    /// A <see cref="ClusterValue{T}"/> containing an array of <see cref="LatencyEntry"/>.
+    /// </returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var history = await clusterClient.LatencyHistoryAsync("command", Route.AllPrimaries);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ClusterValue<LatencyEntry[]>> LatencyHistoryAsync(ValkeyValue @event, Route route);
+
+    /// <summary>
+    /// Reports the latest latency events logged by the server.<br />
+    /// The command is routed to all primary nodes.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/latency-latest/">Valkey commands – LATENCY LATEST</seealso>
+    /// <returns>
+    /// A <see cref="ClusterValue{T}"/> containing an array of <see cref="LatencyEventInfo"/> per node.
+    /// </returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var latest = await clusterClient.LatencyLatestAsync();
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ClusterValue<LatencyEventInfo[]>> LatencyLatestAsync();
+
+    /// <summary>
+    /// Reports the latest latency events logged by the server.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/latency-latest/">Valkey commands – LATENCY LATEST</seealso>
+    /// <param name="route">Specifies the routing configuration for the command.</param>
+    /// <returns>
+    /// A <see cref="ClusterValue{T}"/> containing an array of <see cref="LatencyEventInfo"/>.
+    /// </returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var latest = await clusterClient.LatencyLatestAsync(Route.AllPrimaries);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ClusterValue<LatencyEventInfo[]>> LatencyLatestAsync(Route route);
+
+    /// <summary>
+    /// Resets the latency spike time series for all events.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/latency-reset/">Valkey commands – LATENCY RESET</seealso>
+    /// <param name="route">Specifies the routing configuration for the command. The client will route the
+    /// command to the nodes defined by <paramref name="route"/>.</param>
+    /// <returns>The number of event time series that were reset.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await clusterClient.LatencyResetAsync(Route.AllNodes);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<long> LatencyResetAsync(Route route);
+
+    /// <summary>
+    /// Resets the latency spike time series for the specified event.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/latency-reset/">Valkey commands – LATENCY RESET</seealso>
+    /// <param name="event">The event name to reset.</param>
+    /// <param name="route">Specifies the routing configuration for the command. The client will route the
+    /// command to the nodes defined by <paramref name="route"/>.</param>
+    /// <returns>The number of event time series that were reset.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await clusterClient.LatencyResetAsync("command", Route.AllPrimaries);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<long> LatencyResetAsync(ValkeyValue @event, Route route);
+
+    /// <summary>
+    /// Resets the latency spike time series for the specified events.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/latency-reset/">Valkey commands – LATENCY RESET</seealso>
+    /// <param name="events">The event names to reset. If empty, resets all events.</param>
+    /// <param name="route">Specifies the routing configuration for the command. The client will route the
+    /// command to the nodes defined by <paramref name="route"/>.</param>
+    /// <returns>The number of event time series that were reset.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await clusterClient.LatencyResetAsync(["command", "fast"], Route.AllPrimaries);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<long> LatencyResetAsync(IEnumerable<ValkeyValue> events, Route route);
+
+    /// <summary>
+    /// Displays a piece of generative computer art and the Valkey version.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/lolwut/">Valkey commands – LOLWUT</seealso>
     /// <param name="route">Specifies the routing configuration for the command. The client will route the
@@ -442,75 +700,6 @@ public partial interface IGlideClusterClient
     Task<ClusterValue<string>> LolwutAsync(Route route);
 
     /// <summary>
-    /// Reconfigures the server at runtime without the need to restart Valkey.
-    /// This overload allows setting multiple configuration parameters in a single call.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/config-set/">Valkey commands – CONFIG SET</seealso>
-    /// <param name="parameters">A dictionary of configuration parameter names and their new values.</param>
-    /// <param name="route">Specifies the routing configuration for the command. The client will route the
-    /// command to the nodes defined by <paramref name="route" />.</param>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// await clusterClient.ConfigSetAsync(new Dictionary&lt;ValkeyValue, ValkeyValue&gt;
-    /// {
-    ///     { "maxmemory", "100mb" },
-    ///     { "maxmemory-policy", "allkeys-lru" }
-    /// }, Route.AllPrimaries);
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task ConfigSetAsync(IDictionary<ValkeyValue, ValkeyValue> parameters, Route route);
-
-    /// <summary>
-    /// Gets the values of configuration parameters matching multiple patterns.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/config-get/">Valkey commands – CONFIG GET</seealso>
-    /// <param name="patterns">The patterns of config values to get.</param>
-    /// <param name="route">Specifies the routing configuration for the command.</param>
-    /// <returns>All matching configuration parameters.</returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// var config = await clusterClient.ConfigGetAsync(["max*", "bind*"], Route.AllPrimaries);
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<ClusterValue<KeyValuePair<string, string>[]>> ConfigGetAsync(IEnumerable<ValkeyValue> patterns, Route route);
-
-    /// <summary>
-    /// Deletes all the keys of all the existing databases across all routed nodes, with the specified flush mode.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/flushall/">Valkey commands – FLUSHALL</seealso>
-    /// <param name="mode">The flush mode. <see cref="FlushMode.Sync"/> waits for completion,
-    /// <see cref="FlushMode.Async"/> returns immediately while the flush continues in the background.</param>
-    /// <param name="route">Specifies the routing configuration for the command.</param>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// await clusterClient.FlushAllDatabasesAsync(FlushMode.Async, Route.AllPrimaries);
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task FlushAllDatabasesAsync(FlushMode mode, Route route);
-
-    /// <summary>
-    /// Deletes all the keys in the database across all routed nodes, with the specified flush mode.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/flushdb/">Valkey commands – FLUSHDB</seealso>
-    /// <param name="mode">The flush mode. <see cref="FlushMode.Sync"/> waits for completion,
-    /// <see cref="FlushMode.Async"/> returns immediately while the flush continues in the background.</param>
-    /// <param name="route">Specifies the routing configuration for the command.</param>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// await clusterClient.FlushDatabaseAsync(FlushMode.Async, Route.AllPrimaries);
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task FlushDatabaseAsync(FlushMode mode, Route route);
-
-    /// <summary>
     /// Displays a piece of generative computer art and the Valkey version.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/lolwut/">Valkey commands – LOLWUT</seealso>
@@ -528,29 +717,6 @@ public partial interface IGlideClusterClient
     /// </example>
     /// </remarks>
     Task<ClusterValue<string>> LolwutAsync(LolwutOptions options, Route route);
-
-    /// <summary>
-    /// Blocks the current client until all the previous write commands are successfully transferred and acknowledged
-    /// by at least the specified number of local and replica AOF-synced nodes.
-    /// If the timeout is reached, the command returns even if the specified number of acknowledgments were not yet reached.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/waitaof/">Valkey commands – WAITAOF</seealso>
-    /// <note>Since Valkey 7.2.0.</note>
-    /// <param name="localAof">Whether to wait for the local node to acknowledge AOF sync.</param>
-    /// <param name="numreplicas">The number of replica nodes to wait for AOF sync.</param>
-    /// <param name="timeout">The timeout to wait.</param>
-    /// <param name="route">Specifies the routing configuration for the command. Typically, you should route
-    /// to the primary that handled the write operation you want to wait for.</param>
-    /// <returns>An array of two longs: the number of local and replica nodes that acknowledged the write commands.</returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// var result = await clusterClient.WaitAofAsync(true, 1, TimeSpan.FromSeconds(1), Route.AllPrimaries);
-    /// // result[0] = number of local nodes, result[1] = number of replica nodes
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<long[]> WaitAofAsync(bool localAof, long numreplicas, TimeSpan timeout, Route route);
 
     /// <summary>
     /// Returns a report about memory problems detected by the server.<br />
@@ -680,243 +846,77 @@ public partial interface IGlideClusterClient
     Task<ClusterValue<MemoryStats>> MemoryStatsAsync(Route route);
 
     /// <summary>
-    /// Returns latency spike time series for a specific event.<br />
-    /// The command is routed to all primary nodes.
+    /// Synchronously saves the dataset to disk.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/latency-history/">Valkey commands – LATENCY HISTORY</seealso>
-    /// <param name="event">The name of the event to get latency history for.</param>
-    /// <returns>
-    /// A <see cref="ClusterValue{T}"/> containing an array of <see cref="LatencyEntry"/> per node.
-    /// </returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// var history = await clusterClient.LatencyHistoryAsync("command");
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<ClusterValue<LatencyEntry[]>> LatencyHistoryAsync(ValkeyValue @event);
-
-    /// <summary>
-    /// Returns latency spike time series for a specific event.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/latency-history/">Valkey commands – LATENCY HISTORY</seealso>
-    /// <param name="event">The name of the event to get latency history for.</param>
+    /// <seealso href="https://valkey.io/commands/save/">Valkey commands – SAVE</seealso>
     /// <param name="route">Specifies the routing configuration for the command.</param>
-    /// <returns>
-    /// A <see cref="ClusterValue{T}"/> containing an array of <see cref="LatencyEntry"/>.
-    /// </returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// var history = await clusterClient.LatencyHistoryAsync("command", Route.AllPrimaries);
+    /// await clusterClient.SaveAsync(Route.AllPrimaries);
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ClusterValue<LatencyEntry[]>> LatencyHistoryAsync(ValkeyValue @event, Route route);
+    Task SaveAsync(Route route);
 
     /// <summary>
-    /// Reports the latest latency events logged by the server.<br />
-    /// The command is routed to all primary nodes.
+    /// Returns the current server time in UTC format.
+    /// Use the <see cref="DateTimeOffset.ToLocalTime"/> method to get local time.<br />
+    /// The command is routed to a random node.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/latency-latest/">Valkey commands – LATENCY LATEST</seealso>
-    /// <returns>
-    /// A <see cref="ClusterValue{T}"/> containing an array of <see cref="LatencyEventInfo"/> per node.
-    /// </returns>
+    /// <seealso href="https://valkey.io/commands/time/">Valkey commands – TIME</seealso>
+    /// <returns>The server's current time per cluster node.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// var latest = await clusterClient.LatencyLatestAsync();
+    /// var times = await clusterClient.TimeAsync();
     /// </code>
     /// </example>
     /// </remarks>
-    Task<ClusterValue<LatencyEventInfo[]>> LatencyLatestAsync();
+    Task<Dictionary<string, DateTimeOffset>> TimeAsync();
 
     /// <summary>
-    /// Reports the latest latency events logged by the server.
+    /// Returns the current server time in UTC format.
+    /// Use the <see cref="DateTimeOffset.ToLocalTime"/> method to get local time.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/latency-latest/">Valkey commands – LATENCY LATEST</seealso>
-    /// <param name="route">Specifies the routing configuration for the command.</param>
-    /// <returns>
-    /// A <see cref="ClusterValue{T}"/> containing an array of <see cref="LatencyEventInfo"/>.
-    /// </returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// var latest = await clusterClient.LatencyLatestAsync(Route.AllPrimaries);
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<ClusterValue<LatencyEventInfo[]>> LatencyLatestAsync(Route route);
-
-    /// <summary>
-    /// Resets the latency spike time series for all events.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/latency-reset/">Valkey commands – LATENCY RESET</seealso>
+    /// <seealso href="https://valkey.io/commands/time/">Valkey commands – TIME</seealso>
     /// <param name="route">Specifies the routing configuration for the command. The client will route the
-    /// command to the nodes defined by <paramref name="route"/>.</param>
-    /// <returns>The number of event time series that were reset.</returns>
+    /// command to the nodes defined by <paramref name="route" />.</param>
+    /// <returns>
+    /// A <see cref="ClusterValue{T}" /> containing the server's current time.<br />
+    /// When specifying a <paramref name="route" /> other than a single node, it returns a multi-value <see cref="ClusterValue{T}" />
+    /// with a <c>Dictionary&lt;string, DateTimeOffset&gt;</c> with each address as the key and its corresponding
+    /// server time. For a single node route it returns a <see cref="ClusterValue{T}" /> with a single value.
+    /// </returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// await clusterClient.LatencyResetAsync(Route.AllNodes);
+    /// var time = await clusterClient.TimeAsync(Route.AllPrimaries);
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> LatencyResetAsync(Route route);
+    Task<ClusterValue<DateTimeOffset>> TimeAsync(Route route);
 
     /// <summary>
-    /// Resets the latency spike time series for the specified event.
+    /// Blocks the current client until all the previous write commands are successfully transferred and acknowledged
+    /// by at least the specified number of local and replica AOF-synced nodes.
+    /// If the timeout is reached, the command returns even if the specified number of acknowledgments were not yet reached.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/latency-reset/">Valkey commands – LATENCY RESET</seealso>
-    /// <param name="event">The event name to reset.</param>
-    /// <param name="route">Specifies the routing configuration for the command. The client will route the
-    /// command to the nodes defined by <paramref name="route"/>.</param>
-    /// <returns>The number of event time series that were reset.</returns>
+    /// <seealso href="https://valkey.io/commands/waitaof/">Valkey commands – WAITAOF</seealso>
+    /// <note>Since Valkey 7.2.0.</note>
+    /// <param name="localAof">Whether to wait for the local node to acknowledge AOF sync.</param>
+    /// <param name="numreplicas">The number of replica nodes to wait for AOF sync.</param>
+    /// <param name="timeout">The timeout to wait.</param>
+    /// <param name="route">Specifies the routing configuration for the command. Typically, you should route
+    /// to the primary that handled the write operation you want to wait for.</param>
+    /// <returns>An array of two longs: the number of local and replica nodes that acknowledged the write commands.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// await clusterClient.LatencyResetAsync("command", Route.AllPrimaries);
+    /// var result = await clusterClient.WaitAofAsync(true, 1, TimeSpan.FromSeconds(1), Route.AllPrimaries);
+    /// // result[0] = number of local nodes, result[1] = number of replica nodes
     /// </code>
     /// </example>
     /// </remarks>
-    Task<long> LatencyResetAsync(ValkeyValue @event, Route route);
-
-    /// <summary>
-    /// Resets the latency spike time series for the specified events.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/latency-reset/">Valkey commands – LATENCY RESET</seealso>
-    /// <param name="events">The event names to reset. If empty, resets all events.</param>
-    /// <param name="route">Specifies the routing configuration for the command. The client will route the
-    /// command to the nodes defined by <paramref name="route"/>.</param>
-    /// <returns>The number of event time series that were reset.</returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// await clusterClient.LatencyResetAsync(["command", "fast"], Route.AllPrimaries);
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<long> LatencyResetAsync(IEnumerable<ValkeyValue> events, Route route);
-
-    /// <summary>
-    /// Asynchronously saves the dataset to disk in the background.<br />
-    /// The command will be routed to all primary nodes.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/bgsave/">Valkey commands – BGSAVE</seealso>
-    /// <returns>A <see cref="ClusterValue{T}" /> containing status strings.</returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// var response = await clusterClient.BackgroundSaveAsync();
-    /// foreach (var value in response.MultiValue.Values)
-    /// {
-    ///     Console.WriteLine(value); // "Background saving started"
-    /// }
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<ClusterValue<string>> BackgroundSaveAsync();
-
-    /// <summary>
-    /// Asynchronously saves the dataset to disk in the background.<br />
-    /// The command will be routed to the nodes defined by <paramref name="route" />.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/bgsave/">Valkey commands – BGSAVE</seealso>
-    /// <param name="route">Specifies the routing configuration for the command.</param>
-    /// <returns>A <see cref="ClusterValue{T}" /> containing status strings.</returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// var response = await clusterClient.BackgroundSaveAsync(Route.AllPrimaries);
-    /// foreach (var value in response.MultiValue.Values)
-    /// {
-    ///     Console.WriteLine(value); // "Background saving started"
-    /// }
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<ClusterValue<string>> BackgroundSaveAsync(Route route);
-
-    /// <summary>
-    /// Schedules a background save of the database.<br />
-    /// The command will be routed to all primary nodes.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/bgsave/">Valkey commands – BGSAVE</seealso>
-    /// <returns>A <see cref="ClusterValue{T}" /> containing status strings.</returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// var response = await clusterClient.BackgroundSaveScheduleAsync();
-    /// foreach (var value in response.MultiValue.Values)
-    /// {
-    ///     Console.WriteLine(value); // "Background saving scheduled"
-    /// }
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<ClusterValue<string>> BackgroundSaveScheduleAsync();
-
-    /// <summary>
-    /// Schedules a background save of the database.<br />
-    /// The command will be routed to the nodes defined by <paramref name="route" />.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/bgsave/">Valkey commands – BGSAVE</seealso>
-    /// <param name="route">Specifies the routing configuration for the command.</param>
-    /// <returns>A <see cref="ClusterValue{T}" /> containing status strings.</returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// var response = await clusterClient.BackgroundSaveScheduleAsync(Route.AllPrimaries);
-    /// foreach (var value in response.MultiValue.Values)
-    /// {
-    ///     Console.WriteLine(value); // "Background saving scheduled"
-    /// }
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<ClusterValue<string>> BackgroundSaveScheduleAsync(Route route);
-
-    /// <summary>
-    /// Aborts all in-progress and scheduled background saves.<br />
-    /// The command will be routed to all primary nodes.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/bgsave/">Valkey commands – BGSAVE</seealso>
-    /// <note>Since Valkey 8.1.</note>
-    /// <returns>A <see cref="ClusterValue{T}" /> containing status strings.</returns>
-    /// <exception cref="Errors.RequestException">Thrown if no background save is currently in progress or scheduled.</exception>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// var response = await clusterClient.BackgroundSaveCancelAsync();
-    /// foreach (var value in response.MultiValue.Values)
-    /// {
-    ///     Console.WriteLine(value); // "Background saving cancelled"
-    /// }
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<ClusterValue<string>> BackgroundSaveCancelAsync();
-
-    /// <summary>
-    /// Aborts all in-progress and scheduled background saves.<br />
-    /// The command will be routed to the nodes defined by <paramref name="route" />.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/bgsave/">Valkey commands – BGSAVE</seealso>
-    /// <note>Since Valkey 8.1.</note>
-    /// <param name="route">Specifies the routing configuration for the command.</param>
-    /// <returns>A <see cref="ClusterValue{T}" /> containing status strings.</returns>
-    /// <exception cref="Errors.RequestException">Thrown if no background save is currently in progress or scheduled.</exception>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// var response = await clusterClient.BackgroundSaveCancelAsync(Route.AllPrimaries);
-    /// foreach (var value in response.MultiValue.Values)
-    /// {
-    ///     Console.WriteLine(value); // "Background saving cancelled"
-    /// }
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<ClusterValue<string>> BackgroundSaveCancelAsync(Route route);
+    Task<long[]> WaitAofAsync(bool localAof, long numreplicas, TimeSpan timeout, Route route);
 }

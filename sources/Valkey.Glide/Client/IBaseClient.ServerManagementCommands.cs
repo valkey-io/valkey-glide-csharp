@@ -15,6 +15,22 @@ namespace Valkey.Glide;
 public partial interface IBaseClient
 {
     /// <summary>
+    /// Gets the values of configuration parameters matching the specified patterns.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/config-get/">Valkey commands – CONFIG GET</seealso>
+    /// <param name="patterns">The patterns to match against configuration parameter names.</param>
+    /// <returns>An array of key-value pairs for all matching configuration parameters.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// ValkeyValue[] patterns = ["max*", "bind*"];
+    /// var config = await client.ConfigGetAsync(patterns);  // Patterns matching max* or bind*
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<KeyValuePair<string, string>[]> ConfigGetAsync(IEnumerable<ValkeyValue> patterns);
+
+    /// <summary>
     /// Sets multiple server configuration parameters at runtime.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/config-set/">Valkey commands – CONFIG SET</seealso>
@@ -32,22 +48,6 @@ public partial interface IBaseClient
     /// </example>
     /// </remarks>
     Task ConfigSetAsync(IDictionary<ValkeyValue, ValkeyValue> parameters);
-
-    /// <summary>
-    /// Gets the values of configuration parameters matching the specified patterns.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/config-get/">Valkey commands – CONFIG GET</seealso>
-    /// <param name="patterns">The patterns to match against configuration parameter names.</param>
-    /// <returns>An array of key-value pairs for all matching configuration parameters.</returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// ValkeyValue[] patterns = ["max*", "bind*"];
-    /// var config = await client.ConfigGetAsync(patterns);  // Patterns matching max* or bind*
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<KeyValuePair<string, string>[]> ConfigGetAsync(IEnumerable<ValkeyValue> patterns);
 
     /// <summary>
     /// Deletes all keys from all databases.
@@ -78,36 +78,6 @@ public partial interface IBaseClient
     /// </example>
     /// </remarks>
     Task FlushDatabaseAsync(FlushMode mode);
-
-    /// <summary>
-    /// Synchronously saves the dataset to disk.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/save/">Valkey commands – SAVE</seealso>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// await client.SaveAsync();
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task SaveAsync();
-
-    /// <summary>
-    /// Displays generative computer art and the Valkey version.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/lolwut/">Valkey commands – LOLWUT</seealso>
-    /// <param name="options">The LOLWUT options specifying version and/or parameters.</param>
-    /// <returns>A string containing the Valkey version and generative art.</returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// var options = new LolwutOptions { Version = 6, Parameters = [40, 20] };
-    /// var art = await client.LolwutAsync(options);
-    /// Console.WriteLine(art);  // Print art to console
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<string> LolwutAsync(LolwutOptions options);
 
     /// <summary>
     /// Resets the latency spike time series for all events.
@@ -152,4 +122,34 @@ public partial interface IBaseClient
     /// </example>
     /// </remarks>
     Task<long> LatencyResetAsync(IEnumerable<ValkeyValue> events);
+
+    /// <summary>
+    /// Displays generative computer art and the Valkey version.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/lolwut/">Valkey commands – LOLWUT</seealso>
+    /// <param name="options">The LOLWUT options specifying version and/or parameters.</param>
+    /// <returns>A string containing the Valkey version and generative art.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var options = new LolwutOptions { Version = 6, Parameters = [40, 20] };
+    /// var art = await client.LolwutAsync(options);
+    /// Console.WriteLine(art);  // Print art to console
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<string> LolwutAsync(LolwutOptions options);
+
+    /// <summary>
+    /// Synchronously saves the dataset to disk.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/save/">Valkey commands – SAVE</seealso>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.SaveAsync();
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task SaveAsync();
 }
