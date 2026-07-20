@@ -6,6 +6,8 @@ namespace Valkey.Glide.Internals;
 
 internal partial class Request
 {
+    #region Command Builders
+
     /// <summary>
     /// Creates a command to add one element to a HyperLogLog data structure.
     /// </summary>
@@ -13,7 +15,7 @@ internal partial class Request
     /// <param name="element">The element to add.</param>
     /// <returns>A command that adds the element to the HyperLogLog and returns true if altered.</returns>
     public static Cmd<bool, bool> HyperLogLogAddAsync(ValkeyKey key, ValkeyValue element)
-        => Simple<bool>(RequestType.PfAdd, [key.ToGlideString(), element.ToGlideString()]);
+        => Simple<bool>(RequestType.PfAdd, [key, element]);
 
     /// <summary>
     /// Creates a command to add multiple elements to a HyperLogLog data structure.
@@ -24,10 +26,10 @@ internal partial class Request
     public static Cmd<bool, bool> HyperLogLogAddAsync(ValkeyKey key, ValkeyValue[] elements)
     {
         GlideString[] args = new GlideString[elements.Length + 1];
-        args[0] = key.ToGlideString();
+        args[0] = key;
         for (int i = 0; i < elements.Length; i++)
         {
-            args[i + 1] = elements[i].ToGlideString();
+            args[i + 1] = elements[i];
         }
         return Simple<bool>(RequestType.PfAdd, args);
     }
@@ -38,7 +40,7 @@ internal partial class Request
     /// <param name="key">The key of the HyperLogLog.</param>
     /// <returns>A command that returns the approximated cardinality of the HyperLogLog.</returns>
     public static Cmd<long, long> HyperLogLogLengthAsync(ValkeyKey key)
-        => Simple<long>(RequestType.PfCount, [key.ToGlideString()]);
+        => Simple<long>(RequestType.PfCount, [key]);
 
     /// <summary>
     /// Creates a command to get the cardinality of the union of multiple HyperLogLog data structures.
@@ -67,11 +69,13 @@ internal partial class Request
     public static Cmd<string, ValkeyValue> HyperLogLogMergeAsync(ValkeyKey destination, ValkeyKey[] sourceKeys)
     {
         GlideString[] args = new GlideString[sourceKeys.Length + 1];
-        args[0] = destination.ToGlideString();
+        args[0] = destination;
         for (int i = 0; i < sourceKeys.Length; i++)
         {
-            args[i + 1] = sourceKeys[i].ToGlideString();
+            args[i + 1] = sourceKeys[i];
         }
         return Ok(RequestType.PfMerge, args);
     }
+
+    #endregion
 }
