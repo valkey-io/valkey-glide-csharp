@@ -4,8 +4,20 @@ using System.Collections.Concurrent;
 
 namespace Valkey.Glide.Internals;
 
-internal class MessageContainer(BaseClient client)
+internal class MessageContainer(BaseClient client) : IDisposable
 {
+    #region Private Fields
+
+    private readonly List<Message> _messages = [];
+    private readonly ConcurrentQueue<Message> _availableMessages = new();
+
+#pragma warning disable IDE0052
+    private readonly BaseClient _client = client;
+#pragma warning restore IDE0052
+
+    #endregion
+    #region Internal Methods
+
     internal Message GetMessage(int index) => _messages[index];
 
     internal Message GetMessageForCall()
@@ -15,24 +27,7 @@ internal class MessageContainer(BaseClient client)
         return message;
     }
 
-    private Message GetFreeMessage()
-    {
-        if (!_availableMessages.TryDequeue(out Message? message))
-        {
-            lock (_messages)
-            {
-                int index = _messages.Count;
-                message = new Message(index, this);
-                _messages.Add(message);
-            }
-        }
-        return message;
-    }
-
-    public void ReturnFreeMessage(Message message)
-        => _availableMessages.Enqueue((Message)(object)message);
-
-    internal void DisposeWithError(Exception? error)
+    public void Dispose()
     {
         lock (_messages)
         {
@@ -48,26 +43,32 @@ internal class MessageContainer(BaseClient client)
             {
                 try
                 {
-                    message.SetException(new TaskCanceledException($"Client {_client} closed", error));
+                    message.SetException(new TaskCanceledException($"Client {_client} closed"));
                 }
                 catch (Exception) { }
             }
-            _messages.Clear();
         }
-        _availableMessages.Clear();
     }
 
-    /// This list allows us random-access to the message in each index,
-    /// which means that once we receive a callback with an index, we can
-    /// find the message to resolve in constant time.
-    private readonly List<Message> _messages = [];
+    internal void ReturnFreeMessage(Message message)
+        => _availableMessages.Enqueue((Message)(object)message);
 
-    /// This queue contains the messages that were created and are currently unused by any task,
-    /// so they can be reused by new tasks instead of allocating new messages.
-    private readonly ConcurrentQueue<Message> _availableMessages = new();
+    #endregion
+    #region Private Methods
 
-    // Holding the client prevents it from being GC'd until all operations complete.
-#pragma warning disable IDE0052 // Remove unread private members
-    private readonly BaseClient _client = client;
-#pragma warning restore IDE0052 // Remove unread private members
+    private Message GetFreeMessage()
+    {
+        if (!_availableMessages.TryDequeue(out Message? message))
+        {
+            lock (_messages)
+            {
+                int index = _messages.Count;
+                message = new Message(index, this);
+                _messages.Add(message);
+            }
+        }
+        return message;
+    }
+
+    #endregion
 }
