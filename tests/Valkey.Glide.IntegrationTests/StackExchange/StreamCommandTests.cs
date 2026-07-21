@@ -46,7 +46,6 @@ public class StreamCommandTests(TestConfiguration config)
     }
 
     #endregion
-
     #region StreamRangeAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -78,7 +77,6 @@ public class StreamCommandTests(TestConfiguration config)
     }
 
     #endregion
-
     #region StreamReadAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -94,7 +92,6 @@ public class StreamCommandTests(TestConfiguration config)
     }
 
     #endregion
-
     #region StreamGroupAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -121,27 +118,111 @@ public class StreamCommandTests(TestConfiguration config)
     }
 
     #endregion
-
     #region StreamReadGroupAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StreamReadGroupAsync_NoGroup(IDatabaseAsync db)
+    {
+        var key = $"ser-xreadgroup-nogroup-{Guid.NewGuid()}";
+        _ = await db.StreamAddAsync(key, "field1", "value1");
+
+        _ = await Assert.ThrowsAsync<Errors.RequestException>(
+            () => db.StreamReadGroupAsync(key, "nonexistent", "consumer1", ">"));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StreamReadGroupAsync_WrongKeyType(IDatabaseAsync db)
+    {
+        var key = $"ser-xreadgroup-wrongtype-{Guid.NewGuid()}";
+        _ = await db.StringSetAsync(key, "not_a_stream");
+
+        _ = await Assert.ThrowsAsync<Errors.RequestException>(
+            () => db.StreamReadGroupAsync(key, "mygroup", "consumer1", ">"));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StreamReadGroupAsync_SingleStream(IDatabaseAsync db)
+    {
+        var key = $"ser-xreadgroup-single-{Guid.NewGuid()}";
+        _ = await db.StreamAddAsync(key, [new NameValueEntry("a1", "b1"), new("a2", "b2")]);
+        _ = await db.StreamAddAsync(key, [new NameValueEntry("c1", "d1"), new("c2", "d2"), new("c3", "d3")]);
+        _ = await db.StreamCreateConsumerGroupAsync(key, "mygroup", "0");
+
+        var entries = await db.StreamReadGroupAsync(key, "mygroup", "consumer1", ">");
+        Assert.Equal(2, entries.Length);
+        Assert.Equivalent(new NameValueEntry[] { new("a1", "b1"), new("a2", "b2") }, entries[0].Values);
+        Assert.Equivalent(new NameValueEntry[] { new("c1", "d1"), new("c2", "d2"), new("c3", "d3") }, entries[1].Values);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StreamReadGroupAsync_MultiStream(IDatabaseAsync db)
+    {
+        var key1 = $"ser-xreadgroup-ms1-{Guid.NewGuid()}";
+        var key2 = $"ser-xreadgroup-ms2-{Guid.NewGuid()}";
+        _ = await db.StreamAddAsync(key1, [new NameValueEntry("f1", "v1"), new("f2", "v2")]);
+        _ = await db.StreamAddAsync(key2, [new NameValueEntry("f3", "v3"), new("f4", "v4")]);
+        _ = await db.StreamCreateConsumerGroupAsync(key1, "mygroup", "0");
+        _ = await db.StreamCreateConsumerGroupAsync(key2, "mygroup", "0");
+
+        var streams = await db.StreamReadGroupAsync([new StreamPosition(key1, ">"), new StreamPosition(key2, ">")], "mygroup", "consumer1");
+        Assert.Equal(2, streams.Length);
+
+        var stream0 = streams[0];
+        Assert.Equal(stream0.Key, key1);
+        Assert.Equivalent(new NameValueEntry[] { new("f1", "v1"), new("f2", "v2") }, Assert.Single(stream0.Entries).Values);
+
+        var stream1 = streams[1];
+        Assert.Equal(stream1.Key, key2);
+        Assert.Equivalent(new NameValueEntry[] { new("f3", "v3"), new("f4", "v4") }, Assert.Single(stream1.Entries).Values);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StreamReadGroupAsync_WithCount(IDatabaseAsync db)
+    {
+        var key = $"ser-xreadgroup-count-{Guid.NewGuid()}";
+        _ = await db.StreamAddAsync(key, "field1", "value1");
+        _ = await db.StreamAddAsync(key, "field2", "value2");
+        _ = await db.StreamAddAsync(key, "field3", "value3");
+        _ = await db.StreamCreateConsumerGroupAsync(key, "mygroup", "0");
+
+        var entries = await db.StreamReadGroupAsync(key, "mygroup", "consumer1", ">", count: 2);
+        Assert.Equal(2, entries.Length);
+    }
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task StreamReadGroupAsync_WithNoAck(IDatabaseAsync db)
     {
-        string key = $"ser-xreadgroup-{Guid.NewGuid()}";
+        var key = $"ser-xreadgroup-noack-{Guid.NewGuid()}";
         _ = await db.StreamAddAsync(key, "field", "value");
         _ = await db.StreamCreateConsumerGroupAsync(key, "mygroup", "0");
 
-        var entries = await db.StreamReadGroupAsync(key, "mygroup", "consumer1", noAck: true);
-        _ = Assert.Single(entries);
+        _ = await db.StreamReadGroupAsync(key, "mygroup", "consumer1", ">", noAck: true);
 
-        // With noAck, there should be no pending messages
-        StreamPendingInfo pending = await db.StreamPendingAsync(key, "mygroup");
+        var pending = await db.StreamPendingAsync(key, "mygroup");
         Assert.Equal(0, pending.PendingMessageCount);
     }
 
-    #endregion
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StreamReadGroupAsync_WithPosition(IDatabaseAsync db)
+    {
+        var key = $"ser-xreadgroup-pos-{Guid.NewGuid()}";
+        _ = await db.StreamAddAsync(key, "field1", "value1");
+        var id2 = await db.StreamAddAsync(key, "field2", "value2");
+        _ = await db.StreamAddAsync(key, "field3", "value3");
+        _ = await db.StreamCreateConsumerGroupAsync(key, "mygroup", id2);
 
+        var entries = await db.StreamReadGroupAsync(key, "mygroup", "consumer1", ">");
+        Assert.Equivalent(new NameValueEntry[] { new("field3", "value3") }, Assert.Single(entries).Values);
+    }
+
+    #endregion
     #region StreamClaimIdsOnlyAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -159,7 +240,6 @@ public class StreamCommandTests(TestConfiguration config)
     }
 
     #endregion
-
     #region StreamAutoClaimIdsOnlyAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -176,7 +256,6 @@ public class StreamCommandTests(TestConfiguration config)
     }
 
     #endregion
-
     #region StreamTrimAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -208,7 +287,6 @@ public class StreamCommandTests(TestConfiguration config)
     }
 
     #endregion
-
     #region StreamInfoAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -223,7 +301,6 @@ public class StreamCommandTests(TestConfiguration config)
     }
 
     #endregion
-
     #region StreamPendingMessagesAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -257,7 +334,6 @@ public class StreamCommandTests(TestConfiguration config)
     }
 
     #endregion
-
     #region StreamDeleteAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -274,7 +350,6 @@ public class StreamCommandTests(TestConfiguration config)
     }
 
     #endregion
-
     #region StreamAcknowledgeAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]
