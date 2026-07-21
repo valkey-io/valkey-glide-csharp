@@ -36,7 +36,7 @@ public abstract partial class BaseClient : IBaseClient
             // Clean up PubSub resources
             CleanupPubSubResources();
 
-            MessageContainer.Dispose();
+            MessageContainer.DisposeWithError();
             CloseClientFfi(ClientPointer);
             ClientPointer = IntPtr.Zero;
         }

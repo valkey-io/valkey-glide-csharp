@@ -4,7 +4,7 @@ using System.Collections.Concurrent;
 
 namespace Valkey.Glide.Internals;
 
-internal class MessageContainer(BaseClient client) : IDisposable
+internal class MessageContainer(BaseClient client)
 {
     #region Private Fields
 
@@ -16,13 +16,12 @@ internal class MessageContainer(BaseClient client) : IDisposable
 #pragma warning restore IDE0052
 
     #endregion
-    #region Public Methods
+    #region Internal Methods
 
-    public void Dispose()
+    internal void DisposeWithError()
     {
         lock (_messages)
         {
-            // Create a snapshot of incomplete messages to avoid collection modification during enumeration
             List<Message> incompleteMessages = [.. _messages.Where(message => !message.IsCompleted)];
 
             if (incompleteMessages.Count > 0)
@@ -40,9 +39,6 @@ internal class MessageContainer(BaseClient client) : IDisposable
             }
         }
     }
-
-    #endregion
-    #region Internal Methods
 
     internal Message GetMessage(int index) => _messages[index];
 
