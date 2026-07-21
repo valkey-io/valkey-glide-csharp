@@ -10,10 +10,7 @@ internal class MessageContainer(BaseClient client)
 
     private readonly List<Message> _messages = [];
     private readonly ConcurrentQueue<Message> _availableMessages = new();
-
-#pragma warning disable IDE0052
     private readonly BaseClient _client = client;
-#pragma warning restore IDE0052
 
     #endregion
     #region Internal Methods
