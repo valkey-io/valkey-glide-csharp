@@ -1147,6 +1147,15 @@ internal partial class BatchTestUtils
             testData.Add(new(ValkeyValue.Ok, "SelectAsync(0)"));
         }
 
+        _ = batch.ClientPauseAsync(TimeSpan.FromMilliseconds(100));
+        testData.Add(new(ValkeyValue.Ok, "ClientPauseAsync(100ms)"));
+
+        _ = batch.ClientPauseWriteAsync(TimeSpan.FromMilliseconds(100));
+        testData.Add(new(ValkeyValue.Ok, "ClientPauseWriteAsync(100ms)"));
+
+        _ = batch.ClientUnpauseAsync();
+        testData.Add(new(ValkeyValue.Ok, "ClientUnpauseAsync()"));
+
         return testData;
     }
 

@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Net;
+
 using Valkey.Glide.TestUtils;
 
 namespace Valkey.Glide.IntegrationTests.StackExchange;
@@ -80,6 +82,75 @@ public class ServerManagementTests(ServerManagementFixture fixture) : IClassFixt
     [Fact]
     public async Task IServer_FlushAllDatabasesAsync_Succeeds()
         => await fixture.Server.FlushAllDatabasesAsync();
+
+    [Fact]
+    public async Task IServer_SaveAsync_BackgroundSave_Succeeds()
+    {
+        await WaitForSaveNotInProgressAsync();
+        await fixture.Server.SaveAsync(SaveType.BackgroundSave);
+    }
+
+    [Fact]
+    public async Task IServer_SaveAsync_BackgroundRewriteAppendOnlyFile_Succeeds()
+    {
+        await WaitForSaveNotInProgressAsync();
+        await fixture.Server.SaveAsync(SaveType.BackgroundRewriteAppendOnlyFile);
+    }
+
+    [Fact]
+    public async Task IServer_SaveAsync_ForegroundSave_ThrowsNotSupported()
+#pragma warning disable CS0618 // SaveType.ForegroundSave is obsolete
+        => _ = await Assert.ThrowsAsync<NotSupportedException>(
+            () => fixture.Server.SaveAsync(SaveType.ForegroundSave));
+#pragma warning restore CS0618
+
+    #endregion
+    #region Helpers
+
+    private Task WaitForSaveNotInProgressAsync()
+        => Polling.WaitForAsync(async () =>
+        {
+            string? info = await fixture.Server.InfoRawAsync("persistence");
+            return info is not null
+                && !info.Contains("rdb_bgsave_in_progress:1")
+                && !info.Contains("aof_rewrite_in_progress:1");
+        }, "Timed out waiting for save to complete");
+
+    #endregion
+    #region ReplicaOf Tests
+
+    [Fact]
+    public async Task IServer_ReplicaOfAsync_AndReplicaOfNoOneAsync()
+    {
+        // Start primary and secondary servers with no replicas.
+        using var primary = new StandaloneServer(replicaCount: 0);
+        using var secondary = new StandaloneServer(replicaCount: 0);
+
+        // Connect to secondary server.
+        var config = new ConfigurationOptions();
+        config.EndPoints.Add(secondary.Address.Host, secondary.Address.Port);
+
+        using var conn = await ConnectionMultiplexer.ConnectAsync(config);
+        var server = conn.GetServers().First();
+        await WaitForRoleAsync(server, "master");
+
+        // Verify that secondary server becomes a replica of the primary server.
+        var primaryEndpoint = new DnsEndPoint(primary.Address.Host, primary.Address.Port);
+
+        await server.ReplicaOfAsync(primaryEndpoint);
+        await WaitForRoleAsync(server, "slave");
+
+        // Verify that secondary server becomes a primary server.
+        await server.ReplicaOfAsync(null);
+        await WaitForRoleAsync(server, "master");
+    }
+
+    private static Task WaitForRoleAsync(IServer server, string expectedRole)
+        => Polling.WaitForAsync(async () =>
+        {
+            var info = await server.InfoRawAsync("replication");
+            return info?.Contains($"role:{expectedRole}") == true;
+        }, $"Timed out waiting for role to become '{expectedRole}'");
 
     #endregion
 }

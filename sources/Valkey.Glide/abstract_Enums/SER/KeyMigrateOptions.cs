@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 
 namespace Valkey.Glide;
 
 /// <summary>
-/// Additional options for the MIGRATE command.
+/// Additional options for the <see cref="IDatabaseAsync.KeyMigrateAsync"/> command.
 /// </summary>
 [Flags]
-public enum MigrateOptions
+public enum KeyMigrateOptions
 {
     /// <summary>
     /// No options specified.

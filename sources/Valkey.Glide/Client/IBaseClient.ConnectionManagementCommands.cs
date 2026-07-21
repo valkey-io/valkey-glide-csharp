@@ -87,4 +87,74 @@ public partial interface IBaseClient : IConnectionManagementBaseCommands
     /// </example>
     /// </remarks>
     Task<ValkeyValue> PingAsync(ValkeyValue message);
+
+    /// <summary>
+    /// Suspends all clients for the specified timeout.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/client-pause/">Valkey commands - CLIENT PAUSE</seealso>
+    /// <param name="timeout">The time to pause clients.</param>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.ClientPauseAsync(TimeSpan.FromSeconds(1));
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task ClientPauseAsync(TimeSpan timeout);
+
+    /// <summary>
+    /// Suspends write commands for all clients for the specified timeout.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/client-pause/">Valkey commands - CLIENT PAUSE</seealso>
+    /// <param name="timeout">The time to pause clients.</param>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.ClientPauseWriteAsync(TimeSpan.FromSeconds(1));
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task ClientPauseWriteAsync(TimeSpan timeout);
+
+    /// <summary>
+    /// Resumes processing commands on all clients.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/client-unpause/">Valkey commands - CLIENT UNPAUSE</seealso>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.ClientUnpauseAsync();
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task ClientUnpauseAsync();
+
+    /// <summary>
+    /// Returns information about the current client connection's use of the
+    /// server-assisted client-side caching feature.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/client-trackinginfo/">Valkey commands – CLIENT TRACKINGINFO</seealso>
+    /// <returns>The tracking state for this connection.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var info = await client.ClientTrackingInfoAsync();
+    /// Console.WriteLine($"Flags: {string.Join(", ", info.Flags)}");  // "Flags: off"
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<ClientTrackingInfo> ClientTrackingInfoAsync();
+
+    /// <summary>
+    /// Resets the connection state.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/reset/">Valkey commands – RESET</seealso>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.ResetAsync();
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task ResetAsync();
 }

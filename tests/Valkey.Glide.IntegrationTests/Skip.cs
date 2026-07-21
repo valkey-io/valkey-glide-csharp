@@ -7,11 +7,12 @@ namespace Valkey.Glide.IntegrationTests;
 /// <summary>
 /// Integration test utilities for skipping test cases based on Valkey server version.
 /// </summary>
-internal static class SkipUtils
+internal static class Skip
 {
     #region Version Checks
 
     private static readonly Version Valkey7_0 = new("7.0.0");
+    private static readonly Version Valkey8_1 = new("8.1.0");
     private static readonly Version Valkey9_0 = new("9.0.0");
 
     /// <summary>
@@ -37,6 +38,14 @@ internal static class SkipUtils
         => Assert.SkipWhen(
             TestConfiguration.SERVER_VERSION < Valkey7_0,
             "Set intersection cardinality commands require Valkey 7.0+");
+
+    /// <summary>
+    /// Skips the test if background save cancel commands are not supported.
+    /// </summary>
+    public static void IfBgSaveCancelNotSupported()
+        => Assert.SkipWhen(
+            TestConfiguration.SERVER_VERSION < Valkey8_1,
+            "Background save cancel commands require Valkey 8.1+");
 
     #endregion
     #region Module Checks

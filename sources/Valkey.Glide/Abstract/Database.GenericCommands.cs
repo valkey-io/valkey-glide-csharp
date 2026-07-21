@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Net;
+
 using Valkey.Glide.Commands;
 using Valkey.Glide.Commands.Options;
 using Valkey.Glide.Internals;
@@ -8,8 +10,6 @@ namespace Valkey.Glide;
 
 internal partial class Database
 {
-    // ==================== SER-compat methods (delegate to GLIDE methods) ====================
-
     /// <inheritdoc cref="IDatabaseAsync.KeyDeleteAsync(ValkeyKey, CommandFlags)"/>
     public Task<bool> KeyDeleteAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None)
     {
@@ -221,6 +221,33 @@ internal partial class Database
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         return MoveAsync(key, database);
+    }
+
+    /// <inheritdoc cref="IDatabaseAsync.KeyMigrateAsync(ValkeyKey, EndPoint, int, int, KeyMigrateOptions, CommandFlags)"/>
+    public async Task<bool> KeyMigrateAsync(
+        ValkeyKey key,
+        EndPoint toServer,
+        int toDatabase = 0,
+        int timeoutMilliseconds = 0,
+        KeyMigrateOptions migrateOptions = KeyMigrateOptions.None,
+        CommandFlags flags = CommandFlags.None)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+
+        (string host, ushort port) = Utils.SplitEndpoint(toServer);
+        using var options = new MigrateOptions(host, port, (ushort)toDatabase, TimeSpan.FromMilliseconds(timeoutMilliseconds));
+
+        if (migrateOptions.HasFlag(KeyMigrateOptions.Copy))
+        {
+            _ = options.WithCopy();
+        }
+
+        if (migrateOptions.HasFlag(KeyMigrateOptions.Replace))
+        {
+            _ = options.WithReplace();
+        }
+
+        return await MigrateAsync(key, options);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.KeyRandomAsync(CommandFlags)"/>

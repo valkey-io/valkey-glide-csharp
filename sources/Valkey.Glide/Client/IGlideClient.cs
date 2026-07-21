@@ -59,6 +59,25 @@ public partial interface IGlideClient :
     Task<bool> CopyAsync(ValkeyKey source, ValkeyKey destination, int destinationDatabase, bool replace = false);
 
     /// <summary>
+    /// Atomically transfers keys from the source instance to the destination instance.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/migrate/">Valkey commands – MIGRATE</seealso>
+    /// <param name="keys">The keys to migrate. Must not be empty.</param>
+    /// <param name="options">The migrate options.</param>
+    /// <returns><see langword="true"/> if at least one key was migrated successfully, <see langword="false"/> if no keys were found.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.SetAsync("key1", "value1");
+    /// await client.SetAsync("key2", "value2");
+    /// using var options = new MigrateOptions("desthost", 6379, 0, TimeSpan.FromSeconds(5));
+    /// var migrated = await client.MigrateAsync(["key1", "key2"], options);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<bool> MigrateAsync(IEnumerable<ValkeyKey> keys, MigrateOptions options);
+
+    /// <summary>
     /// Incrementally iterates over the matching keys in the database.
     /// </summary>
     /// <param name="options">Optional scan options including pattern, count hint, and type filter.</param>

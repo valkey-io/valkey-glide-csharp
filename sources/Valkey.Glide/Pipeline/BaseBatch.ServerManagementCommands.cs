@@ -52,6 +52,7 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
     /// <inheritdoc cref="IBatchServerManagementCommands.LolwutAsync(LolwutOptions)" />
     public T LolwutAsync(LolwutOptions options) => AddCmd(Request.LolwutAsync(options));
 
+
     // Interface implementations
     IBatch IBatchServerManagementCommands.ConfigGetAsync(ValkeyValue pattern) => ConfigGetAsync(pattern);
     IBatch IBatchServerManagementCommands.ConfigResetStatisticsAsync() => ConfigResetStatisticsAsync();

@@ -2,8 +2,10 @@
 
 using Valkey.Glide.Commands.Options;
 using Valkey.Glide.Pipeline;
+using Valkey.Glide.TestUtils;
 
 using static Valkey.Glide.Errors;
+using static Valkey.Glide.TestUtils.Options;
 
 namespace Valkey.Glide.IntegrationTests;
 
@@ -82,6 +84,34 @@ public class SharedBatchTests
 
         Assert.Equivalent(new object[] { 1L, ValkeyValue.Ok, ValkeyValue.Ok }, res);
 
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(GetTestClientWithAtomic))]
+    public async Task BatchReset(BaseClient client, bool isAtomic)
+    {
+        Pipeline.IBatch batch = client is GlideClusterClient
+            ? new ClusterBatch(isAtomic)
+            : new Batch(isAtomic);
+
+        _ = batch.ResetAsync();
+
+        if (isAtomic)
+        {
+            // RESET cannot be used in atomic batches.
+            _ = await Assert.ThrowsAsync<RequestException>(async () => _ =
+                client is GlideClusterClient clusterClient
+                ? await clusterClient.Exec((ClusterBatch)batch, true)
+                : await ((GlideClient)client).Exec((Batch)batch, true));
+        }
+        else
+        {
+            var res = client is GlideClusterClient clusterClient
+                ? (await clusterClient.Exec((ClusterBatch)batch, false))!
+                : (await ((GlideClient)client).Exec((Batch)batch, false))!;
+
+            Assert.Equal("RESET", Assert.Single(res)?.ToString());
+        }
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -199,5 +229,38 @@ public class SharedBatchTests
         Assert.Equal(2, execResult.Length);
         Assert.Equal(foobarString, await client.GetAsync(key1));
         Assert.Equal(foobarString, await client.GetAsync(key2));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(GetTestClientWithAtomic))]
+    public async Task BatchMigrate(BaseClient client, bool isAtomic)
+    {
+        using var destServer = new StandaloneServer();
+        await using var destClient = await destServer.CreateStandaloneClientAsync();
+
+        string key = "{BatchMigrate}" + Guid.NewGuid();
+        string value = "batch-migrate-value";
+
+        await client.SetAsync(key, value);
+
+        using var options = BuildMigrateOptions(address: destServer.Address);
+
+        object?[] results;
+        if (client is GlideClusterClient clusterClient)
+        {
+            ClusterBatch batch = new(isAtomic);
+            _ = batch.Migrate(key, options);
+            results = (await clusterClient.Exec(batch, false))!;
+        }
+        else
+        {
+            Batch batch = new(isAtomic);
+            _ = batch.Migrate(key, options);
+            results = (await ((GlideClient)client).Exec(batch, false))!;
+        }
+
+        Assert.True((bool)results[0]!);
+        Assert.False(await client.ExistsAsync(key));
+        Assert.Equal(value, await destClient.GetAsync(key));
     }
 }

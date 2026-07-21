@@ -1,9 +1,6 @@
 ﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-// check https://stackoverflow.com/a/77455034 if you're getting analyzer error (using is unnecessary)
-#if NET8_0_OR_GREATER
 using System.Runtime.CompilerServices;
-#endif
 using System.Runtime.InteropServices;
 
 namespace Valkey.Glide.Internals;
@@ -30,7 +27,6 @@ internal partial class FFI
         IntPtr patternPtr,
         ulong patternLen);
 
-#if NET8_0_OR_GREATER
     [LibraryImport("libglide_rs", EntryPoint = "command")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial void CommandFfi(IntPtr client, ulong index, IntPtr cmdInfo, IntPtr routeInfo);
@@ -98,6 +94,16 @@ internal partial class FFI
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial void RefreshIamTokenFfi(IntPtr client, ulong index);
 
+    [LibraryImport("libglide_rs", EntryPoint = "get_statistics")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial Statistics GetStatisticsFfi();
+
+    [LibraryImport("libglide_rs", EntryPoint = "get_cache_metrics")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial void GetCacheMetricsFfi(IntPtr client, ulong index, uint metricsType);
+
+    #region OpenTelemetry
+
     [LibraryImport("libglide_rs", EntryPoint = "init_otel")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial IntPtr InitOpenTelemetryFfi(IntPtr config);
@@ -114,83 +120,44 @@ internal partial class FFI
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial void DropOpenTelemetrySpanFfi(IntPtr spanPtr);
 
-    [LibraryImport("libglide_rs", EntryPoint = "get_statistics")]
+    #endregion
+    #region Monitor
+
+    /// <summary>
+    /// FFI callback delegate for monitor message reception matching the Rust FFI signature.
+    /// </summary>
+    /// <param name="timestamp">Unix timestamp when the command was processed.</param>
+    /// <param name="database">Database number the command was issued against.</param>
+    /// <param name="clientAddrPtr">Pointer to the client address that issued the command.</param>
+    /// <param name="clientAddrLen">Length of the client address in bytes.</param>
+    /// <param name="commandPtr">Pointer to the command name.</param>
+    /// <param name="commandLen">Length of the command name in bytes.</param>
+    /// <param name="argsCount">Number of command arguments.</param>
+    /// <param name="argsPtrs">Pointer to an array of pointers to argument bytes.</param>
+    /// <param name="argsLens">Pointer to an array of argument lengths.</param>
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    internal delegate void MonitorMessageCallback(
+        double timestamp,
+        ushort database,
+        IntPtr clientAddrPtr,
+        long clientAddrLen,
+        IntPtr commandPtr,
+        long commandLen,
+        long argsCount,
+        IntPtr argsPtrs,
+        IntPtr argsLens);
+
+    [LibraryImport("libglide_rs", EntryPoint = "create_monitor_client")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial Statistics GetStatisticsFfi();
+    public static partial IntPtr CreateMonitorClientFfi(IntPtr config, IntPtr monitorCallback);
 
-    [LibraryImport("libglide_rs", EntryPoint = "get_cache_metrics")]
+    [LibraryImport("libglide_rs", EntryPoint = "close_monitor_client")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial void GetCacheMetricsFfi(IntPtr client, ulong index, uint metricsType);
-#else
-    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "command")]
-    public static extern void CommandFfi(IntPtr client, ulong index, IntPtr cmdInfo, IntPtr routeInfo);
+    public static partial void CloseMonitorClientFfi(IntPtr clientPtr);
 
-    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "batch")]
-    public static extern void BatchFfi(IntPtr client, ulong index, IntPtr batch, [MarshalAs(UnmanagedType.U1)] bool raiseOnError, IntPtr opts);
+    [LibraryImport("libglide_rs", EntryPoint = "free_monitor_connection_response")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial void FreeMonitorConnectionResponseFfi(IntPtr responsePtr);
 
-    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "free_response")]
-    public static extern void FreeResponse(IntPtr responsePtr);
-
-    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "free_string")]
-    public static extern void FreeString(IntPtr strPtr);
-
-    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "create_client")]
-    public static extern void CreateClientFfi(IntPtr config, IntPtr successCallback, IntPtr failureCallback, IntPtr pubsubCallback, IntPtr addressResolverCallback);
-
-    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "close_client")]
-    public static extern void CloseClientFfi(IntPtr client);
-
-    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "store_script")]
-    public static extern IntPtr StoreScriptFfi(IntPtr scriptPtr, UIntPtr scriptLen);
-
-    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "drop_script")]
-    public static extern IntPtr DropScriptFfi(IntPtr hashPtr, UIntPtr hashLen);
-
-    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "free_script_hash_buffer")]
-    public static extern void FreeScriptHashBuffer(IntPtr hashBuffer);
-
-    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "script_invoke")]
-    public static extern void ScriptInvokeFfi(
-        IntPtr client,
-        ulong index,
-        IntPtr hash,
-        ulong keysCount,
-        IntPtr keys,
-        IntPtr keysLen,
-        ulong argsCount,
-        IntPtr args,
-        IntPtr argsLen,
-        IntPtr routeInfo,
-        ulong routeInfoLen);
-
-    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "request_cluster_scan")]
-    public static extern void RequestClusterScanFfi(IntPtr client, ulong index, IntPtr cursor, ulong argCount, IntPtr args, IntPtr argLengths);
-
-    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "remove_cluster_scan_cursor")]
-    public static extern void RemoveClusterScanCursorFfi(IntPtr cursorId);
-
-    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "update_connection_password")]
-    public static extern void UpdateConnectionPasswordFfi(IntPtr client, ulong index, IntPtr password, [MarshalAs(UnmanagedType.U1)] bool immediateAuth);
-
-    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "refresh_iam_token")]
-    public static extern void RefreshIamTokenFfi(IntPtr client, ulong index);
-
-    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "init_otel")]
-    public static extern IntPtr InitOpenTelemetryFfi(IntPtr config);
-
-    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "create_otel_span")]
-    public static extern IntPtr CreateOpenTelemetrySpanFfi(uint requestType);
-
-    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "create_batch_otel_span")]
-    public static extern IntPtr CreateBatchOpenTelemetrySpanFfi();
-
-    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "drop_otel_span")]
-    public static extern void DropOpenTelemetrySpanFfi(IntPtr spanPtr);
-
-    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "get_statistics")]
-    public static extern Statistics GetStatisticsFfi();
-
-    [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "get_cache_metrics")]
-    public static extern void GetCacheMetricsFfi(IntPtr client, ulong index, uint metricsType);
-#endif
+    #endregion
 }

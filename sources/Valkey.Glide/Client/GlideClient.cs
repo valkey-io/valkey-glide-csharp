@@ -70,6 +70,10 @@ public partial class GlideClient :
     public async Task<object?> CustomCommand(IEnumerable<GlideString> args)
         => await Command(Request.CustomCommand([.. args]));
 
+    /// <inheritdoc cref="IGlideClient.MigrateAsync(IEnumerable{ValkeyKey}, MigrateOptions)"/>
+    public async Task<bool> MigrateAsync(IEnumerable<ValkeyKey> keys, MigrateOptions options)
+        => await Command(Request.MigrateAsync(keys, options));
+
     /// <inheritdoc cref="IGlideClient.InfoAsync()"/>
     public async Task<string> InfoAsync() => await InfoAsync([]);
 
@@ -79,63 +83,51 @@ public partial class GlideClient :
 
     /// <inheritdoc cref="IGlideClient.ConfigGetAsync(ValkeyValue)"/>
     public async Task<KeyValuePair<string, string>[]> ConfigGetAsync(ValkeyValue pattern = default)
-    {
-        return await Command(Request.ConfigGetAsync(pattern));
-    }
+        => await Command(Request.ConfigGetAsync(pattern));
 
     /// <inheritdoc cref="IGlideClient.ConfigResetStatisticsAsync()"/>
     public async Task ConfigResetStatisticsAsync()
-    {
-        _ = await Command(Request.ConfigResetStatisticsAsync());
-    }
+        => _ = await Command(Request.ConfigResetStatisticsAsync());
 
     /// <inheritdoc cref="IGlideClient.ConfigRewriteAsync()"/>
     public async Task ConfigRewriteAsync()
-    {
-        _ = await Command(Request.ConfigRewriteAsync());
-    }
+        => _ = await Command(Request.ConfigRewriteAsync());
 
     /// <inheritdoc cref="IGlideClient.ConfigSetAsync(ValkeyValue, ValkeyValue)"/>
     public async Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value)
-    {
-        _ = await Command(Request.ConfigSetAsync(setting, value));
-    }
+        => _ = await Command(Request.ConfigSetAsync(setting, value));
 
     /// <inheritdoc cref="IBaseClient.ConfigSetAsync(IDictionary{ValkeyValue, ValkeyValue})"/>
     public override async Task ConfigSetAsync(IDictionary<ValkeyValue, ValkeyValue> parameters)
-    {
-        _ = await Command(Request.ConfigSetAsync(parameters));
-    }
+        => _ = await Command(Request.ConfigSetAsync(parameters));
 
     /// <inheritdoc cref="IGlideClient.DatabaseSizeAsync()"/>
     public async Task<long> DatabaseSizeAsync()
-    {
-        return await Command(Request.DatabaseSizeAsync());
-    }
+        => await Command(Request.DatabaseSizeAsync());
 
     /// <inheritdoc cref="IGlideClient.FlushAllDatabasesAsync()"/>
     public async Task FlushAllDatabasesAsync()
-    {
-        _ = await Command(Request.FlushAllDatabasesAsync());
-    }
+        => _ = await Command(Request.FlushAllDatabasesAsync());
 
     /// <inheritdoc cref="IBaseClient.FlushAllDatabasesAsync(FlushMode)"/>
     public override async Task FlushAllDatabasesAsync(FlushMode mode)
-    {
-        _ = await Command(Request.FlushAllDatabasesAsync(mode));
-    }
+        => _ = await Command(Request.FlushAllDatabasesAsync(mode));
 
     /// <inheritdoc cref="IGlideClient.FlushDatabaseAsync()"/>
     public async Task FlushDatabaseAsync()
-    {
-        _ = await Command(Request.FlushDatabaseAsync());
-    }
+        => _ = await Command(Request.FlushDatabaseAsync());
 
     /// <inheritdoc cref="IBaseClient.FlushDatabaseAsync(FlushMode)"/>
     public override async Task FlushDatabaseAsync(FlushMode mode)
-    {
-        _ = await Command(Request.FlushDatabaseAsync(mode));
-    }
+        => _ = await Command(Request.FlushDatabaseAsync(mode));
+
+    /// <inheritdoc cref="IBaseClient.SaveAsync()"/>
+    public override async Task SaveAsync()
+        => _ = await Command(Request.SaveAsync());
+
+    /// <inheritdoc cref="IGlideClient.BgRewriteAofAsync()"/>
+    public async Task<string> BgRewriteAofAsync()
+        => await Command(Request.BgRewriteAofAsync());
 
     /// <inheritdoc cref="IGlideClient.LastSaveAsync()"/>
     public Task<DateTimeOffset> LastSaveAsync()
@@ -147,21 +139,59 @@ public partial class GlideClient :
 
     /// <inheritdoc cref="IGlideClient.LolwutAsync()"/>
     public async Task<string> LolwutAsync()
-    {
-        return await Command(Request.LolwutAsync());
-    }
+        => await Command(Request.LolwutAsync());
 
     /// <inheritdoc cref="IBaseClient.LolwutAsync(LolwutOptions)"/>
     public override async Task<string> LolwutAsync(LolwutOptions options)
-    {
-        return await Command(Request.LolwutAsync(options));
-    }
+        => await Command(Request.LolwutAsync(options));
+
+    /// <inheritdoc cref="IGlideClient.MemoryDoctorAsync()"/>
+    public async Task<string> MemoryDoctorAsync()
+        => await Command(Request.MemoryDoctorAsync());
+
+    /// <inheritdoc cref="IGlideClient.MemoryMallocStatsAsync()"/>
+    public async Task<string> MemoryMallocStatsAsync()
+        => await Command(Request.MemoryMallocStatsAsync());
+
+    /// <inheritdoc cref="IGlideClient.MemoryPurgeAsync()"/>
+    public async Task MemoryPurgeAsync()
+        => _ = await Command(Request.MemoryPurgeAsync());
+
+    /// <inheritdoc cref="IGlideClient.MemoryStatsAsync()"/>
+    public async Task<MemoryStats> MemoryStatsAsync()
+        => await Command(Request.MemoryStatsAsync());
 
     /// <inheritdoc cref="IBaseClient.ConfigGetAsync(IEnumerable{ValkeyValue})"/>
     public override async Task<KeyValuePair<string, string>[]> ConfigGetAsync(IEnumerable<ValkeyValue> patterns)
-    {
-        return await Command(Request.ConfigGetAsync(patterns));
-    }
+        => await Command(Request.ConfigGetAsync(patterns));
+
+    /// <inheritdoc cref="IGlideClient.BackgroundSaveAsync()"/>
+    public async Task<string> BackgroundSaveAsync()
+        => await Command(Request.BackgroundSaveAsync());
+
+    /// <inheritdoc cref="IGlideClient.BackgroundSaveScheduleAsync()"/>
+    public async Task<string> BackgroundSaveScheduleAsync()
+        => await Command(Request.BackgroundSaveScheduleAsync());
+
+    /// <inheritdoc cref="IGlideClient.BackgroundSaveCancelAsync()"/>
+    public async Task<string> BackgroundSaveCancelAsync()
+        => await Command(Request.BackgroundSaveCancelAsync());
+
+    /// <inheritdoc cref="IGlideClient.FailoverAsync()"/>
+    public async Task FailoverAsync()
+        => _ = await Command(Request.FailoverAsync());
+
+    /// <inheritdoc cref="IGlideClient.FailoverAsync(FailoverOptions)"/>
+    public async Task FailoverAsync(FailoverOptions options)
+        => _ = await Command(Request.FailoverAsync(options));
+
+    /// <inheritdoc cref="IGlideClient.ReplicaOfAsync(string, int)"/>
+    public async Task ReplicaOfAsync(string host, int port)
+        => _ = await Command(Request.ReplicaOfAsync(host, port));
+
+    /// <inheritdoc cref="IGlideClient.ReplicaOfNoOneAsync()"/>
+    public async Task ReplicaOfNoOneAsync()
+        => _ = await Command(Request.ReplicaOfNoOneAsync());
 
     /// <inheritdoc/>
     public async Task<(string cursor, ValkeyKey[] keys)> ScanAsync(string cursor, ScanOptions? options = null)
@@ -187,15 +217,31 @@ public partial class GlideClient :
 
     /// <inheritdoc cref="ITransactionBaseCommands.WatchAsync(IEnumerable{ValkeyKey})"/>
     public async Task WatchAsync(IEnumerable<ValkeyKey> keys)
-    {
-        _ = await Command(Request.Watch(keys));
-    }
+        => _ = await Command(Request.Watch(keys));
 
     /// <inheritdoc cref="ITransactionCommands.UnwatchAsync()"/>
     public async Task UnwatchAsync()
-    {
-        _ = await Command(Request.Unwatch());
-    }
+        => _ = await Command(Request.Unwatch());
+
+    /// <inheritdoc cref="IGlideClient.LatencyHistoryAsync(ValkeyValue)"/>
+    public async Task<LatencyEntry[]> LatencyHistoryAsync(ValkeyValue @event)
+        => await Command(Request.LatencyHistoryAsync(@event));
+
+    /// <inheritdoc cref="IGlideClient.LatencyLatestAsync()"/>
+    public async Task<LatencyEventInfo[]> LatencyLatestAsync()
+        => await Command(Request.LatencyLatestAsync());
+
+    /// <inheritdoc cref="IBaseClient.LatencyResetAsync()"/>
+    public override async Task<long> LatencyResetAsync()
+        => await Command(Request.LatencyResetAsync([]));
+
+    /// <inheritdoc cref="IBaseClient.LatencyResetAsync(ValkeyValue)"/>
+    public override async Task<long> LatencyResetAsync(ValkeyValue @event)
+        => await Command(Request.LatencyResetAsync([@event]));
+
+    /// <inheritdoc cref="IBaseClient.LatencyResetAsync(IEnumerable{ValkeyValue})"/>
+    public override async Task<long> LatencyResetAsync(IEnumerable<ValkeyValue> events)
+        => await Command(Request.LatencyResetAsync(events));
 
     /// <inheritdoc cref="BaseClient.GetServerVersionAsync()"/>
     protected override async Task<Version> GetServerVersionAsync()

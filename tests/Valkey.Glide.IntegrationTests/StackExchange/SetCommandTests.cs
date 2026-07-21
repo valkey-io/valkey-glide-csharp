@@ -520,7 +520,7 @@ public class SetCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task SetIntersectionLengthAsync_ReturnsCardinality(IDatabaseAsync db)
     {
-        SkipUtils.IfSetInterCardNotSupported();
+        Skip.IfSetInterCardNotSupported();
 
         string key1 = $"{{ser-set}}-sic1-{Guid.NewGuid()}";
         string key2 = $"{{ser-set}}-sic2-{Guid.NewGuid()}";
@@ -535,7 +535,7 @@ public class SetCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task SetIntersectionLengthAsync_WithLimit_RespectsLimit(IDatabaseAsync db)
     {
-        SkipUtils.IfSetInterCardNotSupported();
+        Skip.IfSetInterCardNotSupported();
 
         string key1 = $"{{ser-set}}-sicl1-{Guid.NewGuid()}";
         string key2 = $"{{ser-set}}-sicl2-{Guid.NewGuid()}";

@@ -6,6 +6,8 @@ namespace Valkey.Glide.UnitTests;
 
 public class CommandTests
 {
+    private static readonly TimeSpan OneSecond = TimeSpan.FromSeconds(1);
+
     [Fact]
     public void ValidateCommandArgs() => Assert.Multiple(
             () => Assert.Equal(["get", "a"], Request.CustomCommand(["get", "a"]).GetArgs()),
@@ -82,21 +84,73 @@ public class CommandTests
             () => Assert.Equal(["INFO", "CLIENTS", "CPU"], Request.Info([InfoOptions.Section.CLIENTS, InfoOptions.Section.CPU]).GetArgs()),
             () => Assert.Equal(["INFO", "SERVER", "MEMORY", "STATS"], Request.Info([InfoOptions.Section.SERVER, InfoOptions.Section.MEMORY, InfoOptions.Section.STATS]).GetArgs()),
 
-            // Connection Management Commands - Ping
-            () => Assert.Equal(["PING"], Request.Ping().GetArgs()),
-            () => Assert.Equal(["PING", "Hello"], Request.Ping("Hello").GetArgs()),
-            () => Assert.Equal(["PING", "test message"], Request.Ping("test message").GetArgs()),
-            () => Assert.Equal(["PING", ""], Request.Ping("").GetArgs()),
-            () => Assert.Equal(["PING", "PONG"], Request.Ping("PONG").GetArgs()),
+            // Connection Management Commands
+            () => Assert.Equal(["CLIENTGETNAME"], Request.ClientGetName().GetArgs()),
+            () => Assert.Equal(["CLIENTID"], Request.ClientId().GetArgs()),
+            () => Assert.Equal(["CLIENTPAUSE", "1000", "WRITE"], Request.ClientPauseWrite(OneSecond).GetArgs()),
+            () => Assert.Equal(["CLIENTPAUSE", "1000"], Request.ClientPause(OneSecond).GetArgs()),
+            () => Assert.Equal(["CLIENTTRACKINGINFO"], Request.ClientTrackingInfo().GetArgs()),
+            () => Assert.Equal(["CLIENTUNPAUSE"], Request.ClientUnpause().GetArgs()),
             () => Assert.Equal(["ECHO", "message"], Request.Echo("message").GetArgs()),
+            () => Assert.Equal(["PING", ""], Request.Ping("").GetArgs()),
+            () => Assert.Equal(["PING", "Hello"], Request.Ping("Hello").GetArgs()),
+            () => Assert.Equal(["PING", "PONG"], Request.Ping("PONG").GetArgs()),
+            () => Assert.Equal(["PING", "test message"], Request.Ping("test message").GetArgs()),
+            () => Assert.Equal(["PING"], Request.Ping().GetArgs()),
+            () => Assert.Equal(["SELECT", "-1"], Request.Select(-1).GetArgs()),
             () => Assert.Equal(["SELECT", "0"], Request.Select(0).GetArgs()),
             () => Assert.Equal(["SELECT", "1"], Request.Select(1).GetArgs()),
             () => Assert.Equal(["SELECT", "15"], Request.Select(15).GetArgs()),
-            () => Assert.Equal(["SELECT", "-1"], Request.Select(-1).GetArgs()),
 
             // Server Management Commands
-            () => Assert.Equal(["CLIENTGETNAME"], Request.ClientGetName().GetArgs()),
-            () => Assert.Equal(["CLIENTID"], Request.ClientId().GetArgs()),
+            () => Assert.Equal(["BGREWRITEAOF"], Request.BgRewriteAofAsync().GetArgs()),
+            () => Assert.Equal(["BGSAVE", "CANCEL"], Request.BackgroundSaveCancelAsync().GetArgs()),
+            () => Assert.Equal(["BGSAVE", "SCHEDULE"], Request.BackgroundSaveScheduleAsync().GetArgs()),
+            () => Assert.Equal(["BGSAVE"], Request.BackgroundSaveAsync().GetArgs()),
+            () => Assert.Equal(["CONFIGGET", "*"], Request.ConfigGetAsync("*").GetArgs()),
+            () => Assert.Equal(["CONFIGGET", "*"], Request.ConfigGetAsync().GetArgs()),
+            () => Assert.Equal(["CONFIGGET", "maxmemory", "lfu-decay-time"], Request.ConfigGetAsync([(ValkeyValue)"maxmemory", (ValkeyValue)"lfu-decay-time"]).GetArgs()),
+            () => Assert.Equal(["CONFIGGET", "maxmemory"], Request.ConfigGetAsync("maxmemory").GetArgs()),
+            () => Assert.Equal(["CONFIGRESETSTAT"], Request.ConfigResetStatisticsAsync().GetArgs()),
+            () => Assert.Equal(["CONFIGREWRITE"], Request.ConfigRewriteAsync().GetArgs()),
+            () => Assert.Equal(["CONFIGSET", "lfu-decay-time", "5", "lfu-log-factor", "20"], Request.ConfigSetAsync(new Dictionary<ValkeyValue, ValkeyValue> { { "lfu-decay-time", "5" }, { "lfu-log-factor", "20" } }).GetArgs()),
+            () => Assert.Equal(["CONFIGSET", "maxmemory", "100mb"], Request.ConfigSetAsync("maxmemory", "100mb").GetArgs()),
+            () => Assert.Equal(["CONFIGSET", "timeout", "300"], Request.ConfigSetAsync("timeout", "300").GetArgs()),
+            () => Assert.Equal(["DBSIZE"], Request.DatabaseSizeAsync().GetArgs()),
+            () => Assert.Equal(["DBSIZE"], Request.DatabaseSizeAsync().GetArgs()),
+            () => Assert.Equal(["FAILOVER", "ABORT"], Request.FailoverAsync(FailoverOptions.Abort()).GetArgs()),
+            () => Assert.Equal(["FAILOVER", "TIMEOUT", "5000"], Request.FailoverAsync(FailoverOptions.Timeout(TimeSpan.FromSeconds(5))).GetArgs()),
+            () => Assert.Equal(["FAILOVER", "TO", "localhost", "6380", "FORCE", "TIMEOUT", "5000"], Request.FailoverAsync(FailoverOptions.Forced("localhost", 6380, TimeSpan.FromSeconds(5))).GetArgs()),
+            () => Assert.Equal(["FAILOVER", "TO", "localhost", "6380", "TIMEOUT", "5000"], Request.FailoverAsync(FailoverOptions.To("localhost", 6380, TimeSpan.FromSeconds(5))).GetArgs()),
+            () => Assert.Equal(["FAILOVER", "TO", "localhost", "6380"], Request.FailoverAsync(FailoverOptions.To("localhost", 6380)).GetArgs()),
+            () => Assert.Equal(["FAILOVER"], Request.FailoverAsync().GetArgs()),
+            () => Assert.Equal(["FLUSHALL", "ASYNC"], Request.FlushAllDatabasesAsync(FlushMode.Async).GetArgs()),
+            () => Assert.Equal(["FLUSHALL", "SYNC"], Request.FlushAllDatabasesAsync(FlushMode.Sync).GetArgs()),
+            () => Assert.Equal(["FLUSHALL"], Request.FlushAllDatabasesAsync().GetArgs()),
+            () => Assert.Equal(["FLUSHDB", "ASYNC"], Request.FlushDatabaseAsync(FlushMode.Async).GetArgs()),
+            () => Assert.Equal(["FLUSHDB", "SYNC"], Request.FlushDatabaseAsync(FlushMode.Sync).GetArgs()),
+            () => Assert.Equal(["FLUSHDB"], Request.FlushDatabaseAsync().GetArgs()),
+            () => Assert.Equal(["FLUSHDB"], Request.FlushDatabaseAsync().GetArgs()),
+            () => Assert.Equal(["LASTSAVE"], Request.LastSaveAsync().GetArgs()),
+            () => Assert.Equal(["LATENCY", "HISTORY", "command"], Request.LatencyHistoryAsync("command").GetArgs()),
+            () => Assert.Equal(["LATENCY", "LATEST"], Request.LatencyLatestAsync().GetArgs()),
+            () => Assert.Equal(["LATENCY", "RESET", "command", "fast-command"], Request.LatencyResetAsync(["command", "fast-command"]).GetArgs()),
+            () => Assert.Equal(["LATENCY", "RESET", "command"], Request.LatencyResetAsync(["command"]).GetArgs()),
+            () => Assert.Equal(["LATENCY", "RESET"], Request.LatencyResetAsync([]).GetArgs()),
+            () => Assert.Equal(["LOLWUT", "40", "20"], Request.LolwutAsync(new LolwutOptions { Parameters = [40, 20] }).GetArgs()),
+            () => Assert.Equal(["LOLWUT", "VERSION", "5"], Request.LolwutAsync(new LolwutOptions { Version = 5 }).GetArgs()),
+            () => Assert.Equal(["LOLWUT", "VERSION", "6", "40", "20"], Request.LolwutAsync(new LolwutOptions { Version = 6, Parameters = [40, 20] }).GetArgs()),
+            () => Assert.Equal(["LOLWUT"], Request.LolwutAsync().GetArgs()),
+            () => Assert.Equal(["LOLWUT"], Request.LolwutAsync(options: null).GetArgs()),
+            () => Assert.Equal(["MEMORY", "DOCTOR"], Request.MemoryDoctorAsync().GetArgs()),
+            () => Assert.Equal(["MEMORY", "MALLOC-STATS"], Request.MemoryMallocStatsAsync().GetArgs()),
+            () => Assert.Equal(["MEMORY", "PURGE"], Request.MemoryPurgeAsync().GetArgs()),
+            () => Assert.Equal(["MEMORY", "STATS"], Request.MemoryStatsAsync().GetArgs()),
+            () => Assert.Equal(["REPLICAOF", "localhost", "6379"], Request.ReplicaOfAsync("localhost", 6379).GetArgs()),
+            () => Assert.Equal(["REPLICAOF", "NO", "ONE"], Request.ReplicaOfNoOneAsync().GetArgs()),
+            () => Assert.Equal(["RESET"], Request.Reset().GetArgs()),
+            () => Assert.Equal(["SAVE"], Request.SaveAsync().GetArgs()),
+            () => Assert.Equal(["TIME"], Request.TimeAsync().GetArgs()),
 
             // Set Commands
             () => Assert.Equal(["SADD", "key", "member"], Request.SetAddAsync("key", "member").GetArgs()),
@@ -149,46 +203,49 @@ public class CommandTests
             () => Assert.Equal(["SSCAN", "", "0"], Request.SetScanAsync("", 0).GetArgs()),
 
             // Generic Commands
+            () => Assert.Equal(["COPY", "src", "dest", "DB", "1", "REPLACE"], Request.CopyAsync("src", "dest", 1, true).GetArgs()),
+            () => Assert.Equal(["COPY", "src", "dest"], Request.CopyAsync("src", "dest").GetArgs()),
             () => Assert.Equal(["DEL", "key"], Request.DeleteAsync("key").GetArgs()),
             () => Assert.Equal(["DEL", "key1", "key2"], Request.DeleteAsync(["key1", "key2"]).GetArgs()),
-            () => Assert.Equal(["UNLINK", "key"], Request.UnlinkAsync("key").GetArgs()),
-            () => Assert.Equal(["UNLINK", "key1", "key2"], Request.UnlinkAsync(["key1", "key2"]).GetArgs()),
+            () => Assert.Equal(["DUMP", "key"], Request.DumpAsync("key").GetArgs()),
             () => Assert.Equal(["EXISTS", "key"], Request.ExistsAsync("key").GetArgs()),
             () => Assert.Equal(["EXISTS", "key1", "key2"], Request.ExistsAsync(["key1", "key2"]).GetArgs()),
-            () => Assert.Equal(["PEXPIRE", "key", "60000"], Request.ExpireAsync("key", TimeSpan.FromSeconds(60)).GetArgs()),
-            () => Assert.Equal(["PEXPIRE", "key", "60000", "NX"], Request.ExpireAsync("key", TimeSpan.FromSeconds(60), ExpireCondition.OnlyIfNotExists).GetArgs()),
-            () => Assert.Equal(["PEXPIREAT", "key", "1609459200000"], Request.ExpireAsync("key", new DateTimeOffset(2021, 1, 1, 0, 0, 0, TimeSpan.Zero)).GetArgs()),
-            () => Assert.Equal(["PTTL", "key"], Request.TimeToLiveAsync("key").GetArgs()),
-            () => Assert.Equal(["TYPE", "key"], Request.TypeAsync("key").GetArgs()),
-            () => Assert.Equal(["RENAME", "oldkey", "newkey"], Request.RenameAsync("oldkey", "newkey").GetArgs()),
-            () => Assert.Equal(["RENAMENX", "oldkey", "newkey"], Request.RenameIfNotExistsAsync("oldkey", "newkey").GetArgs()),
-            () => Assert.Equal(["PERSIST", "key"], Request.PersistAsync("key").GetArgs()),
-            () => Assert.Equal(["DUMP", "key"], Request.DumpAsync("key").GetArgs()),
-            () => Assert.Equal(["RESTORE", "key", "0", "data"], Request.RestoreAsync("key", "data"u8.ToArray()).GetArgs()),
-            () => Assert.Equal(["RESTORE", "key", "5000", "data"], Request.RestoreAsync("key", "data"u8.ToArray(), new RestoreOptions { Ttl = TimeSpan.FromSeconds(5) }).GetArgs()),
-            () => Assert.Equal(["RESTORE", "key", "2303596800000", "data", "ABSTTL"], Request.RestoreAsync("key", "data"u8.ToArray(), new RestoreOptions { ExpireAt = new DateTimeOffset(2042, 12, 31, 0, 0, 0, TimeSpan.Zero) }).GetArgs()),
-            () => Assert.Equal(["RESTORE", "key", "0", "data", "REPLACE"], Request.RestoreAsync("key", "data"u8.ToArray(), new RestoreOptions { Replace = true }).GetArgs()),
-            () => Assert.Equal(["RESTORE", "key", "0", "data", "IDLETIME", "1000"], Request.RestoreAsync("key", "data"u8.ToArray(), new RestoreOptions { IdleTime = 1000 }).GetArgs()),
-            () => Assert.Equal(["RESTORE", "key", "0", "data", "FREQ", "5"], Request.RestoreAsync("key", "data"u8.ToArray(), new RestoreOptions { Frequency = 5 }).GetArgs()),
-            () => Assert.Equal(["RESTORE", "key", "0", "data", "REPLACE", "IDLETIME", "2000"], Request.RestoreAsync("key", "data"u8.ToArray(), new RestoreOptions { Replace = true, IdleTime = 2000 }).GetArgs()),
-            () => Assert.Equal(["RESTORE", "key", "0", "data", "REPLACE", "FREQ", "10"], Request.RestoreAsync("key", "data"u8.ToArray(), new RestoreOptions { Replace = true, Frequency = 10 }).GetArgs()),
-            () => Assert.Equal(["RESTORE", "key", "5000", "data", "REPLACE"], Request.RestoreAsync("key", "data"u8.ToArray(), new RestoreOptions { Ttl = TimeSpan.FromSeconds(5), Replace = true }).GetArgs()),
-            () => Assert.Equal(["RESTORE", "key", "2303596800000", "data", "ABSTTL", "REPLACE"], Request.RestoreAsync("key", "data"u8.ToArray(), new RestoreOptions { ExpireAt = new DateTimeOffset(2042, 12, 31, 0, 0, 0, TimeSpan.Zero), Replace = true }).GetArgs()),
-            () => Assert.Equal(["RESTORE", "key", "5000", "data", "IDLETIME", "1000"], Request.RestoreAsync("key", "data"u8.ToArray(), new RestoreOptions { Ttl = TimeSpan.FromSeconds(5), IdleTime = 1000 }).GetArgs()),
-            () => Assert.Equal(["RESTORE", "key", "2303596800000", "data", "ABSTTL", "FREQ", "10"], Request.RestoreAsync("key", "data"u8.ToArray(), new RestoreOptions { ExpireAt = new DateTimeOffset(2042, 12, 31, 0, 0, 0, TimeSpan.Zero), Frequency = 10 }).GetArgs()),
-            () => Assert.Throws<ArgumentException>(() => Request.RestoreAsync("key", "data"u8.ToArray(), new RestoreOptions { IdleTime = 1000, Frequency = 5 }).GetArgs()),
-            () => Assert.Throws<ArgumentException>(() => Request.RestoreAsync("key", "data"u8.ToArray(), new RestoreOptions { Ttl = TimeSpan.FromSeconds(5), ExpireAt = DateTimeOffset.UtcNow }).GetArgs()),
-            () => Assert.Equal(["TOUCH", "key"], Request.TouchAsync("key").GetArgs()),
-            () => Assert.Equal(["TOUCH", "key1", "key2"], Request.TouchAsync(["key1", "key2"]).GetArgs()),
-            () => Assert.Equal(["COPY", "src", "dest"], Request.CopyAsync("src", "dest").GetArgs()),
-            () => Assert.Equal(["COPY", "src", "dest", "DB", "1", "REPLACE"], Request.CopyAsync("src", "dest", 1, true).GetArgs()),
-            () => Assert.Equal(["PEXPIRETIME", "key"], Request.ExpireTimeAsync("key").GetArgs()),
+            () => Assert.Equal(["MIGRATE", "host", "6379", "", "0", "5000", "KEYS", "k1", "k2"], Request.MigrateAsync(["k1", "k2"], new MigrateOptions("host", 6379, 0, TimeSpan.FromSeconds(5))).GetArgs()),
+            () => Assert.Equal(["MIGRATE", "host", "6379", "key", "0", "5000", "COPY", "REPLACE"], Request.MigrateAsync(["key"], new MigrateOptions("host", 6379, 0, TimeSpan.FromSeconds(5)).WithCopy().WithReplace()).GetArgs()),
+            () => Assert.Equal(["MOVE", "key", "1"], Request.MoveAsync("key", 1).GetArgs()),
             () => Assert.Equal(["OBJECT", "ENCODING", "key"], Request.ObjectEncodingAsync("key").GetArgs()),
             () => Assert.Equal(["OBJECT", "FREQ", "key"], Request.ObjectFrequencyAsync("key").GetArgs()),
             () => Assert.Equal(["OBJECT", "IDLETIME", "key"], Request.ObjectIdleTimeAsync("key").GetArgs()),
             () => Assert.Equal(["OBJECT", "REFCOUNT", "key"], Request.ObjectRefCountAsync("key").GetArgs()),
+            () => Assert.Equal(["PERSIST", "key"], Request.PersistAsync("key").GetArgs()),
+            () => Assert.Equal(["PEXPIRE", "key", "60000", "NX"], Request.ExpireAsync("key", TimeSpan.FromSeconds(60), ExpireCondition.OnlyIfNotExists).GetArgs()),
+            () => Assert.Equal(["PEXPIRE", "key", "60000"], Request.ExpireAsync("key", TimeSpan.FromSeconds(60)).GetArgs()),
+            () => Assert.Equal(["PEXPIREAT", "key", "1609459200000"], Request.ExpireAsync("key", new DateTimeOffset(2021, 1, 1, 0, 0, 0, TimeSpan.Zero)).GetArgs()),
+            () => Assert.Equal(["PEXPIRETIME", "key"], Request.ExpireTimeAsync("key").GetArgs()),
+            () => Assert.Equal(["PTTL", "key"], Request.TimeToLiveAsync("key").GetArgs()),
             () => Assert.Equal(["RANDOMKEY"], Request.RandomKeyAsync().GetArgs()),
-            () => Assert.Equal(["MOVE", "key", "1"], Request.MoveAsync("key", 1).GetArgs()),
+            () => Assert.Equal(["RENAME", "oldkey", "newkey"], Request.RenameAsync("oldkey", "newkey").GetArgs()),
+            () => Assert.Equal(["RENAMENX", "oldkey", "newkey"], Request.RenameIfNotExistsAsync("oldkey", "newkey").GetArgs()),
+            () => Assert.Equal(["RESTORE", "key", "0", "data", "FREQ", "5"], Request.RestoreAsync("key", "data"u8.ToArray(), new RestoreOptions { Frequency = 5 }).GetArgs()),
+            () => Assert.Equal(["RESTORE", "key", "0", "data", "IDLETIME", "1000"], Request.RestoreAsync("key", "data"u8.ToArray(), new RestoreOptions { IdleTime = 1000 }).GetArgs()),
+            () => Assert.Equal(["RESTORE", "key", "0", "data", "REPLACE", "FREQ", "10"], Request.RestoreAsync("key", "data"u8.ToArray(), new RestoreOptions { Replace = true, Frequency = 10 }).GetArgs()),
+            () => Assert.Equal(["RESTORE", "key", "0", "data", "REPLACE", "IDLETIME", "2000"], Request.RestoreAsync("key", "data"u8.ToArray(), new RestoreOptions { Replace = true, IdleTime = 2000 }).GetArgs()),
+            () => Assert.Equal(["RESTORE", "key", "0", "data", "REPLACE"], Request.RestoreAsync("key", "data"u8.ToArray(), new RestoreOptions { Replace = true }).GetArgs()),
+            () => Assert.Equal(["RESTORE", "key", "0", "data"], Request.RestoreAsync("key", "data"u8.ToArray()).GetArgs()),
+            () => Assert.Equal(["RESTORE", "key", "2303596800000", "data", "ABSTTL", "FREQ", "10"], Request.RestoreAsync("key", "data"u8.ToArray(), new RestoreOptions { ExpireAt = new DateTimeOffset(2042, 12, 31, 0, 0, 0, TimeSpan.Zero), Frequency = 10 }).GetArgs()),
+            () => Assert.Equal(["RESTORE", "key", "2303596800000", "data", "ABSTTL", "REPLACE"], Request.RestoreAsync("key", "data"u8.ToArray(), new RestoreOptions { ExpireAt = new DateTimeOffset(2042, 12, 31, 0, 0, 0, TimeSpan.Zero), Replace = true }).GetArgs()),
+            () => Assert.Equal(["RESTORE", "key", "2303596800000", "data", "ABSTTL"], Request.RestoreAsync("key", "data"u8.ToArray(), new RestoreOptions { ExpireAt = new DateTimeOffset(2042, 12, 31, 0, 0, 0, TimeSpan.Zero) }).GetArgs()),
+            () => Assert.Equal(["RESTORE", "key", "5000", "data", "IDLETIME", "1000"], Request.RestoreAsync("key", "data"u8.ToArray(), new RestoreOptions { Ttl = TimeSpan.FromSeconds(5), IdleTime = 1000 }).GetArgs()),
+            () => Assert.Equal(["RESTORE", "key", "5000", "data", "REPLACE"], Request.RestoreAsync("key", "data"u8.ToArray(), new RestoreOptions { Ttl = TimeSpan.FromSeconds(5), Replace = true }).GetArgs()),
+            () => Assert.Equal(["RESTORE", "key", "5000", "data"], Request.RestoreAsync("key", "data"u8.ToArray(), new RestoreOptions { Ttl = TimeSpan.FromSeconds(5) }).GetArgs()),
+            () => Assert.Equal(["TOUCH", "key"], Request.TouchAsync("key").GetArgs()),
+            () => Assert.Equal(["TOUCH", "key1", "key2"], Request.TouchAsync(["key1", "key2"]).GetArgs()),
+            () => Assert.Equal(["TYPE", "key"], Request.TypeAsync("key").GetArgs()),
+            () => Assert.Equal(["UNLINK", "key"], Request.UnlinkAsync("key").GetArgs()),
+            () => Assert.Equal(["UNLINK", "key1", "key2"], Request.UnlinkAsync(["key1", "key2"]).GetArgs()),
+
+            () => Assert.Throws<ArgumentException>(() => Request.RestoreAsync("key", "data"u8.ToArray(), new RestoreOptions { IdleTime = 1000, Frequency = 5 }).GetArgs()),
+            () => Assert.Throws<ArgumentException>(() => Request.RestoreAsync("key", "data"u8.ToArray(), new RestoreOptions { Ttl = TimeSpan.FromSeconds(5), ExpireAt = DateTimeOffset.UtcNow }).GetArgs()),
 
             // SCAN Commands
             () => Assert.Equal(["SCAN", "0"], Request.ScanAsync("0").GetArgs()),
@@ -206,10 +263,10 @@ public class CommandTests
             () => Assert.Equal(["SCAN", "10", "MATCH", "key*", "COUNT", "20", "TYPE", "string"], Request.ScanAsync("10", new ScanOptions { MatchPattern = "key*", Count = 20, Type = ValkeyType.String }).GetArgs()),
 
             // WAIT Commands
-            () => Assert.Equal(["WAIT", "1", "1000"], Request.WaitAsync(1, TimeSpan.FromMilliseconds(1000)).GetArgs()),
+            () => Assert.Equal(["WAIT", "1", "1000"], Request.WaitAsync(1, OneSecond).GetArgs()),
             () => Assert.Equal(["WAIT", "0", "0"], Request.WaitAsync(0, TimeSpan.Zero).GetArgs()),
             () => Assert.Equal(["WAIT", "3", "5000"], Request.WaitAsync(3, TimeSpan.FromMilliseconds(5000)).GetArgs()),
-            () => Assert.Equal(["WAITAOF", "1", "1", "1000"], Request.WaitAofAsync(true, 1, TimeSpan.FromMilliseconds(1000)).GetArgs()),
+            () => Assert.Equal(["WAITAOF", "1", "1", "1000"], Request.WaitAofAsync(true, 1, OneSecond).GetArgs()),
             () => Assert.Equal(["WAITAOF", "0", "0", "0"], Request.WaitAofAsync(false, 0, TimeSpan.Zero).GetArgs()),
             () => Assert.Equal(["WAITAOF", "1", "2", "5000"], Request.WaitAofAsync(true, 2, TimeSpan.FromMilliseconds(5000)).GetArgs()),
 
@@ -397,57 +454,58 @@ public class CommandTests
             () => Assert.Equal(11L, Request.Increment("key").Converter(11L)),
             () => Assert.Equal(15L, Request.IncrementBy("key", 5).Converter(15L)),
             () => Assert.Equal(10.5, Request.IncrementByFloat("key", 0.5).Converter(10.5)),
+            // TODO #454: Set should return ValkeyValue.Ok instead of bool.
             () => Assert.True(Request.Set([
                 new KeyValuePair<ValkeyKey, ValkeyValue>("key1", "value1"),
                 new KeyValuePair<ValkeyKey, ValkeyValue>("key2", "value2")
             ]).Converter("OK")),
-            () => Assert.False(Request.Set([
-                new KeyValuePair<ValkeyKey, ValkeyValue>("key1", "value1"),
-                new KeyValuePair<ValkeyKey, ValkeyValue>("key2", "value2")
-            ]).Converter("ERROR")),
             () => Assert.True(Request.SetIfNotExists([new KeyValuePair<ValkeyKey, ValkeyValue>("key1", "value1")]).Converter(true)),
             () => Assert.False(Request.SetIfNotExists([new KeyValuePair<ValkeyKey, ValkeyValue>("key1", "value1")]).Converter(false)),
             () => Assert.Equal("test_value", Request.GetDelete("test_key").Converter(new GlideString("test_value")).ToString()),
             () => Assert.True(Request.GetDelete("test_key").Converter(null!).IsNull),
             () => Assert.Equal("test_value", Request.GetExpiry("test_key", GetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60))).Converter(new GlideString("test_value")).ToString()),
             () => Assert.True(Request.GetExpiry("test_key", GetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60))).Converter(null!).IsNull),
-
-            // Server Management Commands
-            () => Assert.Equal(["CONFIGGET", "*"], Request.ConfigGetAsync("*").GetArgs()),
-            () => Assert.Equal(["CONFIGGET", "maxmemory"], Request.ConfigGetAsync("maxmemory").GetArgs()),
-            () => Assert.Equal(["CONFIGGET", "*"], Request.ConfigGetAsync().GetArgs()),
-            () => Assert.Equal(["CONFIGRESETSTAT"], Request.ConfigResetStatisticsAsync().GetArgs()),
-            () => Assert.Equal(["CONFIGREWRITE"], Request.ConfigRewriteAsync().GetArgs()),
-            () => Assert.Equal(["CONFIGSET", "maxmemory", "100mb"], Request.ConfigSetAsync("maxmemory", "100mb").GetArgs()),
-            () => Assert.Equal(["CONFIGSET", "timeout", "300"], Request.ConfigSetAsync("timeout", "300").GetArgs()),
-            () => Assert.Equal(["DBSIZE"], Request.DatabaseSizeAsync().GetArgs()),
-            () => Assert.Equal(["DBSIZE"], Request.DatabaseSizeAsync().GetArgs()),
-            () => Assert.Equal(["FLUSHALL"], Request.FlushAllDatabasesAsync().GetArgs()),
-            () => Assert.Equal(["FLUSHALL", "SYNC"], Request.FlushAllDatabasesAsync(FlushMode.Sync).GetArgs()),
-            () => Assert.Equal(["FLUSHALL", "ASYNC"], Request.FlushAllDatabasesAsync(FlushMode.Async).GetArgs()),
-            () => Assert.Equal(["FLUSHDB"], Request.FlushDatabaseAsync().GetArgs()),
-            () => Assert.Equal(["FLUSHDB"], Request.FlushDatabaseAsync().GetArgs()),
-            () => Assert.Equal(["FLUSHDB", "SYNC"], Request.FlushDatabaseAsync(FlushMode.Sync).GetArgs()),
-            () => Assert.Equal(["FLUSHDB", "ASYNC"], Request.FlushDatabaseAsync(FlushMode.Async).GetArgs()),
-            () => Assert.Equal(["LASTSAVE"], Request.LastSaveAsync().GetArgs()),
-            () => Assert.Equal(["TIME"], Request.TimeAsync().GetArgs()),
-            () => Assert.Equal(["LOLWUT"], Request.LolwutAsync().GetArgs()),
-            () => Assert.Equal(["LOLWUT"], Request.LolwutAsync(options: null).GetArgs()),
-            () => Assert.Equal(["LOLWUT", "VERSION", "5"], Request.LolwutAsync(new LolwutOptions { Version = 5 }).GetArgs()),
-            () => Assert.Equal(["LOLWUT", "VERSION", "6", "40", "20"], Request.LolwutAsync(new LolwutOptions { Version = 6, Parameters = [40, 20] }).GetArgs()),
-            () => Assert.Equal(["LOLWUT", "40", "20"], Request.LolwutAsync(new LolwutOptions { Parameters = [40, 20] }).GetArgs()),
-            () => Assert.Equal(["CONFIGGET", "maxmemory", "lfu-decay-time"], Request.ConfigGetAsync([(ValkeyValue)"maxmemory", (ValkeyValue)"lfu-decay-time"]).GetArgs()),
-            () => Assert.Equal(["CONFIGSET", "lfu-decay-time", "5", "lfu-log-factor", "20"], Request.ConfigSetAsync(new Dictionary<ValkeyValue, ValkeyValue> { { "lfu-decay-time", "5" }, { "lfu-log-factor", "20" } }).GetArgs()),
+            () => Assert.Equal("test_value", Request.GetExpiry("test_key", GetExpiryOptions.ExpireAt(new DateTimeOffset(2021, 1, 1, 0, 0, 0, TimeSpan.Zero))).Converter(new GlideString("test_value")).ToString()),
+            () => Assert.True(Request.GetExpiry("test_key", GetExpiryOptions.ExpireAt(new DateTimeOffset(2021, 1, 1, 0, 0, 0, TimeSpan.Zero))).Converter(null!).IsNull),
 
             // Server Management Command Converters
+            () => Assert.Equal("Background append only file rewriting started", Request.BgRewriteAofAsync().Converter("Background append only file rewriting started")),
             () => Assert.Equal([new("maxmemory", "100mb")], Request.ConfigGetAsync("maxmemory").Converter(new object[] { (gs)"maxmemory", "100mb" })),
-            () => Assert.Equal([], Request.ConfigGetAsync("nonexistent").Converter(Array.Empty<object>())),
+            () => Assert.Empty(Request.ConfigGetAsync("nonexistent").Converter(Array.Empty<object>())),
             () => Assert.Equal(100L, Request.DatabaseSizeAsync().Converter(100L)),
             () => Assert.Equal(0L, Request.DatabaseSizeAsync().Converter(0L)),
             () => Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(1609459200), Request.LastSaveAsync().Converter(1609459200L)),
-            () => Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(1609459200).AddTicks(123456 * 10), Request.TimeAsync().Converter(["1609459200", "123456"])),
+            () => Assert.Empty(Request.LatencyHistoryAsync("command").Converter(Array.Empty<object>())),
+            () => Assert.Equal(
+                [new LatencyEntry {
+                    Time = DateTimeOffset.FromUnixTimeSeconds(1609459200),
+                    Duration = TimeSpan.FromMilliseconds(50) }],
+                Request.LatencyHistoryAsync("command").Converter(new object[] { new object[] { 1609459200L, 50L } })),
+            () => Assert.Empty(Request.LatencyLatestAsync().Converter(Array.Empty<object>())),
+            () => Assert.Equal(
+                [new LatencyEventInfo {
+                    EventName = "command",
+                    LatestTime = DateTimeOffset.FromUnixTimeSeconds(1609459200),
+                    LatestDuration = TimeSpan.FromMilliseconds(50),
+                    MaxDuration = TimeSpan.FromMilliseconds(100) }],
+                Request.LatencyLatestAsync().Converter(new object[] { new object[] { new GlideString("command"), 1609459200L, 50L, 100L } })),
+            () => Assert.Equal(
+                [new LatencyEventInfo {
+                    EventName = "command",
+                    LatestTime = DateTimeOffset.FromUnixTimeSeconds(1609459200),
+                    LatestDuration = TimeSpan.FromMilliseconds(50),
+                    MaxDuration = TimeSpan.FromMilliseconds(100),
+                    Sum = TimeSpan.FromMilliseconds(200),
+                    Count = 5L, }],
+                Request.LatencyLatestAsync().Converter(new object[] { new object[] { new GlideString("command"), 1609459200L, 50L, 100L, 200L, 5L } })),
+            () => Assert.Equal(0L, Request.LatencyResetAsync([]).Converter(0L)),
+            () => Assert.Equal(3L, Request.LatencyResetAsync(["command"]).Converter(3L)),
             () => Assert.Equal("Valkey 7.0.0", Request.LolwutAsync().Converter("Valkey 7.0.0")),
-            () => Assert.Equal("test_value", Request.GetExpiry("test_key", GetExpiryOptions.ExpireAt(new DateTimeOffset(2021, 1, 1, 0, 0, 0, TimeSpan.Zero))).Converter(new GlideString("test_value")).ToString()),
+            () => Assert.Equal("Sam, I have no memory problems", Request.MemoryDoctorAsync().Converter("Sam, I have no memory problems")),
+            () => Assert.Equal("jemalloc stats", Request.MemoryMallocStatsAsync().Converter("jemalloc stats")),
+            () => Assert.Equal(ValkeyValue.Ok, Request.SaveAsync().Converter("OK")),
+            () => Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(1609459200).AddTicks(123456 * 10), Request.TimeAsync().Converter(["1609459200", "123456"])),
+
             () => Assert.Equal("common", Request.LongestCommonSubsequence("key1", "key2").Converter(new GlideString("common"))!.ToString()),
             () => Assert.Equal(5L, Request.LongestCommonSubsequenceLength("key1", "key2").Converter(5L)),
 
@@ -482,6 +540,9 @@ public class CommandTests
             () => Assert.Equal("test-connection", Request.ClientGetName().Converter(new GlideString("test-connection"))),
             () => Assert.Equal(12345L, Request.ClientId().Converter(12345L)),
             () => Assert.Equal(ValkeyValue.Ok, Request.Select(0).Converter("OK")),
+            () => Assert.Equal(ValkeyValue.Ok, Request.ClientPause(OneSecond).Converter("OK")),
+            () => Assert.Equal(ValkeyValue.Ok, Request.ClientPauseWrite(OneSecond).Converter("OK")),
+            () => Assert.Equal(ValkeyValue.Ok, Request.ClientUnpause().Converter("OK")),
 
             () => Assert.True(Request.SetAddAsync("key", "member").Converter(1L)),
             () => Assert.False(Request.SetAddAsync("key", "member").Converter(0L)),
@@ -520,6 +581,7 @@ public class CommandTests
             () => Assert.Equal(ValkeyType.Hash, Request.TypeAsync("key").Converter("hash")),
             () => Assert.Equal(ValkeyType.Stream, Request.TypeAsync("key").Converter("stream")),
             () => Assert.Equal(ValkeyType.None, Request.TypeAsync("key").Converter("none")),
+            // TODO #454: RenameAsync should return ValkeyValue.Ok instead of bool.
             () => Assert.True(Request.RenameAsync("oldkey", "newkey").Converter("OK")),
             () => Assert.True(Request.RenameIfNotExistsAsync("oldkey", "newkey").Converter(true)),
             () => Assert.False(Request.RenameIfNotExistsAsync("oldkey", "newkey").Converter(false)),
@@ -570,10 +632,10 @@ public class CommandTests
             },
 
             // WAIT Commands Converters
-            () => Assert.Equal(2L, Request.WaitAsync(1, TimeSpan.FromMilliseconds(1000)).Converter(2L)),
+            () => Assert.Equal(2L, Request.WaitAsync(1, OneSecond).Converter(2L)),
             () => Assert.Equal(0L, Request.WaitAsync(0, TimeSpan.Zero).Converter(0L)),
             () => Assert.Equal(1L, Request.WaitAsync(3, TimeSpan.FromMilliseconds(5000)).Converter(1L)),
-            () => Assert.Equal(new long[] { 1L, 0L }, Request.WaitAofAsync(true, 1, TimeSpan.FromMilliseconds(1000)).Converter([1L, 0L])),
+            () => Assert.Equal(new long[] { 1L, 0L }, Request.WaitAofAsync(true, 1, OneSecond).Converter([1L, 0L])),
             () => Assert.Equal(new long[] { 0L, 0L }, Request.WaitAofAsync(false, 0, TimeSpan.Zero).Converter([0L, 0L])),
 
             () => Assert.Equal("one", Request.ListLeftPopAsync("a").Converter("one")),
@@ -683,6 +745,40 @@ public class CommandTests
             () => Assert.Equal([65L, null, 100L], Request.BitFieldAsync("key", [new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(0)), new BitFieldOptions.BitFieldSet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(0), 100)]).Converter([65L, null!, 100L])),
             () => Assert.Equal([65L, 4L], Request.BitFieldReadOnlyAsync("key", [new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(0)), new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Unsigned(4), new BitFieldOptions.BitOffset(0))]).Converter([65L, 4L]))
         );
+
+    [Fact]
+    public void ValidateClientTrackingInfoConverter()
+    {
+        // Tracking off
+        var offResponse = new Dictionary<GlideString, object>()
+        {
+            ["flags"] = new HashSet<object> { new GlideString("off") },
+            ["redirect"] = -1L,
+            ["prefixes"] = new HashSet<object>(),
+        };
+
+        var offInfo = Request.ClientTrackingInfo().Converter(offResponse);
+        Assert.Equivalent(new HashSet<string> { "off" }, offInfo.Flags);
+        Assert.Equal(-1L, offInfo.Redirect);
+        Assert.Empty(offInfo.Prefixes);
+
+        // Tracking on
+        var onResponse = new Dictionary<GlideString, object>()
+        {
+            ["flags"] = new HashSet<object> {
+                new GlideString("on"),
+                new GlideString("bcast") },
+            ["redirect"] = 0L,
+            ["prefixes"] = new HashSet<object> {
+                new GlideString("user:"),
+                new GlideString("session:") },
+        };
+
+        var onInfo = Request.ClientTrackingInfo().Converter(onResponse);
+        Assert.Equivalent(new HashSet<string> { "on", "bcast" }, onInfo.Flags);
+        Assert.Equal(0L, onInfo.Redirect);
+        Assert.Equivalent(new HashSet<string> { "user:", "session:" }, onInfo.Prefixes);
+    }
 
     [Fact]
     public void BitField_AutoOptimization_UsesCorrectRequestType()
@@ -945,22 +1041,22 @@ public class CommandTests
 
             // StreamPendingMessages
             () => Assert.Equal(["XPENDING", "key", "group", "-", "+", "10", "consumer"], Request.StreamPendingMessagesAsync("key", "group", "-", "+", 10, "consumer", null).GetArgs()),
-            () => Assert.Equal(["XPENDING", "key", "group", "IDLE", "1000", "-", "+", "10", "consumer"], Request.StreamPendingMessagesAsync("key", "group", "-", "+", 10, "consumer", TimeSpan.FromMilliseconds(1000)).GetArgs()),
+            () => Assert.Equal(["XPENDING", "key", "group", "IDLE", "1000", "-", "+", "10", "consumer"], Request.StreamPendingMessagesAsync("key", "group", "-", "+", 10, "consumer", OneSecond).GetArgs()),
 
             // StreamClaim
-            () => Assert.Equal(["XCLAIM", "key", "group", "consumer", "1000", "1-0"], Request.StreamClaimAsync("key", "group", "consumer", TimeSpan.FromMilliseconds(1000), ["1-0"]).GetArgs()),
-            () => Assert.Equal(["XCLAIM", "key", "group", "consumer", "1000", "1-0", "IDLE", "500"], Request.StreamClaimAsync("key", "group", "consumer", TimeSpan.FromMilliseconds(1000), ["1-0"], new StreamClaimOptions { Idle = TimeSpan.FromMilliseconds(500) }).GetArgs()),
-            () => Assert.Equal(["XCLAIM", "key", "group", "consumer", "1000", "1-0", "FORCE"], Request.StreamClaimAsync("key", "group", "consumer", TimeSpan.FromMilliseconds(1000), ["1-0"], new StreamClaimOptions { Force = true }).GetArgs()),
+            () => Assert.Equal(["XCLAIM", "key", "group", "consumer", "1000", "1-0"], Request.StreamClaimAsync("key", "group", "consumer", OneSecond, ["1-0"]).GetArgs()),
+            () => Assert.Equal(["XCLAIM", "key", "group", "consumer", "1000", "1-0", "IDLE", "500"], Request.StreamClaimAsync("key", "group", "consumer", OneSecond, ["1-0"], new StreamClaimOptions { Idle = TimeSpan.FromMilliseconds(500) }).GetArgs()),
+            () => Assert.Equal(["XCLAIM", "key", "group", "consumer", "1000", "1-0", "FORCE"], Request.StreamClaimAsync("key", "group", "consumer", OneSecond, ["1-0"], new StreamClaimOptions { Force = true }).GetArgs()),
 
             // StreamClaimIdsOnly
-            () => Assert.Equal(["XCLAIM", "key", "group", "consumer", "1000", "1-0", "JUSTID"], Request.StreamClaimIdsOnlyAsync("key", "group", "consumer", TimeSpan.FromMilliseconds(1000), ["1-0"]).GetArgs()),
+            () => Assert.Equal(["XCLAIM", "key", "group", "consumer", "1000", "1-0", "JUSTID"], Request.StreamClaimIdsOnlyAsync("key", "group", "consumer", OneSecond, ["1-0"]).GetArgs()),
 
             // StreamAutoClaim
-            () => Assert.Equal(["XAUTOCLAIM", "key", "group", "consumer", "1000", "0-0"], Request.StreamAutoClaimAsync("key", "group", "consumer", TimeSpan.FromMilliseconds(1000), "0-0", null).GetArgs()),
-            () => Assert.Equal(["XAUTOCLAIM", "key", "group", "consumer", "1000", "0-0", "COUNT", "10"], Request.StreamAutoClaimAsync("key", "group", "consumer", TimeSpan.FromMilliseconds(1000), "0-0", 10).GetArgs()),
+            () => Assert.Equal(["XAUTOCLAIM", "key", "group", "consumer", "1000", "0-0"], Request.StreamAutoClaimAsync("key", "group", "consumer", OneSecond, "0-0", null).GetArgs()),
+            () => Assert.Equal(["XAUTOCLAIM", "key", "group", "consumer", "1000", "0-0", "COUNT", "10"], Request.StreamAutoClaimAsync("key", "group", "consumer", OneSecond, "0-0", 10).GetArgs()),
 
             // StreamAutoClaimJustId
-            () => Assert.Equal(["XAUTOCLAIM", "key", "group", "consumer", "1000", "0-0", "JUSTID"], Request.StreamAutoClaimJustIdAsync("key", "group", "consumer", TimeSpan.FromMilliseconds(1000), "0-0", null).GetArgs()),
+            () => Assert.Equal(["XAUTOCLAIM", "key", "group", "consumer", "1000", "0-0", "JUSTID"], Request.StreamAutoClaimJustIdAsync("key", "group", "consumer", OneSecond, "0-0", null).GetArgs()),
 
             // StreamInfo
             () => Assert.Equal(["XINFOSTREAM", "key"], Request.StreamInfoAsync("key").GetArgs()),
@@ -1021,4 +1117,154 @@ public class CommandTests
             () => Assert.Equal(2L, Request.StreamAcknowledgeAsync("key", "group", ["1-0", "2-0"]).Converter(2L))
         );
     }
+
+    #region MemoryStats Converter Tests
+
+    // Reponse values for testing converters.
+    private static readonly long ConvertLong = 100L;
+    private static readonly double ConvertDouble = 1.5;
+
+    [Fact]
+    public void MemoryStatsConverter_WithAllFields()
+    {
+        var db0 = new Dictionary<GlideString, object>()
+        {
+            ["overhead.hashtable.main"] = ConvertLong,
+            ["overhead.hashtable.expires"] = ConvertLong,
+        };
+
+        var db1 = new Dictionary<GlideString, object>()
+        {
+            ["overhead.hashtable.main"] = ConvertLong,
+            ["overhead.hashtable.expires"] = ConvertLong,
+        };
+
+        var raw = new Dictionary<GlideString, object>()
+        {
+            ["db.0"] = db0,
+            ["db.1"] = db1,
+            ["allocator.active"] = ConvertLong,
+            ["allocator.allocated"] = ConvertLong,
+            ["allocator-fragmentation.bytes"] = ConvertLong,
+            ["allocator.resident"] = ConvertLong,
+            ["allocator-rss.bytes"] = ConvertLong,
+            ["aof.buffer"] = ConvertLong,
+            ["clients.normal"] = ConvertLong,
+            ["clients.slaves"] = ConvertLong,
+            ["dataset.bytes"] = ConvertLong,
+            ["fragmentation.bytes"] = ConvertLong,
+            ["keys.bytes-per-key"] = ConvertLong,
+            ["keys.count"] = ConvertLong,
+            ["lua.caches"] = ConvertLong,
+            ["overhead.total"] = ConvertLong,
+            ["peak.allocated"] = ConvertLong,
+            ["replication.backlog"] = ConvertLong,
+            ["rss-overhead.bytes"] = ConvertLong,
+            ["startup.allocated"] = ConvertLong,
+            ["total.allocated"] = ConvertLong,
+            ["allocator-fragmentation.ratio"] = ConvertDouble,
+            ["allocator-rss.ratio"] = ConvertDouble,
+            ["dataset.percentage"] = ConvertDouble,
+            ["fragmentation"] = ConvertDouble,
+            ["peak.percentage"] = ConvertDouble,
+            ["rss-overhead.ratio"] = ConvertDouble,
+
+            // Optional 7.0+ fields
+            ["cluster.links"] = ConvertLong,
+            ["functions.caches"] = ConvertLong,
+
+            // Optional 8.0+ fields
+            ["allocator.muzzy"] = ConvertLong,
+            ["db.dict.rehashing.count"] = ConvertLong,
+            ["overhead.db.hashtable.lut"] = ConvertLong,
+            ["overhead.db.hashtable.rehashing"] = ConvertLong,
+        };
+
+        var stats = Request.MemoryStatsAsync().Converter(raw);
+
+        Assert.Equal(2, stats.Db.Count);
+        Assert.Equal(ConvertLong, stats.Db[0].OverheadHashtableMain);
+        Assert.Equal(ConvertLong, stats.Db[0].OverheadHashtableExpires);
+        Assert.Equal(ConvertLong, stats.Db[1].OverheadHashtableMain);
+        Assert.Equal(ConvertLong, stats.Db[1].OverheadHashtableExpires);
+        Assert.Equal(ConvertLong, stats.AllocatorActive);
+        Assert.Equal(ConvertLong, stats.AllocatorAllocated);
+        Assert.Equal(ConvertLong, stats.AllocatorFragmentationBytes);
+        Assert.Equal(ConvertLong, stats.AllocatorResident);
+        Assert.Equal(ConvertLong, stats.AllocatorRssBytes);
+        Assert.Equal(ConvertLong, stats.AofBuffer);
+        Assert.Equal(ConvertLong, stats.ClientsNormal);
+        Assert.Equal(ConvertLong, stats.ClientsSlaves);
+        Assert.Equal(ConvertLong, stats.DatasetBytes);
+        Assert.Equal(ConvertLong, stats.FragmentationBytes);
+        Assert.Equal(ConvertLong, stats.KeysBytesPerKey);
+        Assert.Equal(ConvertLong, stats.KeysCount);
+        Assert.Equal(ConvertLong, stats.LuaCaches);
+        Assert.Equal(ConvertLong, stats.OverheadTotal);
+        Assert.Equal(ConvertLong, stats.PeakAllocated);
+        Assert.Equal(ConvertLong, stats.ReplicationBacklog);
+        Assert.Equal(ConvertLong, stats.RssOverheadBytes);
+        Assert.Equal(ConvertLong, stats.StartupAllocated);
+        Assert.Equal(ConvertLong, stats.TotalAllocated);
+        Assert.Equal(ConvertDouble, stats.AllocatorFragmentationRatio);
+        Assert.Equal(ConvertDouble, stats.AllocatorRssRatio);
+        Assert.Equal(ConvertDouble, stats.DatasetPercentage);
+        Assert.Equal(ConvertDouble, stats.Fragmentation);
+        Assert.Equal(ConvertDouble, stats.PeakPercentage);
+        Assert.Equal(ConvertDouble, stats.RssOverheadRatio);
+        Assert.Equal(ConvertLong, stats.ClusterLinks);
+        Assert.Equal(ConvertLong, stats.FunctionsCaches);
+        Assert.Equal(ConvertLong, stats.AllocatorMuzzy);
+        Assert.Equal(ConvertLong, stats.DbDictRehashingCount);
+        Assert.Equal(ConvertLong, stats.OverheadDbHashtableLut);
+        Assert.Equal(ConvertLong, stats.OverheadDbHashtableRehashing);
+    }
+
+    [Fact]
+    public void MemoryStatsConverter_WithoutOptionalFields()
+    {
+        var raw = new Dictionary<GlideString, object>()
+        {
+            ["allocator.active"] = ConvertLong,
+            ["allocator.allocated"] = ConvertLong,
+            ["allocator-fragmentation.bytes"] = ConvertLong,
+            ["allocator.resident"] = ConvertLong,
+            ["allocator-rss.bytes"] = ConvertLong,
+            ["aof.buffer"] = ConvertLong,
+            ["clients.normal"] = ConvertLong,
+            ["clients.slaves"] = ConvertLong,
+            ["dataset.bytes"] = ConvertLong,
+            ["fragmentation.bytes"] = ConvertLong,
+            ["keys.bytes-per-key"] = ConvertLong,
+            ["keys.count"] = ConvertLong,
+            ["lua.caches"] = ConvertLong,
+            ["overhead.total"] = ConvertLong,
+            ["peak.allocated"] = ConvertLong,
+            ["replication.backlog"] = ConvertLong,
+            ["rss-overhead.bytes"] = ConvertLong,
+            ["startup.allocated"] = ConvertLong,
+            ["total.allocated"] = ConvertLong,
+            ["allocator-fragmentation.ratio"] = ConvertDouble,
+            ["allocator-rss.ratio"] = ConvertDouble,
+            ["dataset.percentage"] = ConvertDouble,
+            ["fragmentation"] = ConvertDouble,
+            ["peak.percentage"] = ConvertDouble,
+            ["rss-overhead.ratio"] = ConvertDouble,
+        };
+
+        var stats = Request.MemoryStatsAsync().Converter(raw);
+
+        Assert.Empty(stats.Db);
+        Assert.Equal(ConvertLong, stats.AllocatorActive);
+        Assert.Equal(ConvertLong, stats.TotalAllocated);
+        Assert.Equal(ConvertDouble, stats.AllocatorFragmentationRatio);
+        Assert.Null(stats.ClusterLinks);
+        Assert.Null(stats.FunctionsCaches);
+        Assert.Null(stats.AllocatorMuzzy);
+        Assert.Null(stats.DbDictRehashingCount);
+        Assert.Null(stats.OverheadDbHashtableLut);
+        Assert.Null(stats.OverheadDbHashtableRehashing);
+    }
+
+    #endregion
 }

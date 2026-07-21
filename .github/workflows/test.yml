@@ -48,7 +48,7 @@ jobs:
                       exit 1
                   fi
 
-            - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+            - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
               with:
                   sparse-checkout: .github/json_matrices
 
@@ -74,7 +74,7 @@ jobs:
             VALKEY_GLIDE_DNS_TESTS_ENABLED: "1"
 
         steps:
-            - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+            - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
               with:
                   submodules: true
 
@@ -106,7 +106,7 @@ jobs:
                   echo "Package version: $PACKAGE_VERSION"
 
             - name: Set up dotnet ${{ matrix.dotnet }}
-              uses: actions/setup-dotnet@9a946fdbd5fb07b82b2f5a4466058b876ab72bb2 # v5.3.0
+              uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
               with:
                   # .NET 10 SDK to build project
                   # matrix.dotnet SDK for test execution
@@ -150,7 +150,7 @@ jobs:
                   target: ${{ matrix.host.target }}
                   server-version: ${{ matrix.server.version }}
 
-            - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+            - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
               if: ${{ inputs.package-version == '' }}
               with:
                   path: rust/target
@@ -223,7 +223,7 @@ jobs:
                   yum update -y
                   yum install -y git tar findutils libicu
 
-            - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+            - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
               with:
                   submodules: true
 
@@ -239,7 +239,7 @@ jobs:
                   echo "Package version: $PACKAGE_VERSION"
 
             - name: Set up dotnet ${{ matrix.dotnet }}
-              uses: actions/setup-dotnet@9a946fdbd5fb07b82b2f5a4466058b876ab72bb2 # v5.3.0
+              uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
               with:
                   # .NET 10 SDK to build project
                   # matrix.dotnet SDK for test execution
@@ -263,7 +263,7 @@ jobs:
                   ::1 valkey.glide.test.no_tls.com"
                   echo "$ENTRIES" | tee -a /etc/hosts
 
-            - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+            - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
               with:
                   path: rust/target
                   key: rust-${{ matrix.host.image }}
@@ -285,12 +285,12 @@ jobs:
             matrix:
                 dotnet: ${{ fromJson(needs.load-matrix.outputs.dotnet-matrix) }}
         steps:
-            - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+            - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
               with:
                   submodules: true
 
             - name: Set up dotnet ${{ matrix.dotnet }}
-              uses: actions/setup-dotnet@9a946fdbd5fb07b82b2f5a4466058b876ab72bb2 # v5.3.0
+              uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
               with:
                   # .NET 10 SDK to build project
                   # matrix.dotnet SDK for test execution
@@ -307,7 +307,7 @@ jobs:
                   target: x86_64-unknown-linux-gnu
                   server-version: "9.0"
 
-            - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+            - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
               with:
                   path: rust/target
                   key: rust-x86_64-unknown-linux-gnu

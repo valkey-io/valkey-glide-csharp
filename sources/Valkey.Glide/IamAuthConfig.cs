@@ -27,10 +27,7 @@ public sealed class IamAuthConfig : IDisposable
     /// <summary>
     /// The AWS service type.
     /// </summary>
-    public ServiceType ServiceType
-    {
-        get { ThrowIfDisposed(); return field; }
-    }
+    public ServiceType ServiceType { get; }
 
     /// <summary>
     /// The AWS region where the cluster is located.
@@ -82,10 +79,7 @@ public sealed class IamAuthConfig : IDisposable
     /// Returns a string representation with sensitive data omitted.
     /// </summary>
     public override string ToString()
-    {
-        ThrowIfDisposed();
-        return $"IamAuthConfig {{ ServiceType = {ServiceType} }}";
-    }
+        => $"IamAuthConfig {{ ServiceType = {ServiceType} }}";
 
     /// <summary>
     /// Clears sensitive data.

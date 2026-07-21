@@ -18,9 +18,13 @@ public abstract class Server : IDisposable
     protected static readonly GlideString[] KillClientArgs = ["CLIENT", "KILL", "TYPE", "NORMAL"];
 
     /// <summary>
-    /// Number of attempts to establish the initial client connection.
+    /// Maximum time to wait for the initial client connection to succeed.
     /// </summary>
-    private const int ConnectionAttempts = 5;
+    /// <remarks>
+    /// On Windows CI (WSL), cluster topology formation can take several seconds after the server
+    /// process starts.
+    /// </remarks>
+    private static readonly TimeSpan ConnectionTimeout = TimeSpan.FromSeconds(30);
 
     /// <summary>
     /// Delay between initial connection attempts.
@@ -77,10 +81,19 @@ public abstract class Server : IDisposable
     /// </summary>
     /// <param name="useClusterMode">Whether to start in cluster mode.</param>
     /// <param name="useTls">Whether to enable TLS.</param>
-    protected Server(bool useClusterMode, bool useTls)
+    /// <param name="replicaCount">Number of replicas per primary, or <see langword="null"/> to use the default.</param>
+    protected Server(
+        bool useClusterMode,
+        bool useTls = false,
+        int? replicaCount = null)
     {
         UseTls = useTls;
-        Address = ServerManager.StartServer(_name, useClusterMode: useClusterMode, useTls: UseTls).First();
+
+        Address = ServerManager.StartServer(
+            name: _name,
+            useClusterMode: useClusterMode,
+            useTls: UseTls,
+            replicaCount: replicaCount).First();
 
         if (UseTls)
         {
@@ -150,8 +163,8 @@ public abstract class Server : IDisposable
     {
         ConnectionException? lastException = null;
 
-        /// Retry the initial connection attempt if needed to handle flakiness in CI environment.
-        for (int attempt = 1; attempt <= ConnectionAttempts; attempt++)
+        using CancellationTokenSource cts = new(ConnectionTimeout);
+        while (!cts.Token.IsCancellationRequested)
         {
             try
             {
@@ -160,11 +173,7 @@ public abstract class Server : IDisposable
             catch (ConnectionException ex)
             {
                 lastException = ex;
-
-                if (attempt < ConnectionAttempts)
-                {
-                    await Task.Delay(ConnectionRetryDelay);
-                }
+                await Task.Delay(ConnectionRetryDelay);
             }
         }
 
@@ -231,7 +240,9 @@ public sealed class ClusterServer(bool useTls = false) : Server(useClusterMode: 
 /// <summary>
 /// Valkey standalone server.
 /// </summary>
-public sealed class StandaloneServer(bool useTls = false) : Server(useClusterMode: false, useTls: useTls)
+public sealed class StandaloneServer(
+    bool useTls = false,
+    int? replicaCount = null) : Server(useClusterMode: false, useTls: useTls, replicaCount: replicaCount)
 {
     #region Public Methods
 
@@ -277,6 +288,17 @@ public sealed class StandaloneServer(bool useTls = false) : Server(useClusterMod
     {
         using GlideClient client = await CreateStandaloneClientAsync();
         _ = await client.CustomCommand(KillClientArgs);
+    }
+
+    /// <summary>
+    /// Creates a <see cref="ConnectionMultiplexer"/> connected to this server.
+    /// The caller is responsible for disposing the returned connection.
+    /// </summary>
+    public async Task<ConnectionMultiplexer> CreateConnectionMultiplexerAsync()
+    {
+        var config = new ConfigurationOptions();
+        config.EndPoints.Add(Address.Host, Address.Port);
+        return await ConnectionMultiplexer.ConnectAsync(config);
     }
 
     #endregion

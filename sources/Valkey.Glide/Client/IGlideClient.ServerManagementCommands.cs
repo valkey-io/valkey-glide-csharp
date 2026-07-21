@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands.Options;
+
 using static Valkey.Glide.Commands.Options.InfoOptions;
 
 namespace Valkey.Glide;
@@ -148,6 +150,21 @@ public partial interface IGlideClient
     Task FlushDatabaseAsync();
 
     /// <summary>
+    /// Initiates a background rewrite of the append-only file (AOF).
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/bgrewriteaof/">Valkey commands – BGREWRITEAOF</seealso>
+    /// <returns>A status string.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var response = await client.BgRewriteAofAsync();
+    /// Console.WriteLine(response); // "Background append only file rewriting started"
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<string> BgRewriteAofAsync();
+
+    /// <summary>
     /// Returns the time of the last DB save executed with success.
     /// A client may check if a <c>BGSAVE</c> command succeeded by reading the <c>LASTSAVE</c> value, then
     /// issuing a <c>BGSAVE</c> command and checking at regular intervals whether <c>LASTSAVE</c> changed.
@@ -191,4 +208,207 @@ public partial interface IGlideClient
     /// </example>
     /// </remarks>
     Task<string> LolwutAsync();
+
+    /// <summary>
+    /// Returns a report about memory problems detected by the server.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/memory-doctor/">Valkey commands – MEMORY DOCTOR</seealso>
+    /// <returns>The memory diagnostic report.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var report = await client.MemoryDoctorAsync();
+    /// Console.WriteLine("Memory report: " + report);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<string> MemoryDoctorAsync();
+
+    /// <summary>
+    /// Returns the internal statistics of the memory allocator.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/memory-malloc-stats/">Valkey commands – MEMORY MALLOC-STATS</seealso>
+    /// <returns>The memory allocator statistics.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var report = await client.MemoryMallocStatsAsync();
+    /// Console.WriteLine("Allocator stats: " + report);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<string> MemoryMallocStatsAsync();
+
+    /// <summary>
+    /// Asks the server to reclaim memory from the allocator back to the operating system.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/memory-purge/">Valkey commands – MEMORY PURGE</seealso>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.MemoryPurgeAsync();
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task MemoryPurgeAsync();
+
+    /// <summary>
+    /// Returns detailed memory consumption statistics of the server.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/memory-stats/">Valkey commands – MEMORY STATS</seealso>
+    /// <returns>A <see cref="MemoryStats" /> containing detailed memory usage statistics.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var stats = await client.MemoryStatsAsync();
+    /// Console.WriteLine($"Peak allocated: {stats.PeakAllocated}");
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<MemoryStats> MemoryStatsAsync();
+
+    /// <summary>
+    /// Returns latency spike time series for the specified event.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/latency-history/">Valkey commands – LATENCY HISTORY</seealso>
+    /// <param name="event">The name of the event to get latency history for.</param>
+    /// <returns>An array of <see cref="LatencyEntry"/> representing the latency spike time series for the event.
+    /// Returns an empty array if the event does not exist.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var history = await client.LatencyHistoryAsync("command");
+    /// foreach (var entry in history)
+    /// {
+    ///     Console.WriteLine($"Time: {entry.Time}, Duration: {entry.Duration.TotalMilliseconds}ms");
+    /// }
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<LatencyEntry[]> LatencyHistoryAsync(ValkeyValue @event);
+
+    /// <summary>
+    /// Reports the latest latency events logged by the server.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/latency-latest/">Valkey commands – LATENCY LATEST</seealso>
+    /// <returns>An array of <see cref="LatencyEventInfo"/> for the latest latency events.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var latest = await client.LatencyLatestAsync();
+    /// foreach (var info in latest)
+    /// {
+    ///     Console.WriteLine($"Event: {info.EventName}, Latest: {info.LatestDuration.TotalMilliseconds}ms");
+    /// }
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<LatencyEventInfo[]> LatencyLatestAsync();
+
+    /// <summary>
+    /// Asynchronously saves the dataset to disk in the background.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/bgsave/">Valkey commands – BGSAVE</seealso>
+    /// <returns>A status string.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var response = await client.BackgroundSaveAsync();
+    /// Console.WriteLine(response); // "Background saving started"
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<string> BackgroundSaveAsync();
+
+    /// <summary>
+    /// Schedules a background save of the database.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/bgsave/">Valkey commands – BGSAVE</seealso>
+    /// <returns>A status string.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var response = await client.BackgroundSaveScheduleAsync();
+    /// Console.WriteLine(response); // "Background saving scheduled"
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<string> BackgroundSaveScheduleAsync();
+
+    /// <summary>
+    /// Aborts all in-progress and scheduled background saves.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/bgsave/">Valkey commands – BGSAVE</seealso>
+    /// <note>Since Valkey 8.1.</note>
+    /// <returns>A status string.</returns>
+    /// <exception cref="Errors.RequestException">Thrown if no background save is currently in progress or scheduled.</exception>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var response = await client.BackgroundSaveCancelAsync();
+    /// Console.WriteLine(response); // "Background saving cancelled"
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<string> BackgroundSaveCancelAsync();
+
+    /// <summary>
+    /// Starts a coordinated failover from the connected primary to one of its replicas.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/failover/">Valkey commands – FAILOVER</seealso>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.FailoverAsync();
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task FailoverAsync();
+
+    /// <summary>
+    /// Starts a coordinated failover from the connected primary to one of its replicas.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/failover/">Valkey commands – FAILOVER</seealso>
+    /// <param name="options">The failover options.</param>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.FailoverAsync(FailoverOptions.Abort());
+    /// </code>
+    /// </example>
+    /// <example>
+    /// <code>
+    /// await client.FailoverAsync(FailoverOptions.To("localhost", 6380, TimeSpan.FromSeconds(1)));
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task FailoverAsync(FailoverOptions options);
+
+    /// <summary>
+    /// Makes the server a replica of the specified primary.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/replicaof/">Valkey commands – REPLICAOF</seealso>
+    /// <param name="host">The host of the primary to replicate.</param>
+    /// <param name="port">The port of the primary to replicate.</param>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.ReplicaOfAsync("localhost", 6379);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task ReplicaOfAsync(string host, int port);
+
+    /// <summary>
+    /// Promotes the current server to a primary by stopping replication.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/replicaof/">Valkey commands – REPLICAOF</seealso>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.ReplicaOfNoOneAsync();
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task ReplicaOfNoOneAsync();
 }

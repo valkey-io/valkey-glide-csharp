@@ -9,7 +9,6 @@ public class ServerFixture : IAsyncLifetime
 {
     #region Public Properties
 
-    // Standalone and cluster servers.
     public StandaloneServer StandaloneServer { get; private set; } = null!;
     public ClusterServer ClusterServer { get; private set; } = null!;
 
@@ -19,7 +18,8 @@ public class ServerFixture : IAsyncLifetime
     public Server GetServer(bool clusterMode)
         => clusterMode ? ClusterServer : StandaloneServer;
 
-    public ValueTask InitializeAsync()
+    /// <inheritdoc/>
+    public virtual ValueTask InitializeAsync()
     {
         StandaloneServer = CreateStandaloneServer();
         ClusterServer = CreateClusterServer();
@@ -27,7 +27,8 @@ public class ServerFixture : IAsyncLifetime
         return ValueTask.CompletedTask;
     }
 
-    public ValueTask DisposeAsync()
+    /// <inheritdoc/>
+    public virtual ValueTask DisposeAsync()
     {
         ClusterServer.Dispose();
         StandaloneServer.Dispose();
@@ -38,8 +39,6 @@ public class ServerFixture : IAsyncLifetime
     #endregion
     #region Protected Methods
 
-    // Creates standalone or cluster server.
-    // Desccendant can override to customize server creation.
     protected virtual StandaloneServer CreateStandaloneServer() => new();
     protected virtual ClusterServer CreateClusterServer() => new();
 

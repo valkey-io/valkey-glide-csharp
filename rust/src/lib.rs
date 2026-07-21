@@ -2018,6 +2018,215 @@ pub unsafe extern "C-unwind" fn get_cache_metrics(
 }
 
 // ========================================================================================
+// Monitor Client
+// ========================================================================================
+
+use glide_core::client::{MonitorClient, MonitorLine, MonitorLineCallback, NodeAddress, TlsMode};
+
+/// Callback invoked for each parsed MONITOR line.
+///
+/// # Safety
+/// All pointers are only valid for the duration of the callback invocation.
+/// They must not be stored or accessed after the callback returns.
+pub type MonitorCallback = unsafe extern "C-unwind" fn(
+    timestamp: f64,
+    database: u16,
+    client_addr: *const u8,
+    client_addr_len: i64,
+    command: *const u8,
+    command_len: i64,
+    args_count: i64,
+    args_ptrs: *const *const u8,
+    args_lens: *const i64,
+);
+
+/// Configuration for creating a monitor client.
+#[repr(C)]
+pub struct MonitorConfig {
+    pub host: *const c_char,
+    pub port: u16,
+    pub use_tls: bool,
+    pub database: u16,
+    pub username: *const c_char,
+    pub password: *const c_char,
+}
+
+struct MonitorAdapter {
+    client: std::mem::ManuallyDrop<MonitorClient>,
+    runtime: Runtime,
+}
+
+impl Drop for MonitorAdapter {
+    fn drop(&mut self) {
+        let client = unsafe { std::mem::ManuallyDrop::take(&mut self.client) };
+        self.runtime.block_on(client.stop_async());
+    }
+}
+
+/// Response returned by `create_monitor_client`.
+#[repr(C)]
+pub struct MonitorConnectionResponse {
+    pub conn_ptr: *const c_void,
+    pub connection_error_message: *mut c_char,
+}
+
+/// Creates a MonitorClient connected to the specified server.
+///
+/// # Safety
+/// - `config` must be a valid [`MonitorConfig`] pointer with valid string fields.
+/// - `monitor_callback` must be a valid function pointer that remains valid for the
+///   lifetime of the returned client.
+/// - The returned `MonitorConnectionResponse` must be freed with `free_monitor_connection_response`.
+#[unsafe(no_mangle)]
+pub unsafe extern "C-unwind" fn create_monitor_client(
+    config: *const MonitorConfig,
+    monitor_callback: MonitorCallback,
+) -> *const MonitorConnectionResponse {
+    let config = unsafe { &*config };
+
+    let host = match unsafe { CStr::from_ptr(config.host) }.to_str() {
+        Ok(s) => s.to_owned(),
+        Err(e) => {
+            let err_msg = CString::new(format!("Invalid UTF-8 in host: {e}")).unwrap_or_default();
+            return Box::into_raw(Box::new(MonitorConnectionResponse {
+                conn_ptr: std::ptr::null(),
+                connection_error_message: err_msg.into_raw(),
+            }));
+        }
+    };
+
+    let address = NodeAddress {
+        host,
+        port: config.port,
+    };
+
+    let tls_mode = if config.use_tls {
+        TlsMode::SecureTls
+    } else {
+        TlsMode::NoTls
+    };
+
+    let username = if config.username.is_null() {
+        None
+    } else {
+        match unsafe { CStr::from_ptr(config.username) }.to_str() {
+            Ok(s) if !s.is_empty() => Some(s.to_owned()),
+            _ => None,
+        }
+    };
+
+    let password = if config.password.is_null() {
+        None
+    } else {
+        match unsafe { CStr::from_ptr(config.password) }.to_str() {
+            Ok(s) if !s.is_empty() => Some(s.to_owned()),
+            _ => None,
+        }
+    };
+
+    let redis_conn_info = redis::RedisConnectionInfo {
+        db: config.database as i64,
+        username,
+        password,
+        protocol: redis::ProtocolVersion::RESP2,
+        client_name: None,
+        lib_name: Some(env!("GLIDE_NAME").to_string()),
+        server_assisted_cache: false,
+        cache: None,
+    };
+
+    let runtime = match Builder::new_multi_thread().enable_all().build() {
+        Ok(r) => r,
+        Err(e) => {
+            let err_msg =
+                CString::new(format!("Failed to create runtime: {e}")).unwrap_or_default();
+            return Box::into_raw(Box::new(MonitorConnectionResponse {
+                conn_ptr: std::ptr::null(),
+                connection_error_message: err_msg.into_raw(),
+            }));
+        }
+    };
+
+    let on_line: MonitorLineCallback = std::sync::Arc::new(move |line: MonitorLine| {
+        let client_addr_bytes = line.client_addr.as_bytes();
+        let command_bytes = line.command.as_bytes();
+
+        let arg_bytes: Vec<&[u8]> = line.args.iter().map(|s| s.as_bytes()).collect();
+        let arg_ptrs: Vec<*const u8> = arg_bytes.iter().map(|b| b.as_ptr()).collect();
+        let arg_lens: Vec<i64> = arg_bytes.iter().map(|b| b.len() as i64).collect();
+
+        unsafe {
+            monitor_callback(
+                line.timestamp,
+                line.db as u16,
+                client_addr_bytes.as_ptr(),
+                client_addr_bytes.len() as i64,
+                command_bytes.as_ptr(),
+                command_bytes.len() as i64,
+                arg_ptrs.len() as i64,
+                arg_ptrs.as_ptr(),
+                arg_lens.as_ptr(),
+            );
+        }
+    });
+
+    let monitor_client = match runtime
+        .block_on(async { MonitorClient::new(&address, redis_conn_info, tls_mode, on_line).await })
+    {
+        Ok(c) => c,
+        Err(e) => {
+            let err_msg =
+                CString::new(format!("Failed to create monitor client: {e}")).unwrap_or_default();
+            return Box::into_raw(Box::new(MonitorConnectionResponse {
+                conn_ptr: std::ptr::null(),
+                connection_error_message: err_msg.into_raw(),
+            }));
+        }
+    };
+
+    let adapter = Box::new(MonitorAdapter {
+        client: std::mem::ManuallyDrop::new(monitor_client),
+        runtime,
+    });
+    let conn_ptr = Box::into_raw(adapter) as *const c_void;
+
+    Box::into_raw(Box::new(MonitorConnectionResponse {
+        conn_ptr,
+        connection_error_message: std::ptr::null_mut(),
+    }))
+}
+
+/// Stop and free a MonitorClient created by `create_monitor_client`.
+///
+/// # Safety
+/// - `client_ptr` must be a `conn_ptr` returned by `create_monitor_client`.
+/// - Must not be called more than once for the same pointer.
+/// - Must not be called concurrently with any active monitor callback.
+#[unsafe(no_mangle)]
+pub unsafe extern "C-unwind" fn close_monitor_client(client_ptr: *const c_void) {
+    if !client_ptr.is_null() {
+        let _ = unsafe { Box::from_raw(client_ptr as *mut MonitorAdapter) };
+    }
+}
+
+/// Free a `MonitorConnectionResponse` returned by `create_monitor_client`.
+///
+/// # Safety
+/// - `response_ptr` must be a pointer returned by `create_monitor_client`.
+/// - Must not be called more than once for the same pointer.
+#[unsafe(no_mangle)]
+pub unsafe extern "C-unwind" fn free_monitor_connection_response(
+    response_ptr: *const MonitorConnectionResponse,
+) {
+    if !response_ptr.is_null() {
+        let response = unsafe { Box::from_raw(response_ptr as *mut MonitorConnectionResponse) };
+        if !response.connection_error_message.is_null() {
+            let _ = unsafe { CString::from_raw(response.connection_error_message) };
+        }
+    }
+}
+
+// ========================================================================================
 // Compression Statistics
 // ========================================================================================
 

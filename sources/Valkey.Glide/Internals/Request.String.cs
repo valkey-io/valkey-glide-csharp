@@ -3,6 +3,7 @@
 using Valkey.Glide.Commands.Options;
 
 using static Valkey.Glide.Internals.FFI;
+using static Valkey.Glide.Internals.TimeUtils;
 
 namespace Valkey.Glide.Internals;
 
@@ -21,8 +22,9 @@ internal partial class Request
     public static Cmd<GlideString, ValkeyValue> GetSet(ValkeyKey key, ValkeyValue value, SetOptions options)
         => ToValkeyValue(RequestType.Set, [key, value, .. ToSetOptionsArgs(options), ValkeyLiterals.GET], isNullable: true);
 
+    // TODO #454: Should return ValkeyValue.Ok instead of bool.
     public static Cmd<string, bool> Set(KeyValuePair<ValkeyKey, ValkeyValue>[] values)
-        => OKToBool(RequestType.MSet, values.ToGlideStrings());
+        => new(RequestType.MSet, values.ToGlideStrings(), false, _ => true);
 
     public static Cmd<bool, bool> SetIfNotExists(KeyValuePair<ValkeyKey, ValkeyValue>[] values)
         => Simple<bool>(RequestType.MSetNX, values.ToGlideStrings());
@@ -142,7 +144,7 @@ internal partial class Request
     {
         if (options.Duration.HasValue)
         {
-            return [ValkeyLiterals.PX, ToMilliseconds(options.Duration.Value)];
+            return [ValkeyLiterals.PX, ToMilliseconds(options.Duration.Value).ToGlideString()];
         }
 
         if (options.Timestamp.HasValue)

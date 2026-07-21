@@ -30,4 +30,20 @@ public partial class GlideClient
     /// <inheritdoc cref="IConnectionManagementBaseCommands.SelectAsync(long)"/>
     public override async Task SelectAsync(long index)
         => _ = await Command(Request.Select(index));
+
+    /// <inheritdoc cref="IBaseClient.ClientPauseAsync(TimeSpan)"/>
+    public override async Task ClientPauseAsync(TimeSpan timeout)
+        => _ = await Command(Request.ClientPause(timeout));
+
+    /// <inheritdoc cref="IBaseClient.ClientPauseWriteAsync(TimeSpan)"/>
+    public override async Task ClientPauseWriteAsync(TimeSpan timeout)
+        => _ = await Command(Request.ClientPauseWrite(timeout));
+
+    /// <inheritdoc cref="IBaseClient.ClientUnpauseAsync()"/>
+    public override async Task ClientUnpauseAsync()
+        => _ = await Command(Request.ClientUnpause());
+
+    /// <inheritdoc cref="IBaseClient.ClientTrackingInfoAsync()"/>
+    public override async Task<ClientTrackingInfo> ClientTrackingInfoAsync()
+        => await Command(Request.ClientTrackingInfo());
 }
