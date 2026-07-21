@@ -54,7 +54,7 @@ internal class MessageContainer(BaseClient client) : IDisposable
     }
 
     internal void ReturnFreeMessage(Message message)
-        => _availableMessages.Enqueue((Message)(object)message);
+        => _availableMessages.Enqueue(message);
 
     #endregion
     #region Private Methods
