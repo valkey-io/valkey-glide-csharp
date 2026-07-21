@@ -16,7 +16,7 @@ public static class Builders
     public static ClientSideCacheConfig BuildClientSideCacheConfig(
         ulong maxCacheKb = 1024,
         TimeSpan? entryTtl = null)
-        => new ClientSideCacheConfig(maxCacheKb, entryTtl ?? TimeSpan.FromMinutes(1))
+        => new ClientSideCacheConfig(maxCacheKb, entryTtl ?? TimeSpan.FromMinutes(5))
             .WithServerAssisted();
 
     /// <summary>
