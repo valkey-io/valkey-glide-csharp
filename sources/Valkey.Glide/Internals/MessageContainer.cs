@@ -16,16 +16,7 @@ internal class MessageContainer(BaseClient client) : IDisposable
 #pragma warning restore IDE0052
 
     #endregion
-    #region Internal Methods
-
-    internal Message GetMessage(int index) => _messages[index];
-
-    internal Message GetMessageForCall()
-    {
-        Message message = GetFreeMessage();
-        message.SetupTask(_client);
-        return message;
-    }
+    #region Public Methods
 
     public void Dispose()
     {
@@ -48,6 +39,18 @@ internal class MessageContainer(BaseClient client) : IDisposable
                 catch (Exception) { }
             }
         }
+    }
+
+    #endregion
+    #region Internal Methods
+
+    internal Message GetMessage(int index) => _messages[index];
+
+    internal Message GetMessageForCall()
+    {
+        Message message = GetFreeMessage();
+        message.SetupTask(_client);
+        return message;
     }
 
     internal void ReturnFreeMessage(Message message)
