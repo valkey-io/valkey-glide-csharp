@@ -172,11 +172,11 @@ public class StreamCommandTests(TestConfiguration config)
         Assert.Equal(2, streams.Length);
 
         var stream0 = streams[0];
-        Assert.Equal(stream0.Key, key1);
+        Assert.Equal(key1, stream0.Key);
         Assert.Equivalent(new NameValueEntry[] { new("f1", "v1"), new("f2", "v2") }, Assert.Single(stream0.Entries).Values);
 
         var stream1 = streams[1];
-        Assert.Equal(stream1.Key, key2);
+        Assert.Equal(key2, stream1.Key);
         Assert.Equivalent(new NameValueEntry[] { new("f3", "v3"), new("f4", "v4") }, Assert.Single(stream1.Entries).Values);
     }
 
