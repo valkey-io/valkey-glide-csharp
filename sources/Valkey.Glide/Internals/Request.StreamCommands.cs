@@ -29,9 +29,9 @@ internal partial class Request
         => new(RequestType.XRead, BuildStreamReadArgs([position], options), false, ConvertSingleStreamReadResponse, allowConverterToHandleNull: true);
 
     public static Cmd<object, ValkeyStream[]> StreamReadAsync(IEnumerable<StreamPosition> positions, StreamReadOptions options)
-        => new(RequestType.XRead, BuildStreamReadArgs(positions, options), false, ConvertMultiStreamReadResponse, allowConverterToHandleNull: true);
+        => new(RequestType.XRead, BuildStreamReadArgs([.. positions], options), false, ConvertMultiStreamReadResponse, allowConverterToHandleNull: true);
 
-    private static GlideString[] BuildStreamReadArgs(IEnumerable<StreamPosition> positions, StreamReadOptions options)
+    private static GlideString[] BuildStreamReadArgs(StreamPosition[] positions, StreamReadOptions options)
     {
         List<GlideString> args = [];
 
@@ -173,9 +173,9 @@ internal partial class Request
         => new(RequestType.XReadGroup, BuildStreamReadGroupArgs([position], group, consumer, options), false, ConvertSingleStreamReadResponse, allowConverterToHandleNull: true);
 
     public static Cmd<object, ValkeyStream[]> StreamReadGroupAsync(IEnumerable<StreamPosition> positions, ValkeyValue group, ValkeyValue consumer, StreamReadGroupOptions options)
-        => new(RequestType.XReadGroup, BuildStreamReadGroupArgs(positions, group, consumer, options), false, ConvertMultiStreamReadResponse, allowConverterToHandleNull: true);
+        => new(RequestType.XReadGroup, BuildStreamReadGroupArgs([.. positions], group, consumer, options), false, ConvertMultiStreamReadResponse, allowConverterToHandleNull: true);
 
-    private static GlideString[] BuildStreamReadGroupArgs(IEnumerable<StreamPosition> positions, ValkeyValue group, ValkeyValue consumer, StreamReadGroupOptions options)
+    private static GlideString[] BuildStreamReadGroupArgs(StreamPosition[] positions, ValkeyValue group, ValkeyValue consumer, StreamReadGroupOptions options)
     {
         List<GlideString> args = [ValkeyLiterals.GROUP, group, consumer];
 
