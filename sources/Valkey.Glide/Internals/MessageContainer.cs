@@ -4,7 +4,7 @@ using System.Collections.Concurrent;
 
 namespace Valkey.Glide.Internals;
 
-internal class MessageContainer(BaseClient client)
+internal class MessageContainer(BaseClient client) : IDisposable
 {
     #region Private Fields
 
@@ -13,12 +13,14 @@ internal class MessageContainer(BaseClient client)
     private readonly BaseClient _client = client;
 
     #endregion
-    #region Internal Methods
+    #region Public Methods
 
-    internal void DisposeWithError()
+    /// <inheritdoc/>
+    public void Dispose()
     {
         lock (_messages)
         {
+            // Complete all pending messages with TaskCanceledException so awaiting callers unblock.
             List<Message> incompleteMessages = [.. _messages.Where(message => !message.IsCompleted)];
 
             if (incompleteMessages.Count > 0)
@@ -36,6 +38,9 @@ internal class MessageContainer(BaseClient client)
             }
         }
     }
+
+    #endregion
+    #region Internal Methods
 
     internal Message GetMessage(int index) => _messages[index];
 
