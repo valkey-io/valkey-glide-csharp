@@ -197,7 +197,7 @@ public class ConnectionManagementCommandTests(TestConfiguration config)
         var key = Guid.NewGuid().ToString();
         await client.SetAsync(key, "before");
 
-        var pauseFor = TimeSpan.FromSeconds(2);
+        var pauseFor = TimeSpan.FromMinutes(1);
         await client.ClientPauseWriteAsync(pauseFor);
 
         var sw = Stopwatch.StartNew();
