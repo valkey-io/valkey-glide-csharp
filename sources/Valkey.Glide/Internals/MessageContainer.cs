@@ -4,8 +4,44 @@ using System.Collections.Concurrent;
 
 namespace Valkey.Glide.Internals;
 
-internal class MessageContainer(BaseClient client)
+internal class MessageContainer(BaseClient client) : IDisposable
 {
+    #region Private Fields
+
+    private readonly List<Message> _messages = [];
+    private readonly ConcurrentQueue<Message> _availableMessages = new();
+    private readonly BaseClient _client = client;
+
+    #endregion
+    #region Public Methods
+
+    /// <inheritdoc/>
+    public void Dispose()
+    {
+        lock (_messages)
+        {
+            // Complete all pending messages with TaskCanceledException so awaiting callers unblock.
+            List<Message> incompleteMessages = [.. _messages.Where(message => !message.IsCompleted)];
+
+            if (incompleteMessages.Count > 0)
+            {
+                Logger.Log(Level.Error, GetType().Name, $"Client is closing, but there are {incompleteMessages.Count} ongoing requests");
+            }
+
+            foreach (Message message in incompleteMessages)
+            {
+                try
+                {
+                    message.SetException(new TaskCanceledException($"Client {_client} closed"));
+                }
+                catch (Exception) { }
+            }
+        }
+    }
+
+    #endregion
+    #region Internal Methods
+
     internal Message GetMessage(int index) => _messages[index];
 
     internal Message GetMessageForCall()
@@ -14,6 +50,12 @@ internal class MessageContainer(BaseClient client)
         message.SetupTask(_client);
         return message;
     }
+
+    internal void ReturnFreeMessage(Message message)
+        => _availableMessages.Enqueue(message);
+
+    #endregion
+    #region Private Methods
 
     private Message GetFreeMessage()
     {
@@ -29,45 +71,5 @@ internal class MessageContainer(BaseClient client)
         return message;
     }
 
-    public void ReturnFreeMessage(Message message)
-        => _availableMessages.Enqueue((Message)(object)message);
-
-    internal void DisposeWithError(Exception? error)
-    {
-        lock (_messages)
-        {
-            // Create a snapshot of incomplete messages to avoid collection modification during enumeration
-            List<Message> incompleteMessages = [.. _messages.Where(message => !message.IsCompleted)];
-
-            if (incompleteMessages.Count > 0)
-            {
-                Logger.Log(Level.Error, GetType().Name, $"Client is closing, but there are {incompleteMessages.Count} ongoing requests");
-            }
-
-            foreach (Message message in incompleteMessages)
-            {
-                try
-                {
-                    message.SetException(new TaskCanceledException($"Client {_client} closed", error));
-                }
-                catch (Exception) { }
-            }
-            _messages.Clear();
-        }
-        _availableMessages.Clear();
-    }
-
-    /// This list allows us random-access to the message in each index,
-    /// which means that once we receive a callback with an index, we can
-    /// find the message to resolve in constant time.
-    private readonly List<Message> _messages = [];
-
-    /// This queue contains the messages that were created and are currently unused by any task,
-    /// so they can be reused by new tasks instead of allocating new messages.
-    private readonly ConcurrentQueue<Message> _availableMessages = new();
-
-    // Holding the client prevents it from being GC'd until all operations complete.
-#pragma warning disable IDE0052 // Remove unread private members
-    private readonly BaseClient _client = client;
-#pragma warning restore IDE0052 // Remove unread private members
+    #endregion
 }
