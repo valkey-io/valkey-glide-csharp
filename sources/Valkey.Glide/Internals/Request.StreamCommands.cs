@@ -841,20 +841,19 @@ internal partial class Request
 
             var entryId = entryKvp.Key;
 
-            var values = new NameValueEntry[outerArray.Length];
+            var values = new List<NameValueEntry>();
             for (int i = 0; i < outerArray.Length; i++)
             {
-                if (outerArray[i] is not object[] fieldValues || fieldValues.Length == 0)
+                if (outerArray[i] is object[] fieldValues && fieldValues.Length >= 2)
                 {
-                    continue;
+                    values.Add(new NameValueEntry(
+                        (GlideString)fieldValues[0],
+                        (GlideString)fieldValues[1]
+                    ));
                 }
-                values[i] = new NameValueEntry(
-                    (GlideString)fieldValues[0],
-                    (GlideString)fieldValues[1]
-                );
             }
 
-            entries.Add(new StreamEntry(entryId, values));
+            entries.Add(new StreamEntry(entryId, [.. values]));
         }
 
         return [.. entries];
