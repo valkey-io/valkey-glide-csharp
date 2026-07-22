@@ -1144,8 +1144,6 @@ internal partial class FFI
         [MarshalAs(UnmanagedType.U1)]
         public bool HasClientSideCacheConfig;
         public ClientSideCacheConfig ClientSideCacheConfig;
-
-        // TODO more config params, see ffi.rs
     }
 
     [StructLayout(LayoutKind.Sequential)]

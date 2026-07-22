@@ -344,14 +344,24 @@ public partial interface IDatabaseAsync
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>The number of entries removed.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<long> StreamTrimAsync(ValkeyKey key, int maxLength, bool useApproximateMaxLength = false, CommandFlags flags = CommandFlags.None);
+    Task<long> StreamTrimAsync(
+        ValkeyKey key,
+        int maxLength,
+        bool useApproximateMaxLength = false,
+        CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="StreamTrimAsync(ValkeyKey, int, bool, CommandFlags)" path="/*[not(self::param[@name='maxLength']) and not(self::returns)]"/>
     /// <param name="maxLength">The maximum number of entries to keep.</param>
     /// <param name="limit">The maximum number of entries to evict per call.</param>
     /// <param name="trimMode">The trim mode to use.</param>
     /// <returns>The number of entries removed.</returns>
-    Task<long> StreamTrimAsync(ValkeyKey key, long? maxLength = null, bool useApproximateMaxLength = false, long? limit = null, StreamTrimMode trimMode = StreamTrimMode.KeepReferences, CommandFlags flags = CommandFlags.None);
+    Task<long> StreamTrimAsync(
+        ValkeyKey key,
+        long maxLength,
+        bool useApproximateMaxLength = false,
+        long? limit = null,
+        StreamTrimMode trimMode = StreamTrimMode.KeepReferences,
+        CommandFlags flags = CommandFlags.None);
 
     #endregion
     #region StreamTrimByMinIdAsync

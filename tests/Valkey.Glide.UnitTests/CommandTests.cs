@@ -1006,9 +1006,9 @@ public class CommandTests
             () => Assert.Equal(["XDEL", "key", "1-0", "2-0"], Request.StreamDeleteAsync("key", ["1-0", "2-0"]).GetArgs()),
 
             // StreamTrim
-            () => Assert.Equal(["XTRIM", "key", "MAXLEN", "1000"], Request.StreamTrimAsync("key", 1000, default, false, null).GetArgs()),
-            () => Assert.Equal(["XTRIM", "key", "MAXLEN", "~", "1000"], Request.StreamTrimAsync("key", 1000, default, true, null).GetArgs()),
-            () => Assert.Equal(["XTRIM", "key", "MINID", "0-1"], Request.StreamTrimAsync("key", null, "0-1", false, null).GetArgs()),
+            () => Assert.Equal(["XTRIM", "key", "MAXLEN", "1000"], Request.StreamTrimAsync("key", new StreamTrimOptions.MaxLen { MaxLength = 1000 }).GetArgs()),
+            () => Assert.Equal(["XTRIM", "key", "MAXLEN", "~", "1000"], Request.StreamTrimAsync("key", new StreamTrimOptions.MaxLen { MaxLength = 1000, Exact = false }).GetArgs()),
+            () => Assert.Equal(["XTRIM", "key", "MINID", "0-1"], Request.StreamTrimAsync("key", new StreamTrimOptions.MinId { MinEntryId = "0-1" }).GetArgs()),
 
             // StreamCreateConsumerGroup
             () => Assert.Equal(["XGROUPCREATE", "key", "group", "$", "MKSTREAM"], Request.StreamCreateConsumerGroupAsync("key", "group", default, true, null).GetArgs()),
@@ -1095,7 +1095,7 @@ public class CommandTests
             () => Assert.Equal(0L, Request.StreamDeleteAsync("key", ["1-0"]).Converter(0L)),
 
             // StreamTrim
-            () => Assert.Equal(10L, Request.StreamTrimAsync("key", 100, default, false, null).Converter(10L)),
+            () => Assert.Equal(10L, Request.StreamTrimAsync("key", new StreamTrimOptions.MaxLen { MaxLength = 100 }).Converter(10L)),
 
             // StreamCreateConsumerGroup
             () => Assert.True(Request.StreamCreateConsumerGroupAsync("key", "group", default, true, null).Converter("OK")),

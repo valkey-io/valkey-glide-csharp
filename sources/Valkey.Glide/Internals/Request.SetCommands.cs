@@ -70,23 +70,18 @@ internal partial class Request
         => new(RequestType.SRandMember, [key.ToGlideString()], true, response => response is null ? ValkeyValue.Null : (ValkeyValue)response, allowConverterToHandleNull: true);
 
     public static Cmd<object[], ValkeyValue[]> SetRandomMembersAsync(ValkeyKey key, long count)
-        => new(RequestType.SRandMember, [key.ToGlideString(), count.ToGlideString()], false, arr => [.. arr.Cast<GlideString>().Select(gs => (ValkeyValue)gs)]);
+        => new(RequestType.SRandMember, [key.ToGlideString(), count.ToGlideString()], false, ToValkeyValueArray);
 
     public static Cmd<bool, bool> SetMoveAsync(ValkeyKey source, ValkeyKey destination, ValkeyValue value)
         => Simple<bool>(RequestType.SMove, [source.ToGlideString(), destination.ToGlideString(), value.ToGlideString()]);
 
     public static Cmd<object[], (long, ValkeyValue[])> SetScanAsync(ValkeyKey key, long cursor, ScanOptions? options = null)
+        => new(RequestType.SScan, [key, cursor.ToGlideString(), .. options?.ToArgs() ?? []], false, ConvertSetScanResponse);
+
+    private static (long cursor, ValkeyValue[] items) ConvertSetScanResponse(object[] response)
     {
-        List<GlideString> args = [key.ToGlideString(), cursor.ToGlideString()];
-
-        args.AddRange(ToScanArgs(options));
-
-        return new(RequestType.SScan, [.. args], false, arr =>
-        {
-            object[] scanArray = arr;
-            long nextCursor = long.Parse(((GlideString)scanArray[0]).ToString());
-            ValkeyValue[] elements = [.. ((object[])scanArray[1]).Cast<GlideString>().Select(gs => (ValkeyValue)gs)];
-            return (nextCursor, elements);
-        });
+        var cursor = response[0] is long l ? l : long.Parse(response[0].ToString()!);
+        var items = ToValkeyValueArray((object[])response[1]);
+        return (cursor, items);
     }
 }

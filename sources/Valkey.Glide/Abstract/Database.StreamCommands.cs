@@ -200,17 +200,22 @@ internal partial class Database
 
     /// <inheritdoc cref="IDatabaseAsync.StreamTrimAsync(ValkeyKey, int, bool, CommandFlags)"/>
     public Task<long> StreamTrimAsync(ValkeyKey key, int maxLength, bool useApproximateMaxLength = false, CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return Command(Request.StreamTrimAsync(key, maxLength, default, useApproximateMaxLength, null));
-    }
+        => StreamTrimAsync(key, maxLength, useApproximateMaxLength);
 
-    /// <inheritdoc cref="IDatabaseAsync.StreamTrimAsync(ValkeyKey, long?, bool, long?, StreamTrimMode, CommandFlags)"/>
-    public Task<long> StreamTrimAsync(ValkeyKey key, long? maxLength = null, bool useApproximateMaxLength = false, long? limit = null, StreamTrimMode trimMode = StreamTrimMode.KeepReferences, CommandFlags flags = CommandFlags.None)
+    /// <inheritdoc cref="IDatabaseAsync.StreamTrimAsync(ValkeyKey, long, bool, long?, StreamTrimMode, CommandFlags)"/>
+    public Task<long> StreamTrimAsync(ValkeyKey key, long maxLength, bool useApproximateMaxLength = false, long? limit = null, StreamTrimMode trimMode = StreamTrimMode.KeepReferences, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         ThrowIfUnsupportedTrimMode(trimMode);
-        return Command(Request.StreamTrimAsync(key, maxLength, default, useApproximateMaxLength, limit));
+
+        var options = new StreamTrimOptions.MaxLen
+        {
+            MaxLength = maxLength,
+            Exact = !useApproximateMaxLength,
+            Limit = limit
+        };
+
+        return StreamTrimAsync(key, options);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StreamTrimByMinIdAsync(ValkeyKey, ValkeyValue, bool, long?, StreamTrimMode, CommandFlags)"/>
@@ -218,7 +223,15 @@ internal partial class Database
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         ThrowIfUnsupportedTrimMode(trimMode);
-        return Command(Request.StreamTrimAsync(key, null, minId, useApproximateMaxLength, limit));
+
+        var options = new StreamTrimOptions.MinId
+        {
+            MinEntryId = minId,
+            Exact = !useApproximateMaxLength,
+            Limit = limit
+        };
+
+        return StreamTrimAsync(key, options);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StreamInfoAsync(ValkeyKey, CommandFlags)"/>
@@ -248,12 +261,17 @@ internal partial class Database
     /// <summary>
     /// Converts the given arguments to a <see cref="StreamAddOptions"/> instance.
     /// </summary>
-    private static StreamAddOptions ToStreamAddOptions(ValkeyValue? messageId, long? maxLength, bool useApproximateMaxLength, long? limit = null) => new()
+    private static StreamAddOptions ToStreamAddOptions(
+        ValkeyValue? messageId,
+        long? maxLength,
+        bool useApproximateMaxLength,
+        long? limit = null)
+    => new()
     {
         Id = messageId ?? StreamAddOptions.AutoGenerateId,
         Trim = maxLength.HasValue
-            ? new StreamTrimOptions.MaxLen { MaxLength = maxLength.Value, Exact = !useApproximateMaxLength, Limit = limit }
-            : null
+                ? new StreamTrimOptions.MaxLen { MaxLength = maxLength.Value, Exact = !useApproximateMaxLength, Limit = limit }
+                : null
     };
 
     /// <summary>
