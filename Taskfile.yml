@@ -126,7 +126,7 @@ tasks:
 
     lint:yaml:
         desc: "Run YAML linting"
-        cmd: npx prettier --check "**/*.yml"
+        cmd: npx --yes prettier --check "**/*.yml"
 
     lint:actions:
         desc: "Run GitHub Actions linting"
@@ -134,7 +134,7 @@ tasks:
 
     lint:markdown:
         desc: "Run Markdown linting"
-        cmd: npx markdownlint-cli2 "**/*.md"
+        cmd: npx --yes markdownlint-cli2 "**/*.md"
 
     # Format
     # --------------------------------------------------------------------------------
@@ -158,11 +158,11 @@ tasks:
 
     format:yaml:
         desc: "Run YAML formatting"
-        cmd: npx prettier --write --cache "**/*.yml"
+        cmd: npx --yes prettier --write --cache "**/*.yml"
 
     format:markdown:
         desc: "Run Markdown formatting"
-        cmd: npx markdownlint-cli2 --fix "**/*.md"
+        cmd: npx --yes markdownlint-cli2 --fix "**/*.md"
 
     # Additional checks
     # --------------------------------------------------------------------------------
