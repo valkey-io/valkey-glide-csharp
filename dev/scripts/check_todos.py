@@ -11,9 +11,12 @@ Usage:
     python dev/scripts/check_todos.py
 """
 
+import os
 import re
 import subprocess
 import sys
+from fnmatch import fnmatch
+from pathlib import Path
 from typing import NamedTuple
 
 from _constants import GITHUB_REPO, PROJECT_ROOT
@@ -27,11 +30,28 @@ class _Todo(NamedTuple):
     text: str
 
 
-# Matches a TODO inside a comment, optionally capturing the issue number.
-# A match with no `github_id` capture means the TODO is missing an issue reference.
 _TODO_PATTERN = re.compile(
     r"(//|#|/\*|\*|<!--).*TODO\b(\s+#(?P<github_id>\d+))?", re.IGNORECASE
 )
+
+_IGNORE_FILE = os.path.join(PROJECT_ROOT, "dev", "conf", "check-todos-ignore")
+
+
+def _load_ignore_patterns() -> list[str]:
+    """Load ignore patterns from the check-todos-ignore file."""
+    if not os.path.isfile(_IGNORE_FILE):
+        print(f"Error: ignore file not found: {_IGNORE_FILE}", file=sys.stderr)
+        sys.exit(1)
+
+    return [
+        ignore for line in Path(_IGNORE_FILE).read_text().splitlines()
+        if (ignore := line.strip()) and not ignore.startswith("#")
+    ]
+
+
+def _is_ignored(filepath: str, patterns: list[str]) -> bool:
+    """Check if a filepath matches any exclusion pattern."""
+    return any(fnmatch(filepath, p) for p in patterns)
 
 
 def _find_todos() -> list[_Todo]:
@@ -49,12 +69,15 @@ def _find_todos() -> list[_Todo]:
         print(f"Error: git grep failed: {result.stderr.strip()}", file=sys.stderr)
         sys.exit(1)
 
+    ignored_patterns = _load_ignore_patterns()
+
     todos = []
     for line in result.stdout.splitlines():
         parts = line.split(":", 2)
         if len(parts) == 3:
             filepath, line_no, text = parts
-            todos.append(_Todo(filepath, int(line_no), text.strip()))
+            if not _is_ignored(filepath, ignored_patterns):
+                todos.append(_Todo(filepath, int(line_no), text.strip()))
 
     return todos
 

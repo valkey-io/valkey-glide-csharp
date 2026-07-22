@@ -1,0 +1,4 @@
+# Files excluded from the TODO checker (dev/scripts/check_todos.py).
+# Patterns use fnmatch-style glob matching against repo-relative paths.
+
+dev/scripts/check_todos.py
