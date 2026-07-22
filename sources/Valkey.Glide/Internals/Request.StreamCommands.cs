@@ -69,10 +69,10 @@ internal partial class Request
         if (options.Order == Order.Descending)
         {
             // Order of start and end IDs is reversed for REVRANGE.
-            return new(RequestType.XRevRange, [key, end, start, .. options.ToArgs()], false, ConvertStreamEntryMap);
+            return new(RequestType.XRevRange, [key, end, start, .. options.ToArgs()], false, ConvertStreamEntryMapResponse);
         }
 
-        return new(RequestType.XRange, [key, start, end, .. options.ToArgs()], false, ConvertStreamEntryMap);
+        return new(RequestType.XRange, [key, start, end, .. options.ToArgs()], false, ConvertStreamEntryMapResponse);
     }
 
     private static StreamEntry[] ConvertStreamEntries(object[] entries)
@@ -280,7 +280,7 @@ internal partial class Request
     }
 
     public static Cmd<object, StreamEntry[]> StreamClaimAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, TimeSpan minIdleTime, ValkeyValue[] messageIds, StreamClaimOptions? options = null)
-        => StreamClaimAsync<object, StreamEntry[]>(key, groupName, consumerName, minIdleTime, messageIds, options, false, ConvertStreamEntryMap);
+        => StreamClaimAsync<object, StreamEntry[]>(key, groupName, consumerName, minIdleTime, messageIds, options, false, ConvertStreamEntryMapResponse);
 
     public static Cmd<object[], ValkeyValue[]> StreamClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, TimeSpan minIdleTime, ValkeyValue[] messageIds, StreamClaimOptions? options = null)
         => StreamClaimAsync<object[], ValkeyValue[]>(key, groupName, consumerName, minIdleTime, messageIds, options, true, ConvertClaimIdsOnly);
@@ -362,7 +362,7 @@ internal partial class Request
     private static StreamAutoClaimResult ConvertAutoClaimResult(object[] response)
     {
         var nextStartId = (ValkeyValue)(GlideString)response[0];
-        var entries = ConvertStreamEntryMap(response[1]);
+        var entries = ConvertStreamEntryMapResponse(response[1]);
         var deletedIds = response.Length > 2 && response[2] is object[] delArr ? delArr.Select(id => (ValkeyValue)(GlideString)id).ToArray() : [];
         return new StreamAutoClaimResult(nextStartId, entries, deletedIds);
     }
@@ -818,7 +818,7 @@ internal partial class Request
         foreach (var streamKvp in (Dictionary<GlideString, object>)response)
         {
             var streamKey = new ValkeyKey(streamKvp.Key);
-            var entries = ConvertStreamEntryMap((Dictionary<GlideString, object>)streamKvp.Value);
+            var entries = ConvertStreamEntryMapResponse((Dictionary<GlideString, object>)streamKvp.Value);
             result.Add(new ValkeyStream(streamKey, entries));
         }
 
@@ -828,7 +828,7 @@ internal partial class Request
     /// <summary>
     /// Converts a stream entry map response (XREAD, XREADGROUP, XRANGE, XREVRANGE, XCLAIM, and XAUTOCLAIM).
     /// </summary>
-    private static StreamEntry[] ConvertStreamEntryMap(object response)
+    private static StreamEntry[] ConvertStreamEntryMapResponse(object response)
     {
         var entries = new List<StreamEntry>();
         foreach (var entryKvp in (Dictionary<GlideString, object>)response)
@@ -841,19 +841,17 @@ internal partial class Request
 
             var entryId = entryKvp.Key;
 
-            var values = new List<NameValueEntry>();
+            var values = new NameValueEntry[outerArray.Length];
             for (int i = 0; i < outerArray.Length; i++)
             {
-                if (outerArray[i] is object[] fieldValues && fieldValues.Length >= 2)
-                {
-                    values.Add(new NameValueEntry(
-                        (GlideString)fieldValues[0],
-                        (GlideString)fieldValues[1]
-                    ));
-                }
+                var fieldValues = (object[])outerArray[i];
+                values[i] = new NameValueEntry(
+                    (GlideString)fieldValues[0],
+                    (GlideString)fieldValues[1]
+                );
             }
 
-            entries.Add(new StreamEntry(entryId, [.. values]));
+            entries.Add(new StreamEntry(entryId, values));
         }
 
         return [.. entries];
