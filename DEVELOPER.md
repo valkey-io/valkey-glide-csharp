@@ -250,8 +250,7 @@ task coverage:clean   # Remove coverage results and reports
 # Linting and formatting
 task lint                   # Run all linters
 task format                 # Run all formatters
-task check-links            # Check for broken links
-
+task check                  # Run all checks
 ```
 
 ## Advanced Testing Options
@@ -339,30 +338,40 @@ To run [DNS tests](tests/Valkey.Glide.IntegrationTests/DnsTests.cs) locally:
 
 If the environment variable is not set, DNS tests will be skipped.
 
-## Formatting, Linting, and Other Checks
+## Formatting
 
-Before making a contribution, run automated formatters, linters, and additional checks.
+Run automated formatters to ensure consistent code style.
 
 ```bash
-# Formatters
 task format           # Run all formatters
 task format:rust      # Run Rust formatter
 task format:csharp    # Run C# formatter
 task format:yaml      # Run YAML formatter
-task format:markdown  # Run Maarkdown formatter
+task format:markdown  # Run Markdown formatter
+```
 
-# Linters
+## Linting
+
+Run linters to catch style issues and static analysis warnings.
+
+```bash
 task lint           # Run all linters
 task lint:rust      # Run Rust linter
 task lint:csharp    # Run C# linter
 task lint:yaml      # Run YAML linter
 task lint:actions   # Run GitHub Actions linter
 task lint:markdown  # Run Markdown linter
+```
 
-# Additional checks:
-task check-examples  # Check C# examples in comments
-task check-links     # Check for broken links
-task check-todos     # Check that TODO comments reference an open GitHub issue
+## Checks
+
+Run checks to validate examples, links, and TODO comments.
+
+```bash
+task check           # Run all checks
+task check:examples  # Check C# examples in comments
+task check:links     # Check for broken links
+task check:todos     # Check that TODO comments reference an open GitHub issue
 ```
 
 ## Test framework and Style

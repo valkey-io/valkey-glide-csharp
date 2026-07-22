@@ -150,12 +150,9 @@ Note: Conventional Commits apply to commit messages only. Do not enforce this fo
 ## Quality Gates (Agent Checklist)
 
 - [ ] Build passes (`task build`)
-- [ ] All [checks](DEVELOPER.md#formatting-linting-and-other-checks) pass.
-  - [ ] `task format`
-  - [ ] `task lint`
-  - [ ] `task check-examples`
-  - [ ] `task check-links`
-  - [ ] `task check-todos`
+- [ ] [Formatting](DEVELOPER.md#formatting) passes (`task format`)
+- [ ] [Linting](DEVELOPER.md#linting) passes (`task lint`)
+- [ ] [Checks](DEVELOPER.md#checks) pass (`task check`)
 - [ ] All unit tests pass (`task test:unit`)
 - [ ] Relevant integration tests pass (`task test:integration`)
 - [ ] Public API changes respect StackExchange.Redis compatibility.

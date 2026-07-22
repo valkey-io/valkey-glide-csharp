@@ -167,14 +167,21 @@ tasks:
     # Additional checks
     # --------------------------------------------------------------------------------
 
-    check-examples:
+    check:
+        desc: "Run all checks"
+        deps:
+            - check:examples
+            - check:links
+            - check:todos
+
+    check:examples:
         desc: "Check C# examples in comments"
         cmd: python3 dev/scripts/check_examples.py
 
-    check-links:
+    check:links:
         desc: "Check for broken links"
         cmd: lychee --config lychee.toml .
 
-    check-todos:
+    check:todos:
         desc: "Check that TODO comments reference an open GitHub issue"
         cmd: python3 dev/scripts/check_todos.py

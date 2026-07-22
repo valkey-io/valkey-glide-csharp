@@ -38,4 +38,4 @@ jobs:
               run: task build target=lib
 
             - name: Check examples
-              run: task check-examples
+              run: task check:examples

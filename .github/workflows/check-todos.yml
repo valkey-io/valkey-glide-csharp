@@ -29,6 +29,6 @@ jobs:
               uses: go-task/setup-task@01a4adf9db2d14c1de7a560f09170b6e0df736aa # v2.1.0
 
             - name: Check TODOs
-              run: task check-todos
+              run: task check:todos
               env:
                   GH_TOKEN: ${{ github.token }}
