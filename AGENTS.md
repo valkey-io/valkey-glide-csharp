@@ -40,16 +40,6 @@ Common commands:
   - `task test coverage=true` (collect), `task coverage:report` (generate)
   - Coverage results go to `dev/coverage/results/`; reports to `dev/coverage/reports/`
 
-## Lint and Format Rules (Agents)
-
-- Prefer `task` commands for linting and formatting.
-- Lint checks (read-only, fail on issues):
-  - `task lint` (all checks), `task lint:rust`, `task lint:csharp`, `task lint:yaml`, `task lint:actions`, `task lint:markdown`
-- Auto-fix formatting:
-  - `task format` (all languages), `task format:rust`, `task format:csharp`, `task format:yaml`, `task format:markdown`
-- Link checking (separate from lint, slower):
-  - `task check-links`
-
 ## Contribution Requirements
 
 ### Developer Certificate of Origin (DCO) Signoff
@@ -159,12 +149,15 @@ Note: Conventional Commits apply to commit messages only. Do not enforce this fo
 
 ## Quality Gates (Agent Checklist)
 
-- [ ] Build passes
-- [ ] Format passes
-- [ ] Lint passes
-- [ ] All unit tests pass
-- [ ] Relevant integration tests pass
-- [ ] Documentation examples compile
+- [ ] Build passes (`task build`)
+- [ ] All [checks](DEVELOPER.md#formatting-linting-and-other-checks) pass.
+  - [ ] `task format`
+  - [ ] `task lint`
+  - [ ] `task check-examples`
+  - [ ] `task check-links`
+  - [ ] `task check-todos`
+- [ ] All unit tests pass (`task test:unit`)
+- [ ] Relevant integration tests pass (`task test:integration`)
 - [ ] Public API changes respect StackExchange.Redis compatibility.
 - [ ] All commits include DCO signoff.
 

@@ -339,32 +339,30 @@ To run [DNS tests](tests/Valkey.Glide.IntegrationTests/DnsTests.cs) locally:
 
 If the environment variable is not set, DNS tests will be skipped.
 
-## Linting and Formatting
+## Formatting, Linting, and Other Checks
 
-Before making a contribution, ensure that all new user APIs and non-obvious code is well documented, and run the code linters and analyzers.
+Before making a contribution, run automated formatters, linters, and additional checks.
 
 ```bash
-# Run all linters:
-task lint
+# Formatters
+task format           # Run all formatters
+task format:rust      # Run Rust formatter
+task format:csharp    # Run C# formatter
+task format:yaml      # Run YAML formatter
+task format:markdown  # Run Maarkdown formatter
 
-# Run linters for specific languages:
-task lint:rust      # Run Rust linting
-task lint:csharp    # Run C# linting
-task lint:yaml      # Run YAML linting
-task lint:actions   # Run GitHub Actions linting
-task lint:markdown  # Run Markdown linting
+# Linters
+task lint           # Run all linters
+task lint:rust      # Run Rust linter
+task lint:csharp    # Run C# linter
+task lint:yaml      # Run YAML linter
+task lint:actions   # Run GitHub Actions linter
+task lint:markdown  # Run Markdown linter
 
-# Run all formatters:
-task format
-
-# Run formatters for specific languages:
-task format:rust
-task format:csharp
-task format:yaml
-task format:markdown
-
-# Check for broken links
-task check-links
+# Additional checks:
+task check-examples  # Check C# examples in comments
+task check-links     # Check for broken links
+task check-todos     # Check that TODO comments reference an open GitHub issue
 ```
 
 ## Test framework and Style

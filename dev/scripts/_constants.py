@@ -7,6 +7,8 @@ from enum import Enum
 # Paths
 # ---------------------------------------------------------------------------
 
+GITHUB_REPO = "valkey-io/valkey-glide-csharp"
+
 SCRIPTS_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(os.path.dirname(SCRIPTS_DIR))
 SOURCES_DIR = os.path.join(PROJECT_ROOT, "sources")

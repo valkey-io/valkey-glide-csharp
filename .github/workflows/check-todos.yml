@@ -1,0 +1,34 @@
+name: check-todos
+
+on:
+    push:
+        branches:
+            - main
+            - release-*
+    pull_request:
+    workflow_dispatch:
+
+permissions:
+    contents: read
+    issues: read
+
+jobs:
+    check-todos:
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+
+        steps:
+            - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+            - name: Setup Python
+              uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+              with:
+                  python-version: "3.12"
+
+            - name: Install Task
+              uses: go-task/setup-task@01a4adf9db2d14c1de7a560f09170b6e0df736aa # v2.1.0
+
+            - name: Check TODOs
+              run: task check-todos
+              env:
+                  GH_TOKEN: ${{ github.token }}
