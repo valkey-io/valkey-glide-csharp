@@ -102,10 +102,10 @@ public sealed partial class GlideClusterClient :
     /// <param name="cursor">The cursor for the scan iteration.</param>
     /// <param name="args">Additional arguments for the scan command.</param>
     /// <returns>A tuple containing the next cursor and the keys found in this iteration.</returns>
-    private async Task<(string cursor, ValkeyKey[] keys)> ClusterScanCommand(string cursor, string[] args)
+    private async Task<(ClusterScanCursor cursor, ValkeyKey[] keys)> ClusterScanCommand(ClusterScanCursor cursor, string[] args)
     {
         var message = MessageContainer.GetMessageForCall();
-        IntPtr cursorPtr = Marshal.StringToHGlobalAnsi(cursor);
+        IntPtr cursorPtr = Marshal.StringToHGlobalAnsi(cursor.CursorId);
 
         IntPtr[]? argPtrs = null;
         IntPtr argsPtr = IntPtr.Zero;
@@ -140,8 +140,8 @@ public sealed partial class GlideClusterClient :
             {
                 var result = HandleResponse(response);
                 var array = (object[])result!;
-                var nextCursor = array[0]!.ToString()!;
-                var keys = ((object[])array[1]!).Select(k => new ValkeyKey(k!.ToString())).ToArray();
+                var nextCursor = new ClusterScanCursor(array[0]!.ToString()!);
+                var keys = ((object[])array[1]!).Cast<GlideString>().Select(gs => (ValkeyKey)gs.Bytes).ToArray();
                 return (nextCursor, keys);
             }
             finally

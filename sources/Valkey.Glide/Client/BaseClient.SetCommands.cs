@@ -88,7 +88,6 @@ public abstract partial class BaseClient
     public async Task<bool> SetMoveAsync(ValkeyKey source, ValkeyKey destination, ValkeyValue value)
         => await Command(Request.SetMoveAsync(source, destination, value));
 
-    // TODO #287
     /// <inheritdoc cref="IBaseClient.SetScanAsync(ValkeyKey, ScanOptions?)"/>
     public async IAsyncEnumerable<ValkeyValue> SetScanAsync(ValkeyKey key, ScanOptions? options = null)
     {
@@ -96,14 +95,12 @@ public abstract partial class BaseClient
 
         do
         {
-            (var nextCursor, var elements) = await Command(Request.SetScanAsync(key, cursor, options));
-
-            foreach (ValkeyValue element in elements)
+            (cursor, var elements) = await Command(Request.SetScanAsync(key, cursor, options));
+            foreach (var element in elements)
             {
                 yield return element;
             }
 
-            cursor = nextCursor;
         } while (cursor != 0);
     }
 }
