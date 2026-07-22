@@ -9,8 +9,6 @@ using static Valkey.Glide.TestUtils.Builders;
 
 namespace Valkey.Glide.IntegrationTests;
 
-// TODO: even though collections aren't executed in parallel, tests in a collection still parallelized
-//       better to run tests in the named collections sequentially
 [Collection(typeof(SharedBatchTests))]
 [CollectionDefinition(DisableParallelization = true)]
 public class SharedBatchTests
@@ -29,8 +27,12 @@ public class SharedBatchTests
         string key2 = "{BatchRaiseOnError}" + Guid.NewGuid();
 
         Pipeline.IBatch batch = isCluster ? new ClusterBatch(isAtomic) : new Batch(isAtomic);
-        // TODO replace custom command
-        _ = batch.Set(key1, "hello").CustomCommand(["lpop", key1]).CustomCommand(["del", key1]).CustomCommand(["rename", key1, key2]);
+
+        _ = batch
+            .Set(key1, "hello")
+            .ListLeftPop(key1)
+            .Delete(key1)
+            .Rename(key1, key2);
 
         object?[] res = isCluster
             ? (await ((GlideClusterClient)client).Exec((ClusterBatch)batch, false))!

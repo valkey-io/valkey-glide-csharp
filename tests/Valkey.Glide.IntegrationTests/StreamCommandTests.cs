@@ -817,7 +817,6 @@ public class StreamCommandTests
         Assert.Equal("value3", result[0].Values[2].Value.ToString());
     }
 
-    // // TODO "legacy"
     // [Theory(DisableDiscoveryEnumeration = true)]
     // [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     // public async Task StreamCreateConsumerGroupAsync_LegacyOverload(BaseClient client)
@@ -827,7 +826,6 @@ public class StreamCommandTests
     //     _ = await client.StreamCreateConsumerGroupAsync(key, "mygroup", "0");
     // }
 
-    // // TODO "legacy"
     // [Theory(DisableDiscoveryEnumeration = true)]
     // [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     // public async Task StreamReadGroupAsync_LegacyOverload_SingleStream(BaseClient client)
@@ -839,7 +837,6 @@ public class StreamCommandTests
     //     _ = Assert.Single(entries);
     // }
 
-    // // TODO "legacy"
     // [Theory(DisableDiscoveryEnumeration = true)]
     // [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     // public async Task StreamReadGroupAsync_LegacyOverload_MultipleStreams(BaseClient client)

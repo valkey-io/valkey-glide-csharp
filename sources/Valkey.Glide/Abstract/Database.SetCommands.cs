@@ -138,47 +138,18 @@ internal partial class Database
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SetScanAsync(ValkeyKey, ValkeyValue, int, long, int, CommandFlags)"/>
-    public IAsyncEnumerable<ValkeyValue> SetScanAsync(ValkeyKey key, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0, int pageOffset = 0, CommandFlags flags = CommandFlags.None)
+    public IAsyncEnumerable<ValkeyValue> SetScanAsync(
+        ValkeyKey key,
+        ValkeyValue pattern = default,
+        int pageSize = 250,
+        long cursor = 0,
+        int pageOffset = 0,
+        CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
 
-        // Build ScanOptions from the SER parameters
-        ScanOptions? options = null;
-        if (!pattern.IsNull || pageSize != 250)
-        {
-            options = new ScanOptions();
-            if (!pattern.IsNull)
-            {
-                options.MatchPattern = pattern;
-            }
-            if (pageSize != 250)
-            {
-                options.Count = pageSize;
-            }
-        }
-
-        return SetScanWithOffsetAsync(key, options, cursor, pageOffset);
-    }
-
-    private async IAsyncEnumerable<ValkeyValue> SetScanWithOffsetAsync(ValkeyKey key, ScanOptions? options, long cursor, int pageOffset)
-    {
-        long currentCursor = cursor;
-        int currentOffset = pageOffset;
-
-        do
-        {
-            (long nextCursor, ValkeyValue[] elements) = await Command(Request.SetScanAsync(key, currentCursor, options));
-
-            IEnumerable<ValkeyValue> elementsToYield = currentOffset > 0 ? elements.Skip(currentOffset) : elements;
-
-            foreach (ValkeyValue element in elementsToYield)
-            {
-                yield return element;
-            }
-
-            currentCursor = nextCursor;
-            currentOffset = 0; // Only skip on first iteration
-        } while (currentCursor != 0);
+        var options = new ScanOptions { MatchPattern = pattern, Count = pageSize };
+        return SetScanAsync(key, options).SkipAsync(pageOffset);
     }
 
     private async Task<ISet<ValkeyValue>> GetCombineResultAsync(SetOperation operation, IEnumerable<ValkeyKey> keys) => operation switch

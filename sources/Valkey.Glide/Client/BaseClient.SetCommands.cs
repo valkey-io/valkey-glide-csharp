@@ -92,18 +92,18 @@ public abstract partial class BaseClient
     /// <inheritdoc cref="IBaseClient.SetScanAsync(ValkeyKey, ScanOptions?)"/>
     public async IAsyncEnumerable<ValkeyValue> SetScanAsync(ValkeyKey key, ScanOptions? options = null)
     {
-        long currentCursor = 0;
+        long cursor = 0;
 
         do
         {
-            (long nextCursor, ValkeyValue[] elements) = await Command(Request.SetScanAsync(key, currentCursor, options));
+            (var nextCursor, var elements) = await Command(Request.SetScanAsync(key, cursor, options));
 
             foreach (ValkeyValue element in elements)
             {
                 yield return element;
             }
 
-            currentCursor = nextCursor;
-        } while (currentCursor != 0);
+            cursor = nextCursor;
+        } while (cursor != 0);
     }
 }

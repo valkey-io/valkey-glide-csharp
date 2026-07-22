@@ -291,48 +291,18 @@ internal partial class Database
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SortedSetScanAsync(ValkeyKey, ValkeyValue, int, long, int, CommandFlags)"/>
-    public IAsyncEnumerable<SortedSetEntry> SortedSetScanAsync(ValkeyKey key, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0, int pageOffset = 0, CommandFlags flags = CommandFlags.None)
+    public IAsyncEnumerable<SortedSetEntry> SortedSetScanAsync(
+        ValkeyKey key,
+        ValkeyValue pattern = default,
+        int pageSize = 250,
+        long cursor = 0,
+        int pageOffset = 0,
+        CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
 
-        // TODO - Extract common logic for building ScanOptions from SER arguments.
-        // Build ScanOptions from the SER parameters
-        ScanOptions? options = null;
-        if (!pattern.IsNull || pageSize != 250)
-        {
-            options = new ScanOptions();
-            if (!pattern.IsNull)
-            {
-                options.MatchPattern = pattern;
-            }
-            if (pageSize != 250)
-            {
-                options.Count = pageSize;
-            }
-        }
-
-        return SortedSetScanWithOffsetAsync(key, options, cursor, pageOffset);
-    }
-
-    private async IAsyncEnumerable<SortedSetEntry> SortedSetScanWithOffsetAsync(ValkeyKey key, ScanOptions? options, long cursor, int pageOffset)
-    {
-        long currentCursor = cursor;
-        int currentOffset = pageOffset;
-
-        do
-        {
-            (long nextCursor, SortedSetEntry[] elements) = await Command(Request.SortedSetScanAsync(key, currentCursor, options));
-
-            IEnumerable<SortedSetEntry> elementsToYield = currentOffset > 0 ? elements.Skip(currentOffset) : elements;
-
-            foreach (SortedSetEntry element in elementsToYield)
-            {
-                yield return element;
-            }
-
-            currentCursor = nextCursor;
-            currentOffset = 0; // Only skip on first iteration
-        } while (currentCursor != 0);
+        var options = new ScanOptions { MatchPattern = pattern, Count = pageSize };
+        return SortedSetScanAsync(key, options).SkipAsync(pageOffset);
     }
 
     /// <inheritdoc cref="IBaseClient.SortedSetBlockingPopAsync(ValkeyKey, Order, TimeSpan)"/>
