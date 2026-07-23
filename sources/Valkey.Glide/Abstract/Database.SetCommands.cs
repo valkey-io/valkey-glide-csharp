@@ -149,7 +149,7 @@ internal partial class Database
         GuardClauses.ThrowIfCommandFlags(flags);
 
         var options = new ScanOptions { MatchPattern = pattern, Count = pageSize };
-        return SetScanAsync(key, options).SkipAsync(pageOffset);
+        return SetScanAsync(key, cursor, options).SkipAsync(pageOffset);
     }
 
     private async Task<ISet<ValkeyValue>> GetCombineResultAsync(SetOperation operation, IEnumerable<ValkeyKey> keys) => operation switch

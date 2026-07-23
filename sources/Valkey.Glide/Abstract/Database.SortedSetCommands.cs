@@ -302,7 +302,7 @@ internal partial class Database
         GuardClauses.ThrowIfCommandFlags(flags);
 
         var options = new ScanOptions { MatchPattern = pattern, Count = pageSize };
-        return SortedSetScanAsync(key, options).SkipAsync(pageOffset);
+        return SortedSetScanAsync(key, cursor, options).SkipAsync(pageOffset);
     }
 
     /// <inheritdoc cref="IBaseClient.SortedSetBlockingPopAsync(ValkeyKey, Order, TimeSpan)"/>

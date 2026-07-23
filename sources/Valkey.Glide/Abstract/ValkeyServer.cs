@@ -292,7 +292,7 @@ internal partial class ValkeyServer(Database conn, EndPoint endpoint) : IServer
         GuardClauses.ThrowIfCommandFlags(flags);
 
         var options = new ScanOptions { MatchPattern = pattern, Count = pageSize };
-        return _conn.ScanAsync(options).SkipAsync(pageOffset);
+        return ScanAsync(cursor.ToString(), options).SkipAsync(pageOffset);
     }
 
     /// <inheritdoc/>
@@ -318,6 +318,20 @@ internal partial class ValkeyServer(Database conn, EndPoint endpoint) : IServer
     {
         (string host, ushort port) = Utils.SplitEndpoint(EndPoint);
         return new ByAddressRoute(host, port);
+    }
+
+    private async IAsyncEnumerable<ValkeyKey> ScanAsync(string cursor, ScanOptions options)
+    {
+        var route = MakeRoute();
+
+        do
+        {
+            (cursor, ValkeyKey[] keys) = await _conn.Command(Request.ScanAsync(cursor, options), route);
+            foreach (ValkeyKey key in keys)
+            {
+                yield return key;
+            }
+        } while (cursor != "0");
     }
 
     #endregion

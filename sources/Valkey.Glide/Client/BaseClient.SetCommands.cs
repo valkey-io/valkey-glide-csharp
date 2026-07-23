@@ -8,6 +8,8 @@ namespace Valkey.Glide;
 
 public abstract partial class BaseClient
 {
+    #region Public Methods
+
     /// <inheritdoc cref="ISetBaseCommands.SetAddAsync(ValkeyKey, ValkeyValue)"/>
     public async Task<bool> SetAddAsync(ValkeyKey key, ValkeyValue value)
         => await Command(Request.SetAddAsync(key, value));
@@ -89,10 +91,15 @@ public abstract partial class BaseClient
         => await Command(Request.SetMoveAsync(source, destination, value));
 
     /// <inheritdoc cref="IBaseClient.SetScanAsync(ValkeyKey, ScanOptions?)"/>
-    public async IAsyncEnumerable<ValkeyValue> SetScanAsync(ValkeyKey key, ScanOptions? options = null)
-    {
-        long cursor = 0;
+    public IAsyncEnumerable<ValkeyValue> SetScanAsync(ValkeyKey key, ScanOptions? options = null)
+        => SetScanAsync(key, 0, options);
 
+    #endregion
+    #region Internal Methods
+
+    /// <inheritdoc cref="IBaseClient.SetScanAsync(ValkeyKey, ScanOptions?)"/>
+    protected async IAsyncEnumerable<ValkeyValue> SetScanAsync(ValkeyKey key, long cursor, ScanOptions? options)
+    {
         do
         {
             (cursor, var elements) = await Command(Request.SetScanAsync(key, cursor, options));
@@ -103,4 +110,6 @@ public abstract partial class BaseClient
 
         } while (cursor != 0);
     }
+
+    #endregion
 }

@@ -8,6 +8,8 @@ namespace Valkey.Glide;
 
 public abstract partial class BaseClient
 {
+    #region Public Methods
+
     /// <inheritdoc cref="ISortedSetBaseCommands.SortedSetAddAsync(ValkeyKey, ValkeyValue, double)"/>
     public Task<bool> SortedSetAddAsync(ValkeyKey key, ValkeyValue member, double score)
         => Command(Request.SortedSetAddAsync(key, member, score));
@@ -249,10 +251,15 @@ public abstract partial class BaseClient
             : await SortedSetPopMaxAsync(keys, count, timeout);
 
     /// <inheritdoc cref="IBaseClient.SortedSetScanAsync(ValkeyKey, ScanOptions?)"/>
-    public async IAsyncEnumerable<SortedSetEntry> SortedSetScanAsync(ValkeyKey key, ScanOptions? options = null)
-    {
-        long cursor = 0;
+    public IAsyncEnumerable<SortedSetEntry> SortedSetScanAsync(ValkeyKey key, ScanOptions? options = null)
+        => SortedSetScanAsync(key, 0, options);
 
+    #endregion
+    #region Protected Methods
+
+    /// <inheritdoc cref="IBaseClient.SortedSetScanAsync(ValkeyKey, ScanOptions?)"/>
+    protected async IAsyncEnumerable<SortedSetEntry> SortedSetScanAsync(ValkeyKey key, long cursor, ScanOptions? options)
+    {
         do
         {
             (cursor, var elements) = await Command(Request.SortedSetScanAsync(key, cursor, options));
@@ -263,4 +270,6 @@ public abstract partial class BaseClient
 
         } while (cursor != 0);
     }
+
+    #endregion
 }
