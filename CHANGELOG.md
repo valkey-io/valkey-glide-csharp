@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 1.2.0
 
+### Fixed
+
+- `XREADGROUP` returning only the first field-value pair per stream entry (#430)
+
 ### Added
 
 - Support additional commands (#435):

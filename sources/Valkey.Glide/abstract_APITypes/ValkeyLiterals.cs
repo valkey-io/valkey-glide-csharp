@@ -52,6 +52,7 @@ internal static class ValkeyLiterals
         GETKEYS = "GETKEYS",
         GETNAME = "GETNAME",
         GT = "GT",
+        GROUP = "GROUP",
         HISTORY = "HISTORY",
         ID = "ID",
         IDLE = "IDLE",

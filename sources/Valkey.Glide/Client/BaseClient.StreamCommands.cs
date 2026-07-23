@@ -69,11 +69,11 @@ public abstract partial class BaseClient
 
     /// <inheritdoc cref="IBaseClient.StreamReadGroupAsync(StreamPosition, ValkeyValue, ValkeyValue, StreamReadGroupOptions)"/>
     public Task<StreamEntry[]> StreamReadGroupAsync(StreamPosition position, ValkeyValue groupName, ValkeyValue consumerName, StreamReadGroupOptions options)
-        => Command(Request.StreamReadGroupSingleAsync(position, groupName, consumerName, options));
+        => Command(Request.StreamReadGroupAsync(position, groupName, consumerName, options));
 
     /// <inheritdoc cref="IBaseClient.StreamReadGroupAsync(IEnumerable{StreamPosition}, ValkeyValue, ValkeyValue, StreamReadGroupOptions)"/>
     public Task<ValkeyStream[]> StreamReadGroupAsync(IEnumerable<StreamPosition> positions, ValkeyValue groupName, ValkeyValue consumerName, StreamReadGroupOptions options)
-        => Command(Request.StreamReadGroupMultiAsync(positions, groupName, consumerName, options));
+        => Command(Request.StreamReadGroupAsync(positions, groupName, consumerName, options));
 
     #endregion
     #region StreamLengthAsync
@@ -95,6 +95,7 @@ public abstract partial class BaseClient
 
     #endregion
 
+    // TODO #326
     // ──────────────────────────────────────────────────────────────────────
     // Methods below are temporarily commented out pending cleanup.
     // The underlying Request methods are kept intact.

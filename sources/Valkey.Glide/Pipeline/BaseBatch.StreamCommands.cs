@@ -83,11 +83,11 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
 
     /// <inheritdoc cref="IBatchStreamCommands.StreamReadGroup(StreamPosition, ValkeyValue, ValkeyValue, StreamReadGroupOptions)" />
     public T StreamReadGroup(StreamPosition position, ValkeyValue groupName, ValkeyValue consumerName, StreamReadGroupOptions options) =>
-        AddCmd(Request.StreamReadGroupSingleAsync(position, groupName, consumerName, options));
+        AddCmd(Request.StreamReadGroupAsync(position, groupName, consumerName, options));
 
     /// <inheritdoc cref="IBatchStreamCommands.StreamReadGroup(IEnumerable{StreamPosition}, ValkeyValue, ValkeyValue, StreamReadGroupOptions)" />
     public T StreamReadGroup(IEnumerable<StreamPosition> positions, ValkeyValue groupName, ValkeyValue consumerName, StreamReadGroupOptions options) =>
-        AddCmd(Request.StreamReadGroupMultiAsync(positions, groupName, consumerName, options));
+        AddCmd(Request.StreamReadGroupAsync(positions, groupName, consumerName, options));
 
     #endregion
     #region Explicit interface implementations
