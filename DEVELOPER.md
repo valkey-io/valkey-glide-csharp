@@ -365,7 +365,7 @@ task lint:markdown  # Run Markdown linter
 
 ## Checks
 
-Run checks to validate examples, links, and TODO comments.
+Run checks to validate examples, links, and TODOs.
 
 ```bash
 task check
@@ -374,9 +374,9 @@ task check:links
 task check:todos
 ```
 
-### Inline TODOs
+### TODOs
 
-All TODO comments must follow the format `TODO #<number>: <description>`, where:
+All TODOs must follow the format `TODO #<number>: <description>`, where:
 
 - `<number>` is an open GitHub issue in this repository.
 - `<description>` is a short explanation of what needs to change (at least 10 characters).

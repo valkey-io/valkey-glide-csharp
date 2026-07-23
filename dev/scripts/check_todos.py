@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""Check that all TODO comments follow the required format.
+"""Check that all TODOs follow the required format.
 
 Validation rules:
   1. Every TODO must follow the format `TODO #<number>: <description>`.
@@ -23,16 +23,16 @@ from _constants import GITHUB_REPO, PROJECT_ROOT
 
 
 class _Todo(NamedTuple):
-    """A TODO comment found in the codebase."""
+    """A TODO found in the codebase."""
 
     file: str
     line: int
     text: str
 
 
-# Matches TODO comments and captures GitHub issue ID and description.
+# Matches TODO and captures GitHub issue ID and description.
 _TODO_PATTERN = re.compile(
-    r"(//|#|/\*|\*|<!--).*TODO\b(\s+#(?P<github_id>\d+)(:\s+(?P<description>.+))?)?",
+    r"TODO\b(\s+#(?P<github_id>\d+)(:\s+(?P<description>.+))?)?",
     re.IGNORECASE,
 )
 
@@ -61,7 +61,7 @@ def _is_ignored(filepath: str, patterns: list[str]) -> bool:
 
 
 def _find_todos() -> list[_Todo]:
-    """Find all TODO comments in tracked files using git grep."""
+    """Find all TODOs in tracked files using git grep."""
     result = subprocess.run(
         ["git", "grep", "-n", "-i", "-P", _TODO_PATTERN.pattern],
         cwd=PROJECT_ROOT,
@@ -142,7 +142,7 @@ def _validate_todos(todos: list[_Todo]) -> dict[_Todo, str]:
 
 
 def main():
-    print("Checking TODO comments...\n")
+    print("Checking TODOs...\n")
 
     todos = _find_todos()
     failures = _validate_todos(todos)

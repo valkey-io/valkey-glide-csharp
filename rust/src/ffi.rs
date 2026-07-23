@@ -148,11 +148,6 @@ pub struct ConnectionConfig {
     pub node_discovery_mode: NodeDiscoveryMode,
     pub has_client_side_cache_config: bool,
     pub client_side_cache_config: ClientSideCacheConfig,
-    /*
-    TODO below
-    pub periodic_checks: Option<PeriodicCheck>,
-    pub inflight_requests_limit: Option<u32>
-    */
 }
 
 #[repr(C)]

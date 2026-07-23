@@ -183,5 +183,5 @@ tasks:
         cmd: lychee --config lychee.toml .
 
     check:todos:
-        desc: "Check that TODO comments reference an open GitHub issue"
+        desc: "Check that TODOs reference an open GitHub issue"
         cmd: python3 dev/scripts/check_todos.py

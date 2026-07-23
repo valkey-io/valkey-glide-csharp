@@ -93,6 +93,9 @@ internal partial class Request
         return result;
     }
 
+    internal static GlideString[] ToScanArgs(ScanOptions? options)
+        => options?.ToArgs() ?? [];
+
     /// <summary>
     /// Appends SetExpiryOptions arguments (PX/PXAT/KEEPTTL) to the args list.
     /// </summary>

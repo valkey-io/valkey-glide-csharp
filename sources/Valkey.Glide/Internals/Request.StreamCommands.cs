@@ -220,6 +220,9 @@ internal partial class Request
         return new(RequestType.XTrim, [.. args], false, response => response);
     }
 
+    public static Cmd<long, long> StreamTrimAsync(ValkeyKey key, StreamTrimOptions options)
+        => Simple<long>(RequestType.XTrim, [key, .. options.ToArgs()]);
+
     #endregion
 
     #region Response Converters

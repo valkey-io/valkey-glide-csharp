@@ -1,5 +1,6 @@
-# Files excluded from the TODO checker (dev/scripts/check_todos.py).
-# Patterns use fnmatch-style glob matching against repo-relative paths.
+# Files excluded from the TODO checker.
+# See dev/scripts/check_todos.py for details.
 
 dev/conf/check-todos-ignore
 dev/scripts/check_todos.py
+DEVELOPER.md
