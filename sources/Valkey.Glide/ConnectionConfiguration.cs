@@ -60,6 +60,7 @@ public abstract class ConnectionConfiguration
         public TimeSpan? PubSubReconciliationInterval;
         public CompressionConfig? CompressionConfig;
         public bool ReadOnly;
+        public NodeDiscoveryMode NodeDiscoveryMode = NodeDiscoveryMode.Standard;
         public ClientSideCacheConfig? ClientSideCacheConfig;
         public AddressResolverDelegate? AddressResolver;
 
@@ -83,6 +84,7 @@ public abstract class ConnectionConfiguration
                 (uint?)PubSubReconciliationInterval?.TotalMilliseconds,
                 CompressionConfig?.ToFfi(),
                 ReadOnly,
+                NodeDiscoveryMode,
                 ClientSideCacheConfig?.ToFfi()
             );
     }
@@ -933,6 +935,26 @@ public abstract class ConnectionConfiguration
         /// Complete the configuration with given settings.
         /// </summary>
         public new StandaloneClientConfiguration Build() => new() { Request = base.Build() };
+
+        #region Node Discovery Mode
+        /// <summary>
+        /// Controls how the client discovers node roles and topology during connection
+        /// initialization. If not set, defaults to <see cref="NodeDiscoveryMode.Standard" />.
+        /// See <see cref="NodeDiscoveryMode" /> for the available modes and their details.
+        /// </summary>
+        public NodeDiscoveryMode NodeDiscoveryMode
+        {
+            get => Config.NodeDiscoveryMode;
+            set => Config.NodeDiscoveryMode = value;
+        }
+
+        /// <inheritdoc cref="NodeDiscoveryMode" />
+        public StandaloneClientConfigurationBuilder WithNodeDiscoveryMode(NodeDiscoveryMode nodeDiscoveryMode)
+        {
+            NodeDiscoveryMode = nodeDiscoveryMode;
+            return this;
+        }
+        #endregion
 
         #region PubSub Subscriptions
         /// <summary>

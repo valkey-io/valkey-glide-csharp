@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `RESET` (#435)
   - `SAVE` (#440)
 - Custom socket address resolution support via callback (#392)
+- `NodeDiscoveryMode` configuration option for standalone clients, with `Standard`, `Static` (proxy-compatible, e.g. Envoy), and `DiscoverAll` modes (#131)
 
 ## 1.1.0
 

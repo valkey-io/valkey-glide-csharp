@@ -81,6 +81,17 @@ pub enum EvictionPolicy {
     Lfu = 1,
 }
 
+/// A mirror of [`glide_core::client::NodeDiscoveryMode`] adopted for FFI.
+///
+/// The discriminants must match the C# `ConnectionConfiguration.NodeDiscoveryMode` enum.
+#[repr(u32)]
+#[derive(Clone, Copy)]
+pub enum NodeDiscoveryMode {
+    Standard = 0,
+    Static = 1,
+    DiscoverAll = 2,
+}
+
 /// A mirror of [`glide_core::client::ClientSideCache`] adopted for FFI.
 #[repr(C)]
 #[derive(Clone, Copy)]
@@ -134,6 +145,7 @@ pub struct ConnectionConfig {
     pub has_compression_config: bool,
     pub compression_config: CompressionConfig,
     pub read_only: bool,
+    pub node_discovery_mode: NodeDiscoveryMode,
     pub has_client_side_cache_config: bool,
     pub client_side_cache_config: ClientSideCacheConfig,
     /*
@@ -353,13 +365,18 @@ pub(crate) unsafe fn create_connection_request(
             None
         },
 
+        node_discovery_mode: match config.node_discovery_mode {
+            NodeDiscoveryMode::Standard => glide_core::client::NodeDiscoveryMode::Standard,
+            NodeDiscoveryMode::Static => glide_core::client::NodeDiscoveryMode::Static,
+            NodeDiscoveryMode::DiscoverAll => glide_core::client::NodeDiscoveryMode::DiscoverAll,
+        },
+
         // Unimplemented configuration options.
         client_cert: Vec::new(),
         client_key: Vec::new(),
         tcp_nodelay: false,
         periodic_checks: None,
         inflight_requests_limit: None,
-        node_discovery_mode: glide_core::client::NodeDiscoveryMode::default(),
         address_resolver: None,
         client_circuit_breaker: None,
     })

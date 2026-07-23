@@ -525,4 +525,19 @@ public class StandaloneClientTests(TestConfiguration config)
         await using var client = await GlideClient.CreateClient(builder.Build());
         await AssertConnected(client);
     }
+
+    [Theory]
+    [MemberData(nameof(NodeDiscoveryModes), MemberType = typeof(Data))]
+    public async Task Connect_WithNodeDiscoveryMode_Succeeds(NodeDiscoveryMode mode)
+    {
+        // Against a single-node standalone server, all modes should connect successfully:
+        // `Standard` verifies the role, `Static` trusts the address as primary, and
+        // `DiscoverAll` discovers the (replica-less) topology from the primary.
+        var config = TestConfiguration.DefaultClientConfig()
+            .WithNodeDiscoveryMode(mode)
+            .Build();
+
+        await using var client = await GlideClient.CreateClient(config);
+        await AssertConnected(client);
+    }
 }
