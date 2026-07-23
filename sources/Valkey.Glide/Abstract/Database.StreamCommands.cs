@@ -209,7 +209,7 @@ internal partial class Database
     public Task<long> StreamTrimAsync(ValkeyKey key, long maxLength, bool useApproximateMaxLength = false, long? limit = null, StreamTrimMode trimMode = StreamTrimMode.KeepReferences, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        GuardClauses.ThrowIfUnsupported(trimMode);
+        GuardClauses.ThrowIfNotSupported(trimMode);
 
         var options = new StreamTrimOptions.MaxLen
         {
@@ -225,7 +225,7 @@ internal partial class Database
     public Task<long> StreamTrimByMinIdAsync(ValkeyKey key, ValkeyValue minId, bool useApproximateMaxLength = false, long? limit = null, StreamTrimMode trimMode = StreamTrimMode.KeepReferences, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        GuardClauses.ThrowIfUnsupported(trimMode);
+        GuardClauses.ThrowIfNotSupported(trimMode);
 
         var options = new StreamTrimOptions.MinId
         {

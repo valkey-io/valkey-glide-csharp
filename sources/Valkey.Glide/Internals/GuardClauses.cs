@@ -65,7 +65,7 @@ internal static class GuardClauses
     /// </summary>
     /// <param name="trimMode">The stream trim mode to validate.</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="trimMode"/> is not <see cref="StreamTrimMode.KeepReferences"/>.</exception>
-    public static void ThrowIfUnsupported(StreamTrimMode trimMode)
+    public static void ThrowIfNotSupported(StreamTrimMode trimMode)
     {
         if (trimMode != StreamTrimMode.KeepReferences)
         {

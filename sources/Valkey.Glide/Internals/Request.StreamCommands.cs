@@ -184,42 +184,6 @@ internal partial class Request
     public static Cmd<object, ValkeyStream[]> StreamReadGroupAsync(IEnumerable<StreamPosition> positions, ValkeyValue group, ValkeyValue consumer, StreamReadGroupOptions options)
         => new(RequestType.XReadGroup, BuildStreamReadGroupArgs([.. positions], group, consumer, options), false, ConvertMultiStreamReadResponse, allowConverterToHandleNull: true);
 
-    // TODO SER only
-    public static Cmd<long, long> StreamTrimAsync(ValkeyKey key, long? maxLength, ValkeyValue minId, bool useApproximateMaxLength, long? limit)
-    {
-        List<GlideString> args = [key];
-
-        if (maxLength.HasValue)
-        {
-            args.Add("MAXLEN");
-
-            if (useApproximateMaxLength)
-            {
-                args.Add("~");
-            }
-
-            args.Add(maxLength.Value.ToGlideString());
-        }
-        else if (!minId.IsNull)
-        {
-            args.Add("MINID");
-            if (useApproximateMaxLength)
-            {
-                args.Add("~");
-            }
-
-            args.Add(minId);
-        }
-
-        if (limit.HasValue && useApproximateMaxLength)
-        {
-            args.Add("LIMIT");
-            args.Add(limit.Value.ToGlideString());
-        }
-
-        return new(RequestType.XTrim, [.. args], false, response => response);
-    }
-
     public static Cmd<long, long> StreamTrimAsync(ValkeyKey key, StreamTrimOptions options)
         => Simple<long>(RequestType.XTrim, [key, .. options.ToArgs()]);
 
