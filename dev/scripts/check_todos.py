@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
-"""Check that all TODO comments reference an open GitHub issue.
+"""Check that all TODO comments follow the required format.
 
 Validation rules:
-  1. Every TODO must include a GitHub issue reference with format `TODO #<number>`.
-  2. The referenced number must correspond to an existing Valkey GLIDE C# GitHub issue.
-  3. The referenced issue must be open.
+  1. Every TODO must follow the format `TODO #<number>: <description>`.
+  2. The description should provide a summary of the proposed changes, and must be at least 10 characters long.
+  3. The referenced number must correspond to an open Valkey GLIDE C# GitHub issue.
 
 Usage:
     python dev/scripts/check_todos.py
@@ -30,10 +30,16 @@ class _Todo(NamedTuple):
     text: str
 
 
+# Matches TODO comments and captures GitHub issue ID and description.
 _TODO_PATTERN = re.compile(
-    r"(//|#|/\*|\*|<!--).*TODO\b(\s+#(?P<github_id>\d+))?", re.IGNORECASE
+    r"(//|#|/\*|\*|<!--).*TODO\b(\s+#(?P<github_id>\d+)(:\s+(?P<description>.+))?)?",
+    re.IGNORECASE,
 )
 
+# Minimum length for the description.
+_MIN_DESCRIPTION_LENGTH = 10
+
+# File path patterns to ignore.
 _IGNORE_FILE = os.path.join(PROJECT_ROOT, "dev", "conf", "check-todos-ignore")
 
 
@@ -116,12 +122,21 @@ def _validate_todos(todos: list[_Todo]) -> dict[_Todo, str]:
 
         if not github_id:
             failures[todo] = "missing GitHub issue reference"
-        else:
-            issue_num = int(github_id)
-            if issue_num not in checked_issues:
-                checked_issues[issue_num] = _check_issue(issue_num)
-            if checked_issues[issue_num]:
-                failures[todo] = checked_issues[issue_num]
+            continue
+
+        description = match.group("description")
+        if description is None:
+            failures[todo] = "missing description (expected format: TODO #<number>: <description>)"
+            continue
+        if len(description.strip()) < _MIN_DESCRIPTION_LENGTH:
+            failures[todo] = f"description too short (must be at least {_MIN_DESCRIPTION_LENGTH} characters)"
+            continue
+
+        issue_num = int(github_id)
+        if issue_num not in checked_issues:
+            checked_issues[issue_num] = _check_issue(issue_num)
+        if checked_issues[issue_num]:
+            failures[todo] = checked_issues[issue_num]
 
     return failures
 
