@@ -14,11 +14,13 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(SCRIPTS_DIR))
 SOURCES_DIR = os.path.join(PROJECT_ROOT, "sources")
 LIBRARY_DIR = os.path.join(SOURCES_DIR, "Valkey.Glide")
 
+CONF_DIR = os.path.join(PROJECT_ROOT, "dev", "conf")
+COVERAGE_BASELINE_PATH = os.path.join(CONF_DIR, "coverage-baseline.json")
+COVERAGE_RUNSETTINGS_PATH = os.path.join(CONF_DIR, "coverage-runsettings.xml")
+
 COVERAGE_DIR = os.path.join(PROJECT_ROOT, "dev", "coverage")
 COVERAGE_RESULTS_DIR = os.path.join(COVERAGE_DIR, "results")
 COVERAGE_REPORTS_DIR = os.path.join(COVERAGE_DIR, "reports")
-COVERAGE_BASELINE_PATH = os.path.join(COVERAGE_DIR, "coverage-baseline.json")
-COVERAGE_RUNSETTINGS_PATH = os.path.join(COVERAGE_DIR, ".runsettings")
 
 COVERAGE_REPORTS_COMBINED_DIR = os.path.join(COVERAGE_REPORTS_DIR, "combined")
 COVERAGE_REPORT_COMBINED_INDEX_PATH = os.path.join(

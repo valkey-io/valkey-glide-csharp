@@ -374,6 +374,21 @@ task check:links
 task check:todos
 ```
 
+### Inline TODOs
+
+All TODO comments must follow the format `TODO #<number>: <description>`, where:
+
+- `<number>` is an open GitHub issue in this repository.
+- `<description>` is a short explanation of what needs to change (at least 10 characters).
+
+Example:
+
+```csharp
+// TODO #472: Auto-generate this enum from the Rust source.
+```
+
+Files can be excluded from validation via `dev/conf/check-todos-ignore` (fnmatch glob patterns, one per line).
+
 ## Test framework and Style
 
 The CSharp Valkey-Glide client uses xUnit v3 for testing code. The test code styles are defined in `.editorconfing` (see `dotnet_diagnostic.xUnit..` rules). The xUnit rules are enforced by the [xUnit analyzers](https://github.com/xunit/xunit.analyzers) referenced in the main xunit.v3 NuGet package. If you choose to use xunit.v3.core instead, you can reference xunit.analyzers explicitly. For additional info, please, refer to <https://xunit.NET> and <https://github.com/xunit/xunit>

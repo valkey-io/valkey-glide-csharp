@@ -81,8 +81,8 @@ jobs:
             - name: Determine whether to run with coverage
               shell: bash
               run: |
-                  SERVER_TYPE=$(jq -r '.server_type' dev/coverage/coverage-baseline.json)
-                  SERVER_VERSION=$(jq -r '.server_version' dev/coverage/coverage-baseline.json)
+                  SERVER_TYPE=$(jq -r '.server_type' dev/conf/coverage-baseline.json)
+                  SERVER_VERSION=$(jq -r '.server_version' dev/conf/coverage-baseline.json)
 
                   RUN_COVERAGE=false
                   if [[ "${{ matrix.dotnet }}" == "8.0" \
