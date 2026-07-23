@@ -22,7 +22,7 @@ internal partial class Request
 
     private const string MemoryStatsDbPrefix = "db.";
 
-    private static MemoryStats ParseMemoryStats(Dictionary<GlideString, object> map)
+    internal static MemoryStats ParseMemoryStats(Dictionary<GlideString, object> map)
     {
         Dictionary<int, MemoryStatsDb> db = [];
         foreach (KeyValuePair<GlideString, object> kvp in map)
