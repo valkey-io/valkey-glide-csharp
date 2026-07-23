@@ -368,10 +368,10 @@ task lint:markdown  # Run Markdown linter
 Run checks to validate examples, links, and TODO comments.
 
 ```bash
-task check           # Run all checks
-task check:examples  # Check C# examples in comments
-task check:links     # Check for broken links
-task check:todos     # Check that TODO comments reference an open GitHub issue
+task check
+task check:examples
+task check:links
+task check:todos
 ```
 
 ## Test framework and Style

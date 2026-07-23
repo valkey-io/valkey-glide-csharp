@@ -609,7 +609,7 @@ internal partial class FFI
         public IntPtr Route;
     }
 
-    // TODO: generate this with a bindings generator
+    // TODO #472: Auto-generate this enum
     internal enum RequestType : int
     {
         /// Invalid request type

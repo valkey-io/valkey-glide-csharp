@@ -121,8 +121,6 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
         throw new ArgumentException("The specified endpoint is not defined", nameof(endpoint));
     }
 
-    // TODO currently this returns only primary node on standalone
-    // https://github.com/valkey-io/valkey-glide/issues/4293
     /// <inheritdoc/>
     public IServer[] GetServers()
     {
@@ -134,7 +132,7 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
         }
         else
         {
-            // due to #4293, core ignores route on standalone and always return a single node response
+            // glide-core ignores route on standalone and always returns a single node response
             string info = _db.Command(Request.Info([]), Route.AllNodes).GetAwaiter().GetResult();
             // and there is no way to get IP address from server, assuming localhost (127.0.0.1)
             // we can try to get port only (in some deployments, this info is also missing)
@@ -375,7 +373,9 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
         lock (_subscriptions)
         {
             foreach (var sub in _subscriptions.Values)
+            {
                 sub.Dispose();
+            }
 
             _subscriptions.Clear();
         }
