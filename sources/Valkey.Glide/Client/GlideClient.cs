@@ -18,7 +18,7 @@ public partial class GlideClient :
     BaseClient,
     IGlideClient
 {
-    internal GlideClient() { }
+    #region Public Methods
 
     /// <summary>
     /// Creates a new <see cref="GlideClient" /> instance and establishes a connection to a standalone Valkey server.
@@ -59,5 +59,5 @@ public partial class GlideClient :
         return _serverVersion;
     }
 
-    
+    #endregion
 }

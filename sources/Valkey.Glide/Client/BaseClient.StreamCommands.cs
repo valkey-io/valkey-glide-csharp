@@ -95,7 +95,8 @@ public abstract partial class BaseClient
 
     #endregion
 
-    // TODO #326
+    // TODO #326: Redesign and expose these methods
+
     // ──────────────────────────────────────────────────────────────────────
     // Methods below are temporarily commented out pending cleanup.
     // The underlying Request methods are kept intact.

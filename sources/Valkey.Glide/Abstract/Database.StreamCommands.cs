@@ -277,6 +277,5 @@ internal partial class Database
                 : null
     };
 
-    /// <summary>
     #endregion
 }
