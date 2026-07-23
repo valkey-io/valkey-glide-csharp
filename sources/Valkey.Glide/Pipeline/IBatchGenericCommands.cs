@@ -7,6 +7,10 @@ namespace Valkey.Glide.Pipeline;
 
 internal interface IBatchGenericCommands
 {
+    /// <inheritdoc cref="IBaseClient.CopyAsync(ValkeyKey, ValkeyKey, bool)" />
+    /// <returns>Command Response - <see langword="true"/> if the key was copied.</returns>
+    IBatch Copy(ValkeyKey source, ValkeyKey destination, bool replace = false);
+
     /// <inheritdoc cref="IBaseClient.DeleteAsync(ValkeyKey)" />
     /// <returns>Command Response - <see langword="true"/> if the key was removed.</returns>
     IBatch Delete(ValkeyKey key);
@@ -15,13 +19,9 @@ internal interface IBatchGenericCommands
     /// <returns>Command Response - The number of keys that were removed.</returns>
     IBatch Delete(IEnumerable<ValkeyKey> keys);
 
-    /// <inheritdoc cref="IBaseClient.UnlinkAsync(ValkeyKey)" />
-    /// <returns>Command Response - <see langword="true"/> if the key was unlinked.</returns>
-    IBatch Unlink(ValkeyKey key);
-
-    /// <inheritdoc cref="IBaseClient.UnlinkAsync(IEnumerable{ValkeyKey})" />
-    /// <returns>Command Response - The number of keys that were unlinked.</returns>
-    IBatch Unlink(IEnumerable<ValkeyKey> keys);
+    /// <inheritdoc cref="IBaseClient.DumpAsync(ValkeyKey)" />
+    /// <returns>Command Response - The serialized value, or <see langword="null"/> if key does not exist.</returns>
+    IBatch Dump(ValkeyKey key);
 
     /// <inheritdoc cref="IBaseClient.ExistsAsync(ValkeyKey)" />
     /// <returns>Command Response - <see langword="true"/> if the key exists.</returns>
@@ -39,45 +39,13 @@ internal interface IBatchGenericCommands
     /// <returns>Command Response - <see langword="true"/> if the timeout was set.</returns>
     IBatch Expire(ValkeyKey key, DateTimeOffset? expiry, ExpireCondition condition = ExpireCondition.Always);
 
-    /// <inheritdoc cref="IBaseClient.TimeToLiveAsync(ValkeyKey)" />
-    /// <returns>Command Response - A <see cref="TimeToLiveResult"/> with TTL information.</returns>
-    IBatch TimeToLive(ValkeyKey key);
-
-    /// <inheritdoc cref="IBaseClient.TypeAsync(ValkeyKey)" />
-    /// <returns>Command Response - Type of key, or none when key does not exist.</returns>
-    IBatch Type(ValkeyKey key);
-
-    /// <inheritdoc cref="IBaseClient.RenameAsync(ValkeyKey, ValkeyKey)" />
-    /// <returns>Command Response - No value is returned (void command).</returns>
-    IBatch Rename(ValkeyKey key, ValkeyKey newKey);
-
-    /// <inheritdoc cref="IBaseClient.RenameIfNotExistsAsync(ValkeyKey, ValkeyKey)" />
-    /// <returns>Command Response - <see langword="true"/> if the key was renamed.</returns>
-    IBatch RenameIfNotExists(ValkeyKey key, ValkeyKey newKey);
-
-    /// <inheritdoc cref="IBaseClient.PersistAsync(ValkeyKey)" />
-    /// <returns>Command Response - <see langword="true"/> if the timeout was removed.</returns>
-    IBatch Persist(ValkeyKey key);
-
-    /// <inheritdoc cref="IBaseClient.DumpAsync(ValkeyKey)" />
-    /// <returns>Command Response - The serialized value, or <see langword="null"/> if key does not exist.</returns>
-    IBatch Dump(ValkeyKey key);
-
-    /// <inheritdoc cref="IBaseClient.RestoreAsync(ValkeyKey, byte[], RestoreOptions?)" />
-    /// <returns>Command Response - No value is returned (void command).</returns>
-    IBatch Restore(ValkeyKey key, byte[] value, RestoreOptions? options = null);
-
-    /// <inheritdoc cref="IBaseClient.TouchAsync(ValkeyKey)" />
-    /// <returns>Command Response - <see langword="true"/> if the key was touched.</returns>
-    IBatch Touch(ValkeyKey key);
-
-    /// <inheritdoc cref="IBaseClient.TouchAsync(IEnumerable{ValkeyKey})" />
-    /// <returns>Command Response - The number of keys that were updated.</returns>
-    IBatch Touch(IEnumerable<ValkeyKey> keys);
-
     /// <inheritdoc cref="IBaseClient.ExpireTimeAsync(ValkeyKey)" />
     /// <returns>Command Response - A <see cref="DateTimeOffset"/> with the expiry time, or <see langword="null"/> if the key does not exist or has no expiry.</returns>
     IBatch ExpireTime(ValkeyKey key);
+
+    /// <inheritdoc cref="IBaseClient.MigrateAsync(ValkeyKey, MigrateOptions)" />
+    /// <returns>Command Response - <see langword="true"/> if the key was migrated successfully, <see langword="false"/> if the key was not found.</returns>
+    IBatch Migrate(ValkeyKey key, MigrateOptions options);
 
     /// <inheritdoc cref="IBaseClient.ObjectEncodingAsync(ValkeyKey)" />
     /// <returns>Command Response - The encoding of the object, or <see langword="null"/> if key does not exist.</returns>
@@ -95,13 +63,25 @@ internal interface IBatchGenericCommands
     /// <returns>Command Response - The reference count, or <see langword="null"/> if key does not exist.</returns>
     IBatch ObjectRefCount(ValkeyKey key);
 
-    /// <inheritdoc cref="IBaseClient.CopyAsync(ValkeyKey, ValkeyKey, bool)" />
-    /// <returns>Command Response - <see langword="true"/> if the key was copied.</returns>
-    IBatch Copy(ValkeyKey source, ValkeyKey destination, bool replace = false);
+    /// <inheritdoc cref="IBaseClient.PersistAsync(ValkeyKey)" />
+    /// <returns>Command Response - <see langword="true"/> if the timeout was removed.</returns>
+    IBatch Persist(ValkeyKey key);
 
     /// <inheritdoc cref="IBaseClient.RandomKeyAsync()" />
     /// <returns>Command Response - A random key, or <see langword="null"/> when the database is empty.</returns>
     IBatch RandomKey();
+
+    /// <inheritdoc cref="IBaseClient.RenameAsync(ValkeyKey, ValkeyKey)" />
+    /// <returns>Command Response - No value is returned (void command).</returns>
+    IBatch Rename(ValkeyKey key, ValkeyKey newKey);
+
+    /// <inheritdoc cref="IBaseClient.RenameIfNotExistsAsync(ValkeyKey, ValkeyKey)" />
+    /// <returns>Command Response - <see langword="true"/> if the key was renamed.</returns>
+    IBatch RenameIfNotExists(ValkeyKey key, ValkeyKey newKey);
+
+    /// <inheritdoc cref="IBaseClient.RestoreAsync(ValkeyKey, byte[], RestoreOptions?)" />
+    /// <returns>Command Response - No value is returned (void command).</returns>
+    IBatch Restore(ValkeyKey key, byte[] value, RestoreOptions? options = null);
 
     /// <inheritdoc cref="IGenericBaseCommands.SortAsync(ValkeyKey, long, long, Order, SortType, ValkeyValue, IEnumerable{ValkeyValue})" />
     /// <returns>Command Response - The sorted elements.</returns>
@@ -123,11 +103,31 @@ internal interface IBatchGenericCommands
     /// <returns>Command Response - The sorted elements.</returns>
     IBatch SortReadOnly(ValkeyKey key, SortOptions? options);
 
+    /// <inheritdoc cref="IBaseClient.TimeToLiveAsync(ValkeyKey)" />
+    /// <returns>Command Response - A <see cref="TimeToLiveResult"/> with TTL information.</returns>
+    IBatch TimeToLive(ValkeyKey key);
+
+    /// <inheritdoc cref="IBaseClient.TouchAsync(ValkeyKey)" />
+    /// <returns>Command Response - <see langword="true"/> if the key was touched.</returns>
+    IBatch Touch(ValkeyKey key);
+
+    /// <inheritdoc cref="IBaseClient.TouchAsync(IEnumerable{ValkeyKey})" />
+    /// <returns>Command Response - The number of keys that were updated.</returns>
+    IBatch Touch(IEnumerable<ValkeyKey> keys);
+
+    /// <inheritdoc cref="IBaseClient.TypeAsync(ValkeyKey)" />
+    /// <returns>Command Response - Type of key, or none when key does not exist.</returns>
+    IBatch Type(ValkeyKey key);
+
+    /// <inheritdoc cref="IBaseClient.UnlinkAsync(ValkeyKey)" />
+    /// <returns>Command Response - <see langword="true"/> if the key was unlinked.</returns>
+    IBatch Unlink(ValkeyKey key);
+
+    /// <inheritdoc cref="IBaseClient.UnlinkAsync(IEnumerable{ValkeyKey})" />
+    /// <returns>Command Response - The number of keys that were unlinked.</returns>
+    IBatch Unlink(IEnumerable<ValkeyKey> keys);
+
     /// <inheritdoc cref="IBaseClient.WaitAsync(long, TimeSpan)" />
     /// <returns>Command Response - The number of replicas that acknowledged the write commands.</returns>
     IBatch Wait(long numreplicas, TimeSpan timeout);
-
-    /// <inheritdoc cref="IBaseClient.MigrateAsync(ValkeyKey, MigrateOptions)" />
-    /// <returns>Command Response - <see langword="true"/> if the key was migrated successfully, <see langword="false"/> if the key was not found.</returns>
-    IBatch Migrate(ValkeyKey key, MigrateOptions options);
 }

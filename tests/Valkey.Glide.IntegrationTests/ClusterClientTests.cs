@@ -472,8 +472,9 @@ public class ClusterClientTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task LolwutAsync_ReturnsArtPerNode(GlideClusterClient client)
     {
-        // Get lolwut from all nodes
+#pragma warning disable CS0618 // TODO #475: Update test for parameterless LolwutAsync()
         var allLolwut = await client.LolwutAsync();
+#pragma warning restore CS0618
         Assert.NotEmpty(allLolwut);
 
         // Each node should return some art

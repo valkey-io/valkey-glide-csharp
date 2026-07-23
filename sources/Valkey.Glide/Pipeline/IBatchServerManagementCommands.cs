@@ -10,6 +10,10 @@ internal interface IBatchServerManagementCommands
     /// <returns>Command Response - <inheritdoc cref="IGlideClient.ConfigGetAsync(ValkeyValue)" /></returns>
     IBatch ConfigGetAsync(ValkeyValue pattern = default);
 
+    /// <inheritdoc cref="IBaseClient.ConfigGetAsync(IEnumerable{ValkeyValue})" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.ConfigGetAsync(IEnumerable{ValkeyValue})" /></returns>
+    IBatch ConfigGetAsync(IEnumerable<ValkeyValue> patterns);
+
     /// <inheritdoc cref="IGlideClient.ConfigResetStatisticsAsync()" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IGlideClient.ConfigResetStatisticsAsync()" /></returns>
     IBatch ConfigResetStatisticsAsync();
@@ -25,10 +29,6 @@ internal interface IBatchServerManagementCommands
     /// <inheritdoc cref="IBaseClient.ConfigSetAsync(IDictionary{ValkeyValue, ValkeyValue})" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.ConfigSetAsync(IDictionary{ValkeyValue, ValkeyValue})" /></returns>
     IBatch ConfigSetAsync(IDictionary<ValkeyValue, ValkeyValue> parameters);
-
-    /// <inheritdoc cref="IBaseClient.ConfigGetAsync(IEnumerable{ValkeyValue})" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IBaseClient.ConfigGetAsync(IEnumerable{ValkeyValue})" /></returns>
-    IBatch ConfigGetAsync(IEnumerable<ValkeyValue> patterns);
 
     /// <inheritdoc cref="IGlideClient.DatabaseSizeAsync()" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IGlideClient.DatabaseSizeAsync()" /></returns>
@@ -54,10 +54,6 @@ internal interface IBatchServerManagementCommands
     /// <returns>Command Response - <inheritdoc cref="IGlideClient.LastSaveAsync()" /></returns>
     IBatch LastSaveAsync();
 
-    /// <inheritdoc cref="IGlideClient.TimeAsync()" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="IGlideClient.TimeAsync()" /></returns>
-    IBatch TimeAsync();
-
     /// <inheritdoc cref="IGlideClient.LolwutAsync()" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IGlideClient.LolwutAsync()" /></returns>
     IBatch LolwutAsync();
@@ -65,4 +61,8 @@ internal interface IBatchServerManagementCommands
     /// <inheritdoc cref="IBaseClient.LolwutAsync(LolwutOptions)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.LolwutAsync(LolwutOptions)" /></returns>
     IBatch LolwutAsync(LolwutOptions options);
+
+    /// <inheritdoc cref="IGlideClient.TimeAsync()" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IGlideClient.TimeAsync()" /></returns>
+    IBatch TimeAsync();
 }

@@ -3,54 +3,42 @@
 namespace Valkey.Glide;
 
 /// <summary>
-/// Represents a command received through the <c>MONITOR</c> stream.
+/// Represents a message received through the <see href="https://valkey.io/commands/monitor/">MONITOR</see> stream.
 /// </summary>
-/// <seealso href="https://valkey.io/commands/monitor/">Valkey commands - MONITOR</seealso>
-public sealed class MonitorMessage
+/// <seealso href="https://valkey.io/commands/monitor/"/>
+public sealed record MonitorMessage
 {
     #region Public Properties
 
     /// <summary>
     /// The server timestamp when the command was processed.
     /// </summary>
-    public DateTimeOffset Timestamp { get; }
+    public required DateTimeOffset Timestamp { get; init; }
 
     /// <summary>
     /// The database number the command was issued against.
     /// </summary>
-    public ushort Database { get; }
+    public required ushort Database { get; init; }
 
     /// <summary>
     /// The address of the client that issued the command.
     /// </summary>
-    public string ClientAddress { get; }
+    public required string ClientAddress { get; init; }
 
     /// <summary>
     /// The command name.
     /// </summary>
-    public string Command { get; }
+    public required string Command { get; init; }
 
     /// <summary>
     /// The command arguments.
     /// </summary>
-    public IReadOnlyList<string> Args { get; }
+    public required IReadOnlyList<string> Args { get; init; }
 
     #endregion
-    #region Constructors
+    #region Constructors & Builders
 
-    internal MonitorMessage(
-        DateTimeOffset timestamp,
-        ushort database,
-        string clientAddress,
-        string command,
-        IReadOnlyList<string> args)
-    {
-        Timestamp = timestamp;
-        Database = database;
-        ClientAddress = clientAddress;
-        Command = command;
-        Args = args;
-    }
+    internal MonitorMessage() { }
 
     #endregion
 }

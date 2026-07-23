@@ -5,11 +5,9 @@ using static Valkey.Glide.Internals.TimeUtils;
 namespace Valkey.Glide.Commands.Options;
 
 /// <summary>
-/// Options for the MIGRATE command.
+/// Options for the <see href="https://valkey.io/commands/migrate/">MIGRATE</see> command.
 /// </summary>
-/// <remarks>
-/// <para>See <a href="https://valkey.io/commands/migrate/">valkey.io</a></para>
-/// </remarks>
+/// <seealso href="https://valkey.io/commands/migrate/"/>
 /// <param name="host">The host address of the destination server.</param>
 /// <param name="port">The port number of the destination server.</param>
 /// <param name="destinationDb">The database number on the destination server.</param>

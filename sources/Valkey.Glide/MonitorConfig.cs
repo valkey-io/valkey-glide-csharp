@@ -3,9 +3,9 @@
 namespace Valkey.Glide;
 
 /// <summary>
-/// Configuration for a <see cref="MonitorClient"/>.
+/// Configuration for a <see href="https://valkey.io/commands/monitor/">MONITOR</see> connection.
 /// </summary>
-/// <seealso href="https://valkey.io/commands/monitor/">Valkey commands - MONITOR</seealso>
+/// <seealso href="https://valkey.io/commands/monitor/"/>
 public sealed class MonitorConfig(string host, ushort port) : IDisposable
 {
     #region Private Fields

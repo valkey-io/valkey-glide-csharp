@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using static Valkey.Glide.TestUtils.Builders;
+
 namespace Valkey.Glide.UnitTests;
 
 public class IamAuthConfigTests
@@ -79,22 +81,6 @@ public class IamAuthConfigTests
         config.Dispose();
         config.Dispose(); // Should not throw
     }
-
-    #endregion
-    #region Helpers
-
-    // TODO #435: Move to TestUtils class.
-
-    /// <summary>
-    /// Builds and returns an IAM authentication configuration for testing.
-    /// If required parameters are not specified, default values are used.
-    /// </summary>
-    private static IamAuthConfig BuildIamAuthConfig(
-        string? clusterName = null,
-        ServiceType serviceType = ServiceType.ElastiCache,
-        string? region = null,
-        uint? refreshIntervalSeconds = null)
-        => new(clusterName ?? ClusterName, serviceType, region ?? Region, refreshIntervalSeconds);
 
     #endregion
 }

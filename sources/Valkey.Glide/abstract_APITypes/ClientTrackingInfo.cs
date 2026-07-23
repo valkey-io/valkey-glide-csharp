@@ -3,40 +3,32 @@
 namespace Valkey.Glide;
 
 /// <summary>
-/// Represents a <c>CLIENT TRACKINGINFO</c> response containing the client's tracking state.
+/// Represents a <see href="https://valkey.io/commands/client-trackinginfo/">CLIENT TRACKINGINFO</see> response.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/client-trackinginfo/"/>
-public sealed class ClientTrackingInfo
+public sealed record ClientTrackingInfo
 {
     #region Public Properties
 
     /// <summary>
     /// The set of tracking flags.
     /// </summary>
-    public IReadOnlySet<string> Flags { get; }
+    public required IReadOnlySet<string> Flags { get; init; }
 
     /// <summary>
     /// The client ID receiving invalidation messages, or <c>-1</c> if not redirecting.
     /// </summary>
-    public long Redirect { get; }
+    public required long Redirect { get; init; }
 
     /// <summary>
     /// The set of key prefixes monitored for invalidation.
     /// </summary>
-    public IReadOnlySet<string> Prefixes { get; }
+    public required IReadOnlySet<string> Prefixes { get; init; }
 
     #endregion
-    #region Constructors
+    #region Constructors & Builders
 
-    internal ClientTrackingInfo(
-        IReadOnlySet<string> flags,
-        long redirect,
-        IReadOnlySet<string> prefixes)
-    {
-        Flags = flags;
-        Redirect = redirect;
-        Prefixes = prefixes;
-    }
+    internal ClientTrackingInfo() { }
 
     #endregion
 }
