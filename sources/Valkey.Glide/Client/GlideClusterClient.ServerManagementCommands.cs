@@ -101,7 +101,7 @@ public partial class GlideClusterClient
         return result.HasMultiData ? result.MultiValue.Values.Sum() : result.SingleValue;
     }
 
-    /// <inheritdoc cref="IGlideClient.FlushAllDatabasesAsync()"/>
+    /// <inheritdoc cref="IGlideClusterClient.FlushAllDatabasesAsync()"/>
     public async Task FlushAllDatabasesAsync()
         => await FlushAllDatabasesAsync(AllPrimaries);
 
@@ -117,7 +117,7 @@ public partial class GlideClusterClient
     public async Task FlushAllDatabasesAsync(FlushMode mode, Route route)
         => _ = await Command(Request.FlushAllDatabasesAsync(mode), route);
 
-    /// <inheritdoc cref="IGlideClient.FlushDatabaseAsync()"/>
+    /// <inheritdoc cref="IGlideClusterClient.FlushDatabaseAsync()"/>
     public async Task FlushDatabaseAsync()
         => await FlushDatabaseAsync(AllPrimaries);
 
@@ -203,7 +203,10 @@ public partial class GlideClusterClient
     public async Task<long> LatencyResetAsync(IEnumerable<ValkeyValue> events, Route route)
         => await Command(Request.LatencyResetAsync(events), route);
 
-    /// <inheritdoc cref="IBaseClient.LolwutAsync(LolwutOptions)"/>
+
+    /// <inheritdoc cref="IGlideClusterClient.LolwutAsync()"/>
+    // TODO #475: Move to BaseClient, return Task<string> instead of Task<Dictionary<string, string>>.
+    [Obsolete("This method will be updated to return Task<string> in future. Use LolwutAsync(Route.Random) instead")]
     public async Task<Dictionary<string, string>> LolwutAsync()
     {
         ClusterValue<string> result = await Command(Request.LolwutAsync().ToClusterValue(false), Route.Random);

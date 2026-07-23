@@ -309,6 +309,7 @@ public partial interface IGlideClient
     /// </code>
     /// </example>
     /// </remarks>
+    // TODO #475: Move to IBaseClient.
     Task<string> LolwutAsync();
 
     /// <summary>

@@ -28,6 +28,8 @@ public abstract partial class BaseClient
     /// <inheritdoc cref="IBaseClient.LatencyResetAsync(IEnumerable{ValkeyValue})"/>
     public abstract Task<long> LatencyResetAsync(IEnumerable<ValkeyValue> events);
 
+    // TODO #475: Add parameterless LolwutAsync() here
+
     /// <inheritdoc cref="IBaseClient.LolwutAsync(LolwutOptions)"/>
     public abstract Task<string> LolwutAsync(LolwutOptions options);
 

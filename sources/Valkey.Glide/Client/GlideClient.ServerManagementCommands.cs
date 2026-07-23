@@ -108,6 +108,7 @@ public partial class GlideClient
         => await Command(Request.LatencyResetAsync(events));
 
     /// <inheritdoc cref="IGlideClient.LolwutAsync()"/>
+    // TODO #475: Move to BaseClient.
     public async Task<string> LolwutAsync()
         => await Command(Request.LolwutAsync());
 

@@ -140,6 +140,8 @@ public partial interface IBaseClient
     /// </remarks>
     Task<string> LolwutAsync(LolwutOptions options);
 
+    // TODO #475: Add parameterless LolwutAsync() here
+
     /// <summary>
     /// Synchronously saves the dataset to disk.
     /// </summary>

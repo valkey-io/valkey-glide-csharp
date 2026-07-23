@@ -508,6 +508,7 @@ public partial interface IBaseClient
     /// <param name="destinationDatabase">The database ID to store destination in.</param>
     /// <param name="replace">Whether to overwrite an existing value at <paramref name="destination"/>.</param>
     /// <returns><see langword="true"/> if <paramref name="source"/> was copied, <see langword="false"/> otherwise.</returns>
+    /// <note>Since Valkey 9.0.0 for cluster mode.</note>
     /// <remarks>
     /// <example>
     /// <code>
@@ -602,6 +603,7 @@ public partial interface IBaseClient
     /// <param name="key">The key to move.</param>
     /// <param name="database">The database to move the key to.</param>
     /// <returns><see langword="true"/> if the key was moved, <see langword="false"/> otherwise.</returns>
+    /// <note>Since Valkey 9.0.0 for cluster mode.</note>
     /// <remarks>
     /// <example>
     /// <code>

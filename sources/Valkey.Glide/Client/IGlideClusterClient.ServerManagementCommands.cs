@@ -378,6 +378,19 @@ public partial interface IGlideClusterClient
     Task<long> DatabaseSizeAsync(Route route);
 
     /// <summary>
+    /// Deletes all the keys of all the existing databases on all primary nodes.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/flushall/">Valkey commands – FLUSHALL</seealso>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await clusterClient.FlushAllDatabasesAsync();
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task FlushAllDatabasesAsync();
+
+    /// <summary>
     /// Deletes all the keys of all the existing databases across all routed nodes.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/flushall/">Valkey commands – FLUSHALL</seealso>
@@ -406,6 +419,19 @@ public partial interface IGlideClusterClient
     /// </example>
     /// </remarks>
     Task FlushAllDatabasesAsync(FlushMode mode, Route route);
+
+    /// <summary>
+    /// Deletes all the keys in the database on all primary nodes.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/flushdb/">Valkey commands – FLUSHDB</seealso>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await clusterClient.FlushDatabaseAsync();
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task FlushDatabaseAsync();
 
     /// <summary>
     /// Deletes all the keys in the database across all routed nodes.
@@ -677,6 +703,23 @@ public partial interface IGlideClusterClient
     /// </example>
     /// </remarks>
     Task<long> LatencyResetAsync(IEnumerable<ValkeyValue> events, Route route);
+
+    /// <summary>
+    /// Displays a piece of generative computer art and the server version.<br />
+    /// The command is routed to a random node.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/lolwut/">Valkey commands – LOLWUT</seealso>
+    /// <returns>A dictionary of node address to LOLWUT output.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var art = await clusterClient.LolwutAsync();
+    /// </code>
+    /// </example>
+    /// </remarks>
+    // TODO #475: Move to IBaseClient, return Task<string>.
+    [Obsolete("Use LolwutAsync(LolwutOptions) or LolwutAsync(Route) instead. This overload will be replaced in a future release.")]
+    Task<Dictionary<string, string>> LolwutAsync();
 
     /// <summary>
     /// Displays a piece of generative computer art and the Valkey version.
