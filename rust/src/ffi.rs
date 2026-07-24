@@ -374,6 +374,9 @@ pub(crate) unsafe fn create_connection_request(
         // Unimplemented configuration options.
         client_cert: Vec::new(),
         client_key: Vec::new(),
+        client_cert_path: None,
+        client_key_path: None,
+        cert_reload: None,
         tcp_nodelay: false,
         periodic_checks: None,
         inflight_requests_limit: None,
@@ -673,7 +676,7 @@ impl ResponseValue {
                 size: 0,
             }),
             Value::BulkString(text) => {
-                let (vec_ptr, size) = Self::convert_vec_to_ffi(text, "BulkString")?;
+                let (vec_ptr, size) = Self::convert_vec_to_ffi(text.into(), "BulkString")?;
                 Ok(ResponseValue {
                     typ: ValueType::BulkString,
                     val: vec_ptr as i64,
