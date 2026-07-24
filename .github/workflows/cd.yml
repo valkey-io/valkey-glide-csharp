@@ -158,8 +158,12 @@ jobs:
             - name: Pack the client
               working-directory: sources/Valkey.Glide
               run: |
-                  dotnet build Valkey.Glide.csproj --configuration Release "/property:Version=$RELEASE_VERSION"
-                  dotnet pack Valkey.Glide.csproj --configuration Release "-p:NuspecProperties=version=$RELEASE_VERSION"
+                  dotnet build Valkey.Glide.csproj \
+                    --configuration Release \
+                    "/property:Version=$RELEASE_VERSION"
+                  dotnet pack Valkey.Glide.csproj \
+                    --configuration Release \
+                    "-p:NuspecProperties=version=$RELEASE_VERSION;commit=${{ github.sha }}"
                   tree -h bin/Release
                   unzip -l "bin/Release/Valkey.Glide.$RELEASE_VERSION.nupkg"
                   unzip -l "bin/Release/Valkey.Glide.$RELEASE_VERSION.snupkg"

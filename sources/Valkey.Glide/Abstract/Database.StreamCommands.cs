@@ -201,24 +201,40 @@ internal partial class Database
     /// <inheritdoc cref="IDatabaseAsync.StreamTrimAsync(ValkeyKey, int, bool, CommandFlags)"/>
     public Task<long> StreamTrimAsync(ValkeyKey key, int maxLength, bool useApproximateMaxLength = false, CommandFlags flags = CommandFlags.None)
     {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return Command(Request.StreamTrimAsync(key, maxLength, default, useApproximateMaxLength, null));
+        GuardClauses.ThrowIfNegative(maxLength, nameof(maxLength));
+        return StreamTrimAsync(key, (long)maxLength, useApproximateMaxLength, flags: flags);
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.StreamTrimAsync(ValkeyKey, long?, bool, long?, StreamTrimMode, CommandFlags)"/>
-    public Task<long> StreamTrimAsync(ValkeyKey key, long? maxLength = null, bool useApproximateMaxLength = false, long? limit = null, StreamTrimMode trimMode = StreamTrimMode.KeepReferences, CommandFlags flags = CommandFlags.None)
+    /// <inheritdoc cref="IDatabaseAsync.StreamTrimAsync(ValkeyKey, long, bool, long?, StreamTrimMode, CommandFlags)"/>
+    public Task<long> StreamTrimAsync(ValkeyKey key, long maxLength, bool useApproximateMaxLength = false, long? limit = null, StreamTrimMode trimMode = StreamTrimMode.KeepReferences, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        ThrowIfUnsupportedTrimMode(trimMode);
-        return Command(Request.StreamTrimAsync(key, maxLength, default, useApproximateMaxLength, limit));
+        GuardClauses.ThrowIfNotSupported(trimMode);
+
+        var options = new StreamTrimOptions.MaxLen
+        {
+            MaxLength = maxLength,
+            Exact = !useApproximateMaxLength,
+            Limit = limit
+        };
+
+        return StreamTrimAsync(key, options);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StreamTrimByMinIdAsync(ValkeyKey, ValkeyValue, bool, long?, StreamTrimMode, CommandFlags)"/>
     public Task<long> StreamTrimByMinIdAsync(ValkeyKey key, ValkeyValue minId, bool useApproximateMaxLength = false, long? limit = null, StreamTrimMode trimMode = StreamTrimMode.KeepReferences, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        ThrowIfUnsupportedTrimMode(trimMode);
-        return Command(Request.StreamTrimAsync(key, null, minId, useApproximateMaxLength, limit));
+        GuardClauses.ThrowIfNotSupported(trimMode);
+
+        var options = new StreamTrimOptions.MinId
+        {
+            MinEntryId = minId,
+            Exact = !useApproximateMaxLength,
+            Limit = limit
+        };
+
+        return StreamTrimAsync(key, options);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StreamInfoAsync(ValkeyKey, CommandFlags)"/>
@@ -248,26 +264,18 @@ internal partial class Database
     /// <summary>
     /// Converts the given arguments to a <see cref="StreamAddOptions"/> instance.
     /// </summary>
-    private static StreamAddOptions ToStreamAddOptions(ValkeyValue? messageId, long? maxLength, bool useApproximateMaxLength, long? limit = null) => new()
+    private static StreamAddOptions ToStreamAddOptions(
+        ValkeyValue? messageId,
+        long? maxLength,
+        bool useApproximateMaxLength,
+        long? limit = null)
+    => new()
     {
         Id = messageId ?? StreamAddOptions.AutoGenerateId,
         Trim = maxLength.HasValue
-            ? new StreamTrimOptions.MaxLen { MaxLength = maxLength.Value, Exact = !useApproximateMaxLength, Limit = limit }
-            : null
+                ? new StreamTrimOptions.MaxLen { MaxLength = maxLength.Value, Exact = !useApproximateMaxLength, Limit = limit }
+                : null
     };
-
-    /// <summary>
-    /// Throws a <see cref="NotImplementedException"/> if the stream trim mode is not supported.
-    /// </summary>
-    /// <param name="trimMode">The stream trim mode to validate.</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="trimMode"/> is not <see cref="StreamTrimMode.KeepReferences"/>.</exception>
-    private static void ThrowIfUnsupportedTrimMode(StreamTrimMode trimMode)
-    {
-        if (trimMode != StreamTrimMode.KeepReferences)
-        {
-            throw new NotImplementedException($"Stream trim mode {trimMode} is not supported by Valkey GLIDE");
-        }
-    }
 
     #endregion
 }

@@ -8,7 +8,6 @@ namespace Valkey.Glide.IntegrationTests;
 
 public class HashCommandTests(TestConfiguration config)
 {
-    // TODO #280: Cleanup this class
     public TestConfiguration Config { get; } = config;
 
     #region HashSetAsync

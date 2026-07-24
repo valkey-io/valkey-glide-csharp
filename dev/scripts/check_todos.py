@@ -1,0 +1,161 @@
+#!/usr/bin/env python3
+
+"""Check that all TODOs follow the required format.
+
+Validation rules:
+  1. Every TODO must follow the format `TODO #<number>: <description>`.
+  2. The description should provide a summary of the proposed changes, and must be at least 10 characters long.
+  3. The referenced number must correspond to an open Valkey GLIDE C# GitHub issue.
+
+Usage:
+    python dev/scripts/check_todos.py
+"""
+
+import os
+import re
+import subprocess
+import sys
+from fnmatch import fnmatch
+from pathlib import Path
+from typing import NamedTuple
+
+from _constants import GITHUB_REPO, PROJECT_ROOT
+
+
+class _Todo(NamedTuple):
+    """A TODO found in the codebase."""
+
+    file: str
+    line: int
+    text: str
+
+
+# Matches TODO and captures GitHub issue ID and description.
+_TODO_PATTERN = re.compile(
+    r"TODO\b(\s+#(?P<github_id>\d+)(:\s+(?P<description>.+))?)?",
+    re.IGNORECASE,
+)
+
+# Minimum length for the description.
+_MIN_DESCRIPTION_LENGTH = 10
+
+# File path patterns to ignore.
+_IGNORE_FILE = os.path.join(PROJECT_ROOT, "dev", "conf", "check-todos-ignore")
+
+
+def _load_ignore_patterns() -> list[str]:
+    """Load ignore patterns from the check-todos-ignore file."""
+    if not os.path.isfile(_IGNORE_FILE):
+        print(f"Error: ignore file not found: {_IGNORE_FILE}", file=sys.stderr)
+        sys.exit(1)
+
+    return [
+        ignore for line in Path(_IGNORE_FILE).read_text().splitlines()
+        if (ignore := line.strip()) and not ignore.startswith("#")
+    ]
+
+
+def _is_ignored(filepath: str, patterns: list[str]) -> bool:
+    """Check if a filepath matches any exclusion pattern."""
+    return any(fnmatch(filepath, p) for p in patterns)
+
+
+def _find_todos() -> list[_Todo]:
+    """Find all TODOs in tracked files using git grep."""
+    result = subprocess.run(
+        ["git", "grep", "-n", "-i", "-P", _TODO_PATTERN.pattern],
+        cwd=PROJECT_ROOT,
+        capture_output=True,
+        text=True,
+    )
+
+    if result.returncode == 1:
+        return []
+    if result.returncode != 0:
+        print(f"Error: git grep failed: {result.stderr.strip()}", file=sys.stderr)
+        sys.exit(1)
+
+    ignored_patterns = _load_ignore_patterns()
+
+    todos = []
+    for line in result.stdout.splitlines():
+        parts = line.split(":", 2)
+        if len(parts) == 3:
+            filepath, line_no, text = parts
+            if not _is_ignored(filepath, ignored_patterns):
+                todos.append(_Todo(filepath, int(line_no), text.strip()))
+
+    return todos
+
+
+def _check_issue(github_id: int) -> str | None:
+    """Check issue state. Returns an error message, or None if the issue is open."""
+    result = subprocess.run(
+        [
+            "gh", "issue", "view", str(github_id),
+            "--repo", GITHUB_REPO,
+            "--json", "state",
+            "--jq", ".state",
+        ],
+        capture_output=True,
+        text=True,
+    )
+
+    if result.returncode != 0:
+        return f"#{github_id} is not a valid GitHub issue"
+
+    state = result.stdout.strip()
+    if state == "OPEN":
+        return None
+
+    return f"#{github_id} is not open (state: {state})"
+
+
+def _validate_todos(todos: list[_Todo]) -> dict[_Todo, str]:
+    """Validate TODO format and issue state. Returns a map from failed TODO to the corresponding reason."""
+    failures: dict[_Todo, str] = {}
+    checked_issues: dict[int, str | None] = {}
+
+    for todo in todos:
+        match = _TODO_PATTERN.search(todo.text)
+        github_id = match.group("github_id")
+
+        if not github_id:
+            failures[todo] = "missing GitHub issue reference"
+            continue
+
+        description = match.group("description")
+        if description is None:
+            failures[todo] = "missing description (expected format: TODO #<number>: <description>)"
+            continue
+        if len(description.strip()) < _MIN_DESCRIPTION_LENGTH:
+            failures[todo] = f"description too short (must be at least {_MIN_DESCRIPTION_LENGTH} characters)"
+            continue
+
+        issue_num = int(github_id)
+        if issue_num not in checked_issues:
+            checked_issues[issue_num] = _check_issue(issue_num)
+        if checked_issues[issue_num]:
+            failures[todo] = checked_issues[issue_num]
+
+    return failures
+
+
+def main():
+    print("Checking TODOs...\n")
+
+    todos = _find_todos()
+    failures = _validate_todos(todos)
+
+    for todo, reason in failures.items():
+        print(f"  FAIL  {todo.file}:{todo.line}")
+        print(f"        {reason}\n")
+
+    passed = len(todos) - len(failures)
+    print(f"Checked {len(todos)} TODOs: {passed} passed, {len(failures)} failed.")
+
+    sys.exit(1 if failures else 0)
+
+
+if __name__ == "__main__":
+    main()

@@ -95,7 +95,8 @@ public abstract partial class BaseClient
 
     #endregion
 
-    // TODO #326
+    // TODO #326: Redesign and expose these methods
+
     // ──────────────────────────────────────────────────────────────────────
     // Methods below are temporarily commented out pending cleanup.
     // The underlying Request methods are kept intact.
@@ -166,16 +167,13 @@ public abstract partial class BaseClient
     //     => await Command(Request.StreamAutoClaimJustIdAsync(key, consumerGroup, claimingConsumer, minIdleTime, startAtId, count));
     // #endregion
 
-    // #region XTRIM
-    // public async Task<long> StreamTrimAsync(ValkeyKey key, int maxLength, bool useApproximateMaxLength)
-    //     => await StreamTrimAsync(key, maxLength, useApproximateMaxLength, null);
-    //
-    // public async Task<long> StreamTrimAsync(ValkeyKey key, long? maxLength = null, bool useApproximateMaxLength = false, long? limit = null)
-    //     => await Command(Request.StreamTrimAsync(key, maxLength, default, useApproximateMaxLength, limit));
-    //
-    // public async Task<long> StreamTrimByMinIdAsync(ValkeyKey key, ValkeyValue minId, bool useApproximateMaxLength = false, long? limit = null)
-    //     => await Command(Request.StreamTrimAsync(key, null, minId, useApproximateMaxLength, limit));
-    // #endregion
+    #region StreamTrimAsync
+
+    /// <inheritdoc cref="IBaseClient.StreamTrimAsync(ValkeyKey, StreamTrimOptions)"/>
+    public Task<long> StreamTrimAsync(ValkeyKey key, StreamTrimOptions options)
+        => Command(Request.StreamTrimAsync(key, options));
+
+    #endregion
 
     // #region XINFO
     // public async Task<StreamInfo> StreamInfoAsync(ValkeyKey key)

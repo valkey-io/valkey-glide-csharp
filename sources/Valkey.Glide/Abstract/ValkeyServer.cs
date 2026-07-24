@@ -282,42 +282,17 @@ internal partial class ValkeyServer(Database conn, EndPoint endpoint) : IServer
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<ValkeyKey> KeysAsync(ValkeyValue pattern = default, int pageSize = 250, long cursor = 0, int pageOffset = 0, CommandFlags flags = CommandFlags.None)
+    public IAsyncEnumerable<ValkeyKey> KeysAsync(
+        ValkeyValue pattern = default,
+        int pageSize = 250,
+        long cursor = 0,
+        int pageOffset = 0,
+        CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
 
-        var options = new ScanOptions();
-        if (!pattern.IsNull)
-        {
-            options.MatchPattern = pattern;
-        }
-
-        // TODO how to handle negative
-        if (pageSize > 0)
-        {
-            options.Count = pageSize;
-        }
-
-        string currentCursor = cursor.ToString();
-        ValkeyKey[] keys;
-        int currentOffset = pageOffset;
-
-        do
-        {
-            (currentCursor, keys) = await _conn.Command(Request.ScanAsync(currentCursor, options));
-
-            if (currentOffset > 0)
-            {
-                keys = [.. keys.Skip(currentOffset)];
-                currentOffset = 0;
-            }
-
-            foreach (ValkeyKey key in keys)
-            {
-                yield return key;
-            }
-
-        } while (currentCursor != "0");
+        var options = new ScanOptions { MatchPattern = pattern, Count = pageSize };
+        return ScanAsync(cursor.ToString(), options).SkipAsync(pageOffset);
     }
 
     /// <inheritdoc/>
@@ -343,6 +318,20 @@ internal partial class ValkeyServer(Database conn, EndPoint endpoint) : IServer
     {
         (string host, ushort port) = Utils.SplitEndpoint(EndPoint);
         return new ByAddressRoute(host, port);
+    }
+
+    private async IAsyncEnumerable<ValkeyKey> ScanAsync(string cursor, ScanOptions options)
+    {
+        var route = MakeRoute();
+
+        do
+        {
+            (cursor, ValkeyKey[] keys) = await _conn.Command(Request.ScanAsync(cursor, options), route);
+            foreach (ValkeyKey key in keys)
+            {
+                yield return key;
+            }
+        } while (cursor != "0");
     }
 
     #endregion

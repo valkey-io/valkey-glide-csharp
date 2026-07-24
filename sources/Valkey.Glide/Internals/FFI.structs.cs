@@ -609,7 +609,7 @@ internal partial class FFI
         public IntPtr Route;
     }
 
-    // TODO: generate this with a bindings generator
+    // TODO #472: Auto-generate this enum
     internal enum RequestType : int
     {
         /// Invalid request type
@@ -1144,8 +1144,6 @@ internal partial class FFI
         [MarshalAs(UnmanagedType.U1)]
         public bool HasClientSideCacheConfig;
         public ClientSideCacheConfig ClientSideCacheConfig;
-
-        // TODO more config params, see ffi.rs
     }
 
     [StructLayout(LayoutKind.Sequential)]

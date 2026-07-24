@@ -1,0 +1,6 @@
+# Files excluded from the TODO checker.
+# See dev/scripts/check_todos.py for details.
+
+dev/conf/check-todos-ignore
+dev/scripts/check_todos.py
+DEVELOPER.md

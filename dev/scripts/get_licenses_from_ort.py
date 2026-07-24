@@ -10,7 +10,6 @@ The analyzer tool reports to analyzer-result.json files, which the script expect
 The script outputs a set of licenses identified by the analyzer. GLIDE maintainers should review the returned list to ensure that all licenses are approved.
 """
 
-# TODO: Modify to use logic operations instead of including AND and OR in strings
 APPROVED_LICENSES = [
     "(Apache-2.0 OR MIT) AND Unicode-DFS-2016",
     "Unicode-3.0",

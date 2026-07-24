@@ -249,10 +249,18 @@ public partial interface IBaseClient
     // Task<bool> StreamConsumerGroupSetPositionAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue position, long? entriesRead = null);
     // #endregion
 
-    // #region XTRIM
-    // Task<long> StreamTrimAsync(ValkeyKey key, long? maxLength = null, bool useApproximateMaxLength = false, long? limit = null);
-    // Task<long> StreamTrimByMinIdAsync(ValkeyKey key, ValkeyValue minId, bool useApproximateMaxLength = false, long? limit = null);
-    // #endregion
+    #region StreamTrimAsync
+
+    /// <summary>
+    /// Trims the stream stored at <paramref name="key"/>.
+    /// </summary>
+    /// <param name="key">The key of the stream.</param>
+    /// <param name="options">The stream trim options.</param>
+    /// <returns>The number of entries removed from the stream.</returns>
+    /// <seealso href="https://valkey.io/commands/xtrim/">Valkey commands - XTRIM</seealso>
+    Task<long> StreamTrimAsync(ValkeyKey key, StreamTrimOptions options);
+
+    #endregion
 
     // #region XCLAIM
     // Task<StreamEntry[]> StreamClaimAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds, StreamClaimOptions options);

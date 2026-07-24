@@ -8,6 +8,8 @@ namespace Valkey.Glide;
 
 public abstract partial class BaseClient
 {
+    #region Public Methods
+
     /// <inheritdoc cref="ISortedSetBaseCommands.SortedSetAddAsync(ValkeyKey, ValkeyValue, double)"/>
     public Task<bool> SortedSetAddAsync(ValkeyKey key, ValkeyValue member, double score)
         => Command(Request.SortedSetAddAsync(key, member, score));
@@ -248,22 +250,26 @@ public abstract partial class BaseClient
             ? await SortedSetPopMinAsync(keys, count, timeout)
             : await SortedSetPopMaxAsync(keys, count, timeout);
 
-    // TODO #287
     /// <inheritdoc cref="IBaseClient.SortedSetScanAsync(ValkeyKey, ScanOptions?)"/>
-    public async IAsyncEnumerable<SortedSetEntry> SortedSetScanAsync(ValkeyKey key, ScanOptions? options = null)
-    {
-        long currentCursor = 0;
+    public IAsyncEnumerable<SortedSetEntry> SortedSetScanAsync(ValkeyKey key, ScanOptions? options = null)
+        => SortedSetScanAsync(key, 0, options);
 
+    #endregion
+    #region Protected Methods
+
+    /// <inheritdoc cref="IBaseClient.SortedSetScanAsync(ValkeyKey, ScanOptions?)"/>
+    protected async IAsyncEnumerable<SortedSetEntry> SortedSetScanAsync(ValkeyKey key, long cursor, ScanOptions? options)
+    {
         do
         {
-            (long nextCursor, SortedSetEntry[] elements) = await Command(Request.SortedSetScanAsync(key, currentCursor, options));
-
-            foreach (SortedSetEntry element in elements)
+            (cursor, var elements) = await Command(Request.SortedSetScanAsync(key, cursor, options));
+            foreach (var element in elements)
             {
                 yield return element;
             }
 
-            currentCursor = nextCursor;
-        } while (currentCursor != 0);
+        } while (cursor != 0);
     }
+
+    #endregion
 }

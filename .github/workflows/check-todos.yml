@@ -1,4 +1,4 @@
-name: check-examples
+name: check-todos
 
 on:
     push:
@@ -10,21 +10,15 @@ on:
 
 permissions:
     contents: read
+    issues: read
 
 jobs:
-    check-examples:
+    check-todos:
         runs-on: ubuntu-latest
         timeout-minutes: 10
 
         steps:
             - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-              with:
-                  submodules: true
-
-            - name: Setup .NET
-              uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
-              with:
-                  dotnet-version: "10"
 
             - name: Setup Python
               uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
@@ -34,8 +28,7 @@ jobs:
             - name: Install Task
               uses: go-task/setup-task@01a4adf9db2d14c1de7a560f09170b6e0df736aa # v2.1.0
 
-            - name: Build Valkey.Glide
-              run: task build target=lib
-
-            - name: Check examples
-              run: task check:examples
+            - name: Check TODOs
+              run: task check:todos
+              env:
+                  GH_TOKEN: ${{ github.token }}

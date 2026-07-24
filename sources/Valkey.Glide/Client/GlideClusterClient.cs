@@ -26,36 +26,11 @@ public sealed partial class GlideClusterClient :
 {
     private GlideClusterClient() { }
 
-    // TODO add pubsub and other params to example and remarks
     /// <summary>
     /// Creates a new <see cref="GlideClusterClient" /> instance and establishes a connection to a cluster of Valkey servers.<br />
     /// </summary>
-    /// <remarks>
-    /// <b>Remarks:</b>
-    /// Use this static method to create and connect a <see cref="GlideClusterClient" /> to a Valkey Cluster.<br />
-    /// The client will automatically handle connection establishment, including cluster topology discovery and handling of authentication and TLS configurations.
-    /// <list type="bullet">
-    ///   <item>
-    ///     <b>Authentication</b>: If credentials are provided, the client will attempt to authenticate using the specified username and password.
-    ///   </item>
-    ///   <item>
-    ///     <b>TLS</b>: If <see cref="ClientConfigurationBuilder{T}.UseTls" /> is set to <see langword="true" />, the client will establish a secure connection using <c>TLS</c>.
-    ///   </item>
-    /// </list>
-    /// <example>
-    /// <code>
-    /// var config = new ConnectionConfiguration.ClusterClientConfigurationBuilder()
-    ///     .WithAddress("address1.example.com", 6379)
-    ///     .WithAddress("address2.example.com", 6379)
-    ///     .WithAuthentication("user1", "passwordA")
-    ///     .WithTls()
-    ///     .Build();
-    /// await using var client = await GlideClusterClient.CreateClient(config);
-    /// </code>
-    /// </example>
-    /// </remarks>
-    /// <param name="config">The configuration options for the client, including cluster addresses, authentication credentials, TLS settings, periodic checks, and Pub/Sub subscriptions.</param>
-    /// <returns>A task that resolves to a connected <see cref="GlideClient" /> instance.</returns>
+    /// <param name="config">The configuration options for the client.</param>
+    /// <returns>A task that resolves to a connected <see cref="GlideClusterClient" /> instance.</returns>
     public static async Task<GlideClusterClient> CreateClient(ClusterClientConfiguration config)
         => await CreateClient(config, () => new GlideClusterClient());
 
@@ -102,10 +77,10 @@ public sealed partial class GlideClusterClient :
     /// <param name="cursor">The cursor for the scan iteration.</param>
     /// <param name="args">Additional arguments for the scan command.</param>
     /// <returns>A tuple containing the next cursor and the keys found in this iteration.</returns>
-    private async Task<(string cursor, ValkeyKey[] keys)> ClusterScanCommand(string cursor, string[] args)
+    private async Task<(ClusterScanCursor cursor, ValkeyKey[] keys)> ClusterScanCommand(ClusterScanCursor cursor, string[] args)
     {
         var message = MessageContainer.GetMessageForCall();
-        IntPtr cursorPtr = Marshal.StringToHGlobalAnsi(cursor);
+        IntPtr cursorPtr = Marshal.StringToHGlobalAnsi(cursor.CursorId);
 
         IntPtr[]? argPtrs = null;
         IntPtr argsPtr = IntPtr.Zero;
@@ -140,8 +115,8 @@ public sealed partial class GlideClusterClient :
             {
                 var result = HandleResponse(response);
                 var array = (object[])result!;
-                var nextCursor = array[0]!.ToString()!;
-                var keys = ((object[])array[1]!).Select(k => new ValkeyKey(k!.ToString())).ToArray();
+                var nextCursor = new ClusterScanCursor(array[0]!.ToString()!);
+                var keys = ((object[])array[1]!).Cast<GlideString>().Select(gs => (ValkeyKey)gs.Bytes).ToArray();
                 return (nextCursor, keys);
             }
             finally

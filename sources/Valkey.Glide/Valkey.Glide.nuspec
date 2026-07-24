@@ -9,14 +9,12 @@
     <description>General Language Independent Driver for the Enterprise (GLIDE) for Valkey</description>
     <projectUrl>https://github.com/valkey-io/valkey-glide-csharp</projectUrl>
     <license type="expression">Apache-2.0</license>
-    <!-- TODO other fields from schema: https://github.com/NuGet/NuGet.Client/blob/dev/src/NuGet.Core/NuGet.Packaging/compiler/resources/nuspec.xsd -->
     <readme>README.md</readme>
     <icon>icon.png</icon>
-    <repository type="git" url="https://github.com/valkey-io/valkey-glide-csharp" /> <!-- TODO: commit="$GitCommitId$" -->
+    <repository type="git" url="https://github.com/valkey-io/valkey-glide-csharp" commit="$commit$" />
     <tags>open-source performance database csharp key-value fault-tolerance cache reliability pubsub valkey valkey-client</tags>
     <copyright>Copyright © 2025 Valkey GLIDE Maintainers</copyright>
-    <!-- TODO include changelog (as a file or as GH release link) starting from the second release -->
-    <!-- TODO do we need empty dependency blocks? -->
+    <releaseNotes>https://github.com/valkey-io/valkey-glide-csharp/releases</releaseNotes>
     <dependencies>
       <group targetFramework="net8.0" />
     </dependencies>
@@ -29,8 +27,9 @@
     <!-- PDB files and sources are included into symbol package only -->
     <file src="bin\Release\**\Valkey.Glide.pdb" target="lib" />
 
-    <!-- TODO: make binaries optional/conditional, build fails on a dev's PC who doesn't have all files. Alternative: use different nuspec files -->
-    <!-- see runtime IDs in https://learn.microsoft.com/en-us/dotnet/core/rid-catalog -->
+    <!-- Native binaries for each supported platform. These are cross-compiled by the CD
+         workflow and are not available locally — `dotnet pack` will fail without them.
+         See runtime IDs: https://learn.microsoft.com/en-us/dotnet/core/rid-catalog -->
     <file src="../../bin/x86_64-unknown-linux-gnu/libglide_rs.so" target="runtimes/linux-x64/native" />
     <file src="../../bin/aarch64-unknown-linux-gnu/libglide_rs.so" target="runtimes/linux-arm64/native" />
     <file src="../../bin/x86_64-apple-darwin/libglide_rs.dylib" target="runtimes/osx-x64/native" />

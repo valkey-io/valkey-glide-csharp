@@ -2,8 +2,11 @@
 
 """Check code examples by extracting and compiling them.
 
+Extracts C# code examples from XML doc comments in the source tree, then
+compiles each against the built Valkey.Glide DLL to verify correctness.
+
 Usage:
-    python scripts/check_examples.py
+    python dev/scripts/check_examples.py
 """
 
 import os

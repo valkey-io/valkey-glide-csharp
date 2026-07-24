@@ -64,3 +64,4 @@ Not applicable items should be crossed out, not removed.
 - [ ] `CHANGELOG.md`, `README.md`, `DEVELOPER.md`, and other documentation files are updated.
 - [ ] Destination branch is correct - `main` or release
 - [ ] Create merge commit if merging release branch into `main`, squash otherwise.
+- [ ] All TODOs referencing issue(s) closed by this PR have been resolved.
