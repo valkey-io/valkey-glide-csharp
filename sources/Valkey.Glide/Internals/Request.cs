@@ -120,12 +120,6 @@ internal partial class Request
     #region Collection Converters
 
     /// <summary>
-    /// Converts the given objects to a <see cref="ValkeyKey"/> array.
-    /// </summary>
-    private static ValkeyKey[] ToValkeyKeyArray(IEnumerable<object> items)
-        => [.. items.Cast<GlideString>().Select(gs => (ValkeyKey)gs.Bytes)];
-
-    /// <summary>
     /// Converts the given objects to a <see cref="ValkeyKey"/> set.
     /// </summary>
     private static ISet<ValkeyKey> ToValkeyKeySet(IEnumerable<object> items)
