@@ -255,18 +255,10 @@ internal partial class FFI
                 CompressionConfig = compressionConfig ?? default,
                 ReadOnly = readOnly,
                 HasClientSideCacheConfig = clientSideCacheConfig.HasValue,
+                ClientSideCacheConfig = clientSideCacheConfig ?? default,
                 HasCircuitBreakerConfig = circuitBreakerConfig.HasValue,
+                CircuitBreakerConfig = circuitBreakerConfig ?? default,
             };
-
-            if (clientSideCacheConfig.HasValue)
-            {
-                _request.ClientSideCacheConfig = clientSideCacheConfig.Value;
-            }
-
-            if (circuitBreakerConfig.HasValue)
-            {
-                _request.CircuitBreakerConfig = circuitBreakerConfig.Value;
-            }
         }
 
         protected override void FreeMemory()
