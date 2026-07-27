@@ -383,7 +383,7 @@ unsafe fn process_push_notification(push_msg: redis::PushInfo, pubsub_callback: 
         .data
         .into_iter()
         .map(|value| match value {
-            Value::BulkString(bytes) => bytes,
+            Value::BulkString(bytes) => bytes.into(),
             Value::Int(num) => num.to_string().into_bytes(),
             Value::SimpleString(s) => s.into_bytes(),
             _ => {
