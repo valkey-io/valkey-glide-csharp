@@ -201,19 +201,28 @@ internal partial class Database
     /// <inheritdoc cref="IDatabaseAsync.StreamTrimAsync(ValkeyKey, int, bool, CommandFlags)"/>
     public Task<long> StreamTrimAsync(ValkeyKey key, int maxLength, bool useApproximateMaxLength = false, CommandFlags flags = CommandFlags.None)
     {
+        GuardClauses.ThrowIfCommandFlags(flags);
         GuardClauses.ThrowIfNegative(maxLength, nameof(maxLength));
-        return StreamTrimAsync(key, (long)maxLength, useApproximateMaxLength, flags: flags);
+
+        return StreamTrimAsync(key, new StreamTrimOptions.MaxLen
+        {
+            MaxLength = maxLength,
+            Exact = !useApproximateMaxLength,
+        });
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.StreamTrimAsync(ValkeyKey, long, bool, long?, StreamTrimMode, CommandFlags)"/>
-    public Task<long> StreamTrimAsync(ValkeyKey key, long maxLength, bool useApproximateMaxLength = false, long? limit = null, StreamTrimMode trimMode = StreamTrimMode.KeepReferences, CommandFlags flags = CommandFlags.None)
+    /// <inheritdoc cref="IDatabaseAsync.StreamTrimAsync(ValkeyKey, long?, bool, long?, StreamTrimMode, CommandFlags)"/>
+    public Task<long> StreamTrimAsync(ValkeyKey key, long? maxLength = null, bool useApproximateMaxLength = false, long? limit = null, StreamTrimMode trimMode = StreamTrimMode.KeepReferences, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         GuardClauses.ThrowIfNotSupported(trimMode);
 
+        // TODO #486: Remove once maxLength is no longer optional.
+        ArgumentNullException.ThrowIfNull(maxLength, nameof(maxLength));
+
         var options = new StreamTrimOptions.MaxLen
         {
-            MaxLength = maxLength,
+            MaxLength = maxLength.Value,
             Exact = !useApproximateMaxLength,
             Limit = limit
         };

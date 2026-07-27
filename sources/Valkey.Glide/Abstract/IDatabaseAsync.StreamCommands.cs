@@ -344,6 +344,7 @@ public partial interface IDatabaseAsync
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>The number of entries removed.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    // TODO #486: Remove default parameter values to match StackExchange.Redis signature.
     Task<long> StreamTrimAsync(
         ValkeyKey key,
         int maxLength,
@@ -355,9 +356,10 @@ public partial interface IDatabaseAsync
     /// <param name="limit">The maximum number of entries to evict per call.</param>
     /// <param name="trimMode">The trim mode to use.</param>
     /// <returns>The number of entries removed.</returns>
+    // TODO #486: Change `long? maxLength = null` to `long maxLength` to match StackExchange.Redis signature.
     Task<long> StreamTrimAsync(
         ValkeyKey key,
-        long maxLength,
+        long? maxLength = null,
         bool useApproximateMaxLength = false,
         long? limit = null,
         StreamTrimMode trimMode = StreamTrimMode.KeepReferences,
