@@ -3,7 +3,7 @@
 """Check that all TODOs follow the required format.
 
 Validation rules:
-  1. Every TODO must follow the format `TODO #<number>: <description>`.
+  1. Every TODO must follow the format `TODO #<github_id>: <description>`.
   2. The description should provide a summary of the proposed changes, and must be at least 10 characters long.
   3. The referenced number must correspond to an open Valkey GLIDE C# GitHub issue.
 
@@ -35,7 +35,7 @@ _TODO_GREP_PATTERN = r"\bTODO\b"
 
 # Used to validate format and extract GitHub issue ID and description.
 _TODO_VALIDATION_PATTERN = re.compile(
-    r"TODO\b(\s+#(?P<github_id>\d+)(:\s+(?P<description>.+))?)?",
+    r"TODO #(?P<github_id>\d+): (?P<description>.+)",
     re.IGNORECASE,
 )
 
@@ -120,26 +120,25 @@ def _validate_todos(todos: list[_Todo]) -> dict[_Todo, str]:
     checked_issues: dict[int, str | None] = {}
 
     for todo in todos:
+
+        # Validate format
         match = _TODO_VALIDATION_PATTERN.search(todo.text)
-        github_id = match.group("github_id")
-
-        if not github_id:
-            failures[todo] = "missing GitHub issue reference"
+        if not match:
+            failures[todo] = "invalid format (expected: TODO #<github_id>: <description>)"
             continue
 
+        # Check issue state
+        github_id = int(match.group("github_id"))
+        if github_id not in checked_issues:
+            checked_issues[github_id] = _check_issue(github_id)
+        if checked_issues[github_id]:
+            failures[todo] = checked_issues[github_id]
+
+        # Check description length
         description = match.group("description")
-        if description is None:
-            failures[todo] = "missing description (expected format: TODO #<number>: <description>)"
-            continue
         if len(description.strip()) < _MIN_DESCRIPTION_LENGTH:
             failures[todo] = f"description too short (must be at least {_MIN_DESCRIPTION_LENGTH} characters)"
             continue
-
-        issue_num = int(github_id)
-        if issue_num not in checked_issues:
-            checked_issues[issue_num] = _check_issue(issue_num)
-        if checked_issues[issue_num]:
-            failures[todo] = checked_issues[issue_num]
 
     return failures
 

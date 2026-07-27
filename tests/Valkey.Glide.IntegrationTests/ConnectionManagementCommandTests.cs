@@ -13,7 +13,7 @@ public class ConnectionManagementCommandTests(TestConfiguration config)
 {
     #region Constants
 
-    //TODO #414: Remove when ClientInfoAsync implemented.
+    // TODO #414: Remove when ClientInfoAsync implemented.
     private static readonly GlideString[] InfoCommand = ["CLIENT", "INFO"];
 
     // Library version is set dynamically by the CD workflow,
