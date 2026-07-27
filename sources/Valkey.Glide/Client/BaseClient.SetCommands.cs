@@ -98,7 +98,10 @@ public abstract partial class BaseClient
     #region Internal Methods
 
     /// <inheritdoc cref="IBaseClient.SetScanAsync(ValkeyKey, ScanOptions?)"/>
-    protected async IAsyncEnumerable<ValkeyValue> SetScanAsync(ValkeyKey key, long cursor, ScanOptions? options)
+    private protected async IAsyncEnumerable<ValkeyValue> SetScanAsync(
+        ValkeyKey key,
+        long cursor,
+        ScanOptions? options)
     {
         do
         {

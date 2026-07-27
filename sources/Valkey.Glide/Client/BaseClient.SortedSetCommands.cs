@@ -258,7 +258,10 @@ public abstract partial class BaseClient
     #region Protected Methods
 
     /// <inheritdoc cref="IBaseClient.SortedSetScanAsync(ValkeyKey, ScanOptions?)"/>
-    protected async IAsyncEnumerable<SortedSetEntry> SortedSetScanAsync(ValkeyKey key, long cursor, ScanOptions? options)
+    private protected async IAsyncEnumerable<SortedSetEntry> SortedSetScanAsync(
+        ValkeyKey key,
+        long cursor,
+        ScanOptions? options)
     {
         do
         {
