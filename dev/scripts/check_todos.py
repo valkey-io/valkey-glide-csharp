@@ -30,8 +30,11 @@ class _Todo(NamedTuple):
     text: str
 
 
-# Matches TODO and captures GitHub issue ID and description.
-_TODO_PATTERN = re.compile(
+# Used by git grep to discover TODO occurrences in tracked files.
+_TODO_GREP_PATTERN = r"\bTODO\b"
+
+# Used to validate format and extract GitHub issue ID and description.
+_TODO_VALIDATION_PATTERN = re.compile(
     r"TODO\b(\s+#(?P<github_id>\d+)(:\s+(?P<description>.+))?)?",
     re.IGNORECASE,
 )
@@ -63,7 +66,7 @@ def _is_ignored(filepath: str, patterns: list[str]) -> bool:
 def _find_todos() -> list[_Todo]:
     """Find all TODOs in tracked files using git grep."""
     result = subprocess.run(
-        ["git", "grep", "-n", "-i", "-P", _TODO_PATTERN.pattern],
+        ["git", "grep", "-n", "-i", "-P", _TODO_GREP_PATTERN],
         cwd=PROJECT_ROOT,
         capture_output=True,
         text=True,
@@ -117,7 +120,7 @@ def _validate_todos(todos: list[_Todo]) -> dict[_Todo, str]:
     checked_issues: dict[int, str | None] = {}
 
     for todo in todos:
-        match = _TODO_PATTERN.search(todo.text)
+        match = _TODO_VALIDATION_PATTERN.search(todo.text)
         github_id = match.group("github_id")
 
         if not github_id:
