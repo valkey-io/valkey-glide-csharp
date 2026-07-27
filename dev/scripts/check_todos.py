@@ -132,12 +132,12 @@ def _validate_todos(todos: list[_Todo]) -> dict[_Todo, str]:
             checked_issues[github_id] = _check_issue(github_id)
         if checked_issues[github_id]:
             failures[todo] = checked_issues[github_id]
+            continue
 
         # Check description length
         description = match.group("description")
         if len(description.strip()) < _MIN_DESCRIPTION_LENGTH:
             failures[todo] = f"description too short (must be at least {_MIN_DESCRIPTION_LENGTH} characters)"
-            continue
 
     return failures
 
