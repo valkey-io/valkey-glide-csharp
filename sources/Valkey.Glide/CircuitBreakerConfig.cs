@@ -56,7 +56,7 @@ public sealed class CircuitBreakerConfig
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="windowSize"/> is zero or negative.</exception>
     public CircuitBreakerConfig WithWindowSize(TimeSpan windowSize)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(windowSize, TimeSpan.Zero);
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(windowSize, TimeSpan.Zero, nameof(windowSize));
         WindowSize = windowSize;
         return this;
     }
@@ -69,8 +69,8 @@ public sealed class CircuitBreakerConfig
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="threshold"/> is not in (0.0, 1.0].</exception>
     public CircuitBreakerConfig WithFailureRateThreshold(double threshold)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(threshold, 0.0);
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(threshold, 1.0);
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(threshold, 0.0, nameof(threshold));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(threshold, 1.0, nameof(threshold));
         FailureRateThreshold = threshold;
         return this;
     }
@@ -83,7 +83,7 @@ public sealed class CircuitBreakerConfig
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="minErrors"/> is zero.</exception>
     public CircuitBreakerConfig WithMinErrors(uint minErrors)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(minErrors, 0u);
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(minErrors, 0u, nameof(minErrors));
         MinErrors = minErrors;
         return this;
     }
@@ -96,7 +96,7 @@ public sealed class CircuitBreakerConfig
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="openTimeout"/> is zero or negative.</exception>
     public CircuitBreakerConfig WithOpenTimeout(TimeSpan openTimeout)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(openTimeout, TimeSpan.Zero);
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(openTimeout, TimeSpan.Zero, nameof(openTimeout));
         OpenTimeout = openTimeout;
         return this;
     }
@@ -120,7 +120,7 @@ public sealed class CircuitBreakerConfig
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="consecutiveSuccesses"/> is zero.</exception>
     public CircuitBreakerConfig WithConsecutiveSuccesses(uint consecutiveSuccesses)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(consecutiveSuccesses, 0u);
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(consecutiveSuccesses, 0u, nameof(consecutiveSuccesses));
         ConsecutiveSuccesses = consecutiveSuccesses;
         return this;
     }
