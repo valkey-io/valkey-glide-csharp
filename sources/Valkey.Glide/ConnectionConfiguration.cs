@@ -914,7 +914,7 @@ public abstract class ConnectionConfiguration
         /// <inheritdoc cref="CircuitBreakerConfig" />
         public T WithCircuitBreaker(CircuitBreakerConfig circuitBreakerConfig)
         {
-            ArgumentNullException.ThrowIfNull(circuitBreakerConfig);
+            ArgumentNullException.ThrowIfNull(circuitBreakerConfig, nameof(circuitBreakerConfig));
             CircuitBreakerConfig = circuitBreakerConfig;
             return (T)this;
         }
