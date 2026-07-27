@@ -61,6 +61,7 @@ public abstract class ConnectionConfiguration
         public CompressionConfig? CompressionConfig;
         public bool ReadOnly;
         public ClientSideCacheConfig? ClientSideCacheConfig;
+        public CircuitBreakerConfig? CircuitBreakerConfig;
         public AddressResolverDelegate? AddressResolver;
 
         internal FFI.ConnectionConfig ToFfi() =>
@@ -83,7 +84,8 @@ public abstract class ConnectionConfiguration
                 (uint?)PubSubReconciliationInterval?.TotalMilliseconds,
                 CompressionConfig?.ToFfi(),
                 ReadOnly,
-                ClientSideCacheConfig?.ToFfi()
+                ClientSideCacheConfig?.ToFfi(),
+                CircuitBreakerConfig?.ToFfi()
             );
     }
 
@@ -890,6 +892,28 @@ public abstract class ConnectionConfiguration
         {
             ArgumentNullException.ThrowIfNull(clientSideCacheConfig);
             ClientSideCacheConfig = clientSideCacheConfig;
+            return (T)this;
+        }
+
+        #endregion
+        #region Circuit Breaker
+
+        /// <summary>
+        /// Circuit breaker configuration for the client. When set, enables a circuit breaker
+        /// that detects unhealthy core state and rejects requests at the client boundary.
+        /// </summary>
+        /// <seealso cref="Glide.CircuitBreakerConfig"/>
+        public CircuitBreakerConfig? CircuitBreakerConfig
+        {
+            get => Config.CircuitBreakerConfig;
+            set => Config.CircuitBreakerConfig = value;
+        }
+
+        /// <inheritdoc cref="CircuitBreakerConfig" />
+        public T WithCircuitBreaker(CircuitBreakerConfig circuitBreakerConfig)
+        {
+            ArgumentNullException.ThrowIfNull(circuitBreakerConfig);
+            CircuitBreakerConfig = circuitBreakerConfig;
             return (T)this;
         }
 

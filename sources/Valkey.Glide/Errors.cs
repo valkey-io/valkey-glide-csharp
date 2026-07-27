@@ -178,11 +178,37 @@ public static class Errors
         public ConfigurationError(string message) : base(message) { }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ConfigurationError"/> class with a specified error message and a reference to the inner exception that is the cause of this exception.
+        /// Initializes a new instance of the <see cref="ConfigurationError"/> class with a specified
+        /// error message and a reference to the inner exception that is the cause of this exception.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         /// <param name="innerException">The exception that is the cause of the current exception.</param>
         public ConfigurationError(string message, Exception innerException) : base(message, innerException) { }
+    }
+
+    /// <summary>
+    /// An error that is thrown when the request is rejected because the circuit breaker is open.
+    /// </summary>
+    public sealed class CircuitBreakerException : GlideException
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CircuitBreakerException"/> class.
+        /// </summary>
+        public CircuitBreakerException() : base() { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CircuitBreakerException"/> class with a specified error message.
+        /// </summary>
+        /// <param name="message">The message that describes the error.</param>
+        public CircuitBreakerException(string message) : base(message) { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CircuitBreakerException"/> class with a specified
+        /// error message and a reference to the inner exception that is the cause of this exception.
+        /// </summary>
+        /// <param name="message">The message that describes the error.</param>
+        /// <param name="innerException">The exception that is the cause of the current exception.</param>
+        public CircuitBreakerException(string message, Exception innerException) : base(message, innerException) { }
     }
 
     internal static GlideException Create(RequestErrorType type, string message) => type switch
@@ -191,6 +217,7 @@ public static class Errors
         RequestErrorType.ExecAbort => new ExecAbortException(message),
         RequestErrorType.Timeout => new TimeoutException(message),
         RequestErrorType.Disconnect => new ConnectionException(message),
+        RequestErrorType.CircuitBreakerOpen => new CircuitBreakerException(message),
         _ => new RequestException(message),
     };
 }
@@ -201,4 +228,5 @@ internal enum RequestErrorType : uint
     ExecAbort = 1,
     Timeout = 2,
     Disconnect = 3,
+    CircuitBreakerOpen = 4,
 }
