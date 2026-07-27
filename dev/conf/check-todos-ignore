@@ -1,4 +1,6 @@
 # Files excluded from the TODO checker.
+# Patterns use fnmatch-style glob matching.
+# Only full-line comments supported.
 # See dev/scripts/check_todos.py for details.
 
 dev/conf/check-todos-ignore
