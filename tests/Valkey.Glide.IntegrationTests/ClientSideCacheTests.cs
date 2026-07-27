@@ -2,6 +2,8 @@
 
 using Valkey.Glide.TestUtils;
 
+using static Valkey.Glide.TestUtils.Builders;
+
 namespace Valkey.Glide.IntegrationTests;
 
 /// <summary>
@@ -359,9 +361,8 @@ public class ClientSideCacheTests
     [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
     public async Task ServerAssisted_Invalidation(bool clusterMode)
     {
-        // TODO #435: Add builder to Options once #447 is merged.
-        var cache = new ClientSideCacheConfig(1024, TimeSpan.FromMinutes(5))
-            .WithMetrics(true)
+        var cache = BuildClientSideCacheConfig()
+            .WithMetrics()
             .WithServerAssisted();
 
         await using BaseClient clientA = clusterMode

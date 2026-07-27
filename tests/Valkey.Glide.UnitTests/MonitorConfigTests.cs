@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using static Valkey.Glide.TestUtils.Builders;
+
 namespace Valkey.Glide.UnitTests;
 
 public class MonitorConfigTests
@@ -99,18 +101,6 @@ public class MonitorConfigTests
 
         Assert.All(passwordRef, c => Assert.Equal('\0', c));
     }
-
-    #endregion
-    #region Helpers
-
-    // TODO #435: Move to TestUtils class.
-
-    /// <summary>
-    /// Builds and returns a monitor configuration for testing.
-    /// If required arguments are not provided, default values will be used.
-    /// </summary>
-    private static MonitorConfig BuildMonitorConfig(string? host = null, ushort? port = null)
-        => new(host ?? "HOST", port ?? 1234);
 
     #endregion
 }

@@ -5,7 +5,7 @@ using Valkey.Glide.Pipeline;
 using Valkey.Glide.TestUtils;
 
 using static Valkey.Glide.Errors;
-using static Valkey.Glide.TestUtils.Options;
+using static Valkey.Glide.TestUtils.Builders;
 
 namespace Valkey.Glide.IntegrationTests;
 

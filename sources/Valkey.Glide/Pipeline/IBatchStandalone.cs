@@ -9,7 +9,7 @@ namespace Valkey.Glide.Pipeline;
 /// </summary>
 internal interface IBatchStandalone
 {
-    /// <inheritdoc cref="IGlideClient.CopyAsync(ValkeyKey, ValkeyKey, int, bool)" />
+    /// <inheritdoc cref="IBaseClient.CopyAsync(ValkeyKey, ValkeyKey, int, bool)" />
     /// <returns>Command Response - <see langword="true"/> if the key was copied.</returns>
     IBatch Copy(ValkeyKey source, ValkeyKey destination, int destinationDatabase, bool replace = false);
 
@@ -17,7 +17,7 @@ internal interface IBatchStandalone
     /// <returns>Command Response - <see langword="true"/> if the keys were migrated successfully, <see langword="false"/> if no keys were found.</returns>
     IBatch Migrate(IEnumerable<ValkeyKey> keys, MigrateOptions options);
 
-    /// <inheritdoc cref="IGlideClient.MoveAsync(ValkeyKey, int)" />
+    /// <inheritdoc cref="IBaseClient.MoveAsync(ValkeyKey, int)" />
     /// <returns>Command Response - <see langword="true"/> if the key was moved.</returns>
     IBatch Move(ValkeyKey key, int database);
 }

@@ -7,8 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 1.2.0
 
+### Fixed
+
+- `XREADGROUP` returning only the first field-value pair per stream entry (#430)
+
 ### Added
 
+- Circuit breaker configuration (#474)
 - Support additional commands (#435):
   - `BGREWRITEAOF` (#444)
   - `BGSAVE CANCEL` (#436)
@@ -30,7 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `RESET` (#435)
   - `SAVE` (#440)
 - Custom socket address resolution support via callback (#392)
-- Client-wide circuit breaker configuration via `CircuitBreakerConfig` and `CircuitBreakerException` (#474)
+- `NodeDiscoveryMode` configuration option for standalone clients (#131)
 
 ## 1.1.0
 

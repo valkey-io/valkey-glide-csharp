@@ -60,7 +60,12 @@ internal partial class Request
             ? ToReadOnlyStringSet(prefixItems)
             : EmptyStringSet;
 
-        return new ClientTrackingInfo(flags, redirect, prefixes);
+        return new ClientTrackingInfo
+        {
+            Flags = flags,
+            Redirect = redirect,
+            Prefixes = prefixes,
+        };
     }
 
     #endregion

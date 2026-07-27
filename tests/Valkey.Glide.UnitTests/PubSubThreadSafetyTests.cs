@@ -237,7 +237,7 @@ public class PubSubThreadSafetyTests
         public override Task FlushDatabaseAsync(FlushMode mode) => Task.CompletedTask;
         public override Task SaveAsync() => Task.CompletedTask;
         public override Task SelectAsync(long index) => Task.CompletedTask;
-        public override Task<ClientTrackingInfo> ClientTrackingInfoAsync() => Task.FromResult(new ClientTrackingInfo(new HashSet<string>(), -1, new HashSet<string>()));
+        public override Task<ClientTrackingInfo> ClientTrackingInfoAsync() => Task.FromResult(new ClientTrackingInfo { Flags = new HashSet<string>(), Redirect = -1, Prefixes = new HashSet<string>() });
         public override Task<KeyValuePair<string, string>[]> ConfigGetAsync(IEnumerable<ValkeyValue> patterns) => Task.FromResult(Array.Empty<KeyValuePair<string, string>>());
         public override Task<long> ClientIdAsync() => Task.FromResult(0L);
         public override Task<long> LatencyResetAsync() => Task.FromResult(0L);

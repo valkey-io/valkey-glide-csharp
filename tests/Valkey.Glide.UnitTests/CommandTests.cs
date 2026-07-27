@@ -1029,9 +1029,12 @@ public class CommandTests
             () => Assert.Equal(["XGROUPSETID", "key", "group", "0-0", "ENTRIESREAD", "5"], Request.StreamConsumerGroupSetPositionAsync("key", "group", "0-0", 5).GetArgs()),
 
             // StreamReadGroup
-            () => Assert.Equal(["XREADGROUP", "GROUP", "group", "consumer", "STREAMS", "key", ">"], Request.StreamReadGroupSingleAsync(new StreamPosition("key", ">"), "group", "consumer", new StreamReadGroupOptions()).GetArgs()),
-            () => Assert.Equal(["XREADGROUP", "GROUP", "group", "consumer", "COUNT", "10", "STREAMS", "key", ">"], Request.StreamReadGroupSingleAsync(new StreamPosition("key", ">"), "group", "consumer", new StreamReadGroupOptions { Count = 10 }).GetArgs()),
-            () => Assert.Equal(["XREADGROUP", "GROUP", "group", "consumer", "NOACK", "STREAMS", "key", ">"], Request.StreamReadGroupSingleAsync(new StreamPosition("key", ">"), "group", "consumer", new StreamReadGroupOptions { NoAck = true }).GetArgs()),
+            () => Assert.Equal(["XREADGROUP", "GROUP", "group", "consumer", "STREAMS", "key", ">"], Request.StreamReadGroupAsync(new StreamPosition("key", ">"), "group", "consumer", new StreamReadGroupOptions()).GetArgs()),
+            () => Assert.Equal(["XREADGROUP", "GROUP", "group", "consumer", "COUNT", "10", "STREAMS", "key", ">"], Request.StreamReadGroupAsync(new StreamPosition("key", ">"), "group", "consumer", new StreamReadGroupOptions { Count = 10 }).GetArgs()),
+            () => Assert.Equal(["XREADGROUP", "GROUP", "group", "consumer", "NOACK", "STREAMS", "key", ">"], Request.StreamReadGroupAsync(new StreamPosition("key", ">"), "group", "consumer", new StreamReadGroupOptions { NoAck = true }).GetArgs()),
+            () => Assert.Equal(["XREADGROUP", "GROUP", "group", "consumer", "STREAMS", "key1", "key2", ">", ">"], Request.StreamReadGroupAsync([new StreamPosition("key1", ">"), new StreamPosition("key2", ">")], "group", "consumer", new StreamReadGroupOptions()).GetArgs()),
+            () => Assert.Equal(["XREADGROUP", "GROUP", "group", "consumer", "COUNT", "5", "STREAMS", "key1", "key2", ">", "0-0"], Request.StreamReadGroupAsync([new StreamPosition("key1", ">"), new StreamPosition("key2", "0-0")], "group", "consumer", new StreamReadGroupOptions { Count = 5 }).GetArgs()),
+            () => Assert.Equal(["XREADGROUP", "GROUP", "group", "consumer", "NOACK", "STREAMS", "key1", "key2", ">", ">"], Request.StreamReadGroupAsync([new StreamPosition("key1", ">"), new StreamPosition("key2", ">")], "group", "consumer", new StreamReadGroupOptions { NoAck = true }).GetArgs()),
 
             // StreamAcknowledge
             () => Assert.Equal(["XACK", "key", "group", "1-0", "2-0"], Request.StreamAcknowledgeAsync("key", "group", ["1-0", "2-0"]).GetArgs()),
@@ -1118,6 +1121,67 @@ public class CommandTests
         );
     }
 
+    #region StreamRead Converter Tests
+
+    [Fact]
+    public void StreamRead_SingleConverter()
+    {
+        var raw = new Dictionary<GlideString, object>
+        {
+            ["mystream"] = new Dictionary<GlideString, object>
+            {
+                ["0-0"] = null!,
+                ["1-0"] = new object[] { new object[] { (GlideString)"f1", (GlideString)"v1" } },
+                ["2-0"] = new object[]
+                {
+                    new object[] { (GlideString)"f1", (GlideString)"v1" },
+                    new object[] { (GlideString)"f2", (GlideString)"v2" },
+                    new object[] { (GlideString)"f3", (GlideString)"v3" },
+                },
+            },
+        };
+
+        var entries = Request.ConvertSingleStreamReadResponse(raw);
+
+        // Verify that nil entry is skipped.
+        Assert.Equal(2, entries.Length);
+
+        // Verify entry with single field.
+        Assert.Equal("1-0", entries[0].Id);
+        Assert.Equivalent(new NameValueEntry[] { new("f1", "v1") }, entries[0].Values);
+
+        // Verify entry with multiple fields.
+        Assert.Equal("2-0", entries[1].Id);
+        Assert.Equivalent(new NameValueEntry[] { new("f1", "v1"), new("f2", "v2"), new("f3", "v3") }, entries[1].Values);
+    }
+
+    [Fact]
+    public void StreamRead_MultiConverter()
+    {
+        var raw = new Dictionary<GlideString, object>
+        {
+            ["stream0"] = new Dictionary<GlideString, object>(),
+            ["stream1"] = new Dictionary<GlideString, object>
+            {
+                ["1-0"] = new object[] { new object[] { (GlideString)"v1", (GlideString)"f1" } },
+            },
+        };
+
+        var streams = Request.ConvertMultiStreamReadResponse(raw);
+        Assert.Equal(2, streams.Length);
+
+        // Verify empty stream.
+        Assert.Equal("stream0", streams[0].Key);
+        Assert.Empty(streams[0].Entries);
+
+        // Verify non-empty stream.
+        Assert.Equal("stream1", streams[1].Key);
+        var entry = Assert.Single(streams[1].Entries);
+        Assert.Equal("1-0", entry.Id);
+        Assert.Equivalent(new NameValueEntry[] { new("v1", "f1") }, entry.Values);
+    }
+
+    #endregion
     #region MemoryStats Converter Tests
 
     // Reponse values for testing converters.
@@ -1180,7 +1244,7 @@ public class CommandTests
             ["overhead.db.hashtable.rehashing"] = ConvertLong,
         };
 
-        var stats = Request.MemoryStatsAsync().Converter(raw);
+        var stats = Request.ParseMemoryStats(raw);
 
         Assert.Equal(2, stats.Db.Count);
         Assert.Equal(ConvertLong, stats.Db[0].OverheadHashtableMain);
@@ -1252,7 +1316,7 @@ public class CommandTests
             ["rss-overhead.ratio"] = ConvertDouble,
         };
 
-        var stats = Request.MemoryStatsAsync().Converter(raw);
+        var stats = Request.ParseMemoryStats(raw);
 
         Assert.Empty(stats.Db);
         Assert.Equal(ConvertLong, stats.AllocatorActive);

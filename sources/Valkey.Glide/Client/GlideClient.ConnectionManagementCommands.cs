@@ -5,6 +5,7 @@ using Valkey.Glide.Internals;
 
 namespace Valkey.Glide;
 
+// TODO #462: Consolidate no-route overloads into BaseClient (glide-core default routing matches).
 public partial class GlideClient
 {
     /// <inheritdoc cref="IBaseClient.ClientGetNameAsync()"/>
@@ -14,6 +15,22 @@ public partial class GlideClient
     /// <inheritdoc cref="IBaseClient.ClientIdAsync()"/>
     public override async Task<long> ClientIdAsync()
         => await Command(Request.ClientId());
+
+    /// <inheritdoc cref="IBaseClient.ClientPauseAsync(TimeSpan)"/>
+    public override async Task ClientPauseAsync(TimeSpan timeout)
+        => _ = await Command(Request.ClientPause(timeout));
+
+    /// <inheritdoc cref="IBaseClient.ClientPauseWriteAsync(TimeSpan)"/>
+    public override async Task ClientPauseWriteAsync(TimeSpan timeout)
+        => _ = await Command(Request.ClientPauseWrite(timeout));
+
+    /// <inheritdoc cref="IBaseClient.ClientTrackingInfoAsync()"/>
+    public override async Task<ClientTrackingInfo> ClientTrackingInfoAsync()
+        => await Command(Request.ClientTrackingInfo());
+
+    /// <inheritdoc cref="IBaseClient.ClientUnpauseAsync()"/>
+    public override async Task ClientUnpauseAsync()
+        => _ = await Command(Request.ClientUnpause());
 
     /// <inheritdoc cref="IBaseClient.EchoAsync(ValkeyValue)"/>
     public override async Task<ValkeyValue> EchoAsync(ValkeyValue message)
@@ -30,20 +47,4 @@ public partial class GlideClient
     /// <inheritdoc cref="IConnectionManagementBaseCommands.SelectAsync(long)"/>
     public override async Task SelectAsync(long index)
         => _ = await Command(Request.Select(index));
-
-    /// <inheritdoc cref="IBaseClient.ClientPauseAsync(TimeSpan)"/>
-    public override async Task ClientPauseAsync(TimeSpan timeout)
-        => _ = await Command(Request.ClientPause(timeout));
-
-    /// <inheritdoc cref="IBaseClient.ClientPauseWriteAsync(TimeSpan)"/>
-    public override async Task ClientPauseWriteAsync(TimeSpan timeout)
-        => _ = await Command(Request.ClientPauseWrite(timeout));
-
-    /// <inheritdoc cref="IBaseClient.ClientUnpauseAsync()"/>
-    public override async Task ClientUnpauseAsync()
-        => _ = await Command(Request.ClientUnpause());
-
-    /// <inheritdoc cref="IBaseClient.ClientTrackingInfoAsync()"/>
-    public override async Task<ClientTrackingInfo> ClientTrackingInfoAsync()
-        => await Command(Request.ClientTrackingInfo());
 }

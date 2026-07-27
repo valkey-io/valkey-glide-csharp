@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using static Valkey.Glide.TestUtils.Builders;
+
 namespace Valkey.Glide.UnitTests;
 
 public class ServerCredentialsTests
@@ -100,31 +102,6 @@ public class ServerCredentialsTests
         credentials.Dispose();
         credentials.Dispose(); // Should not throw
     }
-
-    #endregion
-    #region Helpers
-
-    // TODO #435: Move to TestUtils class.
-
-    /// <summary>
-    /// Builds and returns server credentials for testing.
-    /// If required parameters are not specified, default values are used.
-    /// </summary>
-    private static ServerCredentials BuildServerCredentials(string? username = null, string? password = null)
-        => username is not null
-            ? new ServerCredentials(username, password ?? Password)
-            : new ServerCredentials(password ?? Password);
-
-    /// <summary>
-    /// Builds and returns an IAM authentication configuration for testing.
-    /// If required parameters are not specified, default values are used.
-    /// </summary>
-    private static IamAuthConfig BuildIamAuthConfig(
-        string clusterName = "CLUSTER_NAME",
-        ServiceType serviceType = ServiceType.ElastiCache,
-        string region = "REGION",
-        uint? refreshIntervalSeconds = null)
-        => new(clusterName, serviceType, region, refreshIntervalSeconds);
 
     #endregion
 }

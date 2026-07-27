@@ -2,7 +2,7 @@
 
 using Valkey.Glide.Commands.Options;
 
-using static Valkey.Glide.TestUtils.Options;
+using static Valkey.Glide.TestUtils.Builders;
 
 namespace Valkey.Glide.UnitTests;
 

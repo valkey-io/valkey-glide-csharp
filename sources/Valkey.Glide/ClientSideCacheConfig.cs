@@ -43,6 +43,8 @@ namespace Valkey.Glide;
 /// <seealso cref="EvictionPolicy"/>
 public sealed class ClientSideCacheConfig
 {
+    #region Public Properties
+
     /// <summary>
     /// A unique identifier for the cache instance.
     /// Multiple clients can share the same cache by using the same <see cref="ClientSideCacheConfig"/> instance.
@@ -85,6 +87,9 @@ public sealed class ClientSideCacheConfig
     /// </note>
     public bool ServerAssisted { get; private set; }
 
+    #endregion
+    #region Constructors & Builders
+
     /// <summary>
     /// Creates a new <see cref="ClientSideCacheConfig"/> with an auto-generated unique cache ID.
     /// </summary>
@@ -116,6 +121,9 @@ public sealed class ClientSideCacheConfig
         MaxCacheKb = maxCacheKb;
         EntryTtl = entryTtl;
     }
+
+    #endregion
+    #region Public Methods
 
     /// <summary>
     /// Sets the eviction policy for the cache.
@@ -150,6 +158,9 @@ public sealed class ClientSideCacheConfig
         return this;
     }
 
+    #endregion
+    #region Internal Methods
+
     /// <summary>
     /// Converts to the FFI representation for marshalling to Rust core.
     /// </summary>
@@ -162,4 +173,6 @@ public sealed class ClientSideCacheConfig
         EnableMetrics,
         ServerAssisted
     );
+
+    #endregion
 }

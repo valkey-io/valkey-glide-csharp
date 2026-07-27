@@ -9,6 +9,17 @@ namespace Valkey.Glide.Internals;
 
 internal partial class Request
 {
+    #region Command Builders
+
+    public static Cmd<long, long> Append(ValkeyKey key, ValkeyValue value)
+        => Simple<long>(RequestType.Append, [key, value]);
+
+    public static Cmd<long, long> Decrement(ValkeyKey key)
+        => Simple<long>(RequestType.Decr, [key]);
+
+    public static Cmd<long, long> DecrementBy(ValkeyKey key, long decrement)
+        => Simple<long>(RequestType.DecrBy, [key, decrement.ToGlideString()]);
+
     public static Cmd<GlideString, ValkeyValue> Get(GlideString key)
         => ToValkeyValue(RequestType.Get, [key], isNullable: true);
 
@@ -16,64 +27,42 @@ internal partial class Request
         => new(RequestType.MGet, keys.ToGlideStrings(), false, array =>
             [.. array.Select(item => item is null ? ValkeyValue.Null : (ValkeyValue)(GlideString)item)]);
 
-    public static Cmd<string?, bool> Set(ValkeyKey key, ValkeyValue value, SetOptions options)
-        => NullableOKToBool(RequestType.Set, [key, value, .. ToSetOptionsArgs(options)]);
-
-    public static Cmd<GlideString, ValkeyValue> GetSet(ValkeyKey key, ValkeyValue value, SetOptions options)
-        => ToValkeyValue(RequestType.Set, [key, value, .. ToSetOptionsArgs(options), ValkeyLiterals.GET], isNullable: true);
-
-    // TODO #454: Should return ValkeyValue.Ok instead of bool.
-    public static Cmd<string, bool> Set(KeyValuePair<ValkeyKey, ValkeyValue>[] values)
-        => new(RequestType.MSet, values.ToGlideStrings(), false, _ => true);
-
-    public static Cmd<bool, bool> SetIfNotExists(KeyValuePair<ValkeyKey, ValkeyValue>[] values)
-        => Simple<bool>(RequestType.MSetNX, values.ToGlideStrings());
-
-    public static Cmd<long, ValkeyValue> SetRange(GlideString key, long offset, GlideString value)
-        => new(RequestType.SetRange, [key, offset.ToGlideString(), value], false, response => (ValkeyValue)response);
-
-    public static Cmd<GlideString, ValkeyValue> GetRange(GlideString key, long start, long end)
-        => ToValkeyValue(RequestType.GetRange, [key, start.ToGlideString(), end.ToGlideString()], isNullable: true);
-
-    public static Cmd<long, long> Length(GlideString key)
-        => Simple<long>(RequestType.Strlen, [key]);
-
-    public static Cmd<long, long> Append(ValkeyKey key, ValkeyValue value)
-        => Simple<long>(RequestType.Append, [key.ToGlideString(), value.ToGlideString()]);
-
-    public static Cmd<long, long> Decrement(ValkeyKey key)
-        => Simple<long>(RequestType.Decr, [key.ToGlideString()]);
-
-    public static Cmd<long, long> DecrementBy(ValkeyKey key, long decrement)
-        => Simple<long>(RequestType.DecrBy, [key.ToGlideString(), decrement.ToGlideString()]);
-
-    public static Cmd<long, long> Increment(ValkeyKey key)
-        => Simple<long>(RequestType.Incr, [key.ToGlideString()]);
-
-    public static Cmd<long, long> IncrementBy(ValkeyKey key, long increment)
-        => Simple<long>(RequestType.IncrBy, [key.ToGlideString(), increment.ToGlideString()]);
-
-    public static Cmd<double, double> IncrementByFloat(ValkeyKey key, double increment)
-        => Simple<double>(RequestType.IncrByFloat, [key.ToGlideString(), increment.ToString(System.Globalization.CultureInfo.InvariantCulture).ToGlideString()]);
-
     public static Cmd<GlideString, ValkeyValue> GetDelete(ValkeyKey key)
-        => ToValkeyValue(RequestType.GetDel, [key.ToGlideString()], isNullable: true);
+        => ToValkeyValue(RequestType.GetDel, [key], isNullable: true);
 
     public static Cmd<GlideString, ValkeyValue> GetExpiry(ValkeyKey key, GetExpiryOptions options)
         => ToValkeyValue(RequestType.GetEx, [key, .. ToGetExpiryOptionsArgs(options)], isNullable: true);
 
+    public static Cmd<GlideString, ValkeyValue> GetRange(GlideString key, long start, long end)
+        => ToValkeyValue(RequestType.GetRange, [key, start.ToGlideString(), end.ToGlideString()], isNullable: true);
+
+    public static Cmd<GlideString, ValkeyValue> GetSet(ValkeyKey key, ValkeyValue value, SetOptions options)
+        => ToValkeyValue(RequestType.Set, [key, value, .. ToSetOptionsArgs(options), ValkeyLiterals.GET], isNullable: true);
+
+    public static Cmd<long, long> Increment(ValkeyKey key)
+        => Simple<long>(RequestType.Incr, [key]);
+
+    public static Cmd<long, long> IncrementBy(ValkeyKey key, long increment)
+        => Simple<long>(RequestType.IncrBy, [key, increment.ToGlideString()]);
+
+    public static Cmd<double, double> IncrementByFloat(ValkeyKey key, double increment)
+        => Simple<double>(RequestType.IncrByFloat, [key, increment.ToString(System.Globalization.CultureInfo.InvariantCulture).ToGlideString()]);
+
+    public static Cmd<long, long> Length(GlideString key)
+        => Simple<long>(RequestType.Strlen, [key]);
+
     public static Cmd<GlideString, string?> LongestCommonSubsequence(ValkeyKey first, ValkeyKey second)
-        => new(RequestType.LCS, [first.ToGlideString(), second.ToGlideString()], true, response => response?.ToString());
+        => new(RequestType.LCS, [first, second], true, response => response?.ToString());
 
     public static Cmd<long, long> LongestCommonSubsequenceLength(ValkeyKey first, ValkeyKey second)
-        => Simple<long>(RequestType.LCS, [first.ToGlideString(), second.ToGlideString(), ValkeyLiterals.LEN]);
+        => Simple<long>(RequestType.LCS, [first, second, ValkeyLiterals.LEN]);
 
     public static Cmd<object, LCSMatchResult> LongestCommonSubsequenceWithMatches(ValkeyKey first, ValkeyKey second, long minLength = 0)
     {
         List<GlideString> args =
         [
-            first.ToGlideString(),
-            second.ToGlideString(),
+            first,
+            second,
             ValkeyLiterals.IDX,
             ValkeyLiterals.MINMATCHLEN,
             minLength.ToGlideString(),
@@ -83,7 +72,22 @@ internal partial class Request
         return new(RequestType.LCS, [.. args], false, ConvertLCSMatchResult);
     }
 
-    #region Private Methods
+    // TODO #454: Should return ValkeyValue.Ok instead of bool.
+    public static Cmd<string, bool> Set(KeyValuePair<ValkeyKey, ValkeyValue>[] values)
+        => new(RequestType.MSet, values.ToGlideStrings(), false, _ => true);
+
+    public static Cmd<string?, bool> Set(ValkeyKey key, ValkeyValue value, SetOptions options)
+        => NullableOKToBool(RequestType.Set, [key, value, .. ToSetOptionsArgs(options)]);
+
+    public static Cmd<bool, bool> SetIfNotExists(KeyValuePair<ValkeyKey, ValkeyValue>[] values)
+        => Simple<bool>(RequestType.MSetNX, values.ToGlideStrings());
+
+    public static Cmd<long, ValkeyValue> SetRange(GlideString key, long offset, GlideString value)
+        => new(RequestType.SetRange, [key, offset.ToGlideString(), value], false, response => (ValkeyValue)response);
+
+    #endregion
+
+    #region Response Converters
 
     private static LCSMatchResult ConvertLCSMatchResult(object response) =>
         // Handle dictionary response (expected format)
@@ -128,6 +132,9 @@ internal partial class Request
         return new LCSMatchResult([.. matches], totalLength);
     }
 
+    #endregion
+
+    #region Argument Builders
 
     private static GlideString[] ToSetOptionsArgs(SetOptions options)
     {

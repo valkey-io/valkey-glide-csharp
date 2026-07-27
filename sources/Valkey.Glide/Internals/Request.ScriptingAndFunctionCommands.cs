@@ -6,26 +6,8 @@ namespace Valkey.Glide.Internals;
 
 internal partial class Request
 {
-    // ===== Script Execution =====
+    #region Command Builders
 
-    /// <summary>
-    /// Creates a command to execute a script using EVALSHA.
-    /// </summary>
-    public static Cmd<object?, ValkeyResult> EvalShaAsync(string hash, string[]? keys = null, string[]? args = null)
-    {
-        List<GlideString> cmdArgs = [hash];
-
-        int numKeys = keys?.Length ?? 0;
-        cmdArgs.Add(numKeys.ToString());
-
-        AddKeysAndArgs(cmdArgs, keys, args);
-
-        return new(RequestType.EvalSha, [.. cmdArgs], true, ValkeyResult.Create, allowConverterToHandleNull: true);
-    }
-
-    /// <summary>
-    /// Creates a command to execute a script using EVAL.
-    /// </summary>
     public static Cmd<object?, ValkeyResult> EvalAsync(string script, string[]? keys = null, string[]? args = null)
     {
         List<GlideString> cmdArgs = [script];
@@ -38,7 +20,116 @@ internal partial class Request
         return new(RequestType.Eval, [.. cmdArgs], true, ValkeyResult.Create, allowConverterToHandleNull: true);
     }
 
-    // ===== Script Management =====
+    public static Cmd<object?, ValkeyResult> EvalShaAsync(string hash, string[]? keys = null, string[]? args = null)
+    {
+        List<GlideString> cmdArgs = [hash];
+
+        int numKeys = keys?.Length ?? 0;
+        cmdArgs.Add(numKeys.ToString());
+
+        AddKeysAndArgs(cmdArgs, keys, args);
+
+        return new(RequestType.EvalSha, [.. cmdArgs], true, ValkeyResult.Create, allowConverterToHandleNull: true);
+    }
+
+    public static Cmd<object?, ValkeyResult> FCallAsync(string function, string[]? keys = null, string[]? args = null)
+    {
+        List<GlideString> cmdArgs = [function];
+
+        int numKeys = keys?.Length ?? 0;
+        cmdArgs.Add(numKeys.ToString());
+
+        AddKeysAndArgs(cmdArgs, keys, args);
+
+        return new(RequestType.FCall, [.. cmdArgs], true, ValkeyResult.Create, allowConverterToHandleNull: true);
+    }
+
+    public static Cmd<object?, ValkeyResult> FCallReadOnlyAsync(string function, string[]? keys = null, string[]? args = null)
+    {
+        List<GlideString> cmdArgs = [function];
+
+        int numKeys = keys?.Length ?? 0;
+        cmdArgs.Add(numKeys.ToString());
+
+        AddKeysAndArgs(cmdArgs, keys, args);
+
+        return new(RequestType.FCallReadOnly, [.. cmdArgs], true, ValkeyResult.Create, allowConverterToHandleNull: true);
+    }
+
+    public static Cmd<string, ValkeyValue> FunctionDeleteAsync(string libraryName)
+        => Ok(RequestType.FunctionDelete, [libraryName]);
+
+    public static Cmd<GlideString, byte[]> FunctionDumpAsync()
+        => new(RequestType.FunctionDump, [], false, gs => gs.Bytes);
+
+    public static Cmd<string, ValkeyValue> FunctionFlushAsync()
+        => Ok(RequestType.FunctionFlush);
+
+    public static Cmd<string, ValkeyValue> FunctionFlushAsync(FlushMode mode)
+        => Ok(RequestType.FunctionFlush, [mode == FlushMode.Sync ? ValkeyLiterals.SYNC : ValkeyLiterals.ASYNC]);
+
+    public static Cmd<string, ValkeyValue> FunctionKillAsync()
+        => Ok(RequestType.FunctionKill);
+
+    public static Cmd<object[], LibraryInfo[]> FunctionListAsync(FunctionListOptions? options = null)
+    {
+        List<GlideString> cmdArgs = [];
+
+        if (options?.LibraryName != null)
+        {
+            cmdArgs.Add(ValkeyLiterals.LIBRARYNAME);
+            cmdArgs.Add(options.Value.LibraryName);
+        }
+
+        if (options?.WithCode == true)
+        {
+            cmdArgs.Add(ValkeyLiterals.WITHCODE);
+        }
+
+        return new(RequestType.FunctionList, [.. cmdArgs], false, ParseFunctionListResponse);
+    }
+
+    /// <summary>
+    /// Creates a command to load a function library.
+    /// </summary>
+    public static Cmd<GlideString, string> FunctionLoadAsync(string libraryCode, bool replace)
+    {
+        List<GlideString> cmdArgs = [];
+        if (replace)
+        {
+            cmdArgs.Add(ValkeyLiterals.REPLACE);
+        }
+        cmdArgs.Add(libraryCode);
+
+        return new(RequestType.FunctionLoad, [.. cmdArgs], false, gs => gs.ToString());
+    }
+
+    /// <summary>
+    /// Creates a command to restore functions from a binary payload.
+    /// </summary>
+    public static Cmd<string, ValkeyValue> FunctionRestoreAsync(byte[] payload, FunctionRestorePolicy? policy = null)
+    {
+        List<GlideString> cmdArgs = [payload];
+
+        if (policy.HasValue)
+        {
+            cmdArgs.Add(policy.Value switch
+            {
+                FunctionRestorePolicy.Append => ValkeyLiterals.APPEND,
+                FunctionRestorePolicy.Flush => ValkeyLiterals.FLUSH,
+                FunctionRestorePolicy.Replace => ValkeyLiterals.REPLACE,
+                _ => throw new ArgumentException($"Unknown policy: {policy.Value}", nameof(policy))
+            });
+        }
+
+        return Ok(RequestType.FunctionRestore, [.. cmdArgs]);
+    }
+
+    /// <summary>
+    /// Creates a command to get function statistics.
+    /// </summary>
+    public static Cmd<object, FunctionStatsResult> FunctionStatsAsync()
+        => new(RequestType.FunctionStats, [], false, ParseFunctionStatsResponse);
 
     /// <summary>
     /// Creates a command to check if scripts exist in the cache.
@@ -59,13 +150,7 @@ internal partial class Request
     /// Creates a command to flush all scripts from the cache with specified mode.
     /// </summary>
     public static Cmd<string, ValkeyValue> ScriptFlushAsync(FlushMode mode)
-        => Ok(RequestType.ScriptFlush, [mode == FlushMode.Sync ? "SYNC" : "ASYNC"]);
-
-    /// <summary>
-    /// Creates a command to get the source code of a cached script.
-    /// </summary>
-    public static Cmd<GlideString?, string?> ScriptShowAsync(string sha1Hash)
-        => new(RequestType.ScriptShow, [sha1Hash], true, gs => gs?.ToString());
+        => Ok(RequestType.ScriptFlush, [mode == FlushMode.Sync ? ValkeyLiterals.SYNC : ValkeyLiterals.ASYNC]);
 
     /// <summary>
     /// Creates a command to kill a currently executing script.
@@ -73,154 +158,66 @@ internal partial class Request
     public static Cmd<string, ValkeyValue> ScriptKillAsync()
         => Ok(RequestType.ScriptKill);
 
-    // ===== Function Execution =====
-
     /// <summary>
-    /// Creates a command to execute a function.
+    /// Creates a command to get the source code of a cached script.
     /// </summary>
-    public static Cmd<object?, ValkeyResult> FCallAsync(string function, string[]? keys = null, string[]? args = null)
+    public static Cmd<GlideString?, string?> ScriptShowAsync(string sha1Hash)
+        => new(RequestType.ScriptShow, [sha1Hash], true, gs => gs?.ToString());
+
+    #endregion
+
+    #region Response Converters
+
+    private static void ParseEngineData(string engineName, object value, Dictionary<string, EngineStats> engines)
     {
-        List<GlideString> cmdArgs = [function];
+        long functionCount = 0;
+        long libraryCount = 0;
 
-        int numKeys = keys?.Length ?? 0;
-        cmdArgs.Add(numKeys.ToString());
-
-        AddKeysAndArgs(cmdArgs, keys, args);
-
-        return new(RequestType.FCall, [.. cmdArgs], true, ValkeyResult.Create, allowConverterToHandleNull: true);
-    }
-
-    /// <summary>
-    /// Creates a command to execute a function in read-only mode.
-    /// </summary>
-    public static Cmd<object?, ValkeyResult> FCallReadOnlyAsync(string function, string[]? keys = null, string[]? args = null)
-    {
-        List<GlideString> cmdArgs = [function];
-
-        int numKeys = keys?.Length ?? 0;
-        cmdArgs.Add(numKeys.ToString());
-
-        AddKeysAndArgs(cmdArgs, keys, args);
-
-        return new(RequestType.FCallReadOnly, [.. cmdArgs], true, ValkeyResult.Create, allowConverterToHandleNull: true);
-    }
-
-    // ===== Function Management =====
-
-    /// <summary>
-    /// Creates a command to load a function library.
-    /// </summary>
-    public static Cmd<GlideString, string> FunctionLoadAsync(string libraryCode, bool replace)
-    {
-        List<GlideString> cmdArgs = [];
-        if (replace)
+        if (value is Dictionary<GlideString, object> engineDict)
         {
-            cmdArgs.Add("REPLACE");
-        }
-        cmdArgs.Add(libraryCode);
-
-        return new(RequestType.FunctionLoad, [.. cmdArgs], false, gs => gs.ToString());
-    }
-
-    /// <summary>
-    /// Creates a command to flush all functions.
-    /// </summary>
-    public static Cmd<string, ValkeyValue> FunctionFlushAsync()
-        => Ok(RequestType.FunctionFlush);
-
-    /// <summary>
-    /// Creates a command to flush all functions with specified mode.
-    /// </summary>
-    public static Cmd<string, ValkeyValue> FunctionFlushAsync(FlushMode mode)
-        => Ok(RequestType.FunctionFlush, [mode == FlushMode.Sync ? "SYNC" : "ASYNC"]);
-
-    // ===== Function Inspection =====
-
-    /// <summary>
-    /// Creates a command to list all loaded function libraries.
-    /// </summary>
-    public static Cmd<object[], LibraryInfo[]> FunctionListAsync(FunctionListOptions? options = null)
-    {
-        List<GlideString> cmdArgs = [];
-
-        if (options?.LibraryName != null)
-        {
-            cmdArgs.Add("LIBRARYNAME");
-            cmdArgs.Add(options.Value.LibraryName);
-        }
-
-        if (options?.WithCode == true)
-        {
-            cmdArgs.Add("WITHCODE");
-        }
-
-        return new(RequestType.FunctionList, [.. cmdArgs], false, ParseFunctionListResponse);
-    }
-
-    /// <summary>
-    /// Creates a command to get function statistics.
-    /// </summary>
-    public static Cmd<object, FunctionStatsResult> FunctionStatsAsync()
-        => new(RequestType.FunctionStats, [], false, ParseFunctionStatsResponse);
-
-    /// <summary>
-    /// Creates a command to delete a function library.
-    /// </summary>
-    public static Cmd<string, ValkeyValue> FunctionDeleteAsync(string libraryName)
-        => Ok(RequestType.FunctionDelete, [libraryName]);
-
-    /// <summary>
-    /// Creates a command to kill a currently executing function.
-    /// </summary>
-    public static Cmd<string, ValkeyValue> FunctionKillAsync()
-        => Ok(RequestType.FunctionKill);
-
-    /// <summary>
-    /// Creates a command to dump all functions to a binary payload.
-    /// </summary>
-    public static Cmd<GlideString, byte[]> FunctionDumpAsync()
-        => new(RequestType.FunctionDump, [], false, gs => gs.Bytes);
-
-    /// <summary>
-    /// Creates a command to restore functions from a binary payload.
-    /// </summary>
-    public static Cmd<string, ValkeyValue> FunctionRestoreAsync(byte[] payload, FunctionRestorePolicy? policy = null)
-    {
-        List<GlideString> cmdArgs = [payload];
-
-        if (policy.HasValue)
-        {
-            cmdArgs.Add(policy.Value switch
+            // RESP3 format
+            foreach (KeyValuePair<GlideString, object> kvp in engineDict)
             {
-                FunctionRestorePolicy.Append => "APPEND",
-                FunctionRestorePolicy.Flush => "FLUSH",
-                FunctionRestorePolicy.Replace => "REPLACE",
-                _ => throw new ArgumentException($"Unknown policy: {policy.Value}", nameof(policy))
-            });
+                ProcessEngineField(kvp.Key.ToString(), kvp.Value, ref functionCount, ref libraryCount);
+            }
+        }
+        else
+        {
+            // RESP2 format
+            var engineData = (object[])value;
+            for (int k = 0; k < engineData.Length; k += 2)
+            {
+                string engineKey = ((GlideString)engineData[k]).ToString();
+                object engineValue = engineData[k + 1];
+                ProcessEngineField(engineKey, engineValue, ref functionCount, ref libraryCount);
+            }
         }
 
-        return Ok(RequestType.FunctionRestore, [.. cmdArgs]);
+        engines[engineName] = new EngineStats(engineName, functionCount, libraryCount);
     }
 
-    // ===== Helper Methods =====
-
-    /// <summary>
-    /// Adds keys and args to the command arguments list for script/function execution.
-    /// </summary>
-    private static void AddKeysAndArgs(List<GlideString> cmdArgs, string[]? keys, string[]? args)
+    private static void ParseEngines(object value, Dictionary<string, EngineStats> engines)
     {
-        if (keys != null)
+        if (value is Dictionary<GlideString, object> enginesDict)
         {
-            cmdArgs.AddRange(keys.Select(k => (GlideString)k));
+            // RESP3 format
+            foreach (KeyValuePair<GlideString, object> kvp in enginesDict)
+            {
+                string engineName = kvp.Key.ToString();
+                ParseEngineData(engineName, kvp.Value, engines);
+            }
         }
-
-        if (args != null)
+        else
         {
-            cmdArgs.AddRange(args.Select(a => (GlideString)a));
+            // RESP2 format
+            var enginesData = (object[])value;
+            for (int j = 0; j < enginesData.Length; j += 2)
+            {
+                string engineName = ((GlideString)enginesData[j]).ToString();
+                ParseEngineData(engineName, enginesData[j + 1], engines);
+            }
         }
     }
-
-    // ===== Response Parsers =====
 
     private static LibraryInfo[] ParseFunctionListResponse(object[] response)
     {
@@ -265,28 +262,6 @@ internal partial class Request
         return [.. libraries];
     }
 
-    private static void ProcessLibraryField(string key, object value, ref string? name, ref string? engine, ref string? code, List<FunctionInfo> functions)
-    {
-        switch (key)
-        {
-            case "library_name":
-                name = ((GlideString)value).ToString();
-                break;
-            case "engine":
-                engine = ((GlideString)value).ToString();
-                break;
-            case "library_code":
-                code = ((GlideString)value).ToString();
-                break;
-            case "functions":
-                ParseFunctions(value, functions);
-                break;
-            default:
-                // Ignore unknown library properties
-                break;
-        }
-    }
-
     private static void ParseFunctions(object value, List<FunctionInfo> functions)
     {
         // Handle both array and potential dictionary formats for functions
@@ -323,28 +298,6 @@ internal partial class Request
                     functions.Add(new FunctionInfo(funcName, funcDesc, [.. funcFlags]));
                 }
             }
-        }
-    }
-
-    private static void ProcessFunctionField(string funcKey, object funcValue, ref string? funcName, ref string? funcDesc, List<string> funcFlags)
-    {
-        switch (funcKey)
-        {
-            case "name":
-                funcName = ((GlideString)funcValue).ToString();
-                break;
-            case "description":
-                funcDesc = funcValue != null ? ((GlideString)funcValue).ToString() : null;
-                break;
-            case "flags":
-                if (funcValue is object[] flagsArray)
-                {
-                    funcFlags.AddRange(flagsArray.Select(f => ((GlideString)f).ToString()));
-                }
-                break;
-            default:
-                // Ignore unknown function properties
-                break;
         }
     }
 
@@ -403,25 +356,6 @@ internal partial class Request
         return new FunctionStatsResult(engines, runningScript);
     }
 
-    private static void ProcessStatsField(string key, object value, ref RunningScriptInfo? runningScript, Dictionary<string, EngineStats> engines)
-    {
-        switch (key)
-        {
-            case "running_script":
-                if (value != null)
-                {
-                    runningScript = ParseRunningScript(value);
-                }
-                break;
-            case "engines":
-                ParseEngines(value, engines);
-                break;
-            default:
-                // Ignore unknown top-level properties
-                break;
-        }
-    }
-
     private static RunningScriptInfo? ParseRunningScript(object value)
     {
         string? name = null;
@@ -457,6 +391,66 @@ internal partial class Request
         return null;
     }
 
+    private static void ProcessEngineField(string engineKey, object engineValue, ref long functionCount, ref long libraryCount)
+    {
+        switch (engineKey)
+        {
+            case "libraries_count":
+                libraryCount = Convert.ToInt64(engineValue);
+                break;
+            case "functions_count":
+                functionCount = Convert.ToInt64(engineValue);
+                break;
+            default:
+                // Ignore unknown engine properties
+                break;
+        }
+    }
+
+    private static void ProcessFunctionField(string funcKey, object funcValue, ref string? funcName, ref string? funcDesc, List<string> funcFlags)
+    {
+        switch (funcKey)
+        {
+            case "name":
+                funcName = ((GlideString)funcValue).ToString();
+                break;
+            case "description":
+                funcDesc = funcValue != null ? ((GlideString)funcValue).ToString() : null;
+                break;
+            case "flags":
+                if (funcValue is object[] flagsArray)
+                {
+                    funcFlags.AddRange(flagsArray.Select(f => ((GlideString)f).ToString()));
+                }
+                break;
+            default:
+                // Ignore unknown function properties
+                break;
+        }
+    }
+
+    private static void ProcessLibraryField(string key, object value, ref string? name, ref string? engine, ref string? code, List<FunctionInfo> functions)
+    {
+        switch (key)
+        {
+            case "library_name":
+                name = ((GlideString)value).ToString();
+                break;
+            case "engine":
+                engine = ((GlideString)value).ToString();
+                break;
+            case "library_code":
+                code = ((GlideString)value).ToString();
+                break;
+            case "functions":
+                ParseFunctions(value, functions);
+                break;
+            default:
+                // Ignore unknown library properties
+                break;
+        }
+    }
+
     private static void ProcessRunningScriptField(string scriptKey, object scriptValue, ref string? name, ref string? command, List<string> args, ref long durationMs)
     {
         switch (scriptKey)
@@ -478,71 +472,44 @@ internal partial class Request
         }
     }
 
-    private static void ParseEngines(object value, Dictionary<string, EngineStats> engines)
+    private static void ProcessStatsField(string key, object value, ref RunningScriptInfo? runningScript, Dictionary<string, EngineStats> engines)
     {
-        if (value is Dictionary<GlideString, object> enginesDict)
+        switch (key)
         {
-            // RESP3 format
-            foreach (KeyValuePair<GlideString, object> kvp in enginesDict)
-            {
-                string engineName = kvp.Key.ToString();
-                ParseEngineData(engineName, kvp.Value, engines);
-            }
-        }
-        else
-        {
-            // RESP2 format
-            var enginesData = (object[])value;
-            for (int j = 0; j < enginesData.Length; j += 2)
-            {
-                string engineName = ((GlideString)enginesData[j]).ToString();
-                ParseEngineData(engineName, enginesData[j + 1], engines);
-            }
-        }
-    }
-
-    private static void ParseEngineData(string engineName, object value, Dictionary<string, EngineStats> engines)
-    {
-        long functionCount = 0;
-        long libraryCount = 0;
-
-        if (value is Dictionary<GlideString, object> engineDict)
-        {
-            // RESP3 format
-            foreach (KeyValuePair<GlideString, object> kvp in engineDict)
-            {
-                ProcessEngineField(kvp.Key.ToString(), kvp.Value, ref functionCount, ref libraryCount);
-            }
-        }
-        else
-        {
-            // RESP2 format
-            var engineData = (object[])value;
-            for (int k = 0; k < engineData.Length; k += 2)
-            {
-                string engineKey = ((GlideString)engineData[k]).ToString();
-                object engineValue = engineData[k + 1];
-                ProcessEngineField(engineKey, engineValue, ref functionCount, ref libraryCount);
-            }
-        }
-
-        engines[engineName] = new EngineStats(engineName, functionCount, libraryCount);
-    }
-
-    private static void ProcessEngineField(string engineKey, object engineValue, ref long functionCount, ref long libraryCount)
-    {
-        switch (engineKey)
-        {
-            case "libraries_count":
-                libraryCount = Convert.ToInt64(engineValue);
+            case "running_script":
+                if (value != null)
+                {
+                    runningScript = ParseRunningScript(value);
+                }
                 break;
-            case "functions_count":
-                functionCount = Convert.ToInt64(engineValue);
+            case "engines":
+                ParseEngines(value, engines);
                 break;
             default:
-                // Ignore unknown engine properties
+                // Ignore unknown top-level properties
                 break;
         }
     }
 
+    #endregion
+
+    #region Argument Builders
+
+    /// <summary>
+    /// Adds keys and args to the command arguments list for script/function execution.
+    /// </summary>
+    private static void AddKeysAndArgs(List<GlideString> cmdArgs, string[]? keys, string[]? args)
+    {
+        if (keys != null)
+        {
+            cmdArgs.AddRange(keys.Select(k => (GlideString)k));
+        }
+
+        if (args != null)
+        {
+            cmdArgs.AddRange(args.Select(a => (GlideString)a));
+        }
+    }
+
+    #endregion
 }

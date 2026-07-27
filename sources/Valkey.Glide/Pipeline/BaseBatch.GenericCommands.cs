@@ -11,17 +11,18 @@ namespace Valkey.Glide.Pipeline;
 /// </summary>
 public abstract partial class BaseBatch<T>
 {
+    /// <inheritdoc cref="IBatchGenericCommands.Copy(ValkeyKey, ValkeyKey, bool)" />
+    public T Copy(ValkeyKey source, ValkeyKey destination, bool replace = false)
+        => AddCmd(CopyAsync(source, destination, replace));
+
     /// <inheritdoc cref="IBatchGenericCommands.Delete(ValkeyKey)" />
     public T Delete(ValkeyKey key) => AddCmd(DeleteAsync(key));
 
     /// <inheritdoc cref="IBatchGenericCommands.Delete(IEnumerable{ValkeyKey})" />
     public T Delete(IEnumerable<ValkeyKey> keys) => AddCmd(DeleteAsync([.. keys]));
 
-    /// <inheritdoc cref="IBatchGenericCommands.Unlink(ValkeyKey)" />
-    public T Unlink(ValkeyKey key) => AddCmd(UnlinkAsync(key));
-
-    /// <inheritdoc cref="IBatchGenericCommands.Unlink(IEnumerable{ValkeyKey})" />
-    public T Unlink(IEnumerable<ValkeyKey> keys) => AddCmd(UnlinkAsync([.. keys]));
+    /// <inheritdoc cref="IBatchGenericCommands.Dump(ValkeyKey)" />
+    public T Dump(ValkeyKey key) => AddCmd(DumpAsync(key));
 
     /// <inheritdoc cref="IBatchGenericCommands.Exists(ValkeyKey)" />
     public T Exists(ValkeyKey key) => AddCmd(ExistsAsync(key));
@@ -35,35 +36,12 @@ public abstract partial class BaseBatch<T>
     /// <inheritdoc cref="IBatchGenericCommands.Expire(ValkeyKey, DateTimeOffset?, ExpireCondition)" />
     public T Expire(ValkeyKey key, DateTimeOffset? expiry, ExpireCondition condition = ExpireCondition.Always) => AddCmd(ExpireAsync(key, expiry, condition));
 
-    /// <inheritdoc cref="IBatchGenericCommands.TimeToLive(ValkeyKey)" />
-    public T TimeToLive(ValkeyKey key) => AddCmd(TimeToLiveAsync(key));
-
-    /// <inheritdoc cref="IBatchGenericCommands.Type(ValkeyKey)" />
-    public T Type(ValkeyKey key) => AddCmd(TypeAsync(key));
-
-    /// <inheritdoc cref="IBatchGenericCommands.Rename(ValkeyKey, ValkeyKey)" />
-    public T Rename(ValkeyKey key, ValkeyKey newKey) => AddCmd(RenameAsync(key, newKey));
-
-    /// <inheritdoc cref="IBatchGenericCommands.RenameIfNotExists(ValkeyKey, ValkeyKey)" />
-    public T RenameIfNotExists(ValkeyKey key, ValkeyKey newKey) => AddCmd(RenameIfNotExistsAsync(key, newKey));
-
-    /// <inheritdoc cref="IBatchGenericCommands.Persist(ValkeyKey)" />
-    public T Persist(ValkeyKey key) => AddCmd(PersistAsync(key));
-
-    /// <inheritdoc cref="IBatchGenericCommands.Dump(ValkeyKey)" />
-    public T Dump(ValkeyKey key) => AddCmd(DumpAsync(key));
-
-    /// <inheritdoc cref="IBatchGenericCommands.Restore(ValkeyKey, byte[], RestoreOptions?)" />
-    public T Restore(ValkeyKey key, byte[] value, RestoreOptions? options = null) => AddCmd(RestoreAsync(key, value, options));
-
-    /// <inheritdoc cref="IBatchGenericCommands.Touch(ValkeyKey)" />
-    public T Touch(ValkeyKey key) => AddCmd(TouchAsync(key));
-
-    /// <inheritdoc cref="IBatchGenericCommands.Touch(IEnumerable{ValkeyKey})" />
-    public T Touch(IEnumerable<ValkeyKey> keys) => AddCmd(TouchAsync([.. keys]));
-
     /// <inheritdoc cref="IBatchGenericCommands.ExpireTime(ValkeyKey)" />
     public T ExpireTime(ValkeyKey key) => AddCmd(ExpireTimeAsync(key));
+
+    /// <inheritdoc cref="IBatchGenericCommands.Migrate(ValkeyKey, MigrateOptions)" />
+    public T Migrate(ValkeyKey key, MigrateOptions options)
+        => AddCmd(MigrateAsync([key], options));
 
     /// <inheritdoc cref="IBatchGenericCommands.ObjectEncoding(ValkeyKey)" />
     public T ObjectEncoding(ValkeyKey key) => AddCmd(ObjectEncodingAsync(key));
@@ -77,16 +55,20 @@ public abstract partial class BaseBatch<T>
     /// <inheritdoc cref="IBatchGenericCommands.ObjectRefCount(ValkeyKey)" />
     public T ObjectRefCount(ValkeyKey key) => AddCmd(ObjectRefCountAsync(key));
 
-    /// <inheritdoc cref="IBatchGenericCommands.Copy(ValkeyKey, ValkeyKey, bool)" />
-    public T Copy(ValkeyKey source, ValkeyKey destination, bool replace = false)
-        => AddCmd(CopyAsync(source, destination, replace));
-
-    /// <inheritdoc cref="IBatchGenericCommands.Migrate(ValkeyKey, MigrateOptions)" />
-    public T Migrate(ValkeyKey key, MigrateOptions options)
-        => AddCmd(MigrateAsync([key], options));
+    /// <inheritdoc cref="IBatchGenericCommands.Persist(ValkeyKey)" />
+    public T Persist(ValkeyKey key) => AddCmd(PersistAsync(key));
 
     /// <inheritdoc cref="IBatchGenericCommands.RandomKey()" />
     public T RandomKey() => AddCmd(RandomKeyAsync());
+
+    /// <inheritdoc cref="IBatchGenericCommands.Rename(ValkeyKey, ValkeyKey)" />
+    public T Rename(ValkeyKey key, ValkeyKey newKey) => AddCmd(RenameAsync(key, newKey));
+
+    /// <inheritdoc cref="IBatchGenericCommands.RenameIfNotExists(ValkeyKey, ValkeyKey)" />
+    public T RenameIfNotExists(ValkeyKey key, ValkeyKey newKey) => AddCmd(RenameIfNotExistsAsync(key, newKey));
+
+    /// <inheritdoc cref="IBatchGenericCommands.Restore(ValkeyKey, byte[], RestoreOptions?)" />
+    public T Restore(ValkeyKey key, byte[] value, RestoreOptions? options = null) => AddCmd(RestoreAsync(key, value, options));
 
     /// <inheritdoc cref="IBatchGenericCommands.Sort(ValkeyKey, long, long, Order, SortType, ValkeyValue, IEnumerable{ValkeyValue})" />
     public T Sort(ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, IEnumerable<ValkeyValue>? get = null) => AddCmd(SortAsync(key, skip, take, order, sortType, by, get is null ? null : [.. get], null));
@@ -114,6 +96,24 @@ public abstract partial class BaseBatch<T>
         var opts = options ?? new SortOptions();
         return SortReadOnly(key, opts.Skip, opts.Take, opts.Order.ToOrder(), opts.SortType, opts.By, opts.Get);
     }
+
+    /// <inheritdoc cref="IBatchGenericCommands.TimeToLive(ValkeyKey)" />
+    public T TimeToLive(ValkeyKey key) => AddCmd(TimeToLiveAsync(key));
+
+    /// <inheritdoc cref="IBatchGenericCommands.Touch(ValkeyKey)" />
+    public T Touch(ValkeyKey key) => AddCmd(TouchAsync(key));
+
+    /// <inheritdoc cref="IBatchGenericCommands.Touch(IEnumerable{ValkeyKey})" />
+    public T Touch(IEnumerable<ValkeyKey> keys) => AddCmd(TouchAsync([.. keys]));
+
+    /// <inheritdoc cref="IBatchGenericCommands.Type(ValkeyKey)" />
+    public T Type(ValkeyKey key) => AddCmd(TypeAsync(key));
+
+    /// <inheritdoc cref="IBatchGenericCommands.Unlink(ValkeyKey)" />
+    public T Unlink(ValkeyKey key) => AddCmd(UnlinkAsync(key));
+
+    /// <inheritdoc cref="IBatchGenericCommands.Unlink(IEnumerable{ValkeyKey})" />
+    public T Unlink(IEnumerable<ValkeyKey> keys) => AddCmd(UnlinkAsync([.. keys]));
 
     /// <inheritdoc cref="IBatchGenericCommands.Wait(long, TimeSpan)" />
     public T Wait(long numreplicas, TimeSpan timeout) => AddCmd(WaitAsync(numreplicas, timeout));

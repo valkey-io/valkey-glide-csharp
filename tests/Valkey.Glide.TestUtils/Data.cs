@@ -18,6 +18,12 @@ public static class Data
     public static TheoryData<bool> IsAtomic => [true, false];
 
     /// <summary>
+    /// All node discovery modes for testing.
+    /// </summary>
+    public static TheoryData<NodeDiscoveryMode> NodeDiscoveryModes
+        => new(Enum.GetValues<NodeDiscoveryMode>());
+
+    /// <summary>
     /// Server IP addresses for testing.
     /// </summary>
     public static TheoryData<string> IpAddresses => [

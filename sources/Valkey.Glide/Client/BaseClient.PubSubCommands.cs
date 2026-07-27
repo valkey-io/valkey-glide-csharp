@@ -111,6 +111,17 @@ public abstract partial class BaseClient
     #endregion
     #region IntrospectionCommands
 
+    /// <inheritdoc cref="IBaseClient.GetSubscriptionsAsync()"/>
+    public async Task<PubSubState> GetSubscriptionsAsync()
+    {
+        var (desiredResponse, actualResponse) = await Command(Request.GetSubscriptions());
+
+        var desired = BuildPubSubSubscriptionsMap(desiredResponse);
+        var actual = BuildPubSubSubscriptionsMap(actualResponse);
+
+        return new PubSubState(desired, actual);
+    }
+
     /// <inheritdoc cref="IBaseClient.PubSubChannelsAsync()"/>
     public async Task<ISet<ValkeyKey>> PubSubChannelsAsync()
         => await Command(Request.PubSubChannels());
@@ -118,6 +129,10 @@ public abstract partial class BaseClient
     /// <inheritdoc cref="IBaseClient.PubSubChannelsAsync(ValkeyKey)"/>
     public async Task<ISet<ValkeyKey>> PubSubChannelsAsync(ValkeyKey pattern)
         => await Command(Request.PubSubChannels(pattern));
+
+    /// <inheritdoc cref="IBaseClient.PubSubNumPatAsync()"/>
+    public async Task<long> PubSubNumPatAsync()
+        => await Command(Request.PubSubNumPat());
 
     /// <inheritdoc cref="IBaseClient.PubSubNumSubAsync(ValkeyKey)"/>
     public async Task<long> PubSubNumSubAsync(ValkeyKey channel)
@@ -129,21 +144,6 @@ public abstract partial class BaseClient
     /// <inheritdoc cref="IBaseClient.PubSubNumSubAsync(IEnumerable{ValkeyKey})"/>
     public async Task<Dictionary<ValkeyKey, long>> PubSubNumSubAsync(IEnumerable<ValkeyKey> channels)
         => await Command(Request.PubSubNumSub(channels.ToGlideStrings()));
-
-    /// <inheritdoc cref="IBaseClient.PubSubNumPatAsync()"/>
-    public async Task<long> PubSubNumPatAsync()
-        => await Command(Request.PubSubNumPat());
-
-    /// <inheritdoc cref="IBaseClient.GetSubscriptionsAsync()"/>
-    public async Task<PubSubState> GetSubscriptionsAsync()
-    {
-        var (desiredResponse, actualResponse) = await Command(Request.GetSubscriptions());
-
-        var desired = BuildPubSubSubscriptionsMap(desiredResponse);
-        var actual = BuildPubSubSubscriptionsMap(actualResponse);
-
-        return new PubSubState(desired, actual);
-    }
 
     #endregion
 

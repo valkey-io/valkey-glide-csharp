@@ -81,6 +81,17 @@ pub enum EvictionPolicy {
     Lfu = 1,
 }
 
+/// A mirror of [`glide_core::client::NodeDiscoveryMode`] adopted for FFI.
+///
+/// The discriminants must match the C# `ConnectionConfiguration.NodeDiscoveryMode` enum.
+#[repr(u32)]
+#[derive(Clone, Copy)]
+pub enum NodeDiscoveryMode {
+    Standard = 0,
+    Static = 1,
+    DiscoverAll = 2,
+}
+
 /// A mirror of [`glide_core::client::ClientSideCache`] adopted for FFI.
 #[repr(C)]
 #[derive(Clone, Copy)]
@@ -147,6 +158,8 @@ pub struct ConnectionConfig {
     pub compression_config: CompressionConfig,
 
     pub read_only: bool,
+
+    pub node_discovery_mode: NodeDiscoveryMode,
 
     pub has_client_side_cache_config: bool,
     pub client_side_cache_config: ClientSideCacheConfig,
@@ -336,7 +349,15 @@ pub(crate) unsafe fn create_connection_request(
                     .then_some(config.compression_config.max_decompressed_size as usize),
             },
         ),
+
         read_only: config.read_only,
+
+        // Node discovery mode
+        node_discovery_mode: match config.node_discovery_mode {
+            NodeDiscoveryMode::Standard => glide_core::client::NodeDiscoveryMode::Standard,
+            NodeDiscoveryMode::Static => glide_core::client::NodeDiscoveryMode::Static,
+            NodeDiscoveryMode::DiscoverAll => glide_core::client::NodeDiscoveryMode::DiscoverAll,
+        },
 
         // Client-side cache configuration
         client_side_cache: if config.has_client_side_cache_config {
@@ -372,10 +393,12 @@ pub(crate) unsafe fn create_connection_request(
         // Unimplemented configuration options.
         client_cert: Vec::new(),
         client_key: Vec::new(),
+        client_cert_path: None,
+        client_key_path: None,
+        cert_reload: None,
         tcp_nodelay: false,
         periodic_checks: None,
         inflight_requests_limit: None,
-        node_discovery_mode: glide_core::client::NodeDiscoveryMode::default(),
         address_resolver: None,
     })
 }
@@ -671,7 +694,7 @@ impl ResponseValue {
                 size: 0,
             }),
             Value::BulkString(text) => {
-                let (vec_ptr, size) = Self::convert_vec_to_ffi(text, "BulkString")?;
+                let (vec_ptr, size) = Self::convert_vec_to_ffi(text.into(), "BulkString")?;
                 Ok(ResponseValue {
                     typ: ValueType::BulkString,
                     val: vec_ptr as i64,

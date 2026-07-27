@@ -5,9 +5,9 @@ using Valkey.Glide.TestUtils;
 
 using static Valkey.Glide.Commands.Options.InfoOptions;
 using static Valkey.Glide.Errors;
+using static Valkey.Glide.TestUtils.Builders;
 using static Valkey.Glide.TestUtils.Client;
 using static Valkey.Glide.TestUtils.Data;
-using static Valkey.Glide.TestUtils.Options;
 
 namespace Valkey.Glide.IntegrationTests;
 
@@ -523,6 +523,21 @@ public class StandaloneClientTests(TestConfiguration config)
         var builder = TestUtils.Config.BuildStandaloneConfig(address: new(host, server.Address.Port));
 
         await using var client = await GlideClient.CreateClient(builder.Build());
+        await AssertConnected(client);
+    }
+
+    [Theory]
+    [MemberData(nameof(NodeDiscoveryModes), MemberType = typeof(Data))]
+    public async Task Connect_WithNodeDiscoveryMode_Succeeds(NodeDiscoveryMode mode)
+    {
+        // Against a single-node standalone server, all modes should connect successfully:
+        // `Standard` verifies the role, `Static` trusts the address as primary, and
+        // `DiscoverAll` discovers the (replica-less) topology from the primary.
+        var config = TestConfiguration.DefaultClientConfig()
+            .WithNodeDiscoveryMode(mode)
+            .Build();
+
+        await using var client = await GlideClient.CreateClient(config);
         await AssertConnected(client);
     }
 }

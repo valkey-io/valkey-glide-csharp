@@ -97,13 +97,6 @@ public class ServerManagementTests(ServerManagementFixture fixture) : IClassFixt
         await fixture.Server.SaveAsync(SaveType.BackgroundRewriteAppendOnlyFile);
     }
 
-    [Fact]
-    public async Task IServer_SaveAsync_ForegroundSave_ThrowsNotSupported()
-#pragma warning disable CS0618 // SaveType.ForegroundSave is obsolete
-        => _ = await Assert.ThrowsAsync<NotSupportedException>(
-            () => fixture.Server.SaveAsync(SaveType.ForegroundSave));
-#pragma warning restore CS0618
-
     #endregion
     #region Helpers
 

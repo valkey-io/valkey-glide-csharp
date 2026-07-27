@@ -8,20 +8,15 @@ namespace Valkey.Glide.Internals;
 internal static class GuardClauses
 {
     /// <summary>
-    /// Validates that the When parameter is either Always or NotExists.
+    /// Throws a <see cref="NotImplementedException"/> if async state is specified.
     /// </summary>
-    /// <param name="when">The When enum value to validate</param>
-    /// <exception cref="ArgumentException">Thrown when the When parameter is not Always or NotExists</exception>
-    public static void WhenAlwaysOrNotExists(When when)
+    /// <param name="asyncState">The async state to validate.</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="asyncState"/> is not null.</exception>
+    public static void ThrowIfAsyncState(object? asyncState)
     {
-        switch (when)
+        if (asyncState is not null)
         {
-            case When.Always:
-            case When.NotExists:
-                break;
-            case When.Exists:
-            default:
-                throw new ArgumentException(when + " is not valid in this context; the permitted values are: Always, NotExists");
+            throw new NotImplementedException("Async state is not supported by Valkey GLIDE");
         }
     }
 
@@ -35,19 +30,6 @@ internal static class GuardClauses
         if (flags != CommandFlags.None)
         {
             throw new NotImplementedException($"Command flag {flags} is not supported by Valkey GLIDE");
-        }
-    }
-
-    /// <summary>
-    /// Throws a <see cref="NotImplementedException"/> if async state is specified.
-    /// </summary>
-    /// <param name="asyncState">The async state to validate.</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="asyncState"/> is not null.</exception>
-    public static void ThrowIfAsyncState(object? asyncState)
-    {
-        if (asyncState is not null)
-        {
-            throw new NotImplementedException("Async state is not supported by GLIDE");
         }
     }
 

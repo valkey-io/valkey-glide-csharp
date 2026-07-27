@@ -7,6 +7,7 @@ using static Valkey.Glide.Route;
 
 namespace Valkey.Glide;
 
+// TODO #462: Consolidate no-route overloads into BaseClient (glide-core default routing matches).
 public partial class GlideClusterClient
 {
     /// <inheritdoc cref="IBaseClient.ClientGetNameAsync()"/>

@@ -10,9 +10,9 @@ using static Valkey.Glide.Internals.FFI;
 namespace Valkey.Glide;
 
 /// <summary>
-/// A client that monitors all commands processed by the server.
+/// A client for the <see href="https://valkey.io/commands/monitor/">MONITOR</see> command stream.
 /// </summary>
-/// <seealso href="https://valkey.io/commands/monitor/">Valkey commands - MONITOR</seealso>
+/// <seealso href="https://valkey.io/commands/monitor/"/>
 public sealed class MonitorClient : IAsyncDisposable, IDisposable
 {
     #region Private Fields
@@ -178,7 +178,7 @@ public sealed class MonitorClient : IAsyncDisposable, IDisposable
     #region Private Methods
 
     private void OnMonitorMessage(
-        double timestampUnix,
+        double timestamp,
         ushort database,
         IntPtr clientAddrPtr,
         long clientAddrLen,
@@ -209,9 +209,14 @@ public sealed class MonitorClient : IAsyncDisposable, IDisposable
                 args[i] = System.Text.Encoding.UTF8.GetString(argBytes);
             }
 
-            var timestamp = DateTimeOffset.UnixEpoch.AddSeconds(timestampUnix);
-
-            var message = new MonitorMessage(timestamp, database, clientAddress, command, args);
+            var message = new MonitorMessage
+            {
+                Timestamp = DateTimeOffset.UnixEpoch.AddSeconds(timestamp),
+                Database = database,
+                ClientAddress = clientAddress,
+                Command = command,
+                Args = args,
+            };
             _ = _channel.Writer.TryWrite(message);
         }
         catch (Exception ex)

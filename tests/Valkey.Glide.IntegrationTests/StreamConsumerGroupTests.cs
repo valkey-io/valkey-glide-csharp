@@ -206,6 +206,8 @@ public class StreamConsumerGroupTests
     //     Assert.Equal(0, pendingCount);
     // }
 
+    // TODO #326: Add multi-field tests
+
     // [Theory(DisableDiscoveryEnumeration = true)]
     // [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     // public async Task StreamReadGroupAsync_NewMessages(BaseClient client)

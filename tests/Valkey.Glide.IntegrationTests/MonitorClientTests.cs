@@ -2,10 +2,12 @@
 
 using Valkey.Glide.TestUtils;
 
+using static Valkey.Glide.TestUtils.Builders;
+
 namespace Valkey.Glide.IntegrationTests;
 
 /// <summary>
-/// Tests for the MONITOR command via MonitorClient.
+/// Tests for <see cref="MonitorClient"/>.
 /// </summary>
 [Collection(typeof(MonitorClientTests))]
 [CollectionDefinition(DisableParallelization = true)]
@@ -97,15 +99,10 @@ public class MonitorClientTests(StandaloneClientFixture fixture) : IClassFixture
     #endregion
     #region Helpers
 
-    // TODO #435: Move to TestUtils class.
-
-    /// <summary>
-    /// Creates a connected monitor client for testing.
-    /// </summary>
     private async Task<MonitorClient> BuildMonitorClientAsync()
     {
         var addr = fixture.Server.Address;
-        using var config = new MonitorConfig(addr.Host, addr.Port);
+        using var config = BuildMonitorConfig(addr.Host, addr.Port);
         return await MonitorClient.CreateClient(config);
     }
 

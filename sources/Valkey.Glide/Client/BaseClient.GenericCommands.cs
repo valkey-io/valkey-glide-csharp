@@ -8,6 +8,14 @@ namespace Valkey.Glide;
 
 public abstract partial class BaseClient
 {
+    /// <inheritdoc cref="IBaseClient.CopyAsync(ValkeyKey, ValkeyKey, bool)"/>
+    public async Task<bool> CopyAsync(ValkeyKey source, ValkeyKey destination, bool replace = false)
+        => await Command(Request.CopyAsync(source, destination, replace));
+
+    /// <inheritdoc cref="IBaseClient.CopyAsync(ValkeyKey, ValkeyKey, int, bool)"/>
+    public async Task<bool> CopyAsync(ValkeyKey source, ValkeyKey destination, int destinationDatabase, bool replace = false)
+        => await Command(Request.CopyAsync(source, destination, destinationDatabase, replace));
+
     /// <inheritdoc cref="IBaseClient.DeleteAsync(ValkeyKey)"/>
     public async Task<bool> DeleteAsync(ValkeyKey key)
         => await Command(Request.DeleteAsync(key));
@@ -16,13 +24,9 @@ public abstract partial class BaseClient
     public async Task<long> DeleteAsync(IEnumerable<ValkeyKey> keys)
         => await Command(Request.DeleteAsync([.. keys]));
 
-    /// <inheritdoc cref="IBaseClient.UnlinkAsync(ValkeyKey)"/>
-    public async Task<bool> UnlinkAsync(ValkeyKey key)
-        => await Command(Request.UnlinkAsync(key));
-
-    /// <inheritdoc cref="IBaseClient.UnlinkAsync(IEnumerable{ValkeyKey})"/>
-    public async Task<long> UnlinkAsync(IEnumerable<ValkeyKey> keys)
-        => await Command(Request.UnlinkAsync([.. keys]));
+    /// <inheritdoc cref="IBaseClient.DumpAsync(ValkeyKey)"/>
+    public async Task<byte[]?> DumpAsync(ValkeyKey key)
+        => await Command(Request.DumpAsync(key));
 
     /// <inheritdoc cref="IBaseClient.ExistsAsync(ValkeyKey)"/>
     public async Task<bool> ExistsAsync(ValkeyKey key)
@@ -40,45 +44,17 @@ public abstract partial class BaseClient
     public async Task<bool> ExpireAsync(ValkeyKey key, DateTimeOffset? expiry, ExpireCondition condition = ExpireCondition.Always)
         => await Command(Request.ExpireAsync(key, expiry, condition));
 
-    /// <inheritdoc cref="IBaseClient.TimeToLiveAsync(ValkeyKey)"/>
-    public async Task<TimeToLiveResult> TimeToLiveAsync(ValkeyKey key)
-        => await Command(Request.TimeToLiveAsync(key));
-
-    /// <inheritdoc cref="IBaseClient.TypeAsync(ValkeyKey)"/>
-    public async Task<ValkeyType> TypeAsync(ValkeyKey key)
-        => await Command(Request.TypeAsync(key));
-
-    /// <inheritdoc cref="IBaseClient.RenameAsync(ValkeyKey, ValkeyKey)"/>
-    public async Task RenameAsync(ValkeyKey key, ValkeyKey newKey)
-        => _ = await Command(Request.RenameAsync(key, newKey));
-
-    /// <inheritdoc cref="IBaseClient.RenameIfNotExistsAsync(ValkeyKey, ValkeyKey)"/>
-    public async Task<bool> RenameIfNotExistsAsync(ValkeyKey key, ValkeyKey newKey)
-        => await Command(Request.RenameIfNotExistsAsync(key, newKey));
-
-    /// <inheritdoc cref="IBaseClient.PersistAsync(ValkeyKey)"/>
-    public async Task<bool> PersistAsync(ValkeyKey key)
-        => await Command(Request.PersistAsync(key));
-
-    /// <inheritdoc cref="IBaseClient.DumpAsync(ValkeyKey)"/>
-    public async Task<byte[]?> DumpAsync(ValkeyKey key)
-        => await Command(Request.DumpAsync(key));
-
-    /// <inheritdoc cref="IBaseClient.RestoreAsync(ValkeyKey, byte[], RestoreOptions?)"/>
-    public async Task RestoreAsync(ValkeyKey key, byte[] value, RestoreOptions? options = null)
-        => _ = await Command(Request.RestoreAsync(key, value, options));
-
-    /// <inheritdoc cref="IBaseClient.TouchAsync(ValkeyKey)"/>
-    public async Task<bool> TouchAsync(ValkeyKey key)
-        => await Command(Request.TouchAsync(key));
-
-    /// <inheritdoc cref="IBaseClient.TouchAsync(IEnumerable{ValkeyKey})"/>
-    public async Task<long> TouchAsync(IEnumerable<ValkeyKey> keys)
-        => await Command(Request.TouchAsync([.. keys]));
-
     /// <inheritdoc cref="IBaseClient.ExpireTimeAsync(ValkeyKey)"/>
     public async Task<DateTimeOffset?> ExpireTimeAsync(ValkeyKey key)
         => await Command(Request.ExpireTimeAsync(key));
+
+    /// <inheritdoc cref="IBaseClient.MigrateAsync(ValkeyKey, MigrateOptions)"/>
+    public async Task<bool> MigrateAsync(ValkeyKey key, MigrateOptions options)
+        => await Command(Request.MigrateAsync([key], options));
+
+    /// <inheritdoc cref="IBaseClient.MoveAsync(ValkeyKey, int)"/>
+    public async Task<bool> MoveAsync(ValkeyKey key, int database)
+        => await Command(Request.MoveAsync(key, database));
 
     /// <inheritdoc cref="IBaseClient.ObjectEncodingAsync(ValkeyKey)"/>
     public async Task<string?> ObjectEncodingAsync(ValkeyKey key)
@@ -96,41 +72,29 @@ public abstract partial class BaseClient
     public async Task<long?> ObjectRefCountAsync(ValkeyKey key)
         => await Command(Request.ObjectRefCountAsync(key));
 
-    /// <inheritdoc cref="IBaseClient.CopyAsync(ValkeyKey, ValkeyKey, bool)"/>
-    public async Task<bool> CopyAsync(ValkeyKey source, ValkeyKey destination, bool replace = false)
-        => await Command(Request.CopyAsync(source, destination, replace));
-
-    /// <inheritdoc cref="IGlideClient.MoveAsync(ValkeyKey, int)"/>
-    public async Task<bool> MoveAsync(ValkeyKey key, int database)
-        => await Command(Request.MoveAsync(key, database));
-
-    /// <inheritdoc cref="IGlideClient.CopyAsync(ValkeyKey, ValkeyKey, int, bool)"/>
-    public async Task<bool> CopyAsync(ValkeyKey source, ValkeyKey destination, int destinationDatabase, bool replace = false)
-        => await Command(Request.CopyAsync(source, destination, destinationDatabase, replace));
+    /// <inheritdoc cref="IBaseClient.PersistAsync(ValkeyKey)"/>
+    public async Task<bool> PersistAsync(ValkeyKey key)
+        => await Command(Request.PersistAsync(key));
 
     /// <inheritdoc cref="IBaseClient.RandomKeyAsync()"/>
     public async Task<ValkeyKey?> RandomKeyAsync()
         => await Command(Request.RandomKeyAsync());
 
+    /// <inheritdoc cref="IBaseClient.RenameAsync(ValkeyKey, ValkeyKey)"/>
+    public async Task RenameAsync(ValkeyKey key, ValkeyKey newKey)
+        => _ = await Command(Request.RenameAsync(key, newKey));
+
+    /// <inheritdoc cref="IBaseClient.RenameIfNotExistsAsync(ValkeyKey, ValkeyKey)"/>
+    public async Task<bool> RenameIfNotExistsAsync(ValkeyKey key, ValkeyKey newKey)
+        => await Command(Request.RenameIfNotExistsAsync(key, newKey));
+
+    /// <inheritdoc cref="IBaseClient.RestoreAsync(ValkeyKey, byte[], RestoreOptions?)"/>
+    public async Task RestoreAsync(ValkeyKey key, byte[] value, RestoreOptions? options = null)
+        => _ = await Command(Request.RestoreAsync(key, value, options));
+
     /// <inheritdoc cref="IGenericBaseCommands.SortAsync(ValkeyKey, long, long, Order, SortType, ValkeyValue, IEnumerable{ValkeyValue}?)"/>
     public async Task<ValkeyValue[]> SortAsync(ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, IEnumerable<ValkeyValue>? get = null)
         => await Command(Request.SortAsync(key, skip, take, order, sortType, by, get?.ToArray(), await GetServerVersionAsync()));
-
-    /// <inheritdoc cref="IGenericBaseCommands.SortAndStoreAsync(ValkeyKey, ValkeyKey, long, long, Order, SortType, ValkeyValue, IEnumerable{ValkeyValue}?)"/>
-    public async Task<long> SortAndStoreAsync(ValkeyKey destination, ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, IEnumerable<ValkeyValue>? get = null)
-        => await Command(Request.SortAndStoreAsync(destination, key, skip, take, order, sortType, by, get?.ToArray()));
-
-    /// <inheritdoc cref="IBaseClient.MigrateAsync(ValkeyKey, MigrateOptions)"/>
-    public async Task<bool> MigrateAsync(ValkeyKey key, MigrateOptions options)
-        => await Command(Request.MigrateAsync([key], options));
-
-    /// <inheritdoc cref="IBaseClient.WaitAsync(long, TimeSpan)"/>
-    public async Task<long> WaitAsync(long numreplicas, TimeSpan timeout)
-        => await Command(Request.WaitAsync(numreplicas, timeout));
-
-    /// <inheritdoc cref="IBaseClient.WaitAofAsync(bool, long, TimeSpan)"/>
-    public async Task<long[]> WaitAofAsync(bool localAof, long numreplicas, TimeSpan timeout)
-        => await Command(Request.WaitAofAsync(localAof, numreplicas, timeout));
 
     /// <inheritdoc cref="IBaseClient.SortAsync(ValkeyKey, SortOptions?)"/>
     public async Task<ValkeyValue[]> SortAsync(ValkeyKey key, SortOptions? options)
@@ -138,6 +102,10 @@ public abstract partial class BaseClient
         var opts = options ?? new SortOptions();
         return await SortAsync(key, opts.Skip, opts.Take, opts.Order.ToOrder(), opts.SortType, opts.By, opts.Get);
     }
+
+    /// <inheritdoc cref="IGenericBaseCommands.SortAndStoreAsync(ValkeyKey, ValkeyKey, long, long, Order, SortType, ValkeyValue, IEnumerable{ValkeyValue}?)"/>
+    public async Task<long> SortAndStoreAsync(ValkeyKey destination, ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, IEnumerable<ValkeyValue>? get = null)
+        => await Command(Request.SortAndStoreAsync(destination, key, skip, take, order, sortType, by, get?.ToArray()));
 
     /// <inheritdoc cref="IBaseClient.SortAndStoreAsync(ValkeyKey, ValkeyKey, SortOptions?)"/>
     public async Task<long> SortAndStoreAsync(ValkeyKey destination, ValkeyKey key, SortOptions? options)
@@ -156,4 +124,36 @@ public abstract partial class BaseClient
         var opts = options ?? new SortOptions();
         return await SortReadOnlyAsync(key, opts.Skip, opts.Take, opts.Order.ToOrder(), opts.SortType, opts.By, opts.Get);
     }
+
+    /// <inheritdoc cref="IBaseClient.TimeToLiveAsync(ValkeyKey)"/>
+    public async Task<TimeToLiveResult> TimeToLiveAsync(ValkeyKey key)
+        => await Command(Request.TimeToLiveAsync(key));
+
+    /// <inheritdoc cref="IBaseClient.TouchAsync(ValkeyKey)"/>
+    public async Task<bool> TouchAsync(ValkeyKey key)
+        => await Command(Request.TouchAsync(key));
+
+    /// <inheritdoc cref="IBaseClient.TouchAsync(IEnumerable{ValkeyKey})"/>
+    public async Task<long> TouchAsync(IEnumerable<ValkeyKey> keys)
+        => await Command(Request.TouchAsync([.. keys]));
+
+    /// <inheritdoc cref="IBaseClient.TypeAsync(ValkeyKey)"/>
+    public async Task<ValkeyType> TypeAsync(ValkeyKey key)
+        => await Command(Request.TypeAsync(key));
+
+    /// <inheritdoc cref="IBaseClient.UnlinkAsync(ValkeyKey)"/>
+    public async Task<bool> UnlinkAsync(ValkeyKey key)
+        => await Command(Request.UnlinkAsync(key));
+
+    /// <inheritdoc cref="IBaseClient.UnlinkAsync(IEnumerable{ValkeyKey})"/>
+    public async Task<long> UnlinkAsync(IEnumerable<ValkeyKey> keys)
+        => await Command(Request.UnlinkAsync([.. keys]));
+
+    /// <inheritdoc cref="IBaseClient.WaitAsync(long, TimeSpan)"/>
+    public async Task<long> WaitAsync(long numreplicas, TimeSpan timeout)
+        => await Command(Request.WaitAsync(numreplicas, timeout));
+
+    /// <inheritdoc cref="IBaseClient.WaitAofAsync(bool, long, TimeSpan)"/>
+    public async Task<long[]> WaitAofAsync(bool localAof, long numreplicas, TimeSpan timeout)
+        => await Command(Request.WaitAofAsync(localAof, numreplicas, timeout));
 }

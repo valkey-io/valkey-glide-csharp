@@ -499,6 +499,27 @@ public partial interface IBaseClient
     Task<bool> CopyAsync(ValkeyKey source, ValkeyKey destination, bool replace = false);
 
     /// <summary>
+    /// Copies the value stored at the source to the destination key in the specified database.
+    /// When replace is true, removes the destination key first if it already exists, otherwise performs no action.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/copy/"/>
+    /// <param name="source">The key to the source value.</param>
+    /// <param name="destination">The key where the value should be copied to.</param>
+    /// <param name="destinationDatabase">The database ID to store destination in.</param>
+    /// <param name="replace">Whether to overwrite an existing value at <paramref name="destination"/>.</param>
+    /// <returns><see langword="true"/> if <paramref name="source"/> was copied, <see langword="false"/> otherwise.</returns>
+    /// <note>Since Valkey 9.0.0 for cluster mode.</note>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.SetAsync("source", "value");
+    /// var copied = await client.CopyAsync("source", "dest", 1, replace: true);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<bool> CopyAsync(ValkeyKey source, ValkeyKey destination, int destinationDatabase, bool replace = false);
+
+    /// <summary>
     /// Returns a random key from the database.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/randomkey/">Valkey commands – RANDOMKEY</seealso>
@@ -573,6 +594,25 @@ public partial interface IBaseClient
     /// </example>
     /// </remarks>
     Task<bool> MigrateAsync(ValkeyKey key, MigrateOptions options);
+
+    /// <summary>
+    /// Moves key from the currently selected database to the specified destination database.
+    /// When key already exists in the destination database, or it does not exist in the source database, it does nothing.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/move/"/>
+    /// <param name="key">The key to move.</param>
+    /// <param name="database">The database to move the key to.</param>
+    /// <returns><see langword="true"/> if the key was moved, <see langword="false"/> otherwise.</returns>
+    /// <note>Since Valkey 9.0.0 for cluster mode.</note>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.SetAsync("mykey", "value");
+    /// var moved = await client.MoveAsync("mykey", 2);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<bool> MoveAsync(ValkeyKey key, int database);
 
     /// <summary>
     /// Sorts the elements in a list, set, or sorted set and returns the result.

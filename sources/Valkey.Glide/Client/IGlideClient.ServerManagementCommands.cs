@@ -17,38 +17,66 @@ namespace Valkey.Glide;
 public partial interface IGlideClient
 {
     /// <summary>
-    /// Get information and statistics about the server using <see cref="Section.DEFAULT" /> option.
+    /// Asynchronously saves the dataset to disk in the background.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/info/">Valkey commands – INFO</seealso>
-    /// <returns>A <see langword="string" /> containing the information for the sections requested.</returns>
+    /// <seealso href="https://valkey.io/commands/bgsave/">Valkey commands – BGSAVE</seealso>
+    /// <returns>A status string.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// string info = await client.InfoAsync();
+    /// var response = await client.BackgroundSaveAsync();
+    /// Console.WriteLine(response); // "Background saving started"
     /// </code>
     /// </example>
     /// </remarks>
-    Task<string> InfoAsync();
+    Task<string> BackgroundSaveAsync();
 
     /// <summary>
-    /// Get information and statistics about the server.<br />
-    /// Starting from server version 7, command supports multiple <see cref="Section" /> arguments.
+    /// Aborts all in-progress and scheduled background saves.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/info/">Valkey commands – INFO</seealso>
-    /// <param name="sections">A list of <see cref="Section" /> values specifying which sections of information to
-    /// retrieve. When no parameter is provided, the <see cref="Section.DEFAULT" /> option is assumed.</param>
-    /// <returns>
-    /// <inheritdoc cref="InfoAsync()" path="/returns" />
-    /// </returns>
+    /// <seealso href="https://valkey.io/commands/bgsave/">Valkey commands – BGSAVE</seealso>
+    /// <note>Since Valkey 8.1.</note>
+    /// <returns>A status string.</returns>
+    /// <exception cref="Errors.RequestException">Thrown if no background save is currently in progress or scheduled.</exception>
     /// <remarks>
     /// <example>
     /// <code>
-    /// Section[] sections = [Section.SERVER, Section.MEMORY];
-    /// string info = await client.InfoAsync(sections);
+    /// var response = await client.BackgroundSaveCancelAsync();
+    /// Console.WriteLine(response); // "Background saving cancelled"
     /// </code>
     /// </example>
     /// </remarks>
-    Task<string> InfoAsync(IEnumerable<Section> sections);
+    Task<string> BackgroundSaveCancelAsync();
+
+    /// <summary>
+    /// Schedules a background save of the database.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/bgsave/">Valkey commands – BGSAVE</seealso>
+    /// <returns>A status string.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var response = await client.BackgroundSaveScheduleAsync();
+    /// Console.WriteLine(response); // "Background saving scheduled"
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<string> BackgroundSaveScheduleAsync();
+
+    /// <summary>
+    /// Initiates a background rewrite of the append-only file (AOF).
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/bgrewriteaof/">Valkey commands – BGREWRITEAOF</seealso>
+    /// <returns>A status string.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var response = await client.BgRewriteAofAsync();
+    /// Console.WriteLine(response); // "Background append only file rewriting started"
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<string> BgRewriteAofAsync();
 
     /// <summary>
     /// Gets the values of configuration parameters.
@@ -124,6 +152,38 @@ public partial interface IGlideClient
     Task<long> DatabaseSizeAsync();
 
     /// <summary>
+    /// Starts a coordinated failover from the connected primary to one of its replicas.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/failover/">Valkey commands – FAILOVER</seealso>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.FailoverAsync();
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task FailoverAsync();
+
+    /// <summary>
+    /// Starts a coordinated failover from the connected primary to one of its replicas.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/failover/">Valkey commands – FAILOVER</seealso>
+    /// <param name="options">The failover options.</param>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.FailoverAsync(FailoverOptions.Abort());
+    /// </code>
+    /// </example>
+    /// <example>
+    /// <code>
+    /// await client.FailoverAsync(FailoverOptions.To("localhost", 6380, TimeSpan.FromSeconds(1)));
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task FailoverAsync(FailoverOptions options);
+
+    /// <summary>
     /// Deletes all the keys of all the existing databases.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/flushall/">Valkey commands – FLUSHALL</seealso>
@@ -150,19 +210,38 @@ public partial interface IGlideClient
     Task FlushDatabaseAsync();
 
     /// <summary>
-    /// Initiates a background rewrite of the append-only file (AOF).
+    /// Get information and statistics about the server using <see cref="Section.DEFAULT" /> option.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/bgrewriteaof/">Valkey commands – BGREWRITEAOF</seealso>
-    /// <returns>A status string.</returns>
+    /// <seealso href="https://valkey.io/commands/info/">Valkey commands – INFO</seealso>
+    /// <returns>A <see langword="string" /> containing the information for the sections requested.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// var response = await client.BgRewriteAofAsync();
-    /// Console.WriteLine(response); // "Background append only file rewriting started"
+    /// string info = await client.InfoAsync();
     /// </code>
     /// </example>
     /// </remarks>
-    Task<string> BgRewriteAofAsync();
+    Task<string> InfoAsync();
+
+    /// <summary>
+    /// Get information and statistics about the server.<br />
+    /// Starting from server version 7, command supports multiple <see cref="Section" /> arguments.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/info/">Valkey commands – INFO</seealso>
+    /// <param name="sections">A list of <see cref="Section" /> values specifying which sections of information to
+    /// retrieve. When no parameter is provided, the <see cref="Section.DEFAULT" /> option is assumed.</param>
+    /// <returns>
+    /// <inheritdoc cref="InfoAsync()" path="/returns" />
+    /// </returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// Section[] sections = [Section.SERVER, Section.MEMORY];
+    /// string info = await client.InfoAsync(sections);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<string> InfoAsync(IEnumerable<Section> sections);
 
     /// <summary>
     /// Returns the time of the last DB save executed with success.
@@ -181,19 +260,42 @@ public partial interface IGlideClient
     Task<DateTimeOffset> LastSaveAsync();
 
     /// <summary>
-    /// Returns the current server time in UTC format.
-    /// Use the <see cref="DateTimeOffset.ToLocalTime"/> method to get local time.
+    /// Returns latency spike time series for the specified event.
     /// </summary>
-    /// <seealso href="https://valkey.io/commands/time/">Valkey commands – TIME</seealso>
-    /// <returns>The server's current time.</returns>
+    /// <seealso href="https://valkey.io/commands/latency-history/">Valkey commands – LATENCY HISTORY</seealso>
+    /// <param name="event">The name of the event to get latency history for.</param>
+    /// <returns>An array of <see cref="LatencyEntry"/> representing the latency spike time series for the event.
+    /// Returns an empty array if the event does not exist.</returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// var serverTime = await client.TimeAsync();
+    /// var history = await client.LatencyHistoryAsync("command");
+    /// foreach (var entry in history)
+    /// {
+    ///     Console.WriteLine($"Time: {entry.Time}, Duration: {entry.Duration.TotalMilliseconds}ms");
+    /// }
     /// </code>
     /// </example>
     /// </remarks>
-    Task<DateTimeOffset> TimeAsync();
+    Task<LatencyEntry[]> LatencyHistoryAsync(ValkeyValue @event);
+
+    /// <summary>
+    /// Reports the latest latency events logged by the server.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/latency-latest/">Valkey commands – LATENCY LATEST</seealso>
+    /// <returns>An array of <see cref="LatencyEventInfo"/> for the latest latency events.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var latest = await client.LatencyLatestAsync();
+    /// foreach (var info in latest)
+    /// {
+    ///     Console.WriteLine($"Event: {info.EventName}, Latest: {info.LatestDuration.TotalMilliseconds}ms");
+    /// }
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<LatencyEventInfo[]> LatencyLatestAsync();
 
     /// <summary>
     /// Displays a piece of generative computer art of the specific Valkey version and its optional arguments.
@@ -207,6 +309,7 @@ public partial interface IGlideClient
     /// </code>
     /// </example>
     /// </remarks>
+    // TODO #475: Move to IBaseClient.
     Task<string> LolwutAsync();
 
     /// <summary>
@@ -268,123 +371,6 @@ public partial interface IGlideClient
     Task<MemoryStats> MemoryStatsAsync();
 
     /// <summary>
-    /// Returns latency spike time series for the specified event.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/latency-history/">Valkey commands – LATENCY HISTORY</seealso>
-    /// <param name="event">The name of the event to get latency history for.</param>
-    /// <returns>An array of <see cref="LatencyEntry"/> representing the latency spike time series for the event.
-    /// Returns an empty array if the event does not exist.</returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// var history = await client.LatencyHistoryAsync("command");
-    /// foreach (var entry in history)
-    /// {
-    ///     Console.WriteLine($"Time: {entry.Time}, Duration: {entry.Duration.TotalMilliseconds}ms");
-    /// }
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<LatencyEntry[]> LatencyHistoryAsync(ValkeyValue @event);
-
-    /// <summary>
-    /// Reports the latest latency events logged by the server.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/latency-latest/">Valkey commands – LATENCY LATEST</seealso>
-    /// <returns>An array of <see cref="LatencyEventInfo"/> for the latest latency events.</returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// var latest = await client.LatencyLatestAsync();
-    /// foreach (var info in latest)
-    /// {
-    ///     Console.WriteLine($"Event: {info.EventName}, Latest: {info.LatestDuration.TotalMilliseconds}ms");
-    /// }
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<LatencyEventInfo[]> LatencyLatestAsync();
-
-    /// <summary>
-    /// Asynchronously saves the dataset to disk in the background.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/bgsave/">Valkey commands – BGSAVE</seealso>
-    /// <returns>A status string.</returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// var response = await client.BackgroundSaveAsync();
-    /// Console.WriteLine(response); // "Background saving started"
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<string> BackgroundSaveAsync();
-
-    /// <summary>
-    /// Schedules a background save of the database.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/bgsave/">Valkey commands – BGSAVE</seealso>
-    /// <returns>A status string.</returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// var response = await client.BackgroundSaveScheduleAsync();
-    /// Console.WriteLine(response); // "Background saving scheduled"
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<string> BackgroundSaveScheduleAsync();
-
-    /// <summary>
-    /// Aborts all in-progress and scheduled background saves.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/bgsave/">Valkey commands – BGSAVE</seealso>
-    /// <note>Since Valkey 8.1.</note>
-    /// <returns>A status string.</returns>
-    /// <exception cref="Errors.RequestException">Thrown if no background save is currently in progress or scheduled.</exception>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// var response = await client.BackgroundSaveCancelAsync();
-    /// Console.WriteLine(response); // "Background saving cancelled"
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<string> BackgroundSaveCancelAsync();
-
-    /// <summary>
-    /// Starts a coordinated failover from the connected primary to one of its replicas.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/failover/">Valkey commands – FAILOVER</seealso>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// await client.FailoverAsync();
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task FailoverAsync();
-
-    /// <summary>
-    /// Starts a coordinated failover from the connected primary to one of its replicas.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/failover/">Valkey commands – FAILOVER</seealso>
-    /// <param name="options">The failover options.</param>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// await client.FailoverAsync(FailoverOptions.Abort());
-    /// </code>
-    /// </example>
-    /// <example>
-    /// <code>
-    /// await client.FailoverAsync(FailoverOptions.To("localhost", 6380, TimeSpan.FromSeconds(1)));
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task FailoverAsync(FailoverOptions options);
-
-    /// <summary>
     /// Makes the server a replica of the specified primary.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/replicaof/">Valkey commands – REPLICAOF</seealso>
@@ -411,4 +397,19 @@ public partial interface IGlideClient
     /// </example>
     /// </remarks>
     Task ReplicaOfNoOneAsync();
+
+    /// <summary>
+    /// Returns the current server time in UTC format.
+    /// Use the <see cref="DateTimeOffset.ToLocalTime"/> method to get local time.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/time/">Valkey commands – TIME</seealso>
+    /// <returns>The server's current time.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var serverTime = await client.TimeAsync();
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<DateTimeOffset> TimeAsync();
 }
