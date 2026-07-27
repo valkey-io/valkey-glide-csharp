@@ -61,6 +61,20 @@ internal static class GuardClauses
     }
 
     /// <summary>
+    /// Throws an <see cref="ArgumentOutOfRangeException"/> if the given value is not positive.
+    /// </summary>
+    /// <param name="value">The value to validate.</param>
+    /// <param name="name">The parameter name for the exception.</param>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="value"/> is zero or negative.</exception>
+    public static void ThrowIfNotPositive(long value, string name)
+    {
+        if (value <= 0)
+        {
+            throw new ArgumentOutOfRangeException(name, value, "Value must be positive.");
+        }
+    }
+
+    /// <summary>
     /// Throws a <see cref="NotImplementedException"/> if the stream trim mode is not supported.
     /// </summary>
     /// <param name="trimMode">The stream trim mode to validate.</param>
