@@ -36,7 +36,6 @@ _TODO_GREP_PATTERN = r"\bTODO\b"
 # Used to validate format and extract GitHub issue ID and description.
 _TODO_VALIDATION_PATTERN = re.compile(
     r"TODO #(?P<github_id>\d+): (?P<description>.+)",
-    re.IGNORECASE,
 )
 
 # Minimum length for the description.
