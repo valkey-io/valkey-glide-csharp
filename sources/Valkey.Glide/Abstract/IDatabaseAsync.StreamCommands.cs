@@ -344,7 +344,12 @@ public partial interface IDatabaseAsync
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>The number of entries removed.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    // TODO #486: Remove default parameter values to match StackExchange.Redis signature.
+    /// <remarks>
+    /// The default <paramref name="useApproximateMaxLength"/> and <paramref name="flags"/>
+    /// values on this overload will be removed to match StackExchange.Redis.
+    /// See <see href="https://github.com/valkey-io/valkey-glide-csharp/issues/486">#486</see>.
+    /// </remarks>
+    // TODO #486: Remove default parameter values to match StackExchange.Redis signature in 2.0.
     Task<long> StreamTrimAsync(
         ValkeyKey key,
         int maxLength,
@@ -352,11 +357,15 @@ public partial interface IDatabaseAsync
         CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="StreamTrimAsync(ValkeyKey, int, bool, CommandFlags)" path="/*[not(self::param[@name='maxLength']) and not(self::returns)]"/>
-    /// <param name="maxLength">The maximum number of entries to keep.</param>
+    /// <param name="maxLength">The maximum number of entries to keep. Must not be <c>null</c>.</param>
     /// <param name="limit">The maximum number of entries to evict per call.</param>
     /// <param name="trimMode">The trim mode to use.</param>
     /// <returns>The number of entries removed.</returns>
-    // TODO #486: Change `long? maxLength = null` to `long maxLength` to match StackExchange.Redis signature.
+    /// <remarks>
+    /// The <paramref name="maxLength"/> parameter will change from <c>long?</c> to <c>long</c>
+    /// match StackExchange.Redis. See <see href="https://github.com/valkey-io/valkey-glide-csharp/issues/486">#486</see>.
+    /// </remarks>
+    // TODO #486: Change `long? maxLength = null` to `long maxLength` to match StackExchange.Redis signature in 2.0.
     Task<long> StreamTrimAsync(
         ValkeyKey key,
         long? maxLength = null,
