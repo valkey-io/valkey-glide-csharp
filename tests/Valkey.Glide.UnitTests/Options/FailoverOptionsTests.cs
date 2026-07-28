@@ -18,7 +18,7 @@ public class FailoverOptionsTests
 
     [Fact]
     public void ToArgs_Failure() => Assert.Multiple(
-        () => Assert.Throws<ArgumentException>(() => FailoverOptions.Timeout(TimeSpan.FromSeconds(-1)).ToArgs()),
-        () => Assert.Throws<ArgumentException>(() => FailoverOptions.To("localhost", 6380, TimeSpan.FromSeconds(-1)).ToArgs()),
-        () => Assert.Throws<ArgumentException>(() => FailoverOptions.Forced("localhost", 6380, TimeSpan.FromSeconds(-1)).ToArgs()));
+        () => Assert.Throws<ArgumentOutOfRangeException>(() => FailoverOptions.Timeout(TimeSpan.FromSeconds(-1)).ToArgs()),
+        () => Assert.Throws<ArgumentOutOfRangeException>(() => FailoverOptions.To("localhost", 6380, TimeSpan.FromSeconds(-1)).ToArgs()),
+        () => Assert.Throws<ArgumentOutOfRangeException>(() => FailoverOptions.Forced("localhost", 6380, TimeSpan.FromSeconds(-1)).ToArgs()));
 }
