@@ -42,7 +42,7 @@ public class SharedBatchTests
         Assert.Multiple(
             () => Assert.Equal(4, res.Length),
             () => Assert.Equal(true, res[0]),
-            () => Assert.Equal(1L, (long)res[2]!),
+            () => Assert.Equal(true, res[2]),
             () => Assert.IsType<RequestException>(res[1]),
             () => Assert.IsType<RequestException>(res[3]),
             () => Assert.Contains("wrong kind of value", (res[1] as RequestException)!.Message),
