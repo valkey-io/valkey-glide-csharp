@@ -8,8 +8,10 @@ using static Valkey.Glide.TestUtils.Builders;
 
 namespace Valkey.Glide.IntegrationTests;
 
-[Collection("GlideTests")]
-public class ConnectionManagementCommandTests(TestConfiguration config)
+/// <summary>
+/// Tests for connection management commands.
+/// </summary>
+public class ConnectionManagementCommandTests(ServerFixture fixture) : IClassFixture<ServerFixture>
 {
     #region Constants
 
@@ -22,18 +24,15 @@ public class ConnectionManagementCommandTests(TestConfiguration config)
         Environment.GetEnvironmentVariable("GLIDE_VERSION") ?? "unknown";
 
     #endregion
-    #region Public Properties
-
-    public TestConfiguration Config { get; } = config;
-
-    #endregion
-    #region Tests
+    #region ClientInfoAsync
 
     // TODO #414: Update when ClientInfoAsync implemented.
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task TestClientInfo_ReportsCorrectLibNameAndVersion(BaseClient client)
+    [Theory]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
+    public async Task TestClientInfo_ReportsCorrectLibNameAndVersion(bool clusterMode)
     {
+        await using var client = await fixture.GetServer(clusterMode).CreateClientAsync();
+
         var result = client is GlideClusterClient clusterClient
             ? (await clusterClient.CustomCommand(InfoCommand, Route.Random)).SingleValue
             : await ((GlideClient)client).CustomCommand(InfoCommand);
@@ -45,18 +44,19 @@ public class ConnectionManagementCommandTests(TestConfiguration config)
     }
 
     // TODO #414: Update when ClientInfoAsync implemented.
-    [Theory(DisableDiscoveryEnumeration = true)]
+    [Theory]
     [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
-    public async Task TestClientInfo_WithClientName_ReportsName(bool useCluster)
+    public async Task TestClientInfo_WithClientName_ReportsName(bool clusterMode)
     {
         const string clientName = "client";
-        using BaseClient client = useCluster
+
+        await using BaseClient client = clusterMode
             ? await GlideClusterClient.CreateClient(
-                TestConfiguration.DefaultClusterClientConfig()
+                fixture.ClusterServer.CreateConfigBuilder()
                     .WithClientName(clientName)
                     .Build())
             : await GlideClient.CreateClient(
-                TestConfiguration.DefaultClientConfig()
+                fixture.StandaloneServer.CreateConfigBuilder()
                     .WithClientName(clientName)
                     .Build());
 
@@ -70,18 +70,21 @@ public class ConnectionManagementCommandTests(TestConfiguration config)
     #endregion
     #region ClientTrackingInfoAsync
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task ClientTrackingInfo_Off(BaseClient client)
+    [Theory]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
+    public async Task ClientTrackingInfo_Off(bool clusterMode)
     {
+        await using var client = await fixture.GetServer(clusterMode).CreateClientAsync();
+
         var info = await client.ClientTrackingInfoAsync();
         AssertTrackingInfoOff(info);
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestClusterClients), MemberType = typeof(TestConfiguration))]
-    public async Task ClientTrackingInfo_Off_WithRoute(GlideClusterClient client)
+    [Fact]
+    public async Task ClientTrackingInfo_Off_WithRoute()
     {
+        await using GlideClusterClient client = await fixture.ClusterServer.CreateClusterClientAsync();
+
         var response = await client.ClientTrackingInfoAsync(Route.AllNodes);
 
         Assert.NotEmpty(response.MultiValue);
@@ -99,11 +102,11 @@ public class ConnectionManagementCommandTests(TestConfiguration config)
 
         await using BaseClient client = clusterMode
             ? await GlideClusterClient.CreateClient(
-                TestConfiguration.DefaultClusterClientConfig()
+                fixture.ClusterServer.CreateConfigBuilder()
                     .WithClientSideCache(cache)
                     .Build())
             : await GlideClient.CreateClient(
-                TestConfiguration.DefaultClientConfig()
+                fixture.StandaloneServer.CreateConfigBuilder()
                     .WithClientSideCache(cache)
                     .Build());
 
@@ -116,7 +119,7 @@ public class ConnectionManagementCommandTests(TestConfiguration config)
         var cache = BuildClientSideCacheConfig().WithServerAssisted();
 
         await using var client = await GlideClusterClient.CreateClient(
-            TestConfiguration.DefaultClusterClientConfig()
+            fixture.ClusterServer.CreateConfigBuilder()
                 .WithClientSideCache(cache)
                 .Build());
 
@@ -129,10 +132,6 @@ public class ConnectionManagementCommandTests(TestConfiguration config)
         }
     }
 
-    /// <summary>
-    /// Asserts that the given <see cref="ClientTrackingInfo"/>
-    /// contains the expected values when tracking is turned off.
-    /// </summary>
     private static void AssertTrackingInfoOff(ClientTrackingInfo info)
     {
         Assert.Equivalent(new HashSet<string> { "off" }, info.Flags);
@@ -140,10 +139,6 @@ public class ConnectionManagementCommandTests(TestConfiguration config)
         Assert.Empty(info.Prefixes);
     }
 
-    /// <summary>
-    /// Asserts that the given <see cref="ClientTrackingInfo"/>
-    /// contains the expected values when tracking is turned on.
-    /// </summary>
     private static void AssertTrackingInfoOn(ClientTrackingInfo info)
     {
         Assert.Equivalent(new HashSet<string> { "on", "bcast" }, info.Flags);
@@ -154,10 +149,12 @@ public class ConnectionManagementCommandTests(TestConfiguration config)
     #endregion
     #region ClientPauseAsync / ClientUnpauseAsync
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task TestClientPause_ReadsPausedUntilExpires(BaseClient client)
+    [Theory]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
+    public async Task TestClientPause_ReadsPausedUntilExpires(bool clusterMode)
     {
+        await using var client = await fixture.GetServer(clusterMode).CreateClientAsync();
+
         var key = Guid.NewGuid().ToString();
         await client.SetAsync(key, "value");
 
@@ -171,10 +168,12 @@ public class ConnectionManagementCommandTests(TestConfiguration config)
         Assert.True(sw.Elapsed >= pauseFor);
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task TestClientPause_WritesPausedUntilExpires(BaseClient client)
+    [Theory]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
+    public async Task TestClientPause_WritesPausedUntilExpires(bool clusterMode)
     {
+        await using var client = await fixture.GetServer(clusterMode).CreateClientAsync();
+
         var key = Guid.NewGuid().ToString();
         await client.SetAsync(key, "before");
 
@@ -188,10 +187,12 @@ public class ConnectionManagementCommandTests(TestConfiguration config)
         Assert.True(sw.Elapsed >= pauseFor);
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task TestClientPauseWrite_ReadsNotPaused(BaseClient client)
+    [Theory]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
+    public async Task TestClientPauseWrite_ReadsNotPaused(bool clusterMode)
     {
+        await using var client = await fixture.GetServer(clusterMode).CreateClientAsync();
+
         var key = Guid.NewGuid().ToString();
         await client.SetAsync(key, "before");
 
@@ -207,10 +208,12 @@ public class ConnectionManagementCommandTests(TestConfiguration config)
         await client.ClientUnpauseAsync();
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task TestClientPauseWrite_ThenUnpause(BaseClient client)
+    [Theory]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
+    public async Task TestClientPauseWrite_ThenUnpause(bool clusterMode)
     {
+        await using var client = await fixture.GetServer(clusterMode).CreateClientAsync();
+
         var key = Guid.NewGuid().ToString();
         await client.SetAsync(key, "before");
 
@@ -232,16 +235,15 @@ public class ConnectionManagementCommandTests(TestConfiguration config)
     [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
     public async Task TestReset_ResetsConnectionState(bool clusterMode)
     {
-        // Create a client with server-assisted client-side caching.
         var cache = BuildClientSideCacheConfig().WithServerAssisted();
 
         await using BaseClient client = clusterMode
             ? await GlideClusterClient.CreateClient(
-                TestConfiguration.DefaultClusterClientConfig()
+                fixture.ClusterServer.CreateConfigBuilder()
                     .WithClientSideCache(cache)
                     .Build())
             : await GlideClient.CreateClient(
-                TestConfiguration.DefaultClientConfig()
+                fixture.StandaloneServer.CreateConfigBuilder()
                     .WithClientSideCache(cache)
                     .Build());
 
