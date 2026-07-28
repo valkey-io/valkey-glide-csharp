@@ -11,6 +11,8 @@ namespace Valkey.Glide.IntegrationTests;
 /// <summary>
 /// Tests for connection management commands.
 /// </summary>
+[Collection(typeof(ConnectionManagementCommandTests))]
+[CollectionDefinition(DisableParallelization = true)]
 public class ConnectionManagementCommandTests(ServerFixture fixture) : IClassFixture<ServerFixture>
 {
     #region Constants
