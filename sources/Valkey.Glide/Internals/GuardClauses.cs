@@ -33,16 +33,4 @@ internal static class GuardClauses
         }
     }
 
-    /// <summary>
-    /// Throws an <see cref="ArgumentException"/> if the given time span is negative.
-    /// </summary>
-    /// <param name="value">The time span value to validate.</param>
-    /// <exception cref="ArgumentException">Thrown if <paramref name="value"/> is negative.</exception>
-    public static void ThrowIfNegative(TimeSpan value)
-    {
-        if (value < TimeSpan.Zero)
-        {
-            throw new ArgumentException("Time span cannot be negative.");
-        }
-    }
 }

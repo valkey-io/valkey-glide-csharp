@@ -10,6 +10,14 @@ namespace Valkey.Glide;
 /// <seealso href="https://glide.valkey.io/how-to/connections/circuit-breaker/">Valkey GLIDE – Configure a Circuit Breaker</seealso>
 public sealed class CircuitBreakerConfig
 {
+    #region Constants
+
+    /// <summary>
+    /// Maximum <see cref="TimeSpan"/> that can be represented as a <see cref="uint"/> millisecond value.
+    /// </summary>
+    private static readonly TimeSpan MaxTimeSpan = TimeSpan.FromMilliseconds(uint.MaxValue);
+
+    #endregion
     #region Public Properties
 
     /// <summary>
@@ -51,12 +59,14 @@ public sealed class CircuitBreakerConfig
     /// <summary>
     /// Sets the sliding window duration for error rate calculation.
     /// </summary>
-    /// <param name="windowSize">The window size. Must be positive.</param>
+    /// <param name="windowSize">The window size.</param>
     /// <returns>This instance for method chaining.</returns>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="windowSize"/> is zero or negative.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="windowSize"/> is not positive or exceeds <see cref="uint.MaxValue"/> milliseconds.</exception>
     public CircuitBreakerConfig WithWindowSize(TimeSpan windowSize)
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(windowSize, TimeSpan.Zero, nameof(windowSize));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(windowSize, MaxTimeSpan, nameof(windowSize));
+
         WindowSize = windowSize;
         return this;
     }
@@ -71,6 +81,7 @@ public sealed class CircuitBreakerConfig
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(threshold, 0.0, nameof(threshold));
         ArgumentOutOfRangeException.ThrowIfGreaterThan(threshold, 1.0, nameof(threshold));
+
         FailureRateThreshold = threshold;
         return this;
     }
@@ -84,6 +95,7 @@ public sealed class CircuitBreakerConfig
     public CircuitBreakerConfig WithMinErrors(uint minErrors)
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(minErrors, 0u, nameof(minErrors));
+
         MinErrors = minErrors;
         return this;
     }
@@ -91,12 +103,14 @@ public sealed class CircuitBreakerConfig
     /// <summary>
     /// Sets the time in Open state before allowing a probe request.
     /// </summary>
-    /// <param name="openTimeout">The open timeout duration. Must be positive.</param>
+    /// <param name="openTimeout">The open timeout duration.</param>
     /// <returns>This instance for method chaining.</returns>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="openTimeout"/> is zero or negative.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="openTimeout"/> is not positive or exceeds <see cref="uint.MaxValue"/> milliseconds.</exception>
     public CircuitBreakerConfig WithOpenTimeout(TimeSpan openTimeout)
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(openTimeout, TimeSpan.Zero, nameof(openTimeout));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(openTimeout, MaxTimeSpan, nameof(openTimeout));
+
         OpenTimeout = openTimeout;
         return this;
     }
@@ -121,6 +135,7 @@ public sealed class CircuitBreakerConfig
     public CircuitBreakerConfig WithConsecutiveSuccesses(uint consecutiveSuccesses)
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(consecutiveSuccesses, 0u, nameof(consecutiveSuccesses));
+
         ConsecutiveSuccesses = consecutiveSuccesses;
         return this;
     }
@@ -131,14 +146,21 @@ public sealed class CircuitBreakerConfig
     /// <summary>
     /// Converts to the FFI representation for marshalling to Rust core.
     /// </summary>
-    internal FFI.CircuitBreakerConfig ToFfi() => new(
-        (uint)(WindowSize?.TotalMilliseconds ?? 0),
-        (float)(FailureRateThreshold ?? 0),
-        MinErrors ?? 0,
-        (uint)(OpenTimeout?.TotalMilliseconds ?? 0),
-        CountTimeouts,
-        ConsecutiveSuccesses ?? 0
-    );
+    internal FFI.CircuitBreakerConfig ToFfi()
+    {
+        // Casts to uint are safe: WithWindowSize and WithOpenTimeout validate timespans.
+        var windowSize = (uint)(WindowSize?.TotalMilliseconds ?? 0);
+        var openTimeout = (uint)(OpenTimeout?.TotalMilliseconds ?? 0);
+
+        return new(
+            windowSize,
+            (float)(FailureRateThreshold ?? 0),
+            MinErrors ?? 0,
+            openTimeout,
+            CountTimeouts,
+            ConsecutiveSuccesses ?? 0);
+    }
+
 
     #endregion
 }

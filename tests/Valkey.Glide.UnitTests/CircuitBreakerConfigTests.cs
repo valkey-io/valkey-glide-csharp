@@ -48,6 +48,13 @@ public class CircuitBreakerConfigTests
         _ = Assert.Throws<ArgumentOutOfRangeException>(() => config.WithWindowSize(TimeSpan.FromSeconds(-1)));
     }
 
+    [Fact]
+    public void WithWindowSize_ExceedsMax_Throws()
+    {
+        var config = new CircuitBreakerConfig();
+        _ = Assert.Throws<ArgumentOutOfRangeException>(() => config.WithWindowSize(TimeSpan.FromDays(50)));
+    }
+
     #endregion
     #region WithFailureRateThreshold
 
@@ -133,6 +140,13 @@ public class CircuitBreakerConfigTests
     {
         var config = new CircuitBreakerConfig();
         _ = Assert.Throws<ArgumentOutOfRangeException>(() => config.WithOpenTimeout(TimeSpan.FromSeconds(-1)));
+    }
+
+    [Fact]
+    public void WithOpenTimeout_ExceedsMax_Throws()
+    {
+        var config = new CircuitBreakerConfig();
+        _ = Assert.Throws<ArgumentOutOfRangeException>(() => config.WithOpenTimeout(TimeSpan.FromDays(50)));
     }
 
     #endregion
