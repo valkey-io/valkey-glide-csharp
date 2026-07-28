@@ -48,7 +48,7 @@ jobs:
                       exit 1
                   fi
 
-            - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
               with:
                   sparse-checkout: .github/json_matrices
 
@@ -74,7 +74,7 @@ jobs:
             VALKEY_GLIDE_DNS_TESTS_ENABLED: "1"
 
         steps:
-            - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
               with:
                   submodules: true
 
@@ -106,7 +106,7 @@ jobs:
                   echo "Package version: $PACKAGE_VERSION"
 
             - name: Set up dotnet ${{ matrix.dotnet }}
-              uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
+              uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
               with:
                   # .NET 10 SDK to build project
                   # matrix.dotnet SDK for test execution
@@ -223,7 +223,7 @@ jobs:
                   yum update -y
                   yum install -y git tar findutils libicu
 
-            - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
               with:
                   submodules: true
 
@@ -239,7 +239,7 @@ jobs:
                   echo "Package version: $PACKAGE_VERSION"
 
             - name: Set up dotnet ${{ matrix.dotnet }}
-              uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
+              uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
               with:
                   # .NET 10 SDK to build project
                   # matrix.dotnet SDK for test execution
@@ -285,12 +285,12 @@ jobs:
             matrix:
                 dotnet: ${{ fromJson(needs.load-matrix.outputs.dotnet-matrix) }}
         steps:
-            - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
               with:
                   submodules: true
 
             - name: Set up dotnet ${{ matrix.dotnet }}
-              uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
+              uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
               with:
                   # .NET 10 SDK to build project
                   # matrix.dotnet SDK for test execution
