@@ -904,7 +904,7 @@ public abstract class ConnectionConfiguration
         /// Circuit breaker configuration for the client. When set, enables a circuit breaker
         /// that detects unhealthy core state and rejects requests at the client boundary.
         /// </summary>
-        /// <seealso cref="Glide.CircuitBreakerConfig"/>
+        /// <seealso cref="CircuitBreakerConfig"/>
         public CircuitBreakerConfig? CircuitBreakerConfig
         {
             get => Config.CircuitBreakerConfig;

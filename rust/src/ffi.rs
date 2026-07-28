@@ -367,10 +367,12 @@ pub(crate) unsafe fn create_connection_request(
                 cache_id: unsafe { ptr_to_str(csc.cache_id) }?,
                 max_cache_kb: csc.max_cache_kb,
                 entry_ttl_ms: csc.entry_ttl_ms,
-                eviction_policy: csc.has_eviction_policy.then_some(match csc.eviction_policy {
-                    EvictionPolicy::Lru => CoreEvictionPolicy::Lru,
-                    EvictionPolicy::Lfu => CoreEvictionPolicy::Lfu,
-                }),
+                eviction_policy: csc
+                    .has_eviction_policy
+                    .then_some(match csc.eviction_policy {
+                        EvictionPolicy::Lru => CoreEvictionPolicy::Lru,
+                        EvictionPolicy::Lfu => CoreEvictionPolicy::Lfu,
+                    }),
                 enable_metrics: csc.enable_metrics,
                 server_assisted: csc.server_assisted,
             })
