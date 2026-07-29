@@ -112,7 +112,7 @@ public class PubSubPerformanceTests
     }
 
     [Fact]
-    public void ChannelBasedProcessing_ConcurrentMessages_MaintainsPerformance()
+    public async Task ChannelBasedProcessing_ConcurrentMessages_MaintainsPerformance()
     {
         // Arrange
         const int threadCount = 10;
@@ -122,10 +122,7 @@ public class PubSubPerformanceTests
 
         var config = new StandalonePubSubSubscriptionConfig()
             .WithChannel("concurrent-test")
-            .WithCallback((msg, ctx) =>
-            {
-                _ = Interlocked.Increment(ref messagesReceived);
-            }, null);
+            .WithCallback((msg, ctx) => _ = Interlocked.Increment(ref messagesReceived), null);
 
         // Act - Simulate concurrent message arrival from multiple threads
         var stopwatch = Stopwatch.StartNew();
@@ -141,10 +138,10 @@ public class PubSubPerformanceTests
                     var message = PubSubMessage.FromChannel($"thread-{threadId}-msg-{i}", "concurrent-test");
                     config.Callback!(message, null);
                 }
-            });
+            }, TestContext.Current.CancellationToken);
         }
 
-        Task.WaitAll(tasks);
+        await Task.WhenAll(tasks);
         stopwatch.Stop();
 
         // Assert

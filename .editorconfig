@@ -439,7 +439,7 @@ dotnet_diagnostic.xUnit1029.severity = error
 # Do not call ConfigureAwait in test method
 dotnet_diagnostic.xUnit1030.severity = error
 # Do not use blocking task operations in test method
-dotnet_diagnostic.xUnit1031.severity = suggestion
+dotnet_diagnostic.xUnit1031.severity = error
 # Test classes cannot be nested within a generic class
 dotnet_diagnostic.xUnit1032.severity = error
 # Test classes decorated with 'dotnet_diagnostic.xUnit.IClassFixture' or 'dotnet_diagnostic.xUnit.ICollectionFixture' should add a constructor argument of type TFixture

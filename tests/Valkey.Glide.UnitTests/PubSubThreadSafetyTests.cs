@@ -33,13 +33,13 @@ public class PubSubThreadSafetyTests
             {
                 var message = PubSubMessage.FromChannel($"message-{i}", "test-channel");
                 client.HandlePubSubMessage(message);
-            }))
+            }, TestContext.Current.CancellationToken))
             .ToArray();
 
         await Task.WhenAll(tasks);
 
         // Wait for all messages to be processed
-        await Task.Delay(500);
+        await Task.Delay(500, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(100, messagesReceived.Count);
@@ -77,10 +77,10 @@ public class PubSubThreadSafetyTests
             {
                 exceptions.Add(ex);
             }
-        });
+        }, TestContext.Current.CancellationToken);
 
         // Wait for processing to start
-        _ = processingStarted.Wait(TimeSpan.FromSeconds(5));
+        _ = processingStarted.Wait(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
 
         // Dispose client while message is being processed
         var disposeTask = Task.Run(() =>
@@ -93,7 +93,7 @@ public class PubSubThreadSafetyTests
             {
                 exceptions.Add(ex);
             }
-        });
+        }, TestContext.Current.CancellationToken);
 
         // Allow message processing to continue
         continueProcessing.Set();
@@ -119,7 +119,7 @@ public class PubSubThreadSafetyTests
             {
                 var queue = client.PubSubQueue;
                 Assert.NotNull(queue);
-            }))
+            }, TestContext.Current.CancellationToken))
             .ToArray();
 
         await Task.WhenAll(tasks);
@@ -169,10 +169,8 @@ public class PubSubThreadSafetyTests
         var config = new StandalonePubSubSubscriptionConfig()
             .WithChannel("test-channel")
             .WithCallback((msg, ctx) =>
-            {
                 // This callback will block during disposal
-                _ = disposeStarted.Wait(TimeSpan.FromSeconds(10));
-            }, null);
+                _ = disposeStarted.Wait(TimeSpan.FromSeconds(10)), null);
 
         var client = CreateMockClientWithPubSub(config);
 
@@ -181,15 +179,15 @@ public class PubSubThreadSafetyTests
         {
             var message = PubSubMessage.FromChannel("test-message", "test-channel");
             client.HandlePubSubMessage(message);
-        });
+        }, TestContext.Current.CancellationToken);
 
-        await Task.Delay(100); // Let message processing start
+        await Task.Delay(100, TestContext.Current.CancellationToken); // Let message processing start
 
         // Act - Dispose should complete without hanging
-        var disposeTask = Task.Run(() => client.Dispose());
+        var disposeTask = Task.Run(client.Dispose, TestContext.Current.CancellationToken);
 
         // Allow disposal to proceed after a short delay
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
         disposeStarted.Set();
 
         await Task.WhenAll(messageTask, disposeTask);

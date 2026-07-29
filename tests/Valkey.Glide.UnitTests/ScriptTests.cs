@@ -141,7 +141,7 @@ public class ScriptTests
     }
 
     [Fact]
-    public void Script_ConcurrentAccess_IsThreadSafe()
+    public async Task Script_ConcurrentAccess_IsThreadSafe()
     {
         // Arrange
         string code = "return 'concurrent test'";
@@ -167,17 +167,17 @@ public class ScriptTests
                 {
                     exceptions.Add(ex);
                 }
-            }));
+            }, TestContext.Current.CancellationToken));
         }
 
-        Task.WaitAll([.. tasks]);
+        await Task.WhenAll(tasks);
 
         // Assert
         Assert.Empty(exceptions);
     }
 
     [Fact]
-    public void Script_ConcurrentDispose_IsThreadSafe()
+    public async Task Script_ConcurrentDispose_IsThreadSafe()
     {
         // Arrange
         string code = "return 'concurrent dispose test'";
@@ -199,10 +199,10 @@ public class ScriptTests
                 {
                     exceptions.Add(ex);
                 }
-            }));
+            }, TestContext.Current.CancellationToken));
         }
 
-        Task.WaitAll([.. tasks]);
+        await Task.WhenAll(tasks);
 
         // Assert
         // No exceptions should be thrown during concurrent disposal
