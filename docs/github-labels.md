@@ -22,7 +22,7 @@ Which part of the codebase or project does this affect? An issue can have multip
 
 Workflow state. Applied and updated as the issue progresses. New issues are 'triage'
 by default. When an issue is scheduled, the status label is removed and it is assigned
-to a [Milestone](https://github.com/valkey-io/valkey-glide/milestones).
+to a [Milestone](https://github.com/valkey-io/valkey-glide-csharp/milestones).
 
 | Label        | Color            | Description                     |
 | ------------ | ---------------- | ------------------------------- |

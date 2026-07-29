@@ -166,11 +166,12 @@ public class PubSubThreadSafetyTests
     {
         // Arrange - Create handler with slow callback
         var disposeStarted = new ManualResetEventSlim(false);
+        var blockDuringDisposal = new MessageCallback((msg, ctx)
+            => _ = disposeStarted.Wait(TimeSpan.FromSeconds(10)));
+
         var config = new StandalonePubSubSubscriptionConfig()
             .WithChannel("test-channel")
-            .WithCallback((msg, ctx) =>
-                // This callback will block during disposal
-                _ = disposeStarted.Wait(TimeSpan.FromSeconds(10)), null);
+            .WithCallback(blockDuringDisposal, null);
 
         var client = CreateMockClientWithPubSub(config);
 
