@@ -932,24 +932,32 @@ public class SortedSetCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task SortedSetScanAsync_WithPageOffset_SkipsElements(IDatabaseAsync db)
     {
-        string key = $"ser-zscan-offset-{Guid.NewGuid()}";
-        _ = await db.SortedSetAddAsync(key, [
-            new SortedSetEntry("a", 1.0),
-            new SortedSetEntry("b", 2.0),
-            new SortedSetEntry("c", 3.0),
-            new SortedSetEntry("d", 4.0),
-            new SortedSetEntry("e", 5.0)
-        ]);
+        var key = $"ser-zscan-offset-{Guid.NewGuid()}";
+        _ = await db.SortedSetAddAsync(key, [new("a", 1.0), new("b", 2.0), new("c", 3.0), new("d", 4.0), new("e", 5.0)]);
 
-        // With pageOffset, we skip elements from the first page
-        List<SortedSetEntry> results = [];
-        await foreach (SortedSetEntry entry in db.SortedSetScanAsync(key, pageSize: 1000, pageOffset: 2))
+        var results = new List<SortedSetEntry>();
+        await foreach (var entry in db.SortedSetScanAsync(key, pageOffset: 3))
         {
             results.Add(entry);
         }
 
-        // Should have 3 elements (5 - 2 skipped)
-        Assert.Equal(3, results.Count);
+        Assert.Equal(2, results.Count);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task SortedSetScanAsync_WithPageOffsetGreaterThanPageSize_SkipsElements(IDatabaseAsync db)
+    {
+        var key = $"ser-zscan-offset-gt-pagesize-{Guid.NewGuid()}";
+        _ = await db.SortedSetAddAsync(key, [new("a", 1.0), new("b", 2.0), new("c", 3.0), new("d", 4.0), new("e", 5.0)]);
+
+        var results = new List<SortedSetEntry>();
+        await foreach (var entry in db.SortedSetScanAsync(key, pageSize: 2, pageOffset: 3))
+        {
+            results.Add(entry);
+        }
+
+        Assert.Equal(2, results.Count);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]

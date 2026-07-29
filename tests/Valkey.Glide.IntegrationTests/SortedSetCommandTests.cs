@@ -900,8 +900,8 @@ public class SortedSetCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestSortedSetInterCard(BaseClient client)
     {
-        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "ZINTERCARD is supported since 7.0.0"
-        );
+        Skip.IfSortedSetPopNotSupported();
+
         string key1 = $"{{sortedSetKey}}-{Guid.NewGuid()}";
         string key2 = $"{{sortedSetKey}}-{Guid.NewGuid()}";
         string key3 = $"{{sortedSetKey}}-{Guid.NewGuid()}";
@@ -988,8 +988,8 @@ public class SortedSetCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestSortedSetPopMultiKey(BaseClient client)
     {
-        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "ZMPOP is supported since 7.0.0"
-        );
+        Skip.IfSortedSetPopNotSupported();
+
         string key1 = $"{{sortedSetKey}}1-{Guid.NewGuid()}";
         string key2 = $"{{sortedSetKey}}2-{Guid.NewGuid()}";
         string emptyKey = $"{{sortedSetKey}}empty-{Guid.NewGuid()}";
@@ -1066,8 +1066,8 @@ public class SortedSetCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestSortedSetBlockingPop(BaseClient client)
     {
-        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "BZMPOP is supported since 7.0.0"
-        );
+        Skip.IfSortedSetPopNotSupported();
+
         string key1 = $"{{testKey}}-{Guid.NewGuid()}";
         string key2 = $"{{testKey}}-{Guid.NewGuid()}";
 
@@ -1119,9 +1119,8 @@ public class SortedSetCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestSortedSetBlockingCommands_NonExistentKeys(BaseClient client)
     {
-        // TODO sorted sets
-        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "BZMPOP is supported since 7.0.0"
-        );
+        Skip.IfSortedSetPopNotSupported();
+
         string key1 = $"{{testKey}}-{Guid.NewGuid()}";
         string key2 = $"{{testKey}}-{Guid.NewGuid()}";
 
@@ -1636,7 +1635,7 @@ public class SortedSetCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestSortedSetPopMinAsync_MultiKey(BaseClient client)
     {
-        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "ZMPOP is supported since 7.0.0");
+        Skip.IfSortedSetPopNotSupported();
 
         string key1 = $"{{testKey}}-{Guid.NewGuid()}";
         string key2 = $"{{testKey}}-{Guid.NewGuid()}";
@@ -1662,7 +1661,7 @@ public class SortedSetCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestSortedSetPopMaxAsync_MultiKey(BaseClient client)
     {
-        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "ZMPOP is supported since 7.0.0");
+        Skip.IfSortedSetPopNotSupported();
 
         string key1 = $"{{testKey}}-{Guid.NewGuid()}";
 
@@ -1683,7 +1682,7 @@ public class SortedSetCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestSortedSetPopMinAsync_MultiKey_WithCount(BaseClient client)
     {
-        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "ZMPOP is supported since 7.0.0");
+        Skip.IfSortedSetPopNotSupported();
 
         string key1 = $"{{testKey}}-{Guid.NewGuid()}";
         string key2 = $"{{testKey}}-{Guid.NewGuid()}";
@@ -1715,7 +1714,7 @@ public class SortedSetCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestSortedSetPopMaxAsync_MultiKey_WithCount(BaseClient client)
     {
-        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "ZMPOP is supported since 7.0.0");
+        Skip.IfSortedSetPopNotSupported();
 
         string key1 = $"{{testKey}}-{Guid.NewGuid()}";
 

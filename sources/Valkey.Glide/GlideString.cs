@@ -291,12 +291,9 @@ public sealed class GlideString : IComparable<GlideString>
                 return (bool)_canConvertToString;
             }
 
-            // TODO find a better way to check this
-            // Detect whether `bytes` could be represented by a UTF-8 string without data corruption
-            string tmpStr = Encoding.UTF8.GetString(Bytes);
-            if (Encoding.UTF8.GetBytes(tmpStr).SequenceEqual(Bytes))
+            if (System.Text.Unicode.Utf8.IsValid(Bytes))
             {
-                Str = tmpStr;
+                Str = Encoding.UTF8.GetString(Bytes);
                 _canConvertToString = true;
                 return true;
             }

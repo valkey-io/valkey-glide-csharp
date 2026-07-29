@@ -93,50 +93,8 @@ internal partial class Request
         return result;
     }
 
-    // TODO should not be internal. Move all related logic to requests.
-    /// <summary>
-    /// Converts scan options to an array of arguments.
-    /// </summary>
     internal static GlideString[] ToScanArgs(ScanOptions? options)
-    {
-        if (options is null)
-        {
-            return [];
-        }
-
-        List<GlideString> args = [];
-
-        if (!options.MatchPattern.IsNull)
-        {
-            args.Add(ValkeyLiterals.MATCH);
-            args.Add(options.MatchPattern.ToGlideString());
-        }
-
-        if (options.Count.HasValue)
-        {
-            args.Add(ValkeyLiterals.COUNT);
-            args.Add(options.Count.Value.ToGlideString());
-        }
-
-        if (options.Type.HasValue)
-        {
-            args.Add(ValkeyLiterals.TYPE);
-            args.Add(ToType(options.Type.Value));
-        }
-
-        return [.. args];
-    }
-
-    private static GlideString ToType(ValkeyType type) => type switch
-    {
-        ValkeyType.String => "string",
-        ValkeyType.List => "list",
-        ValkeyType.Set => "set",
-        ValkeyType.SortedSet => "zset",
-        ValkeyType.Hash => "hash",
-        ValkeyType.Stream => "stream",
-        ValkeyType.Unknown or ValkeyType.None or _ => throw new ArgumentException($"Unsupported ValkeyType for SCAN: {type}")
-    };
+        => options?.ToArgs() ?? [];
 
     /// <summary>
     /// Appends SetExpiryOptions arguments (PX/PXAT/KEEPTTL) to the args list.
@@ -159,16 +117,22 @@ internal partial class Request
         }
     }
 
-    #region Set Converters
+    #region Collection Converters
 
     /// <summary>
-    /// Converts the given objects to an <see cref="ISet{ValkeyKey}"/>.
+    /// Converts the given objects to a <see cref="ValkeyKey"/> set.
     /// </summary>
     private static ISet<ValkeyKey> ToValkeyKeySet(IEnumerable<object> items)
         => new HashSet<ValkeyKey>(items.Cast<GlideString>().Select(gs => (ValkeyKey)gs.Bytes));
 
     /// <summary>
-    /// Converts the given objects to an <see cref="ISet{ValkeyValue}"/>.
+    /// Converts the given objects to a <see cref="ValkeyValue"/> array.
+    /// </summary>
+    private static ValkeyValue[] ToValkeyValueArray(object[] items)
+        => [.. items.Cast<GlideString>().Select(gs => (ValkeyValue)gs)];
+
+    /// <summary>
+    /// Converts the given objects to a <see cref="ValkeyValue"/> set.
     /// </summary>
     private static ISet<ValkeyValue> ToValkeyValueSet(IEnumerable<object> items)
         => new HashSet<ValkeyValue>(items.Cast<GlideString>().Select(gs => (ValkeyValue)gs));

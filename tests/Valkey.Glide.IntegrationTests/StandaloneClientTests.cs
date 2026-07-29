@@ -67,8 +67,6 @@ public class StandaloneClientTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    // Verify that client can handle complex return types, not just strings
-    // TODO: remove this test once we add tests with these commands
     public async Task CustomCommandWithDifferentReturnTypes(GlideClient client)
     {
         string key1 = Guid.NewGuid().ToString();

@@ -13,16 +13,12 @@ public partial class GlideClusterClient
     /// <inheritdoc cref="IGlideClusterClient.ScanAsync(ScanOptions?)"/>
     public async IAsyncEnumerable<ValkeyKey> ScanAsync(ScanOptions? options = null)
     {
-        List<GlideString> glideArgs = [];
-        glideArgs.AddRange(Request.ToScanArgs(options));
-        string[] args = [.. glideArgs.Select(a => a.ToString())];
-        ClusterScanCursor cursor = ClusterScanCursor.InitialCursor();
+        var cursor = ClusterScanCursor.InitialCursor();
+        var args = Request.ToScanArgs(options).Select(a => a.ToString()).ToArray();
 
         while (!cursor.IsFinished)
         {
-            var (nextCursorId, keys) = await ClusterScanCommand(cursor.CursorId, args);
-            cursor = new ClusterScanCursor(nextCursorId);
-
+            (cursor, var keys) = await ClusterScanCommand(cursor, args);
             foreach (ValkeyKey key in keys)
             {
                 yield return key;

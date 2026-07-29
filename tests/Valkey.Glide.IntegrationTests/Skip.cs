@@ -16,12 +16,12 @@ internal static class Skip
     private static readonly Version Valkey9_0 = new("9.0.0");
 
     /// <summary>
-    /// Skips the test if hash field expiry commands are not supported.
+    /// Skips the test if background save cancel commands are not supported.
     /// </summary>
-    public static void IfHashExpireNotSupported()
+    public static void IfBgSaveCancelNotSupported()
         => Assert.SkipWhen(
-            TestConfiguration.SERVER_VERSION < Valkey9_0,
-            "Hash expire commands require Valkey 9.0+");
+            TestConfiguration.SERVER_VERSION < Valkey8_1,
+            "Background save cancel commands require Valkey 8.1+");
 
     /// <summary>
     /// Skips the test if bit index type commands are not supported.
@@ -32,6 +32,14 @@ internal static class Skip
             "Bit index type commands require Valkey 7.0+");
 
     /// <summary>
+    /// Skips the test if hash field expiry commands are not supported.
+    /// </summary>
+    public static void IfHashExpireNotSupported()
+        => Assert.SkipWhen(
+            TestConfiguration.SERVER_VERSION < Valkey9_0,
+            "Hash expire commands require Valkey 9.0+");
+
+    /// <summary>
     /// Skips the test if set intersection cardinality commands are not supported.
     /// </summary>
     public static void IfSetInterCardNotSupported()
@@ -40,12 +48,12 @@ internal static class Skip
             "Set intersection cardinality commands require Valkey 7.0+");
 
     /// <summary>
-    /// Skips the test if background save cancel commands are not supported.
+    /// Skips the test if sorted set pop commands are not supported.
     /// </summary>
-    public static void IfBgSaveCancelNotSupported()
+    public static void IfSortedSetPopNotSupported()
         => Assert.SkipWhen(
-            TestConfiguration.SERVER_VERSION < Valkey8_1,
-            "Background save cancel commands require Valkey 8.1+");
+            TestConfiguration.SERVER_VERSION < Valkey7_0,
+            "Sorted set pop commands (ZMPOP, BZMPOP, ZINTERCARD) require Valkey 7.0+");
 
     #endregion
     #region Module Checks
