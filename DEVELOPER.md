@@ -250,8 +250,7 @@ task coverage:clean   # Remove coverage results and reports
 # Linting and formatting
 task lint                   # Run all linters
 task format                 # Run all formatters
-task check-links            # Check for broken links
-
+task check                  # Run all checks
 ```
 
 ## Advanced Testing Options
@@ -339,33 +338,56 @@ To run [DNS tests](tests/Valkey.Glide.IntegrationTests/DnsTests.cs) locally:
 
 If the environment variable is not set, DNS tests will be skipped.
 
-## Linting and Formatting
+## Formatting
 
-Before making a contribution, ensure that all new user APIs and non-obvious code is well documented, and run the code linters and analyzers.
+Run automated formatters to ensure consistent code style.
 
 ```bash
-# Run all linters:
-task lint
-
-# Run linters for specific languages:
-task lint:rust      # Run Rust linting
-task lint:csharp    # Run C# linting
-task lint:yaml      # Run YAML linting
-task lint:actions   # Run GitHub Actions linting
-task lint:markdown  # Run Markdown linting
-
-# Run all formatters:
-task format
-
-# Run formatters for specific languages:
-task format:rust
-task format:csharp
-task format:yaml
-task format:markdown
-
-# Check for broken links
-task check-links
+task format           # Run all formatters
+task format:rust      # Run Rust formatter
+task format:csharp    # Run C# formatter
+task format:yaml      # Run YAML formatter
+task format:markdown  # Run Markdown formatter
 ```
+
+## Linting
+
+Run linters to catch style issues and static analysis warnings.
+
+```bash
+task lint           # Run all linters
+task lint:rust      # Run Rust linter
+task lint:csharp    # Run C# linter
+task lint:yaml      # Run YAML linter
+task lint:actions   # Run GitHub Actions linter
+task lint:markdown  # Run Markdown linter
+```
+
+## Checks
+
+Run checks to validate examples, links, and TODOs.
+
+```bash
+task check
+task check:examples
+task check:links
+task check:todos
+```
+
+### TODOs
+
+All TODOs must follow the format `TODO #<number>: <description>`, where:
+
+- `<number>` is an open GitHub issue in this repository.
+- `<description>` is a short explanation of what needs to change (at least 10 characters).
+
+Example:
+
+```csharp
+// TODO #472: Auto-generate this enum from the Rust source.
+```
+
+Files can be excluded from validation via `dev/conf/check-todos-ignore` (fnmatch glob patterns, one per line).
 
 ## Test framework and Style
 

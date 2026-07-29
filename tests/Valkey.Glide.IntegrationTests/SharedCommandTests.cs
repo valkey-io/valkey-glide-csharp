@@ -38,7 +38,6 @@ public class SharedCommandTests(TestConfiguration config)
                 }
                 else
                 {
-                    // TODO use assertDeepEquals
                     Assert.Equivalent(expectedInfo[i].ExpectedValue, actualResult[i]);
                 }
             }

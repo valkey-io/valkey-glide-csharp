@@ -85,20 +85,34 @@ public class SetCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task SetScanAsync_WithPageOffset_SkipsElements(IDatabaseAsync db)
     {
-        string key = $"ser-sscan-offset-{Guid.NewGuid()}";
+        var key = $"ser-sscan-offset-{Guid.NewGuid()}";
         _ = await db.SetAddAsync(key, ["a", "b", "c", "d", "e"]);
 
-        // With pageOffset, we skip elements from the first page
-        List<ValkeyValue> results = [];
-        await foreach (ValkeyValue value in db.SetScanAsync(key, pageSize: 1000, pageOffset: 2))
+        var results = new List<ValkeyValue>();
+        await foreach (var value in db.SetScanAsync(key, pageOffset: 3))
         {
             results.Add(value);
         }
 
-        // Should have 3 elements (5 - 2 skipped)
-        Assert.Equal(3, results.Count);
-
+        Assert.Equal(2, results.Count);
     }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task SetScanAsync_WithPageOffsetGreaterThanPageSize_SkipsElements(IDatabaseAsync db)
+    {
+        var key = $"ser-sscan-offset-gt-pagesize-{Guid.NewGuid()}";
+        _ = await db.SetAddAsync(key, ["a", "b", "c", "d", "e"]);
+
+        var results = new List<ValkeyValue>();
+        await foreach (var value in db.SetScanAsync(key, pageSize: 2, pageOffset: 3))
+        {
+            results.Add(value);
+        }
+
+        Assert.Equal(2, results.Count);
+    }
+
     #endregion
     #region SetAddAsync
 

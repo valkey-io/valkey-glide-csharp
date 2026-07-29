@@ -2,8 +2,8 @@
 
 This project includes support for measuring line and branch coverage, including a coverage baseline and checks to ensure coverage does not decrease.
 
-![Line coverage](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fvalkey-io%2Fvalkey-glide-csharp%2Fmain%2Fdev%2Fcoverage%2Fcoverage-baseline.json&query=%24.line_coverage&suffix=%25&label=Line%20Coverage)
-![Branch coverage](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fvalkey-io%2Fvalkey-glide-csharp%2Fmain%2Fdev%2Fcoverage%2Fcoverage-baseline.json&query=%24.branch_coverage&suffix=%25&label=Branch%20Coverage)
+![Line coverage](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fvalkey-io%2Fvalkey-glide-csharp%2Fmain%2Fdev%2Fconf%2Fcoverage-baseline.json&query=%24.line_coverage&suffix=%25&label=Line%20Coverage)
+![Branch coverage](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fvalkey-io%2Fvalkey-glide-csharp%2Fmain%2Fdev%2Fconf%2Fcoverage-baseline.json&query=%24.branch_coverage&suffix=%25&label=Branch%20Coverage)
 
 ## How It Works
 
@@ -53,13 +53,15 @@ The coverage check passes only when measured coverage **exactly matches** the ba
 ## File Layout
 
 ```text
+dev/conf/
+├── coverage-baseline.json     # Coverage baseline
+└── coverage-runsettings.xml   # Coverlet configuration
+
 dev/coverage/
-├── coverage-baseline.json   # Coverage baseline
-├── .runsettings             # Coverlet configuration
-├── results/                 # Raw .cobertura.xml coverage results
+├── results/                   # Raw .cobertura.xml coverage results (gitignored)
 │   ├── unit/
 │   └── integration/
-└── reports/                 # Generated HTML/JSON reports
+└── reports/                   # Generated HTML/JSON reports (gitignored)
     ├── unit/
     ├── integration/
     └── combined/
@@ -67,7 +69,7 @@ dev/coverage/
 
 ## Baseline File
 
-The coverage baseline file (`dev/coverage/coverage-baseline.json`) stores the coverage baseline and the server configuration used to collect it.
+The coverage baseline file (`dev/conf/coverage-baseline.json`) stores the coverage baseline and the server configuration used to collect it.
 
 Example:
 

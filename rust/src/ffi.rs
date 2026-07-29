@@ -148,11 +148,6 @@ pub struct ConnectionConfig {
     pub node_discovery_mode: NodeDiscoveryMode,
     pub has_client_side_cache_config: bool,
     pub client_side_cache_config: ClientSideCacheConfig,
-    /*
-    TODO below
-    pub periodic_checks: Option<PeriodicCheck>,
-    pub inflight_requests_limit: Option<u32>
-    */
 }
 
 #[repr(C)]
@@ -378,8 +373,8 @@ pub(crate) unsafe fn create_connection_request(
         client_key_path: None,
         cert_reload: None,
         tcp_nodelay: false,
-        periodic_checks: None,
-        inflight_requests_limit: None,
+        periodic_checks: None, // TODO #485: Expose periodic_checks in ClusterClientConfiguration.
+        inflight_requests_limit: None, // TODO #484: Expose inflight_requests_limit in ConnectionConfiguration.
         address_resolver: None,
         client_circuit_breaker: None,
     })

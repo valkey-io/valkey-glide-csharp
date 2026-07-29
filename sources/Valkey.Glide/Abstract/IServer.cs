@@ -349,13 +349,20 @@ public partial interface IServer : IRedisAsync
     /// <param name="pattern">The pattern to match keys against. If not specified, all keys are returned.</param>
     /// <param name="pageSize">The number of keys to return per SCAN iteration.</param>
     /// <param name="cursor">The cursor to start scanning from.</param>
-    /// <param name="pageOffset">The number of keys to skip from the first page of results.</param>
+    /// <param name="pageOffset">The number of keys to skip from the beginning of the result stream.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <returns>An async enumerable of keys matching the pattern.</returns>
     /// <remarks>
+    /// <para>
     /// Unlike StackExchange.Redis, GLIDE does not support per-database selection.
     /// Use <see cref="IConnectionManagementBaseCommands.SelectAsync(long)"/> to change the current database.
+    /// </para>
+    /// <para>
+    /// Unlike StackExchange.Redis, which only skips elements within the first scan batch (making the
+    /// skip non-deterministic since batch sizes are server-controlled), GLIDE skips <paramref name="pageOffset"/>
+    /// elements from the overall result stream regardless of internal batching. This provides deterministic behavior.
+    /// </para>
     /// </remarks>
     IAsyncEnumerable<ValkeyKey> KeysAsync(
         ValkeyValue pattern = default,

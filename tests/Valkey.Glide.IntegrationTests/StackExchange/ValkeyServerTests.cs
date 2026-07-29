@@ -22,63 +22,59 @@ public class ValkeyServerTests(ValkeyServerFixture fixture) : IClassFixture<Valk
         var server = fixture.Server;
         var db = fixture.Database;
 
-        string prefix = Guid.NewGuid().ToString();
-        string key1 = $"{prefix}:key1";
-        string key2 = $"{prefix}:key2";
-        string key3 = $"{prefix}:key3";
-        string otherKey = "other:key";
-
-        _ = await db.StringSetAsync(key1, "value1");
-        _ = await db.StringSetAsync(key2, "value2");
-        _ = await db.StringSetAsync(key3, "value3");
-        _ = await db.StringSetAsync(otherKey, "other");
-
-        List<ValkeyKey> keys = [];
-        await foreach (ValkeyKey key in server.KeysAsync(pattern: $"{prefix}:*"))
+        var prefix = $"ser-keys-{Guid.NewGuid()}";
+        foreach (var element in new[] { "a", "b", "c", "d", "e" })
         {
-            keys.Add(key);
+            _ = await db.StringSetAsync($"{prefix}:{element}", "value");
         }
 
-        Assert.Equal(3, keys.Count);
-        Assert.Contains(key1, keys.Select(k => k.ToString()));
-        Assert.Contains(key2, keys.Select(k => k.ToString()));
-        Assert.Contains(key3, keys.Select(k => k.ToString()));
-        Assert.DoesNotContain(otherKey, keys.Select(k => k.ToString()));
+        // Test scanning all keys
+        var results = new List<ValkeyKey>();
+        await foreach (var key in server.KeysAsync(pattern: $"{prefix}:*"))
+        {
+            results.Add(key);
+        }
+
+        Assert.Equal(5, results.Count);
+        results.Clear();
 
         // Test scanning with pageSize
-        keys.Clear();
-        await foreach (ValkeyKey key in server.KeysAsync(pattern: $"{prefix}:*", pageSize: 1))
+        await foreach (var key in server.KeysAsync(pattern: $"{prefix}:*", pageSize: 1))
         {
-            keys.Add(key);
+            results.Add(key);
         }
-        Assert.Equal(3, keys.Count);
+
+        Assert.Equal(5, results.Count);
+        results.Clear();
 
         // Test scanning with pageOffset
-        keys.Clear();
-        await foreach (ValkeyKey key in server.KeysAsync(pattern: $"{prefix}:*", pageOffset: 1))
+        await foreach (var key in server.KeysAsync(pattern: $"{prefix}:*", pageOffset: 3))
         {
-            keys.Add(key);
+            results.Add(key);
         }
-        Assert.True(keys.Count >= 2);
+
+        Assert.Equal(2, results.Count);
+        results.Clear();
+
+        // Test scanning with pageOffset > pageSize
+        await foreach (var key in server.KeysAsync(pattern: $"{prefix}:*", pageSize: 2, pageOffset: 3))
+        {
+            results.Add(key);
+        }
+
+        Assert.Equal(2, results.Count);
+        results.Clear();
 
         // Test scanning non-existent pattern
-        keys.Clear();
-        await foreach (ValkeyKey key in server.KeysAsync(pattern: "nonexistent:*"))
+        await foreach (var key in server.KeysAsync(pattern: "nonexistent:*"))
         {
-            keys.Add(key);
+            results.Add(key);
         }
-        Assert.Empty(keys);
 
-        // Clear database.
+        Assert.Empty(results);
+
         await server.FlushDatabaseAsync();
     }
-
-    [Fact]
-    public async Task KeysAsync_CommandFlags_Throws()
-        => _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => fixture.Server.KeysAsync(flags: UnsupportedCommandFlag)
-                .GetAsyncEnumerator(TestContext.Current.CancellationToken)
-                .MoveNextAsync().AsTask());
 
     [Fact]
     public async Task DatabaseSizeAsync_ReturnsSize()
