@@ -48,7 +48,8 @@ public class BatchTests(TestConfiguration config)
         Task<object?> t4 = db.CustomCommand(["time"]); // This cmd is sent
 
         // wait for t3 for 100ms, expect to time out (batch is queued, not sent yet)
-        Assert.NotEqual(t3, await Task.WhenAny(t3, Task.Delay(100, TestContext.Current.CancellationToken)));
+        await Task.Delay(100, TestContext.Current.CancellationToken);
+        Assert.False(t3.IsCompleted);
 
         batch.Execute();
         // tasks could be awaited in any order
@@ -72,7 +73,8 @@ public class BatchTests(TestConfiguration config)
         Task<object?> t4 = db.CustomCommand(["time"]); // This cmd is sent
 
         // wait for t3 for 100ms, expect to time out (transaction is queued, not sent yet)
-        Assert.NotEqual(t3, await Task.WhenAny(t3, Task.Delay(100, TestContext.Current.CancellationToken)));
+        await Task.Delay(100, TestContext.Current.CancellationToken);
+        Assert.False(t3.IsCompleted);
 
         Assert.True(transaction.Execute());
         // tasks could be awaited in any order
@@ -109,7 +111,8 @@ public class BatchTests(TestConfiguration config)
         RequestException ex = Assert.Throws<RequestException>(() => transaction.Execute());
         Assert.Contains("CrossSlot", ex.Message);
         // in SER, commands' futures are never resolved if transaction failed, so we do the same
-        Assert.NotEqual(t1, await Task.WhenAny(t1, Task.Delay(100, TestContext.Current.CancellationToken)));
+        await Task.Delay(100, TestContext.Current.CancellationToken);
+        Assert.False(t1.IsCompleted);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
