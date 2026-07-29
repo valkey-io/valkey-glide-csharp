@@ -45,7 +45,7 @@ public class IamAuthTests
         await AssertConnected(client);
 
         // Verify connection after token refresh
-        await Task.Delay(TimeSpan.FromSeconds(5));
+        await Task.Delay(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
         await AssertConnected(client);
     }
 
@@ -93,7 +93,7 @@ public class IamAuthTests
         await client.RefreshIamTokenAsync();
 
         // Wait for automatic token refresh (3 seconds to ensure refresh happens)
-        await Task.Delay(TimeSpan.FromSeconds(3));
+        await Task.Delay(TimeSpan.FromSeconds(3), TestContext.Current.CancellationToken);
 
         // Verify client still works after automatic refresh
         await client.SetAsync("iam_auto_refresh_key", "iam_auto_refresh_value");
@@ -115,7 +115,7 @@ public class IamAuthTests
         await AssertConnected(client);
 
         // Wait for automatic token refresh (3 seconds to ensure refresh happens)
-        await Task.Delay(TimeSpan.FromSeconds(3));
+        await Task.Delay(TimeSpan.FromSeconds(3), TestContext.Current.CancellationToken);
 
         // Verify client still works after automatic refresh
         await client.SetAsync("iam_auto_refresh_key", "iam_auto_refresh_value");
