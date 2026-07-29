@@ -370,16 +370,18 @@ pub(crate) unsafe fn create_connection_request(
         // directly to `create_client`, which patches it onto the request after construction.
         address_resolver: None,
 
-        // Unimplemented configuration options.
-        client_cert: Vec::new(),
-        client_key: Vec::new(),
-        client_cert_path: None,
-        client_key_path: None,
-        cert_reload: None,
-        tcp_nodelay: false,
-        periodic_checks: None,          // TODO #485: Expose periodic_checks in ClusterClientConfiguration.
-        inflight_requests_limit: None,  // TODO #484: Expose inflight_requests_limit in ConnectionConfiguration.
-        client_circuit_breaker: None,
+        // Unimplemented configuration options
+        // -----------------------------------
+
+        client_cert: Vec::new(),        // TODO #488: Expose for mTLS
+        client_key: Vec::new(),         // TODO #488: Expose for mTLS
+        client_cert_path: None,         // TODO #488: Expose for mTLS
+        client_key_path: None,          // TODO #488: Expose for mTLS
+        cert_reload: None,              // TODO #488: Expose for mTLS
+        tcp_nodelay: false,             // TODO #490: Expose TCP_NODELAY.
+        periodic_checks: None,          // TODO #485: Expose cluster periodic checks.
+        inflight_requests_limit: None,  // TODO #484: Expose request limiting.
+        client_circuit_breaker: None,   // TODO #474: Expose circuit breaker configuration.
     })
 }
 
