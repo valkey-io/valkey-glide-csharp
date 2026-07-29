@@ -371,6 +371,10 @@ pub(crate) unsafe fn create_connection_request(
             NodeDiscoveryMode::DiscoverAll => glide_core::client::NodeDiscoveryMode::DiscoverAll,
         },
 
+        // Initialized to `None` because FFI clients pass the resolver as a function pointer
+        // directly to `create_client`, which patches it onto the request after construction.
+        address_resolver: None,
+
         // Unimplemented configuration options.
         client_cert: Vec::new(),
         client_key: Vec::new(),
@@ -380,7 +384,6 @@ pub(crate) unsafe fn create_connection_request(
         tcp_nodelay: false,
         periodic_checks: None,
         inflight_requests_limit: None,
-        address_resolver: None,
         client_circuit_breaker: None,
     })
 }
