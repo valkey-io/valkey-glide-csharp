@@ -127,14 +127,18 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
         // run INFO on all nodes, but disregard the node responses, we need node addresses only
         if (_db!.IsCluster)
         {
-            Dictionary<string, string> info = _db.Command(Request.Info([]).ToMultiNodeValue(), Route.AllNodes).GetAwaiter().GetResult();
-            List<ValkeyServer> servers = new(info.Count);
-            foreach (string addr in info.Keys)
+            var servers = new List<ValkeyServer>();
+
+            foreach (var addr in _db.Command(Request.Info([]).ToMultiNodeValue(), Route.AllNodes).GetAwaiter().GetResult().Keys)
             {
                 if (!Format.TryParseEndPoint(addr, out EndPoint? ep))
+                {
                     throw new FormatException($"Could not parse endpoint address: '{addr}'");
+                }
+
                 servers.Add(new ValkeyServer(_db, ep));
             }
+
             return [.. servers];
         }
         else
