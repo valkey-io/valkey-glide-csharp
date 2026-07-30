@@ -244,7 +244,8 @@ public sealed class ClusterServer(bool useTls = false, string? host = null) : Se
 /// </summary>
 public sealed class StandaloneServer(
     bool useTls = false,
-    int? replicaCount = null) : Server(useClusterMode: false, useTls: useTls, replicaCount: replicaCount)
+    int? replicaCount = null,
+    string? host = null) : Server(useClusterMode: false, useTls: useTls, replicaCount: replicaCount, host: host)
 {
     #region Public Methods
 

@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Net;
+
 using Valkey.Glide.TestUtils;
 
 using static Valkey.Glide.ConnectionConfiguration;
@@ -61,6 +63,49 @@ public class DnsTests(DnsTestsFixture fixture) : IClassFixture<DnsTestsFixture>
         SkipIfDnsTestsNotEnabled();
         _ = await Assert.ThrowsAsync<ConnectionException>(async ()
             => await BuildClient(useCluster, useTls: true, HostnameNoTls));
+    }
+
+    [Fact]
+    public void GetServers_WithDnsHostnameTopology_ReturnsDnsEndPoints()
+    {
+        SkipIfDnsTestsNotEnabled();
+
+        var config = new ConfigurationOptions();
+        config.EndPoints.Add(fixture.DnsClusterServer!.Address.Host, fixture.DnsClusterServer.Address.Port);
+        config.ResponseTimeout = 10000;
+
+        using var conn = ConnectionMultiplexer.Connect(config);
+
+        IServer[] servers = conn.GetServers();
+        Assert.True(servers.Length > 0);
+
+        foreach (IServer s in servers)
+        {
+            Assert.IsType<DnsEndPoint>(s.EndPoint);
+            Assert.Contains(HostnameTls, s.EndPoint.ToString());
+        }
+    }
+
+    [Fact]
+    public void GetEndPoints_WithDnsHostnameTopology_ReturnsDnsEndPoints()
+    {
+        SkipIfDnsTestsNotEnabled();
+
+        var config = new ConfigurationOptions();
+        config.EndPoints.Add(fixture.DnsClusterServer!.Address.Host, fixture.DnsClusterServer.Address.Port);
+        config.ResponseTimeout = 10000;
+
+        using var conn = ConnectionMultiplexer.Connect(config);
+
+        EndPoint[] endpoints = conn.GetEndPoints(false);
+        Assert.True(endpoints.Length > 0);
+
+        foreach (EndPoint ep in endpoints)
+        {
+            Assert.IsType<DnsEndPoint>(ep);
+            IServer found = conn.GetServer(ep);
+            Assert.Equal(ep, found.EndPoint);
+        }
     }
 
     #endregion
@@ -128,6 +173,7 @@ public class DnsTestsFixture : IAsyncLifetime
     public StandaloneServer? StandaloneServer { get; private set; }
     public ClusterServer? TlsClusterServer { get; private set; }
     public StandaloneServer? TlsStandaloneServer { get; private set; }
+    public ClusterServer? DnsClusterServer { get; private set; }
 
     public ValueTask InitializeAsync()
     {
@@ -136,8 +182,18 @@ public class DnsTestsFixture : IAsyncLifetime
         {
             ClusterServer = new(useTls: false);
             StandaloneServer = new(useTls: false);
-            TlsClusterServer = new(useTls: true);
-            TlsStandaloneServer = new(useTls: true);
+            DnsClusterServer = new(host: HostnameTls);
+
+            try
+            {
+                TlsClusterServer = new(useTls: true);
+                TlsStandaloneServer = new(useTls: true);
+            }
+            catch
+            {
+                // TLS servers may fail to start in some environments.
+                // Tests that require TLS will be skipped via null checks.
+            }
         }
 
         return ValueTask.CompletedTask;
@@ -149,6 +205,7 @@ public class DnsTestsFixture : IAsyncLifetime
         StandaloneServer?.Dispose();
         TlsClusterServer?.Dispose();
         TlsStandaloneServer?.Dispose();
+        DnsClusterServer?.Dispose();
 
         return ValueTask.CompletedTask;
     }
