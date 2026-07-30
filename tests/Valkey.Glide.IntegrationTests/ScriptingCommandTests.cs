@@ -1043,7 +1043,7 @@ redis.register_function('statsfunc', function(keys, args) return 'result' end)";
 
         Assert.NotNull(stats);
         Assert.NotNull(stats.Engines);
-        Assert.True(stats.Engines.Count > 0);
+        Assert.NotEmpty(stats.Engines);
 
         // Check LUA engine stats
         Assert.True(stats.Engines.ContainsKey("LUA"));
@@ -1119,7 +1119,7 @@ redis.register_function('dumpfunc', function(keys, args) return 'result' end)";
         byte[] backup = await client.FunctionDumpAsync();
 
         Assert.NotNull(backup);
-        Assert.True(backup.Length > 0);
+        Assert.NotEmpty(backup);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1246,7 +1246,7 @@ redis.register_function('{funcName}', function(keys, args) return 'Hello from pr
         // Verify load succeeded (may be single or multi-value depending on cluster configuration)
         if (loadResult.HasMultiData)
         {
-            Assert.True(loadResult.MultiValue.Count > 0);
+            Assert.NotEmpty(loadResult.MultiValue);
             Assert.All(loadResult.MultiValue.Values, name => Assert.Equal(libName, name));
         }
         else
@@ -1260,7 +1260,7 @@ redis.register_function('{funcName}', function(keys, args) return 'Hello from pr
         // Verify execution (may be single or multi-value depending on cluster configuration)
         if (result.HasMultiData)
         {
-            Assert.True(result.MultiValue.Count > 0);
+            Assert.NotEmpty(result.MultiValue);
             Assert.All(result.MultiValue.Values, r => Assert.Equal("Hello from primary", r.ToString()));
         }
         else
@@ -1294,7 +1294,7 @@ redis.register_function{{
         // Verify load succeeded (may be single or multi-value depending on cluster configuration)
         if (loadResult.HasMultiData)
         {
-            Assert.True(loadResult.MultiValue.Count > 0);
+            Assert.NotEmpty(loadResult.MultiValue);
         }
         else
         {
@@ -1307,7 +1307,7 @@ redis.register_function{{
         // Verify execution (may be single or multi-value depending on cluster configuration)
         if (result.HasMultiData)
         {
-            Assert.True(result.MultiValue.Count > 0);
+            Assert.NotEmpty(result.MultiValue);
             Assert.All(result.MultiValue.Values, r => Assert.Equal("Hello from node", r.ToString()));
         }
         else
@@ -1425,7 +1425,7 @@ redis.register_function('{funcName}', function(keys, args) return 'test' end)";
         // Verify list returned (may be single or multi-value depending on cluster configuration)
         if (result.HasMultiData)
         {
-            Assert.True(result.MultiValue.Count > 0);
+            Assert.NotEmpty(result.MultiValue);
             // Verify each node has the library
             foreach (var (node, libraries) in result.MultiValue)
             {
@@ -1464,7 +1464,7 @@ redis.register_function('{funcName}', function(keys, args) return 'test' end)";
         // Verify stats returned (may be single or multi-value depending on cluster configuration)
         if (result.HasMultiData)
         {
-            Assert.True(result.MultiValue.Count > 0);
+            Assert.NotEmpty(result.MultiValue);
             // Verify each node has stats
             foreach (var (_, stats) in result.MultiValue)
             {
@@ -1610,7 +1610,7 @@ redis.register_function('{funcName}', function(keys, args) return 'multi-node re
         {
             Assert.False(loadResult.HasSingleData);
             Assert.NotNull(loadResult.MultiValue);
-            Assert.True(loadResult.MultiValue.Count > 0);
+            Assert.NotEmpty(loadResult.MultiValue);
 
             // Verify each node address is a key in the dictionary
             foreach (var (nodeAddress, libraryName) in loadResult.MultiValue)

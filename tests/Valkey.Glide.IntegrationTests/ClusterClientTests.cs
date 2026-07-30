@@ -360,7 +360,7 @@ public class ClusterClientTests(TestConfiguration config)
         // Test CLIENT ID with all nodes routing
         var allNodesResult = await client.ClientIdAsync(AllNodes);
         Assert.True(allNodesResult.HasMultiData);
-        Assert.True(allNodesResult.MultiValue.Count > 0);
+        Assert.NotEmpty(allNodesResult.MultiValue);
 
         foreach (var kvp in allNodesResult.MultiValue)
         {
@@ -414,7 +414,7 @@ public class ClusterClientTests(TestConfiguration config)
         // Test CLIENT GETNAME with all nodes routing
         var allNodesResult = await client.ClientGetNameAsync(AllNodes);
         Assert.True(allNodesResult.HasMultiData);
-        Assert.True(allNodesResult.MultiValue.Count > 0);
+        Assert.NotEmpty(allNodesResult.MultiValue);
 
         foreach (var kvp in allNodesResult.MultiValue)
         {
