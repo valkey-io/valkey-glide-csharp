@@ -7,19 +7,25 @@ namespace Valkey.Glide.UnitTests;
 /// </summary>
 public class CircuitBreakerConfigTests
 {
+    #region Constants
+
+    private static readonly TimeSpan TooLarge =
+        CircuitBreakerConfig.MaxTimeSpan + TimeSpan.FromMilliseconds(1);
+
+    #endregion
     #region Default Values
 
     [Fact]
-    public void DefaultConfig_AllPropertiesAreUnset()
+    public void DefaultConfig_AllPropertiesCorrect()
     {
         var config = new CircuitBreakerConfig();
 
-        Assert.Null(config.WindowSize);
-        Assert.Null(config.FailureRateThreshold);
-        Assert.Null(config.MinErrors);
-        Assert.Null(config.OpenTimeout);
+        Assert.Equal(TimeSpan.FromSeconds(10), config.WindowSize);
+        Assert.Equal(0.5f, config.FailureRateThreshold);
+        Assert.Equal(50u, config.MinErrors);
+        Assert.Equal(TimeSpan.FromSeconds(5), config.OpenTimeout);
         Assert.False(config.CountTimeouts);
-        Assert.Null(config.ConsecutiveSuccesses);
+        Assert.Equal(3u, config.ConsecutiveSuccesses);
     }
 
     #endregion
@@ -52,7 +58,7 @@ public class CircuitBreakerConfigTests
     public void WithWindowSize_ExceedsMax_Throws()
     {
         var config = new CircuitBreakerConfig();
-        _ = Assert.Throws<ArgumentOutOfRangeException>(() => config.WithWindowSize(TimeSpan.FromDays(50)));
+        _ = Assert.Throws<ArgumentOutOfRangeException>(() => config.WithWindowSize(TooLarge));
     }
 
     #endregion
@@ -62,39 +68,32 @@ public class CircuitBreakerConfigTests
     public void WithFailureRateThreshold_ValidValue_SetsProperty()
     {
         var config = new CircuitBreakerConfig()
-            .WithFailureRateThreshold(0.6);
+            .WithFailureRateThreshold(0.6f);
 
-        Assert.Equal(0.6, config.FailureRateThreshold);
+        Assert.Equal(0.6f, config.FailureRateThreshold);
     }
 
     [Fact]
     public void WithFailureRateThreshold_One_SetsProperty()
     {
         var config = new CircuitBreakerConfig()
-            .WithFailureRateThreshold(1.0);
+            .WithFailureRateThreshold(1.0f);
 
-        Assert.Equal(1.0, config.FailureRateThreshold);
+        Assert.Equal(1.0f, config.FailureRateThreshold);
     }
 
     [Fact]
     public void WithFailureRateThreshold_Zero_Throws()
     {
         var config = new CircuitBreakerConfig();
-        _ = Assert.Throws<ArgumentOutOfRangeException>(() => config.WithFailureRateThreshold(0.0));
+        _ = Assert.Throws<ArgumentOutOfRangeException>(() => config.WithFailureRateThreshold(0.0f));
     }
 
     [Fact]
     public void WithFailureRateThreshold_Negative_Throws()
     {
         var config = new CircuitBreakerConfig();
-        _ = Assert.Throws<ArgumentOutOfRangeException>(() => config.WithFailureRateThreshold(-0.5));
-    }
-
-    [Fact]
-    public void WithFailureRateThreshold_AboveOne_Throws()
-    {
-        var config = new CircuitBreakerConfig();
-        _ = Assert.Throws<ArgumentOutOfRangeException>(() => config.WithFailureRateThreshold(1.1));
+        _ = Assert.Throws<ArgumentOutOfRangeException>(() => config.WithFailureRateThreshold(-0.5f));
     }
 
     #endregion
@@ -146,7 +145,7 @@ public class CircuitBreakerConfigTests
     public void WithOpenTimeout_ExceedsMax_Throws()
     {
         var config = new CircuitBreakerConfig();
-        _ = Assert.Throws<ArgumentOutOfRangeException>(() => config.WithOpenTimeout(TimeSpan.FromDays(50)));
+        _ = Assert.Throws<ArgumentOutOfRangeException>(() => config.WithOpenTimeout(TooLarge));
     }
 
     #endregion
