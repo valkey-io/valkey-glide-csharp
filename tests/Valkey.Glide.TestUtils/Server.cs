@@ -85,7 +85,8 @@ public abstract class Server : IDisposable
     protected Server(
         bool useClusterMode,
         bool useTls = false,
-        int? replicaCount = null)
+        int? replicaCount = null,
+        string? host = null)
     {
         UseTls = useTls;
 
@@ -93,7 +94,8 @@ public abstract class Server : IDisposable
             name: _name,
             useClusterMode: useClusterMode,
             useTls: UseTls,
-            replicaCount: replicaCount).First();
+            replicaCount: replicaCount,
+            host: host).First();
 
         if (UseTls)
         {
@@ -186,7 +188,7 @@ public abstract class Server : IDisposable
 /// <summary>
 /// Valkey cluster server.
 /// </summary>
-public sealed class ClusterServer(bool useTls = false) : Server(useClusterMode: true, useTls: useTls)
+public sealed class ClusterServer(bool useTls = false, string? host = null) : Server(useClusterMode: true, useTls: useTls, host: host)
 {
     #region Public Methods
 
