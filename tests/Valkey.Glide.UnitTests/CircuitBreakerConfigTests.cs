@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Internals;
+
 namespace Valkey.Glide.UnitTests;
 
 /// <summary>
@@ -195,6 +197,42 @@ public class CircuitBreakerConfigTests
     {
         var config = new CircuitBreakerConfig();
         _ = Assert.Throws<ArgumentOutOfRangeException>(() => config.WithConsecutiveSuccesses(0));
+    }
+
+    #endregion
+    #region ToFfi
+
+    [Fact]
+    public void ToFfi_DefaultConfig()
+    {
+        var ffi = new CircuitBreakerConfig().ToFfi();
+
+        Assert.Equal(10_000u, ffi.WindowSizeMs);
+        Assert.Equal(0.5f, ffi.FailureRateThreshold);
+        Assert.Equal(50u, ffi.MinErrors);
+        Assert.Equal(5_000u, ffi.OpenTimeoutMs);
+        Assert.False(ffi.CountTimeouts);
+        Assert.Equal(3u, ffi.ConsecutiveSuccesses);
+    }
+
+    [Fact]
+    public void ToFfi_CustomConfig()
+    {
+        var ffi = new CircuitBreakerConfig()
+            .WithWindowSize(TimeSpan.FromSeconds(30))
+            .WithFailureRateThreshold(0.75f)
+            .WithMinErrors(200)
+            .WithOpenTimeout(TimeSpan.FromMilliseconds(2500))
+            .WithCountTimeouts(true)
+            .WithConsecutiveSuccesses(5)
+            .ToFfi();
+
+        Assert.Equal(30_000u, ffi.WindowSizeMs);
+        Assert.Equal(0.75f, ffi.FailureRateThreshold);
+        Assert.Equal(200u, ffi.MinErrors);
+        Assert.Equal(2_500u, ffi.OpenTimeoutMs);
+        Assert.True(ffi.CountTimeouts);
+        Assert.Equal(5u, ffi.ConsecutiveSuccesses);
     }
 
     #endregion
