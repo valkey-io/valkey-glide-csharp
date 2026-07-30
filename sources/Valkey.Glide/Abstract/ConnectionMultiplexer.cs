@@ -128,7 +128,15 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
         if (_db!.IsCluster)
         {
             Dictionary<string, string> info = _db.Command(Request.Info([]).ToMultiNodeValue(), Route.AllNodes).GetAwaiter().GetResult();
-            return [.. info.Keys.Select(addr => new ValkeyServer(_db, IPEndPoint.Parse(addr)))];
+            ValkeyServer[] servers = new ValkeyServer[info.Count];
+            int i = 0;
+            foreach (string addr in info.Keys)
+            {
+                if (!Format.TryParseEndPoint(addr, out EndPoint? ep))
+                    throw new FormatException($"Could not parse endpoint address: '{addr}'");
+                servers[i++] = new ValkeyServer(_db, ep);
+            }
+            return servers;
         }
         else
         {
