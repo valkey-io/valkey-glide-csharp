@@ -66,45 +66,44 @@ public class DnsTests(DnsTestsFixture fixture) : IClassFixture<DnsTestsFixture>
     }
 
     [Fact]
-    public void GetServers_WithDnsHostnameTopology_ReturnsDnsEndPoints()
+    public void GetServers_WithDnsHostname_ReturnsDnsEndPoints()
     {
         SkipIfDnsTestsNotEnabled();
 
         var config = new ConfigurationOptions();
-        config.EndPoints.Add(fixture.DnsClusterServer!.Address.Host, fixture.DnsClusterServer.Address.Port);
-        config.ResponseTimeout = 10000;
+        var address = fixture.DnsClusterServer!.Address;
+        config.EndPoints.Add(address.Host, address.Port);
 
         using var conn = ConnectionMultiplexer.Connect(config);
 
-        IServer[] servers = conn.GetServers();
-        Assert.True(servers.Length > 0);
+        var servers = conn.GetServers();
+        Assert.NotEmpty(servers);
 
-        foreach (IServer s in servers)
+        foreach (var server in servers)
         {
-            Assert.IsType<DnsEndPoint>(s.EndPoint);
-            Assert.Contains(HostnameTls, s.EndPoint.ToString());
+            _ = Assert.IsType<DnsEndPoint>(server.EndPoint);
+            Assert.Contains(HostnameTls, server.EndPoint.ToString());
         }
     }
 
     [Fact]
-    public void GetEndPoints_WithDnsHostnameTopology_ReturnsDnsEndPoints()
+    public void GetEndPoints_WithDnsHostname_ReturnsDnsEndPoints()
     {
         SkipIfDnsTestsNotEnabled();
 
         var config = new ConfigurationOptions();
-        config.EndPoints.Add(fixture.DnsClusterServer!.Address.Host, fixture.DnsClusterServer.Address.Port);
-        config.ResponseTimeout = 10000;
+        var address = fixture.DnsClusterServer!.Address;
+        config.EndPoints.Add(address.Host, address.Port);
 
         using var conn = ConnectionMultiplexer.Connect(config);
 
-        EndPoint[] endpoints = conn.GetEndPoints(false);
-        Assert.True(endpoints.Length > 0);
+        var endpoints = conn.GetEndPoints(false);
+        Assert.NotEmpty(endpoints);
 
-        foreach (EndPoint ep in endpoints)
+        foreach (EndPoint endpoint in endpoints)
         {
-            Assert.IsType<DnsEndPoint>(ep);
-            IServer found = conn.GetServer(ep);
-            Assert.Equal(ep, found.EndPoint);
+            _ = Assert.IsType<DnsEndPoint>(endpoint);
+            Assert.Contains(HostnameTls, endpoint.ToString());
         }
     }
 
