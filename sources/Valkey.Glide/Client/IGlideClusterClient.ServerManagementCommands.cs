@@ -190,6 +190,8 @@ public partial interface IGlideClusterClient
     /// </code>
     /// </example>
     /// </remarks>
+    // TODO #495: Remove method; consolidate single-value version into BaseClient.
+    [Obsolete("Use ConfigGetAsync(ValkeyValue, Route) instead. This method will be removed in 2.0.")]
     Task<ClusterValue<KeyValuePair<string, string>[]>> ConfigGetAsync(ValkeyValue pattern = default);
 
     /// <summary>

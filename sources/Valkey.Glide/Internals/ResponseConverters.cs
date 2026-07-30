@@ -14,22 +14,6 @@ internal class ResponseConverters
                 : ClusterValue<object?>.OfMultiValue((Dictionary<GlideString, object?>)data));
 
     /// <summary>
-    /// Process and convert a server response that may be a multi-node response.
-    /// </summary>
-    /// <typeparam name="R">GLIDE's return type per node.</typeparam>
-    /// <typeparam name="T">Command's return type.</typeparam>
-    /// <param name="converter">Function to convert <typeparamref name="R"/> to <typeparamref name="T"/>.</param>
-    /// <param name="isSingleValue">Whether current command call returns a single value.</param>
-    public static Func<object, ClusterValue<T>> MakeClusterValueHandler<R, T>(Func<R, T> converter, bool isSingleValue)
-        => isSingleValue
-            ? value => ClusterValue<T>.OfSingleValue(converter((R)value))
-            : value => value is Dictionary<GlideString, object> dict
-                ? ClusterValue<T>.OfMultiValue(dict.ConvertValues(converter))
-                : value is Dictionary<string, object> stringDict
-                    ? ClusterValue<T>.OfMultiValue(stringDict.ConvertValues(converter))
-                    : ClusterValue<T>.OfSingleValue(converter((R)value)); // In case the nodes combine multiple results to a single result
-
-    /// <summary>
     /// Process and convert a cluster multi-node response.
     /// </summary>
     /// <typeparam name="R">GLIDE's return type per node.</typeparam>

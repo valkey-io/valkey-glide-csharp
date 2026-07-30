@@ -5,7 +5,6 @@ using Valkey.Glide.Internals;
 
 namespace Valkey.Glide;
 
-// TODO #462: Consolidate no-route overloads into BaseClient (glide-core default routing matches).
 public partial class GlideClient
 {
     /// <inheritdoc cref="IGlideClient.BackgroundSaveAsync()"/>
@@ -28,10 +27,6 @@ public partial class GlideClient
     public async Task<KeyValuePair<string, string>[]> ConfigGetAsync(ValkeyValue pattern = default)
         => await Command(Request.ConfigGetAsync(pattern));
 
-    /// <inheritdoc cref="IBaseClient.ConfigGetAsync(IEnumerable{ValkeyValue})"/>
-    public override async Task<KeyValuePair<string, string>[]> ConfigGetAsync(IEnumerable<ValkeyValue> patterns)
-        => await Command(Request.ConfigGetAsync(patterns));
-
     /// <inheritdoc cref="IGlideClient.ConfigResetStatisticsAsync()"/>
     public async Task ConfigResetStatisticsAsync()
         => _ = await Command(Request.ConfigResetStatisticsAsync());
@@ -43,10 +38,6 @@ public partial class GlideClient
     /// <inheritdoc cref="IGlideClient.ConfigSetAsync(ValkeyValue, ValkeyValue)"/>
     public async Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value)
         => _ = await Command(Request.ConfigSetAsync(setting, value));
-
-    /// <inheritdoc cref="IBaseClient.ConfigSetAsync(IDictionary{ValkeyValue, ValkeyValue})"/>
-    public override async Task ConfigSetAsync(IDictionary<ValkeyValue, ValkeyValue> parameters)
-        => _ = await Command(Request.ConfigSetAsync(parameters));
 
     /// <inheritdoc cref="IGlideClient.DatabaseSizeAsync()"/>
     public async Task<long> DatabaseSizeAsync()
@@ -64,17 +55,9 @@ public partial class GlideClient
     public async Task FlushAllDatabasesAsync()
         => _ = await Command(Request.FlushAllDatabasesAsync());
 
-    /// <inheritdoc cref="IBaseClient.FlushAllDatabasesAsync(FlushMode)"/>
-    public override async Task FlushAllDatabasesAsync(FlushMode mode)
-        => _ = await Command(Request.FlushAllDatabasesAsync(mode));
-
     /// <inheritdoc cref="IGlideClient.FlushDatabaseAsync()"/>
     public async Task FlushDatabaseAsync()
         => _ = await Command(Request.FlushDatabaseAsync());
-
-    /// <inheritdoc cref="IBaseClient.FlushDatabaseAsync(FlushMode)"/>
-    public override async Task FlushDatabaseAsync(FlushMode mode)
-        => _ = await Command(Request.FlushDatabaseAsync(mode));
 
     /// <inheritdoc cref="IGlideClient.InfoAsync()"/>
     public async Task<string> InfoAsync() => await InfoAsync([]);
@@ -95,26 +78,9 @@ public partial class GlideClient
     public async Task<LatencyEventInfo[]> LatencyLatestAsync()
         => await Command(Request.LatencyLatestAsync());
 
-    /// <inheritdoc cref="IBaseClient.LatencyResetAsync()"/>
-    public override async Task<long> LatencyResetAsync()
-        => await Command(Request.LatencyResetAsync([]));
-
-    /// <inheritdoc cref="IBaseClient.LatencyResetAsync(ValkeyValue)"/>
-    public override async Task<long> LatencyResetAsync(ValkeyValue @event)
-        => await Command(Request.LatencyResetAsync([@event]));
-
-    /// <inheritdoc cref="IBaseClient.LatencyResetAsync(IEnumerable{ValkeyValue})"/>
-    public override async Task<long> LatencyResetAsync(IEnumerable<ValkeyValue> events)
-        => await Command(Request.LatencyResetAsync(events));
-
     /// <inheritdoc cref="IGlideClient.LolwutAsync()"/>
-    // TODO #475: Move to BaseClient.
     public async Task<string> LolwutAsync()
         => await Command(Request.LolwutAsync());
-
-    /// <inheritdoc cref="IBaseClient.LolwutAsync(LolwutOptions)"/>
-    public override async Task<string> LolwutAsync(LolwutOptions options)
-        => await Command(Request.LolwutAsync(options));
 
     /// <inheritdoc cref="IGlideClient.MemoryDoctorAsync()"/>
     public async Task<string> MemoryDoctorAsync()
@@ -139,10 +105,6 @@ public partial class GlideClient
     /// <inheritdoc cref="IGlideClient.ReplicaOfNoOneAsync()"/>
     public async Task ReplicaOfNoOneAsync()
         => _ = await Command(Request.ReplicaOfNoOneAsync());
-
-    /// <inheritdoc cref="IBaseClient.SaveAsync()"/>
-    public override async Task SaveAsync()
-        => _ = await Command(Request.SaveAsync());
 
     /// <inheritdoc cref="IGlideClient.TimeAsync()"/>
     public Task<DateTimeOffset> TimeAsync()
