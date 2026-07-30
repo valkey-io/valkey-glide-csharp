@@ -375,6 +375,7 @@ pub(crate) unsafe fn create_connection_request(
         tcp_nodelay: false,
         periodic_checks: None, // TODO #485: Expose periodic_checks in ClusterClientConfiguration.
         inflight_requests_limit: None, // TODO #484: Expose inflight_requests_limit in ConnectionConfiguration.
+        recovery_requests_queue_size: None,
         address_resolver: None,
         client_circuit_breaker: None,
     })
