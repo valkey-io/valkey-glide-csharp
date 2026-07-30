@@ -186,11 +186,14 @@ public partial interface IDatabaseAsync
     /// <param name="pattern">The pattern to match.</param>
     /// <param name="pageSize">The number of elements to return per iteration (hint to the server).</param>
     /// <param name="cursor">The cursor position to start at.</param>
-    /// <param name="pageOffset">The number of elements to skip from the first page.</param>
+    /// <param name="pageOffset">The number of elements to skip from the beginning of the result stream.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>An <see cref="IAsyncEnumerable{T}"/> that yields all matching elements of the set.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <remarks>
+    /// Unlike StackExchange.Redis, which only skips elements within the first scan batch (making the
+    /// skip non-deterministic since batch sizes are server-controlled), GLIDE skips <paramref name="pageOffset"/>
+    /// elements from the overall result stream regardless of internal batching. This provides deterministic behavior.
     /// <example>
     /// <code>
     /// await db.SetAddAsync("myset", ["apple", "banana", "apricot"]);

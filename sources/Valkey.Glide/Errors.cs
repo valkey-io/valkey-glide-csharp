@@ -164,8 +164,6 @@ public static class Errors
     /// </summary>
     public sealed class ConfigurationError : GlideException
     {
-        // TODO set HelpLink with link to wiki
-
         /// <summary>
         /// Initializes a new instance of the <see cref="ConfigurationError"/> class.
         /// </summary>

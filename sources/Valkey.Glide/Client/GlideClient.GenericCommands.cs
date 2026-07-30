@@ -17,21 +17,20 @@ public partial class GlideClient
         => await Command(Request.ScanAsync(cursor, options));
 
     /// <inheritdoc cref="IGlideClient.ScanAsync(ScanOptions?)"/>
-    public async IAsyncEnumerable<ValkeyKey> ScanAsync(ScanOptions? options = null)
-    {
-        string currentCursor = "0";
+    public IAsyncEnumerable<ValkeyKey> ScanAsync(ScanOptions? options = null)
+        => ScanKeysAsync("0", options);
 
+    /// <inheritdoc cref="IGlideClient.ScanAsync(ScanOptions?)"/>
+    internal async IAsyncEnumerable<ValkeyKey> ScanKeysAsync(string cursor, ScanOptions? options)
+    {
         do
         {
-            (string nextCursor, ValkeyKey[] keys) = await Command(Request.ScanAsync(currentCursor, options));
-
-            foreach (ValkeyKey key in keys)
+            (cursor, var keys) = await Command(Request.ScanAsync(cursor, options));
+            foreach (var key in keys)
             {
                 yield return key;
             }
-
-            currentCursor = nextCursor;
-        } while (currentCursor != "0");
+        } while (cursor != "0");
     }
 
     /// <inheritdoc cref="ITransactionCommands.UnwatchAsync()"/>
