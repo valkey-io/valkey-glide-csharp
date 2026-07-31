@@ -105,6 +105,18 @@ pub struct ClientSideCacheConfig {
     pub server_assisted: bool,
 }
 
+/// A mirror of [`glide_core::client::ClientCircuitBreakerConfig`] adopted for FFI.
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct CircuitBreakerConfig {
+    pub window_size_ms: u32,
+    pub failure_rate_threshold: f32,
+    pub min_errors: u32,
+    pub open_timeout_ms: u32,
+    pub count_timeouts: bool,
+    pub consecutive_successes: u32,
+}
+
 /// A mirror of [`ConnectionRequest`] adopted for FFI.
 #[repr(C)]
 #[derive(Clone, Copy)]
@@ -144,10 +156,16 @@ pub struct ConnectionConfig {
 
     pub has_compression_config: bool,
     pub compression_config: CompressionConfig,
+
     pub read_only: bool,
+
     pub node_discovery_mode: NodeDiscoveryMode,
+
     pub has_client_side_cache_config: bool,
     pub client_side_cache_config: ClientSideCacheConfig,
+
+    pub has_circuit_breaker_config: bool,
+    pub circuit_breaker_config: CircuitBreakerConfig,
 }
 
 #[repr(C)]
@@ -269,14 +287,10 @@ pub(crate) unsafe fn create_connection_request(
                         ServiceType::ElastiCache => glide_core::iam::ServiceType::ElastiCache,
                         ServiceType::MemoryDB => glide_core::iam::ServiceType::MemoryDB,
                     },
-                    refresh_interval_seconds: if auth_info
+                    refresh_interval_seconds: auth_info
                         .iam_credentials
                         .has_refresh_interval_seconds
-                    {
-                        Some(auth_info.iam_credentials.refresh_interval_seconds)
-                    } else {
-                        None
-                    },
+                        .then_some(auth_info.iam_credentials.refresh_interval_seconds),
                 })
             } else {
                 None
@@ -335,7 +349,15 @@ pub(crate) unsafe fn create_connection_request(
                     .then_some(config.compression_config.max_decompressed_size as usize),
             },
         ),
+
         read_only: config.read_only,
+
+        // Node discovery mode
+        node_discovery_mode: match config.node_discovery_mode {
+            NodeDiscoveryMode::Standard => glide_core::client::NodeDiscoveryMode::Standard,
+            NodeDiscoveryMode::Static => glide_core::client::NodeDiscoveryMode::Static,
+            NodeDiscoveryMode::DiscoverAll => glide_core::client::NodeDiscoveryMode::DiscoverAll,
+        },
 
         // Client-side cache configuration
         client_side_cache: if config.has_client_side_cache_config {
@@ -345,14 +367,12 @@ pub(crate) unsafe fn create_connection_request(
                 cache_id: unsafe { ptr_to_str(csc.cache_id) }?,
                 max_cache_kb: csc.max_cache_kb,
                 entry_ttl_ms: csc.entry_ttl_ms,
-                eviction_policy: if csc.has_eviction_policy {
-                    Some(match csc.eviction_policy {
+                eviction_policy: csc
+                    .has_eviction_policy
+                    .then_some(match csc.eviction_policy {
                         EvictionPolicy::Lru => CoreEvictionPolicy::Lru,
                         EvictionPolicy::Lfu => CoreEvictionPolicy::Lfu,
-                    })
-                } else {
-                    None
-                },
+                    }),
                 enable_metrics: csc.enable_metrics,
                 server_assisted: csc.server_assisted,
             })
@@ -360,23 +380,32 @@ pub(crate) unsafe fn create_connection_request(
             None
         },
 
-        node_discovery_mode: match config.node_discovery_mode {
-            NodeDiscoveryMode::Standard => glide_core::client::NodeDiscoveryMode::Standard,
-            NodeDiscoveryMode::Static => glide_core::client::NodeDiscoveryMode::Static,
-            NodeDiscoveryMode::DiscoverAll => glide_core::client::NodeDiscoveryMode::DiscoverAll,
-        },
+        // Circuit breaker configuration
+        client_circuit_breaker: config.has_circuit_breaker_config.then_some(
+            glide_core::client::ClientCircuitBreakerConfig {
+                window_size_ms: config.circuit_breaker_config.window_size_ms,
+                failure_rate_threshold: config.circuit_breaker_config.failure_rate_threshold,
+                min_errors: config.circuit_breaker_config.min_errors,
+                open_timeout_ms: config.circuit_breaker_config.open_timeout_ms,
+                count_timeouts: config.circuit_breaker_config.count_timeouts,
+                consecutive_successes: config.circuit_breaker_config.consecutive_successes,
+            },
+        ),
 
-        // Unimplemented configuration options.
-        client_cert: Vec::new(),
-        client_key: Vec::new(),
-        client_cert_path: None,
-        client_key_path: None,
-        cert_reload: None,
-        tcp_nodelay: false,
-        periodic_checks: None, // TODO #485: Expose periodic_checks in ClusterClientConfiguration.
-        inflight_requests_limit: None, // TODO #484: Expose inflight_requests_limit in ConnectionConfiguration.
+        // Initialized to `None` because FFI clients pass the resolver as a function pointer
+        // directly to `create_client`, which patches it onto the request after construction.
         address_resolver: None,
-        client_circuit_breaker: None,
+
+        // Unimplemented configuration options
+        // -----------------------------------
+        client_cert: Vec::new(),       // TODO #488: Expose for mTLS
+        client_key: Vec::new(),        // TODO #488: Expose for mTLS
+        client_cert_path: None,        // TODO #488: Expose for mTLS
+        client_key_path: None,         // TODO #488: Expose for mTLS
+        cert_reload: None,             // TODO #488: Expose for mTLS
+        tcp_nodelay: false,            // TODO #490: Expose TCP_NODELAY.
+        periodic_checks: None,         // TODO #485: Expose cluster periodic checks.
+        inflight_requests_limit: None, // TODO #484: Expose request limiting.
     })
 }
 

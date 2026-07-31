@@ -147,7 +147,7 @@ internal partial class Database
         CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        GuardClauses.ThrowIfNotPositive(pageSize, nameof(pageSize));
+        ArgumentOutOfRangeException.ThrowIfLessThan(pageSize, 0, nameof(pageSize));
 
         var options = new ScanOptions { MatchPattern = pattern, Count = pageSize };
         return SetScanAsync(key, cursor, options).SkipAsync(pageOffset);

@@ -52,11 +52,11 @@ public class PubSubGracefulShutdownTests
             {
                 // Expected when cancelled
             }
-        });
+        }, TestContext.Current.CancellationToken);
 
-        await channel.Writer.WriteAsync(1);
-        await channel.Writer.WriteAsync(2);
-        await Task.Delay(50);
+        await channel.Writer.WriteAsync(1, TestContext.Current.CancellationToken);
+        await channel.Writer.WriteAsync(2, TestContext.Current.CancellationToken);
+        await Task.Delay(50, TestContext.Current.CancellationToken);
 
         cts.Cancel();
         channel.Writer.Complete();
@@ -74,16 +74,16 @@ public class PubSubGracefulShutdownTests
 
         Task processingTask = Task.Run(async () =>
         {
-            await foreach (int message in channel.Reader.ReadAllAsync())
+            await foreach (int message in channel.Reader.ReadAllAsync(TestContext.Current.CancellationToken))
             {
                 _ = Interlocked.Increment(ref messagesProcessed);
             }
             processingCompleted = true;
-        });
+        }, TestContext.Current.CancellationToken);
 
-        await channel.Writer.WriteAsync(1);
-        await channel.Writer.WriteAsync(2);
-        await channel.Writer.WriteAsync(3);
+        await channel.Writer.WriteAsync(1, TestContext.Current.CancellationToken);
+        await channel.Writer.WriteAsync(2, TestContext.Current.CancellationToken);
+        await channel.Writer.WriteAsync(3, TestContext.Current.CancellationToken);
         channel.Writer.Complete();
         await processingTask;
 

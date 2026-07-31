@@ -191,7 +191,7 @@ public class ClientSideCacheTests
         Assert.Equal("ttl_value", value.ToString());
 
         // Wait for TTL to expire
-        await Task.Delay(TimeSpan.FromSeconds(3));
+        await Task.Delay(TimeSpan.FromSeconds(3), TestContext.Current.CancellationToken);
 
         // GET after expiration — should fetch from server again
         value = await client.GetAsync(key);
