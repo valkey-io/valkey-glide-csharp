@@ -1061,22 +1061,22 @@ internal partial class FFI
         ByAddress,
     }
 
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    [StructLayout(LayoutKind.Sequential)]
     private struct RouteInfo
     {
         public RouteType Type;
         public int SlotId;
 
-        [MarshalAs(UnmanagedType.LPStr)]
+        [MarshalAs(UnmanagedType.LPUTF8Str)]
         public string? SlotKey;
         public SlotType SlotType;
 
-        [MarshalAs(UnmanagedType.LPStr)]
+        [MarshalAs(UnmanagedType.LPUTF8Str)]
         public string? Host;
         public int Port;
     }
 
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    [StructLayout(LayoutKind.Sequential)]
     private struct ConnectionRequest
     {
         public nuint AddressCount;
@@ -1115,7 +1115,7 @@ internal partial class FFI
         public bool HasProtocol;
         public ConnectionConfiguration.Protocol Protocol;
 
-        [MarshalAs(UnmanagedType.LPStr)]
+        [MarshalAs(UnmanagedType.LPUTF8Str)]
         public string? ClientName;
 
         [MarshalAs(UnmanagedType.U1)]
@@ -1164,10 +1164,10 @@ internal partial class FFI
         public uint ShardedChannelCount;
     }
 
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    [StructLayout(LayoutKind.Sequential)]
     internal readonly struct NodeAddress(string host, ushort port)
     {
-        [MarshalAs(UnmanagedType.LPStr)]
+        [MarshalAs(UnmanagedType.LPUTF8Str)]
         public readonly string Host = host;
         public readonly ushort Port = port;
     }
@@ -1226,7 +1226,7 @@ internal partial class FFI
         public ulong MaxDecompressedSize = maxDecompressedSize ?? default;
     }
 
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    [StructLayout(LayoutKind.Sequential)]
     internal readonly struct ClientSideCacheConfig(
         string cacheId,
         ulong maxCacheKb,
@@ -1239,7 +1239,7 @@ internal partial class FFI
         /// <summary>
         /// Unique identifier for the cache instance.
         /// </summary>
-        [MarshalAs(UnmanagedType.LPStr)]
+        [MarshalAs(UnmanagedType.LPUTF8Str)]
         public readonly string CacheId = cacheId;
 
         /// <summary>
@@ -1549,7 +1549,7 @@ internal partial class FFI
         /// <summary>
         /// Endpoint for OpenTelemetry traces.
         /// </summary>
-        [MarshalAs(UnmanagedType.LPStr)]
+        [MarshalAs(UnmanagedType.LPUTF8Str)]
         public readonly string Endpoint = endpoint;
 
         /// <summary>
@@ -1566,7 +1566,7 @@ internal partial class FFI
         /// <summary>
         /// Endpoint for OpenTelemetry metrics.
         /// </summary>
-        [MarshalAs(UnmanagedType.LPStr)]
+        [MarshalAs(UnmanagedType.LPUTF8Str)]
         public readonly string Endpoint = endpoint;
     }
 
@@ -1574,19 +1574,19 @@ internal partial class FFI
     // Authentication
     // ========================================================================================
 
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    [StructLayout(LayoutKind.Sequential)]
     internal readonly struct AuthenticationInfo(string? username, string? password, IamCredentials? iamCredentials)
     {
         /// <summary>
         /// Username for authentication.
         /// </summary>
-        [MarshalAs(UnmanagedType.LPStr)]
+        [MarshalAs(UnmanagedType.LPUTF8Str)]
         public readonly string? Username = username;
 
         /// <summary>
         /// Password for authentication.
         /// </summary>
-        [MarshalAs(UnmanagedType.LPStr)]
+        [MarshalAs(UnmanagedType.LPUTF8Str)]
         public readonly string? Password = password;
 
         /// <summary>
@@ -1597,19 +1597,19 @@ internal partial class FFI
         public readonly IamCredentials IamCredentials = iamCredentials ?? default;
     }
 
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    [StructLayout(LayoutKind.Sequential)]
     internal readonly struct IamCredentials(string clusterName, string region, ServiceType serviceType, uint? refreshIntervalSeconds)
     {
         /// <summary>
         /// The name of the cluster for IAM authentication.
         /// </summary>
-        [MarshalAs(UnmanagedType.LPStr)]
+        [MarshalAs(UnmanagedType.LPUTF8Str)]
         public readonly string ClusterName = clusterName;
 
         /// <summary>
         /// The AWS region for IAM authentication.
         /// </summary>
-        [MarshalAs(UnmanagedType.LPStr)]
+        [MarshalAs(UnmanagedType.LPUTF8Str)]
         public readonly string Region = region;
 
         /// <summary>
@@ -1648,13 +1648,13 @@ internal partial class FFI
     /// <summary>
     /// FFI-safe configuration struct passed to <see cref="CreateMonitorClientFfi"/>.
     /// </summary>
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    [StructLayout(LayoutKind.Sequential)]
     internal struct MonitorConfigFfi
     {
         /// <summary>
         /// The server host.
         /// </summary>
-        [MarshalAs(UnmanagedType.LPStr)]
+        [MarshalAs(UnmanagedType.LPUTF8Str)]
         public string Host;
 
         /// <summary>
@@ -1677,13 +1677,13 @@ internal partial class FFI
         /// The username for authentication,
         /// or <see langword="null"/> if not set.
         /// </summary>
-        [MarshalAs(UnmanagedType.LPStr)]
+        [MarshalAs(UnmanagedType.LPUTF8Str)]
         public string? Username;
 
         /// <summary>
         /// The password for authentication,
         /// or <see langword="null"/> if not set.</summary>
-        [MarshalAs(UnmanagedType.LPStr)]
+        [MarshalAs(UnmanagedType.LPUTF8Str)]
         public string? Password;
     }
 
