@@ -113,7 +113,7 @@ public class PubSubFFIMemoryLeakTests
 
     [Fact]
     [Trait("Category", "LongRunning")]
-    public void ProcessConcurrentMessages_NoMemoryLeak_ThreadSafeMemoryManagement()
+    public async Task ProcessConcurrentMessages_NoMemoryLeak_ThreadSafeMemoryManagement()
     {
         // Arrange
         const int threadsCount = 10;
@@ -146,11 +146,11 @@ public class PubSubFFIMemoryLeakTests
                 {
                     exceptions[capturedIndex] = ex;
                 }
-            });
+            }, TestContext.Current.CancellationToken);
         }
 
         // Wait for all tasks to complete
-        Task.WaitAll(tasks);
+        await Task.WhenAll(tasks);
 
         // Check for exceptions
         for (int i = 0; i < exceptions.Length; i++)

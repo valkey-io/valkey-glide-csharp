@@ -24,7 +24,7 @@ public class PubSubReconnectionTests
 
         // Kill connections and wait for reconnection.
         await KillConnections(publisher);
-        await Task.Delay(TimeSpan.FromSeconds(5));
+        await Task.Delay(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
 
         // Verify subscription after kill.
         await AssertSubscribedAsync(subscriber, message);

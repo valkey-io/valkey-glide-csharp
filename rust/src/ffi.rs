@@ -432,11 +432,15 @@ pub(crate) unsafe fn create_connection_request(
                     .then_some(config.cert_reload_interval_seconds),
             }),
 
-        // Unimplemented configuration options.
-        tcp_nodelay: false,
-        periodic_checks: None, // TODO #485: Expose periodic_checks in ClusterClientConfiguration.
-        inflight_requests_limit: None, // TODO #484: Expose inflight_requests_limit in ConnectionConfiguration.
+        // Initialized to `None` because FFI clients pass the resolver as a function pointer
+        // directly to `create_client`, which patches it onto the request after construction.
         address_resolver: None,
+
+        // Unimplemented configuration options
+        // -----------------------------------
+        tcp_nodelay: false,            // TODO #490: Expose TCP_NODELAY.
+        periodic_checks: None,         // TODO #485: Expose cluster periodic checks.
+        inflight_requests_limit: None, // TODO #484: Expose request limiting.
     })
 }
 
