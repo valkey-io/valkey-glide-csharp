@@ -226,7 +226,8 @@ internal partial class FFI
             CompressionConfig? compressionConfig,
             bool readOnly,
             NodeDiscoveryMode nodeDiscoveryMode,
-            ClientSideCacheConfig? clientSideCacheConfig)
+            ClientSideCacheConfig? clientSideCacheConfig,
+            CircuitBreakerConfig? circuitBreakerConfig)
         {
             _request = new()
             {
@@ -263,6 +264,8 @@ internal partial class FFI
                 NodeDiscoveryMode = nodeDiscoveryMode,
                 HasClientSideCacheConfig = clientSideCacheConfig.HasValue,
                 ClientSideCacheConfig = clientSideCacheConfig ?? default,
+                HasCircuitBreakerConfig = circuitBreakerConfig.HasValue,
+                CircuitBreakerConfig = circuitBreakerConfig ?? default,
             };
         }
 
@@ -1144,6 +1147,10 @@ internal partial class FFI
         [MarshalAs(UnmanagedType.U1)]
         public bool HasClientSideCacheConfig;
         public ClientSideCacheConfig ClientSideCacheConfig;
+
+        [MarshalAs(UnmanagedType.U1)]
+        public bool HasCircuitBreakerConfig;
+        public CircuitBreakerConfig CircuitBreakerConfig;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -1267,6 +1274,47 @@ internal partial class FFI
         /// </summary>
         [MarshalAs(UnmanagedType.U1)]
         public readonly bool ServerAssisted = serverAssisted;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal readonly struct CircuitBreakerConfig(
+        uint windowSizeMs,
+        float failureRateThreshold,
+        uint minErrors,
+        uint openTimeoutMs,
+        bool countTimeouts,
+        uint consecutiveSuccesses)
+    {
+        /// <summary>
+        /// Sliding window duration in milliseconds for error counting (0 = default).
+        /// </summary>
+        public readonly uint WindowSizeMs = windowSizeMs;
+
+        /// <summary>
+        /// Error rate threshold that triggers the circuit breaker (0 = default).
+        /// </summary>
+        public readonly float FailureRateThreshold = failureRateThreshold;
+
+        /// <summary>
+        /// Minimum errors in the window before the failure rate is evaluated (0 = default).
+        /// </summary>
+        public readonly uint MinErrors = minErrors;
+
+        /// <summary>
+        /// Duration in milliseconds the circuit breaker stays open before probing (0 = default).
+        /// </summary>
+        public readonly uint OpenTimeoutMs = openTimeoutMs;
+
+        /// <summary>
+        /// Whether timeout errors count toward tripping the circuit breaker.
+        /// </summary>
+        [MarshalAs(UnmanagedType.U1)]
+        public readonly bool CountTimeouts = countTimeouts;
+
+        /// <summary>
+        /// Consecutive successful probes needed to close the circuit breaker (0 = default).
+        /// </summary>
+        public readonly uint ConsecutiveSuccesses = consecutiveSuccesses;
     }
 
     [StructLayout(LayoutKind.Sequential)]
