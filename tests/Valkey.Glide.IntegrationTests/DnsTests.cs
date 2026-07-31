@@ -69,7 +69,6 @@ public class DnsTests(DnsTestsFixture fixture) : IClassFixture<DnsTestsFixture>
     public void GetServers_WithDnsHostname_ReturnsDnsEndPoints()
     {
         SkipIfDnsTestsNotEnabled();
-        Assert.SkipWhen(fixture.DnsClusterServer is null, "DNS cluster server not available.");
 
         var config = new ConfigurationOptions();
         var address = fixture.DnsClusterServer!.Address;
@@ -91,7 +90,6 @@ public class DnsTests(DnsTestsFixture fixture) : IClassFixture<DnsTestsFixture>
     public void GetEndPoints_WithDnsHostname_ReturnsDnsEndPoints()
     {
         SkipIfDnsTestsNotEnabled();
-        Assert.SkipWhen(fixture.DnsClusterServer is null, "DNS cluster server not available.");
 
         var config = new ConfigurationOptions();
         var address = fixture.DnsClusterServer!.Address;
@@ -102,10 +100,13 @@ public class DnsTests(DnsTestsFixture fixture) : IClassFixture<DnsTestsFixture>
         var endpoints = conn.GetEndPoints(false);
         Assert.NotEmpty(endpoints);
 
-        foreach (EndPoint endpoint in endpoints)
+        foreach (var endpoint in endpoints)
         {
             _ = Assert.IsType<DnsEndPoint>(endpoint);
             Assert.Contains(HostnameTls, endpoint.ToString());
+
+            var server = conn.GetServer(endpoint);
+            Assert.Equal(endpoint, server.EndPoint);
         }
     }
 
@@ -183,26 +184,9 @@ public class DnsTestsFixture : IAsyncLifetime
         {
             ClusterServer = new(useTls: false);
             StandaloneServer = new(useTls: false);
-
-            try
-            {
-                DnsClusterServer = new(host: HostnameTls);
-            }
-            catch
-            {
-                // DNS cluster may fail in environments where cluster-announce-hostname
-                // isn't properly supported (e.g. wait_for_all_topology_views timeout).
-            }
-
-            try
-            {
-                TlsClusterServer = new(useTls: true);
-                TlsStandaloneServer = new(useTls: true);
-            }
-            catch
-            {
-                // TLS servers may fail to start in some environments.
-            }
+            TlsClusterServer = new(useTls: true);
+            TlsStandaloneServer = new(useTls: true);
+            DnsClusterServer = new(host: HostnameTls);
         }
 
         return ValueTask.CompletedTask;
