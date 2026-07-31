@@ -48,7 +48,8 @@ public class BatchTests(TestConfiguration config)
         Task<object?> t4 = db.CustomCommand(["time"]); // This cmd is sent
 
         // wait for t3 for 100ms, expect to time out (batch is queued, not sent yet)
-        Assert.False(t3.Wait(100));
+        await Task.Delay(100, TestContext.Current.CancellationToken);
+        Assert.False(t3.IsCompleted);
 
         batch.Execute();
         // tasks could be awaited in any order
@@ -72,7 +73,8 @@ public class BatchTests(TestConfiguration config)
         Task<object?> t4 = db.CustomCommand(["time"]); // This cmd is sent
 
         // wait for t3 for 100ms, expect to time out (transaction is queued, not sent yet)
-        Assert.False(t3.Wait(100));
+        await Task.Delay(100, TestContext.Current.CancellationToken);
+        Assert.False(t3.IsCompleted);
 
         Assert.True(transaction.Execute());
         // tasks could be awaited in any order
@@ -100,7 +102,7 @@ public class BatchTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClusterConnections), MemberType = typeof(TestConfiguration))]
-    public void TransactionWithCrossSlot(ConnectionMultiplexer conn)
+    public async Task TransactionWithCrossSlot(ConnectionMultiplexer conn)
     {
         ITransaction transaction = conn.GetDatabase().CreateTransaction();
         Task<ValkeyValue> t1 = transaction.StringGetAsync(Guid.NewGuid().ToString());
@@ -109,7 +111,8 @@ public class BatchTests(TestConfiguration config)
         RequestException ex = Assert.Throws<RequestException>(() => transaction.Execute());
         Assert.Contains("CrossSlot", ex.Message);
         // in SER, commands' futures are never resolved if transaction failed, so we do the same
-        Assert.False(t1.Wait(100));
+        await Task.Delay(100, TestContext.Current.CancellationToken);
+        Assert.False(t1.IsCompleted);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]

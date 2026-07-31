@@ -20,34 +20,36 @@ Which part of the codebase or project does this affect? An issue can have multip
 
 ## Status
 
-Workflow state. Applied and updated as the issue progresses. New issues are 'triage' by default.
+Workflow state. Applied and updated as the issue progresses. New issues are 'triage'
+by default. When an issue is scheduled, the status label is removed and it is assigned
+to a [Milestone](https://github.com/valkey-io/valkey-glide-csharp/milestones).
 
-| Label        | Color            | Description                        |
-| ------------ | ---------------- | ---------------------------------- |
-| `backlog`    | `#0052cc` – blue | Reviewed but not yet scheduled     |
-| `release-*`  | `#0052cc` – blue | Targeted for the specified release |
-| `triage`     | `#0052cc` – blue | Needs triage — not yet reviewed    |
+| Label        | Color            | Description                     |
+| ------------ | ---------------- | ------------------------------- |
+| `backlog`    | `#0052cc` – blue | Reviewed but not yet scheduled  |
+| `triage`     | `#0052cc` – blue | Needs triage — not yet reviewed |
 
 ## Special
 
 GitHub-recognized labels and other cross-cutting concerns.
 
-| Label              | Color              | Description                                     |
-| ------------------ | ------------------ | ----------------------------------------------- |
-| `breaking`         | `#0e8a16` – green  | Introduces a breaking change                    |
-| `compatibility`    | `#0e8a16` – green  | StackExchange.Redis API compatibility           |
-| `dependencies`     | `#0e8a16` – green  | Dependency updates (auto-applied by Dependabot) |
-| `flaky-test`       | `#0e8a16` – green  | Flaky test in CI                                |
-| `good first issue` | `#0e8a16` – green  | Good for new contributors                       |
-| `help wanted`      | `#0e8a16` – green  | Extra attention is needed                       |
-| `inquiry`          | `#0e8a16` – green  | Question about how something works              |
+| Label              | Color              | Description                                       |
+| ------------------ | ------------------ | ------------------------------------------------- |
+| `breaking`         | `#0e8a16` – green  | Introduces a breaking change                      |
+| `compatibility`    | `#0e8a16` – green  | StackExchange.Redis API compatibility             |
+| `dependencies`     | `#0e8a16` – green  | Dependency updates (auto-applied by Dependabot)   |
+| `dev`              | `#0e8a16` – green  | Developer tooling, scripts, and local environment |
+| `flaky-test`       | `#0e8a16` – green  | Flaky test in CI                                  |
+| `good first issue` | `#0e8a16` – green  | Good for new contributors                         |
+| `help wanted`      | `#0e8a16` – green  | Extra attention is needed                         |
+| `inquiry`          | `#0e8a16` – green  | Question about how something works                |
 
 ## Mapping to Issue Templates
 
-| Template                                                           | Issue Type | Default Labels                          |
-| ------------------------------------------------------------------ | ---------- | --------------------------------------- |
-| [Bug Report](../.github/ISSUE_TEMPLATE/bug-report.yml)             | Bug        | `triage`                                |
-| [Feature Request](../.github/ISSUE_TEMPLATE/feature-request.yml)   | Feature    | `triage`                                |
-| [Flaky CI Test](../.github/ISSUE_TEMPLATE/flaky-ci-test-issue.yml) | Bug        | `ci`, `tests`, `triage`, `flaky-test`   |
-| [Inquiry](../.github/ISSUE_TEMPLATE/inquiry.yml)                   | Task       | `triage`, `inquiry`                     |
-| [Task](../.github/ISSUE_TEMPLATE/task.yml)                         | Task       | `triage`                                |
+| Template                                                           | Issue Type | Default Labels                        |
+| ------------------------------------------------------------------ | ---------- | ------------------------------------- |
+| [Bug Report](../.github/ISSUE_TEMPLATE/bug-report.yml)             | Bug        | `triage`                              |
+| [Feature Request](../.github/ISSUE_TEMPLATE/feature-request.yml)   | Feature    | `triage`                              |
+| [Flaky CI Test](../.github/ISSUE_TEMPLATE/flaky-ci-test-issue.yml) | Bug        | `ci`, `tests`, `triage`, `flaky-test` |
+| [Inquiry](../.github/ISSUE_TEMPLATE/inquiry.yml)                   | Task       | `triage`, `inquiry`                   |
+| [Task](../.github/ISSUE_TEMPLATE/task.yml)                         | Task       | `triage`                              |

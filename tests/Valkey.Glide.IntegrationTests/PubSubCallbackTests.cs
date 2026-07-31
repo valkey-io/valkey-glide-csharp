@@ -95,7 +95,7 @@ public class PubSubCallbackTests
         await PublishAsync(publisher, message);
 
         // Verify that all messages received despite exception.
-        _ = completed.Wait(MaxDuration);
+        _ = completed.Wait(MaxDuration, TestContext.Current.CancellationToken);
         Assert.Equal(3, receivedCount);
         Assert.Equal(2, succeededCount);
     }
