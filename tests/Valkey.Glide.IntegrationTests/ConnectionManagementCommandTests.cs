@@ -168,6 +168,8 @@ public class ConnectionManagementCommandTests(ServerFixture fixture) : IClassFix
         // Verify that read commands are blocked until the pause expires.
         _ = await client.GetAsync(key);
         Assert.True(sw.Elapsed >= pauseFor);
+
+        await client.ClientUnpauseAsync();
     }
 
     [Theory]
@@ -187,6 +189,8 @@ public class ConnectionManagementCommandTests(ServerFixture fixture) : IClassFix
         // Verify that write commands are blocked until the pause expires.
         await client.SetAsync(key, "after");
         Assert.True(sw.Elapsed >= pauseFor);
+
+        await client.ClientUnpauseAsync();
     }
 
     [Theory]
