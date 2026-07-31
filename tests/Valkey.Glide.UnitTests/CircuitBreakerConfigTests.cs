@@ -10,7 +10,7 @@ public class CircuitBreakerConfigTests
     #region Constants
 
     private static readonly TimeSpan TooLarge =
-        CircuitBreakerConfig.MaxTimeSpan + TimeSpan.FromMilliseconds(1);
+        GuardClauses.MaxUintMilliseconds + TimeSpan.FromMilliseconds(1);
 
     #endregion
     #region Default Values

@@ -1183,22 +1183,21 @@ internal partial class FFI
 
         public NodeDiscoveryMode NodeDiscoveryMode;
 
-        // Client-side cache configuration
-        // -------------------------------
+        #region Client-Side Cache
 
         [MarshalAs(UnmanagedType.U1)]
         public bool HasClientSideCacheConfig;
         public ClientSideCacheConfig ClientSideCacheConfig;
 
-        // Circuit breaker configuration
-        // -----------------------------
+        #endregion
+        #region Circuit Breaker
 
         [MarshalAs(UnmanagedType.U1)]
         public bool HasCircuitBreakerConfig;
         public CircuitBreakerConfig CircuitBreakerConfig;
 
-        // TLS configuration
-        // -----------------
+        #endregion
+        #region TLS
 
         public TlsMode TlsMode;
 
@@ -1206,8 +1205,8 @@ internal partial class FFI
         public IntPtr RootCertsPtr;
         public IntPtr RootCertsLensPtr;
 
-        // Mutual TLS configuration
-        // ------------------------
+        #endregion
+        #region Mutual TLS
 
         public nuint ClientCertLen;
         public IntPtr ClientCertPtr;
@@ -1227,6 +1226,8 @@ internal partial class FFI
         [MarshalAs(UnmanagedType.U1)]
         public bool HasCertReloadIntervalSeconds;
         public uint CertReloadIntervalSeconds;
+
+        #endregion
     }
 
     [StructLayout(LayoutKind.Sequential)]

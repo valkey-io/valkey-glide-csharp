@@ -569,8 +569,7 @@ public abstract class ConnectionConfiguration
         /// <seealso href="https://glide.valkey.io/how-to/security/tls/">Valkey GLIDE – Configure TLS</seealso>
         public T WithTrustedCertificate(byte[] certificateData)
         {
-            GuardClauses.ThrowIfDataNotSupported(certificateData, nameof(certificateData));
-
+            GuardClauses.ThrowIfBytesNotSupported(certificateData, nameof(certificateData));
             TrustedCertificates.Add(certificateData);
             return (T)this;
         }
@@ -588,8 +587,8 @@ public abstract class ConnectionConfiguration
         /// <seealso href="https://glide.valkey.io/how-to/security/tls/">Valkey GLIDE – Configure TLS</seealso>
         public T WithClientCertificate(byte[] certificateData, byte[] keyData)
         {
-            GuardClauses.ThrowIfDataNotSupported(certificateData, nameof(certificateData));
-            GuardClauses.ThrowIfDataNotSupported(keyData, nameof(keyData));
+            GuardClauses.ThrowIfBytesNotSupported(certificateData, nameof(certificateData));
+            GuardClauses.ThrowIfBytesNotSupported(keyData, nameof(keyData));
 
             ClearMutualTls();
 
@@ -677,7 +676,7 @@ public abstract class ConnectionConfiguration
             get => TimeSpan.FromMilliseconds(Config.RequestTimeoutMilliseconds ?? 250);
             set
             {
-                GuardClauses.ThrowIfNotUintMilliseconds(value, nameof(RequestTimeout));
+                GuardClauses.ThrowIfNotPositiveUintMilliseconds(value, nameof(RequestTimeout));
                 Config.RequestTimeoutMilliseconds = (uint)value.TotalMilliseconds;
             }
         }
@@ -703,7 +702,7 @@ public abstract class ConnectionConfiguration
             get => TimeSpan.FromMilliseconds(Config.ConnectionTimeoutMilliseconds ?? 250);
             set
             {
-                GuardClauses.ThrowIfNotUintMilliseconds(value, nameof(ConnectionTimeout));
+                GuardClauses.ThrowIfNotPositiveUintMilliseconds(value, nameof(ConnectionTimeout));
                 Config.ConnectionTimeoutMilliseconds = (uint)value.TotalMilliseconds;
             }
         }
@@ -918,7 +917,7 @@ public abstract class ConnectionConfiguration
             {
                 if (value.HasValue)
                 {
-                    GuardClauses.ThrowIfNotUintMilliseconds(value.Value, nameof(PubSubReconciliationInterval));
+                    GuardClauses.ThrowIfNotPositiveUintMilliseconds(value.Value, nameof(PubSubReconciliationInterval));
                     Config.PubSubReconciliationIntervalMilliseconds = (uint)value.Value.TotalMilliseconds;
                 }
                 else

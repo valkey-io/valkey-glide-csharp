@@ -13,12 +13,6 @@ public sealed class CircuitBreakerConfig
     #region Constants
 
     /// <summary>
-    /// TimeSpan parameters are marshalled to the Rust core as <c>u32</c> milliseconds,
-    /// so values exceeding this limit will throw an exception during configuration.
-    /// </summary>
-    public static readonly TimeSpan MaxTimeSpan = TimeSpan.FromMilliseconds(uint.MaxValue);
-
-    /// <summary>
     /// Default sliding window duration for error rate calculation (10 seconds).
     /// </summary>
     public static readonly TimeSpan DefaultWindowSize = TimeSpan.FromSeconds(10);
@@ -88,13 +82,11 @@ public sealed class CircuitBreakerConfig
     /// <param name="windowSize">The window size.</param>
     /// <returns>This instance for method chaining.</returns>
     /// <exception cref="ArgumentOutOfRangeException">
-    /// Thrown if <paramref name="windowSize"/> is not positive or exceeds <see cref="MaxTimeSpan"/>.
+    /// Thrown if <paramref name="windowSize"/> is not positive or is too large.
     /// </exception>
     public CircuitBreakerConfig WithWindowSize(TimeSpan windowSize)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(windowSize, TimeSpan.Zero, nameof(windowSize));
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(windowSize, MaxTimeSpan, nameof(windowSize));
-
+        GuardClauses.ThrowIfNotPositiveUintMilliseconds(windowSize, nameof(windowSize));
         WindowSize = windowSize;
         return this;
     }
@@ -110,7 +102,6 @@ public sealed class CircuitBreakerConfig
     public CircuitBreakerConfig WithFailureRateThreshold(float threshold)
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(threshold, 0.0f, nameof(threshold));
-
         FailureRateThreshold = threshold;
         return this;
     }
@@ -126,7 +117,6 @@ public sealed class CircuitBreakerConfig
     public CircuitBreakerConfig WithMinErrors(uint minErrors)
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(minErrors, 0u, nameof(minErrors));
-
         MinErrors = minErrors;
         return this;
     }
@@ -137,13 +127,11 @@ public sealed class CircuitBreakerConfig
     /// <param name="openTimeout">The open timeout duration.</param>
     /// <returns>This instance for method chaining.</returns>
     /// <exception cref="ArgumentOutOfRangeException">
-    /// Thrown if <paramref name="openTimeout"/> is not positive or exceeds <see cref="MaxTimeSpan"/>.
+    /// Thrown if <paramref name="openTimeout"/> is not positive or is too large.
     /// </exception>
     public CircuitBreakerConfig WithOpenTimeout(TimeSpan openTimeout)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(openTimeout, TimeSpan.Zero, nameof(openTimeout));
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(openTimeout, MaxTimeSpan, nameof(openTimeout));
-
+        GuardClauses.ThrowIfNotPositiveUintMilliseconds(openTimeout, nameof(openTimeout));
         OpenTimeout = openTimeout;
         return this;
     }
@@ -170,7 +158,6 @@ public sealed class CircuitBreakerConfig
     public CircuitBreakerConfig WithConsecutiveSuccesses(uint consecutiveSuccesses)
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(consecutiveSuccesses, 0u, nameof(consecutiveSuccesses));
-
         ConsecutiveSuccesses = consecutiveSuccesses;
         return this;
     }

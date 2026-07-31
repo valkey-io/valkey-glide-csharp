@@ -46,7 +46,7 @@ internal static class GuardClauses
     /// </summary>
     /// <param name="data">The byte array to validate.</param>
     /// <param name="paramName">The parameter name for the exception.</param>
-    internal static void ThrowIfDataNotSupported(byte[] data, string paramName)
+    internal static void ThrowIfBytesNotSupported(byte[] data, string paramName)
     {
         ArgumentNullException.ThrowIfNull(data, paramName);
         ArgumentOutOfRangeException.ThrowIfZero(data.Length, paramName);
@@ -63,6 +63,18 @@ internal static class GuardClauses
         var fileLength = new FileInfo(path).Length;
         ArgumentOutOfRangeException.ThrowIfZero(fileLength, paramName);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(fileLength, MaxDataSize, paramName);
+    }
+
+    /// <summary>
+    /// Throws an <see cref="ArgumentOutOfRangeException"/> if the given <see cref="TimeSpan"/>
+    /// cannot be represented as a positive <see cref="uint"/> number of milliseconds.
+    /// </summary>
+    /// <param name="value">The time span value to validate.</param>
+    /// <param name="paramName">The parameter name for the exception.</param>
+    internal static void ThrowIfNotPositiveUintMilliseconds(TimeSpan value, string paramName)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(value, TimeSpan.Zero, paramName);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(value, MaxUintMilliseconds, paramName);
     }
 
     /// <summary>
@@ -88,17 +100,5 @@ internal static class GuardClauses
         {
             throw new NotImplementedException($"Stream trim mode {trimMode} is not supported by Valkey GLIDE");
         }
-    }
-
-    /// <summary>
-    /// Throws an <see cref="ArgumentOutOfRangeException"/> if the given <see cref="TimeSpan"/>
-    /// cannot be represented as a positive <see cref="uint"/> number of milliseconds.
-    /// </summary>
-    /// <param name="value">The time span value to validate.</param>
-    /// <param name="paramName">The parameter name for the exception.</param>
-    internal static void ThrowIfNotUintMilliseconds(TimeSpan value, string paramName)
-    {
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(value, TimeSpan.Zero, paramName);
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(value, MaxUintMilliseconds, paramName);
     }
 }
