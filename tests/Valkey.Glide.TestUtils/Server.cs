@@ -231,6 +231,8 @@ public sealed class ClusterServer(bool useTls = false) : Server(useClusterMode: 
     {
         using var client = await CreateClusterClientAsync();
         await client.ConfigSetAsync("requirepass", password, Route.AllNodes);
+
+        _username = null;
         _password = password;
     }
 
@@ -306,6 +308,8 @@ public sealed class StandaloneServer(
     {
         using GlideClient client = await CreateStandaloneClientAsync();
         await client.ConfigSetAsync("requirepass", password);
+
+        _username = null;
         _password = password;
     }
 

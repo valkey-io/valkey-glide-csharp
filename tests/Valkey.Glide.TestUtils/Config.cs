@@ -128,10 +128,11 @@ public static class Config
         TimeSpan? requestTimeout = null,
         RetryStrategy? retryStrategy = null,
         byte[]? trustedCertificate = null,
+        string? username = null,
         string? password = null)
         => clusterMode
-            ? BuildClusterConfig(address, addressResolver, useTls, connectionTimeout, requestTimeout, retryStrategy, trustedCertificate, password).Build()
-            : BuildStandaloneConfig(address, addressResolver, useTls, connectionTimeout, requestTimeout, retryStrategy, trustedCertificate, password).Build();
+            ? BuildClusterConfig(address, addressResolver, useTls, connectionTimeout, requestTimeout, retryStrategy, trustedCertificate, username, password).Build()
+            : BuildStandaloneConfig(address, addressResolver, useTls, connectionTimeout, requestTimeout, retryStrategy, trustedCertificate, username, password).Build();
 
     #endregion
 }
