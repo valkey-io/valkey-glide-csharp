@@ -398,7 +398,6 @@ pub(crate) unsafe fn create_connection_request(
 
         // Unimplemented configuration options
         // -----------------------------------
-
         client_cert: Vec::new(),       // TODO #488: Expose for mTLS
         client_key: Vec::new(),        // TODO #488: Expose for mTLS
         client_cert_path: None,        // TODO #488: Expose for mTLS
