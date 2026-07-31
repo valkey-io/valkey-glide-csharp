@@ -43,6 +43,7 @@ public static class Config
         TimeSpan? requestTimeout = null,
         RetryStrategy? retryStrategy = null,
         byte[]? trustedCertificate = null,
+        string? username = null,
         string? password = null)
     {
         StandaloneClientConfigurationBuilder builder = new()
@@ -62,7 +63,7 @@ public static class Config
 
         if (password is not null)
         {
-            _ = builder.WithAuthentication(password);
+            _ = builder.WithAuthentication(username, password);
         }
 
         if (addressResolver is not null)
@@ -84,6 +85,7 @@ public static class Config
         TimeSpan? requestTimeout = null,
         RetryStrategy? retryStrategy = null,
         byte[]? trustedCertificate = null,
+        string? username = null,
         string? password = null)
     {
         ClusterClientConfigurationBuilder builder = new()
@@ -103,7 +105,7 @@ public static class Config
 
         if (password is not null)
         {
-            _ = builder.WithAuthentication(password);
+            _ = builder.WithAuthentication(username, password);
         }
 
         if (addressResolver is not null)
