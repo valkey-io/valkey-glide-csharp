@@ -53,6 +53,20 @@ unsafe fn ptr_to_opt_str(ptr: *const c_char) -> Result<Option<String>, String> {
     }
 }
 
+/// Convert a raw byte pointer and length to an owned `Vec<u8>`.
+/// Returns an empty Vec if the pointer is null.
+///
+/// # Safety
+///
+/// * If non-null, `ptr` must point to `len` valid bytes.
+unsafe fn ptr_to_bytes(ptr: *const u8, len: usize) -> Vec<u8> {
+    if ptr.is_null() {
+        Vec::new()
+    } else {
+        unsafe { from_raw_parts(ptr, len) }.to_vec()
+    }
+}
+
 /// A mirror of [`ConnectionRequest`] adopted for FFI.
 #[repr(C)]
 #[derive(Clone, Copy)]
@@ -112,8 +126,6 @@ pub struct ConnectionConfig {
     pub address_count: usize,
     /// Pointer to an array.
     pub addresses: *const *const Address,
-    pub has_tls: bool,
-    pub tls_mode: TlsMode,
     pub cluster_mode: bool,
     pub has_request_timeout: bool,
     pub request_timeout: u32,
@@ -134,11 +146,6 @@ pub struct ConnectionConfig {
     pub refresh_topology_from_initial_nodes: bool,
     pub pubsub_config: PubSubConfigInfo,
 
-    // Root certificates for TLS connections
-    pub root_certs_count: usize,
-    pub root_certs: *const *const u8,
-    pub root_certs_len: *const usize,
-
     pub has_pubsub_reconciliation_interval_ms: bool,
     pub pubsub_reconciliation_interval_ms: u32,
 
@@ -148,6 +155,23 @@ pub struct ConnectionConfig {
     pub node_discovery_mode: NodeDiscoveryMode,
     pub has_client_side_cache_config: bool,
     pub client_side_cache_config: ClientSideCacheConfig,
+
+    // TLS configuration
+    pub tls_mode: TlsMode,
+    pub root_certs_count: usize,
+    pub root_certs: *const *const u8,
+    pub root_certs_len: *const usize,
+
+    // Mutual TLS configuration
+    pub client_cert_len: usize,
+    pub client_cert_ptr: *const u8,
+    pub client_key_len: usize,
+    pub client_key_ptr: *const u8,
+    pub client_cert_path: *const c_char,
+    pub client_key_path: *const c_char,
+    pub cert_reload_enabled: bool,
+    pub has_cert_reload_interval_seconds: bool,
+    pub cert_reload_interval_seconds: u32,
 }
 
 #[repr(C)]
@@ -292,7 +316,6 @@ pub(crate) unsafe fn create_connection_request(
         },
         database_id: config.database_id.into(),
         protocol: config.has_protocol.then_some(config.protocol),
-        tls_mode: config.has_tls.then_some(config.tls_mode),
         addresses: unsafe { convert_node_addresses(config.addresses, config.address_count) }?,
         cluster_mode_enabled: config.cluster_mode,
         request_timeout: config.has_request_timeout.then_some(config.request_timeout),
@@ -305,13 +328,6 @@ pub(crate) unsafe fn create_connection_request(
         lazy_connect: config.lazy_connect,
         refresh_topology_from_initial_nodes: config.refresh_topology_from_initial_nodes,
         pubsub_subscriptions: Some(unsafe { convert_pubsub_config(&config.pubsub_config) }),
-        root_certs: unsafe {
-            convert_byte_array_to_owned(
-                config.root_certs,
-                config.root_certs_count,
-                config.root_certs_len,
-            )
-        },
         pubsub_reconciliation_interval_ms: config
             .has_pubsub_reconciliation_interval_ms
             .then_some(config.pubsub_reconciliation_interval_ms),
@@ -366,12 +382,31 @@ pub(crate) unsafe fn create_connection_request(
             NodeDiscoveryMode::DiscoverAll => glide_core::client::NodeDiscoveryMode::DiscoverAll,
         },
 
+        // TLS configuration
+        tls_mode: Some(config.tls_mode),
+        root_certs: unsafe {
+            convert_byte_array_to_owned(
+                config.root_certs,
+                config.root_certs_count,
+                config.root_certs_len,
+            )
+        },
+
+        // Mutual TLS configuration
+        client_cert: unsafe { ptr_to_bytes(config.client_cert_ptr, config.client_cert_len) },
+        client_key: unsafe { ptr_to_bytes(config.client_key_ptr, config.client_key_len) },
+        client_cert_path: unsafe { ptr_to_opt_str(config.client_cert_path) }?,
+        client_key_path: unsafe { ptr_to_opt_str(config.client_key_path) }?,
+        cert_reload: config
+            .cert_reload_enabled
+            .then_some(glide_core::client::CertReloadConfig {
+                enabled: true,
+                interval_seconds: config
+                    .has_cert_reload_interval_seconds
+                    .then_some(config.cert_reload_interval_seconds),
+            }),
+
         // Unimplemented configuration options.
-        client_cert: Vec::new(),
-        client_key: Vec::new(),
-        client_cert_path: None,
-        client_key_path: None,
-        cert_reload: None,
         tcp_nodelay: false,
         periodic_checks: None, // TODO #485: Expose periodic_checks in ClusterClientConfiguration.
         inflight_requests_limit: None, // TODO #484: Expose inflight_requests_limit in ConnectionConfiguration.

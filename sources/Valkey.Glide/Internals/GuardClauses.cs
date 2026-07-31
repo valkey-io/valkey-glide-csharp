@@ -7,6 +7,27 @@ namespace Valkey.Glide.Internals;
 /// </summary>
 internal static class GuardClauses
 {
+    #region Constants
+
+    /// <summary>
+    /// Maximum size for byte data (10 MB). Security measure to prevent
+    /// excessive memory allocation from malformed or malicious data.
+    /// </summary>
+    /// <seealso href="https://github.com/valkey-io/valkey-glide-csharp/issues/226">#226</seealso>
+    internal static readonly long MaxDataSize = 10 * 1024 * 1024;
+
+    /// <summary>
+    /// Maximum value for <see cref="uint"/> milliseconds
+    /// </summary>
+    internal static readonly TimeSpan MaxUintMilliseconds = TimeSpan.FromMilliseconds(uint.MaxValue);
+
+    /// <summary>
+    /// Maximum value for <see cref="uint"/> seconds
+    /// </summary>
+    internal static readonly TimeSpan MaxUintSeconds = TimeSpan.FromSeconds(uint.MaxValue);
+
+    #endregion
+
     /// <summary>
     /// Throws a <see cref="NotImplementedException"/> if async state is specified.
     /// </summary>
@@ -31,6 +52,30 @@ internal static class GuardClauses
         {
             throw new NotImplementedException($"Command flag {flags} is not supported by Valkey GLIDE");
         }
+    }
+
+    /// <summary>
+    /// Throws an <see cref="ArgumentException"/> if the byte array is not supported.
+    /// </summary>
+    /// <param name="data">The byte array to validate.</param>
+    /// <param name="paramName">The parameter name for the exception.</param>
+    internal static void ThrowIfDataNotSupported(byte[] data, string paramName)
+    {
+        ArgumentNullException.ThrowIfNull(data, paramName);
+        ArgumentOutOfRangeException.ThrowIfZero(data.Length, paramName);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(data.Length, MaxDataSize, paramName);
+    }
+
+    /// <summary>
+    /// Throws an <see cref="ArgumentException"/> if file is not supported.
+    /// </summary>
+    /// <param name="path">The file path to check.</param>
+    /// <param name="paramName">The parameter name for the exception.</param>
+    internal static void ThrowIfFileNotSupported(string path, string paramName)
+    {
+        var fileLength = new FileInfo(path).Length;
+        ArgumentOutOfRangeException.ThrowIfZero(fileLength, paramName);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(fileLength, MaxDataSize, paramName);
     }
 
     /// <summary>
@@ -75,6 +120,18 @@ internal static class GuardClauses
     }
 
     /// <summary>
+    /// Throws an <see cref="ArgumentOutOfRangeException"/> if the given <see cref="TimeSpan"/>
+    /// cannot be represented as a positive <see cref="uint"/> number of seconds.
+    /// </summary>
+    /// <param name="value">The time span value to validate.</param>
+    /// <param name="paramName">The parameter name for the exception.</param>
+    internal static void ThrowIfNotPositiveUintSeconds(TimeSpan value, string paramName)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(value, TimeSpan.Zero, paramName);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(value, MaxUintSeconds, paramName);
+    }
+
+    /// <summary>
     /// Throws a <see cref="NotImplementedException"/> if the stream trim mode is not supported.
     /// </summary>
     /// <param name="trimMode">The stream trim mode to validate.</param>
@@ -85,5 +142,18 @@ internal static class GuardClauses
         {
             throw new NotImplementedException($"Stream trim mode {trimMode} is not supported by Valkey GLIDE");
         }
+    }
+
+    /// <summary>
+    /// Throws an <see cref="ArgumentOutOfRangeException"/> if the given <see cref="TimeSpan"/>
+    /// cannot be represented as a positive <see cref="uint"/> number of milliseconds.
+    /// (<see cref="MaxUintMilliseconds"/>).
+    /// </summary>
+    /// <param name="value">The time span value to validate.</param>
+    /// <param name="paramName">The parameter name for the exception.</param>
+    internal static void ThrowIfNotUintMilliseconds(TimeSpan value, string paramName)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(value, TimeSpan.Zero, paramName);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(value, MaxUintMilliseconds, paramName);
     }
 }

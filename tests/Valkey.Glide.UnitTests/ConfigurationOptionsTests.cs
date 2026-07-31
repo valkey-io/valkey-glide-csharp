@@ -8,8 +8,13 @@ namespace Valkey.Glide.UnitTests;
 
 public class ConfigurationOptionsTests
 {
+    #region Constants
+
     private static readonly X509Certificate2 Certificate = CreateTestCertificate();
     private static readonly byte[] CertificateData = Certificate.Export(X509ContentType.Cert);
+
+    #endregion
+    #region TrustIssuer
 
     [Fact]
     public void TrustIssuer_WithPath_NullThrows()
@@ -30,21 +35,20 @@ public class ConfigurationOptionsTests
     {
         using var tempFile = new TempFile();
         var options = new ConfigurationOptions();
-        _ = Assert.Throws<ArgumentException>(() => options.TrustIssuer(tempFile.Path));
+        _ = Assert.Throws<ArgumentOutOfRangeException>(() => options.TrustIssuer(tempFile.Path));
     }
 
     [Fact]
     public void TrustIssuer_WithPath_OversizedThrows()
     {
-        // Create file that exceeds maximum size.
         using var tempFile = new TempFile();
         using (var fs = new FileStream(tempFile.Path, FileMode.Create))
         {
-            fs.SetLength(ConnectionConfiguration.CertificateMaxSize + 1);
+            fs.SetLength(GuardClauses.MaxDataSize + 1);
         }
 
-        var options = new ConfigurationOptions();
-        _ = Assert.Throws<ArgumentException>(() => options.TrustIssuer(tempFile.Path));
+        _ = Assert.Throws<ArgumentOutOfRangeException>(()
+            => new ConfigurationOptions().TrustIssuer(tempFile.Path));
     }
 
     [Fact]
@@ -90,6 +94,59 @@ public class ConfigurationOptionsTests
         Assert.Equivalent(new[] { CertificateData }, options._trustedIssuers);
     }
 
+    #endregion
+    #region SetUserPemCertificate
+
+    [Fact]
+    public void SetUserPemCertificate_WithCertAndKey_Succeeds()
+    {
+        using var certFile = new TempFile(CertificateData);
+        using var keyFile = new TempFile(CertificateData);
+
+        var options = new ConfigurationOptions();
+        options.SetUserPemCertificate(certFile.Path, keyFile.Path);
+
+        Assert.NotNull(options._clientCertificate);
+        Assert.Equal(CertificateData, options._clientCertificate);
+        Assert.Equal(CertificateData, options._clientKey);
+        Assert.True(options.Ssl);
+    }
+
+    [Fact]
+    public void SetUserPemCertificate_CertOnly_UsesCertAsKey()
+    {
+        using var certFile = new TempFile(CertificateData);
+
+        var options = new ConfigurationOptions();
+        options.SetUserPemCertificate(certFile.Path);
+
+        Assert.NotNull(options._clientCertificate);
+        Assert.Equal(CertificateData, options._clientCertificate);
+        Assert.Equal(CertificateData, options._clientKey);
+        Assert.True(options.Ssl);
+    }
+
+    [Fact]
+    public void SetUserPemCertificate_NullPath_Throws()
+        => _ = Assert.Throws<ArgumentNullException>(()
+            => new ConfigurationOptions().SetUserPemCertificate(null!));
+
+    [Fact]
+    public void SetUserPemCertificate_NonExistentCertPath_Throws()
+        => _ = Assert.Throws<FileNotFoundException>(()
+            => new ConfigurationOptions().SetUserPemCertificate("nonexistent.crt"));
+
+    [Fact]
+    public void SetUserPemCertificate_NonExistentKeyPath_Throws()
+    {
+        using var certFile = new TempFile(CertificateData);
+        _ = Assert.Throws<FileNotFoundException>(()
+            => new ConfigurationOptions().SetUserPemCertificate(certFile.Path, "nonexistent.key"));
+    }
+
+    #endregion
+    #region Helpers
+
     private static X509Certificate2 CreateTestCertificate()
     {
         // Create a self-signed certificate for testing
@@ -111,4 +168,6 @@ public class ConfigurationOptionsTests
             DateTimeOffset.UtcNow.AddDays(-1),
             DateTimeOffset.UtcNow.AddDays(365));
     }
+
+    #endregion
 }

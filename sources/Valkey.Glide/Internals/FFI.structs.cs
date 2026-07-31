@@ -208,7 +208,6 @@ internal partial class FFI
 
         public ConnectionConfig(
             List<NodeAddress> addresses,
-            TlsMode tlsMode,
             bool clusterMode,
             uint? requestTimeout,
             uint? connectionTimeout,
@@ -221,19 +220,28 @@ internal partial class FFI
             bool lazyConnect,
             bool refreshTopologyFromInitialNodes,
             BasePubSubSubscriptionConfig? pubSubSubscriptions,
-            List<byte[]> rootCertificates,
             uint? pubSubReconciliationIntervalMs,
             CompressionConfig? compressionConfig,
             bool readOnly,
             NodeDiscoveryMode nodeDiscoveryMode,
-            ClientSideCacheConfig? clientSideCacheConfig)
+            ClientSideCacheConfig? clientSideCacheConfig,
+
+            // TLS configuration
+            TlsMode tlsMode,
+            List<byte[]> rootCertificates,
+
+            // Mutual TLS configuration
+            byte[]? clientCertificate,
+            byte[]? clientKey,
+            string? clientCertificatePath,
+            string? clientKeyPath,
+            bool certReloadEnabled,
+            uint? certReloadIntervalSeconds)
         {
             _request = new()
             {
                 AddressCount = (nuint)addresses.Count,
                 Addresses = MarshallAddress(addresses),
-                HasTlsMode = true,
-                TlsMode = tlsMode,
                 ClusterMode = clusterMode,
                 HasRequestTimeout = requestTimeout.HasValue,
                 RequestTimeout = requestTimeout ?? default,
@@ -252,9 +260,6 @@ internal partial class FFI
                 LazyConnect = lazyConnect,
                 RefreshTopologyFromInitialNodes = refreshTopologyFromInitialNodes,
                 PubSubConfig = MarshalPubSubConfig(pubSubSubscriptions),
-                RootCertsCount = (nuint)rootCertificates.Count,
-                RootCertsPtr = MarshallRootCertificates(rootCertificates),
-                RootCertsLensPtr = MarshallRootCertificatesLengths(rootCertificates),
                 HasPubSubReconciliationIntervalMs = pubSubReconciliationIntervalMs.HasValue,
                 PubSubReconciliationIntervalMs = pubSubReconciliationIntervalMs ?? default,
                 HasCompressionConfig = compressionConfig.HasValue,
@@ -263,6 +268,23 @@ internal partial class FFI
                 NodeDiscoveryMode = nodeDiscoveryMode,
                 HasClientSideCacheConfig = clientSideCacheConfig.HasValue,
                 ClientSideCacheConfig = clientSideCacheConfig ?? default,
+
+                // TLS configuration
+                TlsMode = tlsMode,
+                RootCertsCount = (nuint)rootCertificates.Count,
+                RootCertsPtr = MarshallRootCertificates(rootCertificates),
+                RootCertsLensPtr = MarshallRootCertificatesLengths(rootCertificates),
+
+                // Mutual TLS configuration
+                ClientCertLen = (nuint)(clientCertificate?.Length ?? 0),
+                ClientCertPtr = MarshalBytes(clientCertificate),
+                ClientKeyLen = (nuint)(clientKey?.Length ?? 0),
+                ClientKeyPtr = MarshalBytes(clientKey),
+                ClientCertPath = clientCertificatePath,
+                ClientKeyPath = clientKeyPath,
+                CertReloadEnabled = certReloadEnabled,
+                HasCertReloadIntervalSeconds = certReloadIntervalSeconds.HasValue,
+                CertReloadIntervalSeconds = certReloadIntervalSeconds ?? 0,
             };
         }
 
@@ -280,7 +302,7 @@ internal partial class FFI
             FreeStringArray(pubSubConfig.PatternsPtr, pubSubConfig.PatternCount);
             FreeStringArray(pubSubConfig.ShardedChannelsPtr, pubSubConfig.ShardedChannelCount);
 
-            // Free root certificates
+            // Free TLS root certificates.
             if (_request.RootCertsCount > 0)
             {
                 for (int i = 0; i < (int)_request.RootCertsCount; i++)
@@ -291,6 +313,17 @@ internal partial class FFI
 
                 Marshal.FreeHGlobal(_request.RootCertsPtr);
                 Marshal.FreeHGlobal(_request.RootCertsLensPtr);
+            }
+
+            // Free mutual TLS certificate and key.
+            if (_request.ClientCertPtr != IntPtr.Zero)
+            {
+                Marshal.FreeHGlobal(_request.ClientCertPtr);
+            }
+
+            if (_request.ClientKeyPtr != IntPtr.Zero)
+            {
+                Marshal.FreeHGlobal(_request.ClientKeyPtr);
             }
         }
 
@@ -361,10 +394,7 @@ internal partial class FFI
 
             for (int i = 0; i < rootCerts.Count; i++)
             {
-                byte[] cert = rootCerts[i];
-                IntPtr certPtr = Marshal.AllocHGlobal(cert.Length);
-                Marshal.Copy(cert, 0, certPtr, cert.Length);
-                Marshal.WriteIntPtr(certsPtr, i * IntPtr.Size, certPtr);
+                Marshal.WriteIntPtr(certsPtr, i * IntPtr.Size, MarshalBytes(rootCerts[i]));
             }
 
             return certsPtr;
@@ -393,6 +423,22 @@ internal partial class FFI
             }
 
             return certsLengthsPtr;
+        }
+
+        /// <summary>
+        /// Copies a byte array into unmanaged memory for FFI.
+        /// Returns <see cref="IntPtr.Zero"/> if null.
+        /// </summary>
+        private static IntPtr MarshalBytes(byte[]? data)
+        {
+            if (data is null)
+            {
+                return IntPtr.Zero;
+            }
+
+            IntPtr ptr = Marshal.AllocHGlobal(data.Length);
+            Marshal.Copy(data, 0, ptr, data.Length);
+            return ptr;
         }
 
         /// <summary>
@@ -1080,10 +1126,6 @@ internal partial class FFI
         public IntPtr Addresses; // ** NodeAddress - array pointer
 
         [MarshalAs(UnmanagedType.U1)]
-        public bool HasTlsMode;
-        public TlsMode TlsMode;
-
-        [MarshalAs(UnmanagedType.U1)]
         public bool ClusterMode;
 
         [MarshalAs(UnmanagedType.U1)]
@@ -1123,11 +1165,6 @@ internal partial class FFI
 
         public PubSubConfigInfo PubSubConfig;
 
-        // Root certificates for TLS connections
-        public nuint RootCertsCount;
-        public IntPtr RootCertsPtr;
-        public IntPtr RootCertsLensPtr;
-
         [MarshalAs(UnmanagedType.U1)]
         public bool HasPubSubReconciliationIntervalMs;
         public uint PubSubReconciliationIntervalMs;
@@ -1144,6 +1181,37 @@ internal partial class FFI
         [MarshalAs(UnmanagedType.U1)]
         public bool HasClientSideCacheConfig;
         public ClientSideCacheConfig ClientSideCacheConfig;
+
+        // TLS configuration
+        // -----------------
+
+        public TlsMode TlsMode;
+
+        public nuint RootCertsCount;
+        public IntPtr RootCertsPtr;
+        public IntPtr RootCertsLensPtr;
+
+        // Mutual TLS configuration
+        // ------------------------
+
+        public nuint ClientCertLen;
+        public IntPtr ClientCertPtr;
+
+        public nuint ClientKeyLen;
+        public IntPtr ClientKeyPtr;
+
+        [MarshalAs(UnmanagedType.LPStr)]
+        public string? ClientCertPath;
+
+        [MarshalAs(UnmanagedType.LPStr)]
+        public string? ClientKeyPath;
+
+        [MarshalAs(UnmanagedType.U1)]
+        public bool CertReloadEnabled;
+
+        [MarshalAs(UnmanagedType.U1)]
+        public bool HasCertReloadIntervalSeconds;
+        public uint CertReloadIntervalSeconds;
     }
 
     [StructLayout(LayoutKind.Sequential)]
