@@ -202,7 +202,7 @@ internal partial class Database
     public Task<long> StreamTrimAsync(ValkeyKey key, int maxLength, bool useApproximateMaxLength = false, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        GuardClauses.ThrowIfNegative(maxLength, nameof(maxLength));
+        ArgumentOutOfRangeException.ThrowIfLessThan(maxLength, 0, nameof(maxLength));
 
         return StreamTrimAsync(key, new StreamTrimOptions.MaxLen
         {

@@ -34,47 +34,6 @@ internal static class GuardClauses
     }
 
     /// <summary>
-    /// Throws an <see cref="ArgumentException"/> if the given time span is negative.
-    /// </summary>
-    /// <param name="value">The time span value to validate.</param>
-    /// <exception cref="ArgumentException">Thrown if <paramref name="value"/> is negative.</exception>
-    public static void ThrowIfNegative(TimeSpan value)
-    {
-        if (value < TimeSpan.Zero)
-        {
-            throw new ArgumentException("Time span cannot be negative.");
-        }
-    }
-
-    /// <summary>
-    /// Throws an <see cref="ArgumentOutOfRangeException"/> if the given value is negative.
-    /// </summary>
-    /// <param name="value">The value to validate.</param>
-    /// <param name="name">The parameter name for the exception.</param>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="value"/> is negative.</exception>
-    public static void ThrowIfNegative(long value, string name)
-    {
-        if (value < 0)
-        {
-            throw new ArgumentOutOfRangeException(name, value, "Value cannot be negative.");
-        }
-    }
-
-    /// <summary>
-    /// Throws an <see cref="ArgumentOutOfRangeException"/> if the given value is not positive.
-    /// </summary>
-    /// <param name="value">The value to validate.</param>
-    /// <param name="name">The parameter name for the exception.</param>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="value"/> is zero or negative.</exception>
-    public static void ThrowIfNotPositive(long value, string name)
-    {
-        if (value <= 0)
-        {
-            throw new ArgumentOutOfRangeException(name, value, "Value must be positive.");
-        }
-    }
-
-    /// <summary>
     /// Throws a <see cref="NotImplementedException"/> if the stream trim mode is not supported.
     /// </summary>
     /// <param name="trimMode">The stream trim mode to validate.</param>
