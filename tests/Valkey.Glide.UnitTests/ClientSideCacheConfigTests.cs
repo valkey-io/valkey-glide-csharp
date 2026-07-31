@@ -10,7 +10,7 @@ public class ClientSideCacheConfigTests
 
     [Fact]
     public void ClientSideCacheConfig_EntryTtlMustNotBeNegative()
-        => _ = Assert.Throws<ArgumentException>(() => BuildConfig(entryTtl: TimeSpan.FromTicks(-1)));
+        => _ = Assert.Throws<ArgumentOutOfRangeException>(() => BuildConfig(entryTtl: TimeSpan.FromTicks(-1)));
 
     [Fact]
     public void ClientSideCacheConfig_EntryTtlZeroIsAllowed()

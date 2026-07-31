@@ -290,7 +290,7 @@ internal partial class ValkeyServer(Database conn, EndPoint endpoint) : IServer
         CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        GuardClauses.ThrowIfNotPositive(pageSize, nameof(pageSize));
+        ArgumentOutOfRangeException.ThrowIfLessThan(pageSize, 0, nameof(pageSize));
 
         var options = new ScanOptions { MatchPattern = pattern, Count = pageSize };
         return ScanAsync(cursor.ToString(), options).SkipAsync(pageOffset);
