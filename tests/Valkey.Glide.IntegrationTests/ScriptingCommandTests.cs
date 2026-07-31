@@ -8,13 +8,16 @@ public class ScriptingCommandTests(TestConfiguration config)
 {
     public TestConfiguration Config { get; } = config;
 
+    // Store xUnit test cancellation token for convenience.
+    private static CancellationToken CancellationToken => TestContext.Current.CancellationToken;
+
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task ScriptInvokeAsync_SimpleScript_ReturnsExpectedResult(BaseClient client)
     {
         // Test simple script execution
         using var script = new Script("return 'Hello, World!'");
-        ValkeyResult result = await client.ScriptInvokeAsync(script);
+        ValkeyResult result = await client.ScriptInvokeAsync(script, CancellationToken);
 
         Assert.NotNull(result);
         Assert.Equal("Hello, World!", result.ToString());
@@ -30,7 +33,7 @@ public class ScriptingCommandTests(TestConfiguration config)
             .WithKeys("mykey")
             .WithArgs("myvalue");
 
-        ValkeyResult result = await client.ScriptInvokeAsync(script, options);
+        ValkeyResult result = await client.ScriptInvokeAsync(script, options, CancellationToken);
 
         Assert.NotNull(result);
         Assert.Equal("mykey:myvalue", result.ToString());
@@ -41,11 +44,11 @@ public class ScriptingCommandTests(TestConfiguration config)
     public async Task ScriptInvokeAsync_NOSCRIPTFallback_AutomaticallyUsesEVAL(BaseClient client)
     {
         // Flush scripts to ensure NOSCRIPT error
-        await client.ScriptFlushAsync();
+        await client.ScriptFlushAsync(CancellationToken);
 
         // This should trigger NOSCRIPT and automatically fallback to EVAL
         using var script = new Script("return 'fallback test'");
-        ValkeyResult result = await client.ScriptInvokeAsync(script);
+        ValkeyResult result = await client.ScriptInvokeAsync(script, CancellationToken);
 
         Assert.NotNull(result);
         Assert.Equal("fallback test", result.ToString());
@@ -59,7 +62,7 @@ public class ScriptingCommandTests(TestConfiguration config)
         using var script = new Script("return redis.call('INVALID_COMMAND')");
 
         _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-            await client.ScriptInvokeAsync(script));
+            await client.ScriptInvokeAsync(script, CancellationToken));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -68,9 +71,9 @@ public class ScriptingCommandTests(TestConfiguration config)
     {
         // Load a script and verify it exists
         using var script = new Script("return 'exists test'");
-        _ = await client.ScriptInvokeAsync(script);
+        _ = await client.ScriptInvokeAsync(script, CancellationToken);
 
-        bool[] exists = await client.ScriptExistsAsync([script.Hash]);
+        bool[] exists = await client.ScriptExistsAsync([script.Hash], CancellationToken);
 
         _ = Assert.Single(exists);
         Assert.True(exists[0]);
@@ -81,12 +84,12 @@ public class ScriptingCommandTests(TestConfiguration config)
     public async Task ScriptExistsAsync_NonCachedScript_ReturnsFalse(BaseClient client)
     {
         // Flush scripts first
-        await client.ScriptFlushAsync();
+        await client.ScriptFlushAsync(CancellationToken);
 
         // Create a script but don't execute it
         using var script = new Script("return 'not cached'");
 
-        bool[] exists = await client.ScriptExistsAsync([script.Hash]);
+        bool[] exists = await client.ScriptExistsAsync([script.Hash], CancellationToken);
 
         _ = Assert.Single(exists);
         Assert.False(exists[0]);
@@ -97,15 +100,15 @@ public class ScriptingCommandTests(TestConfiguration config)
     public async Task ScriptExistsAsync_MultipleScripts_ReturnsCorrectStatus(BaseClient client)
     {
         // Flush scripts first
-        await client.ScriptFlushAsync();
+        await client.ScriptFlushAsync(CancellationToken);
 
         using var script1 = new Script("return 'script1'");
         using var script2 = new Script("return 'script2'");
 
         // Execute only script1
-        _ = await client.ScriptInvokeAsync(script1);
+        _ = await client.ScriptInvokeAsync(script1, CancellationToken);
 
-        bool[] exists = await client.ScriptExistsAsync([script1.Hash, script2.Hash]);
+        bool[] exists = await client.ScriptExistsAsync([script1.Hash, script2.Hash], CancellationToken);
 
         Assert.Equal(2, exists.Length);
         Assert.True(exists[0]);  // script1 is cached
@@ -118,17 +121,17 @@ public class ScriptingCommandTests(TestConfiguration config)
     {
         // Load a script
         using var script = new Script("return 'flush test'");
-        _ = await client.ScriptInvokeAsync(script);
+        _ = await client.ScriptInvokeAsync(script, CancellationToken);
 
         // Verify it exists
-        bool[] existsBefore = await client.ScriptExistsAsync([script.Hash]);
+        bool[] existsBefore = await client.ScriptExistsAsync([script.Hash], CancellationToken);
         Assert.True(existsBefore[0]);
 
         // Flush with SYNC mode
-        await client.ScriptFlushAsync(FlushMode.Sync);
+        await client.ScriptFlushAsync(FlushMode.Sync, CancellationToken);
 
         // Verify it no longer exists
-        bool[] existsAfter = await client.ScriptExistsAsync([script.Hash]);
+        bool[] existsAfter = await client.ScriptExistsAsync([script.Hash], CancellationToken);
         Assert.False(existsAfter[0]);
     }
 
@@ -138,16 +141,16 @@ public class ScriptingCommandTests(TestConfiguration config)
     {
         // Load a script
         using var script = new Script("return 'async flush test'");
-        _ = await client.ScriptInvokeAsync(script);
+        _ = await client.ScriptInvokeAsync(script, CancellationToken);
 
         // Flush with ASYNC mode
-        await client.ScriptFlushAsync(FlushMode.Async);
+        await client.ScriptFlushAsync(FlushMode.Async, CancellationToken);
 
         // Wait a bit for async flush to complete
-        await Task.Delay(100);
+        await Task.Delay(100, CancellationToken);
 
         // Verify it no longer exists
-        bool[] existsAfter = await client.ScriptExistsAsync([script.Hash]);
+        bool[] existsAfter = await client.ScriptExistsAsync([script.Hash], CancellationToken);
         Assert.False(existsAfter[0]);
     }
 
@@ -157,13 +160,13 @@ public class ScriptingCommandTests(TestConfiguration config)
     {
         // Load a script
         using var script = new Script("return 'default flush test'");
-        _ = await client.ScriptInvokeAsync(script);
+        _ = await client.ScriptInvokeAsync(script, CancellationToken);
 
         // Flush with default mode (SYNC)
-        await client.ScriptFlushAsync();
+        await client.ScriptFlushAsync(CancellationToken);
 
         // Verify it no longer exists
-        bool[] existsAfter = await client.ScriptExistsAsync([script.Hash]);
+        bool[] existsAfter = await client.ScriptExistsAsync([script.Hash], CancellationToken);
         Assert.False(existsAfter[0]);
     }
 
@@ -176,10 +179,10 @@ public class ScriptingCommandTests(TestConfiguration config)
         // Load a script
         string scriptCode = "return 'show test'";
         using var script = new Script(scriptCode);
-        _ = await client.ScriptInvokeAsync(script);
+        _ = await client.ScriptInvokeAsync(script, CancellationToken);
 
         // Get the source code
-        string? source = await client.ScriptShowAsync(script.Hash);
+        string? source = await client.ScriptShowAsync(script.Hash, CancellationToken);
 
         Assert.NotNull(source);
         Assert.Equal(scriptCode, source);
@@ -192,13 +195,13 @@ public class ScriptingCommandTests(TestConfiguration config)
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("8.0.0"), "SCRIPT SHOW is supported since Valkey 8.0.0");
 
         // Flush scripts first
-        await client.ScriptFlushAsync();
+        await client.ScriptFlushAsync(CancellationToken);
 
         // Create a script but don't execute it
         using var script = new Script("return 'not cached'");
 
         // Try to get source code
-        string? source = await client.ScriptShowAsync(script.Hash);
+        string? source = await client.ScriptShowAsync(script.Hash, CancellationToken);
 
         Assert.Null(source);
     }
@@ -209,7 +212,7 @@ public class ScriptingCommandTests(TestConfiguration config)
     {
         // Try to kill when no script is running
         _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-            await client.ScriptKillAsync());
+            await client.ScriptKillAsync(CancellationToken));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -222,7 +225,7 @@ public class ScriptingCommandTests(TestConfiguration config)
         var options = new ScriptOptions()
             .WithKeys("{key}1", "{key}2", "{key}3");
 
-        ValkeyResult result = await client.ScriptInvokeAsync(script, options);
+        ValkeyResult result = await client.ScriptInvokeAsync(script, options, CancellationToken);
 
         Assert.NotNull(result);
         Assert.Equal(3, (long)result);
@@ -237,7 +240,7 @@ public class ScriptingCommandTests(TestConfiguration config)
         var options = new ScriptOptions()
             .WithArgs("arg1", "arg2", "arg3", "arg4");
 
-        ValkeyResult result = await client.ScriptInvokeAsync(script, options);
+        ValkeyResult result = await client.ScriptInvokeAsync(script, options, CancellationToken);
 
         Assert.NotNull(result);
         Assert.Equal(4, (long)result);
@@ -249,7 +252,7 @@ public class ScriptingCommandTests(TestConfiguration config)
     {
         // Test script returning integer
         using var script = new Script("return 42");
-        ValkeyResult result = await client.ScriptInvokeAsync(script);
+        ValkeyResult result = await client.ScriptInvokeAsync(script, CancellationToken);
 
         Assert.NotNull(result);
         Assert.Equal(42, (long)result);
@@ -261,7 +264,7 @@ public class ScriptingCommandTests(TestConfiguration config)
     {
         // Test script returning array
         using var script = new Script("return {'a', 'b', 'c'}");
-        ValkeyResult result = await client.ScriptInvokeAsync(script);
+        ValkeyResult result = await client.ScriptInvokeAsync(script, CancellationToken);
 
         Assert.NotNull(result);
         string?[]? arr = (string?[]?)result;
@@ -278,7 +281,7 @@ public class ScriptingCommandTests(TestConfiguration config)
     {
         // Test script returning nil
         using var script = new Script("return nil");
-        ValkeyResult result = await client.ScriptInvokeAsync(script);
+        ValkeyResult result = await client.ScriptInvokeAsync(script, CancellationToken);
 
         Assert.NotNull(result);
         Assert.True(result.IsNull);
@@ -297,7 +300,7 @@ public class ScriptingCommandTests(TestConfiguration config)
         using var script = new Script("return redis.call('GET', KEYS[1])");
         var options = new ScriptOptions().WithKeys(key);
 
-        ValkeyResult result = await client.ScriptInvokeAsync(script, options);
+        ValkeyResult result = await client.ScriptInvokeAsync(script, options, CancellationToken);
 
         Assert.NotNull(result);
         Assert.Equal(value, result.ToString());
@@ -316,7 +319,7 @@ public class ScriptingCommandTests(TestConfiguration config)
             .WithKeys(key)
             .WithArgs(value);
 
-        ValkeyResult result = await client.ScriptInvokeAsync(script, options);
+        ValkeyResult result = await client.ScriptInvokeAsync(script, options, CancellationToken);
 
         Assert.NotNull(result);
         Assert.Equal("OK", result.ToString());
@@ -335,7 +338,7 @@ public class ScriptingCommandTests(TestConfiguration config)
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        await client.FunctionFlushAsync();
+        await client.FunctionFlushAsync(CancellationToken);
 
         // Use hardcoded unique library name per test
         string libName = "testlib_load";
@@ -345,7 +348,7 @@ public class ScriptingCommandTests(TestConfiguration config)
         string libraryCode = $@"#!lua name={libName}
 redis.register_function('{funcName}', function(keys, args) return 'Hello from function' end)";
 
-        string libraryName = await client.FunctionLoadAsync(libraryCode);
+        string libraryName = await client.FunctionLoadAsync(libraryCode, false, CancellationToken);
 
         Assert.Equal(libName, libraryName);
     }
@@ -359,11 +362,11 @@ redis.register_function('{funcName}', function(keys, args) return 'Hello from fu
         // Flush all functions first (use routing for cluster clients)
         if (client is GlideClusterClient clusterClient)
         {
-            await clusterClient.FunctionFlushAsync(Route.AllPrimaries);
+            await clusterClient.FunctionFlushAsync(Route.AllPrimaries, CancellationToken);
         }
         else
         {
-            await client.FunctionFlushAsync();
+            await client.FunctionFlushAsync(CancellationToken);
         }
 
         // Use hardcoded unique library name per test
@@ -375,11 +378,11 @@ redis.register_function('{funcName}', function(keys, args) return 'Hello from fu
 redis.register_function('{funcName}', function(keys, args) return 'version 1' end)";
         if (client is GlideClusterClient clusterClient1)
         {
-            _ = await clusterClient1.FunctionLoadAsync(libraryCode1, false, Route.AllPrimaries);
+            _ = await clusterClient1.FunctionLoadAsync(libraryCode1, false, Route.AllPrimaries, CancellationToken);
         }
         else
         {
-            _ = await client.FunctionLoadAsync(libraryCode1);
+            _ = await client.FunctionLoadAsync(libraryCode1, false, CancellationToken);
         }
 
         // Replace with new version (use routing for cluster clients)
@@ -388,12 +391,12 @@ redis.register_function('{funcName}', function(keys, args) return 'version 2' en
         string libraryName;
         if (client is GlideClusterClient clusterClient2)
         {
-            ClusterValue<string> loadResult = await clusterClient2.FunctionLoadAsync(libraryCode2, replace: true, Route.AllPrimaries);
+            ClusterValue<string> loadResult = await clusterClient2.FunctionLoadAsync(libraryCode2, replace: true, Route.AllPrimaries, CancellationToken);
             libraryName = loadResult.HasSingleData ? loadResult.SingleValue : loadResult.MultiValue.Values.First();
         }
         else
         {
-            libraryName = await client.FunctionLoadAsync(libraryCode2, replace: true);
+            libraryName = await client.FunctionLoadAsync(libraryCode2, replace: true, CancellationToken);
         }
 
         Assert.Equal(libName, libraryName);
@@ -402,12 +405,12 @@ redis.register_function('{funcName}', function(keys, args) return 'version 2' en
         ValkeyResult result;
         if (client is GlideClusterClient clusterClient3)
         {
-            ClusterValue<ValkeyResult> callResult = await clusterClient3.FCallAsync(funcName, Route.Random);
+            ClusterValue<ValkeyResult> callResult = await clusterClient3.FCallAsync(funcName, Route.Random, CancellationToken);
             result = callResult.HasSingleData ? callResult.SingleValue : callResult.MultiValue.Values.First();
         }
         else
         {
-            result = await client.FCallAsync(funcName);
+            result = await client.FCallAsync(funcName, CancellationToken);
         }
         Assert.Equal("version 2", result.ToString());
     }
@@ -419,7 +422,7 @@ redis.register_function('{funcName}', function(keys, args) return 'version 2' en
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        await client.FunctionFlushAsync();
+        await client.FunctionFlushAsync(CancellationToken);
 
         // Use hardcoded unique library name per test
         string libName = "conflictlib";
@@ -428,11 +431,11 @@ redis.register_function('{funcName}', function(keys, args) return 'version 2' en
         // Load initial library
         string libraryCode = $@"#!lua name={libName}
 redis.register_function('{funcName}', function(keys, args) return 'test' end)";
-        _ = await client.FunctionLoadAsync(libraryCode);
+        _ = await client.FunctionLoadAsync(libraryCode, false, CancellationToken);
 
         // Try to load again without replace flag
         _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-            await client.FunctionLoadAsync(libraryCode, replace: false));
+            await client.FunctionLoadAsync(libraryCode, replace: false, CancellationToken));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -446,7 +449,7 @@ redis.register_function('{funcName}', function(keys, args) return 'test' end)";
 this is not valid lua code";
 
         _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-            await client.FunctionLoadAsync(invalidCode));
+            await client.FunctionLoadAsync(invalidCode, false, CancellationToken));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -458,11 +461,11 @@ this is not valid lua code";
         // Flush all functions first (use routing for cluster clients)
         if (client is GlideClusterClient clusterClient)
         {
-            await clusterClient.FunctionFlushAsync(Route.AllPrimaries);
+            await clusterClient.FunctionFlushAsync(Route.AllPrimaries, CancellationToken);
         }
         else
         {
-            await client.FunctionFlushAsync();
+            await client.FunctionFlushAsync(CancellationToken);
         }
 
         // Use hardcoded unique library name per test
@@ -474,23 +477,23 @@ this is not valid lua code";
 redis.register_function('{funcName}', function(keys, args) return 'Hello, World!' end)";
         if (client is GlideClusterClient clusterClient2)
         {
-            _ = await clusterClient2.FunctionLoadAsync(libraryCode, false, Route.AllPrimaries);
+            _ = await clusterClient2.FunctionLoadAsync(libraryCode, false, Route.AllPrimaries, CancellationToken);
         }
         else
         {
-            _ = await client.FunctionLoadAsync(libraryCode);
+            _ = await client.FunctionLoadAsync(libraryCode, false, CancellationToken);
         }
 
         // Execute the function (use routing for cluster clients)
         ValkeyResult result;
         if (client is GlideClusterClient clusterClient3)
         {
-            ClusterValue<ValkeyResult> callResult = await clusterClient3.FCallAsync(funcName, Route.Random);
+            ClusterValue<ValkeyResult> callResult = await clusterClient3.FCallAsync(funcName, Route.Random, CancellationToken);
             result = callResult.HasSingleData ? callResult.SingleValue : callResult.MultiValue.Values.First();
         }
         else
         {
-            result = await client.FCallAsync(funcName);
+            result = await client.FCallAsync(funcName, CancellationToken);
         }
 
         Assert.NotNull(result);
@@ -504,7 +507,7 @@ redis.register_function('{funcName}', function(keys, args) return 'Hello, World!
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        await client.FunctionFlushAsync();
+        await client.FunctionFlushAsync(CancellationToken);
 
         // Use hardcoded unique library name per test
         string libName = "paramlib";
@@ -515,10 +518,10 @@ redis.register_function('{funcName}', function(keys, args) return 'Hello, World!
 redis.register_function('{funcName}', function(keys, args)
     return keys[1] .. ':' .. args[1]
 end)";
-        _ = await client.FunctionLoadAsync(libraryCode);
+        _ = await client.FunctionLoadAsync(libraryCode, false, CancellationToken);
 
         // Execute with keys and args
-        ValkeyResult result = await client.FCallAsync(funcName, ["mykey"], ["myvalue"]);
+        ValkeyResult result = await client.FCallAsync(funcName, ["mykey"], ["myvalue"], CancellationToken);
 
         Assert.NotNull(result);
         Assert.Equal("mykey:myvalue", result.ToString());
@@ -531,13 +534,13 @@ end)";
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        await client.FunctionFlushAsync();
+        await client.FunctionFlushAsync(CancellationToken);
 
         // Try to call non-existent function
         string funcName = "nonexistent";
 
         _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-            await client.FCallAsync(funcName));
+            await client.FCallAsync(funcName, CancellationToken));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -547,7 +550,7 @@ end)";
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        await client.FunctionFlushAsync();
+        await client.FunctionFlushAsync(CancellationToken);
 
         // Use hardcoded unique library name per test
         string libName = "readonlylib";
@@ -560,10 +563,10 @@ redis.register_function{{
     callback=function(keys, args) return 'Read-only result' end,
     flags={{'no-writes'}}
 }}";
-        _ = await client.FunctionLoadAsync(libraryCode);
+        _ = await client.FunctionLoadAsync(libraryCode, false, CancellationToken);
 
         // Execute in read-only mode
-        ValkeyResult result = await client.FCallReadOnlyAsync(funcName);
+        ValkeyResult result = await client.FCallReadOnlyAsync(funcName, CancellationToken);
 
         Assert.NotNull(result);
         Assert.Equal("Read-only result", result.ToString());
@@ -576,7 +579,7 @@ redis.register_function{{
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        await client.FunctionFlushAsync();
+        await client.FunctionFlushAsync(CancellationToken);
 
         // Use hardcoded unique library name per test
         string libName = "readonlyparamlib";
@@ -591,10 +594,10 @@ redis.register_function{{
     end,
     flags={{'no-writes'}}
 }}";
-        _ = await client.FunctionLoadAsync(libraryCode);
+        _ = await client.FunctionLoadAsync(libraryCode, false, CancellationToken);
 
         // Execute with keys and args
-        ValkeyResult result = await client.FCallReadOnlyAsync(funcName, ["key1"], ["value1"]);
+        ValkeyResult result = await client.FCallReadOnlyAsync(funcName, ["key1"], ["value1"], CancellationToken);
 
         Assert.NotNull(result);
         Assert.Equal("key1:value1", result.ToString());
@@ -609,11 +612,11 @@ redis.register_function{{
         // Flush all functions first (use routing for cluster clients)
         if (client is GlideClusterClient clusterClient)
         {
-            await clusterClient.FunctionFlushAsync(Route.AllPrimaries);
+            await clusterClient.FunctionFlushAsync(Route.AllPrimaries, CancellationToken);
         }
         else
         {
-            await client.FunctionFlushAsync();
+            await client.FunctionFlushAsync(CancellationToken);
         }
 
         // Use hardcoded unique library name per test
@@ -625,46 +628,46 @@ redis.register_function{{
 redis.register_function('{funcName}', function(keys, args) return 'test' end)";
         if (client is GlideClusterClient clusterClient2)
         {
-            _ = await clusterClient2.FunctionLoadAsync(libraryCode, false, Route.AllPrimaries);
+            _ = await clusterClient2.FunctionLoadAsync(libraryCode, false, Route.AllPrimaries, CancellationToken);
         }
         else
         {
-            _ = await client.FunctionLoadAsync(libraryCode);
+            _ = await client.FunctionLoadAsync(libraryCode, false, CancellationToken);
         }
 
         // Verify function exists by calling it (use routing for cluster clients)
         ValkeyResult resultBefore;
         if (client is GlideClusterClient clusterClient3)
         {
-            ClusterValue<ValkeyResult> callResult = await clusterClient3.FCallAsync(funcName, Route.Random);
+            ClusterValue<ValkeyResult> callResult = await clusterClient3.FCallAsync(funcName, Route.Random, CancellationToken);
             resultBefore = callResult.HasSingleData ? callResult.SingleValue : callResult.MultiValue.Values.First();
         }
         else
         {
-            resultBefore = await client.FCallAsync(funcName);
+            resultBefore = await client.FCallAsync(funcName, CancellationToken);
         }
         Assert.Equal("test", resultBefore.ToString());
 
         // Flush all functions (use routing for cluster clients)
         if (client is GlideClusterClient clusterClient4)
         {
-            await clusterClient4.FunctionFlushAsync(Route.AllPrimaries);
+            await clusterClient4.FunctionFlushAsync(Route.AllPrimaries, CancellationToken);
         }
         else
         {
-            await client.FunctionFlushAsync();
+            await client.FunctionFlushAsync(CancellationToken);
         }
 
         // Verify function no longer exists (use routing for cluster clients)
         if (client is GlideClusterClient clusterClient5)
         {
             _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-                await clusterClient5.FCallAsync(funcName, Route.Random));
+                await clusterClient5.FCallAsync(funcName, Route.Random, CancellationToken));
         }
         else
         {
             _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-                await client.FCallAsync(funcName));
+                await client.FCallAsync(funcName, CancellationToken));
         }
     }
 
@@ -675,7 +678,7 @@ redis.register_function('{funcName}', function(keys, args) return 'test' end)";
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        await client.FunctionFlushAsync();
+        await client.FunctionFlushAsync(CancellationToken);
 
         // Use hardcoded unique library name per test
         string libName = "flushsynclib";
@@ -684,14 +687,14 @@ redis.register_function('{funcName}', function(keys, args) return 'test' end)";
         // Load a function
         string libraryCode = $@"#!lua name={libName}
 redis.register_function('{funcName}', function(keys, args) return 'test' end)";
-        _ = await client.FunctionLoadAsync(libraryCode);
+        _ = await client.FunctionLoadAsync(libraryCode, false, CancellationToken);
 
         // Flush with SYNC mode
-        await client.FunctionFlushAsync(FlushMode.Sync);
+        await client.FunctionFlushAsync(FlushMode.Sync, CancellationToken);
 
         // Verify function no longer exists
         _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-            await client.FCallAsync(funcName));
+            await client.FCallAsync(funcName, CancellationToken));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -701,7 +704,7 @@ redis.register_function('{funcName}', function(keys, args) return 'test' end)";
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        await client.FunctionFlushAsync();
+        await client.FunctionFlushAsync(CancellationToken);
 
         // Use hardcoded unique library name per test
         string libName = "flushasynclib";
@@ -710,17 +713,17 @@ redis.register_function('{funcName}', function(keys, args) return 'test' end)";
         // Load a function
         string libraryCode = $@"#!lua name={libName}
 redis.register_function('{funcName}', function(keys, args) return 'test' end)";
-        _ = await client.FunctionLoadAsync(libraryCode);
+        _ = await client.FunctionLoadAsync(libraryCode, false, CancellationToken);
 
         // Flush with ASYNC mode
-        await client.FunctionFlushAsync(FlushMode.Async);
+        await client.FunctionFlushAsync(FlushMode.Async, CancellationToken);
 
         // Wait a bit for async flush to complete
-        await Task.Delay(100);
+        await Task.Delay(100, CancellationToken);
 
         // Verify function no longer exists
         _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-            await client.FCallAsync(funcName));
+            await client.FCallAsync(funcName, CancellationToken));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -730,7 +733,7 @@ redis.register_function('{funcName}', function(keys, args) return 'test' end)";
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        await client.FunctionFlushAsync();
+        await client.FunctionFlushAsync(CancellationToken);
 
         // Use hardcoded unique library name per test
         string libName = "errorlib";
@@ -741,11 +744,11 @@ redis.register_function('{funcName}', function(keys, args) return 'test' end)";
 redis.register_function('{funcName}', function(keys, args)
     error('Intentional error')
 end)";
-        _ = await client.FunctionLoadAsync(libraryCode);
+        _ = await client.FunctionLoadAsync(libraryCode, false, CancellationToken);
 
         // Execute function that throws error
         _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-            await client.FCallAsync(funcName));
+            await client.FCallAsync(funcName, CancellationToken));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -755,7 +758,7 @@ end)";
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        await client.FunctionFlushAsync();
+        await client.FunctionFlushAsync(CancellationToken);
 
         // Set up test data
         string key = Guid.NewGuid().ToString();
@@ -771,10 +774,10 @@ end)";
 redis.register_function('{funcName}', function(keys, args)
     return redis.call('GET', keys[1])
 end)";
-        _ = await client.FunctionLoadAsync(libraryCode);
+        _ = await client.FunctionLoadAsync(libraryCode, false, CancellationToken);
 
         // Execute function
-        ValkeyResult result = await client.FCallAsync(funcName, [key], []);
+        ValkeyResult result = await client.FCallAsync(funcName, [key], [], CancellationToken);
 
         Assert.NotNull(result);
         Assert.Equal(value, result.ToString());
@@ -787,7 +790,7 @@ end)";
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        await client.FunctionFlushAsync();
+        await client.FunctionFlushAsync(CancellationToken);
 
         // Use hardcoded unique library name per test
         string libName = "setlib";
@@ -798,12 +801,12 @@ end)";
 redis.register_function('{funcName}', function(keys, args)
     return redis.call('SET', keys[1], args[1])
 end)";
-        _ = await client.FunctionLoadAsync(libraryCode);
+        _ = await client.FunctionLoadAsync(libraryCode, false, CancellationToken);
 
         // Execute function to set value
         string key = Guid.NewGuid().ToString();
         string value = "function set value";
-        ValkeyResult result = await client.FCallAsync(funcName, [key], [value]);
+        ValkeyResult result = await client.FCallAsync(funcName, [key], [value], CancellationToken);
 
         Assert.NotNull(result);
         Assert.Equal("OK", result.ToString());
@@ -822,11 +825,11 @@ end)";
         // Flush all functions first (use routing for cluster clients)
         if (client is GlideClusterClient clusterClient)
         {
-            await clusterClient.FunctionFlushAsync(Route.AllPrimaries);
+            await clusterClient.FunctionFlushAsync(Route.AllPrimaries, CancellationToken);
         }
         else
         {
-            await client.FunctionFlushAsync();
+            await client.FunctionFlushAsync(CancellationToken);
         }
 
         // Use hardcoded unique library name per test
@@ -838,22 +841,22 @@ end)";
 redis.register_function('{funcName}', function(keys, args) return 42 end)";
         if (client is GlideClusterClient clusterClient2)
         {
-            _ = await clusterClient2.FunctionLoadAsync(libraryCode, false, Route.AllPrimaries);
+            _ = await clusterClient2.FunctionLoadAsync(libraryCode, false, Route.AllPrimaries, CancellationToken);
         }
         else
         {
-            _ = await client.FunctionLoadAsync(libraryCode);
+            _ = await client.FunctionLoadAsync(libraryCode, false, CancellationToken);
         }
 
         ValkeyResult result;
         if (client is GlideClusterClient clusterClient3)
         {
-            ClusterValue<ValkeyResult> callResult = await clusterClient3.FCallAsync(funcName, Route.Random);
+            ClusterValue<ValkeyResult> callResult = await clusterClient3.FCallAsync(funcName, Route.Random, CancellationToken);
             result = callResult.HasSingleData ? callResult.SingleValue : callResult.MultiValue.Values.First();
         }
         else
         {
-            result = await client.FCallAsync(funcName);
+            result = await client.FCallAsync(funcName, CancellationToken);
         }
 
         Assert.NotNull(result);
@@ -869,11 +872,11 @@ redis.register_function('{funcName}', function(keys, args) return 42 end)";
         // Flush all functions first (use routing for cluster clients)
         if (client is GlideClusterClient clusterClient)
         {
-            await clusterClient.FunctionFlushAsync(Route.AllPrimaries);
+            await clusterClient.FunctionFlushAsync(Route.AllPrimaries, CancellationToken);
         }
         else
         {
-            await client.FunctionFlushAsync();
+            await client.FunctionFlushAsync(CancellationToken);
         }
 
         // Use hardcoded unique library name per test
@@ -885,22 +888,22 @@ redis.register_function('{funcName}', function(keys, args) return 42 end)";
 redis.register_function('{funcName}', function(keys, args) return {{'a', 'b', 'c'}} end)";
         if (client is GlideClusterClient clusterClient2)
         {
-            _ = await clusterClient2.FunctionLoadAsync(libraryCode, false, Route.AllPrimaries);
+            _ = await clusterClient2.FunctionLoadAsync(libraryCode, false, Route.AllPrimaries, CancellationToken);
         }
         else
         {
-            _ = await client.FunctionLoadAsync(libraryCode);
+            _ = await client.FunctionLoadAsync(libraryCode, false, CancellationToken);
         }
 
         ValkeyResult result;
         if (client is GlideClusterClient clusterClient3)
         {
-            ClusterValue<ValkeyResult> callResult = await clusterClient3.FCallAsync(funcName, Route.Random);
+            ClusterValue<ValkeyResult> callResult = await clusterClient3.FCallAsync(funcName, Route.Random, CancellationToken);
             result = callResult.HasSingleData ? callResult.SingleValue : callResult.MultiValue.Values.First();
         }
         else
         {
-            result = await client.FCallAsync(funcName);
+            result = await client.FCallAsync(funcName, CancellationToken);
         }
 
         Assert.NotNull(result);
@@ -922,7 +925,7 @@ redis.register_function('{funcName}', function(keys, args) return {{'a', 'b', 'c
         Assert.SkipWhen(client is GlideClusterClient, "Nil handling with cluster routing needs investigation");
 
         // Flush all functions first
-        await client.FunctionFlushAsync();
+        await client.FunctionFlushAsync(CancellationToken);
 
         // Use hardcoded unique library name per test
         string libName = "nillib";
@@ -931,9 +934,9 @@ redis.register_function('{funcName}', function(keys, args) return {{'a', 'b', 'c
         // Load function returning nil
         string libraryCode = $@"#!lua name={libName}
 redis.register_function('{funcName}', function(keys, args) return nil end)";
-        _ = await client.FunctionLoadAsync(libraryCode);
+        _ = await client.FunctionLoadAsync(libraryCode, false, CancellationToken);
 
-        ValkeyResult result = await client.FCallAsync(funcName);
+        ValkeyResult result = await client.FCallAsync(funcName, CancellationToken);
 
         Assert.NotNull(result);
         Assert.True(result.IsNull);
@@ -948,7 +951,7 @@ redis.register_function('{funcName}', function(keys, args) return nil end)";
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        await client.FunctionFlushAsync();
+        await client.FunctionFlushAsync(CancellationToken);
 
         // Load multiple libraries
         string lib1Code = @"#!lua name=testlib1
@@ -956,11 +959,11 @@ redis.register_function('func1', function(keys, args) return 'result1' end)";
         string lib2Code = @"#!lua name=testlib2
 redis.register_function('func2', function(keys, args) return 'result2' end)";
 
-        _ = await client.FunctionLoadAsync(lib1Code);
-        _ = await client.FunctionLoadAsync(lib2Code);
+        _ = await client.FunctionLoadAsync(lib1Code, false, CancellationToken);
+        _ = await client.FunctionLoadAsync(lib2Code, false, CancellationToken);
 
         // List all libraries
-        LibraryInfo[] libraries = await client.FunctionListAsync();
+        LibraryInfo[] libraries = await client.FunctionListAsync(null, CancellationToken);
 
         Assert.NotNull(libraries);
         Assert.True(libraries.Length >= 2);
@@ -975,7 +978,7 @@ redis.register_function('func2', function(keys, args) return 'result2' end)";
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        await client.FunctionFlushAsync();
+        await client.FunctionFlushAsync(CancellationToken);
 
         // Load multiple libraries
         string lib1Code = @"#!lua name=filterlib1
@@ -983,11 +986,11 @@ redis.register_function('func1', function(keys, args) return 'result1' end)";
         string lib2Code = @"#!lua name=filterlib2
 redis.register_function('func2', function(keys, args) return 'result2' end)";
 
-        _ = await client.FunctionLoadAsync(lib1Code);
-        _ = await client.FunctionLoadAsync(lib2Code);
+        _ = await client.FunctionLoadAsync(lib1Code, false, CancellationToken);
+        _ = await client.FunctionLoadAsync(lib2Code, false, CancellationToken);
 
         // List with filter
-        LibraryInfo[] libraries = await client.FunctionListAsync(new FunctionListOptions { LibraryName = "filterlib1" });
+        LibraryInfo[] libraries = await client.FunctionListAsync(new FunctionListOptions { LibraryName = "filterlib1" }, CancellationToken);
 
         Assert.NotNull(libraries);
         _ = Assert.Single(libraries);
@@ -1001,15 +1004,15 @@ redis.register_function('func2', function(keys, args) return 'result2' end)";
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        await client.FunctionFlushAsync();
+        await client.FunctionFlushAsync(CancellationToken);
 
         // Load a library
         string libCode = @"#!lua name=codelib
 redis.register_function('codefunc', function(keys, args) return 'result' end)";
-        _ = await client.FunctionLoadAsync(libCode);
+        _ = await client.FunctionLoadAsync(libCode, false, CancellationToken);
 
         // List with code
-        LibraryInfo[] libraries = await client.FunctionListAsync(new FunctionListOptions { WithCode = true });
+        LibraryInfo[] libraries = await client.FunctionListAsync(new FunctionListOptions { WithCode = true }, CancellationToken);
 
         Assert.NotNull(libraries);
         var lib = libraries.FirstOrDefault(l => l.Name == "codelib");
@@ -1025,21 +1028,21 @@ redis.register_function('codefunc', function(keys, args) return 'result' end)";
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        await client.FunctionFlushAsync();
+        await client.FunctionFlushAsync(CancellationToken);
 
         // Load a library
         string libCode = @"#!lua name=statslib
 redis.register_function('statsfunc', function(keys, args) return 'result' end)";
-        string libName = await client.FunctionLoadAsync(libCode);
+        string libName = await client.FunctionLoadAsync(libCode, false, CancellationToken);
         Assert.Equal("statslib", libName);
 
         // Verify the function was loaded
-        var libraries = await client.FunctionListAsync();
+        var libraries = await client.FunctionListAsync(null, CancellationToken);
         Assert.NotEmpty(libraries);
         Assert.Contains(libraries, lib => lib.Name == "statslib");
 
         // Get stats
-        FunctionStatsResult stats = await client.FunctionStatsAsync();
+        FunctionStatsResult stats = await client.FunctionStatsAsync(CancellationToken);
 
         Assert.NotNull(stats);
         Assert.NotNull(stats.Engines);
@@ -1060,22 +1063,22 @@ redis.register_function('statsfunc', function(keys, args) return 'result' end)";
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        await client.FunctionFlushAsync();
+        await client.FunctionFlushAsync(CancellationToken);
 
         // Load a library
         string libCode = @"#!lua name=deletelib
 redis.register_function('deletefunc', function(keys, args) return 'result' end)";
-        _ = await client.FunctionLoadAsync(libCode);
+        _ = await client.FunctionLoadAsync(libCode, false, CancellationToken);
 
         // Verify it exists
-        var libraries = await client.FunctionListAsync(new FunctionListOptions { LibraryName = "deletelib" });
+        var libraries = await client.FunctionListAsync(new FunctionListOptions { LibraryName = "deletelib" }, CancellationToken);
         _ = Assert.Single(libraries);
 
         // Delete the library
-        await client.FunctionDeleteAsync("deletelib");
+        await client.FunctionDeleteAsync("deletelib", CancellationToken);
 
         // Verify it no longer exists
-        libraries = await client.FunctionListAsync(new FunctionListOptions { LibraryName = "deletelib" });
+        libraries = await client.FunctionListAsync(new FunctionListOptions { LibraryName = "deletelib" }, CancellationToken);
         Assert.Empty(libraries);
     }
 
@@ -1087,7 +1090,7 @@ redis.register_function('deletefunc', function(keys, args) return 'result' end)"
 
         // Try to delete non-existent library
         _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-            await client.FunctionDeleteAsync("nonexistentlib"));
+            await client.FunctionDeleteAsync("nonexistentlib", CancellationToken));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1098,7 +1101,7 @@ redis.register_function('deletefunc', function(keys, args) return 'result' end)"
 
         // Try to kill when no function is running
         _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-            await client.FunctionKillAsync());
+            await client.FunctionKillAsync(CancellationToken));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1108,15 +1111,15 @@ redis.register_function('deletefunc', function(keys, args) return 'result' end)"
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        await client.FunctionFlushAsync();
+        await client.FunctionFlushAsync(CancellationToken);
 
         // Load a library
         string libCode = @"#!lua name=dumplib
 redis.register_function('dumpfunc', function(keys, args) return 'result' end)";
-        _ = await client.FunctionLoadAsync(libCode);
+        _ = await client.FunctionLoadAsync(libCode, false, CancellationToken);
 
         // Dump functions
-        byte[] backup = await client.FunctionDumpAsync();
+        byte[] backup = await client.FunctionDumpAsync(CancellationToken);
 
         Assert.NotNull(backup);
         Assert.NotEmpty(backup);
@@ -1129,20 +1132,20 @@ redis.register_function('dumpfunc', function(keys, args) return 'result' end)";
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        await client.FunctionFlushAsync();
+        await client.FunctionFlushAsync(CancellationToken);
 
         // Load and dump a library
         string libCode = @"#!lua name=restorelib1
 redis.register_function('restorefunc1', function(keys, args) return 'result1' end)";
-        _ = await client.FunctionLoadAsync(libCode);
-        byte[] backup = await client.FunctionDumpAsync();
+        _ = await client.FunctionLoadAsync(libCode, false, CancellationToken);
+        byte[] backup = await client.FunctionDumpAsync(CancellationToken);
 
         // Flush and restore with APPEND (default)
-        await client.FunctionFlushAsync();
-        await client.FunctionRestoreAsync(backup);
+        await client.FunctionFlushAsync(CancellationToken);
+        await client.FunctionRestoreAsync(backup, CancellationToken);
 
         // Verify library was restored
-        var libraries = await client.FunctionListAsync(new FunctionListOptions { LibraryName = "restorelib1" });
+        var libraries = await client.FunctionListAsync(new FunctionListOptions { LibraryName = "restorelib1" }, CancellationToken);
         _ = Assert.Single(libraries);
     }
 
@@ -1153,7 +1156,7 @@ redis.register_function('restorefunc1', function(keys, args) return 'result1' en
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        await client.FunctionFlushAsync();
+        await client.FunctionFlushAsync(CancellationToken);
 
         // Load two libraries
         string lib1Code = @"#!lua name=flushlib1
@@ -1161,16 +1164,16 @@ redis.register_function('flushfunc1', function(keys, args) return 'result1' end)
         string lib2Code = @"#!lua name=flushlib2
 redis.register_function('flushfunc2', function(keys, args) return 'result2' end)";
 
-        _ = await client.FunctionLoadAsync(lib1Code);
-        byte[] backup = await client.FunctionDumpAsync();
+        _ = await client.FunctionLoadAsync(lib1Code, false, CancellationToken);
+        byte[] backup = await client.FunctionDumpAsync(CancellationToken);
 
-        _ = await client.FunctionLoadAsync(lib2Code);
+        _ = await client.FunctionLoadAsync(lib2Code, false, CancellationToken);
 
         // Restore with FLUSH policy
-        await client.FunctionRestoreAsync(backup, FunctionRestorePolicy.Flush);
+        await client.FunctionRestoreAsync(backup, FunctionRestorePolicy.Flush, CancellationToken);
 
         // Verify only lib1 exists
-        var libraries = await client.FunctionListAsync();
+        var libraries = await client.FunctionListAsync(null, CancellationToken);
         _ = Assert.Single(libraries);
         Assert.Equal("flushlib1", libraries[0].Name);
     }
@@ -1182,24 +1185,24 @@ redis.register_function('flushfunc2', function(keys, args) return 'result2' end)
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        await client.FunctionFlushAsync();
+        await client.FunctionFlushAsync(CancellationToken);
 
         // Load a library
         string lib1Code = @"#!lua name=replacelib
 redis.register_function('replacefunc', function(keys, args) return 'version1' end)";
-        _ = await client.FunctionLoadAsync(lib1Code);
-        byte[] backup = await client.FunctionDumpAsync();
+        _ = await client.FunctionLoadAsync(lib1Code, false, CancellationToken);
+        byte[] backup = await client.FunctionDumpAsync(CancellationToken);
 
         // Load a different version of the same library
         string lib2Code = @"#!lua name=replacelib
 redis.register_function('replacefunc', function(keys, args) return 'version2' end)";
-        _ = await client.FunctionLoadAsync(lib2Code, replace: true);
+        _ = await client.FunctionLoadAsync(lib2Code, replace: true, CancellationToken);
 
         // Restore with REPLACE policy
-        await client.FunctionRestoreAsync(backup, FunctionRestorePolicy.Replace);
+        await client.FunctionRestoreAsync(backup, FunctionRestorePolicy.Replace, CancellationToken);
 
         // Verify the function was replaced (should return version1)
-        ValkeyResult funcResult = await client.FCallAsync("replacefunc");
+        ValkeyResult funcResult = await client.FCallAsync("replacefunc", CancellationToken);
         Assert.Equal("version1", funcResult.ToString());
     }
 
@@ -1210,17 +1213,17 @@ redis.register_function('replacefunc', function(keys, args) return 'version2' en
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        await client.FunctionFlushAsync();
+        await client.FunctionFlushAsync(CancellationToken);
 
         // Load a library
         string libCode = @"#!lua name=conflictlib
 redis.register_function('conflictfunc', function(keys, args) return 'result' end)";
-        _ = await client.FunctionLoadAsync(libCode);
-        byte[] backup = await client.FunctionDumpAsync();
+        _ = await client.FunctionLoadAsync(libCode, false, CancellationToken);
+        byte[] backup = await client.FunctionDumpAsync(CancellationToken);
 
         // Try to restore with APPEND policy (should fail because library already exists)
         _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-            await client.FunctionRestoreAsync(backup, FunctionRestorePolicy.Append));
+            await client.FunctionRestoreAsync(backup, FunctionRestorePolicy.Append, CancellationToken));
     }
 
     // ===== Cluster-Specific Function Tests =====
@@ -1232,7 +1235,7 @@ redis.register_function('conflictfunc', function(keys, args) return 'result' end
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        await client.FunctionFlushAsync(Route.AllPrimaries);
+        await client.FunctionFlushAsync(Route.AllPrimaries, CancellationToken);
 
         // Use hardcoded unique library name per test
         string libName = "cluster_allprimaries_lib";
@@ -1241,7 +1244,7 @@ redis.register_function('conflictfunc', function(keys, args) return 'result' end
         // Load function on all primaries
         string libraryCode = $@"#!lua name={libName}
 redis.register_function('{funcName}', function(keys, args) return 'Hello from primary' end)";
-        ClusterValue<string> loadResult = await client.FunctionLoadAsync(libraryCode, false, Route.AllPrimaries);
+        ClusterValue<string> loadResult = await client.FunctionLoadAsync(libraryCode, false, Route.AllPrimaries, CancellationToken);
 
         // Verify load succeeded (may be single or multi-value depending on cluster configuration)
         if (loadResult.HasMultiData)
@@ -1255,7 +1258,7 @@ redis.register_function('{funcName}', function(keys, args) return 'Hello from pr
         }
 
         // Execute function on all primaries
-        ClusterValue<ValkeyResult> result = await client.FCallAsync(funcName, Route.AllPrimaries);
+        ClusterValue<ValkeyResult> result = await client.FCallAsync(funcName, Route.AllPrimaries, CancellationToken);
 
         // Verify execution (may be single or multi-value depending on cluster configuration)
         if (result.HasMultiData)
@@ -1276,7 +1279,7 @@ redis.register_function('{funcName}', function(keys, args) return 'Hello from pr
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first (must use AllPrimaries since replicas are read-only)
-        await client.FunctionFlushAsync(Route.AllPrimaries);
+        await client.FunctionFlushAsync(Route.AllPrimaries, CancellationToken);
 
         // Use hardcoded unique library name per test
         string libName = "cluster_allnodes_lib";
@@ -1289,7 +1292,7 @@ redis.register_function{{
     callback=function(keys, args) return 'Hello from node' end,
     flags={{'no-writes'}}
 }}";
-        ClusterValue<string> loadResult = await client.FunctionLoadAsync(libraryCode, false, Route.AllPrimaries);
+        ClusterValue<string> loadResult = await client.FunctionLoadAsync(libraryCode, false, Route.AllPrimaries, CancellationToken);
 
         // Verify load succeeded (may be single or multi-value depending on cluster configuration)
         if (loadResult.HasMultiData)
@@ -1302,7 +1305,7 @@ redis.register_function{{
         }
 
         // Execute read-only function on all nodes
-        ClusterValue<ValkeyResult> result = await client.FCallReadOnlyAsync(funcName, Route.AllNodes);
+        ClusterValue<ValkeyResult> result = await client.FCallReadOnlyAsync(funcName, Route.AllNodes, CancellationToken);
 
         // Verify execution (may be single or multi-value depending on cluster configuration)
         if (result.HasMultiData)
@@ -1323,7 +1326,7 @@ redis.register_function{{
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        await client.FunctionFlushAsync(Route.AllPrimaries);
+        await client.FunctionFlushAsync(Route.AllPrimaries, CancellationToken);
 
         // Use hardcoded unique library name per test
         string libName = "cluster_random_lib";
@@ -1332,10 +1335,10 @@ redis.register_function{{
         // Load function on all primaries
         string libraryCode = $@"#!lua name={libName}
 redis.register_function('{funcName}', function(keys, args) return 'Random node result' end)";
-        _ = await client.FunctionLoadAsync(libraryCode, false, Route.AllPrimaries);
+        _ = await client.FunctionLoadAsync(libraryCode, false, Route.AllPrimaries, CancellationToken);
 
         // Execute function on random node
-        ClusterValue<ValkeyResult> result = await client.FCallAsync(funcName, Route.Random);
+        ClusterValue<ValkeyResult> result = await client.FCallAsync(funcName, Route.Random, CancellationToken);
 
         // Verify execution on single node
         Assert.True(result.HasSingleData);
@@ -1349,7 +1352,7 @@ redis.register_function('{funcName}', function(keys, args) return 'Random node r
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        await client.FunctionFlushAsync(Route.AllPrimaries);
+        await client.FunctionFlushAsync(Route.AllPrimaries, CancellationToken);
 
         // Use hardcoded unique library name per test
         string libName = "cluster_load_lib";
@@ -1358,7 +1361,7 @@ redis.register_function('{funcName}', function(keys, args) return 'Random node r
         // Load function on all primaries
         string libraryCode = $@"#!lua name={libName}
 redis.register_function('{funcName}', function(keys, args) return 'Loaded' end)";
-        ClusterValue<string> result = await client.FunctionLoadAsync(libraryCode, false, Route.AllPrimaries);
+        ClusterValue<string> result = await client.FunctionLoadAsync(libraryCode, false, Route.AllPrimaries, CancellationToken);
 
         // Verify load succeeded (may be single or multi-value depending on cluster configuration)
         if (result.HasMultiData)
@@ -1378,7 +1381,7 @@ redis.register_function('{funcName}', function(keys, args) return 'Loaded' end)"
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        await client.FunctionFlushAsync(Route.AllPrimaries);
+        await client.FunctionFlushAsync(Route.AllPrimaries, CancellationToken);
 
         // Use hardcoded unique library name per test
         string libName = "cluster_delete_lib";
@@ -1387,18 +1390,18 @@ redis.register_function('{funcName}', function(keys, args) return 'Loaded' end)"
         // Load function on all primaries
         string libraryCode = $@"#!lua name={libName}
 redis.register_function('{funcName}', function(keys, args) return 'test' end)";
-        _ = await client.FunctionLoadAsync(libraryCode, false, Route.AllPrimaries);
+        _ = await client.FunctionLoadAsync(libraryCode, false, Route.AllPrimaries, CancellationToken);
 
         // Verify function exists by calling it
-        ClusterValue<ValkeyResult> callResult = await client.FCallAsync(funcName, Route.Random);
+        ClusterValue<ValkeyResult> callResult = await client.FCallAsync(funcName, Route.Random, CancellationToken);
         Assert.Equal("test", callResult.SingleValue.ToString());
 
         // Delete function from all primaries
-        await client.FunctionDeleteAsync(libName, Route.AllPrimaries);
+        await client.FunctionDeleteAsync(libName, Route.AllPrimaries, CancellationToken);
 
         // Verify function no longer exists
         _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-            await client.FCallAsync(funcName, Route.Random));
+            await client.FCallAsync(funcName, Route.Random, CancellationToken));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1408,7 +1411,7 @@ redis.register_function('{funcName}', function(keys, args) return 'test' end)";
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        await client.FunctionFlushAsync(Route.AllPrimaries);
+        await client.FunctionFlushAsync(Route.AllPrimaries, CancellationToken);
 
         // Use hardcoded unique library name per test
         string libName = "cluster_list_lib";
@@ -1417,10 +1420,10 @@ redis.register_function('{funcName}', function(keys, args) return 'test' end)";
         // Load function on all primaries
         string libraryCode = $@"#!lua name={libName}
 redis.register_function('{funcName}', function(keys, args) return 'test' end)";
-        _ = await client.FunctionLoadAsync(libraryCode, false, Route.AllPrimaries);
+        _ = await client.FunctionLoadAsync(libraryCode, false, Route.AllPrimaries, CancellationToken);
 
         // List functions from all primaries
-        ClusterValue<LibraryInfo[]> result = await client.FunctionListAsync(null, Route.AllPrimaries);
+        ClusterValue<LibraryInfo[]> result = await client.FunctionListAsync(null, Route.AllPrimaries, CancellationToken);
 
         // Verify list returned (may be single or multi-value depending on cluster configuration)
         if (result.HasMultiData)
@@ -1447,7 +1450,7 @@ redis.register_function('{funcName}', function(keys, args) return 'test' end)";
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        await client.FunctionFlushAsync(Route.AllPrimaries);
+        await client.FunctionFlushAsync(Route.AllPrimaries, CancellationToken);
 
         // Use hardcoded unique library name per test
         string libName = "cluster_stats_lib";
@@ -1456,10 +1459,10 @@ redis.register_function('{funcName}', function(keys, args) return 'test' end)";
         // Load function on all primaries
         string libraryCode = $@"#!lua name={libName}
 redis.register_function('{funcName}', function(keys, args) return 'test' end)";
-        _ = await client.FunctionLoadAsync(libraryCode, false, Route.AllPrimaries);
+        _ = await client.FunctionLoadAsync(libraryCode, false, Route.AllPrimaries, CancellationToken);
 
         // Get stats from all primaries
-        ClusterValue<FunctionStatsResult> result = await client.FunctionStatsAsync(Route.AllPrimaries);
+        ClusterValue<FunctionStatsResult> result = await client.FunctionStatsAsync(Route.AllPrimaries, CancellationToken);
 
         // Verify stats returned (may be single or multi-value depending on cluster configuration)
         if (result.HasMultiData)
@@ -1496,7 +1499,7 @@ redis.register_function('{funcName}', function(keys, args) return 'test' end)";
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        await client.FunctionFlushAsync(Route.AllPrimaries);
+        await client.FunctionFlushAsync(Route.AllPrimaries, CancellationToken);
 
         // Use hardcoded unique library name per test
         string libName = "cluster_dump_lib";
@@ -1505,10 +1508,10 @@ redis.register_function('{funcName}', function(keys, args) return 'test' end)";
         // Load function on all primaries
         string libraryCode = $@"#!lua name={libName}
 redis.register_function('{funcName}', function(keys, args) return 'test' end)";
-        _ = await client.FunctionLoadAsync(libraryCode, false, Route.AllPrimaries);
+        _ = await client.FunctionLoadAsync(libraryCode, false, Route.AllPrimaries, CancellationToken);
 
         // Dump functions from random node
-        ClusterValue<byte[]> result = await client.FunctionDumpAsync(Route.Random);
+        ClusterValue<byte[]> result = await client.FunctionDumpAsync(Route.Random, CancellationToken);
 
         // Verify dump succeeded on single node
         Assert.True(result.HasSingleData);
@@ -1523,7 +1526,7 @@ redis.register_function('{funcName}', function(keys, args) return 'test' end)";
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        await client.FunctionFlushAsync(Route.AllPrimaries);
+        await client.FunctionFlushAsync(Route.AllPrimaries, CancellationToken);
 
         // Use hardcoded unique library name per test
         string libName = "cluster_restore_lib";
@@ -1532,20 +1535,20 @@ redis.register_function('{funcName}', function(keys, args) return 'test' end)";
         // Load function on all primaries
         string libraryCode = $@"#!lua name={libName}
 redis.register_function('{funcName}', function(keys, args) return 'restored' end)";
-        _ = await client.FunctionLoadAsync(libraryCode, false, Route.AllPrimaries);
+        _ = await client.FunctionLoadAsync(libraryCode, false, Route.AllPrimaries, CancellationToken);
 
         // Dump functions from random node
-        ClusterValue<byte[]> dumpResult = await client.FunctionDumpAsync(Route.Random);
+        ClusterValue<byte[]> dumpResult = await client.FunctionDumpAsync(Route.Random, CancellationToken);
         byte[] backup = dumpResult.SingleValue;
 
         // Flush all functions
-        await client.FunctionFlushAsync(Route.AllPrimaries);
+        await client.FunctionFlushAsync(Route.AllPrimaries, CancellationToken);
 
         // Restore functions to all primaries
-        await client.FunctionRestoreAsync(backup, Route.AllPrimaries);
+        await client.FunctionRestoreAsync(backup, Route.AllPrimaries, CancellationToken);
 
         // Verify function is restored by calling it
-        ClusterValue<ValkeyResult> callResult = await client.FCallAsync(funcName, Route.Random);
+        ClusterValue<ValkeyResult> callResult = await client.FCallAsync(funcName, Route.Random, CancellationToken);
         Assert.Equal("restored", callResult.SingleValue.ToString());
     }
 
@@ -1556,7 +1559,7 @@ redis.register_function('{funcName}', function(keys, args) return 'restored' end
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        await client.FunctionFlushAsync(Route.AllPrimaries);
+        await client.FunctionFlushAsync(Route.AllPrimaries, CancellationToken);
 
         // Use hardcoded unique library name per test
         string libName = "cluster_replace_lib";
@@ -1565,25 +1568,26 @@ redis.register_function('{funcName}', function(keys, args) return 'restored' end
         // Load initial function
         string libraryCode1 = $@"#!lua name={libName}
 redis.register_function('{funcName}', function(keys, args) return 'version 1' end)";
-        _ = await client.FunctionLoadAsync(libraryCode1, false, Route.AllPrimaries);
+        _ = await client.FunctionLoadAsync(libraryCode1, false, Route.AllPrimaries, CancellationToken);
 
         // Dump functions
-        ClusterValue<byte[]> dumpResult = await client.FunctionDumpAsync(Route.Random);
+        ClusterValue<byte[]> dumpResult = await client.FunctionDumpAsync(Route.Random, CancellationToken);
         byte[] backup = dumpResult.SingleValue;
 
         // Load different version
         string libraryCode2 = $@"#!lua name={libName}
 redis.register_function('{funcName}', function(keys, args) return 'version 2' end)";
-        _ = await client.FunctionLoadAsync(libraryCode2, true, Route.AllPrimaries);
+        _ = await client.FunctionLoadAsync(libraryCode2, true, Route.AllPrimaries, CancellationToken);
 
         // Restore with REPLACE policy
         await client.FunctionRestoreAsync(
             backup,
             FunctionRestorePolicy.Replace,
-            Route.AllPrimaries);
+            Route.AllPrimaries,
+            CancellationToken);
 
         // Verify original version is restored
-        ClusterValue<ValkeyResult> callResult = await client.FCallAsync(funcName, Route.Random);
+        ClusterValue<ValkeyResult> callResult = await client.FCallAsync(funcName, Route.Random, CancellationToken);
         Assert.Equal("version 1", callResult.SingleValue.ToString());
     }
 
@@ -1594,7 +1598,7 @@ redis.register_function('{funcName}', function(keys, args) return 'version 2' en
         Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
 
         // Flush all functions first
-        await client.FunctionFlushAsync(Route.AllPrimaries);
+        await client.FunctionFlushAsync(Route.AllPrimaries, CancellationToken);
 
         // Use hardcoded unique library name per test
         string libName = "cluster_multinode_lib";
@@ -1603,7 +1607,7 @@ redis.register_function('{funcName}', function(keys, args) return 'version 2' en
         // Load function on all primaries
         string libraryCode = $@"#!lua name={libName}
 redis.register_function('{funcName}', function(keys, args) return 'multi-node result' end)";
-        ClusterValue<string> loadResult = await client.FunctionLoadAsync(libraryCode, false, Route.AllPrimaries);
+        ClusterValue<string> loadResult = await client.FunctionLoadAsync(libraryCode, false, Route.AllPrimaries, CancellationToken);
 
         // Test ClusterValue properties (may be single or multi-value depending on cluster configuration)
         if (loadResult.HasMultiData)
@@ -1666,7 +1670,7 @@ redis.register_function('{funcName}', function(keys, args) return 'multi-node re
         using var scriptObj = new Script(script);
 
         // Execute once to cache it
-        _ = await client.ScriptInvokeAsync(scriptObj);
+        _ = await client.ScriptInvokeAsync(scriptObj, CancellationToken);
 
         // Convert hash string to byte array
         byte[] hash = Convert.FromHexString(scriptObj.Hash);
@@ -1778,7 +1782,7 @@ redis.register_function('{funcName}', function(keys, args) return 'multi-node re
             Assert.False(existsBefore);
 
             // Load the script
-            _ = await client.ScriptInvokeAsync(scriptObj);
+            _ = await client.ScriptInvokeAsync(scriptObj, CancellationToken);
 
             // Script should exist now
             bool existsAfter = await server.ScriptExistsAsync(hash);
@@ -1858,7 +1862,7 @@ redis.register_function('{funcName}', function(keys, args) return 'multi-node re
             // Load a script
             string script = "return 'flush test'";
             using var scriptObj = new Script(script);
-            _ = await client.ScriptInvokeAsync(scriptObj);
+            _ = await client.ScriptInvokeAsync(scriptObj, CancellationToken);
 
             // Verify it exists
             bool existsBefore = await server.ScriptExistsAsync(script);

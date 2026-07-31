@@ -223,12 +223,12 @@ public class PubSubMessageHandlerTests
     }
 
     [Fact]
-    public void HandleMessage_ConcurrentAccess_HandlesCorrectly()
+    public async Task HandleMessage_ConcurrentAccess_HandlesCorrectly()
     {
         // Arrange
         List<PubSubMessage> receivedMessages = [];
-        object lockObject = new object();
-        MessageCallback callback = new MessageCallback((msg, ctx) =>
+        var lockObject = new object();
+        var callback = new MessageCallback((msg, ctx) =>
         {
             lock (lockObject)
             {
@@ -236,7 +236,7 @@ public class PubSubMessageHandlerTests
             }
         });
 
-        using PubSubMessageHandler handler = new PubSubMessageHandler(callback, null);
+        using var handler = new PubSubMessageHandler(callback, null);
         PubSubMessage[] messages =
         [
             PubSubMessage.FromChannel("message1", "channel1"),
@@ -245,8 +245,8 @@ public class PubSubMessageHandlerTests
         ];
 
         // Act
-        Task[] tasks = [.. messages.Select(msg => Task.Run(() => handler.HandleMessage(msg)))];
-        Task.WaitAll(tasks);
+        Task[] tasks = [.. messages.Select(msg => Task.Run(() => handler.HandleMessage(msg), TestContext.Current.CancellationToken))];
+        await Task.WhenAll(tasks);
 
         // Assert
         Assert.Equal(3, receivedMessages.Count);
@@ -256,14 +256,14 @@ public class PubSubMessageHandlerTests
     }
 
     [Fact]
-    public void HandleMessage_DisposedDuringCallback_HandlesGracefully()
+    public async Task HandleMessage_DisposedDuringCallback_HandlesGracefully()
     {
         // Arrange
-        ManualResetEventSlim callbackStarted = new ManualResetEventSlim(false);
-        ManualResetEventSlim disposeStarted = new ManualResetEventSlim(false);
+        var callbackStarted = new ManualResetEventSlim(false);
+        var disposeStarted = new ManualResetEventSlim(false);
         bool callbackCompleted = false;
 
-        MessageCallback callback = new MessageCallback((msg, ctx) =>
+        var callback = new MessageCallback((msg, ctx) =>
         {
             callbackStarted.Set();
             _ = disposeStarted.Wait(TimeSpan.FromSeconds(5)); // Wait for dispose to start
@@ -271,20 +271,20 @@ public class PubSubMessageHandlerTests
             callbackCompleted = true;
         });
 
-        PubSubMessageHandler handler = new PubSubMessageHandler(callback, null);
-        PubSubMessage message = PubSubMessage.FromChannel("test-message", "test-channel");
+        var handler = new PubSubMessageHandler(callback, null);
+        var message = PubSubMessage.FromChannel("test-message", "test-channel");
 
         // Act
-        Task handleTask = Task.Run(() => handler.HandleMessage(message));
-        _ = callbackStarted.Wait(TimeSpan.FromSeconds(5));
+        Task handleTask = Task.Run(() => handler.HandleMessage(message), TestContext.Current.CancellationToken);
+        _ = callbackStarted.Wait(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
 
         Task disposeTask = Task.Run(() =>
         {
             disposeStarted.Set();
             handler.Dispose();
-        });
+        }, TestContext.Current.CancellationToken);
 
-        Task.WaitAll(handleTask, disposeTask);
+        await Task.WhenAll(handleTask, disposeTask);
 
         // Assert
         Assert.True(callbackCompleted);
