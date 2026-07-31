@@ -15,7 +15,7 @@ public partial class GlideClusterClient
 
     /// <inheritdoc cref="IGlideClusterClient.BackgroundSaveAsync(Route)"/>
     public Task<ClusterValue<string>> BackgroundSaveAsync(Route route)
-        => Command(Request.BackgroundSaveAsync().ToClusterValue(), route);
+        => Command(Request.BackgroundSaveAsync().ToClusterValue(route), route);
 
     /// <inheritdoc cref="IGlideClusterClient.BackgroundSaveCancelAsync()"/>
     public Task<ClusterValue<string>> BackgroundSaveCancelAsync()
@@ -23,7 +23,7 @@ public partial class GlideClusterClient
 
     /// <inheritdoc cref="IGlideClusterClient.BackgroundSaveCancelAsync(Route)"/>
     public Task<ClusterValue<string>> BackgroundSaveCancelAsync(Route route)
-        => Command(Request.BackgroundSaveCancelAsync().ToClusterValue(), route);
+        => Command(Request.BackgroundSaveCancelAsync().ToClusterValue(route), route);
 
     /// <inheritdoc cref="IGlideClusterClient.BackgroundSaveScheduleAsync()"/>
     public Task<ClusterValue<string>> BackgroundSaveScheduleAsync()
@@ -31,7 +31,7 @@ public partial class GlideClusterClient
 
     /// <inheritdoc cref="IGlideClusterClient.BackgroundSaveScheduleAsync(Route)"/>
     public Task<ClusterValue<string>> BackgroundSaveScheduleAsync(Route route)
-        => Command(Request.BackgroundSaveScheduleAsync().ToClusterValue(), route);
+        => Command(Request.BackgroundSaveScheduleAsync().ToClusterValue(route), route);
 
     /// <inheritdoc cref="IGlideClusterClient.BgRewriteAofAsync()"/>
     public Task<ClusterValue<string>> BgRewriteAofAsync()
@@ -39,7 +39,7 @@ public partial class GlideClusterClient
 
     /// <inheritdoc cref="IGlideClusterClient.BgRewriteAofAsync(Route)"/>
     public Task<ClusterValue<string>> BgRewriteAofAsync(Route route)
-        => Command(Request.BgRewriteAofAsync().ToClusterValue(), route);
+        => Command(Request.BgRewriteAofAsync().ToClusterValue(route), route);
 
     // TODO #495: Remove method; consolidate single-value version into BaseClient.
     /// <inheritdoc cref="IGlideClusterClient.ConfigGetAsync(ValkeyValue)"/>
@@ -49,11 +49,11 @@ public partial class GlideClusterClient
 
     /// <inheritdoc cref="IGlideClusterClient.ConfigGetAsync(ValkeyValue, Route)"/>
     public async Task<ClusterValue<KeyValuePair<string, string>[]>> ConfigGetAsync(ValkeyValue pattern, Route route)
-        => await Command(Request.ConfigGetAsync(pattern).ToClusterValue(), route);
+        => await Command(Request.ConfigGetAsync(pattern).ToClusterValue(route), route);
 
     /// <inheritdoc cref="IGlideClusterClient.ConfigGetAsync(IEnumerable{ValkeyValue}, Route)"/>
     public async Task<ClusterValue<KeyValuePair<string, string>[]>> ConfigGetAsync(IEnumerable<ValkeyValue> patterns, Route route)
-        => await Command(Request.ConfigGetAsync(patterns).ToClusterValue(), route);
+        => await Command(Request.ConfigGetAsync(patterns).ToClusterValue(route), route);
 
     /// <inheritdoc cref="IGlideClusterClient.ConfigResetStatisticsAsync()"/>
     public async Task ConfigResetStatisticsAsync()
@@ -93,7 +93,7 @@ public partial class GlideClusterClient
     /// <inheritdoc cref="IGlideClusterClient.DatabaseSizeAsync(Route)"/>
     public async Task<long> DatabaseSizeAsync(Route route)
     {
-        ClusterValue<long> result = await Command(Request.DatabaseSizeAsync().ToClusterValue(), route);
+        ClusterValue<long> result = await Command(Request.DatabaseSizeAsync().ToClusterValue(route), route);
         return result.HasMultiData ? result.MultiValue.Values.Sum() : result.SingleValue;
     }
 
@@ -133,7 +133,7 @@ public partial class GlideClusterClient
 
     /// <inheritdoc cref="IGlideClusterClient.InfoAsync(IEnumerable{InfoOptions.Section}, Route)"/>
     public async Task<ClusterValue<string>> InfoAsync(IEnumerable<InfoOptions.Section> sections, Route route)
-        => await Command(Request.Info([.. sections]).ToClusterValue(), route);
+        => await Command(Request.Info([.. sections]).ToClusterValue(route), route);
 
     /// <inheritdoc cref="IGlideClusterClient.LastSaveAsync()"/>
     public async Task<Dictionary<string, DateTimeOffset>> LastSaveAsync()
@@ -144,7 +144,7 @@ public partial class GlideClusterClient
 
     /// <inheritdoc cref="IGlideClusterClient.LastSaveAsync(Route)"/>
     public Task<ClusterValue<DateTimeOffset>> LastSaveAsync(Route route)
-        => Command(Request.LastSaveAsync().ToClusterValue(), route);
+        => Command(Request.LastSaveAsync().ToClusterValue(route), route);
 
     /// <inheritdoc cref="IGlideClusterClient.LatencyHistoryAsync(ValkeyValue)"/>
     public async Task<ClusterValue<LatencyEntry[]>> LatencyHistoryAsync(ValkeyValue @event)
@@ -152,7 +152,7 @@ public partial class GlideClusterClient
 
     /// <inheritdoc cref="IGlideClusterClient.LatencyHistoryAsync(ValkeyValue, Route)"/>
     public async Task<ClusterValue<LatencyEntry[]>> LatencyHistoryAsync(ValkeyValue @event, Route route)
-        => await Command(Request.LatencyHistoryAsync(@event).ToClusterValue(), route);
+        => await Command(Request.LatencyHistoryAsync(@event).ToClusterValue(route), route);
 
     /// <inheritdoc cref="IGlideClusterClient.LatencyLatestAsync()"/>
     public async Task<ClusterValue<LatencyEventInfo[]>> LatencyLatestAsync()
@@ -160,7 +160,7 @@ public partial class GlideClusterClient
 
     /// <inheritdoc cref="IGlideClusterClient.LatencyLatestAsync(Route)"/>
     public async Task<ClusterValue<LatencyEventInfo[]>> LatencyLatestAsync(Route route)
-        => await Command(Request.LatencyLatestAsync().ToClusterValue(), route);
+        => await Command(Request.LatencyLatestAsync().ToClusterValue(route), route);
 
     /// <inheritdoc cref="IGlideClusterClient.LatencyResetAsync(Route)"/>
     public async Task<long> LatencyResetAsync(Route route)
@@ -184,11 +184,11 @@ public partial class GlideClusterClient
 
     /// <inheritdoc cref="IGlideClusterClient.LolwutAsync(Route)"/>
     public async Task<ClusterValue<string>> LolwutAsync(Route route)
-        => await Command(Request.LolwutAsync().ToClusterValue(), route);
+        => await Command(Request.LolwutAsync().ToClusterValue(route), route);
 
     /// <inheritdoc cref="IGlideClusterClient.LolwutAsync(LolwutOptions, Route)"/>
     public async Task<ClusterValue<string>> LolwutAsync(LolwutOptions options, Route route)
-        => await Command(Request.LolwutAsync(options).ToClusterValue(), route);
+        => await Command(Request.LolwutAsync(options).ToClusterValue(route), route);
 
     /// <inheritdoc cref="IGlideClusterClient.MemoryDoctorAsync()"/>
     public async Task<ClusterValue<string>> MemoryDoctorAsync()
@@ -196,7 +196,7 @@ public partial class GlideClusterClient
 
     /// <inheritdoc cref="IGlideClusterClient.MemoryDoctorAsync(Route)"/>
     public async Task<ClusterValue<string>> MemoryDoctorAsync(Route route)
-        => await Command(Request.MemoryDoctorAsync().ToClusterValue(), route);
+        => await Command(Request.MemoryDoctorAsync().ToClusterValue(route), route);
 
     /// <inheritdoc cref="IGlideClusterClient.MemoryMallocStatsAsync()"/>
     public async Task<ClusterValue<string>> MemoryMallocStatsAsync()
@@ -204,7 +204,7 @@ public partial class GlideClusterClient
 
     /// <inheritdoc cref="IGlideClusterClient.MemoryMallocStatsAsync(Route)"/>
     public async Task<ClusterValue<string>> MemoryMallocStatsAsync(Route route)
-        => await Command(Request.MemoryMallocStatsAsync().ToClusterValue(), route);
+        => await Command(Request.MemoryMallocStatsAsync().ToClusterValue(route), route);
 
     /// <inheritdoc cref="IGlideClusterClient.MemoryPurgeAsync()"/>
     public async Task MemoryPurgeAsync()
@@ -220,7 +220,7 @@ public partial class GlideClusterClient
 
     /// <inheritdoc cref="IGlideClusterClient.MemoryStatsAsync(Route)"/>
     public async Task<ClusterValue<MemoryStats>> MemoryStatsAsync(Route route)
-        => await Command(Request.MemoryStatsAsync().ToClusterValue(), route);
+        => await Command(Request.MemoryStatsAsync().ToClusterValue(route), route);
 
     /// <inheritdoc cref="IGlideClusterClient.SaveAsync(Route)"/>
     public async Task SaveAsync(Route route)
@@ -235,5 +235,5 @@ public partial class GlideClusterClient
 
     /// <inheritdoc cref="IGlideClusterClient.TimeAsync(Route)"/>
     public Task<ClusterValue<DateTimeOffset>> TimeAsync(Route route)
-        => Command(Request.TimeAsync().ToClusterValue(), route);
+        => Command(Request.TimeAsync().ToClusterValue(route), route);
 }
