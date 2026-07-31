@@ -662,7 +662,7 @@ public class GenericCommandTests(TestConfiguration config)
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestWait_NegativeTimeout(BaseClient client)
-        => await Assert.ThrowsAsync<ArgumentException>(
+        => await Assert.ThrowsAsync<ArgumentOutOfRangeException>(
             () => client.WaitAsync(1, TimeSpan.FromMilliseconds(-1)));
 
     [Theory(DisableDiscoveryEnumeration = true)]

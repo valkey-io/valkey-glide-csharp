@@ -29,19 +29,6 @@ internal static class GuardClauses
     #endregion
 
     /// <summary>
-    /// Throws a <see cref="NotImplementedException"/> if async state is specified.
-    /// </summary>
-    /// <param name="asyncState">The async state to validate.</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="asyncState"/> is not null.</exception>
-    public static void ThrowIfAsyncState(object? asyncState)
-    {
-        if (asyncState is not null)
-        {
-            throw new NotImplementedException("Async state is not supported by Valkey GLIDE");
-        }
-    }
-
-    /// <summary>
     /// Throws a <see cref="NotImplementedException"/> if command flags are specified.
     /// </summary>
     /// <param name="flags">The command flags to validate.</param>
@@ -55,7 +42,7 @@ internal static class GuardClauses
     }
 
     /// <summary>
-    /// Throws an <see cref="ArgumentException"/> if the byte array is not supported.
+    /// Throws if the byte array is null, empty, or exceeds <see cref="MaxDataSize"/>.
     /// </summary>
     /// <param name="data">The byte array to validate.</param>
     /// <param name="paramName">The parameter name for the exception.</param>
@@ -67,7 +54,7 @@ internal static class GuardClauses
     }
 
     /// <summary>
-    /// Throws an <see cref="ArgumentException"/> if file is not supported.
+    /// Throws if the file at the given path is empty or exceeds <see cref="MaxDataSize"/>.
     /// </summary>
     /// <param name="path">The file path to check.</param>
     /// <param name="paramName">The parameter name for the exception.</param>
@@ -76,47 +63,6 @@ internal static class GuardClauses
         var fileLength = new FileInfo(path).Length;
         ArgumentOutOfRangeException.ThrowIfZero(fileLength, paramName);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(fileLength, MaxDataSize, paramName);
-    }
-
-    /// <summary>
-    /// Throws an <see cref="ArgumentException"/> if the given time span is negative.
-    /// </summary>
-    /// <param name="value">The time span value to validate.</param>
-    /// <exception cref="ArgumentException">Thrown if <paramref name="value"/> is negative.</exception>
-    public static void ThrowIfNegative(TimeSpan value)
-    {
-        if (value < TimeSpan.Zero)
-        {
-            throw new ArgumentException("Time span cannot be negative.");
-        }
-    }
-
-    /// <summary>
-    /// Throws an <see cref="ArgumentOutOfRangeException"/> if the given value is negative.
-    /// </summary>
-    /// <param name="value">The value to validate.</param>
-    /// <param name="name">The parameter name for the exception.</param>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="value"/> is negative.</exception>
-    public static void ThrowIfNegative(long value, string name)
-    {
-        if (value < 0)
-        {
-            throw new ArgumentOutOfRangeException(name, value, "Value cannot be negative.");
-        }
-    }
-
-    /// <summary>
-    /// Throws an <see cref="ArgumentOutOfRangeException"/> if the given value is not positive.
-    /// </summary>
-    /// <param name="value">The value to validate.</param>
-    /// <param name="name">The parameter name for the exception.</param>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="value"/> is zero or negative.</exception>
-    public static void ThrowIfNotPositive(long value, string name)
-    {
-        if (value <= 0)
-        {
-            throw new ArgumentOutOfRangeException(name, value, "Value must be positive.");
-        }
     }
 
     /// <summary>
@@ -147,7 +93,6 @@ internal static class GuardClauses
     /// <summary>
     /// Throws an <see cref="ArgumentOutOfRangeException"/> if the given <see cref="TimeSpan"/>
     /// cannot be represented as a positive <see cref="uint"/> number of milliseconds.
-    /// (<see cref="MaxUintMilliseconds"/>).
     /// </summary>
     /// <param name="value">The time span value to validate.</param>
     /// <param name="paramName">The parameter name for the exception.</param>

@@ -13,7 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Mutual TLS (mTLS) client certificate support (#488)
+- Mutual TLS (mTLS) support (#488)
+- Circuit breaker configuration (#474)
 - Support additional commands (#435):
   - `BGREWRITEAOF` (#444)
   - `BGSAVE CANCEL` (#436)
@@ -35,7 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `RESET` (#435)
   - `SAVE` (#440)
 - Custom socket address resolution support via callback (#392)
-- `NodeDiscoveryMode` configuration option for standalone clients, with `Standard`, `Static` (proxy-compatible, e.g. Envoy), and `DiscoverAll` modes (#131)
+- `NodeDiscoveryMode` configuration option for standalone clients (#131)
 
 ## 1.1.0
 

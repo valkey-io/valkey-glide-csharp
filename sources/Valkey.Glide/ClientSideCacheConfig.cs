@@ -96,7 +96,7 @@ public sealed class ClientSideCacheConfig
     /// <param name="maxCacheKb">Maximum size of the cache in kilobytes (KB). Must be positive.</param>
     /// <param name="entryTtl">Time-To-Live for cached entries. Use <see cref="TimeSpan.Zero"/> to disable expiration.</param>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="maxCacheKb"/> is zero.</exception>
-    /// <exception cref="ArgumentException">Thrown when <paramref name="entryTtl"/> is negative.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="entryTtl"/> is negative.</exception>
     /// <example>
     /// <code>
     /// var cache = new ClientSideCacheConfig(1024, TimeSpan.FromMinutes(1))
@@ -111,12 +111,8 @@ public sealed class ClientSideCacheConfig
     /// </example>
     public ClientSideCacheConfig(ulong maxCacheKb, TimeSpan entryTtl)
     {
-        if (maxCacheKb == 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(maxCacheKb), "maxCacheKb must be positive.");
-        }
-
-        GuardClauses.ThrowIfNegative(entryTtl);
+        ArgumentOutOfRangeException.ThrowIfEqual(maxCacheKb, 0u, nameof(maxCacheKb));
+        ArgumentOutOfRangeException.ThrowIfLessThan(entryTtl, TimeSpan.Zero, nameof(entryTtl));
 
         MaxCacheKb = maxCacheKb;
         EntryTtl = entryTtl;

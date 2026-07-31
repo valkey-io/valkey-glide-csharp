@@ -10,22 +10,22 @@ internal static class TimeUtils
     /// <summary>
     /// Converts a <see cref="TimeSpan"/> to <see cref="ulong"/> milliseconds.
     /// </summary>
-    /// <exception cref="ArgumentException">Thrown if <paramref name="timeSpan"/> is negative.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="timeSpan"/> is negative.</exception>
     public static ulong ToMilliseconds(TimeSpan timeSpan)
     {
-        GuardClauses.ThrowIfNegative(timeSpan);
+        ArgumentOutOfRangeException.ThrowIfLessThan(timeSpan, TimeSpan.Zero, nameof(timeSpan));
 
         // Use tick-based arithmetic to avoid floating-point precision loss.
         return (ulong)(timeSpan.Ticks / TimeSpan.TicksPerMillisecond);
     }
 
     /// <summary>
-    /// Converts a <see cref="TimeSpan"/> to <see cref="GlideString"/> seconds.
+    /// Converts a <see cref="TimeSpan"/> to <see cref="double"/> seconds.
     /// </summary>
-    /// <exception cref="ArgumentException">Thrown if <paramref name="timeSpan"/> is negative.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="timeSpan"/> is negative.</exception>
     public static double ToSeconds(TimeSpan timeSpan)
     {
-        GuardClauses.ThrowIfNegative(timeSpan);
+        ArgumentOutOfRangeException.ThrowIfLessThan(timeSpan, TimeSpan.Zero, nameof(timeSpan));
         return timeSpan.TotalSeconds;
     }
 }

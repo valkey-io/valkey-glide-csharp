@@ -225,6 +225,7 @@ internal partial class FFI
             bool readOnly,
             NodeDiscoveryMode nodeDiscoveryMode,
             ClientSideCacheConfig? clientSideCacheConfig,
+            CircuitBreakerConfig? circuitBreakerConfig,
 
             // TLS configuration
             TlsMode tlsMode,
@@ -268,6 +269,10 @@ internal partial class FFI
                 NodeDiscoveryMode = nodeDiscoveryMode,
                 HasClientSideCacheConfig = clientSideCacheConfig.HasValue,
                 ClientSideCacheConfig = clientSideCacheConfig ?? default,
+
+                // Circuit breaker configuration
+                HasCircuitBreakerConfig = circuitBreakerConfig.HasValue,
+                CircuitBreakerConfig = circuitBreakerConfig ?? default,
 
                 // TLS configuration
                 TlsMode = tlsMode,
@@ -1178,9 +1183,19 @@ internal partial class FFI
 
         public NodeDiscoveryMode NodeDiscoveryMode;
 
+        // Client-side cache configuration
+        // -------------------------------
+
         [MarshalAs(UnmanagedType.U1)]
         public bool HasClientSideCacheConfig;
         public ClientSideCacheConfig ClientSideCacheConfig;
+
+        // Circuit breaker configuration
+        // -----------------------------
+
+        [MarshalAs(UnmanagedType.U1)]
+        public bool HasCircuitBreakerConfig;
+        public CircuitBreakerConfig CircuitBreakerConfig;
 
         // TLS configuration
         // -----------------
@@ -1335,6 +1350,47 @@ internal partial class FFI
         /// </summary>
         [MarshalAs(UnmanagedType.U1)]
         public readonly bool ServerAssisted = serverAssisted;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal readonly struct CircuitBreakerConfig(
+        uint windowSizeMs,
+        float failureRateThreshold,
+        uint minErrors,
+        uint openTimeoutMs,
+        bool countTimeouts,
+        uint consecutiveSuccesses)
+    {
+        /// <summary>
+        /// Sliding window duration in milliseconds for error counting (0 = default).
+        /// </summary>
+        public readonly uint WindowSizeMs = windowSizeMs;
+
+        /// <summary>
+        /// Error rate threshold that triggers the circuit breaker (0 = default).
+        /// </summary>
+        public readonly float FailureRateThreshold = failureRateThreshold;
+
+        /// <summary>
+        /// Minimum errors in the window before the failure rate is evaluated (0 = default).
+        /// </summary>
+        public readonly uint MinErrors = minErrors;
+
+        /// <summary>
+        /// Duration in milliseconds the circuit breaker stays open before probing (0 = default).
+        /// </summary>
+        public readonly uint OpenTimeoutMs = openTimeoutMs;
+
+        /// <summary>
+        /// Whether timeout errors count toward tripping the circuit breaker.
+        /// </summary>
+        [MarshalAs(UnmanagedType.U1)]
+        public readonly bool CountTimeouts = countTimeouts;
+
+        /// <summary>
+        /// Consecutive successful probes needed to close the circuit breaker (0 = default).
+        /// </summary>
+        public readonly uint ConsecutiveSuccesses = consecutiveSuccesses;
     }
 
     [StructLayout(LayoutKind.Sequential)]

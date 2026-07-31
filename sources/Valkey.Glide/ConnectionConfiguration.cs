@@ -55,6 +55,7 @@ public abstract class ConnectionConfiguration
         public bool ReadOnly;
         public NodeDiscoveryMode NodeDiscoveryMode = NodeDiscoveryMode.Standard;
         public ClientSideCacheConfig? ClientSideCacheConfig;
+        public CircuitBreakerConfig? CircuitBreakerConfig;
         public AddressResolverDelegate? AddressResolver;
 
         // TLS configuration
@@ -88,6 +89,7 @@ public abstract class ConnectionConfiguration
             ReadOnly,
             NodeDiscoveryMode,
             ClientSideCacheConfig?.ToFfi(),
+            CircuitBreakerConfig?.ToFfi(),
 
             // TLS configuration
             TlsMode,
@@ -974,6 +976,28 @@ public abstract class ConnectionConfiguration
         {
             ArgumentNullException.ThrowIfNull(clientSideCacheConfig);
             ClientSideCacheConfig = clientSideCacheConfig;
+            return (T)this;
+        }
+
+        #endregion
+        #region Circuit Breaker
+
+        /// <summary>
+        /// Circuit breaker configuration for the client. When set, enables a circuit breaker
+        /// that detects unhealthy core state and rejects requests at the client boundary.
+        /// </summary>
+        /// <seealso cref="CircuitBreakerConfig"/>
+        public CircuitBreakerConfig? CircuitBreakerConfig
+        {
+            get => Config.CircuitBreakerConfig;
+            set => Config.CircuitBreakerConfig = value;
+        }
+
+        /// <inheritdoc cref="CircuitBreakerConfig" />
+        public T WithCircuitBreaker(CircuitBreakerConfig circuitBreakerConfig)
+        {
+            ArgumentNullException.ThrowIfNull(circuitBreakerConfig, nameof(circuitBreakerConfig));
+            CircuitBreakerConfig = circuitBreakerConfig;
             return (T)this;
         }
 
