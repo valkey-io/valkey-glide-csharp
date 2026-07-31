@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - `XREADGROUP` returning only the first field-value pair per stream entry (#430)
+- Incorrect default routes:
+  - `SELECT` routed to Random instead of AllNodes in cluster mode (#491)
+  - `CONFIG SET` routed to AllPrimaries instead of AllNodes in cluster mode (#492)
+  - `CONFIG REWRITE` routed to Random instead of AllNodes in cluster mode (#493)
+  - `CONFIG RESETSTAT` routed to AllPrimaries instead of AllNodes in cluster mode (#493)
+  - `FUNCTION KILL` routed to AllPrimaries instead of AllNodes in cluster mode (#494)
 
 ### Added
 

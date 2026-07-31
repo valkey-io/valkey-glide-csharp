@@ -1,7 +1,5 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using Valkey.Glide.Commands.Options;
-
 namespace Valkey.Glide.UnitTests;
 
 public class PubSubFFIIntegrationTests
@@ -208,26 +206,5 @@ public class PubSubFFIIntegrationTests
 
         // Mock implementations
         internal override void HandlePubSubMessage(PubSubMessage message) { }
-
-        // Mock abstract methods.
-        public override Task ClientPauseAsync(TimeSpan timeout) => Task.CompletedTask;
-        public override Task ClientPauseWriteAsync(TimeSpan timeout) => Task.CompletedTask;
-        public override Task ClientUnpauseAsync() => Task.CompletedTask;
-        public override Task ConfigSetAsync(IDictionary<ValkeyValue, ValkeyValue> parameters) => Task.CompletedTask;
-        public override Task FlushAllDatabasesAsync(FlushMode mode) => Task.CompletedTask;
-        public override Task FlushDatabaseAsync(FlushMode mode) => Task.CompletedTask;
-        public override Task SaveAsync() => Task.CompletedTask;
-        public override Task SelectAsync(long index) => Task.CompletedTask;
-        public override Task<ClientTrackingInfo> ClientTrackingInfoAsync() => Task.FromResult(new ClientTrackingInfo { Flags = new HashSet<string>(), Redirect = -1, Prefixes = new HashSet<string>() });
-        public override Task<KeyValuePair<string, string>[]> ConfigGetAsync(IEnumerable<ValkeyValue> patterns) => Task.FromResult(Array.Empty<KeyValuePair<string, string>>());
-        public override Task<long> ClientIdAsync() => Task.FromResult(0L);
-        public override Task<long> LatencyResetAsync() => Task.FromResult(0L);
-        public override Task<long> LatencyResetAsync(IEnumerable<ValkeyValue> events) => Task.FromResult(0L);
-        public override Task<long> LatencyResetAsync(ValkeyValue eventName) => Task.FromResult(0L);
-        public override Task<string> LolwutAsync(LolwutOptions options) => Task.FromResult(string.Empty);
-        public override Task<ValkeyValue> ClientGetNameAsync() => Task.FromResult(ValkeyValue.Null);
-        public override Task<ValkeyValue> EchoAsync(ValkeyValue message) => Task.FromResult(message);
-        public override Task<ValkeyValue> PingAsync() => Task.FromResult((ValkeyValue)"PONG");
-        public override Task<ValkeyValue> PingAsync(ValkeyValue message) => Task.FromResult(message);
     }
 }

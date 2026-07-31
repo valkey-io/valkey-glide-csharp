@@ -38,6 +38,8 @@ public partial interface IGlideClusterClient
     /// </code>
     /// </example>
     /// </remarks>
+    // TODO #496: Change return type to Task<ValkeyResult>; remove AllPrimaries default.
+    [Obsolete("Return type will change to Task<ValkeyResult>. See #496.")]
     Task<ClusterValue<ValkeyResult>> ScriptInvokeAsync(
         Script script,
         ClusterScriptOptions options,
@@ -379,6 +381,8 @@ public partial interface IGlideClusterClient
     /// </code>
     /// </example>
     /// </remarks>
+    // TODO #495: Remove method; consolidate single-value version into BaseClient.
+    [Obsolete("Use FunctionListAsync(FunctionListOptions?, Route) instead. See #495.")]
     Task<ClusterValue<LibraryInfo[]>> FunctionListAsync(
         FunctionListOptions? options = null,
         CancellationToken cancellationToken = default);

@@ -822,7 +822,10 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
         KeyValuePair<string, string>[] prevConfigs;
         if (isCluster)
         {
+            // TODO #495: Update to new method and remove pragma
+#pragma warning disable CS0618
             var prev = await ClusterClient.ConfigGetAsync(latencyThresholdParam);
+#pragma warning restore CS0618
             prevConfigs = prev.HasSingleData ? prev.SingleValue : prev.MultiValue.Values.First();
         }
         else
