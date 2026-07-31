@@ -77,16 +77,20 @@ internal class Cmd<R, T> : ICmd
     /// <summary>
     /// Convert a command to one which handles a <see cref="ClusterValue{T}" />.
     /// </summary>
-    /// <param name="isSingleValue">Whether current command call returns a single value.</param>
-    public Cmd<object, ClusterValue<T>> ToClusterValue(bool isSingleValue)
-        => new(Request, ArgsArray.Args, IsNullable, ResponseConverters.MakeClusterValueHandler(Converter, isSingleValue), AllowConverterToHandleNull);
+    public Cmd<object, ClusterValue<T>> ToClusterValue()
+        => new(Request, ArgsArray.Args, IsNullable, value => value is Dictionary<GlideString, object> dict
+            ? ClusterValue<T>.OfMultiValue(dict.ConvertValues(Converter))
+            : value is Dictionary<string, object> stringDict
+                ? ClusterValue<T>.OfMultiValue(stringDict.ConvertValues(Converter))
+                : ClusterValue<T>.OfSingleValue(Converter((R)value)), AllowConverterToHandleNull);
 
     /// <summary>
-    /// Convert a command to one which handles a <see cref="ClusterValue{T}" />.
+    /// Convert a command to one which handles a <see cref="ClusterValue{T}" /> for the given route.
     /// </summary>
-    /// <param name="route">The route to determine if this is a single-node operation.</param>
     public Cmd<object, ClusterValue<T>> ToClusterValue(Route route)
-        => ToClusterValue(route is Route.SingleNodeRoute);
+        => route is Route.SingleNodeRoute
+            ? new(Request, ArgsArray.Args, IsNullable, value => ClusterValue<T>.OfSingleValue(Converter((R)value)), AllowConverterToHandleNull)
+            : ToClusterValue();
 
     /// <summary>
     /// Get full command line including command name.

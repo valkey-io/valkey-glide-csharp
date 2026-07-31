@@ -1,38 +1,45 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using Valkey.Glide.Commands.Options;
+using Valkey.Glide.Internals;
 
 namespace Valkey.Glide;
 
-// TODO #462: Consolidate no-route overloads into BaseClient (glide-core default routing matches).
 public abstract partial class BaseClient
 {
     /// <inheritdoc cref="IBaseClient.ConfigGetAsync(IEnumerable{ValkeyValue})"/>
-    public abstract Task<KeyValuePair<string, string>[]> ConfigGetAsync(IEnumerable<ValkeyValue> patterns);
+    public async Task<KeyValuePair<string, string>[]> ConfigGetAsync(IEnumerable<ValkeyValue> patterns)
+        => await Command(Request.ConfigGetAsync(patterns));
 
     /// <inheritdoc cref="IBaseClient.ConfigSetAsync(IDictionary{ValkeyValue, ValkeyValue})"/>
-    public abstract Task ConfigSetAsync(IDictionary<ValkeyValue, ValkeyValue> parameters);
+    public async Task ConfigSetAsync(IDictionary<ValkeyValue, ValkeyValue> parameters)
+        => _ = await Command(Request.ConfigSetAsync(parameters));
 
     /// <inheritdoc cref="IBaseClient.FlushAllDatabasesAsync(FlushMode)"/>
-    public abstract Task FlushAllDatabasesAsync(FlushMode mode);
+    public async Task FlushAllDatabasesAsync(FlushMode mode)
+        => _ = await Command(Request.FlushAllDatabasesAsync(mode));
 
     /// <inheritdoc cref="IBaseClient.FlushDatabaseAsync(FlushMode)"/>
-    public abstract Task FlushDatabaseAsync(FlushMode mode);
+    public async Task FlushDatabaseAsync(FlushMode mode)
+        => _ = await Command(Request.FlushDatabaseAsync(mode));
 
     /// <inheritdoc cref="IBaseClient.LatencyResetAsync()"/>
-    public abstract Task<long> LatencyResetAsync();
+    public async Task<long> LatencyResetAsync()
+        => await Command(Request.LatencyResetAsync([]));
 
     /// <inheritdoc cref="IBaseClient.LatencyResetAsync(ValkeyValue)"/>
-    public abstract Task<long> LatencyResetAsync(ValkeyValue @event);
+    public async Task<long> LatencyResetAsync(ValkeyValue @event)
+        => await Command(Request.LatencyResetAsync([@event]));
 
     /// <inheritdoc cref="IBaseClient.LatencyResetAsync(IEnumerable{ValkeyValue})"/>
-    public abstract Task<long> LatencyResetAsync(IEnumerable<ValkeyValue> events);
-
-    // TODO #475: Add parameterless LolwutAsync() here
+    public async Task<long> LatencyResetAsync(IEnumerable<ValkeyValue> events)
+        => await Command(Request.LatencyResetAsync(events));
 
     /// <inheritdoc cref="IBaseClient.LolwutAsync(LolwutOptions)"/>
-    public abstract Task<string> LolwutAsync(LolwutOptions options);
+    public async Task<string> LolwutAsync(LolwutOptions options)
+        => await Command(Request.LolwutAsync(options));
 
     /// <inheritdoc cref="IBaseClient.SaveAsync()"/>
-    public abstract Task SaveAsync();
+    public async Task SaveAsync()
+        => _ = await Command(Request.SaveAsync());
 }

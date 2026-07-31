@@ -266,6 +266,8 @@ public class ClusterClientTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task ConfigGetAsync_ReturnsConfigurationPerNode(GlideClusterClient client)
     {
+        // TODO #495: Update for single node method.
+#pragma warning disable CS0618
         // Test getting all configuration from all nodes
         var allConfig = await client.ConfigGetAsync("*");
         Assert.True(allConfig.HasMultiData);
@@ -338,6 +340,7 @@ public class ClusterClientTests(TestConfiguration config)
         {
             Assert.Empty(nodeConfig);
         }
+#pragma warning restore CS0618
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
