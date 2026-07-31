@@ -1214,10 +1214,10 @@ internal partial class FFI
         public nuint ClientKeyLen;
         public IntPtr ClientKeyPtr;
 
-        [MarshalAs(UnmanagedType.LPStr)]
+        [MarshalAs(UnmanagedType.LPUTF8Str)]
         public string? ClientCertPath;
 
-        [MarshalAs(UnmanagedType.LPStr)]
+        [MarshalAs(UnmanagedType.LPUTF8Str)]
         public string? ClientKeyPath;
 
         [MarshalAs(UnmanagedType.U1)]
