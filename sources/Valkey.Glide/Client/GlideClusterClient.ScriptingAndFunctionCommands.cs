@@ -10,7 +10,7 @@ public sealed partial class GlideClusterClient
 
     /// <inheritdoc cref="IGlideClusterClient.ScriptInvokeAsync(Script, ClusterScriptOptions, CancellationToken)"/>
     // TODO #496: Change return type to Task<ValkeyResult>; remove AllPrimaries default.
-    [Obsolete("Return type will change to Task<ValkeyResult> in 2.0. See #496.")]
+    [Obsolete("Return type will change to Task<ValkeyResult>. See #496.")]
     public async Task<ClusterValue<ValkeyResult>> ScriptInvokeAsync(
         Script script,
         ClusterScriptOptions options,
@@ -132,7 +132,7 @@ public sealed partial class GlideClusterClient
 
     /// <inheritdoc cref="IGlideClusterClient.FunctionListAsync(FunctionListOptions?, CancellationToken)"/>
     // TODO #495: Remove method; consolidate single-value version into BaseClient.
-    [Obsolete("Use FunctionListAsync(FunctionListOptions?, Route) instead. This method will be removed in 2.0.")]
+    [Obsolete("Use FunctionListAsync(FunctionListOptions?, Route) instead. See #495.")]
     public async Task<ClusterValue<LibraryInfo[]>> FunctionListAsync(
         FunctionListOptions? options = null,
         CancellationToken cancellationToken = default)

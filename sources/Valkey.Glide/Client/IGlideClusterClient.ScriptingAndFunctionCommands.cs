@@ -382,7 +382,7 @@ public partial interface IGlideClusterClient
     /// </example>
     /// </remarks>
     // TODO #495: Remove method; consolidate single-value version into BaseClient.
-    [Obsolete("Use FunctionListAsync(FunctionListOptions?, Route) instead. This method will be removed in 2.0.")]
+    [Obsolete("Use FunctionListAsync(FunctionListOptions?, Route) instead. See #495.")]
     Task<ClusterValue<LibraryInfo[]>> FunctionListAsync(
         FunctionListOptions? options = null,
         CancellationToken cancellationToken = default);

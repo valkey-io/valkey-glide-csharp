@@ -43,7 +43,7 @@ public partial class GlideClusterClient
 
     // TODO #495: Remove method; consolidate single-value version into BaseClient.
     /// <inheritdoc cref="IGlideClusterClient.ConfigGetAsync(ValkeyValue)"/>
-    [Obsolete("Use ConfigGetAsync(ValkeyValue, Route) instead. This method will be removed.")]
+    [Obsolete("Use ConfigGetAsync(ValkeyValue, Route) instead. See #495.")]
     public async Task<ClusterValue<KeyValuePair<string, string>[]>> ConfigGetAsync(ValkeyValue pattern = default)
         => await Command(Request.ConfigGetAsync(pattern).ToClusterValue(), AllPrimaries);
 
@@ -139,11 +139,7 @@ public partial class GlideClusterClient
     public async Task<Dictionary<string, DateTimeOffset>> LastSaveAsync()
     {
         var result = await Command(Request.LastSaveAsync().ToClusterValue());
-        if (result.HasMultiData)
-        {
-            return result.MultiValue;
-        }
-        return new Dictionary<string, DateTimeOffset> { ["single_node"] = result.SingleValue };
+        return result.HasMultiData ? result.MultiValue : new Dictionary<string, DateTimeOffset> { ["single_node"] = result.SingleValue };
     }
 
     /// <inheritdoc cref="IGlideClusterClient.LastSaveAsync(Route)"/>
@@ -182,12 +178,8 @@ public partial class GlideClusterClient
     [Obsolete("This method will be updated to return Task<string> in future. Use LolwutAsync(Route.Random) instead")]
     public async Task<Dictionary<string, string>> LolwutAsync()
     {
-        ClusterValue<string> result = await Command(Request.LolwutAsync().ToClusterValue());
-        if (result.HasMultiData)
-        {
-            return result.MultiValue;
-        }
-        return new Dictionary<string, string> { ["single_node"] = result.SingleValue };
+        var result = await Command(Request.LolwutAsync().ToClusterValue());
+        return result.HasMultiData ? result.MultiValue : new Dictionary<string, string> { ["single_node"] = result.SingleValue };
     }
 
     /// <inheritdoc cref="IGlideClusterClient.LolwutAsync(Route)"/>
@@ -238,11 +230,7 @@ public partial class GlideClusterClient
     public async Task<Dictionary<string, DateTimeOffset>> TimeAsync()
     {
         var result = await Command(Request.TimeAsync().ToClusterValue());
-        if (result.HasMultiData)
-        {
-            return result.MultiValue;
-        }
-        return new Dictionary<string, DateTimeOffset> { ["single_node"] = result.SingleValue };
+        return result.HasMultiData ? result.MultiValue : new Dictionary<string, DateTimeOffset> { ["single_node"] = result.SingleValue };
     }
 
     /// <inheritdoc cref="IGlideClusterClient.TimeAsync(Route)"/>
