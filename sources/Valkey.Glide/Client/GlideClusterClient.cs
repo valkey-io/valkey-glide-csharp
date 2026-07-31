@@ -52,7 +52,6 @@ public sealed partial class GlideClusterClient :
             ? throw new RequestException("Retry strategy is not supported for atomic batches (transactions).")
             : await Batch(batch, raiseOnError, options);
 
-
     /// <inheritdoc cref="BaseClient.GetServerVersionAsync()"/>
     protected override async Task<Version> GetServerVersionAsync()
     {
