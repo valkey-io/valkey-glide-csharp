@@ -7,16 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 1.2.0
 
-### Added
-
-- Mutual TLS (mTLS) client certificate support (#488)
-
 ### Fixed
 
 - `XREADGROUP` returning only the first field-value pair per stream entry (#430)
 
 ### Added
 
+- Mutual TLS (mTLS) client certificate support (#488)
 - Support additional commands (#435):
   - `BGREWRITEAOF` (#444)
   - `BGSAVE CANCEL` (#436)
