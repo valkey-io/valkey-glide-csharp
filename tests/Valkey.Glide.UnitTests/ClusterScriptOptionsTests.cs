@@ -1,5 +1,8 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+// TODO #496: Remove test file when ClusterScriptOptions is deleted.
+#pragma warning disable CS0618
+
 namespace Valkey.Glide.UnitTests;
 
 public class ClusterScriptOptionsTests

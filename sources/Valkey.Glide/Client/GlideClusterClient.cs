@@ -59,8 +59,11 @@ public sealed partial class GlideClusterClient :
         {
             try
             {
-                var infoResponse = await Command(Request.Info([InfoOptions.Section.SERVER]).ToClusterValue(true), Route.Random);
-                _serverVersion = ParseServerVersion(infoResponse.SingleValue) ?? DefaultServerVersion;
+                var infoResponse = await Command(Request.Info([InfoOptions.Section.SERVER]).ToClusterValue());
+                string infoString = infoResponse.HasMultiData
+                    ? infoResponse.MultiValue.Values.First()
+                    : infoResponse.SingleValue;
+                _serverVersion = ParseServerVersion(infoString) ?? DefaultServerVersion;
             }
             catch
             {

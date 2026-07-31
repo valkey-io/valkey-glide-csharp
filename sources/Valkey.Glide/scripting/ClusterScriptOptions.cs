@@ -5,6 +5,8 @@ namespace Valkey.Glide;
 /// <summary>
 /// Options for cluster script execution with routing support.
 /// </summary>
+[Obsolete("This class will be removed and replaced with use of ScriptOptions. See #496.")]
+// TODO #496: Remove class; use BaseClient.ScriptInvokeAsync(Script, ScriptOptions) for key-based routing.
 public sealed class ClusterScriptOptions
 {
     /// <summary>

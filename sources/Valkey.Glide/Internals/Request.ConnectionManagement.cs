@@ -17,9 +17,6 @@ internal partial class Request
     public static Cmd<GlideString, ValkeyValue> ClientGetName()
         => ToValkeyValue(RequestType.ClientGetName, [], isNullable: true);
 
-    public static Cmd<object, ClusterValue<ValkeyValue>> ClientGetName(Route route)
-        => ClientGetName().ToClusterValue(route);
-
     public static Cmd<long, long> ClientId()
         => Simple<long>(RequestType.ClientId, []);
 
