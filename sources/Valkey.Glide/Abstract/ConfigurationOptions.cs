@@ -305,15 +305,25 @@ public sealed class ConfigurationOptions : ICloneable
     /// </summary>
     /// <param name="userCertificatePath">The path for the user certificate (commonly a .crt file).</param>
     /// <param name="userKeyPath">The path for the user key (commonly a .key file).</param>
-    /// <exception cref="ArgumentNullException">If <paramref name="userCertificatePath"/> is <see langword="null"/>.</exception>
-    /// <exception cref="FileNotFoundException">If a specified file does not exist.</exception>
+    /// <exception cref="FileNotFoundException">If one of the specified files does not exist.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">If one of the specified files is empty or too large.</exception>
     public void SetUserPemCertificate(string userCertificatePath, string? userKeyPath = null)
     {
+        GuardClauses.ThrowIfFileNotSupported(userCertificatePath, nameof(userCertificatePath));
+        _clientCertificate = File.ReadAllBytes(userCertificatePath);
+
         // When keyPath is null, pass the same blob for both cert and key.
         // glide-core extracts certificates and private keys independently by scanning for
         // their respective PEM headers, ignoring irrelevant sections in the same blob.
-        _clientCertificate = File.ReadAllBytes(userCertificatePath);
-        _clientKey = userKeyPath is not null ? File.ReadAllBytes(userKeyPath) : _clientCertificate;
+        if (userKeyPath is not null)
+        {
+            GuardClauses.ThrowIfFileNotSupported(userKeyPath, nameof(userKeyPath));
+            _clientKey = File.ReadAllBytes(userKeyPath);
+        }
+        else
+        {
+            _clientKey = _clientCertificate;
+        }
 
         Ssl = true;
     }
