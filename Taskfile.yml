@@ -101,11 +101,12 @@ tasks:
     lint:
         desc: "Run all linters"
         deps:
-            - lint:rust
-            - lint:csharp
-            - lint:yaml
             - lint:actions
+            - lint:csharp
             - lint:markdown
+            - lint:python
+            - lint:rust
+            - lint:yaml
 
     lint:rust:
         desc: "Run Rust linting"
@@ -123,6 +124,12 @@ tasks:
             # Shutdown build server to release file locks before lint build
             - dotnet build-server shutdown
             - dotnet build --configuration Lint --framework net8.0 -m:1
+
+    lint:python:
+        desc: "Run Python linting"
+        cmds:
+            - uvx ruff@latest check --config dev/conf/ruff.toml .
+            - uvx ruff@latest format --check --config dev/conf/ruff.toml .
 
     lint:yaml:
         desc: "Run YAML linting"
@@ -142,10 +149,11 @@ tasks:
     format:
         desc: "Run all formatters"
         deps:
-            - format:rust
             - format:csharp
-            - format:yaml
             - format:markdown
+            - format:python
+            - format:rust
+            - format:yaml
 
     format:rust:
         desc: "Run Rust formatting"
@@ -155,6 +163,10 @@ tasks:
     format:csharp:
         desc: "Run C# formatting"
         cmd: dotnet format
+
+    format:python:
+        desc: "Run Python formatting"
+        cmd: uvx ruff@latest format --config dev/conf/ruff.toml .
 
     format:yaml:
         desc: "Run YAML formatting"
