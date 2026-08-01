@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# TODO #490: Temporary test TODO to verify CI check (remove after verification)
 
 """Check that all TODOs follow the required format.
 
