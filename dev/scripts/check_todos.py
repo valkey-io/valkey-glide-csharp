@@ -9,7 +9,11 @@ Validation rules:
 
 Options:
   --fail-issues ID [ID ...]
-      When provided, the script fails if any TODOs reference the specified GitHub issues.
+      When provided, the script fails if any TODOs reference the specified issue IDs.
+
+      In CI, the check-todos workflow automatically detects issues closed by the
+      current pull request and passes them to this flag. This prevents merging a
+      pull request that would orphan TODOs (see .github/workflows/check-todos.yml).
 
 Usage:
     python dev/scripts/check_todos.py
@@ -194,7 +198,9 @@ def main():
     passed = len(todos) - len(failures)
     print(f"Checked {len(todos)} TODOs: {passed} passed, {len(failures)} failed.")
 
-    sys.exit(1 if failures else 0)
+    if failures:
+        print("\nSee dev/scripts/check_todos.py for more details.")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
