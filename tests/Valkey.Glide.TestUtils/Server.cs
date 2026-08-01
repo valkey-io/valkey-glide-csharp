@@ -90,7 +90,8 @@ public abstract class Server : IDisposable
     protected Server(
         bool useClusterMode,
         bool useTls = false,
-        int? replicaCount = null)
+        int? replicaCount = null,
+        string? host = null)
     {
         UseTls = useTls;
 
@@ -98,7 +99,8 @@ public abstract class Server : IDisposable
             name: _name,
             useClusterMode: useClusterMode,
             useTls: UseTls,
-            replicaCount: replicaCount).First();
+            replicaCount: replicaCount,
+            host: host).First();
 
         if (UseTls)
         {
@@ -133,7 +135,8 @@ public abstract class Server : IDisposable
     /// <summary>
     /// Builds and returns a client for this server.
     /// </summary>
-    public abstract Task<BaseClient> CreateClientAsync();
+    /// <param name="host">Optional hostname.</param>
+    public abstract Task<BaseClient> CreateClientAsync(string? host = null);
 
     /// <summary>
     /// Sets authentication credentials for the default user.
@@ -198,7 +201,7 @@ public abstract class Server : IDisposable
 /// <summary>
 /// Valkey cluster server.
 /// </summary>
-public sealed class ClusterServer(bool useTls = false) : Server(useClusterMode: true, useTls: useTls)
+public sealed class ClusterServer(bool useTls = false, string? host = null) : Server(useClusterMode: true, useTls: useTls, host: host)
 {
     #region Public Methods
 
@@ -213,18 +216,32 @@ public sealed class ClusterServer(bool useTls = false) : Server(useClusterMode: 
             username: _username,
             password: _password);
 
-    /// <inheritdoc cref="Server.CreateClientAsync()"/>
-    public override async Task<BaseClient> CreateClientAsync()
-        => await CreateClusterClientAsync();
+    /// <inheritdoc cref="Server.CreateClientAsync(string?)"/>
+    public override async Task<BaseClient> CreateClientAsync(string? host = null)
+        => await CreateClusterClientAsync(host);
 
     /// <summary>
     /// Builds and returns a cluster client for this server.
     /// </summary>
-    public async Task<GlideClusterClient> CreateClusterClientAsync()
+    /// <param name="host">Optional hostname.</param>
+    public async Task<GlideClusterClient> CreateClusterClientAsync(string? host = null)
     {
-        var config = CreateConfigBuilder().Build();
-        Task<GlideClusterClient> factory() => GlideClusterClient.CreateClient(config);
-        return await CreateClientAsync(factory);
+        var builder = new ClusterClientConfigurationBuilder()
+            .WithAddress(host ?? Address.Host, Address.Port);
+
+        if (UseTls)
+        {
+            _ = builder.WithTls();
+            _ = builder.WithTrustedCertificate(CertificateData!);
+        }
+
+        if (_password != null)
+        {
+            _ = builder.WithAuthentication(password: _password);
+        }
+
+        return await CreateClientAsync(()
+            => GlideClusterClient.CreateClient(builder.Build()));
     }
 
     public override async Task SetAuthenticationAsync(string password)
@@ -275,7 +292,8 @@ public sealed class ClusterServer(bool useTls = false) : Server(useClusterMode: 
 /// </summary>
 public sealed class StandaloneServer(
     bool useTls = false,
-    int? replicaCount = null) : Server(useClusterMode: false, useTls: useTls, replicaCount: replicaCount)
+    int? replicaCount = null,
+    string? host = null) : Server(useClusterMode: false, useTls: useTls, replicaCount: replicaCount, host: host)
 {
     #region Public Methods
 
@@ -290,18 +308,32 @@ public sealed class StandaloneServer(
             username: _username,
             password: _password);
 
-    /// <inheritdoc cref="Server.CreateClientAsync()"/>
-    public override async Task<BaseClient> CreateClientAsync()
-        => await CreateStandaloneClientAsync();
+    /// <inheritdoc cref="Server.CreateClientAsync(string?)"/>
+    public override async Task<BaseClient> CreateClientAsync(string? host = null)
+        => await CreateStandaloneClientAsync(host);
 
     /// <summary>
     /// Builds and returns a standalone client for this server.
     /// </summary>
-    public async Task<GlideClient> CreateStandaloneClientAsync()
+    /// <param name="host">Optional hostname.</param>
+    public async Task<GlideClient> CreateStandaloneClientAsync(string? host = null)
     {
-        var config = CreateConfigBuilder().Build();
-        Task<GlideClient> factory() => GlideClient.CreateClient(config);
-        return await CreateClientAsync(factory);
+        var builder = new StandaloneClientConfigurationBuilder()
+            .WithAddress(host ?? Address.Host, Address.Port);
+
+        if (UseTls)
+        {
+            _ = builder.WithTls();
+            _ = builder.WithTrustedCertificate(CertificateData!);
+        }
+
+        if (_password != null)
+        {
+            _ = builder.WithAuthentication(password: _password);
+        }
+
+        return await CreateClientAsync(()
+            => GlideClient.CreateClient(builder.Build()));
     }
 
     public override async Task SetAuthenticationAsync(string password)
