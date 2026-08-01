@@ -67,7 +67,8 @@ public static class ServerManager
         string name,
         bool useClusterMode = false,
         bool useTls = false,
-        int? replicaCount = null)
+        int? replicaCount = null,
+        string? host = null)
     {
         // Build command arguments.
         List<string> args = [];
@@ -75,6 +76,11 @@ public static class ServerManager
         if (useTls)
         {
             args.Add("--tls");
+        }
+
+        if (host != null)
+        {
+            args.AddRange(["--host", host]);
         }
 
         args.Add("start");
