@@ -4,10 +4,10 @@ tasks:
     # Test
     # --------------------------------------------------------------------------------
 
-    test:unit:
-        desc: Run unit tests
+    test:
+        desc: Run all tests
         summary: |
-            Run unit tests.
+            Run all tests (unit + integration).
 
             Options:
               filter=MyClass       Filter tests by class or method name
@@ -15,7 +15,7 @@ tasks:
               verbosity=detailed   Set verbosity (quiet|minimal|normal|detailed|diagnostic)
               configuration=Debug  Set build configuration
         cmd: >-
-            python3 dev/scripts/test.py --unit
+            python3 dev/scripts/test.py
             {{if (default "" .filter)}}--filter {{.filter}}{{end}}
             {{if eq (default "false" .coverage) "true"}}--coverage{{end}}
             {{if (default "" .verbosity)}}--verbosity {{.verbosity}}{{end}}
@@ -38,10 +38,10 @@ tasks:
             {{if (default "" .verbosity)}}--verbosity {{.verbosity}}{{end}}
             {{if (default "" .configuration)}}--configuration {{.configuration}}{{end}}
 
-    test:
-        desc: Run all tests
+    test:unit:
+        desc: Run unit tests
         summary: |
-            Run all tests (unit + integration).
+            Run unit tests.
 
             Options:
               filter=MyClass       Filter tests by class or method name
@@ -49,7 +49,7 @@ tasks:
               verbosity=detailed   Set verbosity (quiet|minimal|normal|detailed|diagnostic)
               configuration=Debug  Set build configuration
         cmd: >-
-            python3 dev/scripts/test.py
+            python3 dev/scripts/test.py --unit
             {{if (default "" .filter)}}--filter {{.filter}}{{end}}
             {{if eq (default "false" .coverage) "true"}}--coverage{{end}}
             {{if (default "" .verbosity)}}--verbosity {{.verbosity}}{{end}}
@@ -57,6 +57,14 @@ tasks:
 
     # Coverage
     # --------------------------------------------------------------------------------
+
+    coverage:check:
+        desc: Compare measured coverage against the baseline
+        cmd: python3 dev/scripts/coverage.py check
+
+    coverage:clean:
+        desc: Remove coverage results and reports
+        cmd: python3 dev/scripts/coverage.py clean
 
     coverage:install:
         desc: Install coverage reporting tools
@@ -68,17 +76,9 @@ tasks:
         desc: Generate coverage reports
         cmd: python3 dev/scripts/coverage.py report
 
-    coverage:check:
-        desc: Compare measured coverage against the baseline
-        cmd: python3 dev/scripts/coverage.py check
-
     coverage:update:
         desc: Updates the coverage baseline
         cmd: python3 dev/scripts/coverage.py update
-
-    coverage:clean:
-        desc: Remove coverage results and reports
-        cmd: python3 dev/scripts/coverage.py clean
 
     # Build
     # --------------------------------------------------------------------------------
@@ -108,14 +108,9 @@ tasks:
             - lint:rust
             - lint:yaml
 
-    lint:rust:
-        desc: "Run Rust linting"
-        dir: rust
-        cmds:
-            - cargo fmt --all -- --check
-            - cargo clippy --all-features --all-targets -- -D warnings
-            - cargo deny check
-            - RUSTDOCFLAGS=-Dwarnings cargo doc --no-deps --document-private-items
+    lint:actions:
+        desc: "Run GitHub Actions linting"
+        cmd: actionlint
 
     lint:csharp:
         desc: "Run C# linting"
@@ -125,23 +120,28 @@ tasks:
             - dotnet build-server shutdown
             - dotnet build --configuration Lint --framework net8.0 -m:1
 
+    lint:markdown:
+        desc: "Run Markdown linting"
+        cmd: npx --yes markdownlint-cli2 "**/*.md"
+
     lint:python:
         desc: "Run Python linting"
         cmds:
             - uvx ruff@latest check --config dev/conf/ruff.toml .
             - uvx ruff@latest format --check --config dev/conf/ruff.toml .
 
+    lint:rust:
+        desc: "Run Rust linting"
+        dir: rust
+        cmds:
+            - cargo fmt --all -- --check
+            - cargo clippy --all-features --all-targets -- -D warnings
+            - cargo deny check
+            - RUSTDOCFLAGS=-Dwarnings cargo doc --no-deps --document-private-items
+
     lint:yaml:
         desc: "Run YAML linting"
         cmd: npx --yes prettier --check "**/*.yml"
-
-    lint:actions:
-        desc: "Run GitHub Actions linting"
-        cmd: actionlint
-
-    lint:markdown:
-        desc: "Run Markdown linting"
-        cmd: npx --yes markdownlint-cli2 "**/*.md"
 
     # Format
     # --------------------------------------------------------------------------------
@@ -155,26 +155,26 @@ tasks:
             - format:rust
             - format:yaml
 
-    format:rust:
-        desc: "Run Rust formatting"
-        dir: rust
-        cmd: cargo fmt --all
-
     format:csharp:
         desc: "Run C# formatting"
         cmd: dotnet format
+
+    format:markdown:
+        desc: "Run Markdown formatting"
+        cmd: npx --yes markdownlint-cli2 --fix "**/*.md"
 
     format:python:
         desc: "Run Python formatting"
         cmd: uvx ruff@latest format --config dev/conf/ruff.toml .
 
+    format:rust:
+        desc: "Run Rust formatting"
+        dir: rust
+        cmd: cargo fmt --all
+
     format:yaml:
         desc: "Run YAML formatting"
         cmd: npx --yes prettier --write --cache "**/*.yml"
-
-    format:markdown:
-        desc: "Run Markdown formatting"
-        cmd: npx --yes markdownlint-cli2 --fix "**/*.md"
 
     # Additional checks
     # --------------------------------------------------------------------------------
