@@ -266,6 +266,8 @@ public class ClusterClientTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task ConfigGetAsync_ReturnsConfigurationPerNode(GlideClusterClient client)
     {
+        // TODO #495: Update for single node method.
+#pragma warning disable CS0618
         // Test getting all configuration from all nodes
         var allConfig = await client.ConfigGetAsync("*");
         Assert.True(allConfig.HasMultiData);
@@ -338,6 +340,7 @@ public class ClusterClientTests(TestConfiguration config)
         {
             Assert.Empty(nodeConfig);
         }
+#pragma warning restore CS0618
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -360,7 +363,7 @@ public class ClusterClientTests(TestConfiguration config)
         // Test CLIENT ID with all nodes routing
         var allNodesResult = await client.ClientIdAsync(AllNodes);
         Assert.True(allNodesResult.HasMultiData);
-        Assert.True(allNodesResult.MultiValue.Count > 0);
+        Assert.NotEmpty(allNodesResult.MultiValue);
 
         foreach (var kvp in allNodesResult.MultiValue)
         {
@@ -414,7 +417,7 @@ public class ClusterClientTests(TestConfiguration config)
         // Test CLIENT GETNAME with all nodes routing
         var allNodesResult = await client.ClientGetNameAsync(AllNodes);
         Assert.True(allNodesResult.HasMultiData);
-        Assert.True(allNodesResult.MultiValue.Count > 0);
+        Assert.NotEmpty(allNodesResult.MultiValue);
 
         foreach (var kvp in allNodesResult.MultiValue)
         {
