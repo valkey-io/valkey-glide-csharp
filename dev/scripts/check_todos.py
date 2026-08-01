@@ -7,10 +7,16 @@ Validation rules:
   2. The description should provide a summary of the proposed changes, and must be at least 10 characters long.
   3. The referenced number must correspond to an open Valkey GLIDE C# GitHub issue.
 
+Options:
+  --fail-issues ID [ID ...]
+      When provided, the script fails if any TODOs reference the specified GitHub issues.
+
 Usage:
     python dev/scripts/check_todos.py
+    python dev/scripts/check_todos.py --fail-issues 123 456
 """
 
+import argparse
 import os
 import re
 import subprocess
@@ -113,21 +119,31 @@ def _check_issue(github_id: int) -> str | None:
     return f"#{github_id} is not open (state: {state})"
 
 
-def _validate_todos(todos: list[_Todo]) -> dict[_Todo, str]:
-    """Validate TODO format and issue state. Returns a map from failed TODO to the corresponding reason."""
+def _validate_todos(
+    todos: list[_Todo], fail_issues: set[int]
+) -> dict[_Todo, str]:
+    """
+    Validate TODO format and issue state.
+    Returns a map from failed TODO to the corresponding reason.
+    """
     failures: dict[_Todo, str] = {}
     checked_issues: dict[int, str | None] = {}
 
     for todo in todos:
 
-        # Validate format
+        # Validate format.
         match = _TODO_VALIDATION_PATTERN.search(todo.text)
         if not match:
             failures[todo] = "invalid format (expected: TODO #<github_id>: <description>)"
             continue
 
-        # Check issue state
+        # Check GitHub issue
         github_id = int(match.group("github_id"))
+
+        if fail_issues and github_id in fail_issues:
+            failures[todo] = f"TODO cannot reference #{github_id}"
+            continue
+
         if github_id not in checked_issues:
             checked_issues[github_id] = _check_issue(github_id)
         if checked_issues[github_id]:
@@ -143,11 +159,24 @@ def _validate_todos(todos: list[_Todo]) -> dict[_Todo, str]:
 
 
 def main():
+    # Build arguments
+    parser = argparse.ArgumentParser(description="Check TODO format and issue state.")
+    parser.add_argument(
+        "--fail-issues",
+        type=int,
+        nargs="*",
+        default=[],
+        help="Issue IDs whose TODOs should fail validation.",
+    )
+    args = parser.parse_args()
+
+    # Check TODOs
     print("Checking TODOs...\n")
 
     todos = _find_todos()
-    failures = _validate_todos(todos)
+    failures = _validate_todos(todos, set(args.fail_issues))
 
+    # Print results
     for todo, reason in failures.items():
         print(f"  FAIL  {todo.file}:{todo.line}")
         print(f"        {reason}\n")

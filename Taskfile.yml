@@ -184,4 +184,14 @@ tasks:
 
     check:todos:
         desc: "Check that TODOs reference an open GitHub issue"
-        cmd: python3 dev/scripts/check_todos.py
+        summary: |
+            Check that TODOs reference an open GitHub issue.
+
+            Options
+              --fail-issues ID [ID ...]
+                When provided, the script fails if any TODOs reference the specified GitHub issues.
+
+            Examples:
+              task check:todos
+              task check:todos -- --fail-issues 123 456
+        cmd: python3 dev/scripts/check_todos.py {{.CLI_ARGS}}

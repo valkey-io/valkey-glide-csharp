@@ -1,16 +1,13 @@
 name: check-todos
 
 on:
-    push:
-        branches:
-            - main
-            - release-*
     pull_request:
     workflow_dispatch:
 
 permissions:
     contents: read
     issues: read
+    pull-requests: read
 
 jobs:
     check-todos:
@@ -28,7 +25,19 @@ jobs:
             - name: Install Task
               uses: go-task/setup-task@01a4adf9db2d14c1de7a560f09170b6e0df736aa # v2.1.0
 
+            - name: Get issues closed by this pull request
+              id: closing-issues
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              if: github.event_name == 'pull_request'
+              run: |
+                  ISSUES=$(gh pr view ${{ github.event.pull_request.number }} \
+                    --repo ${{ github.repository }} \
+                    --json closingIssuesReferences \
+                    --jq '[.closingIssuesReferences[].number] | join(" ")')
+                  echo "issues=$ISSUES" >> "$GITHUB_OUTPUT"
+
             - name: Check TODOs
-              run: task check:todos
+              run: task check:todos -- --fail-issues ${{ steps.closing-issues.outputs.issues }}
               env:
                   GH_TOKEN: ${{ github.token }}
