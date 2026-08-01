@@ -58,7 +58,8 @@ def _load_ignore_patterns() -> list[str]:
         sys.exit(1)
 
     return [
-        ignore for line in Path(_IGNORE_FILE).read_text().splitlines()
+        ignore
+        for line in Path(_IGNORE_FILE).read_text().splitlines()
         if (ignore := line.strip()) and not ignore.startswith("#")
     ]
 
@@ -75,6 +76,7 @@ def _find_todos() -> list[_Todo]:
         cwd=PROJECT_ROOT,
         capture_output=True,
         text=True,
+        check=False,
     )
 
     if result.returncode == 1:
@@ -100,13 +102,20 @@ def _check_issue(github_id: int) -> str | None:
     """Check issue state. Returns an error message, or None if the issue is open."""
     result = subprocess.run(
         [
-            "gh", "issue", "view", str(github_id),
-            "--repo", GITHUB_REPO,
-            "--json", "state",
-            "--jq", ".state",
+            "gh",
+            "issue",
+            "view",
+            str(github_id),
+            "--repo",
+            GITHUB_REPO,
+            "--json",
+            "state",
+            "--jq",
+            ".state",
         ],
         capture_output=True,
         text=True,
+        check=False,
     )
 
     if result.returncode != 0:
@@ -119,9 +128,7 @@ def _check_issue(github_id: int) -> str | None:
     return f"#{github_id} is not open (state: {state})"
 
 
-def _validate_todos(
-    todos: list[_Todo], fail_issues: set[int]
-) -> dict[_Todo, str]:
+def _validate_todos(todos: list[_Todo], fail_issues: set[int]) -> dict[_Todo, str]:
     """
     Validate TODO format and issue state.
     Returns a map from failed TODO to the corresponding reason.
@@ -130,11 +137,12 @@ def _validate_todos(
     checked_issues: dict[int, str | None] = {}
 
     for todo in todos:
-
         # Validate format.
         match = _TODO_VALIDATION_PATTERN.search(todo.text)
         if not match:
-            failures[todo] = "invalid format (expected: TODO #<github_id>: <description>)"
+            failures[todo] = (
+                "invalid format (expected: TODO #<github_id>: <description>)"
+            )
             continue
 
         # Check GitHub issue
@@ -153,7 +161,9 @@ def _validate_todos(
         # Check description length
         description = match.group("description")
         if len(description.strip()) < _MIN_DESCRIPTION_LENGTH:
-            failures[todo] = f"description too short (must be at least {_MIN_DESCRIPTION_LENGTH} characters)"
+            failures[todo] = (
+                f"description too short (must be at least {_MIN_DESCRIPTION_LENGTH} characters)"
+            )
 
     return failures
 
