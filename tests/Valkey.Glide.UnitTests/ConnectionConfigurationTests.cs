@@ -881,6 +881,29 @@ public class ConnectionConfigurationTests
     }
 
     #endregion
+    #region Inflight Requests Limit Tests
+
+    [Fact]
+    public void InflightRequestsLimit_Default_IsNull()
+    {
+        var builder = new StandaloneClientConfigurationBuilder();
+        Assert.Null(builder.Build().Request.InflightRequestsLimit);
+    }
+
+    [Fact]
+    public void WithInflightRequestsLimit_SetsValue()
+    {
+        var builder = new StandaloneClientConfigurationBuilder()
+            .WithInflightRequestsLimit(500);
+        Assert.Equal(500u, builder.Build().Request.InflightRequestsLimit);
+    }
+
+    [Fact]
+    public void WithInflightRequestsLimit_ZeroThrows()
+        => _ = Assert.Throws<ArgumentOutOfRangeException>(()
+            => new StandaloneClientConfigurationBuilder().WithInflightRequestsLimit(0));
+
+    #endregion
     #region Address Resolver Tests
 
     [Fact]

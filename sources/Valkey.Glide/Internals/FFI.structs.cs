@@ -226,6 +226,7 @@ internal partial class FFI
             NodeDiscoveryMode nodeDiscoveryMode,
             ClientSideCacheConfig? clientSideCacheConfig,
             CircuitBreakerConfig? circuitBreakerConfig,
+            uint? inflightRequestsLimit,
 
             // TLS configuration
             TlsMode tlsMode,
@@ -279,6 +280,9 @@ internal partial class FFI
                 RootCertsCount = (nuint)rootCertificates.Count,
                 RootCertsPtr = MarshallRootCertificates(rootCertificates),
                 RootCertsLensPtr = MarshallRootCertificatesLengths(rootCertificates),
+
+                HasInflightRequestsLimit = inflightRequestsLimit.HasValue,
+                InflightRequestsLimit = inflightRequestsLimit ?? default,
 
                 // Mutual TLS configuration
                 ClientCertLen = (nuint)(clientCertificate?.Length ?? 0),
@@ -1197,6 +1201,10 @@ internal partial class FFI
         public CircuitBreakerConfig CircuitBreakerConfig;
 
         #endregion
+        [MarshalAs(UnmanagedType.U1)]
+        public bool HasInflightRequestsLimit;
+        public uint InflightRequestsLimit;
+
         #region TLS
 
         public TlsMode TlsMode;
