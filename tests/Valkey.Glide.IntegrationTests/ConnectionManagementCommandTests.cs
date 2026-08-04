@@ -155,14 +155,24 @@ public class ConnectionManagementCommandTests(ServerFixture fixture) : IClassFix
     [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
     public async Task TestClientPause_ReadsPausedUntilExpires(bool clusterMode)
     {
-        await using var client = await fixture.GetServer(clusterMode).CreateClientAsync();
+        // Request timeout must be longer than the pause duration.
+        var pauseFor = TimeSpan.FromSeconds(1);
+        var requestTimeout = pauseFor + TimeSpan.FromSeconds(1);
+
+        await using BaseClient client = clusterMode
+            ? await GlideClusterClient.CreateClient(
+                fixture.ClusterServer.CreateConfigBuilder()
+                    .WithRequestTimeout(requestTimeout)
+                    .Build())
+            : await GlideClient.CreateClient(
+                fixture.StandaloneServer.CreateConfigBuilder()
+                    .WithRequestTimeout(requestTimeout)
+                    .Build());
 
         var key = Guid.NewGuid().ToString();
         await client.SetAsync(key, "value");
 
         var sw = Stopwatch.StartNew();
-
-        var pauseFor = TimeSpan.FromSeconds(2);
         await client.ClientPauseAsync(pauseFor);
 
         // Verify that read commands are blocked until the pause expires.
@@ -176,14 +186,24 @@ public class ConnectionManagementCommandTests(ServerFixture fixture) : IClassFix
     [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
     public async Task TestClientPause_WritesPausedUntilExpires(bool clusterMode)
     {
-        await using var client = await fixture.GetServer(clusterMode).CreateClientAsync();
+        // Request timeout must be longer than the pause duration.
+        var pauseFor = TimeSpan.FromSeconds(1);
+        var requestTimeout = pauseFor + TimeSpan.FromSeconds(1);
+
+        await using BaseClient client = clusterMode
+            ? await GlideClusterClient.CreateClient(
+                fixture.ClusterServer.CreateConfigBuilder()
+                    .WithRequestTimeout(requestTimeout)
+                    .Build())
+            : await GlideClient.CreateClient(
+                fixture.StandaloneServer.CreateConfigBuilder()
+                    .WithRequestTimeout(requestTimeout)
+                    .Build());
 
         var key = Guid.NewGuid().ToString();
         await client.SetAsync(key, "before");
 
         var sw = Stopwatch.StartNew();
-
-        var pauseFor = TimeSpan.FromSeconds(2);
         await client.ClientPauseAsync(pauseFor);
 
         // Verify that write commands are blocked until the pause expires.
