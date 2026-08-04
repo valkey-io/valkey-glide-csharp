@@ -2,6 +2,7 @@
 
 using System.Diagnostics;
 
+using Valkey.Glide.Commands.Options;
 using Valkey.Glide.TestUtils;
 
 using static Valkey.Glide.TestUtils.Builders;
@@ -262,6 +263,66 @@ public class ConnectionManagementCommandTests(ServerFixture fixture) : IClassFix
         // Verify tracking is disabled after reset.
         var infoAfter = await client.ClientTrackingInfoAsync();
         Assert.Contains("off", infoAfter.Flags);
+    }
+
+    #endregion
+    #region ClientKillAsync
+
+    [Theory]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
+    public async Task ClientKillAsync_ByFilter_KillsClientById(bool clusterMode)
+    {
+        await using var client = await fixture.GetServer(clusterMode).CreateClientAsync();
+        await using var target = await fixture.GetServer(clusterMode).CreateClientAsync();
+
+        var targetId = await target.ClientIdAsync();
+        var killed = await client.ClientKillAsync(new ClientFilterOptions().WithId(targetId));
+
+        Assert.Equal(1, killed);
+    }
+
+    [Theory]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
+    public async Task ClientKillAsync_ByFilter_NonExistentId_ReturnsZero(bool clusterMode)
+    {
+        await using var client = await fixture.GetServer(clusterMode).CreateClientAsync();
+
+        var killed = await client.ClientKillAsync(new ClientFilterOptions().WithId(999999999));
+
+        Assert.Equal(0, killed);
+    }
+
+    [Theory]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
+    public async Task ClientKillAsync_ByAddress_KillsClient(bool clusterMode)
+    {
+        await using var client = await fixture.GetServer(clusterMode).CreateClientAsync();
+        await using var target = await fixture.GetServer(clusterMode).CreateClientAsync();
+
+        var info = client is GlideClusterClient clusterClient
+            ? (await clusterClient.CustomCommand(InfoCommand, Route.Random)).SingleValue!.ToString()!
+            : (await ((GlideClient)client).CustomCommand(InfoCommand)).ToString()!;
+
+        var addrField = info.Split(' ').First(f => f.StartsWith("addr="));
+        var addr = addrField.Split('=')[1];
+        var parts = addr.Split(':');
+        var host = parts[0];
+        var port = ushort.Parse(parts[1]);
+
+        await client.ClientKillAsync(host, port);
+    }
+
+    [Fact]
+    public async Task ClientKillAsync_WithRoute_KillsClientInCluster()
+    {
+        await using var client = await fixture.ClusterServer.CreateClusterClientAsync();
+        await using var target = await fixture.ClusterServer.CreateClusterClientAsync();
+
+        var targetId = await target.ClientIdAsync();
+        var killed = await client.ClientKillAsync(
+            new ClientFilterOptions().WithId(targetId), Route.AllPrimaries);
+
+        Assert.Equal(1, killed);
     }
 
     #endregion

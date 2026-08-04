@@ -153,4 +153,56 @@ public class ServerTests(TestConfiguration config)
             Assert.Equal(ValkeyValue.Null, clientName); // No name should be set initially
         }
     }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestConnections), MemberType = typeof(TestConfiguration))]
+    public async Task ClientKillAsync_ById_KillsClient(ConnectionMultiplexer conn, bool _)
+    {
+        foreach (IServer server in conn.GetServers())
+        {
+            long clientId = await server.ClientIdAsync();
+            var killed = await server.ClientKillAsync(id: clientId);
+            Assert.Equal(1, killed);
+            break;
+        }
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestConnections), MemberType = typeof(TestConfiguration))]
+    public async Task ClientKillAsync_ById_NonExistent_ReturnsZero(ConnectionMultiplexer conn, bool _)
+    {
+        foreach (IServer server in conn.GetServers())
+        {
+            var killed = await server.ClientKillAsync(id: 999999999);
+            Assert.Equal(0, killed);
+            break;
+        }
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestConnections), MemberType = typeof(TestConfiguration))]
+    public async Task ClientKillAsync_WithFilter_KillsClient(ConnectionMultiplexer conn, bool _)
+    {
+        foreach (IServer server in conn.GetServers())
+        {
+            long clientId = await server.ClientIdAsync();
+            var filter = new ClientKillFilter().WithId(clientId).WithSkipMe(false);
+            var killed = await server.ClientKillAsync(filter);
+            Assert.Equal(1, killed);
+            break;
+        }
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestConnections), MemberType = typeof(TestConfiguration))]
+    public async Task ClientKillAsync_ByEndpoint_KillsClient(ConnectionMultiplexer conn, bool _)
+    {
+        foreach (IServer server in conn.GetServers())
+        {
+            long clientId = await server.ClientIdAsync();
+            var killed = await server.ClientKillAsync(id: clientId, skipMe: false);
+            Assert.Equal(1, killed);
+            break;
+        }
+    }
 }

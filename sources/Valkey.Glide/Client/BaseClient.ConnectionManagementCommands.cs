@@ -1,6 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using Valkey.Glide.Commands;
+using Valkey.Glide.Commands.Options;
 using Valkey.Glide.Internals;
 
 namespace Valkey.Glide;
@@ -14,6 +15,18 @@ public abstract partial class BaseClient
     /// <inheritdoc cref="IBaseClient.ClientIdAsync()"/>
     public async Task<long> ClientIdAsync()
         => await Command(Request.ClientId());
+
+    /// <inheritdoc cref="IBaseClient.ClientKillAsync()"/>
+    public async Task<long> ClientKillAsync()
+        => await Command(Request.ClientKill(new ClientFilterOptions().WithSkipMe(true)));
+
+    /// <inheritdoc cref="IBaseClient.ClientKillAsync(string, ushort)"/>
+    public async Task ClientKillAsync(string host, ushort port)
+        => _ = await Command(Request.ClientKill(host, port));
+
+    /// <inheritdoc cref="IBaseClient.ClientKillAsync(ClientFilterOptions)"/>
+    public async Task<long> ClientKillAsync(ClientFilterOptions options)
+        => await Command(Request.ClientKill(options));
 
     /// <inheritdoc cref="IBaseClient.ClientPauseAsync(TimeSpan)"/>
     public async Task ClientPauseAsync(TimeSpan timeout)

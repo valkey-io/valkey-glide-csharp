@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands.Options;
+
 using static Valkey.Glide.Internals.FFI;
 using static Valkey.Glide.Internals.TimeUtils;
 
@@ -19,6 +21,12 @@ internal partial class Request
 
     public static Cmd<long, long> ClientId()
         => Simple<long>(RequestType.ClientId, []);
+
+    public static Cmd<string, ValkeyValue> ClientKill(string host, ushort port)
+        => Ok(RequestType.ClientKillSimple, [$"{host}:{port}"]);
+
+    public static Cmd<long, long> ClientKill(ClientFilterOptions options)
+        => Simple<long>(RequestType.ClientKill, options.ToClientKillArgs());
 
     public static Cmd<string, ValkeyValue> ClientSetName(string name)
         => Ok(RequestType.ClientSetName, [name]);

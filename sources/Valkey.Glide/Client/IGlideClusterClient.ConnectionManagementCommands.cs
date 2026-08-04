@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands.Options;
+
 namespace Valkey.Glide;
 
 /// <summary>
@@ -39,6 +41,54 @@ public partial interface IGlideClusterClient
     /// </example>
     /// </remarks>
     Task<ClusterValue<long>> ClientIdAsync(Route route);
+
+    /// <summary>
+    /// Kills all client connections except the calling client on the specified nodes.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/client-kill/">Valkey commands – CLIENT KILL</seealso>
+    /// <param name="route">Specifies the routing configuration for the command.</param>
+    /// <returns>The total number of clients killed across all targeted nodes.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var killed = await clusterClient.ClientKillAsync(Route.AllPrimaries);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<long> ClientKillAsync(Route route);
+
+    /// <summary>
+    /// Kills the client connection identified by the given address, routed to the specified node.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/client-kill/">Valkey commands – CLIENT KILL</seealso>
+    /// <param name="host">The hostname or IP address of the client to kill.</param>
+    /// <param name="port">The port number of the client to kill.</param>
+    /// <param name="route">Specifies the routing configuration for the command.</param>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await clusterClient.ClientKillAsync("127.0.0.1", 6380, Route.Random);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task ClientKillAsync(string host, ushort port, Route route);
+
+    /// <summary>
+    /// Kills client connections matching the given filter options, routed to the specified nodes.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/client-kill/">Valkey commands – CLIENT KILL</seealso>
+    /// <param name="options">The options specifying which clients to kill.</param>
+    /// <param name="route">Specifies the routing configuration for the command.</param>
+    /// <returns>The total number of clients killed across all targeted nodes.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var killed = await clusterClient.ClientKillAsync(
+    ///     new ClientFilterOptions().WithId(42), Route.AllPrimaries);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<long> ClientKillAsync(ClientFilterOptions options, Route route);
 
     /// <summary>
     /// Returns information about the current client connection's use of the

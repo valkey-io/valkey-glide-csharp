@@ -273,6 +273,43 @@ public partial interface IServer : IRedisAsync
     Task<long> ClientIdAsync(CommandFlags flags = CommandFlags.None);
 
     /// <summary>
+    /// Kills the client connection with the given endpoint.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/client-kill"/>
+    /// <param name="endpoint">The endpoint of the client to kill.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    Task ClientKillAsync(EndPoint endpoint, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Kills client connections matching the given filter parameters.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/client-kill"/>
+    /// <param name="id">The client ID to kill.</param>
+    /// <param name="clientType">The client type to kill.</param>
+    /// <param name="endpoint">The endpoint of the client to kill.</param>
+    /// <param name="skipMe">Whether to skip the current connection (defaults to <see langword="true"/>).</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <returns>The number of clients killed.</returns>
+    Task<long> ClientKillAsync(
+        long? id = null,
+        ClientType? clientType = null,
+        EndPoint? endpoint = null,
+        bool skipMe = true,
+        CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
+    /// Kills client connections matching the given filter.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/client-kill"/>
+    /// <param name="filter">The filter specifying which clients to kill.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <returns>The number of clients killed.</returns>
+    Task<long> ClientKillAsync(ClientKillFilter filter, CommandFlags flags = CommandFlags.None);
+
+    /// <summary>
     /// Checks if a script exists in the server's script cache.
     /// </summary>
     /// <param name="script">The Lua script to check.</param>

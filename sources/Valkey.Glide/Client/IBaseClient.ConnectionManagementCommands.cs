@@ -1,6 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using Valkey.Glide.Commands;
+using Valkey.Glide.Commands.Options;
 
 namespace Valkey.Glide;
 
@@ -43,6 +44,53 @@ public partial interface IBaseClient : IConnectionManagementBaseCommands
     /// </example>
     /// </remarks>
     Task<long> ClientIdAsync();
+
+    /// <summary>
+    /// Kills all client connections except the calling client.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/client-kill/">Valkey commands – CLIENT KILL</seealso>
+    /// <returns>The number of clients killed.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var killed = await client.ClientKillAsync();
+    /// Console.WriteLine($"Killed {killed} client(s)");
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<long> ClientKillAsync();
+
+    /// <summary>
+    /// Kills the client connection matching the given address.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/client-kill/">Valkey commands – CLIENT KILL</seealso>
+    /// <param name="host">The hostname or IP address of the client to kill.</param>
+    /// <param name="port">The port number of the client to kill.</param>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// await client.ClientKillAsync("127.0.0.1", 6380);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task ClientKillAsync(string host, ushort port);
+
+    /// <summary>
+    /// Kills client connections matching the given filter options.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/client-kill/">Valkey commands – CLIENT KILL</seealso>
+    /// <param name="options">The options specifying which clients to kill.</param>
+    /// <returns>The number of clients killed.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var options = new ClientFilterOptions().WithMaxAge(TimeSpan.FromHours(1));
+    /// var killed = await client.ClientKillAsync(options);
+    /// Console.WriteLine($"Killed {killed} client(s)");
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<long> ClientKillAsync(ClientFilterOptions options);
 
     /// <summary>
     /// Suspends all clients for the specified timeout.

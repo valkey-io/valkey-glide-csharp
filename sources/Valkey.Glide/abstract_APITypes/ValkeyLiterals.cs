@@ -131,6 +131,7 @@ internal static class ValkeyLiterals
         TIME = "TIME",
         TO = "TO",
         TYPE = "TYPE",
+        USER = "USER",
         USERNAME = "USERNAME",
         VERSION = "VERSION",
         WEIGHTS = "WEIGHTS",
@@ -293,6 +294,15 @@ internal static class ValkeyLiterals
         Bitwise.Xor => XOR,
         Bitwise.Not => NOT,
         _ => throw new ArgumentOutOfRangeException(nameof(operation)),
+    };
+
+    internal static ValkeyValue Get(ClientType clientType) => clientType switch
+    {
+        ClientType.Normal => normal,
+        ClientType.Primary => master,
+        ClientType.Replica => replica,
+        ClientType.PubSub => pubsub,
+        _ => throw new ArgumentOutOfRangeException(nameof(clientType)),
     };
 }
 #pragma warning restore SA1310 // Field names should not contain underscore
