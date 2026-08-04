@@ -1001,6 +1001,7 @@ public abstract class ConnectionConfiguration
         /// reached, new requests will immediately fail with a <see cref="Errors.RequestException"/>.
         /// </summary>
         /// <exception cref="ArgumentOutOfRangeException">Thrown when value is zero.</exception>
+        /// <seealso href="https://glide.valkey.io/how-to/connections/limit-inflight-requests/">Valkey GLIDE – Limit Inflight Requests</seealso>
         public uint? InflightRequestsLimit
         {
             get => Config.InflightRequestsLimit;
