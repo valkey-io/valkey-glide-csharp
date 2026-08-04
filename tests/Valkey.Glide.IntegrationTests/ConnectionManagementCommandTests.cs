@@ -157,7 +157,7 @@ public class ConnectionManagementCommandTests(ServerFixture fixture) : IClassFix
     {
         // Request timeout must be longer than the pause duration.
         var pauseFor = TimeSpan.FromSeconds(1);
-        var requestTimeout = 2 * pauseFor;
+        var requestTimeout = pauseFor + TimeSpan.FromSeconds(1);
 
         await using BaseClient client = clusterMode
             ? await GlideClusterClient.CreateClient(
@@ -188,7 +188,7 @@ public class ConnectionManagementCommandTests(ServerFixture fixture) : IClassFix
     {
         // Request timeout must be longer than the pause duration.
         var pauseFor = TimeSpan.FromSeconds(1);
-        var requestTimeout = 2 * pauseFor;
+        var requestTimeout = pauseFor + TimeSpan.FromSeconds(1);
 
         await using BaseClient client = clusterMode
             ? await GlideClusterClient.CreateClient(
