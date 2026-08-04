@@ -883,25 +883,29 @@ public class ConnectionConfigurationTests
     #endregion
     #region Inflight Requests Limit Tests
 
-    [Fact]
-    public void InflightRequestsLimit_Default_IsNull()
+    [Theory]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
+    public void InflightRequestsLimit_Default_IsNull(bool clusterMode)
     {
-        var builder = new StandaloneClientConfigurationBuilder();
+        var builder = GetConfigurationBuilder(clusterMode);
         Assert.Null(builder.Build().Request.InflightRequestsLimit);
     }
 
-    [Fact]
-    public void WithInflightRequestsLimit_SetsValue()
+    [Theory]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
+    public void WithInflightRequestsLimit_SetsValue(bool clusterMode)
     {
-        var builder = new StandaloneClientConfigurationBuilder()
-            .WithInflightRequestsLimit(500);
+        var builder = GetConfigurationBuilder(clusterMode).WithInflightRequestsLimit(500);
         Assert.Equal(500u, builder.Build().Request.InflightRequestsLimit);
     }
 
-    [Fact]
-    public void WithInflightRequestsLimit_ZeroThrows()
-        => _ = Assert.Throws<ArgumentOutOfRangeException>(()
-            => new StandaloneClientConfigurationBuilder().WithInflightRequestsLimit(0));
+    [Theory]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
+    public void WithInflightRequestsLimit_ZeroThrows(bool clusterMode)
+    {
+        var builder = GetConfigurationBuilder(clusterMode);
+        _ = Assert.Throws<ArgumentOutOfRangeException>(() => builder.WithInflightRequestsLimit(0));
+    }
 
     #endregion
     #region Address Resolver Tests
@@ -940,6 +944,11 @@ public class ConnectionConfigurationTests
 
     #endregion
     #region Helpers
+
+    private static dynamic GetConfigurationBuilder(bool clusterMode)
+        => clusterMode
+            ? new ClusterClientConfigurationBuilder()
+            : new StandaloneClientConfigurationBuilder();
 
     /// <summary>
     /// Builds and returns a new IAM authentication configuration for testing.
