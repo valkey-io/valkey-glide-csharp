@@ -135,7 +135,7 @@ public abstract class ConnectionConfiguration
     /// <summary>
     /// Represents the client's read from strategy and Availability zone if applicable.
     /// </summary>
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    [StructLayout(LayoutKind.Sequential)]
     public struct ReadFrom
     {
         /// <summary>
@@ -147,7 +147,7 @@ public abstract class ConnectionConfiguration
         /// The Availability Zone (AZ) identifier used with <see cref="ReadFromStrategy.AzAffinity"/>
         /// or <see cref="ReadFromStrategy.AzAffinityReplicasAndPrimary"/> strategies.
         /// </summary>
-        [MarshalAs(UnmanagedType.LPStr)]
+        [MarshalAs(UnmanagedType.LPUTF8Str)]
         public string? Az;
 
         /// <summary>

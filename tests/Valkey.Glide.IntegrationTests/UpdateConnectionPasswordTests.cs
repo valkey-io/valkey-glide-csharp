@@ -31,7 +31,7 @@ public class UpdateConnectionPasswordTests(ServerFixture fixture) : IClassFixtur
         await AssertConnected(client);
 
         // Update password, kill clients, and verify reconnection.
-        await server.SetPasswordAsync(Password);
+        await server.SetAuthenticationAsync(Password);
         await server.KillClientsAsync();
         await AssertReconnected(client);
 
@@ -40,7 +40,7 @@ public class UpdateConnectionPasswordTests(ServerFixture fixture) : IClassFixtur
         await AssertConnected(client);
 
         // Clear password, kill clients, and verify reconnection.
-        await server.ClearPasswordAsync();
+        await server.ClearAuthenticationAsync();
         await server.KillClientsAsync();
         await AssertReconnected(client);
     }
@@ -53,12 +53,12 @@ public class UpdateConnectionPasswordTests(ServerFixture fixture) : IClassFixtur
         await using BaseClient client = await server.CreateClientAsync();
 
         // Update password and verify connection.
-        await server.SetPasswordAsync(Password);
+        await server.SetAuthenticationAsync(Password);
         await client.UpdateConnectionPasswordAsync(Password, immediateAuth: true);
         await AssertConnected(client);
 
         // Clear passwords, kill clients, and verify reconnection.
-        await server.ClearPasswordAsync();
+        await server.ClearAuthenticationAsync();
         await server.KillClientsAsync();
         await AssertReconnected(client);
     }
