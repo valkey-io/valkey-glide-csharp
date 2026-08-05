@@ -589,7 +589,8 @@ public abstract class ConnectionConfiguration
         /// <param name="certificateData">Client certificate data</param>
         /// <param name="keyData">Client key data</param>
         /// <returns>This builder for method chaining.</returns>
-        /// <exception cref="ArgumentException">If <paramref name="certificateData"/> or <paramref name="keyData"/> is empty or too large.</exception>
+        /// <exception cref="ArgumentNullException">If <paramref name="certificateData"/> or <paramref name="keyData"/> is null.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">If <paramref name="certificateData"/> or <paramref name="keyData"/> is empty or too large.</exception>
         /// <seealso href="https://glide.valkey.io/how-to/security/tls/">Valkey GLIDE – Configure TLS</seealso>
         public T WithClientCertificate(byte[] certificateData, byte[] keyData)
         {
@@ -611,7 +612,8 @@ public abstract class ConnectionConfiguration
         /// <param name="certificatePath">Client certificate file path</param>
         /// <param name="keyPath">Client key file path</param>
         /// <returns>This builder for method chaining.</returns>
-        /// <exception cref="ArgumentException">If <paramref name="certificatePath"/> or <paramref name="keyPath"/> is null, empty, or too large.</exception>
+        /// <exception cref="ArgumentNullException">If <paramref name="certificatePath"/> or <paramref name="keyPath"/> is null.</exception>
+        /// <exception cref="ArgumentException">If <paramref name="certificatePath"/> or <paramref name="keyPath"/> is empty.</exception>
         /// <seealso href="https://glide.valkey.io/how-to/security/tls/">Valkey GLIDE – Configure TLS</seealso>
         public T WithClientCertificate(string certificatePath, string keyPath)
         {
@@ -635,7 +637,8 @@ public abstract class ConnectionConfiguration
         /// <param name="keyPath">Client key file path</param>
         /// <param name="reloadInterval">The interval at which to reload the client certificate and key. Rounded to the nearest second.</param>
         /// <returns>This builder for method chaining.</returns>
-        /// <exception cref="ArgumentException">If <paramref name="certificatePath"/> or <paramref name="keyPath"/> is null, empty, or too large.</exception>
+        /// <exception cref="ArgumentNullException">If <paramref name="certificatePath"/> or <paramref name="keyPath"/> is null.</exception>
+        /// <exception cref="ArgumentException">If <paramref name="certificatePath"/> or <paramref name="keyPath"/> is empty.</exception>
         /// <exception cref="ArgumentOutOfRangeException">If <paramref name="reloadInterval"/> is not positive or exceeds <see cref="uint.MaxValue"/> seconds.</exception>
         /// <seealso href="https://glide.valkey.io/how-to/security/tls/">Valkey GLIDE – Configure TLS</seealso>
         public T WithClientCertificate(string certificatePath, string keyPath, TimeSpan reloadInterval)
