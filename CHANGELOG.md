@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `FailoverOptions` throws `ArgumentOutOfRangeException` for zero timeout (#488)
 - `XREADGROUP` returning only the first field-value pair per stream entry (#430)
 - Incorrect default routes:
   - `SELECT` routed to Random instead of AllNodes in cluster mode (#491)

@@ -14,17 +14,7 @@ internal static class GuardClauses
     /// excessive memory allocation from malformed or malicious data.
     /// </summary>
     /// <seealso href="https://github.com/valkey-io/valkey-glide-csharp/issues/226">#226</seealso>
-    internal static readonly long MaxDataSize = 10 * 1024 * 1024;
-
-    /// <summary>
-    /// Maximum value for <see cref="uint"/> milliseconds
-    /// </summary>
-    internal static readonly TimeSpan MaxUintMilliseconds = TimeSpan.FromMilliseconds(uint.MaxValue);
-
-    /// <summary>
-    /// Maximum value for <see cref="uint"/> seconds
-    /// </summary>
-    internal static readonly TimeSpan MaxUintSeconds = TimeSpan.FromSeconds(uint.MaxValue);
+    internal const int MaxDataSize = 10 * 1024 * 1024;
 
     #endregion
 
@@ -63,30 +53,6 @@ internal static class GuardClauses
         var fileLength = new FileInfo(path).Length;
         ArgumentOutOfRangeException.ThrowIfZero(fileLength, paramName);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(fileLength, MaxDataSize, paramName);
-    }
-
-    /// <summary>
-    /// Throws an <see cref="ArgumentOutOfRangeException"/> if the given <see cref="TimeSpan"/>
-    /// cannot be represented as a positive <see cref="uint"/> number of milliseconds.
-    /// </summary>
-    /// <param name="value">The time span value to validate.</param>
-    /// <param name="paramName">The parameter name for the exception.</param>
-    internal static void ThrowIfNotPositiveUintMilliseconds(TimeSpan value, string paramName)
-    {
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(value, TimeSpan.Zero, paramName);
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(value, MaxUintMilliseconds, paramName);
-    }
-
-    /// <summary>
-    /// Throws an <see cref="ArgumentOutOfRangeException"/> if the given <see cref="TimeSpan"/>
-    /// cannot be represented as a positive <see cref="uint"/> number of seconds.
-    /// </summary>
-    /// <param name="value">The time span value to validate.</param>
-    /// <param name="paramName">The parameter name for the exception.</param>
-    internal static void ThrowIfNotPositiveUintSeconds(TimeSpan value, string paramName)
-    {
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(value, TimeSpan.Zero, paramName);
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(value, MaxUintSeconds, paramName);
     }
 
     /// <summary>

@@ -39,8 +39,8 @@ public abstract class ConnectionConfiguration
     {
         public List<NodeAddress> Addresses = [];
         public bool ClusterMode;
-        public uint? RequestTimeoutMilliseconds;
-        public uint? ConnectionTimeoutMilliseconds;
+        public uint? RequestTimeoutMs;
+        public uint? ConnectionTimeoutMs;
         public ReadFrom? ReadFrom;
         public RetryStrategy? RetryStrategy;
         public AuthenticationInfo? AuthenticationInfo;
@@ -50,7 +50,7 @@ public abstract class ConnectionConfiguration
         public bool LazyConnect;
         public bool RefreshTopologyFromInitialNodes;
         public BasePubSubSubscriptionConfig? PubSubSubscriptions;
-        public uint? PubSubReconciliationIntervalMilliseconds;
+        public uint? PubSubReconciliationIntervalMs;
         public CompressionConfig? CompressionConfig;
         public bool ReadOnly;
         public NodeDiscoveryMode NodeDiscoveryMode = NodeDiscoveryMode.Standard;
@@ -73,8 +73,8 @@ public abstract class ConnectionConfiguration
         internal FFI.ConnectionConfig ToFfi() => new(
             Addresses,
             ClusterMode,
-            RequestTimeoutMilliseconds,
-            ConnectionTimeoutMilliseconds,
+            RequestTimeoutMs,
+            ConnectionTimeoutMs,
             ReadFrom,
             RetryStrategy,
             AuthenticationInfo,
@@ -84,7 +84,7 @@ public abstract class ConnectionConfiguration
             LazyConnect,
             RefreshTopologyFromInitialNodes,
             PubSubSubscriptions,
-            PubSubReconciliationIntervalMilliseconds,
+            PubSubReconciliationIntervalMs,
             CompressionConfig?.ToFfi(),
             ReadOnly,
             NodeDiscoveryMode,
@@ -383,7 +383,8 @@ public abstract class ConnectionConfiguration
             Config = new ConnectionConfig { ClusterMode = clusterMode };
         }
 
-        #region address
+        #region Address
+
         /// <inheritdoc cref="Addresses" />
         /// <b>Add</b> a new address to the list.<br />
         /// See also <seealso cref="Addresses" />.
@@ -627,7 +628,7 @@ public abstract class ConnectionConfiguration
         /// </summary>
         /// <param name="certificatePath">Client certificate file path</param>
         /// <param name="keyPath">Client key file path</param>
-        /// <param name="reloadInterval">The interval at which to reloads the client certificate and key</param>
+        /// <param name="reloadInterval">The interval at which to reload the client certificate and key. Rounded to the nearest second.</param>
         /// <returns>This builder for method chaining.</returns>
         /// <exception cref="ArgumentException">If <paramref name="certificatePath"/> or <paramref name="keyPath"/> is null, empty, or too large.</exception>
         /// <exception cref="ArgumentOutOfRangeException">If <paramref name="reloadInterval"/> is not positive or exceeds <see cref="uint.MaxValue"/> seconds.</exception>
@@ -636,14 +637,13 @@ public abstract class ConnectionConfiguration
         {
             ArgumentException.ThrowIfNullOrEmpty(certificatePath, nameof(certificatePath));
             ArgumentException.ThrowIfNullOrEmpty(keyPath, nameof(keyPath));
-            GuardClauses.ThrowIfNotPositiveUintSeconds(reloadInterval, nameof(reloadInterval));
 
             ClearMutualTls();
 
             Config.ClientCertificatePath = certificatePath;
             Config.ClientKeyPath = keyPath;
             Config.CertReloadEnabled = true;
-            Config.CertReloadIntervalSeconds = (uint)reloadInterval.TotalSeconds;
+            Config.CertReloadIntervalSeconds = TimeUtils.ToPositiveUintSecs(reloadInterval, nameof(reloadInterval));
 
             return (T)this;
         }
@@ -669,16 +669,14 @@ public abstract class ConnectionConfiguration
         /// duration encompasses sending the request, awaiting for a response from the server, and any
         /// required reconnections or retries. If the specified timeout is exceeded for a pending request,
         /// it will result in a timeout error.<br />
-        /// If not explicitly set, a default value of <c>250</c> milliseconds will be used.
+        /// If not set, a default value of <c>250</c> milliseconds is used.
         /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException">If the value is not positive.</exception>
+        // TODO #512: Make nullable and default to GLIDE core.
         public TimeSpan RequestTimeout
         {
-            get => TimeSpan.FromMilliseconds(Config.RequestTimeoutMilliseconds ?? 250);
-            set
-            {
-                GuardClauses.ThrowIfNotPositiveUintMilliseconds(value, nameof(RequestTimeout));
-                Config.RequestTimeoutMilliseconds = (uint)value.TotalMilliseconds;
-            }
+            get => TimeSpan.FromMilliseconds(Config.RequestTimeoutMs ?? 250);
+            set => Config.RequestTimeoutMs = TimeUtils.ToPositiveUintMs(value, nameof(RequestTimeout));
         }
 
         /// <inheritdoc cref="RequestTimeout" />
@@ -695,16 +693,14 @@ public abstract class ConnectionConfiguration
         /// The duration to wait for a TCP/TLS connection to complete.
         /// This applies both during initial client creation and any reconnections that may occur during request processing.<br />
         /// <b>Note</b>: A high connection timeout may lead to prolonged blocking of the entire command pipeline.<br />
-        /// If not explicitly set, a default value of <c>250</c> milliseconds will be used.
+        /// If not set, a default value of <c>250</c> milliseconds is used.
         /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException">If the value is not positive.</exception>
+        // TODO #512: Make nullable and default to GLIDE core.
         public TimeSpan ConnectionTimeout
         {
-            get => TimeSpan.FromMilliseconds(Config.ConnectionTimeoutMilliseconds ?? 250);
-            set
-            {
-                GuardClauses.ThrowIfNotPositiveUintMilliseconds(value, nameof(ConnectionTimeout));
-                Config.ConnectionTimeoutMilliseconds = (uint)value.TotalMilliseconds;
-            }
+            get => TimeSpan.FromMilliseconds(Config.ConnectionTimeoutMs ?? 250);
+            set => Config.ConnectionTimeoutMs = TimeUtils.ToPositiveUintMs(value, nameof(ConnectionTimeout));
         }
 
         /// <inheritdoc cref="ConnectionTimeout" />
@@ -910,21 +906,8 @@ public abstract class ConnectionConfiguration
         /// </summary>
         public TimeSpan? PubSubReconciliationInterval
         {
-            get => Config.PubSubReconciliationIntervalMilliseconds is { } ms
-                ? TimeSpan.FromMilliseconds(ms)
-                : null;
-            set
-            {
-                if (value.HasValue)
-                {
-                    GuardClauses.ThrowIfNotPositiveUintMilliseconds(value.Value, nameof(PubSubReconciliationInterval));
-                    Config.PubSubReconciliationIntervalMilliseconds = (uint)value.Value.TotalMilliseconds;
-                }
-                else
-                {
-                    Config.PubSubReconciliationIntervalMilliseconds = null;
-                }
-            }
+            get => Config.PubSubReconciliationIntervalMs is { } ms ? TimeSpan.FromMilliseconds(ms) : null;
+            set => Config.PubSubReconciliationIntervalMs = value.HasValue ? TimeUtils.ToPositiveUintMs(value.Value, nameof(PubSubReconciliationInterval)) : null;
         }
 
         /// <inheritdoc cref="PubSubReconciliationInterval" />

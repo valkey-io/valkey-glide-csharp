@@ -16,7 +16,7 @@ public sealed class FailoverOptions
     private int _port;
     private bool _force;
     private bool _abort;
-    private TimeSpan? _timeout;
+    private ulong? _timeoutMs;
 
     #endregion
     #region Constructors & Builders
@@ -33,8 +33,9 @@ public sealed class FailoverOptions
     /// Creates options for a failover with timeout.
     /// </summary>
     /// <param name="timeout">The maximum time to wait before aborting the failover.</param>
+    /// <exception cref="ArgumentOutOfRangeException">If <paramref name="timeout"/> is not positive.</exception>
     public static FailoverOptions Timeout(TimeSpan timeout)
-        => new() { _timeout = timeout };
+        => new() { _timeoutMs = ToPositiveULongMs(timeout, nameof(timeout)) };
 
     /// <summary>
     /// Creates options for a failover with a specified replica.
@@ -50,8 +51,9 @@ public sealed class FailoverOptions
     /// <param name="host">The host of the target replica.</param>
     /// <param name="port">The port of the target replica.</param>
     /// <param name="timeout">The maximum time to wait before aborting.</param>
+    /// <exception cref="ArgumentOutOfRangeException">If <paramref name="timeout"/> is not positive.</exception>
     public static FailoverOptions To(string host, int port, TimeSpan timeout)
-        => new() { _host = host, _port = port, _timeout = timeout };
+        => new() { _host = host, _port = port, _timeoutMs = ToPositiveULongMs(timeout, nameof(timeout)) };
 
     /// <summary>
     /// Creates options for a forced failover with a specified replica and timeout.
@@ -59,8 +61,9 @@ public sealed class FailoverOptions
     /// <param name="host">The host of the target replica.</param>
     /// <param name="port">The port of the target replica.</param>
     /// <param name="timeout">The maximum time before forcing the failover.</param>
+    /// <exception cref="ArgumentOutOfRangeException">If <paramref name="timeout"/> is not positive.</exception>
     public static FailoverOptions Forced(string host, int port, TimeSpan timeout)
-        => new() { _host = host, _port = port, _force = true, _timeout = timeout };
+        => new() { _host = host, _port = port, _force = true, _timeoutMs = ToPositiveULongMs(timeout, nameof(timeout)) };
 
     #endregion
     #region Internal Methods
@@ -90,10 +93,10 @@ public sealed class FailoverOptions
                 }
             }
 
-            if (_timeout is not null)
+            if (_timeoutMs is not null)
             {
                 args.Add(ValkeyLiterals.TIMEOUT);
-                args.Add(ToMilliseconds(_timeout.Value).ToGlideString());
+                args.Add(_timeoutMs.Value.ToGlideString());
             }
         }
 

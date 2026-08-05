@@ -10,12 +10,12 @@ namespace Valkey.Glide;
 /// <seealso href="https://glide.valkey.io/how-to/connections/circuit-breaker/">Valkey GLIDE – Configure a Circuit Breaker</seealso>
 public sealed class CircuitBreakerConfig
 {
-    #region Constants
+    #region Public Constants
 
     /// <summary>
     /// Default sliding window duration for error rate calculation (10 seconds).
     /// </summary>
-    public static readonly TimeSpan DefaultWindowSize = TimeSpan.FromSeconds(10);
+    public static readonly TimeSpan DefaultWindowSize = TimeSpan.FromMilliseconds(DefaultWindowSizeMs);
 
     /// <summary>
     /// Default failure rate threshold within the window to trip the breaker (50%).
@@ -30,7 +30,7 @@ public sealed class CircuitBreakerConfig
     /// <summary>
     /// Default time in Open state before allowing a probe request (5 seconds).
     /// </summary>
-    public static readonly TimeSpan DefaultOpenTimeout = TimeSpan.FromSeconds(5);
+    public static readonly TimeSpan DefaultOpenTimeout = TimeSpan.FromMilliseconds(DefaultOpenTimeoutMs);
 
     /// <summary>
     /// Default number of consecutive successful probe requests needed before closing the breaker (3).
@@ -38,12 +38,18 @@ public sealed class CircuitBreakerConfig
     public const uint DefaultConsecutiveSuccesses = 3;
 
     #endregion
+    #region Private Constants
+
+    private const uint DefaultWindowSizeMs = 10_000;
+    private const uint DefaultOpenTimeoutMs = 5_000;
+
+    #endregion
     #region Public Properties
 
     /// <summary>
     /// Sliding window duration for error rate calculation.
     /// </summary>
-    public TimeSpan WindowSize { get; private set; } = DefaultWindowSize;
+    public TimeSpan WindowSize => TimeSpan.FromMilliseconds(WindowSizeMs);
 
     /// <summary>
     /// Failure rate threshold (0.0, 1.0] within the window to trip the breaker.
@@ -59,7 +65,7 @@ public sealed class CircuitBreakerConfig
     /// <summary>
     /// Time in Open state before allowing a probe request.
     /// </summary>
-    public TimeSpan OpenTimeout { get; private set; } = DefaultOpenTimeout;
+    public TimeSpan OpenTimeout => TimeSpan.FromMilliseconds(OpenTimeoutMs);
 
     /// <summary>
     /// Whether command timeouts count toward tripping the breaker. Set to true only if
@@ -74,6 +80,12 @@ public sealed class CircuitBreakerConfig
     public uint ConsecutiveSuccesses { get; private set; } = DefaultConsecutiveSuccesses;
 
     #endregion
+    #region Internal Properties
+
+    internal uint WindowSizeMs { get; private set; } = DefaultWindowSizeMs;
+    internal uint OpenTimeoutMs { get; private set; } = DefaultOpenTimeoutMs;
+
+    #endregion
     #region Public Methods
 
     /// <summary>
@@ -86,8 +98,7 @@ public sealed class CircuitBreakerConfig
     /// </exception>
     public CircuitBreakerConfig WithWindowSize(TimeSpan windowSize)
     {
-        GuardClauses.ThrowIfNotPositiveUintMilliseconds(windowSize, nameof(windowSize));
-        WindowSize = windowSize;
+        WindowSizeMs = TimeUtils.ToPositiveUintMs(windowSize, nameof(windowSize));
         return this;
     }
 
@@ -131,8 +142,7 @@ public sealed class CircuitBreakerConfig
     /// </exception>
     public CircuitBreakerConfig WithOpenTimeout(TimeSpan openTimeout)
     {
-        GuardClauses.ThrowIfNotPositiveUintMilliseconds(openTimeout, nameof(openTimeout));
-        OpenTimeout = openTimeout;
+        OpenTimeoutMs = TimeUtils.ToPositiveUintMs(openTimeout, nameof(openTimeout));
         return this;
     }
 
@@ -168,20 +178,13 @@ public sealed class CircuitBreakerConfig
     /// <summary>
     /// Converts to the FFI representation for marshalling to Rust core.
     /// </summary>
-    internal FFI.CircuitBreakerConfig ToFfi()
-    {
-        // Casts to uint are safe: validated by WithWindowSize and WithOpenTimeout.
-        var windowSize = (uint)WindowSize.TotalMilliseconds;
-        var openTimeout = (uint)OpenTimeout.TotalMilliseconds;
-
-        return new(
-            windowSize,
-            FailureRateThreshold,
-            MinErrors,
-            openTimeout,
-            CountTimeouts,
-            ConsecutiveSuccesses);
-    }
+    internal FFI.CircuitBreakerConfig ToFfi() => new(
+        WindowSizeMs,
+        FailureRateThreshold,
+        MinErrors,
+        OpenTimeoutMs,
+        CountTimeouts,
+        ConsecutiveSuccesses);
 
     #endregion
 }

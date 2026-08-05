@@ -43,14 +43,13 @@ namespace Valkey.Glide;
 /// <seealso cref="EvictionPolicy"/>
 public sealed class ClientSideCacheConfig
 {
-    #region Public Properties
+    #region Internal Properties
 
-    /// <summary>
-    /// A unique identifier for the cache instance.
-    /// Multiple clients can share the same cache by using the same <see cref="ClientSideCacheConfig"/> instance.
-    /// </summary>
-    // Internal for testing.
     internal string CacheId { get; } = Guid.NewGuid().ToString("N");
+    internal ulong EntryTtlMs { get; } = 0;
+
+    #endregion
+    #region Public Properties
 
     /// <summary>
     /// The maximum size of the cache in kilobytes (KB).
@@ -64,7 +63,7 @@ public sealed class ClientSideCacheConfig
     /// After this duration, entries automatically expire and are removed from the cache.
     /// <see cref="TimeSpan.Zero"/> means no expiration is applied (entries remain until evicted).
     /// </summary>
-    public TimeSpan EntryTtl { get; }
+    public TimeSpan EntryTtl => TimeSpan.FromMilliseconds(EntryTtlMs);
 
     /// <summary>
     /// The policy for evicting entries when the cache reaches its maximum size.
@@ -115,7 +114,7 @@ public sealed class ClientSideCacheConfig
         ArgumentOutOfRangeException.ThrowIfLessThan(entryTtl, TimeSpan.Zero, nameof(entryTtl));
 
         MaxCacheKb = maxCacheKb;
-        EntryTtl = entryTtl;
+        EntryTtlMs = ToULongMs(entryTtl, nameof(entryTtl));
     }
 
     #endregion
@@ -163,7 +162,7 @@ public sealed class ClientSideCacheConfig
     internal FFI.ClientSideCacheConfig ToFfi() => new(
         CacheId,
         MaxCacheKb,
-        ToMilliseconds(EntryTtl),
+        EntryTtlMs,
         EvictionPolicy.HasValue,
         EvictionPolicy ?? default,
         EnableMetrics,

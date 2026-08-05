@@ -667,7 +667,7 @@ public class ConnectionConfigurationTests
     public void PubSubReconciliationInterval_Default()
     {
         var builder = new StandaloneClientConfigurationBuilder();
-        Assert.Null(builder.Build().Request.PubSubReconciliationIntervalMilliseconds);
+        Assert.Null(builder.Build().Request.PubSubReconciliationIntervalMs);
     }
 
     [Fact]
@@ -675,7 +675,7 @@ public class ConnectionConfigurationTests
     {
         var builder = new StandaloneClientConfigurationBuilder()
             .WithPubSubReconciliationInterval(TimeSpan.FromSeconds(30));
-        Assert.Equal(30_000u, builder.Build().Request.PubSubReconciliationIntervalMilliseconds);
+        Assert.Equal(30_000u, builder.Build().Request.PubSubReconciliationIntervalMs);
     }
 
     [Fact]
@@ -700,7 +700,7 @@ public class ConnectionConfigurationTests
     public void RequestTimeout_Default()
     {
         var builder = new StandaloneClientConfigurationBuilder();
-        Assert.Null(builder.Build().Request.RequestTimeoutMilliseconds);
+        Assert.Null(builder.Build().Request.RequestTimeoutMs);
     }
 
     [Fact]
@@ -708,7 +708,7 @@ public class ConnectionConfigurationTests
     {
         var builder = new StandaloneClientConfigurationBuilder()
             .WithRequestTimeout(TimeSpan.FromMilliseconds(500));
-        Assert.Equal(500u, builder.Build().Request.RequestTimeoutMilliseconds);
+        Assert.Equal(500u, builder.Build().Request.RequestTimeoutMs);
     }
 
     [Fact]
@@ -733,7 +733,7 @@ public class ConnectionConfigurationTests
     public void ConnectionTimeout_Default()
     {
         var builder = new StandaloneClientConfigurationBuilder();
-        Assert.Null(builder.Build().Request.ConnectionTimeoutMilliseconds);
+        Assert.Null(builder.Build().Request.ConnectionTimeoutMs);
     }
 
     [Fact]
@@ -741,7 +741,7 @@ public class ConnectionConfigurationTests
     {
         var builder = new StandaloneClientConfigurationBuilder()
             .WithConnectionTimeout(TimeSpan.FromMilliseconds(1000));
-        Assert.Equal(1000u, builder.Build().Request.ConnectionTimeoutMilliseconds);
+        Assert.Equal(1000u, builder.Build().Request.ConnectionTimeoutMs);
     }
 
     [Fact]
