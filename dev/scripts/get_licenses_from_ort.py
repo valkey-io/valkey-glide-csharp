@@ -2,7 +2,6 @@
 
 import json
 import os
-from typing import List, Optional, Set
 
 """
 This script should be used after all specific langauge folders were scanned by the analyzer of the OSS review tool (ORT).
@@ -47,7 +46,7 @@ APPROVED_LICENSES = [
     "(Apache-2.0 OR ISC) AND ISC",
     "(Apache-2.0 OR ISC) AND ISC AND OpenSSL",
     "CDLA-Permissive-2.0",
-    "Apache-2.0 AND (Apache-2.0 OR ISC) AND (Apache-2.0 OR ISC OR MIT) AND (Apache-2.0 OR ISC OR MIT-0) AND BSD-3-Clause AND ISC AND MIT"
+    "Apache-2.0 AND (Apache-2.0 OR ISC) AND (Apache-2.0 OR ISC OR MIT) AND (Apache-2.0 OR ISC OR MIT-0) AND BSD-3-Clause AND ISC AND MIT",
 ]
 
 # Packages with non-pre-approved licenses that received manual approval.
@@ -75,7 +74,7 @@ class OrtResults:
 
 class PackageLicense:
     def __init__(
-        self, package_name: str, language: str, license: Optional[str] = None
+        self, package_name: str, language: str, license: str | None = None
     ) -> None:
         self.package_name = package_name
         self.language = language
@@ -92,15 +91,16 @@ ort_results_per_lang = [
     OrtResults("C#", "ort_results"),
 ]
 
-all_licenses_set: Set = set()
-unknown_licenses: List[PackageLicense] = []
-final_packages: List[PackageLicense] = []
-skipped_packages: List[PackageLicense] = []
+all_licenses_set: set = set()
+unknown_licenses: list[PackageLicense] = []
+final_packages: list[PackageLicense] = []
+skipped_packages: list[PackageLicense] = []
 
 for ort_result in ort_results_per_lang:
-    with open(ort_result.analyzer_result_file, "r") as ort_results, open(
-        ort_result.notice_file, "r"
-    ) as notice_file:
+    with (
+        open(ort_result.analyzer_result_file, "r") as ort_results,
+        open(ort_result.notice_file, "r") as notice_file,
+    ):
         json_file = json.load(ort_results)
         notice_file_text = notice_file.read()
         for package in json_file["analyzer"]["result"]["packages"]:
@@ -111,7 +111,7 @@ for ort_result in ort_results_per_lang:
                 continue
             try:
                 for license in package["declared_licenses_processed"].values():
-                    if isinstance(license, list) or isinstance(license, dict):
+                    if isinstance(license, (list, dict)):
                         final_licenses = (
                             list(license.values())
                             if isinstance(license, dict)
@@ -150,8 +150,7 @@ with open(unapproved_list_file_path, mode="wt", encoding="utf-8") as f:
     f.writelines(f"{package}\n" for package in unknown_licenses)
 
 print("\n\n#### Found Licenses #####\n")
-all_licenses_set = set(sorted(all_licenses_set))
-for license in all_licenses_set:
+for license in sorted(all_licenses_set):
     print(f"{license}")
 
 print("\n\n#### unknown / Not Pre-Approved Licenses #####\n")
