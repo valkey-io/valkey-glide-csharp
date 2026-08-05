@@ -561,7 +561,7 @@ public abstract class ConnectionConfiguration
         /// <seealso href="https://glide.valkey.io/how-to/security/tls/">Valkey GLIDE – Configure TLS</seealso>
         public T WithTrustedCertificate(string certificatePath)
         {
-            GuardClauses.ThrowIfFileNotSupported(certificatePath, nameof(certificatePath), CertificateMaxSize);
+            GuardClauses.ThrowIfCertificateNotSupported(certificatePath, nameof(certificatePath));
             return WithTrustedCertificate(File.ReadAllBytes(certificatePath));
         }
 
@@ -575,7 +575,7 @@ public abstract class ConnectionConfiguration
         /// <seealso href="https://glide.valkey.io/how-to/security/tls/">Valkey GLIDE – Configure TLS</seealso>
         public T WithTrustedCertificate(byte[] certificateData)
         {
-            GuardClauses.ThrowIfBytesNotSupported(certificateData, nameof(certificateData), CertificateMaxSize);
+            GuardClauses.ThrowIfCertificateNotSupported(certificateData, nameof(certificateData));
             TrustedCertificates.Add(certificateData);
             return (T)this;
         }
@@ -593,8 +593,8 @@ public abstract class ConnectionConfiguration
         /// <seealso href="https://glide.valkey.io/how-to/security/tls/">Valkey GLIDE – Configure TLS</seealso>
         public T WithClientCertificate(byte[] certificateData, byte[] keyData)
         {
-            GuardClauses.ThrowIfBytesNotSupported(certificateData, nameof(certificateData), CertificateMaxSize);
-            GuardClauses.ThrowIfBytesNotSupported(keyData, nameof(keyData), CertificateMaxSize);
+            GuardClauses.ThrowIfCertificateNotSupported(certificateData, nameof(certificateData));
+            GuardClauses.ThrowIfCertificateNotSupported(keyData, nameof(keyData));
 
             ClearMutualTls();
 

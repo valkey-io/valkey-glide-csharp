@@ -21,29 +21,27 @@ internal static class GuardClauses
     }
 
     /// <summary>
-    /// Throws if the byte array is null, empty, or exceeds <paramref name="maxLength"/>.
+    /// Throws if the certificate byte array is null, empty, or exceeds <see cref="ConnectionConfiguration.CertificateMaxSize"/>.
     /// </summary>
-    /// <param name="data">The byte array to validate.</param>
+    /// <param name="data">The certificate or key byte array to validate.</param>
     /// <param name="paramName">The parameter name for the exception.</param>
-    /// <param name="maxLength">The maximum allowed byte array length.</param>
-    internal static void ThrowIfBytesNotSupported(byte[] data, string paramName, int maxLength)
+    internal static void ThrowIfCertificateNotSupported(byte[] data, string paramName)
     {
         ArgumentNullException.ThrowIfNull(data, paramName);
         ArgumentOutOfRangeException.ThrowIfZero(data.Length, paramName);
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(data.Length, maxLength, paramName);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(data.Length, ConnectionConfiguration.CertificateMaxSize, paramName);
     }
 
     /// <summary>
-    /// Throws if the file at the given path is empty or exceeds <paramref name="maxLength"/>.
+    /// Throws if the certificate file at the given path is empty or exceeds <see cref="ConnectionConfiguration.CertificateMaxSize"/>.
     /// </summary>
-    /// <param name="path">The file path to check.</param>
+    /// <param name="path">The certificate or key file path to check.</param>
     /// <param name="paramName">The parameter name for the exception.</param>
-    /// <param name="maxLength">The maximum allowed file length.</param>
-    internal static void ThrowIfFileNotSupported(string path, string paramName, int maxLength)
+    internal static void ThrowIfCertificateNotSupported(string path, string paramName)
     {
         var length = new FileInfo(path).Length;
         ArgumentOutOfRangeException.ThrowIfZero(length, paramName);
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(length, maxLength, paramName);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(length, (long)ConnectionConfiguration.CertificateMaxSize, paramName);
     }
 
     /// <summary>
