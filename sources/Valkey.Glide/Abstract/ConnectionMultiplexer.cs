@@ -250,8 +250,11 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
         _ = configuration.ReconnectRetryPolicy.HasValue ? config.ConnectionRetryStrategy = configuration.ReconnectRetryPolicy.Value : new();
         _ = configuration.ReadFrom.HasValue ? config.ReadFrom = configuration.ReadFrom.Value : new();
 
-        config.Config.ClientCertificate = configuration._clientCertificate;
-        config.Config.ClientKey = configuration._clientKey;
+        // Mutual TLS configuration
+        if (configuration._clientCertificate is not null && configuration._clientKey is not null)
+        {
+            _ = config.WithClientCertificate(configuration._clientCertificate, configuration._clientKey);
+        }
 
         return config;
     }
