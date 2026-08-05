@@ -285,7 +285,7 @@ public sealed class ConfigurationOptions : ICloneable
     /// <exception cref="ArgumentException">If the certificate file is empty or is too large.</exception>
     public void TrustIssuer(string certificatePath)
     {
-        GuardClauses.ThrowIfFileNotSupported(certificatePath, nameof(certificatePath));
+        GuardClauses.ThrowIfFileNotSupported(certificatePath, nameof(certificatePath), ConnectionConfiguration.CertificateMaxSize);
         _trustedIssuers.Add(File.ReadAllBytes(certificatePath));
     }
 
@@ -309,7 +309,7 @@ public sealed class ConfigurationOptions : ICloneable
     /// <exception cref="ArgumentOutOfRangeException">If one of the specified files is empty or too large.</exception>
     public void SetUserPemCertificate(string userCertificatePath, string? userKeyPath = null)
     {
-        GuardClauses.ThrowIfFileNotSupported(userCertificatePath, nameof(userCertificatePath));
+        GuardClauses.ThrowIfFileNotSupported(userCertificatePath, nameof(userCertificatePath), ConnectionConfiguration.CertificateMaxSize);
         _clientCertificate = File.ReadAllBytes(userCertificatePath);
 
         // When keyPath is null, pass the same blob for both cert and key.
@@ -317,7 +317,7 @@ public sealed class ConfigurationOptions : ICloneable
         // their respective PEM headers, ignoring irrelevant sections in the same blob.
         if (userKeyPath is not null)
         {
-            GuardClauses.ThrowIfFileNotSupported(userKeyPath, nameof(userKeyPath));
+            GuardClauses.ThrowIfFileNotSupported(userKeyPath, nameof(userKeyPath), ConnectionConfiguration.CertificateMaxSize);
             _clientKey = File.ReadAllBytes(userKeyPath);
         }
         else

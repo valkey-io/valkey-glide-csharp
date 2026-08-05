@@ -466,7 +466,7 @@ public class ConnectionConfigurationTests
     [Fact]
     public void WithTrustedCertificate_Bytes_OversizedThrows()
         => _ = Assert.Throws<ArgumentOutOfRangeException>(()
-            => new StandaloneClientConfigurationBuilder().WithTrustedCertificate(new byte[GuardClauses.MaxDataSize + 1]));
+            => new StandaloneClientConfigurationBuilder().WithTrustedCertificate(new byte[ConnectionConfiguration.CertificateMaxSize + 1]));
 
     [Fact]
     public void WithTrustedCertificate_Path_Succeeds()
@@ -544,7 +544,7 @@ public class ConnectionConfigurationTests
         using var tempFile = new TempFile();
         using (var fs = new FileStream(tempFile.Path, FileMode.Create))
         {
-            fs.SetLength(GuardClauses.MaxDataSize + 1);
+            fs.SetLength(ConnectionConfiguration.CertificateMaxSize + 1);
         }
 
         _ = Assert.Throws<ArgumentOutOfRangeException>(()
@@ -590,12 +590,12 @@ public class ConnectionConfigurationTests
     [Fact]
     public void WithClientCertificate_Bytes_OversizedCertThrows()
         => _ = Assert.Throws<ArgumentOutOfRangeException>(()
-            => new StandaloneClientConfigurationBuilder().WithClientCertificate(new byte[GuardClauses.MaxDataSize + 1], CertData1));
+            => new StandaloneClientConfigurationBuilder().WithClientCertificate(new byte[ConnectionConfiguration.CertificateMaxSize + 1], CertData1));
 
     [Fact]
     public void WithClientCertificate_Bytes_OversizedKeyThrows()
         => _ = Assert.Throws<ArgumentOutOfRangeException>(()
-            => new StandaloneClientConfigurationBuilder().WithClientCertificate(CertData1, new byte[GuardClauses.MaxDataSize + 1]));
+            => new StandaloneClientConfigurationBuilder().WithClientCertificate(CertData1, new byte[ConnectionConfiguration.CertificateMaxSize + 1]));
 
     [Fact]
     public void WithClientCertificate_Paths_Succeeds()

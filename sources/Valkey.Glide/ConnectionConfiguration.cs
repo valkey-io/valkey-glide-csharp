@@ -16,6 +16,11 @@ namespace Valkey.Glide;
 public abstract class ConnectionConfiguration
 {
     /// <summary>
+    /// Maximum certificate/key size (10 MB).
+    /// </summary>
+    public const int CertificateMaxSize = 10 * 1024 * 1024;
+
+    /// <summary>
     /// A callback for resolving server addresses before connection.
     /// </summary>
     /// <param name="host">The configured host name or IP address.</param>
@@ -556,7 +561,7 @@ public abstract class ConnectionConfiguration
         /// <seealso href="https://glide.valkey.io/how-to/security/tls/">Valkey GLIDE – Configure TLS</seealso>
         public T WithTrustedCertificate(string certificatePath)
         {
-            GuardClauses.ThrowIfFileNotSupported(certificatePath, nameof(certificatePath));
+            GuardClauses.ThrowIfFileNotSupported(certificatePath, nameof(certificatePath), CertificateMaxSize);
             return WithTrustedCertificate(File.ReadAllBytes(certificatePath));
         }
 
@@ -570,7 +575,7 @@ public abstract class ConnectionConfiguration
         /// <seealso href="https://glide.valkey.io/how-to/security/tls/">Valkey GLIDE – Configure TLS</seealso>
         public T WithTrustedCertificate(byte[] certificateData)
         {
-            GuardClauses.ThrowIfBytesNotSupported(certificateData, nameof(certificateData));
+            GuardClauses.ThrowIfBytesNotSupported(certificateData, nameof(certificateData), CertificateMaxSize);
             TrustedCertificates.Add(certificateData);
             return (T)this;
         }
@@ -588,8 +593,8 @@ public abstract class ConnectionConfiguration
         /// <seealso href="https://glide.valkey.io/how-to/security/tls/">Valkey GLIDE – Configure TLS</seealso>
         public T WithClientCertificate(byte[] certificateData, byte[] keyData)
         {
-            GuardClauses.ThrowIfBytesNotSupported(certificateData, nameof(certificateData));
-            GuardClauses.ThrowIfBytesNotSupported(keyData, nameof(keyData));
+            GuardClauses.ThrowIfBytesNotSupported(certificateData, nameof(certificateData), CertificateMaxSize);
+            GuardClauses.ThrowIfBytesNotSupported(keyData, nameof(keyData), CertificateMaxSize);
 
             ClearMutualTls();
 

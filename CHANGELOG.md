@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `CONFIG RESETSTAT` routed to AllPrimaries instead of AllNodes in cluster mode (#493)
   - `FUNCTION KILL` routed to AllPrimaries instead of AllNodes in cluster mode (#494)
 
+### Removed
+
+- `CircuitBreakerConfig.MaxTimeSpan` — validation consolidated into internal `TimeUtils` (#488)
+
 ### Added
 
 - Mutual TLS (mTLS) support (#488)

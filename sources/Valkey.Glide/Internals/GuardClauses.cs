@@ -7,17 +7,6 @@ namespace Valkey.Glide.Internals;
 /// </summary>
 internal static class GuardClauses
 {
-    #region Constants
-
-    /// <summary>
-    /// Maximum size for byte data (10 MB). Security measure to prevent
-    /// excessive memory allocation from malformed or malicious data.
-    /// </summary>
-    /// <seealso href="https://github.com/valkey-io/valkey-glide-csharp/issues/226">#226</seealso>
-    internal const int MaxDataSize = 10 * 1024 * 1024;
-
-    #endregion
-
     /// <summary>
     /// Throws a <see cref="NotImplementedException"/> if command flags are specified.
     /// </summary>
@@ -32,27 +21,29 @@ internal static class GuardClauses
     }
 
     /// <summary>
-    /// Throws if the byte array is null, empty, or exceeds <see cref="MaxDataSize"/>.
+    /// Throws if the byte array is null, empty, or exceeds <paramref name="maxLength"/>.
     /// </summary>
     /// <param name="data">The byte array to validate.</param>
     /// <param name="paramName">The parameter name for the exception.</param>
-    internal static void ThrowIfBytesNotSupported(byte[] data, string paramName)
+    /// <param name="maxLength">The maximum allowed byte array length.</param>
+    internal static void ThrowIfBytesNotSupported(byte[] data, string paramName, int maxLength)
     {
         ArgumentNullException.ThrowIfNull(data, paramName);
         ArgumentOutOfRangeException.ThrowIfZero(data.Length, paramName);
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(data.Length, MaxDataSize, paramName);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(data.Length, maxLength, paramName);
     }
 
     /// <summary>
-    /// Throws if the file at the given path is empty or exceeds <see cref="MaxDataSize"/>.
+    /// Throws if the file at the given path is empty or exceeds <paramref name="maxLength"/>.
     /// </summary>
     /// <param name="path">The file path to check.</param>
     /// <param name="paramName">The parameter name for the exception.</param>
-    internal static void ThrowIfFileNotSupported(string path, string paramName)
+    /// <param name="maxLength">The maximum allowed file length.</param>
+    internal static void ThrowIfFileNotSupported(string path, string paramName, int maxLength)
     {
-        var fileLength = new FileInfo(path).Length;
-        ArgumentOutOfRangeException.ThrowIfZero(fileLength, paramName);
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(fileLength, MaxDataSize, paramName);
+        var length = new FileInfo(path).Length;
+        ArgumentOutOfRangeException.ThrowIfZero(length, paramName);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(length, maxLength, paramName);
     }
 
     /// <summary>

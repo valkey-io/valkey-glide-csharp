@@ -44,7 +44,7 @@ public class ConfigurationOptionsTests
         using var tempFile = new TempFile();
         using (var fs = new FileStream(tempFile.Path, FileMode.Create))
         {
-            fs.SetLength(GuardClauses.MaxDataSize + 1);
+            fs.SetLength(ConnectionConfiguration.CertificateMaxSize + 1);
         }
 
         _ = Assert.Throws<ArgumentOutOfRangeException>(()
