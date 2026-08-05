@@ -344,10 +344,11 @@ Run automated formatters to ensure consistent code style.
 
 ```bash
 task format           # Run all formatters
-task format:rust      # Run Rust formatter
 task format:csharp    # Run C# formatter
-task format:yaml      # Run YAML formatter
 task format:markdown  # Run Markdown formatter
+task format:python    # Run Python formatter
+task format:rust      # Run Rust formatter
+task format:yaml      # Run YAML formatter
 ```
 
 ## Linting
@@ -356,11 +357,12 @@ Run linters to catch style issues and static analysis warnings.
 
 ```bash
 task lint           # Run all linters
-task lint:rust      # Run Rust linter
-task lint:csharp    # Run C# linter
-task lint:yaml      # Run YAML linter
 task lint:actions   # Run GitHub Actions linter
+task lint:csharp    # Run C# linter
 task lint:markdown  # Run Markdown linter
+task lint:python    # Run Python linter
+task lint:rust      # Run Rust linter
+task lint:yaml      # Run YAML linter
 ```
 
 ## Checks

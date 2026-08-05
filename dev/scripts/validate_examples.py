@@ -37,13 +37,14 @@ import sys
 import tempfile
 import textwrap
 import uuid
+from typing import ClassVar
 
 
 class ExamplesValidator:
     """Validates C# code examples by compiling them in a temporary .NET project."""
 
     # Namespace imports to include when --add-imports is specified.
-    _USING_NAMESPACES = [
+    _USING_NAMESPACES: ClassVar[list[str]] = [
         "System.Net",
         "Valkey.Glide",
         "Valkey.Glide.Pipeline",
@@ -53,7 +54,7 @@ class ExamplesValidator:
     ]
 
     # Type imports (using static) to include when --add-imports is specified.
-    _USING_TYPES = [
+    _USING_TYPES: ClassVar[list[str]] = [
         "Valkey.Glide.Commands.Options.BitFieldOptions.Encoding",
         "Valkey.Glide.Commands.Options.BitFieldOptions",
         "Valkey.Glide.Commands.Options.InfoOptions",
@@ -63,7 +64,7 @@ class ExamplesValidator:
     ]
 
     # Client fields to include when --add-clients is specified.
-    _CLIENT_FIELDS = [
+    _CLIENT_FIELDS: ClassVar[list[str]] = [
         "static Valkey.Glide.GlideClient client = null!;",
         "static Valkey.Glide.GlideClusterClient clusterClient = null!;",
         "static Valkey.Glide.IDatabase db = null!;",
@@ -148,6 +149,7 @@ public class {class_name}
                 ["dotnet", "--version"],
                 capture_output=True,
                 text=True,
+                check=False,
             )
             if result.returncode != 0:
                 print(
@@ -187,7 +189,9 @@ public class {class_name}
         """Generate the .csproj and wrapper files in the temp directory."""
         csproj_content = self._PROJECT_TEMPLATE.format(dll_path=self._glide_dll_path)
 
-        with open(os.path.join(self._temp_dir.name, "ExampleValidation.csproj"), "w") as f:
+        with open(
+            os.path.join(self._temp_dir.name, "ExampleValidation.csproj"), "w"
+        ) as f:
             f.write(csproj_content)
 
         for source, content in self._examples.items():
@@ -256,6 +260,7 @@ public class {class_name}
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
+            check=False,
         )
 
         # Build succeeded:
@@ -339,9 +344,9 @@ def main():
         errors = validator.validate()
 
     if errors:
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print(f"FAILURES ({len(errors)} of {len(examples)} examples)")
-        print(f"{'='*60}\n")
+        print(f"{'=' * 60}\n")
 
         for source, messages in errors.items():
             print(f"  FAIL: {source}")

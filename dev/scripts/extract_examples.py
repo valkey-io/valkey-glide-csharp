@@ -15,9 +15,9 @@ import html
 import json
 import os
 import re
-import sys
 
 from _constants import PROJECT_ROOT, SOURCES_DIR
+
 
 class ExamplesExtractor:
     """Extracts C# code examples from XML doc comments in .cs files."""

@@ -12,6 +12,7 @@ import os
 import sys
 from pathlib import Path
 
+
 def load_json(filename: str) -> list | dict:
     return json.loads(Path(filename).read_text())
 
