@@ -40,7 +40,6 @@ from _constants import (
     TestSuite,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -58,16 +57,20 @@ def _check_server_version() -> None:
 
     # [2] Check server version
     cmd_args = [f"{server_type}-server", "--version"]
-    result = subprocess.run(cmd_args, capture_output=True, text=True)
+    result = subprocess.run(cmd_args, capture_output=True, text=True, check=False)
 
     if result.returncode != 0:
         raise FileNotFoundError(f"{server_type}-server not found on PATH.")
 
     if server_type.lower() not in result.stdout.lower():
-        raise RuntimeError(f"Coverage requires {server_type} but found: {result.stdout.strip()}")
+        raise RuntimeError(
+            f"Coverage requires {server_type} but found: {result.stdout.strip()}"
+        )
 
     if f"v={server_version}." not in result.stdout:
-        raise RuntimeError(f"Coverage requires version {server_version} but found: {result.stdout.strip()}")
+        raise RuntimeError(
+            f"Coverage requires version {server_version} but found: {result.stdout.strip()}"
+        )
 
 
 def _build_command(
