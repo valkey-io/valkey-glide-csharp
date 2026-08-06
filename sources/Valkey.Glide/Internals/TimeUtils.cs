@@ -65,6 +65,16 @@ internal static class TimeUtils
         return (ulong)(timeSpan.Ticks / TimeSpan.TicksPerMillisecond);
     }
 
+    /// <summary>
+    /// Converts a <see cref="TimeSpan"/> to <see cref="ulong"/> seconds, rounded to the nearest second.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="timeSpan"/> is negative.</exception>
+    public static ulong ToULongSecs(TimeSpan timeSpan, string paramName)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(timeSpan, TimeSpan.Zero, paramName);
+        return (ulong)Math.Round(timeSpan.TotalSeconds);
+    }
+
     #endregion
     #region To Double
 

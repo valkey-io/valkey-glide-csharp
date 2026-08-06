@@ -11,11 +11,6 @@ namespace Valkey.Glide.Commands.Options;
 /// <seealso href="https://valkey.io/commands/client-list/" />
 public class ClientFilterOptions
 {
-    #region Private Fields
-
-    private readonly HashSet<long> _ids = [];
-
-    #endregion
     #region Public Properties
 
     /// <summary>
@@ -61,7 +56,7 @@ public class ClientFilterOptions
     /// <summary>
     /// The maximum connection age to filter by.
     /// </summary>
-    public TimeSpan? MaxAge { get; private set; }
+    public TimeSpan? MaxAge => _maxAgeSecs.HasValue ? TimeSpan.FromSeconds(_maxAgeSecs.Value) : null;
 
     #endregion
     #region Public Methods
@@ -149,15 +144,14 @@ public class ClientFilterOptions
     /// <summary>
     /// Filters by maximum connection age.
     /// </summary>
-    /// <param name="maxAge">The minimum age of connections to match.</param>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="maxAge"/> is negative.</exception>
+    /// <param name="maxAge">The minimum age of connections to match. Rounded to the nearest second.</param>
+    /// <exception cref="ArgumentOutOfRangeException">If <paramref name="maxAge"/> is negative.</exception>
     /// <remarks>
     /// <note>Since Valkey 8.0.0.</note>
     /// </remarks>
     public ClientFilterOptions WithMaxAge(TimeSpan maxAge)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(maxAge, TimeSpan.Zero, nameof(maxAge));
-        MaxAge = maxAge;
+        _maxAgeSecs = TimeUtils.ToULongSecs(maxAge, nameof(maxAge));
         return this;
     }
 
@@ -171,10 +165,10 @@ public class ClientFilterOptions
     {
         List<GlideString> args = BuildCommonArgs();
 
-        if (MaxAge is not null)
+        if (_maxAgeSecs.HasValue)
         {
             args.Add(ValkeyLiterals.MAXAGE);
-            args.Add(((long)TimeUtils.ToPositiveUintSecs(MaxAge.Value, nameof(MaxAge))).ToGlideString());
+            args.Add(_maxAgeSecs.Value.ToGlideString());
         }
 
         return [.. args];
@@ -230,6 +224,12 @@ public class ClientFilterOptions
 
         return args;
     }
+
+    #endregion
+    #region Private Fields
+
+    private readonly HashSet<long> _ids = [];
+    private ulong? _maxAgeSecs;
 
     #endregion
 }

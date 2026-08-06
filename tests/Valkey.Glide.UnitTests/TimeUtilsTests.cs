@@ -71,4 +71,15 @@ public class TimeUtilsTests
 
         _ = Assert.Throws<ArgumentOutOfRangeException>(() => TimeUtils.ToULongMs(Negative, "p"));
     }
+
+    [Fact]
+    public void ToULongSecs()
+    {
+        Assert.Equal(0UL, TimeUtils.ToULongSecs(Zero, "p"));
+        Assert.Equal(1UL, TimeUtils.ToULongSecs(RoundDownToOneSecond, "p"));
+        Assert.Equal(2UL, TimeUtils.ToULongSecs(RoundUpToTwoSeconds, "p"));
+        Assert.Equal(60UL, TimeUtils.ToULongSecs(OneMinute, "p"));
+
+        _ = Assert.Throws<ArgumentOutOfRangeException>(() => TimeUtils.ToULongSecs(Negative, "p"));
+    }
 }

@@ -1,4 +1,4 @@
-﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
+// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using System.Net;
 
@@ -13,9 +13,118 @@ public class ServerTests(TestConfiguration config)
 {
     public TestConfiguration Config { get; } = config;
 
+    #region ClientGetNameAsync
+
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestConnections), MemberType = typeof(TestConfiguration))]
-    public async Task CanGetServers(ConnectionMultiplexer conn, bool isCluster)
+    public async Task ClientGetNameAsync_ReturnsNull_WhenNoNameSet(ConnectionMultiplexer conn, bool isCluster)
+    {
+        foreach (IServer server in conn.GetServers())
+        {
+            Assert.Equal(isCluster ? ServerType.Cluster : ServerType.Standalone, server.ServerType);
+            Assert.Equal(ValkeyValue.Null, await server.ClientGetNameAsync());
+        }
+    }
+
+    #endregion
+    #region ClientIdAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestConnections), MemberType = typeof(TestConfiguration))]
+    public async Task ClientIdAsync_ReturnsPositiveId(ConnectionMultiplexer conn, bool isCluster)
+    {
+        foreach (IServer server in conn.GetServers())
+        {
+            Assert.Equal(isCluster ? ServerType.Cluster : ServerType.Standalone, server.ServerType);
+
+            long clientId = await server.ClientIdAsync();
+            Assert.True(clientId > 0);
+
+            long? connectionId = await conn.GetConnectionIdAsync(server.EndPoint, ConnectionType.Interactive);
+            _ = Assert.NotNull(connectionId);
+            Assert.Equal(clientId, connectionId.Value);
+
+            long? syncConnectionId = conn.GetConnectionId(server.EndPoint, ConnectionType.Interactive);
+            _ = Assert.NotNull(syncConnectionId);
+            Assert.Equal(clientId, syncConnectionId.Value);
+        }
+    }
+
+    #endregion
+    #region ClientKillAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestConnections), MemberType = typeof(TestConfiguration))]
+    public async Task ClientKillAsync_ByAddress_NonExistentEndpoint_DoesNotThrow(ConnectionMultiplexer conn, bool _)
+    {
+        var server = conn.GetServers().First();
+        await server.ClientKillAsync(new IPEndPoint(IPAddress.Parse("192.0.2.1"), 9999));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestConnections), MemberType = typeof(TestConfiguration))]
+    public async Task ClientKillAsync_ByAddress_KillsClient(ConnectionMultiplexer conn, bool _)
+    {
+        var server = conn.GetServers().First();
+
+        // TODO #414: Update to use ClientInfoAsync() once available on IServer.
+        var info = (await server.ExecuteAsync("CLIENT", ["INFO"])).AsString()!;
+        var addr = info.Split(' ').First(f => f.StartsWith("addr=")).Split('=')[1];
+        var host = addr[..addr.LastIndexOf(':')];
+        var port = int.Parse(addr[(addr.LastIndexOf(':') + 1)..]);
+
+        await server.ClientKillAsync(new IPEndPoint(IPAddress.Parse(host), port));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestConnections), MemberType = typeof(TestConfiguration))]
+    public async Task ClientKillAsync_ById_NonExistent_ReturnsZero(ConnectionMultiplexer conn, bool _)
+    {
+        var server = conn.GetServers().First();
+        Assert.Equal(0, await server.ClientKillAsync(id: 999999999));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestConnections), MemberType = typeof(TestConfiguration))]
+    public async Task ClientKillAsync_ById_KillsClient(ConnectionMultiplexer conn, bool _)
+    {
+        var server = conn.GetServers().First();
+        var clientId = await server.ClientIdAsync();
+
+        Assert.Equal(1, await server.ClientKillAsync(id: clientId, skipMe: false));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestConnections), MemberType = typeof(TestConfiguration))]
+    public async Task ClientKillAsync_WithFilterId_KillsClient(ConnectionMultiplexer conn, bool _)
+    {
+        var server = conn.GetServers().First();
+        var clientId = await server.ClientIdAsync();
+
+        var filter = new ClientKillFilter().WithId(clientId).WithSkipMe(false);
+        Assert.Equal(1, await server.ClientKillAsync(filter));
+    }
+
+    #endregion
+    #region EchoAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestConnections), MemberType = typeof(TestConfiguration))]
+    public async Task EchoAsync_ReturnsMessage(ConnectionMultiplexer conn, bool _)
+    {
+        ValkeyValue message = "hello";
+        foreach (IServer server in conn.GetServers())
+        {
+            Assert.Equal(message, await server.EchoAsync(message));
+        }
+    }
+
+    #endregion
+    #region GetServers
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestConnections), MemberType = typeof(TestConfiguration))]
+    public async Task GetServers_ReturnsCorrectEndpoints(ConnectionMultiplexer conn, bool isCluster)
     {
         (string host, ushort port) = isCluster ? TestConfiguration.CLUSTER_ADDRESS : TestConfiguration.STANDALONE_ADDRESS;
 
@@ -30,15 +139,19 @@ public class ServerTests(TestConfiguration config)
             $"Expected {count} servers, got {conn.GetServers().Length}");
     }
 
+    #endregion
+    #region InfoAsync
+
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestConnections), MemberType = typeof(TestConfiguration))]
-    public async Task CanGetServerInfo(ConnectionMultiplexer conn, bool isCluster)
+    public async Task InfoAsync_ReturnsServerInfo(ConnectionMultiplexer conn, bool isCluster)
     {
         foreach (IServer server in conn.GetServers())
         {
             Assert.Equal(conn.RawConfig.Protocol, server.Protocol);
             Assert.Equal(TestConfiguration.SERVER_VERSION, server.Version);
             Assert.Equal(isCluster ? ServerType.Cluster : ServerType.Standalone, server.ServerType);
+
             string info = (await server.InfoRawAsync("server"))!;
             foreach (string line in info.Split("\r\n"))
             {
@@ -81,128 +194,29 @@ public class ServerTests(TestConfiguration config)
         }
     }
 
+    #endregion
+    #region PingAsync
+
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestConnections), MemberType = typeof(TestConfiguration))]
-    public async Task PingAsync_Succeeds(ConnectionMultiplexer conn, bool _)
+    public async Task PingAsync_ReturnsPositiveLatency(ConnectionMultiplexer conn, bool _)
     {
         foreach (IServer server in conn.GetServers())
         {
-            TimeSpan ping = await server.PingAsync();
-            Assert.True(ping > TimeSpan.Zero);
+            Assert.True(await server.PingAsync() > TimeSpan.Zero);
         }
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestConnections), MemberType = typeof(TestConfiguration))]
-    public async Task PingAsync_WithMessage_Succeeds(ConnectionMultiplexer conn, bool _)
-    {
-        ValkeyValue message = "hello";
-        foreach (IServer server in conn.GetServers())
-        {
-            TimeSpan ping = await server.PingAsync(message);
-            Assert.True(ping > TimeSpan.Zero);
-        }
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestConnections), MemberType = typeof(TestConfiguration))]
-    public async Task EchoAsync_Succeeds(ConnectionMultiplexer conn, bool _)
+    public async Task PingAsync_WithMessage_ReturnsPositiveLatency(ConnectionMultiplexer conn, bool _)
     {
         ValkeyValue message = "hello";
         foreach (IServer server in conn.GetServers())
         {
-            ValkeyValue echo = await server.EchoAsync(message);
-            Assert.Equal(message, echo);
+            Assert.True(await server.PingAsync(message) > TimeSpan.Zero);
         }
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestConnections), MemberType = typeof(TestConfiguration))]
-    public async Task CanGetClientId(ConnectionMultiplexer conn, bool isCluster)
-    {
-        foreach (IServer server in conn.GetServers())
-        {
-            Assert.Equal(isCluster ? ServerType.Cluster : ServerType.Standalone, server.ServerType);
-
-            // Test CLIENT ID command directly
-            long clientId = await server.ClientIdAsync();
-            Assert.True(clientId > 0, "Client ID should be a positive number");
-
-            // Test GetConnectionId from ConnectionMultiplexer (matching SER pattern)
-            long? connectionId = await conn.GetConnectionIdAsync(server.EndPoint, ConnectionType.Interactive);
-            _ = Assert.NotNull(connectionId);
-            Assert.Equal(clientId, connectionId.Value);
-
-            // Test synchronous version
-            long? syncConnectionId = conn.GetConnectionId(server.EndPoint, ConnectionType.Interactive);
-            _ = Assert.NotNull(syncConnectionId);
-            Assert.Equal(clientId, syncConnectionId.Value);
-        }
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestConnections), MemberType = typeof(TestConfiguration))]
-    public async Task CanGetClientName(ConnectionMultiplexer conn, bool isCluster)
-    {
-        foreach (IServer server in conn.GetServers())
-        {
-            Assert.Equal(isCluster ? ServerType.Cluster : ServerType.Standalone, server.ServerType);
-
-            // Test CLIENT GETNAME command - should return ValkeyValue.Null initially (no name set)
-            ValkeyValue clientName = await server.ClientGetNameAsync();
-            Assert.Equal(ValkeyValue.Null, clientName); // No name should be set initially
-        }
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestConnections), MemberType = typeof(TestConfiguration))]
-    public async Task ClientKillAsync_ById_KillsClient(ConnectionMultiplexer conn, bool _)
-    {
-        foreach (IServer server in conn.GetServers())
-        {
-            long clientId = await server.ClientIdAsync();
-            var killed = await server.ClientKillAsync(id: clientId);
-            Assert.Equal(1, killed);
-            break;
-        }
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestConnections), MemberType = typeof(TestConfiguration))]
-    public async Task ClientKillAsync_ById_NonExistent_ReturnsZero(ConnectionMultiplexer conn, bool _)
-    {
-        foreach (IServer server in conn.GetServers())
-        {
-            var killed = await server.ClientKillAsync(id: 999999999);
-            Assert.Equal(0, killed);
-            break;
-        }
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestConnections), MemberType = typeof(TestConfiguration))]
-    public async Task ClientKillAsync_WithFilter_KillsClient(ConnectionMultiplexer conn, bool _)
-    {
-        foreach (IServer server in conn.GetServers())
-        {
-            long clientId = await server.ClientIdAsync();
-            var filter = new ClientKillFilter().WithId(clientId).WithSkipMe(false);
-            var killed = await server.ClientKillAsync(filter);
-            Assert.Equal(1, killed);
-            break;
-        }
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestConnections), MemberType = typeof(TestConfiguration))]
-    public async Task ClientKillAsync_ByEndpoint_KillsClient(ConnectionMultiplexer conn, bool _)
-    {
-        foreach (IServer server in conn.GetServers())
-        {
-            long clientId = await server.ClientIdAsync();
-            var killed = await server.ClientKillAsync(id: clientId, skipMe: false);
-            Assert.Equal(1, killed);
-            break;
-        }
-    }
+    #endregion
 }

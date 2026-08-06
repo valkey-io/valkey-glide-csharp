@@ -71,82 +71,53 @@ public class ConnectionManagementCommandTests(ServerFixture fixture) : IClassFix
     }
 
     #endregion
-    #region ClientTrackingInfoAsync
+    #region ClientKillAsync
 
     [Theory]
     [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
-    public async Task ClientTrackingInfo_Off(bool clusterMode)
+    public async Task ClientKillAsync_ByAddress_NonExistentAddress_ReturnsZero(bool clusterMode)
     {
         await using var client = await fixture.GetServer(clusterMode).CreateClientAsync();
-
-        var info = await client.ClientTrackingInfoAsync();
-        AssertTrackingInfoOff(info);
-    }
-
-    [Fact]
-    public async Task ClientTrackingInfo_Off_WithRoute()
-    {
-        await using GlideClusterClient client = await fixture.ClusterServer.CreateClusterClientAsync();
-
-        var response = await client.ClientTrackingInfoAsync(Route.AllNodes);
-
-        Assert.NotEmpty(response.MultiValue);
-        foreach (var info in response.MultiValue.Values)
-        {
-            AssertTrackingInfoOff(info);
-        }
+        Assert.Equal(0, await client.ClientKillAsync(new ClientFilterOptions().WithAddress("192.0.2.1", 9999)));
     }
 
     [Theory]
     [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
-    public async Task ClientTrackingInfo_On(bool clusterMode)
+    public async Task ClientKillAsync_ByAddress_KillsClient(bool clusterMode)
     {
-        var cache = BuildClientSideCacheConfig().WithServerAssisted();
+        await using var client = await fixture.GetServer(clusterMode).CreateClientAsync();
+        await using var target = await fixture.GetServer(clusterMode).CreateClientAsync();
 
-        await using BaseClient client = clusterMode
-            ? await GlideClusterClient.CreateClient(
-                fixture.ClusterServer.CreateConfigBuilder()
-                    .WithClientSideCache(cache)
-                    .Build())
-            : await GlideClient.CreateClient(
-                fixture.StandaloneServer.CreateConfigBuilder()
-                    .WithClientSideCache(cache)
-                    .Build());
+        // TODO #414: Update to use ClientInfoAsync()
+        var info = target is GlideClusterClient clusterTarget
+            ? (await clusterTarget.CustomCommand(InfoCommand, Route.Random)).SingleValue!.ToString()!
+            : (await ((GlideClient)target).CustomCommand(InfoCommand))!.ToString()!;
 
-        AssertTrackingInfoOn(await client.ClientTrackingInfoAsync());
+        var addr = info.Split(' ').First(f => f.StartsWith("addr=")).Split('=')[1];
+        var host = addr[..addr.LastIndexOf(':')];
+        var port = ushort.Parse(addr[(addr.LastIndexOf(':') + 1)..]);
+
+        Assert.Equal(1, await client.ClientKillAsync(new ClientFilterOptions().WithAddress(host, port)));
+    }
+    [Theory]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
+    public async Task ClientKillAsync_ById_NonExistentId_ReturnsZero(bool clusterMode)
+    {
+        await using var client = await fixture.GetServer(clusterMode).CreateClientAsync();
+        Assert.Equal(0, await client.ClientKillAsync(new ClientFilterOptions().WithId(999999999)));
     }
 
-    [Fact]
-    public async Task ClientTrackingInfo_On_WithRoute()
+    [Theory]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
+    public async Task ClientKillAsync_ById_KillsClient(bool clusterMode)
     {
-        var cache = BuildClientSideCacheConfig().WithServerAssisted();
+        await using var client = await fixture.GetServer(clusterMode).CreateClientAsync();
+        await using var target = await fixture.GetServer(clusterMode).CreateClientAsync();
 
-        await using var client = await GlideClusterClient.CreateClient(
-            fixture.ClusterServer.CreateConfigBuilder()
-                .WithClientSideCache(cache)
-                .Build());
+        var targetId = await target.ClientIdAsync();
+        var killed = await client.ClientKillAsync(new ClientFilterOptions().WithId(targetId));
 
-        var response = await client.ClientTrackingInfoAsync(Route.AllNodes);
-
-        Assert.NotEmpty(response.MultiValue);
-        foreach (var multiInfo in response.MultiValue.Values)
-        {
-            AssertTrackingInfoOn(multiInfo);
-        }
-    }
-
-    private static void AssertTrackingInfoOff(ClientTrackingInfo info)
-    {
-        Assert.Equivalent(new HashSet<string> { "off" }, info.Flags);
-        Assert.Equal(-1, info.Redirect);
-        Assert.Empty(info.Prefixes);
-    }
-
-    private static void AssertTrackingInfoOn(ClientTrackingInfo info)
-    {
-        Assert.Equivalent(new HashSet<string> { "on", "bcast" }, info.Flags);
-        Assert.Equal(0, info.Redirect);
-        Assert.Equivalent(new HashSet<string> { "" }, info.Prefixes);
+        Assert.Equal(1, killed);
     }
 
     #endregion
@@ -256,6 +227,85 @@ public class ConnectionManagementCommandTests(ServerFixture fixture) : IClassFix
     }
 
     #endregion
+    #region ClientTrackingInfoAsync
+
+    [Theory]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
+    public async Task ClientTrackingInfo_Off(bool clusterMode)
+    {
+        await using var client = await fixture.GetServer(clusterMode).CreateClientAsync();
+
+        var info = await client.ClientTrackingInfoAsync();
+        AssertTrackingInfoOff(info);
+    }
+
+    [Fact]
+    public async Task ClientTrackingInfo_Off_WithRoute()
+    {
+        await using GlideClusterClient client = await fixture.ClusterServer.CreateClusterClientAsync();
+
+        var response = await client.ClientTrackingInfoAsync(Route.AllNodes);
+
+        Assert.NotEmpty(response.MultiValue);
+        foreach (var info in response.MultiValue.Values)
+        {
+            AssertTrackingInfoOff(info);
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
+    public async Task ClientTrackingInfo_On(bool clusterMode)
+    {
+        var cache = BuildClientSideCacheConfig().WithServerAssisted();
+
+        await using BaseClient client = clusterMode
+            ? await GlideClusterClient.CreateClient(
+                fixture.ClusterServer.CreateConfigBuilder()
+                    .WithClientSideCache(cache)
+                    .Build())
+            : await GlideClient.CreateClient(
+                fixture.StandaloneServer.CreateConfigBuilder()
+                    .WithClientSideCache(cache)
+                    .Build());
+
+        AssertTrackingInfoOn(await client.ClientTrackingInfoAsync());
+    }
+
+    [Fact]
+    public async Task ClientTrackingInfo_On_WithRoute()
+    {
+        var cache = BuildClientSideCacheConfig().WithServerAssisted();
+
+        await using var client = await GlideClusterClient.CreateClient(
+            fixture.ClusterServer.CreateConfigBuilder()
+                .WithClientSideCache(cache)
+                .Build());
+
+        var response = await client.ClientTrackingInfoAsync(Route.AllNodes);
+
+        Assert.NotEmpty(response.MultiValue);
+        foreach (var multiInfo in response.MultiValue.Values)
+        {
+            AssertTrackingInfoOn(multiInfo);
+        }
+    }
+
+    private static void AssertTrackingInfoOff(ClientTrackingInfo info)
+    {
+        Assert.Equivalent(new HashSet<string> { "off" }, info.Flags);
+        Assert.Equal(-1, info.Redirect);
+        Assert.Empty(info.Prefixes);
+    }
+
+    private static void AssertTrackingInfoOn(ClientTrackingInfo info)
+    {
+        Assert.Equivalent(new HashSet<string> { "on", "bcast" }, info.Flags);
+        Assert.Equal(0, info.Redirect);
+        Assert.Equivalent(new HashSet<string> { "" }, info.Prefixes);
+    }
+
+    #endregion
     #region ResetAsync
 
     [Theory]
@@ -283,66 +333,6 @@ public class ConnectionManagementCommandTests(ServerFixture fixture) : IClassFix
         // Verify tracking is disabled after reset.
         var infoAfter = await client.ClientTrackingInfoAsync();
         Assert.Contains("off", infoAfter.Flags);
-    }
-
-    #endregion
-    #region ClientKillAsync
-
-    [Theory]
-    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
-    public async Task ClientKillAsync_ByFilter_KillsClientById(bool clusterMode)
-    {
-        await using var client = await fixture.GetServer(clusterMode).CreateClientAsync();
-        await using var target = await fixture.GetServer(clusterMode).CreateClientAsync();
-
-        var targetId = await target.ClientIdAsync();
-        var killed = await client.ClientKillAsync(new ClientFilterOptions().WithId(targetId));
-
-        Assert.Equal(1, killed);
-    }
-
-    [Theory]
-    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
-    public async Task ClientKillAsync_ByFilter_NonExistentId_ReturnsZero(bool clusterMode)
-    {
-        await using var client = await fixture.GetServer(clusterMode).CreateClientAsync();
-
-        var killed = await client.ClientKillAsync(new ClientFilterOptions().WithId(999999999));
-
-        Assert.Equal(0, killed);
-    }
-
-    [Theory]
-    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
-    public async Task ClientKillAsync_ByAddress_KillsClient(bool clusterMode)
-    {
-        await using var client = await fixture.GetServer(clusterMode).CreateClientAsync();
-        await using var target = await fixture.GetServer(clusterMode).CreateClientAsync();
-
-        var info = client is GlideClusterClient clusterClient
-            ? (await clusterClient.CustomCommand(InfoCommand, Route.Random)).SingleValue!.ToString()!
-            : (await ((GlideClient)client).CustomCommand(InfoCommand)).ToString()!;
-
-        var addrField = info.Split(' ').First(f => f.StartsWith("addr="));
-        var addr = addrField.Split('=')[1];
-        var parts = addr.Split(':');
-        var host = parts[0];
-        var port = ushort.Parse(parts[1]);
-
-        var killed = await client.ClientKillAsync(new ClientFilterOptions().WithAddress(host, port));
-        Assert.Equal(1, killed);
-    }
-
-    [Fact]
-    public async Task ClientKillAsync_ByFilter_KillsClientInCluster()
-    {
-        await using var client = await fixture.ClusterServer.CreateClusterClientAsync();
-        await using var target = await fixture.ClusterServer.CreateClusterClientAsync();
-
-        var targetId = await target.ClientIdAsync();
-        var killed = await client.ClientKillAsync(new ClientFilterOptions().WithId(targetId));
-
-        Assert.Equal(1, killed);
     }
 
     #endregion
