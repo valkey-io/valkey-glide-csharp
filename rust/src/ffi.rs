@@ -175,13 +175,13 @@ pub struct ConnectionConfig {
     pub has_circuit_breaker_config: bool,
     pub circuit_breaker_config: CircuitBreakerConfig,
 
-    // TLS configuration
+    // TLS
     pub tls_mode: TlsMode,
     pub root_certs_count: usize,
     pub root_certs: *const *const u8,
     pub root_certs_len: *const usize,
 
-    // Mutual TLS configuration
+    // Mutual TLS
     pub client_cert_len: usize,
     pub client_cert_ptr: *const u8,
     pub client_key_len: usize,
@@ -192,7 +192,11 @@ pub struct ConnectionConfig {
     pub has_cert_reload_interval_seconds: bool,
     pub cert_reload_interval_seconds: u32,
 
-    // Periodic checks configuration
+    // Inflight requests limit
+    pub has_inflight_requests_limit: bool,
+    pub inflight_requests_limit: u32,
+
+    // Periodic checks
     pub periodic_checks_mode: PeriodicChecksMode,
     pub periodic_checks_interval_sec: u32,
 }
@@ -437,6 +441,11 @@ pub(crate) unsafe fn create_connection_request(
                     .then_some(config.cert_reload_interval_seconds),
             }),
 
+        // Inflight requests limit
+        inflight_requests_limit: config
+            .has_inflight_requests_limit
+            .then_some(config.inflight_requests_limit),
+
         // Periodic checks configuration
         periodic_checks: Some(match config.periodic_checks_mode {
             PeriodicChecksMode::Enabled => glide_core::client::PeriodicCheck::Enabled,
@@ -448,14 +457,14 @@ pub(crate) unsafe fn create_connection_request(
             }
         }),
 
+        // Address resolver
         // Initialized to `None` because FFI clients pass the resolver as a function pointer
         // directly to `create_client`, which patches it onto the request after construction.
         address_resolver: None,
 
         // Unimplemented configuration options
         // -----------------------------------
-        tcp_nodelay: false,            // TODO #490: Expose TCP_NODELAY.
-        inflight_requests_limit: None, // TODO #484: Expose request limiting.
+        tcp_nodelay: false, // TODO #490: Expose TCP_NODELAY.
         recovery_requests_queue_size: None,
     })
 }

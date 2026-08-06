@@ -227,11 +227,11 @@ internal partial class FFI
             ClientSideCacheConfig? clientSideCacheConfig,
             CircuitBreakerConfig? circuitBreakerConfig,
 
-            // TLS configuration
+            // TLS
             TlsMode tlsMode,
             List<byte[]> rootCertificates,
 
-            // Mutual TLS configuration
+            // Mutual TLS
             byte[]? clientCertificate,
             byte[]? clientKey,
             string? clientCertificatePath,
@@ -239,7 +239,10 @@ internal partial class FFI
             bool certReloadEnabled,
             uint? certReloadIntervalSeconds,
 
-            // Periodic checks configuration
+            // Inflight requests limit
+            uint? inflightRequestsLimit,
+
+            // Periodic checks
             PeriodicChecksMode periodicChecksMode,
             uint periodicChecksIntervalSec)
         {
@@ -294,6 +297,10 @@ internal partial class FFI
                 CertReloadEnabled = certReloadEnabled,
                 HasCertReloadIntervalSeconds = certReloadIntervalSeconds.HasValue,
                 CertReloadIntervalSeconds = certReloadIntervalSeconds ?? 0,
+
+                // Inflight requests limit
+                HasInflightRequestsLimit = inflightRequestsLimit.HasValue,
+                InflightRequestsLimit = inflightRequestsLimit ?? default,
 
                 // Periodic checks configuration
                 PeriodicChecksMode = periodicChecksMode,
@@ -787,6 +794,13 @@ internal partial class FFI
         [MarshalAs(UnmanagedType.U1)]
         public bool HasCertReloadIntervalSeconds;
         public uint CertReloadIntervalSeconds;
+
+        #endregion
+        #region Inflight Requests Limit
+
+        [MarshalAs(UnmanagedType.U1)]
+        public bool HasInflightRequestsLimit;
+        public uint InflightRequestsLimit;
 
         #endregion
         #region Periodic Checks

@@ -63,17 +63,20 @@ public abstract class ConnectionConfiguration
         public CircuitBreakerConfig? CircuitBreakerConfig;
         public AddressResolverDelegate? AddressResolver;
 
-        // TLS configuration
+        // TLS
         public TlsMode TlsMode = TlsMode.NoTls;
         public readonly List<byte[]> RootCertificates = [];
 
-        // Mutual TLS configuration
+        // Mutual TLS
         public byte[]? ClientCertificate;
         public byte[]? ClientKey;
         public string? ClientCertificatePath;
         public string? ClientKeyPath;
         public bool CertReloadEnabled;
         public uint? CertReloadIntervalSeconds;
+
+        // Inflight requests limit
+        public uint? InflightRequestsLimit;
 
         // Periodic checks
         public PeriodicChecksMode PeriodicChecksMode;
@@ -100,11 +103,11 @@ public abstract class ConnectionConfiguration
             ClientSideCacheConfig?.ToFfi(),
             CircuitBreakerConfig?.ToFfi(),
 
-            // TLS configuration
+            // TLS
             TlsMode,
             RootCertificates,
 
-            // Mutual TLS configuration
+            // Mutual TLS
             ClientCertificate,
             ClientKey,
             ClientCertificatePath,
@@ -112,7 +115,10 @@ public abstract class ConnectionConfiguration
             CertReloadEnabled,
             CertReloadIntervalSeconds,
 
-            // Periodic checks configuration
+            // Inflight requests limit
+            InflightRequestsLimit,
+
+            // Periodic checks
             PeriodicChecksMode,
             PeriodicChecksIntervalSecs
         );
@@ -996,6 +1002,35 @@ public abstract class ConnectionConfiguration
         {
             ArgumentNullException.ThrowIfNull(circuitBreakerConfig, nameof(circuitBreakerConfig));
             CircuitBreakerConfig = circuitBreakerConfig;
+            return (T)this;
+        }
+
+        #endregion
+        #region Inflight Requests Limit
+
+        /// <summary>
+        /// The maximum number of concurrent requests allowed to be in-flight. When this limit is
+        /// reached, new requests will immediately fail with a <see cref="Errors.RequestException"/>.
+        /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when value is zero.</exception>
+        /// <seealso href="https://glide.valkey.io/how-to/connections/limit-inflight-requests/">Valkey GLIDE – Limit Inflight Requests</seealso>
+        public uint? InflightRequestsLimit
+        {
+            get => Config.InflightRequestsLimit;
+            set
+            {
+                if (value.HasValue)
+                {
+                    ArgumentOutOfRangeException.ThrowIfZero(value.Value, nameof(value));
+                }
+                Config.InflightRequestsLimit = value;
+            }
+        }
+
+        /// <inheritdoc cref="InflightRequestsLimit" />
+        public T WithInflightRequestsLimit(uint inflightRequestsLimit)
+        {
+            InflightRequestsLimit = inflightRequestsLimit;
             return (T)this;
         }
 
