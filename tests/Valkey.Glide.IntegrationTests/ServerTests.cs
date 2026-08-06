@@ -65,14 +65,18 @@ public class ServerTests(TestConfiguration config)
     [MemberData(nameof(Config.TestConnections), MemberType = typeof(TestConfiguration))]
     public async Task ClientKillAsync_ByAddress_KillsClient(ConnectionMultiplexer conn, bool _)
     {
+        var target = ConnectionMultiplexer.Connect(conn.RawConfig).GetServers().First();
+        long targetId = await target.ClientIdAsync();
+
         var server = conn.GetServers().First();
 
         // TODO #414: Update to use ClientInfoAsync() once available on IServer.
-        var info = (await server.ExecuteAsync("CLIENT", ["INFO"])).AsString()!;
+        var info = (await target.ExecuteAsync("CLIENT", ["INFO"])).AsString()!;
         var addr = info.Split(' ').First(f => f.StartsWith("addr=")).Split('=')[1];
         var endpoint = IPEndPoint.Parse(addr);
 
         await server.ClientKillAsync(endpoint);
+        Assert.NotEqual(targetId, await target.ClientIdAsync());
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
