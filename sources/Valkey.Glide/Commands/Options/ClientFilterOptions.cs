@@ -207,13 +207,13 @@ public class ClientFilterOptions
         if (AddressHost is not null)
         {
             args.Add(ValkeyLiterals.ADDR);
-            args.Add($"{AddressHost}:{AddressPort}");
+            args.Add(Utils.FormatAddress(AddressHost, AddressPort!.Value));
         }
 
         if (LocalAddressHost is not null)
         {
             args.Add(ValkeyLiterals.LADDR);
-            args.Add($"{LocalAddressHost}:{LocalAddressPort}");
+            args.Add(Utils.FormatAddress(LocalAddressHost, LocalAddressPort!.Value));
         }
 
         if (SkipMe is not null)

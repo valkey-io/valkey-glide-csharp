@@ -18,7 +18,11 @@ public class ClientFilterOptionsTests
         Assert.Equal(["TYPE", "pubsub"], new ClientFilterOptions().WithType(ClientType.PubSub).ToClientKillArgs());
         Assert.Equal(["USER", "user"], new ClientFilterOptions().WithUser("user").ToClientKillArgs());
         Assert.Equal(["ADDR", "addr:1234"], new ClientFilterOptions().WithAddress("addr", 1234).ToClientKillArgs());
+        Assert.Equal(["ADDR", "127.0.0.1:1234"], new ClientFilterOptions().WithAddress("127.0.0.1", 1234).ToClientKillArgs());
+        Assert.Equal(["ADDR", "[::1]:1234"], new ClientFilterOptions().WithAddress("::1", 1234).ToClientKillArgs());
         Assert.Equal(["LADDR", "laddr:4321"], new ClientFilterOptions().WithLocalAddress("laddr", 4321).ToClientKillArgs());
+        Assert.Equal(["LADDR", "127.0.0.1:4321"], new ClientFilterOptions().WithLocalAddress("127.0.0.1", 4321).ToClientKillArgs());
+        Assert.Equal(["LADDR", "[::1]:4321"], new ClientFilterOptions().WithLocalAddress("::1", 4321).ToClientKillArgs());
         Assert.Equal(["SKIPME", "yes"], new ClientFilterOptions().WithSkipMe(true).ToClientKillArgs());
         Assert.Equal(["SKIPME", "no"], new ClientFilterOptions().WithSkipMe(false).ToClientKillArgs());
         Assert.Equal(["MAXAGE", "0"], new ClientFilterOptions().WithMaxAge(TimeSpan.Zero).ToClientKillArgs());
