@@ -31,6 +31,7 @@ Common commands:
   - `task test` (all tests)
   - `task test:unit` (unit tests only)
   - `task test:integration` (integration tests only)
+  - Integration tests automatically starts and stops Valkey servers. No external server is required.
 
 - Filter tests:
   - By class: `task test:unit filter=MyTestClass`
