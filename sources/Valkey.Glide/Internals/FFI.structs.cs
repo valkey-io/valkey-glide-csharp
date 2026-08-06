@@ -243,8 +243,8 @@ internal partial class FFI
             uint? inflightRequestsLimit,
 
             // Periodic checks
-            PeriodicChecksMode periodicChecksMode,
-            uint periodicChecksIntervalSec)
+            PeriodicChecksMode? periodicChecksMode,
+            uint? periodicChecksIntervalSec)
         {
             _request = new()
             {
@@ -303,8 +303,9 @@ internal partial class FFI
                 InflightRequestsLimit = inflightRequestsLimit ?? default,
 
                 // Periodic checks configuration
-                PeriodicChecksMode = periodicChecksMode,
-                PeriodicChecksIntervalSec = periodicChecksIntervalSec,
+                HasPeriodicChecksConfig = periodicChecksMode.HasValue,
+                PeriodicChecksMode = periodicChecksMode ?? default,
+                PeriodicChecksIntervalSec = periodicChecksIntervalSec ?? 0,
             };
         }
 
@@ -805,6 +806,8 @@ internal partial class FFI
         #endregion
         #region Periodic Checks
 
+        [MarshalAs(UnmanagedType.U1)]
+        public bool HasPeriodicChecksConfig;
         public PeriodicChecksMode PeriodicChecksMode;
         public uint PeriodicChecksIntervalSec;
 

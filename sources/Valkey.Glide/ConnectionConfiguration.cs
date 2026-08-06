@@ -79,8 +79,8 @@ public abstract class ConnectionConfiguration
         public uint? InflightRequestsLimit;
 
         // Periodic checks
-        public PeriodicChecksMode PeriodicChecksMode;
-        public uint PeriodicChecksIntervalSecs;
+        public PeriodicChecksMode? PeriodicChecksMode;
+        public uint? PeriodicChecksIntervalSecs;
 
         internal FFI.ConnectionConfig ToFfi() => new(
             Addresses,
@@ -1123,16 +1123,17 @@ public abstract class ConnectionConfiguration
         /// </summary>
         public ClusterClientConfigurationBuilder() : base(true) { }
 
+        /// <summary>
+        /// Complete the configuration with given settings.
+        /// </summary>
+        public new ClusterClientConfiguration Build() => new() { Request = base.Build() };
+
         #region Refresh Topology
+
         /// <summary>
         /// Enables refreshing the cluster topology using only the initial nodes.
-        /// <para />
-        /// When this option is enabled, all topology updates (both the periodic checks and on-demand
-        /// refreshes triggered by topology changes) will query only the initial nodes provided when
-        /// creating the client, rather than using the internal cluster view.
-        /// <para />
-        /// If not set, defaults to <c>false</c> (uses internal cluster view for topology refresh).
         /// </summary>
+        /// <seealso href="https://glide.valkey.io/how-to/connections/periodic-checks/">Valkey GLIDE – Configure Periodic Checks</seealso>
         public bool RefreshTopologyFromInitialNodes
         {
             get => Config.RefreshTopologyFromInitialNodes;
@@ -1145,67 +1146,51 @@ public abstract class ConnectionConfiguration
             RefreshTopologyFromInitialNodes = refreshTopologyFromInitialNodes;
             return this;
         }
+
         #endregion
         #region Periodic Checks
 
-        // TODO #485: refactor after mTLS merge
-
         /// <summary>
-        /// The maximum supported periodic checks interval. The Rust core uses <c>u32</c> seconds,
-        /// so values exceeding this limit will throw an exception during configuration.
+        /// Enables periodic topology checks.
         /// </summary>
-        public static readonly TimeSpan MaxPeriodicChecksInterval = TimeSpan.FromSeconds(uint.MaxValue);
-
-        /// <summary>
-        /// Configures periodic topology checks to run at a custom interval.
-        /// <para/>
-        /// These checks evaluate changes in the cluster's topology at regular intervals,
-        /// triggering a slot refresh when a change is detected. They query a limited number of nodes
-        /// to remain quick and efficient.
-        /// <para/>
-        /// By default, periodic checks are enabled with a 60-second interval.
-        /// Sub-second precision is truncated because the Rust core operates in whole seconds.
-        /// </summary>
-        /// <param name="interval">The interval between periodic topology checks. Must be positive
-        /// and not exceed <see cref="MaxPeriodicChecksInterval"/>.</param>
+        /// <seealso href="https://glide.valkey.io/how-to/connections/periodic-checks/">Valkey GLIDE – Configure Periodic Checks</seealso>
         /// <returns>This configuration builder instance for method chaining.</returns>
-        /// <exception cref="ArgumentOutOfRangeException">
-        /// Thrown if <paramref name="interval"/> is not positive or exceeds <see cref="MaxPeriodicChecksInterval"/>.
-        /// </exception>
+        public ClusterClientConfigurationBuilder WithPeriodicChecks()
+        {
+            Config.PeriodicChecksMode = PeriodicChecksMode.Enabled;
+            Config.PeriodicChecksIntervalSecs = null;
+            return this;
+        }
+
+        /// <summary>
+        /// Enables periodic topology checks at the specified interval.
+        /// </summary>
+        /// <seealso href="https://glide.valkey.io/how-to/connections/periodic-checks/">Valkey GLIDE – Configure Periodic Checks</seealso>
+        /// <param name="interval">The interval between periodic topology checks. Must be positive.</param>
+        /// <returns>This configuration builder instance for method chaining.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="interval"/> is not positive or exceeds <see cref="uint.MaxValue"/> seconds.</exception>
         public ClusterClientConfigurationBuilder WithPeriodicChecks(TimeSpan interval)
         {
-            ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(interval, TimeSpan.Zero, nameof(interval));
-            ArgumentOutOfRangeException.ThrowIfGreaterThan(interval, MaxPeriodicChecksInterval, nameof(interval));
-
-            Config.PeriodicChecksMode = FFI.PeriodicChecksMode.ManualInterval;
-            Config.PeriodicChecksIntervalSecs = (uint)interval.TotalSeconds;
+            Config.PeriodicChecksMode = PeriodicChecksMode.ManualInterval;
+            Config.PeriodicChecksIntervalSecs = TimeUtils.ToPositiveUintSecs(interval, nameof(interval));
             return this;
         }
 
         /// <summary>
         /// Disables periodic topology checks.
-        /// <para/>
-        /// When disabled, the client will not periodically query the cluster to detect topology changes.
-        /// Topology refreshes will only occur in response to moved/ask redirections.
-        /// <para/>
-        /// By default, periodic checks are enabled with a 60-second interval.
         /// </summary>
+        /// <seealso href="https://glide.valkey.io/how-to/connections/periodic-checks/">Valkey GLIDE – Configure Periodic Checks</seealso>
         /// <returns>This configuration builder instance for method chaining.</returns>
         public ClusterClientConfigurationBuilder WithoutPeriodicChecks()
         {
-            Config.PeriodicChecksMode = FFI.PeriodicChecksMode.Disabled;
-            Config.PeriodicChecksIntervalSecs = 0;
+            Config.PeriodicChecksMode = PeriodicChecksMode.Disabled;
+            Config.PeriodicChecksIntervalSecs = null;
             return this;
         }
 
         #endregion
-
-        /// <summary>
-        /// Complete the configuration with given settings.
-        /// </summary>
-        public new ClusterClientConfiguration Build() => new() { Request = base.Build() };
-
         #region PubSub Subscriptions
+
         /// <summary>
         /// Configure PubSub subscriptions for the cluster client.
         /// </summary>
@@ -1219,6 +1204,7 @@ public abstract class ConnectionConfiguration
             Config.PubSubSubscriptions = config;
             return this;
         }
+
         #endregion
     }
 }

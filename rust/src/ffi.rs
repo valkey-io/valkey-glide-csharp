@@ -197,6 +197,7 @@ pub struct ConnectionConfig {
     pub inflight_requests_limit: u32,
 
     // Periodic checks
+    pub has_periodic_checks_config: bool,
     pub periodic_checks_mode: PeriodicChecksMode,
     pub periodic_checks_interval_sec: u32,
 }
@@ -447,15 +448,17 @@ pub(crate) unsafe fn create_connection_request(
             .then_some(config.inflight_requests_limit),
 
         // Periodic checks configuration
-        periodic_checks: Some(match config.periodic_checks_mode {
-            PeriodicChecksMode::Enabled => glide_core::client::PeriodicCheck::Enabled,
-            PeriodicChecksMode::Disabled => glide_core::client::PeriodicCheck::Disabled,
-            PeriodicChecksMode::ManualInterval => {
-                glide_core::client::PeriodicCheck::ManualInterval(std::time::Duration::from_secs(
-                    config.periodic_checks_interval_sec as u64,
-                ))
-            }
-        }),
+        periodic_checks: config.has_periodic_checks_config.then_some(
+            match config.periodic_checks_mode {
+                PeriodicChecksMode::Enabled => glide_core::client::PeriodicCheck::Enabled,
+                PeriodicChecksMode::Disabled => glide_core::client::PeriodicCheck::Disabled,
+                PeriodicChecksMode::ManualInterval => {
+                    glide_core::client::PeriodicCheck::ManualInterval(
+                        std::time::Duration::from_secs(config.periodic_checks_interval_sec as u64),
+                    )
+                }
+            },
+        ),
 
         // Address resolver
         // Initialized to `None` because FFI clients pass the resolver as a function pointer
