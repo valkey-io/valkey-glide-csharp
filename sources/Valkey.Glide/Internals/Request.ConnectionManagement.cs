@@ -22,9 +22,6 @@ internal partial class Request
     public static Cmd<long, long> ClientId()
         => Simple<long>(RequestType.ClientId, []);
 
-    public static Cmd<string, ValkeyValue> ClientKill(string host, ushort port)
-        => Ok(RequestType.ClientKillSimple, [$"{host}:{port}"]);
-
     public static Cmd<long, long> ClientKill(ClientFilterOptions options)
         => Simple<long>(RequestType.ClientKill, options.ToClientKillArgs());
 

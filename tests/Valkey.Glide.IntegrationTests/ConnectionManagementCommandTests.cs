@@ -329,7 +329,8 @@ public class ConnectionManagementCommandTests(ServerFixture fixture) : IClassFix
         var host = parts[0];
         var port = ushort.Parse(parts[1]);
 
-        await client.ClientKillAsync(host, port);
+        var killed = await client.ClientKillAsync(new ClientFilterOptions().WithAddress(host, port));
+        Assert.Equal(1, killed);
     }
 
     [Fact]

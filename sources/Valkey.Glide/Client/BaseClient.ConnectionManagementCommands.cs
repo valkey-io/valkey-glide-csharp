@@ -20,10 +20,6 @@ public abstract partial class BaseClient
     public async Task<long> ClientKillAsync()
         => await Command(Request.ClientKill(new ClientFilterOptions().WithSkipMe(true)));
 
-    /// <inheritdoc cref="IBaseClient.ClientKillAsync(string, ushort)"/>
-    public async Task ClientKillAsync(string host, ushort port)
-        => _ = await Command(Request.ClientKill(host, port));
-
     /// <inheritdoc cref="IBaseClient.ClientKillAsync(ClientFilterOptions)"/>
     public async Task<long> ClientKillAsync(ClientFilterOptions options)
         => await Command(Request.ClientKill(options));

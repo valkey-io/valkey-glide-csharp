@@ -122,7 +122,7 @@ internal partial class ValkeyServer(Database conn, EndPoint endpoint) : IServer
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         (string host, ushort port) = Utils.SplitEndpoint(endpoint);
-        await _conn.ClientKillAsync(host, port);
+        _ = await _conn.ClientKillAsync(new ClientFilterOptions().WithAddress(host, port));
     }
 
     /// <inheritdoc/>

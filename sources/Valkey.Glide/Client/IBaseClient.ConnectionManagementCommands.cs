@@ -61,21 +61,6 @@ public partial interface IBaseClient : IConnectionManagementBaseCommands
     Task<long> ClientKillAsync();
 
     /// <summary>
-    /// Kills the client connection matching the given address.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/client-kill/">Valkey commands – CLIENT KILL</seealso>
-    /// <param name="host">The hostname or IP address of the client to kill.</param>
-    /// <param name="port">The port number of the client to kill.</param>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// await client.ClientKillAsync("127.0.0.1", 6380);
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task ClientKillAsync(string host, ushort port);
-
-    /// <summary>
     /// Kills client connections matching the given filter options.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/client-kill/">Valkey commands – CLIENT KILL</seealso>

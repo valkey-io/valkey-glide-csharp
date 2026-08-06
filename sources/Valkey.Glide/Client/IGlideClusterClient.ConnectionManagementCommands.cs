@@ -58,22 +58,6 @@ public partial interface IGlideClusterClient
     Task<long> ClientKillAsync(Route route);
 
     /// <summary>
-    /// Kills the client connection identified by the given address, routed to the specified node.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/client-kill/">Valkey commands – CLIENT KILL</seealso>
-    /// <param name="host">The hostname or IP address of the client to kill.</param>
-    /// <param name="port">The port number of the client to kill.</param>
-    /// <param name="route">Specifies the routing configuration for the command.</param>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// await clusterClient.ClientKillAsync("127.0.0.1", 6380, Route.Random);
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task ClientKillAsync(string host, ushort port, Route route);
-
-    /// <summary>
     /// Kills client connections matching the given filter options, routed to the specified nodes.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/client-kill/">Valkey commands – CLIENT KILL</seealso>

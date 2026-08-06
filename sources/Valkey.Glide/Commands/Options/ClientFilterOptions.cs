@@ -156,8 +156,7 @@ public class ClientFilterOptions
     /// </remarks>
     public ClientFilterOptions WithMaxAge(TimeSpan maxAge)
     {
-        // TODO #276: Update once mTLS merged.
-        ArgumentOutOfRangeException.ThrowIfLessThan(maxAge, TimeSpan.Zero, nameof(maxAge));
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(maxAge, TimeSpan.Zero, nameof(maxAge));
         MaxAge = maxAge;
         return this;
     }
@@ -175,8 +174,7 @@ public class ClientFilterOptions
         if (MaxAge is not null)
         {
             args.Add(ValkeyLiterals.MAXAGE);
-            // TODO #276: Update once mTLS is merged.
-            args.Add(((long)TimeUtils.ToSeconds(MaxAge.Value)).ToGlideString());
+            args.Add(((long)TimeUtils.ToPositiveUintSecs(MaxAge.Value, nameof(MaxAge))).ToGlideString());
         }
 
         return [.. args];

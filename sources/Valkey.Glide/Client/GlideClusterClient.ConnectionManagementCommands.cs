@@ -19,10 +19,6 @@ public partial class GlideClusterClient
     public async Task<long> ClientKillAsync(Route route)
         => await ClientKillAsync(new ClientFilterOptions().WithSkipMe(true), route);
 
-    /// <inheritdoc cref="IGlideClusterClient.ClientKillAsync(string, ushort, Route)"/>
-    public async Task ClientKillAsync(string host, ushort port, Route route)
-        => _ = await Command(Request.ClientKill(host, port), route);
-
     /// <inheritdoc cref="IGlideClusterClient.ClientKillAsync(ClientFilterOptions, Route)"/>
     public async Task<long> ClientKillAsync(ClientFilterOptions options, Route route)
     {

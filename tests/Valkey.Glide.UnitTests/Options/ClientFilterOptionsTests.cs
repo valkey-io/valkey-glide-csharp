@@ -65,8 +65,12 @@ public class ClientFilterOptionsTests
         => Assert.Equal(["MAXAGE", "60"], Str(new ClientFilterOptions().WithMaxAge(TimeSpan.FromSeconds(60)).ToClientKillArgs()));
 
     [Fact]
-    public void ToClientKillArgs_WithMaxAge_FractionalSeconds_Truncates()
-        => Assert.Equal(["MAXAGE", "90"], Str(new ClientFilterOptions().WithMaxAge(TimeSpan.FromSeconds(90.7)).ToClientKillArgs()));
+    public void ToClientKillArgs_WithMaxAge_FractionalSeconds_Rounds()
+        => Assert.Equal(["MAXAGE", "91"], Str(new ClientFilterOptions().WithMaxAge(TimeSpan.FromSeconds(90.7)).ToClientKillArgs()));
+
+    [Fact]
+    public void WithMaxAge_Zero_Throws()
+        => _ = Assert.Throws<ArgumentOutOfRangeException>(() => new ClientFilterOptions().WithMaxAge(TimeSpan.Zero));
 
     [Fact]
     public void WithMaxAge_Negative_Throws()
