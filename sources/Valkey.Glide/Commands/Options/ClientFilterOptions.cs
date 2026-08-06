@@ -228,7 +228,9 @@ public class ClientFilterOptions
     #endregion
     #region Private Fields
 
-    private readonly HashSet<long> _ids = [];
+    // Use sorted set to ensure deterministic behaviour.
+    private readonly SortedSet<long> _ids = [];
+
     private ulong? _maxAgeSecs;
 
     #endregion
