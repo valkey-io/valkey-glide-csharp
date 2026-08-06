@@ -75,6 +75,10 @@ public abstract class ConnectionConfiguration
         public bool CertReloadEnabled;
         public uint? CertReloadIntervalSeconds;
 
+        // Periodic checks
+        public PeriodicChecksMode PeriodicChecksMode;
+        public uint PeriodicChecksIntervalSecs;
+
         internal FFI.ConnectionConfig ToFfi() => new(
             Addresses,
             ClusterMode,
@@ -106,7 +110,11 @@ public abstract class ConnectionConfiguration
             ClientCertificatePath,
             ClientKeyPath,
             CertReloadEnabled,
-            CertReloadIntervalSeconds
+            CertReloadIntervalSeconds,
+
+            // Periodic checks configuration
+            PeriodicChecksMode,
+            PeriodicChecksIntervalSecs
         );
     }
 
@@ -1102,6 +1110,59 @@ public abstract class ConnectionConfiguration
             RefreshTopologyFromInitialNodes = refreshTopologyFromInitialNodes;
             return this;
         }
+        #endregion
+        #region Periodic Checks
+
+        // TODO #485: refactor after mTLS merge
+
+        /// <summary>
+        /// The maximum supported periodic checks interval. The Rust core uses <c>u32</c> seconds,
+        /// so values exceeding this limit will throw an exception during configuration.
+        /// </summary>
+        public static readonly TimeSpan MaxPeriodicChecksInterval = TimeSpan.FromSeconds(uint.MaxValue);
+
+        /// <summary>
+        /// Configures periodic topology checks to run at a custom interval.
+        /// <para/>
+        /// These checks evaluate changes in the cluster's topology at regular intervals,
+        /// triggering a slot refresh when a change is detected. They query a limited number of nodes
+        /// to remain quick and efficient.
+        /// <para/>
+        /// By default, periodic checks are enabled with a 60-second interval.
+        /// Sub-second precision is truncated because the Rust core operates in whole seconds.
+        /// </summary>
+        /// <param name="interval">The interval between periodic topology checks. Must be positive
+        /// and not exceed <see cref="MaxPeriodicChecksInterval"/>.</param>
+        /// <returns>This configuration builder instance for method chaining.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// Thrown if <paramref name="interval"/> is not positive or exceeds <see cref="MaxPeriodicChecksInterval"/>.
+        /// </exception>
+        public ClusterClientConfigurationBuilder WithPeriodicChecks(TimeSpan interval)
+        {
+            ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(interval, TimeSpan.Zero, nameof(interval));
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(interval, MaxPeriodicChecksInterval, nameof(interval));
+
+            Config.PeriodicChecksMode = FFI.PeriodicChecksMode.ManualInterval;
+            Config.PeriodicChecksIntervalSecs = (uint)interval.TotalSeconds;
+            return this;
+        }
+
+        /// <summary>
+        /// Disables periodic topology checks.
+        /// <para/>
+        /// When disabled, the client will not periodically query the cluster to detect topology changes.
+        /// Topology refreshes will only occur in response to moved/ask redirections.
+        /// <para/>
+        /// By default, periodic checks are enabled with a 60-second interval.
+        /// </summary>
+        /// <returns>This configuration builder instance for method chaining.</returns>
+        public ClusterClientConfigurationBuilder WithoutPeriodicChecks()
+        {
+            Config.PeriodicChecksMode = FFI.PeriodicChecksMode.Disabled;
+            Config.PeriodicChecksIntervalSecs = 0;
+            return this;
+        }
+
         #endregion
 
         /// <summary>

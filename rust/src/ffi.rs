@@ -1,5 +1,6 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+use crate::enums::{PeriodicChecksMode, PushKind, RouteType, ServiceType};
 use std::{
     ffi::{CStr, c_char},
     slice::from_raw_parts,
@@ -190,6 +191,10 @@ pub struct ConnectionConfig {
     pub cert_reload_enabled: bool,
     pub has_cert_reload_interval_seconds: bool,
     pub cert_reload_interval_seconds: u32,
+
+    // Periodic checks configuration
+    pub periodic_checks_mode: PeriodicChecksMode,
+    pub periodic_checks_interval_sec: u32,
 }
 
 #[repr(C)]
@@ -432,6 +437,17 @@ pub(crate) unsafe fn create_connection_request(
                     .then_some(config.cert_reload_interval_seconds),
             }),
 
+        // Periodic checks configuration
+        periodic_checks: Some(match config.periodic_checks_mode {
+            PeriodicChecksMode::Enabled => glide_core::client::PeriodicCheck::Enabled,
+            PeriodicChecksMode::Disabled => glide_core::client::PeriodicCheck::Disabled,
+            PeriodicChecksMode::ManualInterval => {
+                glide_core::client::PeriodicCheck::ManualInterval(std::time::Duration::from_secs(
+                    config.periodic_checks_interval_sec as u64,
+                ))
+            }
+        }),
+
         // Initialized to `None` because FFI clients pass the resolver as a function pointer
         // directly to `create_client`, which patches it onto the request after construction.
         address_resolver: None,
@@ -439,7 +455,6 @@ pub(crate) unsafe fn create_connection_request(
         // Unimplemented configuration options
         // -----------------------------------
         tcp_nodelay: false,            // TODO #490: Expose TCP_NODELAY.
-        periodic_checks: None,         // TODO #485: Expose cluster periodic checks.
         inflight_requests_limit: None, // TODO #484: Expose request limiting.
         recovery_requests_queue_size: None,
     })
@@ -511,24 +526,6 @@ pub struct IamCredentials {
     pub service_type: ServiceType,
     pub has_refresh_interval_seconds: bool,
     pub refresh_interval_seconds: u32,
-}
-
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub enum ServiceType {
-    ElastiCache = 0,
-    MemoryDB = 1,
-}
-
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub enum RouteType {
-    Random,
-    AllNodes,
-    AllPrimaries,
-    SlotId,
-    SlotKey,
-    ByAddress,
 }
 
 /// A mirror of [`SlotAddr`]
@@ -1013,40 +1010,6 @@ pub(crate) unsafe fn get_pipeline_options(
         timeout,
         PipelineRetryStrategy::new(info.retry_server_error, info.retry_connection_error),
     ))
-}
-
-/// FFI-safe version of [`redis::PushKind`] for C# interop.
-/// This enum maps to the `PushKind` enum in `sources/Valkey.Glide/Internals/FFI.structs.cs`.
-///
-/// The `#[repr(u32)]` attribute ensures a stable memory layout compatible with C# marshaling.
-/// Each variant corresponds to a specific Redis/Valkey PubSub notification type.
-#[repr(u32)]
-#[derive(Clone, Copy, PartialEq, Eq)]
-pub enum PushKind {
-    /// Disconnection notification sent from the library when connection is closed.
-    Disconnection = 0,
-    /// Other/unknown push notification type.
-    Other = 1,
-    /// Cache invalidation notification received when a key is changed/deleted.
-    Invalidate = 2,
-    /// Regular channel message received via SUBSCRIBE.
-    Message = 3,
-    /// Pattern-based message received via PSUBSCRIBE.
-    PMessage = 4,
-    /// Sharded channel message received via SSUBSCRIBE.
-    SMessage = 5,
-    /// Unsubscribe confirmation.
-    Unsubscribe = 6,
-    /// Pattern unsubscribe confirmation.
-    PUnsubscribe = 7,
-    /// Sharded unsubscribe confirmation.
-    SUnsubscribe = 8,
-    /// Subscribe confirmation.
-    Subscribe = 9,
-    /// Pattern subscribe confirmation.
-    PSubscribe = 10,
-    /// Sharded subscribe confirmation.
-    SSubscribe = 11,
 }
 
 impl From<&redis::PushKind> for PushKind {
