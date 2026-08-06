@@ -1129,11 +1129,15 @@ public abstract class ConnectionConfiguration
         public new ClusterClientConfiguration Build() => new() { Request = base.Build() };
 
         #region Refresh Topology
-
         /// <summary>
         /// Enables refreshing the cluster topology using only the initial nodes.
+        /// <para />
+        /// When this option is enabled, all topology updates (both the periodic checks and on-demand
+        /// refreshes triggered by topology changes) will query only the initial nodes provided when
+        /// creating the client, rather than using the internal cluster view.
+        /// <para />
+        /// If not set, defaults to <c>false</c> (uses internal cluster view for topology refresh).
         /// </summary>
-        /// <seealso href="https://glide.valkey.io/how-to/connections/periodic-checks/">Valkey GLIDE – Configure Periodic Checks</seealso>
         public bool RefreshTopologyFromInitialNodes
         {
             get => Config.RefreshTopologyFromInitialNodes;
