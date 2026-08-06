@@ -1,6 +1,5 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using Valkey.Glide.Commands.Options;
 using Valkey.Glide.Internals;
 
 namespace Valkey.Glide;
@@ -14,17 +13,6 @@ public partial class GlideClusterClient
     /// <inheritdoc cref="IGlideClusterClient.ClientIdAsync(Route)"/>
     public async Task<ClusterValue<long>> ClientIdAsync(Route route)
         => await Command(Request.ClientId().ToClusterValue(route), route);
-
-    /// <inheritdoc cref="IGlideClusterClient.ClientKillAsync(Route)"/>
-    public async Task<long> ClientKillAsync(Route route)
-        => await ClientKillAsync(new ClientFilterOptions().WithSkipMe(true), route);
-
-    /// <inheritdoc cref="IGlideClusterClient.ClientKillAsync(ClientFilterOptions, Route)"/>
-    public async Task<long> ClientKillAsync(ClientFilterOptions options, Route route)
-    {
-        ClusterValue<long> result = await Command(Request.ClientKill(options).ToClusterValue(route), route);
-        return result.HasMultiData ? result.MultiValue.Values.Sum() : result.SingleValue;
-    }
 
     /// <inheritdoc cref="IGlideClusterClient.ClientTrackingInfoAsync(Route)"/>
     public async Task<ClusterValue<ClientTrackingInfo>> ClientTrackingInfoAsync(Route route)

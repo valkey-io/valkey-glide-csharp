@@ -334,14 +334,13 @@ public class ConnectionManagementCommandTests(ServerFixture fixture) : IClassFix
     }
 
     [Fact]
-    public async Task ClientKillAsync_WithRoute_KillsClientInCluster()
+    public async Task ClientKillAsync_ByFilter_KillsClientInCluster()
     {
         await using var client = await fixture.ClusterServer.CreateClusterClientAsync();
         await using var target = await fixture.ClusterServer.CreateClusterClientAsync();
 
         var targetId = await target.ClientIdAsync();
-        var killed = await client.ClientKillAsync(
-            new ClientFilterOptions().WithId(targetId), Route.AllPrimaries);
+        var killed = await client.ClientKillAsync(new ClientFilterOptions().WithId(targetId));
 
         Assert.Equal(1, killed);
     }

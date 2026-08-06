@@ -46,21 +46,6 @@ public partial interface IBaseClient : IConnectionManagementBaseCommands
     Task<long> ClientIdAsync();
 
     /// <summary>
-    /// Kills all client connections except the calling client.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/client-kill/">Valkey commands – CLIENT KILL</seealso>
-    /// <returns>The number of clients killed.</returns>
-    /// <remarks>
-    /// <example>
-    /// <code>
-    /// var killed = await client.ClientKillAsync();
-    /// Console.WriteLine($"Killed {killed} client(s)");
-    /// </code>
-    /// </example>
-    /// </remarks>
-    Task<long> ClientKillAsync();
-
-    /// <summary>
     /// Kills client connections matching the given filter options.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/client-kill/">Valkey commands – CLIENT KILL</seealso>
