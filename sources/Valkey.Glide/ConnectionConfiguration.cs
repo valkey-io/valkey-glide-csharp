@@ -1170,7 +1170,7 @@ public abstract class ConnectionConfiguration
         /// Enables periodic topology checks at the specified interval.
         /// </summary>
         /// <seealso href="https://glide.valkey.io/how-to/connections/periodic-checks/">Valkey GLIDE – Configure Periodic Checks</seealso>
-        /// <param name="interval">The interval between periodic topology checks. Must be positive.</param>
+        /// <param name="interval">The interval between periodic topology checks.</param>
         /// <returns>This configuration builder instance for method chaining.</returns>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="interval"/> is not positive or exceeds <see cref="uint.MaxValue"/> seconds.</exception>
         public ClusterClientConfigurationBuilder WithPeriodicChecks(TimeSpan interval)

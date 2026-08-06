@@ -22,16 +22,18 @@ public sealed class OpenTelemetryConfig
     /// <summary>
     /// Interval for flushing telemetry data to the collector.
     /// </summary>
-    public TimeSpan? FlushInterval { get; }
+    public TimeSpan? FlushInterval => FlushIntervalMs.HasValue
+        ? TimeSpan.FromMilliseconds(FlushIntervalMs.Value)
+        : null;
 
     #endregion
     #region Constructors & Builders
 
-    private OpenTelemetryConfig(TracesConfig? traces, MetricsConfig? metrics, TimeSpan? flushInterval)
+    private OpenTelemetryConfig(TracesConfig? traces, MetricsConfig? metrics, uint? flushIntervalMs)
     {
         Traces = traces;
         Metrics = metrics;
-        FlushInterval = flushInterval;
+        FlushIntervalMs = flushIntervalMs;
     }
 
     #endregion
@@ -43,6 +45,11 @@ public sealed class OpenTelemetryConfig
     public static Builder CreateBuilder() => new();
 
     #endregion
+    #region Internal Fields
+
+    internal readonly uint? FlushIntervalMs;
+
+    #endregion
 
     /// <summary>
     /// Builder for OpenTelemetryConfig.
@@ -51,7 +58,7 @@ public sealed class OpenTelemetryConfig
     {
         private TracesConfig? _traces;
         private MetricsConfig? _metrics;
-        private TimeSpan? _flushInterval;
+        private uint? _flushIntervalMs;
 
         /// <summary>
         /// Sets the traces configuration.
@@ -74,13 +81,10 @@ public sealed class OpenTelemetryConfig
         /// <summary>
         /// Sets the flush interval.
         /// </summary>
-        /// <exception cref="ArgumentException">Thrown if flushInterval is not positive.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="flushInterval"/> is not positive or exceeds <see cref="uint.MaxValue"/> milliseconds.</exception>
         public Builder WithFlushInterval(TimeSpan flushInterval)
         {
-            if (flushInterval <= TimeSpan.Zero)
-                throw new ArgumentException("Flush interval must be positive", nameof(flushInterval));
-
-            _flushInterval = flushInterval;
+            _flushIntervalMs = Internals.TimeUtils.ToPositiveUintMs(flushInterval, nameof(flushInterval));
             return this;
         }
 
@@ -91,9 +95,11 @@ public sealed class OpenTelemetryConfig
         public OpenTelemetryConfig Build()
         {
             if (_traces == null && _metrics == null)
+            {
                 throw new InvalidOperationException("At least one of traces or metrics must be configured");
+            }
 
-            return new OpenTelemetryConfig(_traces, _metrics, _flushInterval);
+            return new OpenTelemetryConfig(_traces, _metrics, _flushIntervalMs);
         }
     }
 }
