@@ -9,8 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fix marshalling of non-ASCII characters on Windows (#501)
-- `XREADGROUP` returning only the first field-value pair per stream entry (#430)
+- Marshalling of non-ASCII characters on Windows (#501)
+- `FailoverOptions` throws `ArgumentOutOfRangeException` for zero timeout (#488)
+- `StreamReadGroupAsync` returning only the first field-value pair per stream entry (#430)
 - Incorrect default routes:
   - `SELECT` routed to Random instead of AllNodes in cluster mode (#491)
   - `CONFIG SET` routed to AllPrimaries instead of AllNodes in cluster mode (#492)
@@ -20,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Mutual TLS (mTLS) support (#488)
 - Circuit breaker configuration (#474)
 - Support additional commands (#435):
   - `BGREWRITEAOF` (#444)

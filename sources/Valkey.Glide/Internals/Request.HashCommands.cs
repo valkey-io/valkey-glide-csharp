@@ -22,7 +22,7 @@ internal partial class Request
 
     public static Cmd<object[], HashExpireResult[]> HashExpireAsync(ValkeyKey key, TimeSpan expiry, ValkeyValue[] hashFields, ExpireCondition condition)
     {
-        List<GlideString> args = [key, ToMilliseconds(expiry).ToGlideString()];
+        List<GlideString> args = [key, ToULongMs(expiry, nameof(expiry)).ToGlideString()];
 
         AddExpireCondition(args, condition);
         args.AddRange(ToArgs(ValkeyLiterals.FIELDS, hashFields));
@@ -65,29 +65,8 @@ internal partial class Request
 
     public static Cmd<object[], ValkeyValue[]> HashGetAsync(
         ValkeyKey key, IEnumerable<ValkeyValue> hashFields, GetExpiryOptions options)
-    {
-        List<GlideString> args = [key];
-
-        if (options.Duration.HasValue)
-        {
-            args.Add(ValkeyLiterals.PX);
-            args.Add(ToMilliseconds(options.Duration.Value).ToGlideString());
-        }
-        else if (options.Timestamp.HasValue)
-        {
-            args.Add(ValkeyLiterals.PXAT);
-            args.Add(options.Timestamp.Value.ToUnixTimeMilliseconds().ToGlideString());
-        }
-        else
-        {
-            args.Add(ValkeyLiterals.PERSIST);
-        }
-
-        args.AddRange(ToArgs(ValkeyLiterals.FIELDS, hashFields));
-
-        return new(RequestType.HGetEx, [.. args], true, response =>
-            [.. response.Select(item => item == null ? ValkeyValue.Null : (ValkeyValue)(GlideString)item)]);
-    }
+            => new(RequestType.HGetEx, [key, .. options.ToArgs(), .. ToArgs(ValkeyLiterals.FIELDS, hashFields)], true, response
+                => [.. response.Select(item => item == null ? ValkeyValue.Null : (ValkeyValue)(GlideString)item)]);
 
     public static Cmd<long, long> HashIncrementByAsync(ValkeyKey key, ValkeyValue hashField, long value)
         => Simple<long>(RequestType.HIncrBy, [key, hashField, value.ToGlideString()]);

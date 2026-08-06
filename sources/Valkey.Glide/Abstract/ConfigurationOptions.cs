@@ -5,6 +5,8 @@ using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
+using Valkey.Glide.Internals;
+
 using static Valkey.Glide.ConnectionConfiguration;
 
 namespace Valkey.Glide;
@@ -98,6 +100,8 @@ public sealed class ConfigurationOptions : ICloneable
     #region Internal fields
 
     internal readonly List<byte[]> _trustedIssuers = [];
+    internal byte[]? _clientCertificate;
+    internal byte[]? _clientKey;
 
     #endregion
 
@@ -278,37 +282,11 @@ public sealed class ConfigurationOptions : ICloneable
     /// <param name="certificatePath">Trusted certificate file path</param>
     /// <exception cref="ArgumentNullException">If the certificate path is null.</exception>
     /// <exception cref="FileNotFoundException">If the certificate file does not exist.</exception>
-    /// <exception cref="ArgumentException">If the certificate file is empty or exceeds <see cref="CertificateMaxSize"/>.</exception>
+    /// <exception cref="ArgumentException">If the certificate file is empty or is too large.</exception>
     public void TrustIssuer(string certificatePath)
     {
-        ArgumentNullException.ThrowIfNull(certificatePath);
-
-        // Normalize path and check file length within try/catch block to
-        // avoid race condition where file is deleted before being read.
-        try
-        {
-            var fullPath = Path.GetFullPath(certificatePath);
-
-            var fileLength = new FileInfo(fullPath).Length;
-            if (fileLength == 0)
-            {
-                throw new ArgumentException("Certificate file cannot be empty", nameof(fullPath));
-            }
-            else if (fileLength > CertificateMaxSize)
-            {
-                throw new ArgumentException($"Certificate file exceeds maximum allowed size of {CertificateMaxSize} bytes", nameof(fullPath));
-            }
-
-            var certificateData = File.ReadAllBytes(fullPath);
-            _trustedIssuers.Add(certificateData);
-
-            return;
-        }
-
-        catch (FileNotFoundException)
-        {
-            throw new FileNotFoundException($"Certificate file not found: {certificatePath}");
-        }
+        GuardClauses.ThrowIfCertificateNotSupported(certificatePath, nameof(certificatePath));
+        _trustedIssuers.Add(File.ReadAllBytes(certificatePath));
     }
 
     /// <summary>
@@ -318,13 +296,36 @@ public sealed class ConfigurationOptions : ICloneable
     /// <exception cref="ArgumentNullException">If the certificate is null.</exception>
     public void TrustIssuer(X509Certificate2 certificate)
     {
-        if (certificate == null)
-            throw new ArgumentNullException(nameof(certificate));
+        ArgumentNullException.ThrowIfNull(certificate, nameof(certificate));
+        _trustedIssuers.Add(certificate.Export(X509ContentType.Cert));
+    }
 
-        var certificateData = certificate.Export(X509ContentType.Cert);
-        _trustedIssuers.Add(certificateData);
+    /// <summary>
+    /// Supply a user certificate from a PEM file pair and enable TLS.
+    /// </summary>
+    /// <param name="userCertificatePath">The path for the user certificate (commonly a .crt file).</param>
+    /// <param name="userKeyPath">The path for the user key (commonly a .key file).</param>
+    /// <exception cref="FileNotFoundException">If one of the specified files does not exist.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">If one of the specified files is empty or too large.</exception>
+    public void SetUserPemCertificate(string userCertificatePath, string? userKeyPath = null)
+    {
+        GuardClauses.ThrowIfCertificateNotSupported(userCertificatePath, nameof(userCertificatePath));
+        _clientCertificate = File.ReadAllBytes(userCertificatePath);
 
-        return;
+        // When keyPath is null, pass the same blob for both cert and key.
+        // glide-core extracts certificates and private keys independently by scanning for
+        // their respective PEM headers, ignoring irrelevant sections in the same blob.
+        if (userKeyPath is not null)
+        {
+            GuardClauses.ThrowIfCertificateNotSupported(userKeyPath, nameof(userKeyPath));
+            _clientKey = File.ReadAllBytes(userKeyPath);
+        }
+        else
+        {
+            _clientKey = _clientCertificate;
+        }
+
+        Ssl = true;
     }
 
     /// <summary>
@@ -378,6 +379,9 @@ public sealed class ConfigurationOptions : ICloneable
         {
             clone._trustedIssuers.Add(cert);
         }
+
+        clone._clientCertificate = _clientCertificate;
+        clone._clientKey = _clientKey;
 
         return clone;
     }
@@ -479,6 +483,8 @@ public sealed class ConfigurationOptions : ICloneable
         ReadFrom = null;
         _reconnectRetryPolicy = null;
         _trustedIssuers.Clear();
+        _clientCertificate = null;
+        _clientKey = null;
         EndPoints.Clear();
     }
 

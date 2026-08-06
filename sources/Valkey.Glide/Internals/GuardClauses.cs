@@ -7,17 +7,28 @@ namespace Valkey.Glide.Internals;
 /// </summary>
 internal static class GuardClauses
 {
+    #region Public Methods
+
     /// <summary>
-    /// Throws a <see cref="NotImplementedException"/> if async state is specified.
+    /// Throws if the certificate byte array is null, empty, or exceeds <see cref="ConnectionConfiguration.CertificateMaxSize"/>.
     /// </summary>
-    /// <param name="asyncState">The async state to validate.</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="asyncState"/> is not null.</exception>
-    public static void ThrowIfAsyncState(object? asyncState)
+    /// <param name="data">The certificate or key byte array to validate.</param>
+    /// <param name="paramName">The parameter name for the exception.</param>
+    internal static void ThrowIfCertificateNotSupported(byte[] data, string paramName)
     {
-        if (asyncState is not null)
-        {
-            throw new NotImplementedException("Async state is not supported by Valkey GLIDE");
-        }
+        ArgumentNullException.ThrowIfNull(data, paramName);
+        ThrowIfCertificateLengthNotSupported(data.Length, paramName);
+    }
+
+    /// <summary>
+    /// Throws if the certificate file at the given path is null, empty or exceeds <see cref="ConnectionConfiguration.CertificateMaxSize"/>.
+    /// </summary>
+    /// <param name="path">The certificate or key file path to check.</param>
+    /// <param name="paramName">The parameter name for the exception.</param>
+    internal static void ThrowIfCertificateNotSupported(string path, string paramName)
+    {
+        ArgumentNullException.ThrowIfNull(path, paramName);
+        ThrowIfCertificateLengthNotSupported(new FileInfo(path).Length, paramName);
     }
 
     /// <summary>
@@ -45,4 +56,15 @@ internal static class GuardClauses
             throw new NotImplementedException($"Stream trim mode {trimMode} is not supported by Valkey GLIDE");
         }
     }
+
+    #endregion
+    #region Private Methods
+
+    internal static void ThrowIfCertificateLengthNotSupported(long length, string paramName)
+    {
+        ArgumentOutOfRangeException.ThrowIfZero(length, paramName);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(length, ConnectionConfiguration.CertificateMaxSize, paramName);
+    }
+
+    #endregion
 }

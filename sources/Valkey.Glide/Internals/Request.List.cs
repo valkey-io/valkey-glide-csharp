@@ -10,22 +10,22 @@ internal partial class Request
     #region Command Builders
 
     public static Cmd<object[], ValkeyValue[]?> ListBlockingLeftPopAsync(ValkeyKey[] keys, TimeSpan timeout)
-        => new(RequestType.BLPop, [.. keys, ToSeconds(timeout).ToGlideString()], true, array =>
+        => new(RequestType.BLPop, [.. keys, ToNonNegativeDoubleSecs(timeout, nameof(timeout)).ToGlideString()], true, array =>
             array is null ? null : [.. array.Cast<GlideString>().Select(gs => (ValkeyValue)gs)]);
 
     public static Cmd<GlideString, ValkeyValue> ListBlockingMoveAsync(ValkeyKey source, ValkeyKey destination, ListSide sourceSide, ListSide destinationSide, TimeSpan timeout)
-        => new(RequestType.BLMove, [source, destination, sourceSide.ToLiteral(), destinationSide.ToLiteral(), ToSeconds(timeout).ToGlideString()], true, gs => gs is null ? ValkeyValue.Null : (ValkeyValue)gs, allowConverterToHandleNull: true);
+        => new(RequestType.BLMove, [source, destination, sourceSide.ToLiteral(), destinationSide.ToLiteral(), ToNonNegativeDoubleSecs(timeout, nameof(timeout)).ToGlideString()], true, gs => gs is null ? ValkeyValue.Null : (ValkeyValue)gs, allowConverterToHandleNull: true);
 
     public static Cmd<Dictionary<GlideString, object>, ListPopResult> ListBlockingPopAsync(ValkeyKey[] keys, ListSide side, TimeSpan timeout)
-        => new(RequestType.BLMPop, [ToSeconds(timeout).ToGlideString(), keys.Length.ToGlideString(), .. keys.ToGlideStrings(), side.ToLiteral()], true, dict =>
+        => new(RequestType.BLMPop, [ToNonNegativeDoubleSecs(timeout, nameof(timeout)).ToGlideString(), keys.Length.ToGlideString(), .. keys.ToGlideStrings(), side.ToLiteral()], true, dict =>
             dict is null ? ListPopResult.Null : ConvertDictToListPopResult(dict), allowConverterToHandleNull: true);
 
     public static Cmd<Dictionary<GlideString, object>, ListPopResult> ListBlockingPopAsync(ValkeyKey[] keys, ListSide side, long count, TimeSpan timeout)
-        => new(RequestType.BLMPop, [ToSeconds(timeout).ToGlideString(), keys.Length.ToGlideString(), .. keys.ToGlideStrings(), side.ToLiteral(), ValkeyLiterals.COUNT, count.ToGlideString()], true, dict =>
+        => new(RequestType.BLMPop, [ToNonNegativeDoubleSecs(timeout, nameof(timeout)).ToGlideString(), keys.Length.ToGlideString(), .. keys.ToGlideStrings(), side.ToLiteral(), ValkeyLiterals.COUNT, count.ToGlideString()], true, dict =>
             dict is null ? ListPopResult.Null : ConvertDictToListPopResult(dict), allowConverterToHandleNull: true);
 
     public static Cmd<object[], ValkeyValue[]?> ListBlockingRightPopAsync(ValkeyKey[] keys, TimeSpan timeout)
-        => new(RequestType.BRPop, [.. keys, ToSeconds(timeout).ToGlideString()], true, array =>
+        => new(RequestType.BRPop, [.. keys, ToNonNegativeDoubleSecs(timeout, nameof(timeout)).ToGlideString()], true, array =>
             array is null ? null : [.. array.Cast<GlideString>().Select(gs => (ValkeyValue)gs)]);
 
     public static Cmd<GlideString, ValkeyValue> ListGetByIndexAsync(ValkeyKey key, long index)

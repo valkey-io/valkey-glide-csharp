@@ -16,9 +16,9 @@ namespace Valkey.Glide;
 public abstract class ConnectionConfiguration
 {
     /// <summary>
-    /// Maximum root certificate size for TLS connections.
+    /// Maximum certificate/key size (10 MB).
     /// </summary>
-    public static readonly long CertificateMaxSize = 10 * 1024 * 1024; // 10 MB
+    public const int CertificateMaxSize = 10 * 1024 * 1024;
 
     /// <summary>
     /// A callback for resolving server addresses before connection.
@@ -43,10 +43,9 @@ public abstract class ConnectionConfiguration
     internal record ConnectionConfig
     {
         public List<NodeAddress> Addresses = [];
-        public TlsMode TlsMode = TlsMode.NoTls;
         public bool ClusterMode;
-        public TimeSpan? RequestTimeout;
-        public TimeSpan? ConnectionTimeout;
+        public uint? RequestTimeoutMs;
+        public uint? ConnectionTimeoutMs;
         public ReadFrom? ReadFrom;
         public RetryStrategy? RetryStrategy;
         public AuthenticationInfo? AuthenticationInfo;
@@ -56,8 +55,7 @@ public abstract class ConnectionConfiguration
         public bool LazyConnect;
         public bool RefreshTopologyFromInitialNodes;
         public BasePubSubSubscriptionConfig? PubSubSubscriptions;
-        public readonly List<byte[]> RootCertificates = [];
-        public TimeSpan? PubSubReconciliationInterval;
+        public uint? PubSubReconciliationIntervalMs;
         public CompressionConfig? CompressionConfig;
         public bool ReadOnly;
         public NodeDiscoveryMode NodeDiscoveryMode = NodeDiscoveryMode.Standard;
@@ -65,30 +63,51 @@ public abstract class ConnectionConfiguration
         public CircuitBreakerConfig? CircuitBreakerConfig;
         public AddressResolverDelegate? AddressResolver;
 
-        internal FFI.ConnectionConfig ToFfi() =>
-            new(
-                Addresses,
-                TlsMode,
-                ClusterMode,
-                (uint?)RequestTimeout?.TotalMilliseconds,
-                (uint?)ConnectionTimeout?.TotalMilliseconds,
-                ReadFrom,
-                RetryStrategy,
-                AuthenticationInfo,
-                DatabaseId,
-                Protocol,
-                ClientName,
-                LazyConnect,
-                RefreshTopologyFromInitialNodes,
-                PubSubSubscriptions,
-                RootCertificates,
-                (uint?)PubSubReconciliationInterval?.TotalMilliseconds,
-                CompressionConfig?.ToFfi(),
-                ReadOnly,
-                NodeDiscoveryMode,
-                ClientSideCacheConfig?.ToFfi(),
-                CircuitBreakerConfig?.ToFfi()
-            );
+        // TLS configuration
+        public TlsMode TlsMode = TlsMode.NoTls;
+        public readonly List<byte[]> RootCertificates = [];
+
+        // Mutual TLS configuration
+        public byte[]? ClientCertificate;
+        public byte[]? ClientKey;
+        public string? ClientCertificatePath;
+        public string? ClientKeyPath;
+        public bool CertReloadEnabled;
+        public uint? CertReloadIntervalSeconds;
+
+        internal FFI.ConnectionConfig ToFfi() => new(
+            Addresses,
+            ClusterMode,
+            RequestTimeoutMs,
+            ConnectionTimeoutMs,
+            ReadFrom,
+            RetryStrategy,
+            AuthenticationInfo,
+            DatabaseId,
+            Protocol,
+            ClientName,
+            LazyConnect,
+            RefreshTopologyFromInitialNodes,
+            PubSubSubscriptions,
+            PubSubReconciliationIntervalMs,
+            CompressionConfig?.ToFfi(),
+            ReadOnly,
+            NodeDiscoveryMode,
+            ClientSideCacheConfig?.ToFfi(),
+            CircuitBreakerConfig?.ToFfi(),
+
+            // TLS configuration
+            TlsMode,
+            RootCertificates,
+
+            // Mutual TLS configuration
+            ClientCertificate,
+            ClientKey,
+            ClientCertificatePath,
+            ClientKeyPath,
+            CertReloadEnabled,
+            CertReloadIntervalSeconds
+        );
     }
 
     /// <summary>
@@ -369,7 +388,8 @@ public abstract class ConnectionConfiguration
             Config = new ConnectionConfig { ClusterMode = clusterMode };
         }
 
-        #region address
+        #region Address
+
         /// <inheritdoc cref="Addresses" />
         /// <b>Add</b> a new address to the list.<br />
         /// See also <seealso cref="Addresses" />.
@@ -535,34 +555,14 @@ public abstract class ConnectionConfiguration
         /// </summary>
         /// <param name="certificatePath">Trusted certificate file path</param>
         /// <returns>This builder for method chaining</returns>
+        /// <exception cref="ArgumentException">If the certificate is null, empty, or too large.</exception>
         /// <exception cref="FileNotFoundException">If the certificate file does not exist</exception>
-        /// <exception cref="ArgumentException">If the certificate file is empty or exceeds <see cref="CertificateMaxSize"/></exception>
         /// <seealso href="https://glide.valkey.io/tutorials/tls/">Valkey GLIDE – Setting up TLS</seealso>
         /// <seealso href="https://glide.valkey.io/how-to/security/tls/">Valkey GLIDE – Configure TLS</seealso>
         public T WithTrustedCertificate(string certificatePath)
         {
-            ArgumentNullException.ThrowIfNull(certificatePath);
-
-            // Normalize path and check file length within try/catch block to
-            // avoid race condition where file is deleted before being read.
-            try
-            {
-                var fullPath = Path.GetFullPath(certificatePath);
-
-                var fileLength = new FileInfo(fullPath).Length;
-                if (fileLength > CertificateMaxSize)
-                {
-                    throw new ArgumentException($"Certificate file exceeds maximum allowed size of {CertificateMaxSize} bytes", nameof(fullPath));
-                }
-
-                var certificateData = File.ReadAllBytes(fullPath);
-                return WithTrustedCertificate(certificateData);
-            }
-
-            catch (FileNotFoundException)
-            {
-                throw new FileNotFoundException($"Certificate file not found: {certificatePath}");
-            }
+            GuardClauses.ThrowIfCertificateNotSupported(certificatePath, nameof(certificatePath));
+            return WithTrustedCertificate(File.ReadAllBytes(certificatePath));
         }
 
         /// <summary>
@@ -570,27 +570,103 @@ public abstract class ConnectionConfiguration
         /// </summary>
         /// <param name="certificateData">Trusted certificate data</param>
         /// <returns>This builder for method chaining</returns>
-        /// <exception cref="ArgumentException">If the certificate data is null, empty, or exceeds <see cref="CertificateMaxSize"/></exception>
+        /// <exception cref="ArgumentException">If the certificate is empty or too large.</exception>
         /// <seealso href="https://glide.valkey.io/tutorials/tls/">Valkey GLIDE – Setting up TLS</seealso>
         /// <seealso href="https://glide.valkey.io/how-to/security/tls/">Valkey GLIDE – Configure TLS</seealso>
         public T WithTrustedCertificate(byte[] certificateData)
         {
-            if (certificateData == null)
-            {
-                throw new ArgumentNullException(nameof(certificateData), "Certificate data cannot be null");
-            }
-            else if (certificateData.Length == 0)
-            {
-                throw new ArgumentException("Certificate data cannot be empty", nameof(certificateData));
-            }
-            else if (certificateData.Length > CertificateMaxSize)
-            {
-                var msg = $"Certificate data exceeds maximum allowed size of {CertificateMaxSize} bytes: {certificateData.Length} bytes";
-                throw new ArgumentException(msg, nameof(certificateData));
-            }
-
+            GuardClauses.ThrowIfCertificateNotSupported(certificateData, nameof(certificateData));
             TrustedCertificates.Add(certificateData);
             return (T)this;
+        }
+
+        #endregion
+        #region Mutual TLS
+
+        /// <summary>
+        /// Configures mutual TLS for the given client certificate and key data.
+        /// </summary>
+        /// <param name="certificateData">Client certificate data</param>
+        /// <param name="keyData">Client key data</param>
+        /// <returns>This builder for method chaining.</returns>
+        /// <exception cref="ArgumentNullException">If <paramref name="certificateData"/> or <paramref name="keyData"/> is null.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">If <paramref name="certificateData"/> or <paramref name="keyData"/> is empty or too large.</exception>
+        /// <seealso href="https://glide.valkey.io/how-to/security/tls/">Valkey GLIDE – Configure TLS</seealso>
+        public T WithClientCertificate(byte[] certificateData, byte[] keyData)
+        {
+            GuardClauses.ThrowIfCertificateNotSupported(certificateData, nameof(certificateData));
+            GuardClauses.ThrowIfCertificateNotSupported(keyData, nameof(keyData));
+
+            ClearMutualTls();
+
+            Config.ClientCertificate = certificateData;
+            Config.ClientKey = keyData;
+
+            return (T)this;
+        }
+
+        /// <summary>
+        /// Configures mutual TLS for the given client certificate and key path.<p/>
+        /// The client periodically reloads the client certificate and key to support certificate rotation.
+        /// </summary>
+        /// <param name="certificatePath">Client certificate file path</param>
+        /// <param name="keyPath">Client key file path</param>
+        /// <returns>This builder for method chaining.</returns>
+        /// <exception cref="ArgumentNullException">If <paramref name="certificatePath"/> or <paramref name="keyPath"/> is null.</exception>
+        /// <exception cref="ArgumentException">If <paramref name="certificatePath"/> or <paramref name="keyPath"/> is empty.</exception>
+        /// <seealso href="https://glide.valkey.io/how-to/security/tls/">Valkey GLIDE – Configure TLS</seealso>
+        public T WithClientCertificate(string certificatePath, string keyPath)
+        {
+            ArgumentException.ThrowIfNullOrEmpty(certificatePath, nameof(certificatePath));
+            ArgumentException.ThrowIfNullOrEmpty(keyPath, nameof(keyPath));
+
+            ClearMutualTls();
+
+            Config.ClientCertificatePath = certificatePath;
+            Config.ClientKeyPath = keyPath;
+            Config.CertReloadEnabled = true;
+
+            return (T)this;
+        }
+
+        /// <summary>
+        /// Configures mutual TLS for the given client certificate and key path.<p/>
+        /// The client reloads the client certificate and key at the specified interval to support certificate rotation.
+        /// </summary>
+        /// <param name="certificatePath">Client certificate file path</param>
+        /// <param name="keyPath">Client key file path</param>
+        /// <param name="reloadInterval">The interval at which to reload the client certificate and key. Rounded to the nearest second.</param>
+        /// <returns>This builder for method chaining.</returns>
+        /// <exception cref="ArgumentNullException">If <paramref name="certificatePath"/> or <paramref name="keyPath"/> is null.</exception>
+        /// <exception cref="ArgumentException">If <paramref name="certificatePath"/> or <paramref name="keyPath"/> is empty.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">If <paramref name="reloadInterval"/> is not positive or exceeds <see cref="uint.MaxValue"/> seconds.</exception>
+        /// <seealso href="https://glide.valkey.io/how-to/security/tls/">Valkey GLIDE – Configure TLS</seealso>
+        public T WithClientCertificate(string certificatePath, string keyPath, TimeSpan reloadInterval)
+        {
+            ArgumentException.ThrowIfNullOrEmpty(certificatePath, nameof(certificatePath));
+            ArgumentException.ThrowIfNullOrEmpty(keyPath, nameof(keyPath));
+
+            ClearMutualTls();
+
+            Config.ClientCertificatePath = certificatePath;
+            Config.ClientKeyPath = keyPath;
+            Config.CertReloadEnabled = true;
+            Config.CertReloadIntervalSeconds = TimeUtils.ToPositiveUintSecs(reloadInterval, nameof(reloadInterval));
+
+            return (T)this;
+        }
+
+        /// <summary>
+        /// Clears the mutual TLS properties.
+        /// </summary>
+        private void ClearMutualTls()
+        {
+            Config.ClientCertificate = null;
+            Config.ClientKey = null;
+            Config.ClientCertificatePath = null;
+            Config.ClientKeyPath = null;
+            Config.CertReloadEnabled = false;
+            Config.CertReloadIntervalSeconds = null;
         }
 
         #endregion
@@ -601,12 +677,14 @@ public abstract class ConnectionConfiguration
         /// duration encompasses sending the request, awaiting for a response from the server, and any
         /// required reconnections or retries. If the specified timeout is exceeded for a pending request,
         /// it will result in a timeout error.<br />
-        /// If not explicitly set, a default value of <c>250</c> milliseconds will be used.
+        /// If not set, a default value of <c>250</c> milliseconds is used.
         /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException">If the value is not positive.</exception>
+        // TODO #512: Make nullable and default to GLIDE core.
         public TimeSpan RequestTimeout
         {
-            get => Config.RequestTimeout ?? TimeSpan.FromMilliseconds(250);
-            set => Config.RequestTimeout = value;
+            get => TimeSpan.FromMilliseconds(Config.RequestTimeoutMs ?? 250);
+            set => Config.RequestTimeoutMs = TimeUtils.ToPositiveUintMs(value, nameof(RequestTimeout));
         }
 
         /// <inheritdoc cref="RequestTimeout" />
@@ -623,12 +701,14 @@ public abstract class ConnectionConfiguration
         /// The duration to wait for a TCP/TLS connection to complete.
         /// This applies both during initial client creation and any reconnections that may occur during request processing.<br />
         /// <b>Note</b>: A high connection timeout may lead to prolonged blocking of the entire command pipeline.<br />
-        /// If not explicitly set, a default value of <c>250</c> milliseconds will be used.
+        /// If not set, a default value of <c>250</c> milliseconds is used.
         /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException">If the value is not positive.</exception>
+        // TODO #512: Make nullable and default to GLIDE core.
         public TimeSpan ConnectionTimeout
         {
-            get => Config.ConnectionTimeout ?? TimeSpan.FromMilliseconds(250);
-            set => Config.ConnectionTimeout = value;
+            get => TimeSpan.FromMilliseconds(Config.ConnectionTimeoutMs ?? 250);
+            set => Config.ConnectionTimeoutMs = TimeUtils.ToPositiveUintMs(value, nameof(ConnectionTimeout));
         }
 
         /// <inheritdoc cref="ConnectionTimeout" />
@@ -834,16 +914,8 @@ public abstract class ConnectionConfiguration
         /// </summary>
         public TimeSpan? PubSubReconciliationInterval
         {
-            get => Config.PubSubReconciliationInterval;
-            set
-            {
-                if (value <= TimeSpan.Zero)
-                {
-                    throw new ArgumentException("PubSubReconciliationInterval must be positive", nameof(value));
-                }
-
-                Config.PubSubReconciliationInterval = value;
-            }
+            get => Config.PubSubReconciliationIntervalMs is { } ms ? TimeSpan.FromMilliseconds(ms) : null;
+            set => Config.PubSubReconciliationIntervalMs = value.HasValue ? TimeUtils.ToPositiveUintMs(value.Value, nameof(PubSubReconciliationInterval)) : null;
         }
 
         /// <inheritdoc cref="PubSubReconciliationInterval" />

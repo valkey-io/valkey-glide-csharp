@@ -215,7 +215,7 @@ internal partial class Request
         if (options.Timeout.HasValue)
         {
             args.Add(ValkeyLiterals.TIMEOUT);
-            args.Add(ToMilliseconds(options.Timeout.Value).ToGlideString());
+            args.Add(ToULongMs(options.Timeout.Value, nameof(options.Timeout)).ToGlideString());
         }
 
         return [.. args];
@@ -273,7 +273,7 @@ internal partial class Request
         if (options.Timeout.HasValue)
         {
             args.Add(ValkeyLiterals.TIMEOUT);
-            args.Add(ToMilliseconds(options.Timeout.Value).ToGlideString());
+            args.Add(ToULongMs(options.Timeout.Value, nameof(options.Timeout)).ToGlideString());
         }
 
         foreach (var clause in options.Clauses)

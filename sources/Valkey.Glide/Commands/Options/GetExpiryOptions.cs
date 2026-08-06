@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Internals;
+
 namespace Valkey.Glide.Commands.Options;
 
 /// <summary>
@@ -12,27 +14,21 @@ public sealed class GetExpiryOptions
     #region Internal Properties
 
     /// <summary>
-    /// The expiry duration to set, if specified.
+    /// The expiry duration.
     /// </summary>
-    internal TimeSpan? Duration { get; }
+    internal ulong? DurationMs { get; }
 
     /// <summary>
-    /// The expiry timestamp to set, if specified.
+    /// The expiry timestamp.
     /// </summary>
     internal DateTimeOffset? Timestamp { get; }
 
     #endregion
     #region Constructors
 
-    private GetExpiryOptions(TimeSpan? duration = null, DateTimeOffset? timestamp = null)
+    private GetExpiryOptions(ulong? durationMs = null, DateTimeOffset? timestamp = null)
     {
-        // Only one expiry can be specified.
-        if (duration.HasValue && timestamp.HasValue)
-        {
-            throw new ArgumentException("Duration and Timestamp cannot both be specified.");
-        }
-
-        Duration = duration;
+        DurationMs = durationMs;
         Timestamp = timestamp;
     }
 
@@ -44,20 +40,41 @@ public sealed class GetExpiryOptions
     /// </summary>
     /// <param name="duration">The duration until expiry.</param>
     /// <returns>A new <see cref="GetExpiryOptions"/> instance.</returns>
-    public static GetExpiryOptions ExpireIn(TimeSpan duration) => new(duration: duration);
+    /// <exception cref="ArgumentOutOfRangeException">If <paramref name="duration"/> is not positive.</exception>
+    public static GetExpiryOptions ExpireIn(TimeSpan duration)
+        => new(durationMs: TimeUtils.ToPositiveULongMs(duration, nameof(duration)));
 
     /// <summary>
     /// Set expiry to a timestamp (EXAT/PXAT).
     /// </summary>
     /// <param name="timestamp">The expiry timestamp.</param>
     /// <returns>A new <see cref="GetExpiryOptions"/> instance.</returns>
-    public static GetExpiryOptions ExpireAt(DateTimeOffset timestamp) => new(timestamp: timestamp);
+    public static GetExpiryOptions ExpireAt(DateTimeOffset timestamp)
+        => new(timestamp: timestamp);
 
     /// <summary>
     /// Remove existing expiry (PERSIST).
     /// </summary>
     /// <returns>A new <see cref="GetExpiryOptions"/> instance.</returns>
     public static GetExpiryOptions Persist() => new();
+
+    #endregion
+    #region Internal Methods
+
+    internal GlideString[] ToArgs()
+    {
+        if (DurationMs.HasValue)
+        {
+            return [ValkeyLiterals.PX, DurationMs.Value.ToGlideString()];
+        }
+
+        if (Timestamp.HasValue)
+        {
+            return [ValkeyLiterals.PXAT, Timestamp.Value.ToUnixTimeMilliseconds().ToGlideString()];
+        }
+
+        return [ValkeyLiterals.PERSIST];
+    }
 
     #endregion
 }

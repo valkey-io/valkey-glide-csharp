@@ -10,22 +10,22 @@ public class ConnectionConfigurationTests
 {
     #region Constants
 
-    // Authentication constants.
+    // Authentication constants
     private static readonly string Username = "USERNAME";
     private static readonly string Password = "PASSWORD";
+    private const uint RefreshInterval = 300;
 
-    // Certificate data constants.
-    private static readonly byte[] CertificateData1 = [0x30, 0x82, 0x01, 0x00];
-    private static readonly byte[] CertificateData2 = [0x30, 0x82, 0x02, 0x00];
+    // Certificate constants
+    private static readonly byte[] CertData1 = [0x30, 0x82, 0x01, 0x00];
+    private static readonly byte[] CertData2 = [0x30, 0x82, 0x02, 0x00];
+    private const string CertPath = "/path/cert.pem";
+    private const string KeyPath = "/path/key.pem";
 
-    // Connection retry strategy constants.
+    // Connection retry strategy constants
     private static readonly uint NumberOfRetries = 3u;
     private static readonly uint Factor = 50u;
     private static readonly uint ExponentBase = 2u;
     private static readonly uint JitterPercent = 10u;
-
-    // IAM auth constants.
-    private const uint RefreshInterval = 300;
 
     // Address resolver constants.
     private static readonly (string, ushort) Resolved = ("resolved-host", 9999);
@@ -48,10 +48,8 @@ public class ConnectionConfigurationTests
 
     [Fact]
     public void WithAuthentication_UsernamePassword_NullPasswordThrows()
-    {
-        var builder = new StandaloneClientConfigurationBuilder();
-        _ = Assert.Throws<ArgumentNullException>(() => builder.WithAuthentication(Username, (string)null!));
-    }
+        => _ = Assert.Throws<ArgumentNullException>(()
+            => new StandaloneClientConfigurationBuilder().WithAuthentication(Username, (string)null!));
 
     [Fact]
     public void WithAuthentication_PasswordOnly_Succeeds()
@@ -67,10 +65,8 @@ public class ConnectionConfigurationTests
 
     [Fact]
     public void WithAuthentication_PasswordOnly_NullThrows()
-    {
-        var builder = new StandaloneClientConfigurationBuilder();
-        _ = Assert.Throws<ArgumentNullException>(() => builder.WithAuthentication(null!));
-    }
+        => _ = Assert.Throws<ArgumentNullException>(()
+            => new StandaloneClientConfigurationBuilder().WithAuthentication(null!));
 
     [Fact]
     public void WithAuthentication_UsernameIamAuthConfig_WithoutRefreshInterval_Succeeds()
@@ -121,10 +117,8 @@ public class ConnectionConfigurationTests
 
     [Fact]
     public void WithAuthentication_UsernameIamAuthConfig_NulIamAuthConfigThrows()
-    {
-        var builder = new StandaloneClientConfigurationBuilder();
-        _ = Assert.Throws<ArgumentNullException>(() => builder.WithAuthentication(Username!, (IamAuthConfig)null!));
-    }
+        => _ = Assert.Throws<ArgumentNullException>(()
+            => new StandaloneClientConfigurationBuilder().WithAuthentication(Username!, (IamAuthConfig)null!));
 
     [Fact]
     public void WithAuthentication_MultipleCalls_LastWins()
@@ -197,10 +191,8 @@ public class ConnectionConfigurationTests
 
     [Fact]
     public void WithCredentials()
-    {
-        var builder = new StandaloneClientConfigurationBuilder();
-        _ = Assert.Throws<ArgumentNullException>(() => builder.WithCredentials(null!));
-    }
+        => _ = Assert.Throws<ArgumentNullException>(()
+            => new StandaloneClientConfigurationBuilder().WithCredentials(null!));
 
     [Fact]
     public void WithCredentials_MultipleCalls_LastWins()
@@ -321,7 +313,7 @@ public class ConnectionConfigurationTests
     }
 
     #endregion
-    #region TLS Configuration Tests
+    #region TLS Tests
 
     [Fact]
     public void UseTls()
@@ -439,80 +431,74 @@ public class ConnectionConfigurationTests
     }
 
     [Fact]
-    public void WithTrustedCertificate_ByteArray_Succeeds()
+    public void WithTrustedCertificate_Bytes_Succeeds()
     {
         var builder = new StandaloneClientConfigurationBuilder()
-            .WithTrustedCertificate(CertificateData1);
+            .WithTrustedCertificate(CertData1);
 
         Assert.Equivalent(
-            new List<byte[]> { CertificateData1 },
+            new List<byte[]> { CertData1 },
             builder.Build().Request.RootCertificates);
     }
 
     [Fact]
-    public void WithTrustedCertificate_ByteArray_MultipleCertificatesSucceeds()
+    public void WithTrustedCertificate_Bytes_MultipleCertificatesSucceeds()
     {
         var builder = new StandaloneClientConfigurationBuilder()
-            .WithTrustedCertificate(CertificateData1)
-            .WithTrustedCertificate(CertificateData2);
+            .WithTrustedCertificate(CertData1)
+            .WithTrustedCertificate(CertData2);
 
         Assert.Equivalent(
-            new List<byte[]> { CertificateData1, CertificateData2 },
+            new List<byte[]> { CertData1, CertData2 },
             builder.Build().Request.RootCertificates);
     }
 
     [Fact]
-    public void WithTrustedCertificate_ByteArray_NullThrows()
-    {
-        var builder = new StandaloneClientConfigurationBuilder();
-        _ = Assert.Throws<ArgumentNullException>(() => builder.WithTrustedCertificate((byte[])null!));
-    }
+    public void WithTrustedCertificate_Bytes_NullThrows()
+        => _ = Assert.Throws<ArgumentNullException>(()
+            => new StandaloneClientConfigurationBuilder().WithTrustedCertificate((byte[])null!));
 
     [Fact]
-    public void WithTrustedCertificate_ByteArray_EmptyThrows()
-    {
-        var builder = new StandaloneClientConfigurationBuilder();
-        _ = Assert.Throws<ArgumentException>(() => builder.WithTrustedCertificate([]));
-    }
+    public void WithTrustedCertificate_Bytes_EmptyThrows()
+        => _ = Assert.Throws<ArgumentOutOfRangeException>(()
+            => new StandaloneClientConfigurationBuilder().WithTrustedCertificate([]));
 
     [Fact]
-    public void WithTrustedCertificate_ByteArray_OversizedThrows()
-    {
-        var builder = new StandaloneClientConfigurationBuilder();
-        _ = Assert.Throws<ArgumentException>(() => builder.WithTrustedCertificate(new byte[CertificateMaxSize + 1]));
-    }
+    public void WithTrustedCertificate_Bytes_OversizedThrows()
+        => _ = Assert.Throws<ArgumentOutOfRangeException>(()
+            => new StandaloneClientConfigurationBuilder().WithTrustedCertificate(new byte[ConnectionConfiguration.CertificateMaxSize + 1]));
 
     [Fact]
     public void WithTrustedCertificate_Path_Succeeds()
     {
-        using var tempFile = new TempFile(CertificateData1);
+        using var tempFile = new TempFile(CertData1);
         var builder = new StandaloneClientConfigurationBuilder()
             .WithTrustedCertificate(tempFile.Path);
 
         Assert.Equivalent(
-            new List<byte[]> { CertificateData1 },
+            new List<byte[]> { CertData1 },
             builder.Build().Request.RootCertificates);
     }
 
     [Fact]
     public void WithTrustedCertificate_Path_MultipleCertificatesSucceeds()
     {
-        using var tempFile1 = new TempFile(CertificateData1);
-        using var tempFile2 = new TempFile(CertificateData2);
+        using var tempFile1 = new TempFile(CertData1);
+        using var tempFile2 = new TempFile(CertData2);
 
         var builder = new StandaloneClientConfigurationBuilder()
             .WithTrustedCertificate(tempFile1.Path)
             .WithTrustedCertificate(tempFile2.Path);
 
         Assert.Equivalent(
-            new List<byte[]> { CertificateData1, CertificateData2 },
+            new List<byte[]> { CertData1, CertData2 },
             builder.Build().Request.RootCertificates);
     }
 
     [Fact]
     public void WithTrustedCertificate_Path_TraversalPathSucceeds()
     {
-        using var tempFile = new TempFile(CertificateData1);
+        using var tempFile = new TempFile(CertData1);
 
         // Construct a traversal path that resolves to the temp file.
         string dir = Path.GetDirectoryName(tempFile.Path)!;
@@ -523,36 +509,32 @@ public class ConnectionConfigurationTests
             .WithTrustedCertificate(traversalPath);
 
         Assert.Equivalent(
-            new List<byte[]> { CertificateData1 },
+            new List<byte[]> { CertData1 },
             builder.Build().Request.RootCertificates);
     }
 
     [Fact]
     public void WithTrustedCertificate_Path_FileNotFoundThrows()
-    {
-        var builder = new StandaloneClientConfigurationBuilder();
-        _ = Assert.Throws<FileNotFoundException>(() => builder.WithTrustedCertificate("/nonexistent/path/cert.pem"));
-    }
+        => _ = Assert.Throws<FileNotFoundException>(()
+            => new StandaloneClientConfigurationBuilder().WithTrustedCertificate("/nonexistent/path/cert.pem"));
 
     [Fact]
     public void WithTrustedCertificate_Path_NullThrows()
-    {
-        var builder = new StandaloneClientConfigurationBuilder();
-        _ = Assert.Throws<ArgumentNullException>(() => builder.WithTrustedCertificate((string)null!));
-    }
+        => _ = Assert.Throws<ArgumentNullException>(()
+            => new StandaloneClientConfigurationBuilder().WithTrustedCertificate((string)null!));
 
     [Fact]
     public void WithTrustedCertificate_Path_MultipleCertificates()
     {
-        using var tempFile1 = new TempFile(CertificateData1);
-        using var tempFile2 = new TempFile(CertificateData2);
+        using var tempFile1 = new TempFile(CertData1);
+        using var tempFile2 = new TempFile(CertData2);
 
         var builder = new StandaloneClientConfigurationBuilder()
             .WithTrustedCertificate(tempFile1.Path)
             .WithTrustedCertificate(tempFile2.Path);
 
         Assert.Equivalent(
-            new List<byte[]> { CertificateData1, CertificateData2 },
+            new List<byte[]> { CertData1, CertData2 },
             builder.Build().Request.RootCertificates);
     }
 
@@ -560,16 +542,123 @@ public class ConnectionConfigurationTests
     public void WithTrustedCertificate_Path_OversizedThrows()
     {
         using var tempFile = new TempFile();
-
-        // Set temp file size so that it exceeds the maximum size.
         using (var fs = new FileStream(tempFile.Path, FileMode.Create))
         {
-            fs.SetLength(CertificateMaxSize + 1);
+            fs.SetLength(ConnectionConfiguration.CertificateMaxSize + 1);
         }
 
-        var builder = new StandaloneClientConfigurationBuilder();
-        _ = Assert.Throws<ArgumentException>(() => builder.WithTrustedCertificate(tempFile.Path));
+        _ = Assert.Throws<ArgumentOutOfRangeException>(()
+            => new StandaloneClientConfigurationBuilder().WithTrustedCertificate(tempFile.Path));
     }
+
+    #endregion
+    #region Mutual TLS Tests
+
+    [Fact]
+    public void WithClientCertificate_Bytes_Succeeds()
+    {
+        var config = new StandaloneClientConfigurationBuilder()
+            .WithClientCertificate(CertData1, CertData2)
+            .Build();
+
+        Assert.Equal(CertData1, config.Request.ClientCertificate);
+        Assert.Equal(CertData2, config.Request.ClientKey);
+        Assert.False(config.Request.CertReloadEnabled);
+        Assert.Null(config.Request.CertReloadIntervalSeconds);
+    }
+
+    [Fact]
+    public void WithClientCertificate_Bytes_NullCertThrows()
+        => _ = Assert.Throws<ArgumentNullException>(()
+            => new StandaloneClientConfigurationBuilder().WithClientCertificate(null!, CertData1));
+
+    [Fact]
+    public void WithClientCertificate_Bytes_NullKeyThrows()
+        => _ = Assert.Throws<ArgumentNullException>(()
+            => new StandaloneClientConfigurationBuilder().WithClientCertificate(CertData1, null!));
+
+    [Fact]
+    public void WithClientCertificate_Bytes_EmptyCertThrows()
+        => _ = Assert.Throws<ArgumentOutOfRangeException>(()
+            => new StandaloneClientConfigurationBuilder().WithClientCertificate([], CertData1));
+
+    [Fact]
+    public void WithClientCertificate_Bytes_EmptyKeyThrows()
+        => _ = Assert.Throws<ArgumentOutOfRangeException>(()
+            => new StandaloneClientConfigurationBuilder().WithClientCertificate(CertData1, []));
+
+    [Fact]
+    public void WithClientCertificate_Bytes_OversizedCertThrows()
+        => _ = Assert.Throws<ArgumentOutOfRangeException>(()
+            => new StandaloneClientConfigurationBuilder().WithClientCertificate(new byte[ConnectionConfiguration.CertificateMaxSize + 1], CertData1));
+
+    [Fact]
+    public void WithClientCertificate_Bytes_OversizedKeyThrows()
+        => _ = Assert.Throws<ArgumentOutOfRangeException>(()
+            => new StandaloneClientConfigurationBuilder().WithClientCertificate(CertData1, new byte[ConnectionConfiguration.CertificateMaxSize + 1]));
+
+    [Fact]
+    public void WithClientCertificate_Paths_Succeeds()
+    {
+        var config = new StandaloneClientConfigurationBuilder()
+            .WithClientCertificate(CertPath, KeyPath)
+            .Build();
+
+        Assert.Null(config.Request.ClientCertificate);
+        Assert.Null(config.Request.ClientKey);
+        Assert.Equal(CertPath, config.Request.ClientCertificatePath);
+        Assert.Equal(KeyPath, config.Request.ClientKeyPath);
+        Assert.True(config.Request.CertReloadEnabled);
+        Assert.Null(config.Request.CertReloadIntervalSeconds);
+    }
+
+    [Fact]
+    public void WithClientCertificate_Paths_NullCertPathThrows()
+        => _ = Assert.Throws<ArgumentNullException>(()
+            => new StandaloneClientConfigurationBuilder().WithClientCertificate(null!, KeyPath));
+
+    [Fact]
+    public void WithClientCertificate_Paths_NullKeyPathThrows()
+        => _ = Assert.Throws<ArgumentNullException>(()
+            => new StandaloneClientConfigurationBuilder().WithClientCertificate(CertPath, null!));
+
+    [Fact]
+    public void WithClientCertificate_Paths_EmptyCertPathThrows()
+        => _ = Assert.Throws<ArgumentException>(()
+            => new StandaloneClientConfigurationBuilder().WithClientCertificate("", KeyPath));
+
+    [Fact]
+    public void WithClientCertificate_Paths_EmptyKeyPathThrows()
+        => _ = Assert.Throws<ArgumentException>(()
+            => new StandaloneClientConfigurationBuilder().WithClientCertificate(CertPath, ""));
+
+    [Fact]
+    public void WithClientCertificate_Paths_WithInterval_Succeeds()
+    {
+        var config = new StandaloneClientConfigurationBuilder()
+            .WithClientCertificate(CertPath, KeyPath, TimeSpan.FromSeconds(60))
+            .Build();
+
+        Assert.Equal(CertPath, config.Request.ClientCertificatePath);
+        Assert.Equal(KeyPath, config.Request.ClientKeyPath);
+        Assert.True(config.Request.CertReloadEnabled);
+        Assert.Equal(60u, config.Request.CertReloadIntervalSeconds);
+    }
+
+    [Fact]
+    public void WithClientCertificate_Paths_WithInterval_ZeroThrows()
+        => _ = Assert.Throws<ArgumentOutOfRangeException>(()
+            => new StandaloneClientConfigurationBuilder().WithClientCertificate(CertPath, KeyPath, TimeSpan.Zero));
+
+    [Fact]
+    public void WithClientCertificate_Paths_WithInterval_NegativeThrows()
+        => _ = Assert.Throws<ArgumentOutOfRangeException>(()
+            => new StandaloneClientConfigurationBuilder().WithClientCertificate(CertPath, KeyPath, TimeSpan.FromSeconds(-1)));
+
+    [Fact]
+    public void WithClientCertificate_Paths_WithInterval_OverflowThrows()
+        => _ = Assert.Throws<ArgumentOutOfRangeException>(()
+            => new StandaloneClientConfigurationBuilder().WithClientCertificate(CertPath, KeyPath, TimeSpan.FromSeconds((double)uint.MaxValue + 1)));
 
     #endregion
     #region Pub/Sub Reconciliation Interval Tests
@@ -578,34 +667,97 @@ public class ConnectionConfigurationTests
     public void PubSubReconciliationInterval_Default()
     {
         var builder = new StandaloneClientConfigurationBuilder();
-        Assert.Null(builder.Build().Request.PubSubReconciliationInterval);
+        Assert.Null(builder.Build().Request.PubSubReconciliationIntervalMs);
     }
 
     [Fact]
     public void PubSubReconciliationInterval_PositiveSucceeds()
     {
-        var interval = TimeSpan.FromSeconds(30);
         var builder = new StandaloneClientConfigurationBuilder()
-            .WithPubSubReconciliationInterval(interval);
-
-        Assert.Equal(
-            interval.TotalMilliseconds,
-            builder.Build().Request.PubSubReconciliationInterval!.Value.TotalMilliseconds);
+            .WithPubSubReconciliationInterval(TimeSpan.FromSeconds(30));
+        Assert.Equal(30_000u, builder.Build().Request.PubSubReconciliationIntervalMs);
     }
 
     [Fact]
     public void PubSubReconciliationInterval_NegativeThrows()
-    {
-        var builder = new StandaloneClientConfigurationBuilder();
-        _ = Assert.Throws<ArgumentException>(() => builder.WithPubSubReconciliationInterval(TimeSpan.FromSeconds(-1)));
-    }
+        => _ = Assert.Throws<ArgumentOutOfRangeException>(()
+            => new StandaloneClientConfigurationBuilder().WithPubSubReconciliationInterval(TimeSpan.FromSeconds(-1)));
 
     [Fact]
     public void PubSubReconciliationInterval_ZeroThrows()
+        => _ = Assert.Throws<ArgumentOutOfRangeException>(()
+            => new StandaloneClientConfigurationBuilder().WithPubSubReconciliationInterval(TimeSpan.Zero));
+
+    [Fact]
+    public void PubSubReconciliationInterval_OverflowThrows()
+        => _ = Assert.Throws<ArgumentOutOfRangeException>(()
+            => new StandaloneClientConfigurationBuilder().WithPubSubReconciliationInterval(TimeSpan.FromMilliseconds((double)uint.MaxValue + 1)));
+
+    #endregion
+    #region Request Timeout Tests
+
+    [Fact]
+    public void RequestTimeout_Default()
     {
         var builder = new StandaloneClientConfigurationBuilder();
-        _ = Assert.Throws<ArgumentException>(() => builder.WithPubSubReconciliationInterval(TimeSpan.Zero));
+        Assert.Null(builder.Build().Request.RequestTimeoutMs);
     }
+
+    [Fact]
+    public void RequestTimeout_PositiveSucceeds()
+    {
+        var builder = new StandaloneClientConfigurationBuilder()
+            .WithRequestTimeout(TimeSpan.FromMilliseconds(500));
+        Assert.Equal(500u, builder.Build().Request.RequestTimeoutMs);
+    }
+
+    [Fact]
+    public void RequestTimeout_NegativeThrows()
+        => _ = Assert.Throws<ArgumentOutOfRangeException>(()
+            => new StandaloneClientConfigurationBuilder().WithRequestTimeout(TimeSpan.FromMilliseconds(-1)));
+
+    [Fact]
+    public void RequestTimeout_ZeroThrows()
+        => _ = Assert.Throws<ArgumentOutOfRangeException>(()
+            => new StandaloneClientConfigurationBuilder().WithRequestTimeout(TimeSpan.Zero));
+
+    [Fact]
+    public void RequestTimeout_OverflowThrows()
+        => _ = Assert.Throws<ArgumentOutOfRangeException>(()
+            => new StandaloneClientConfigurationBuilder().WithRequestTimeout(TimeSpan.FromMilliseconds((double)uint.MaxValue + 1)));
+
+    #endregion
+    #region Connection Timeout Tests
+
+    [Fact]
+    public void ConnectionTimeout_Default()
+    {
+        var builder = new StandaloneClientConfigurationBuilder();
+        Assert.Null(builder.Build().Request.ConnectionTimeoutMs);
+    }
+
+    [Fact]
+    public void ConnectionTimeout_PositiveSucceeds()
+    {
+        var builder = new StandaloneClientConfigurationBuilder()
+            .WithConnectionTimeout(TimeSpan.FromMilliseconds(1000));
+        Assert.Equal(1000u, builder.Build().Request.ConnectionTimeoutMs);
+    }
+
+    [Fact]
+    public void ConnectionTimeout_NegativeThrows()
+        => _ = Assert.Throws<ArgumentOutOfRangeException>(()
+            => new StandaloneClientConfigurationBuilder().WithConnectionTimeout(TimeSpan.FromMilliseconds(-1)));
+
+    [Fact]
+    public void ConnectionTimeout_ZeroThrows()
+        => _ = Assert.Throws<ArgumentOutOfRangeException>(()
+            => new StandaloneClientConfigurationBuilder().WithConnectionTimeout(TimeSpan.Zero));
+
+    [Fact]
+    public void ConnectionTimeout_OverflowThrows()
+        => _ = Assert.Throws<ArgumentOutOfRangeException>(()
+            => new StandaloneClientConfigurationBuilder().WithConnectionTimeout(TimeSpan.FromMilliseconds((double)uint.MaxValue + 1)));
 
     #endregion
     #region Connection Retry Strategy Tests
