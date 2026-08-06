@@ -70,10 +70,9 @@ public class ServerTests(TestConfiguration config)
         // TODO #414: Update to use ClientInfoAsync() once available on IServer.
         var info = (await server.ExecuteAsync("CLIENT", ["INFO"])).AsString()!;
         var addr = info.Split(' ').First(f => f.StartsWith("addr=")).Split('=')[1];
-        var host = addr[..addr.LastIndexOf(':')];
-        var port = int.Parse(addr[(addr.LastIndexOf(':') + 1)..]);
+        var endpoint = IPEndPoint.Parse(addr);
 
-        await server.ClientKillAsync(new IPEndPoint(IPAddress.Parse(host), port));
+        await server.ClientKillAsync(endpoint);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]

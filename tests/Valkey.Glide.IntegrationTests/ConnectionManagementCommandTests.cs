@@ -1,6 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using System.Diagnostics;
+using System.Net;
 
 using Valkey.Glide.Commands.Options;
 using Valkey.Glide.TestUtils;
@@ -92,12 +93,10 @@ public class ConnectionManagementCommandTests(ServerFixture fixture) : IClassFix
         var info = target is GlideClusterClient clusterTarget
             ? (await clusterTarget.CustomCommand(InfoCommand, Route.Random)).SingleValue!.ToString()!
             : (await ((GlideClient)target).CustomCommand(InfoCommand))!.ToString()!;
-
         var addr = info.Split(' ').First(f => f.StartsWith("addr=")).Split('=')[1];
-        var host = addr[..addr.LastIndexOf(':')];
-        var port = ushort.Parse(addr[(addr.LastIndexOf(':') + 1)..]);
+        var endpoint = IPEndPoint.Parse(addr);
 
-        Assert.Equal(1, await client.ClientKillAsync(new ClientFilterOptions().WithAddress(host, port)));
+        Assert.Equal(1, await client.ClientKillAsync(new ClientFilterOptions().WithAddress(endpoint.Address.ToString(), (ushort)endpoint.Port)));
     }
     [Theory]
     [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
