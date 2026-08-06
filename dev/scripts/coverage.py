@@ -32,12 +32,12 @@ import sys
 from _constants import (
     COVERAGE_BASELINE_PATH,
     COVERAGE_REPORT_COMBINED_INDEX_PATH,
+    COVERAGE_REPORT_COMBINED_SUMMARY_PATH,
     COVERAGE_REPORT_INDEX_FOR_TEST_SUITE,
     COVERAGE_REPORTS_COMBINED_DIR,
     COVERAGE_REPORTS_DIR_FOR_TEST_SUITE,
     COVERAGE_RESULTS_DIR,
     COVERAGE_RESULTS_DIR_FOR_TEST_SUITE,
-    COVERAGE_REPORT_COMBINED_SUMMARY_PATH,
     COVERAGE_SUMMARY_FOR_TEST_SUITE,
     PROJECT_ROOT,
     TestSuite,
@@ -48,11 +48,11 @@ from _constants import (
 # ---------------------------------------------------------------------------
 
 _REPORTGENERATOR_ASSEMBLY_FILTERS = "+Valkey.Glide*"
-_REPORTGENERATOR_CLASS_FILTERS = (
-    "-Valkey.Glide.UnitTests*;"
-    "-Valkey.Glide.IntegrationTests*;"
-    "-Valkey.Glide.TestUtils*"
-)
+_REPORTGENERATOR_CLASS_FILTERS = [
+    "-Valkey.Glide.UnitTests*",
+    "-Valkey.Glide.IntegrationTests*",
+    "-Valkey.Glide.TestUtils*",
+]
 _REPORTGENERATOR_TYPES = "Html;JsonSummary"
 
 
@@ -119,11 +119,15 @@ def _print_coverage_comparison(coverage: dict):
 
     for key, entry in coverage.items():
         if entry["comparison"] < 0:
-            print(f"REGRESSED: {key} coverage decreased ({entry['baseline']}% -> {entry['measured']}%)")
-            print(f"Please increase coverage to meet the baseline.")
+            print(
+                f"REGRESSED: {key} coverage decreased ({entry['baseline']}% -> {entry['measured']}%)"
+            )
+            print("Please increase coverage to meet the baseline.")
         elif entry["comparison"] > 0:
-            print(f"IMPROVED: {key} coverage increased ({entry['baseline']}% -> {entry['measured']}%)")
-            print(f"Please update the baseline in coverage.json")
+            print(
+                f"IMPROVED: {key} coverage increased ({entry['baseline']}% -> {entry['measured']}%)"
+            )
+            print("Please update the baseline in coverage.json")
         else:
             print(f"UNCHANGED: {key} coverage unchanged ({entry['baseline']}%)")
 
@@ -160,7 +164,7 @@ def _cmd_report(test_suites: list[TestSuite]) -> bool:
                 f"-targetdir:{COVERAGE_REPORTS_DIR_FOR_TEST_SUITE[test_suite]}",
                 f"-reporttypes:{_REPORTGENERATOR_TYPES}",
                 f"-assemblyfilters:{_REPORTGENERATOR_ASSEMBLY_FILTERS}",
-                f"-classfilters:{_REPORTGENERATOR_CLASS_FILTERS}",
+                f"-classfilters:{';'.join(_REPORTGENERATOR_CLASS_FILTERS)}",
             ],
             cwd=PROJECT_ROOT,
             check=True,
@@ -176,7 +180,7 @@ def _cmd_report(test_suites: list[TestSuite]) -> bool:
             f"-targetdir:{COVERAGE_REPORTS_COMBINED_DIR}",
             f"-reporttypes:{_REPORTGENERATOR_TYPES}",
             f"-assemblyfilters:{_REPORTGENERATOR_ASSEMBLY_FILTERS}",
-            f"-classfilters:{_REPORTGENERATOR_CLASS_FILTERS}",
+            f"-classfilters:{';'.join(_REPORTGENERATOR_CLASS_FILTERS)}",
         ],
         cwd=PROJECT_ROOT,
         check=True,
@@ -241,9 +245,10 @@ def _cmd_clean(test_suites: list[TestSuite]) -> bool:
         if os.path.exists(reports_dir):
             shutil.rmtree(reports_dir)
 
-    if set(test_suites) == set(TestSuite):
-        if os.path.exists(COVERAGE_REPORTS_COMBINED_DIR):
-            shutil.rmtree(COVERAGE_REPORTS_COMBINED_DIR)
+    if set(test_suites) == set(TestSuite) and os.path.exists(
+        COVERAGE_REPORTS_COMBINED_DIR
+    ):
+        shutil.rmtree(COVERAGE_REPORTS_COMBINED_DIR)
 
     print("Coverage results and reports cleaned.")
 
@@ -310,6 +315,7 @@ def main() -> int:
             test_suites.append(TestSuite.INTEGRATION)
 
     return 0 if _COMMANDS[args.command](test_suites) else 1
+
 
 if __name__ == "__main__":
     sys.exit(main())

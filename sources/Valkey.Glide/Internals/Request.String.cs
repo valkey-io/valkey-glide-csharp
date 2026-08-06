@@ -3,7 +3,6 @@
 using Valkey.Glide.Commands.Options;
 
 using static Valkey.Glide.Internals.FFI;
-using static Valkey.Glide.Internals.TimeUtils;
 
 namespace Valkey.Glide.Internals;
 
@@ -31,7 +30,7 @@ internal partial class Request
         => ToValkeyValue(RequestType.GetDel, [key], isNullable: true);
 
     public static Cmd<GlideString, ValkeyValue> GetExpiry(ValkeyKey key, GetExpiryOptions options)
-        => ToValkeyValue(RequestType.GetEx, [key, .. ToGetExpiryOptionsArgs(options)], isNullable: true);
+        => ToValkeyValue(RequestType.GetEx, [key, .. options.ToArgs()], isNullable: true);
 
     public static Cmd<GlideString, ValkeyValue> GetRange(GlideString key, long start, long end)
         => ToValkeyValue(RequestType.GetRange, [key, start.ToGlideString(), end.ToGlideString()], isNullable: true);
@@ -147,20 +146,6 @@ internal partial class Request
         return [.. args];
     }
 
-    private static GlideString[] ToGetExpiryOptionsArgs(GetExpiryOptions options)
-    {
-        if (options.Duration.HasValue)
-        {
-            return [ValkeyLiterals.PX, ToMilliseconds(options.Duration.Value).ToGlideString()];
-        }
-
-        if (options.Timestamp.HasValue)
-        {
-            return [ValkeyLiterals.PXAT, options.Timestamp.Value.ToUnixTimeMilliseconds().ToGlideString()];
-        }
-
-        return [ValkeyLiterals.PERSIST];
-    }
 
     #endregion
 }

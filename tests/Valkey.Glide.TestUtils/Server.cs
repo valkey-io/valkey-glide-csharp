@@ -46,6 +46,11 @@ public abstract class Server : IDisposable
     private bool _disposed = false;
 
     /// <summary>
+    /// Username for the server.
+    /// </summary>
+    protected string? _username;
+
+    /// <summary>
     /// Password for the server.
     /// </summary>
     protected string? _password;
@@ -134,15 +139,22 @@ public abstract class Server : IDisposable
     public abstract Task<BaseClient> CreateClientAsync(string? host = null);
 
     /// <summary>
-    /// Updates the password for the server to the given value.
+    /// Sets authentication credentials for the default user.
     /// </summary>
-    /// <param name="password">The new server password.</param>
-    public abstract Task SetPasswordAsync(string password);
+    /// <param name="password">The password for the default user.</param>
+    public abstract Task SetAuthenticationAsync(string password);
 
     /// <summary>
-    /// Clears the password for the server.
+    /// Sets authentication credentials for a new user.
     /// </summary>
-    public abstract Task ClearPasswordAsync();
+    /// <param name="username">The username for the new user.</param>
+    /// <param name="password">The password for the new user.</param>
+    public abstract Task SetAuthenticationAsync(string username, string password);
+
+    /// <summary>
+    /// Clears all usernames and passwords.
+    /// </summary>
+    public abstract Task ClearAuthenticationAsync();
 
     /// <summary>
     /// Kill all normal clients on the server.
@@ -201,6 +213,7 @@ public sealed class ClusterServer(bool useTls = false, string? host = null) : Se
             address: Address,
             useTls: UseTls,
             trustedCertificate: UseTls ? CertificateData : null,
+            username: _username,
             password: _password);
 
     /// <inheritdoc cref="Server.CreateClientAsync(string?)"/>
@@ -231,17 +244,37 @@ public sealed class ClusterServer(bool useTls = false, string? host = null) : Se
             => GlideClusterClient.CreateClient(builder.Build()));
     }
 
-    public override async Task SetPasswordAsync(string password)
+    public override async Task SetAuthenticationAsync(string password)
     {
-        using GlideClusterClient client = await CreateClusterClientAsync();
+        using var client = await CreateClusterClientAsync();
         await client.ConfigSetAsync("requirepass", password, Route.AllNodes);
+
+        _username = null;
         _password = password;
     }
 
-    public override async Task ClearPasswordAsync()
+    public override async Task SetAuthenticationAsync(string username, string password)
     {
         using GlideClusterClient client = await CreateClusterClientAsync();
-        await client.ConfigSetAsync("requirepass", "", Route.AllNodes);
+        _ = await client.CustomCommand(["ACL", "SETUSER", username, "on", $">{password}", "~*", "+@all"], Route.AllNodes);
+
+        _username = username;
+        _password = password;
+    }
+
+    public override async Task ClearAuthenticationAsync()
+    {
+        using var client = await CreateClusterClientAsync();
+        if (_username is not null)
+        {
+            _ = await client.CustomCommand(["ACL", "DELUSER", _username], Route.AllNodes);
+        }
+        else
+        {
+            await client.ConfigSetAsync("requirepass", "", Route.AllNodes);
+        }
+
+        _username = null;
         _password = null;
     }
 
@@ -272,6 +305,7 @@ public sealed class StandaloneServer(
             address: Address,
             useTls: UseTls,
             trustedCertificate: UseTls ? CertificateData : null,
+            username: _username,
             password: _password);
 
     /// <inheritdoc cref="Server.CreateClientAsync(string?)"/>
@@ -302,17 +336,37 @@ public sealed class StandaloneServer(
             => GlideClient.CreateClient(builder.Build()));
     }
 
-    public override async Task SetPasswordAsync(string password)
+    public override async Task SetAuthenticationAsync(string password)
     {
         using GlideClient client = await CreateStandaloneClientAsync();
         await client.ConfigSetAsync("requirepass", password);
+
+        _username = null;
         _password = password;
     }
 
-    public override async Task ClearPasswordAsync()
+    public override async Task SetAuthenticationAsync(string username, string password)
+    {
+        using var client = await CreateStandaloneClientAsync();
+        _ = await client.CustomCommand(["ACL", "SETUSER", username, "on", $">{password}", "~*", "+@all"]);
+
+        _username = username;
+        _password = password;
+    }
+
+    public override async Task ClearAuthenticationAsync()
     {
         using GlideClient client = await CreateStandaloneClientAsync();
-        await client.ConfigSetAsync("requirepass", "");
+        if (_username is not null)
+        {
+            _ = await client.CustomCommand(["ACL", "DELUSER", _username]);
+        }
+        else
+        {
+            await client.ConfigSetAsync("requirepass", "");
+        }
+
+        _username = null;
         _password = null;
     }
 

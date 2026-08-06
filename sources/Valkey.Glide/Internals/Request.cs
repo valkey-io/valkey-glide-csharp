@@ -104,7 +104,7 @@ internal partial class Request
         if (options.Duration.HasValue)
         {
             args.Add(ValkeyLiterals.PX);
-            args.Add(ToMilliseconds(options.Duration.Value).ToGlideString());
+            args.Add(ToULongMs(options.Duration.Value, nameof(options.Duration)).ToGlideString());
         }
         else if (options.Timestamp.HasValue)
         {

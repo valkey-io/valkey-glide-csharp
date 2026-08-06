@@ -85,10 +85,10 @@ internal partial class Request
         => new(RequestType.ZMPop, [.. GetKeysArgs(keys), ValkeyLiterals.MAX, ValkeyLiterals.COUNT, count.ToGlideString()], true, HandleSortedSetPopResultResponse, true);
 
     public static Cmd<object?, SortedSetEntry?> SortedSetPopMaxAsync(IEnumerable<ValkeyKey> keys, TimeSpan timeout)
-        => new(RequestType.BZMPop, [ToSeconds(timeout).ToGlideString(), keys.Count().ToGlideString(), .. keys, ValkeyLiterals.MAX, ValkeyLiterals.COUNT, "1"], true, ToSortedSetEntryFromPopResult, true);
+        => new(RequestType.BZMPop, [ToNonNegativeDoubleSecs(timeout, nameof(timeout)).ToGlideString(), keys.Count().ToGlideString(), .. keys, ValkeyLiterals.MAX, ValkeyLiterals.COUNT, "1"], true, ToSortedSetEntryFromPopResult, true);
 
     public static Cmd<object?, SortedSetPopResult> SortedSetPopMaxAsync(IEnumerable<ValkeyKey> keys, long count, TimeSpan timeout)
-        => new(RequestType.BZMPop, [ToSeconds(timeout).ToGlideString(), keys.Count().ToGlideString(), .. keys, ValkeyLiterals.MAX, ValkeyLiterals.COUNT, count.ToGlideString()], true, HandleSortedSetPopResultResponse, true);
+        => new(RequestType.BZMPop, [ToNonNegativeDoubleSecs(timeout, nameof(timeout)).ToGlideString(), keys.Count().ToGlideString(), .. keys, ValkeyLiterals.MAX, ValkeyLiterals.COUNT, count.ToGlideString()], true, HandleSortedSetPopResultResponse, true);
 
     public static Cmd<object?, SortedSetEntry?> SortedSetPopMinAsync(ValkeyKey key)
         => new(RequestType.ZPopMin, [key], true, ToSortedSetEntry, true);
@@ -103,10 +103,10 @@ internal partial class Request
         => new(RequestType.ZMPop, [.. GetKeysArgs(keys), ValkeyLiterals.MIN, ValkeyLiterals.COUNT, count.ToGlideString()], true, HandleSortedSetPopResultResponse, true);
 
     public static Cmd<object?, SortedSetEntry?> SortedSetPopMinAsync(IEnumerable<ValkeyKey> keys, TimeSpan timeout)
-        => new(RequestType.BZMPop, [ToSeconds(timeout).ToGlideString(), keys.Count().ToGlideString(), .. keys, ValkeyLiterals.MIN, ValkeyLiterals.COUNT, "1"], true, ToSortedSetEntryFromPopResult, true);
+        => new(RequestType.BZMPop, [ToNonNegativeDoubleSecs(timeout, nameof(timeout)).ToGlideString(), keys.Count().ToGlideString(), .. keys, ValkeyLiterals.MIN, ValkeyLiterals.COUNT, "1"], true, ToSortedSetEntryFromPopResult, true);
 
     public static Cmd<object?, SortedSetPopResult> SortedSetPopMinAsync(IEnumerable<ValkeyKey> keys, long count, TimeSpan timeout)
-        => new(RequestType.BZMPop, [ToSeconds(timeout).ToGlideString(), keys.Count().ToGlideString(), .. keys, ValkeyLiterals.MIN, ValkeyLiterals.COUNT, count.ToGlideString()], true, HandleSortedSetPopResultResponse, true);
+        => new(RequestType.BZMPop, [ToNonNegativeDoubleSecs(timeout, nameof(timeout)).ToGlideString(), keys.Count().ToGlideString(), .. keys, ValkeyLiterals.MIN, ValkeyLiterals.COUNT, count.ToGlideString()], true, HandleSortedSetPopResultResponse, true);
 
     public static Cmd<GlideString?, ValkeyValue> SortedSetRandomMemberAsync(ValkeyKey key) =>
         new(RequestType.ZRandMember, [key], true, response =>

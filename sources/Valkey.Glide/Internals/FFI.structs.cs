@@ -208,7 +208,6 @@ internal partial class FFI
 
         public ConnectionConfig(
             List<NodeAddress> addresses,
-            TlsMode tlsMode,
             bool clusterMode,
             uint? requestTimeout,
             uint? connectionTimeout,
@@ -221,20 +220,29 @@ internal partial class FFI
             bool lazyConnect,
             bool refreshTopologyFromInitialNodes,
             BasePubSubSubscriptionConfig? pubSubSubscriptions,
-            List<byte[]> rootCertificates,
             uint? pubSubReconciliationIntervalMs,
             CompressionConfig? compressionConfig,
             bool readOnly,
             NodeDiscoveryMode nodeDiscoveryMode,
             ClientSideCacheConfig? clientSideCacheConfig,
-            CircuitBreakerConfig? circuitBreakerConfig)
+            CircuitBreakerConfig? circuitBreakerConfig,
+
+            // TLS configuration
+            TlsMode tlsMode,
+            List<byte[]> rootCertificates,
+
+            // Mutual TLS configuration
+            byte[]? clientCertificate,
+            byte[]? clientKey,
+            string? clientCertificatePath,
+            string? clientKeyPath,
+            bool certReloadEnabled,
+            uint? certReloadIntervalSeconds)
         {
             _request = new()
             {
                 AddressCount = (nuint)addresses.Count,
                 Addresses = MarshallAddress(addresses),
-                HasTlsMode = true,
-                TlsMode = tlsMode,
                 ClusterMode = clusterMode,
                 HasRequestTimeout = requestTimeout.HasValue,
                 RequestTimeout = requestTimeout ?? default,
@@ -253,9 +261,6 @@ internal partial class FFI
                 LazyConnect = lazyConnect,
                 RefreshTopologyFromInitialNodes = refreshTopologyFromInitialNodes,
                 PubSubConfig = MarshalPubSubConfig(pubSubSubscriptions),
-                RootCertsCount = (nuint)rootCertificates.Count,
-                RootCertsPtr = MarshallRootCertificates(rootCertificates),
-                RootCertsLensPtr = MarshallRootCertificatesLengths(rootCertificates),
                 HasPubSubReconciliationIntervalMs = pubSubReconciliationIntervalMs.HasValue,
                 PubSubReconciliationIntervalMs = pubSubReconciliationIntervalMs ?? default,
                 HasCompressionConfig = compressionConfig.HasValue,
@@ -264,8 +269,27 @@ internal partial class FFI
                 NodeDiscoveryMode = nodeDiscoveryMode,
                 HasClientSideCacheConfig = clientSideCacheConfig.HasValue,
                 ClientSideCacheConfig = clientSideCacheConfig ?? default,
+
+                // Circuit breaker configuration
                 HasCircuitBreakerConfig = circuitBreakerConfig.HasValue,
                 CircuitBreakerConfig = circuitBreakerConfig ?? default,
+
+                // TLS configuration
+                TlsMode = tlsMode,
+                RootCertsCount = (nuint)rootCertificates.Count,
+                RootCertsPtr = MarshallRootCertificates(rootCertificates),
+                RootCertsLensPtr = MarshallRootCertificatesLengths(rootCertificates),
+
+                // Mutual TLS configuration
+                ClientCertLen = (nuint)(clientCertificate?.Length ?? 0),
+                ClientCertPtr = MarshalBytes(clientCertificate),
+                ClientKeyLen = (nuint)(clientKey?.Length ?? 0),
+                ClientKeyPtr = MarshalBytes(clientKey),
+                ClientCertPath = clientCertificatePath,
+                ClientKeyPath = clientKeyPath,
+                CertReloadEnabled = certReloadEnabled,
+                HasCertReloadIntervalSeconds = certReloadIntervalSeconds.HasValue,
+                CertReloadIntervalSeconds = certReloadIntervalSeconds ?? 0,
             };
         }
 
@@ -283,7 +307,7 @@ internal partial class FFI
             FreeStringArray(pubSubConfig.PatternsPtr, pubSubConfig.PatternCount);
             FreeStringArray(pubSubConfig.ShardedChannelsPtr, pubSubConfig.ShardedChannelCount);
 
-            // Free root certificates
+            // Free TLS root certificates.
             if (_request.RootCertsCount > 0)
             {
                 for (int i = 0; i < (int)_request.RootCertsCount; i++)
@@ -294,6 +318,17 @@ internal partial class FFI
 
                 Marshal.FreeHGlobal(_request.RootCertsPtr);
                 Marshal.FreeHGlobal(_request.RootCertsLensPtr);
+            }
+
+            // Free mutual TLS certificate and key.
+            if (_request.ClientCertPtr != IntPtr.Zero)
+            {
+                Marshal.FreeHGlobal(_request.ClientCertPtr);
+            }
+
+            if (_request.ClientKeyPtr != IntPtr.Zero)
+            {
+                Marshal.FreeHGlobal(_request.ClientKeyPtr);
             }
         }
 
@@ -364,10 +399,7 @@ internal partial class FFI
 
             for (int i = 0; i < rootCerts.Count; i++)
             {
-                byte[] cert = rootCerts[i];
-                IntPtr certPtr = Marshal.AllocHGlobal(cert.Length);
-                Marshal.Copy(cert, 0, certPtr, cert.Length);
-                Marshal.WriteIntPtr(certsPtr, i * IntPtr.Size, certPtr);
+                Marshal.WriteIntPtr(certsPtr, i * IntPtr.Size, MarshalBytes(rootCerts[i]));
             }
 
             return certsPtr;
@@ -396,6 +428,22 @@ internal partial class FFI
             }
 
             return certsLengthsPtr;
+        }
+
+        /// <summary>
+        /// Copies a byte array into unmanaged memory for FFI.
+        /// Returns <see cref="IntPtr.Zero"/> if null.
+        /// </summary>
+        private static IntPtr MarshalBytes(byte[]? data)
+        {
+            if (data is null)
+            {
+                return IntPtr.Zero;
+            }
+
+            IntPtr ptr = Marshal.AllocHGlobal(data.Length);
+            Marshal.Copy(data, 0, ptr, data.Length);
+            return ptr;
         }
 
         /// <summary>
@@ -1061,30 +1109,26 @@ internal partial class FFI
         ByAddress,
     }
 
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    [StructLayout(LayoutKind.Sequential)]
     private struct RouteInfo
     {
         public RouteType Type;
         public int SlotId;
 
-        [MarshalAs(UnmanagedType.LPStr)]
+        [MarshalAs(UnmanagedType.LPUTF8Str)]
         public string? SlotKey;
         public SlotType SlotType;
 
-        [MarshalAs(UnmanagedType.LPStr)]
+        [MarshalAs(UnmanagedType.LPUTF8Str)]
         public string? Host;
         public int Port;
     }
 
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    [StructLayout(LayoutKind.Sequential)]
     private struct ConnectionRequest
     {
         public nuint AddressCount;
         public IntPtr Addresses; // ** NodeAddress - array pointer
-
-        [MarshalAs(UnmanagedType.U1)]
-        public bool HasTlsMode;
-        public TlsMode TlsMode;
 
         [MarshalAs(UnmanagedType.U1)]
         public bool ClusterMode;
@@ -1115,7 +1159,7 @@ internal partial class FFI
         public bool HasProtocol;
         public ConnectionConfiguration.Protocol Protocol;
 
-        [MarshalAs(UnmanagedType.LPStr)]
+        [MarshalAs(UnmanagedType.LPUTF8Str)]
         public string? ClientName;
 
         [MarshalAs(UnmanagedType.U1)]
@@ -1125,11 +1169,6 @@ internal partial class FFI
         public bool RefreshTopologyFromInitialNodes;
 
         public PubSubConfigInfo PubSubConfig;
-
-        // Root certificates for TLS connections
-        public nuint RootCertsCount;
-        public IntPtr RootCertsPtr;
-        public IntPtr RootCertsLensPtr;
 
         [MarshalAs(UnmanagedType.U1)]
         public bool HasPubSubReconciliationIntervalMs;
@@ -1144,13 +1183,51 @@ internal partial class FFI
 
         public NodeDiscoveryMode NodeDiscoveryMode;
 
+        #region Client-Side Cache
+
         [MarshalAs(UnmanagedType.U1)]
         public bool HasClientSideCacheConfig;
         public ClientSideCacheConfig ClientSideCacheConfig;
 
+        #endregion
+        #region Circuit Breaker
+
         [MarshalAs(UnmanagedType.U1)]
         public bool HasCircuitBreakerConfig;
         public CircuitBreakerConfig CircuitBreakerConfig;
+
+        #endregion
+        #region TLS
+
+        public TlsMode TlsMode;
+
+        public nuint RootCertsCount;
+        public IntPtr RootCertsPtr;
+        public IntPtr RootCertsLensPtr;
+
+        #endregion
+        #region Mutual TLS
+
+        public nuint ClientCertLen;
+        public IntPtr ClientCertPtr;
+
+        public nuint ClientKeyLen;
+        public IntPtr ClientKeyPtr;
+
+        [MarshalAs(UnmanagedType.LPUTF8Str)]
+        public string? ClientCertPath;
+
+        [MarshalAs(UnmanagedType.LPUTF8Str)]
+        public string? ClientKeyPath;
+
+        [MarshalAs(UnmanagedType.U1)]
+        public bool CertReloadEnabled;
+
+        [MarshalAs(UnmanagedType.U1)]
+        public bool HasCertReloadIntervalSeconds;
+        public uint CertReloadIntervalSeconds;
+
+        #endregion
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -1164,10 +1241,10 @@ internal partial class FFI
         public uint ShardedChannelCount;
     }
 
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    [StructLayout(LayoutKind.Sequential)]
     internal readonly struct NodeAddress(string host, ushort port)
     {
-        [MarshalAs(UnmanagedType.LPStr)]
+        [MarshalAs(UnmanagedType.LPUTF8Str)]
         public readonly string Host = host;
         public readonly ushort Port = port;
     }
@@ -1226,7 +1303,7 @@ internal partial class FFI
         public ulong MaxDecompressedSize = maxDecompressedSize ?? default;
     }
 
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    [StructLayout(LayoutKind.Sequential)]
     internal readonly struct ClientSideCacheConfig(
         string cacheId,
         ulong maxCacheKb,
@@ -1239,7 +1316,7 @@ internal partial class FFI
         /// <summary>
         /// Unique identifier for the cache instance.
         /// </summary>
-        [MarshalAs(UnmanagedType.LPStr)]
+        [MarshalAs(UnmanagedType.LPUTF8Str)]
         public readonly string CacheId = cacheId;
 
         /// <summary>
@@ -1549,7 +1626,7 @@ internal partial class FFI
         /// <summary>
         /// Endpoint for OpenTelemetry traces.
         /// </summary>
-        [MarshalAs(UnmanagedType.LPStr)]
+        [MarshalAs(UnmanagedType.LPUTF8Str)]
         public readonly string Endpoint = endpoint;
 
         /// <summary>
@@ -1566,7 +1643,7 @@ internal partial class FFI
         /// <summary>
         /// Endpoint for OpenTelemetry metrics.
         /// </summary>
-        [MarshalAs(UnmanagedType.LPStr)]
+        [MarshalAs(UnmanagedType.LPUTF8Str)]
         public readonly string Endpoint = endpoint;
     }
 
@@ -1574,19 +1651,19 @@ internal partial class FFI
     // Authentication
     // ========================================================================================
 
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    [StructLayout(LayoutKind.Sequential)]
     internal readonly struct AuthenticationInfo(string? username, string? password, IamCredentials? iamCredentials)
     {
         /// <summary>
         /// Username for authentication.
         /// </summary>
-        [MarshalAs(UnmanagedType.LPStr)]
+        [MarshalAs(UnmanagedType.LPUTF8Str)]
         public readonly string? Username = username;
 
         /// <summary>
         /// Password for authentication.
         /// </summary>
-        [MarshalAs(UnmanagedType.LPStr)]
+        [MarshalAs(UnmanagedType.LPUTF8Str)]
         public readonly string? Password = password;
 
         /// <summary>
@@ -1597,19 +1674,19 @@ internal partial class FFI
         public readonly IamCredentials IamCredentials = iamCredentials ?? default;
     }
 
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    [StructLayout(LayoutKind.Sequential)]
     internal readonly struct IamCredentials(string clusterName, string region, ServiceType serviceType, uint? refreshIntervalSeconds)
     {
         /// <summary>
         /// The name of the cluster for IAM authentication.
         /// </summary>
-        [MarshalAs(UnmanagedType.LPStr)]
+        [MarshalAs(UnmanagedType.LPUTF8Str)]
         public readonly string ClusterName = clusterName;
 
         /// <summary>
         /// The AWS region for IAM authentication.
         /// </summary>
-        [MarshalAs(UnmanagedType.LPStr)]
+        [MarshalAs(UnmanagedType.LPUTF8Str)]
         public readonly string Region = region;
 
         /// <summary>
@@ -1648,13 +1725,13 @@ internal partial class FFI
     /// <summary>
     /// FFI-safe configuration struct passed to <see cref="CreateMonitorClientFfi"/>.
     /// </summary>
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    [StructLayout(LayoutKind.Sequential)]
     internal struct MonitorConfigFfi
     {
         /// <summary>
         /// The server host.
         /// </summary>
-        [MarshalAs(UnmanagedType.LPStr)]
+        [MarshalAs(UnmanagedType.LPUTF8Str)]
         public string Host;
 
         /// <summary>
@@ -1677,13 +1754,13 @@ internal partial class FFI
         /// The username for authentication,
         /// or <see langword="null"/> if not set.
         /// </summary>
-        [MarshalAs(UnmanagedType.LPStr)]
+        [MarshalAs(UnmanagedType.LPUTF8Str)]
         public string? Username;
 
         /// <summary>
         /// The password for authentication,
         /// or <see langword="null"/> if not set.</summary>
-        [MarshalAs(UnmanagedType.LPStr)]
+        [MarshalAs(UnmanagedType.LPUTF8Str)]
         public string? Password;
     }
 

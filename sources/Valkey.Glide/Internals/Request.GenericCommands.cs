@@ -58,7 +58,7 @@ internal partial class Request
     public static Cmd<bool, bool> ExpireAsync(ValkeyKey key, TimeSpan? expiry, ExpireCondition condition = ExpireCondition.Always)
     {
         List<GlideString> args = [key];
-        args.Add(expiry.HasValue ? ToMilliseconds(expiry.Value).ToGlideString() : InstantExpiry);
+        args.Add(expiry.HasValue ? ToULongMs(expiry.Value, nameof(expiry)).ToGlideString() : InstantExpiry);
         AddExpireCondition(args, condition);
 
         return Simple<bool>(RequestType.PExpire, [.. args]);
@@ -301,10 +301,10 @@ internal partial class Request
         => Simple<long>(RequestType.Unlink, keys.ToGlideStrings());
 
     public static Cmd<long, long> WaitAsync(long numreplicas, TimeSpan timeout)
-        => Simple<long>(RequestType.Wait, [numreplicas.ToGlideString(), ToMilliseconds(timeout).ToGlideString()]);
+        => Simple<long>(RequestType.Wait, [numreplicas.ToGlideString(), ToULongMs(timeout, nameof(timeout)).ToGlideString()]);
 
     public static Cmd<object[], long[]> WaitAofAsync(bool localAof, long numreplicas, TimeSpan timeout)
-        => new(RequestType.WaitAof, [(localAof ? 1L : 0L).ToGlideString(), numreplicas.ToGlideString(), ToMilliseconds(timeout).ToGlideString()], false, arr =>
+        => new(RequestType.WaitAof, [(localAof ? 1L : 0L).ToGlideString(), numreplicas.ToGlideString(), ToULongMs(timeout, nameof(timeout)).ToGlideString()], false, arr =>
             {
                 long local = Convert.ToInt64(arr[0] is GlideString gs0 ? gs0.ToString() : arr[0]);
                 long replicas = Convert.ToInt64(arr[1] is GlideString gs1 ? gs1.ToString() : arr[1]);

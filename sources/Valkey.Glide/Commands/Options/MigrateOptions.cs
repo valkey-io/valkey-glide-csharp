@@ -11,15 +11,14 @@ namespace Valkey.Glide.Commands.Options;
 /// <param name="host">The host address of the destination server.</param>
 /// <param name="port">The port number of the destination server.</param>
 /// <param name="destinationDb">The database number on the destination server.</param>
-/// <param name="timeout">The timeout for the migration.</param>
+/// <param name="timeout">The timeout for the migration. Zero means no timeout.</param>
+/// <exception cref="ArgumentOutOfRangeException">If <paramref name="timeout"/> is negative.</exception>
 public sealed class MigrateOptions(string host, ushort port, ushort destinationDb, TimeSpan timeout) : IDisposable
 {
     #region Private Fields
 
-    ///  <summary>
-    /// Indicates whether the object has been disposed.
-    /// </summary>
     private bool _disposed;
+    private readonly ulong _timeoutMs = ToULongMs(timeout, nameof(timeout));
 
     #endregion
     #region Public Properties
@@ -42,7 +41,7 @@ public sealed class MigrateOptions(string host, ushort port, ushort destinationD
     /// <summary>
     /// The timeout for the migration.
     /// </summary>
-    public TimeSpan Timeout { get; } = timeout;
+    public TimeSpan Timeout => TimeSpan.FromMilliseconds(_timeoutMs);
 
     /// <summary>
     /// When <see langword="true"/>, do not remove the key from the local instance.
@@ -186,7 +185,7 @@ public sealed class MigrateOptions(string host, ushort port, ushort destinationD
             Port.ToGlideString(),
             isMultiKey ? "" : keys.First(),
             DestinationDb.ToGlideString(),
-            ToMilliseconds(Timeout).ToGlideString()
+            _timeoutMs.ToGlideString()
         ];
 
         if (Copy)

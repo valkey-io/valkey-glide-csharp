@@ -25,8 +25,7 @@ internal partial class Request
 
     public static Cmd<GlideString, ValkeyValue> StreamAddAsync(ValkeyKey key, NameValueEntry[] streamPairs, StreamAddOptions options)
     {
-        List<GlideString> args = [key];
-        args.AddRange(options.ToArgs());
+        List<GlideString> args = [key, .. options.ToArgs()];
 
         foreach (var pair in streamPairs)
         {
@@ -39,18 +38,20 @@ internal partial class Request
 
     public static Cmd<object[], StreamAutoClaimResult> StreamAutoClaimAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, TimeSpan minIdleTime, ValkeyValue startId, int? count)
     {
-        List<GlideString> args = [key, groupName, consumerName, ToMilliseconds(minIdleTime).ToGlideString(), startId];
+        List<GlideString> args = [key, groupName, consumerName, ToULongMs(minIdleTime, nameof(minIdleTime)).ToGlideString(), startId];
+
         if (count.HasValue)
         {
-            args.Add("COUNT");
+            args.Add(ValkeyLiterals.COUNT);
             args.Add(count.Value.ToGlideString());
         }
+
         return new(RequestType.XAutoClaim, [.. args], false, ConvertAutoClaimResult);
     }
 
     public static Cmd<object[], StreamAutoClaimJustIdResult> StreamAutoClaimJustIdAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, TimeSpan minIdleTime, ValkeyValue startId, int? count)
     {
-        List<GlideString> args = [key, groupName, consumerName, ToMilliseconds(minIdleTime).ToGlideString(), startId];
+        List<GlideString> args = [key, groupName, consumerName, ToULongMs(minIdleTime, nameof(minIdleTime)).ToGlideString(), startId];
         if (count.HasValue)
         {
             args.Add("COUNT");
@@ -141,8 +142,8 @@ internal partial class Request
 
         if (minIdleTime.HasValue)
         {
-            args.Add("IDLE");
-            args.Add(ToMilliseconds(minIdleTime.Value).ToGlideString());
+            args.Add(ValkeyLiterals.IDLE);
+            args.Add(ToULongMs(minIdleTime.Value, nameof(minIdleTime)).ToGlideString());
         }
 
         args.Add(minId);
@@ -537,7 +538,7 @@ internal partial class Request
         if (options.Block.HasValue)
         {
             args.Add(ValkeyLiterals.BLOCK);
-            args.Add(ToMilliseconds(options.Block.Value).ToGlideString());
+            args.Add(ToULongMs(options.Block.Value, nameof(options.Block)).ToGlideString());
         }
 
         args.Add(ValkeyLiterals.STREAMS);
@@ -566,7 +567,7 @@ internal partial class Request
         if (options.Block.HasValue)
         {
             args.Add(ValkeyLiterals.BLOCK);
-            args.Add(ToMilliseconds(options.Block.Value).ToGlideString());
+            args.Add(ToULongMs(options.Block.Value, nameof(options.Block)).ToGlideString());
         }
 
         if (options.NoAck)
@@ -589,7 +590,7 @@ internal partial class Request
 
     private static Cmd<TResponse, TResult> StreamClaimAsync<TResponse, TResult>(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, TimeSpan minIdleTime, ValkeyValue[] messageIds, StreamClaimOptions? options, bool justId, Func<TResponse, TResult> converter)
     {
-        List<GlideString> args = [key, groupName, consumerName, ToMilliseconds(minIdleTime).ToGlideString()];
+        List<GlideString> args = [key, groupName, consumerName, ToULongMs(minIdleTime, nameof(minIdleTime)).ToGlideString()];
         foreach (var id in messageIds)
         {
             args.Add(id);
@@ -600,7 +601,7 @@ internal partial class Request
             if (options.Idle.HasValue)
             {
                 args.Add(ValkeyLiterals.IDLE);
-                args.Add(ToMilliseconds(options.Idle.Value).ToGlideString());
+                args.Add(ToULongMs(options.Idle.Value, nameof(options.Idle)).ToGlideString());
             }
 
             if (options.IdleUnix.HasValue)

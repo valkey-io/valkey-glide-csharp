@@ -32,10 +32,10 @@ internal partial class Request
         => Ok(RequestType.ClientSetName, [name]);
 
     public static Cmd<string, ValkeyValue> ClientPause(TimeSpan timeout)
-        => Ok(RequestType.ClientPause, [ToMilliseconds(timeout).ToGlideString()]);
+        => Ok(RequestType.ClientPause, [ToULongMs(timeout, nameof(timeout)).ToGlideString()]);
 
     public static Cmd<string, ValkeyValue> ClientPauseWrite(TimeSpan timeout)
-        => Ok(RequestType.ClientPause, [ToMilliseconds(timeout).ToGlideString(), ValkeyLiterals.WRITE]);
+        => Ok(RequestType.ClientPause, [ToULongMs(timeout, nameof(timeout)).ToGlideString(), ValkeyLiterals.WRITE]);
 
     public static Cmd<string, ValkeyValue> ClientUnpause()
         => Ok(RequestType.ClientUnpause);
