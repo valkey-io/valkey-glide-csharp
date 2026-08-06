@@ -190,6 +190,9 @@ pub struct ConnectionConfig {
     pub cert_reload_enabled: bool,
     pub has_cert_reload_interval_seconds: bool,
     pub cert_reload_interval_seconds: u32,
+
+    pub has_inflight_requests_limit: bool,
+    pub inflight_requests_limit: u32,
 }
 
 #[repr(C)]
@@ -432,15 +435,20 @@ pub(crate) unsafe fn create_connection_request(
                     .then_some(config.cert_reload_interval_seconds),
             }),
 
+        // Address resolver
         // Initialized to `None` because FFI clients pass the resolver as a function pointer
         // directly to `create_client`, which patches it onto the request after construction.
         address_resolver: None,
 
+        // Inflight requests limit
+        inflight_requests_limit: config
+            .has_inflight_requests_limit
+            .then_some(config.inflight_requests_limit),
+
         // Unimplemented configuration options
         // -----------------------------------
-        tcp_nodelay: false,            // TODO #490: Expose TCP_NODELAY.
-        periodic_checks: None,         // TODO #485: Expose cluster periodic checks.
-        inflight_requests_limit: None, // TODO #484: Expose request limiting.
+        tcp_nodelay: false,    // TODO #490: Expose TCP_NODELAY.
+        periodic_checks: None, // TODO #485: Expose cluster periodic checks.
         recovery_requests_queue_size: None,
     })
 }

@@ -237,7 +237,10 @@ internal partial class FFI
             string? clientCertificatePath,
             string? clientKeyPath,
             bool certReloadEnabled,
-            uint? certReloadIntervalSeconds)
+            uint? certReloadIntervalSeconds,
+
+            // Inflight requests limit
+            uint? inflightRequestsLimit)
         {
             _request = new()
             {
@@ -290,6 +293,10 @@ internal partial class FFI
                 CertReloadEnabled = certReloadEnabled,
                 HasCertReloadIntervalSeconds = certReloadIntervalSeconds.HasValue,
                 CertReloadIntervalSeconds = certReloadIntervalSeconds ?? 0,
+
+                // Inflight requests limit
+                HasInflightRequestsLimit = inflightRequestsLimit.HasValue,
+                InflightRequestsLimit = inflightRequestsLimit ?? default,
             };
         }
 
@@ -1226,6 +1233,13 @@ internal partial class FFI
         [MarshalAs(UnmanagedType.U1)]
         public bool HasCertReloadIntervalSeconds;
         public uint CertReloadIntervalSeconds;
+
+        #endregion
+        #region Inflight Requests Limit
+
+        [MarshalAs(UnmanagedType.U1)]
+        public bool HasInflightRequestsLimit;
+        public uint InflightRequestsLimit;
 
         #endregion
     }

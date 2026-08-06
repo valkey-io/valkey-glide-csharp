@@ -62,6 +62,7 @@ public abstract class ConnectionConfiguration
         public ClientSideCacheConfig? ClientSideCacheConfig;
         public CircuitBreakerConfig? CircuitBreakerConfig;
         public AddressResolverDelegate? AddressResolver;
+        public uint? InflightRequestsLimit;
 
         // TLS configuration
         public TlsMode TlsMode = TlsMode.NoTls;
@@ -106,7 +107,10 @@ public abstract class ConnectionConfiguration
             ClientCertificatePath,
             ClientKeyPath,
             CertReloadEnabled,
-            CertReloadIntervalSeconds
+            CertReloadIntervalSeconds,
+
+            // Inflight requests limit
+            InflightRequestsLimit
         );
     }
 
@@ -988,6 +992,35 @@ public abstract class ConnectionConfiguration
         {
             ArgumentNullException.ThrowIfNull(circuitBreakerConfig, nameof(circuitBreakerConfig));
             CircuitBreakerConfig = circuitBreakerConfig;
+            return (T)this;
+        }
+
+        #endregion
+        #region Inflight Requests Limit
+
+        /// <summary>
+        /// The maximum number of concurrent requests allowed to be in-flight. When this limit is
+        /// reached, new requests will immediately fail with a <see cref="Errors.RequestException"/>.
+        /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when value is zero.</exception>
+        /// <seealso href="https://glide.valkey.io/how-to/connections/limit-inflight-requests/">Valkey GLIDE – Limit Inflight Requests</seealso>
+        public uint? InflightRequestsLimit
+        {
+            get => Config.InflightRequestsLimit;
+            set
+            {
+                if (value.HasValue)
+                {
+                    ArgumentOutOfRangeException.ThrowIfZero(value.Value, nameof(value));
+                }
+                Config.InflightRequestsLimit = value;
+            }
+        }
+
+        /// <inheritdoc cref="InflightRequestsLimit" />
+        public T WithInflightRequestsLimit(uint inflightRequestsLimit)
+        {
+            InflightRequestsLimit = inflightRequestsLimit;
             return (T)this;
         }
 
