@@ -44,7 +44,7 @@ pub enum PushKind {
 
 /// The command routing type for cluster clients.
 /// Must match [`redis::cluster_routing::RoutingInfo`] in glide-core.
-#[repr(C)]
+#[repr(u32)]
 #[derive(Clone, Copy)]
 pub enum RouteType {
     Random = 0,
@@ -57,7 +57,7 @@ pub enum RouteType {
 
 /// The AWS service type for IAM authentication.
 /// Must match [`glide_core::iam::ServiceType`] in glide-core.
-#[repr(C)]
+#[repr(u32)]
 #[derive(Clone, Copy)]
 pub enum ServiceType {
     ElastiCache = 0,
