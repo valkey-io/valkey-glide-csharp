@@ -226,7 +226,6 @@ internal partial class FFI
             NodeDiscoveryMode nodeDiscoveryMode,
             ClientSideCacheConfig? clientSideCacheConfig,
             CircuitBreakerConfig? circuitBreakerConfig,
-            uint? inflightRequestsLimit,
 
             // TLS configuration
             TlsMode tlsMode,
@@ -238,7 +237,10 @@ internal partial class FFI
             string? clientCertificatePath,
             string? clientKeyPath,
             bool certReloadEnabled,
-            uint? certReloadIntervalSeconds)
+            uint? certReloadIntervalSeconds,
+
+            // Inflight requests limit
+            uint? inflightRequestsLimit)
         {
             _request = new()
             {
@@ -281,9 +283,6 @@ internal partial class FFI
                 RootCertsPtr = MarshallRootCertificates(rootCertificates),
                 RootCertsLensPtr = MarshallRootCertificatesLengths(rootCertificates),
 
-                HasInflightRequestsLimit = inflightRequestsLimit.HasValue,
-                InflightRequestsLimit = inflightRequestsLimit ?? default,
-
                 // Mutual TLS configuration
                 ClientCertLen = (nuint)(clientCertificate?.Length ?? 0),
                 ClientCertPtr = MarshalBytes(clientCertificate),
@@ -294,6 +293,10 @@ internal partial class FFI
                 CertReloadEnabled = certReloadEnabled,
                 HasCertReloadIntervalSeconds = certReloadIntervalSeconds.HasValue,
                 CertReloadIntervalSeconds = certReloadIntervalSeconds ?? 0,
+
+                // Inflight requests limit
+                HasInflightRequestsLimit = inflightRequestsLimit.HasValue,
+                InflightRequestsLimit = inflightRequestsLimit ?? default,
             };
         }
 
@@ -1201,10 +1204,6 @@ internal partial class FFI
         public CircuitBreakerConfig CircuitBreakerConfig;
 
         #endregion
-        [MarshalAs(UnmanagedType.U1)]
-        public bool HasInflightRequestsLimit;
-        public uint InflightRequestsLimit;
-
         #region TLS
 
         public TlsMode TlsMode;
@@ -1234,6 +1233,13 @@ internal partial class FFI
         [MarshalAs(UnmanagedType.U1)]
         public bool HasCertReloadIntervalSeconds;
         public uint CertReloadIntervalSeconds;
+
+        #endregion
+        #region Inflight Requests Limit
+
+        [MarshalAs(UnmanagedType.U1)]
+        public bool HasInflightRequestsLimit;
+        public uint InflightRequestsLimit;
 
         #endregion
     }

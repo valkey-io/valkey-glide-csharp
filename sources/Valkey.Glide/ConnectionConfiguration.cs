@@ -96,7 +96,6 @@ public abstract class ConnectionConfiguration
             NodeDiscoveryMode,
             ClientSideCacheConfig?.ToFfi(),
             CircuitBreakerConfig?.ToFfi(),
-            InflightRequestsLimit,
 
             // TLS configuration
             TlsMode,
@@ -108,7 +107,10 @@ public abstract class ConnectionConfiguration
             ClientCertificatePath,
             ClientKeyPath,
             CertReloadEnabled,
-            CertReloadIntervalSeconds
+            CertReloadIntervalSeconds,
+
+            // Inflight requests limit
+            InflightRequestsLimit
         );
     }
 
