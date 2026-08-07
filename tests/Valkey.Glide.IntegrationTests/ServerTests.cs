@@ -76,7 +76,11 @@ public class ServerTests(TestConfiguration config)
         var endpoint = IPEndPoint.Parse(addr);
 
         await server.ClientKillAsync(endpoint);
-        Assert.NotEqual(targetId, await target.ClientIdAsync());
+
+        // Wait for killed client to reconnect.
+        await Polling.WaitForAsync(
+            async () => targetId != await target.ClientIdAsync(),
+            "Target connection did not reconnect with a new client ID after kill");
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
