@@ -14,39 +14,69 @@ public class ClientFilterOptions
     #region Public Properties
 
     /// <summary>
-    /// The client IDs to filter by.
-    /// </summary>
-    public IReadOnlySet<long> Ids => _ids;
-
-    /// <summary>
-    /// The type of client connections to filter by.
+    /// Includes clients with the specified connection type.
     /// </summary>
     public ClientType? Type { get; private set; }
 
     /// <summary>
-    /// The ACL username to filter by.
+    /// Excludes clients with the specified connection type.
+    /// </summary>
+    /// <remarks>
+    /// <note>Since Valkey 9.0.0.</note>
+    /// </remarks>
+    public ClientType? NotType { get; private set; }
+
+    /// <summary>
+    /// Includes clients with the specified client IDs.
+    /// </summary>
+    public IReadOnlySet<long> Ids => _ids;
+
+    /// <summary>
+    /// Excludes clients with the specified client IDs.
+    /// </summary>
+    /// <remarks>
+    /// <note>Since Valkey 9.0.0.</note>
+    /// </remarks>
+    public IReadOnlySet<long> NotIds => _notIds;
+
+    /// <summary>
+    /// Includes clients with the specified ACL username.
     /// </summary>
     public string? User { get; private set; }
 
     /// <summary>
-    /// The client address host to filter by.
+    /// Excludes clients with the specified ACL username.
     /// </summary>
-    public string? AddressHost { get; private set; }
+    /// <remarks>
+    /// <note>Since Valkey 9.0.0.</note>
+    /// </remarks>
+    public string? NotUser { get; private set; }
 
     /// <summary>
-    /// The client address port to filter by.
+    /// Includes clients with the specified address.
     /// </summary>
-    public ushort? AddressPort { get; private set; }
+    public (string Host, ushort Port)? Address { get; private set; }
 
     /// <summary>
-    /// The server-side local address host to filter by.
+    /// Excludes clients with the specified address.
     /// </summary>
-    public string? LocalAddressHost { get; private set; }
+    /// <remarks>
+    /// <note>Since Valkey 9.0.0.</note>
+    /// </remarks>
+    public (string Host, ushort Port)? NotAddress { get; private set; }
 
     /// <summary>
-    /// The server-side local address port to filter by.
+    /// Includes clients with the specified local address.
     /// </summary>
-    public ushort? LocalAddressPort { get; private set; }
+    public (string Host, ushort Port)? LocalAddress { get; private set; }
+
+    /// <summary>
+    /// Excludes clients with the specified local address.
+    /// </summary>
+    /// <remarks>
+    /// <note>Since Valkey 9.0.0.</note>
+    /// </remarks>
+    public (string Host, ushort Port)? NotLocalAddress { get; private set; }
 
     /// <summary>
     /// Whether to skip the current connection.
@@ -54,50 +84,187 @@ public class ClientFilterOptions
     public bool? SkipMe { get; private set; }
 
     /// <summary>
-    /// The maximum connection age to filter by.
+    /// Includes clients older than the specified age.
     /// </summary>
-    public TimeSpan? MaxAge => _maxAgeSecs.HasValue ? TimeSpan.FromSeconds(_maxAgeSecs.Value) : null;
+    /// <remarks>
+    /// <note>Since Valkey 8.0.0.</note>
+    /// </remarks>
+    public TimeSpan? MaxAge { get; private set; }
+
+    /// <summary>
+    /// Includes clients with the specified name.
+    /// </summary>
+    /// <remarks>
+    /// <note>Since Valkey 9.0.0.</note>
+    /// </remarks>
+    public string? Name { get; private set; }
+
+    /// <summary>
+    /// Excludes clients with the specified name.
+    /// </summary>
+    /// <remarks>
+    /// <note>Since Valkey 9.0.0.</note>
+    /// </remarks>
+    public string? NotName { get; private set; }
+
+    /// <summary>
+    /// Includes clients that have been idle for at least the specified time.
+    /// </summary>
+    /// <remarks>
+    /// <note>Since Valkey 9.0.0.</note>
+    /// </remarks>
+    public TimeSpan? Idle { get; private set; }
+
+    /// <summary>
+    /// Includes clients with the specified flags.
+    /// </summary>
+    /// <remarks>
+    /// <note>Since Valkey 9.0.0.</note>
+    /// </remarks>
+    public IReadOnlySet<ClientFlag> Flags => _flags;
+
+    /// <summary>
+    /// Excludes clients with the specified flags.
+    /// </summary>
+    /// <remarks>
+    /// <note>Since Valkey 9.0.0.</note>
+    /// </remarks>
+    public IReadOnlySet<ClientFlag> NotFlags => _notFlags;
+
+    /// <summary>
+    /// Includes clients with the specified library name.
+    /// </summary>
+    /// <remarks>
+    /// <note>Since Valkey 9.0.0.</note>
+    /// </remarks>
+    public string? LibraryName { get; private set; }
+
+    /// <summary>
+    /// Excludes clients with the specified library name.
+    /// </summary>
+    /// <remarks>
+    /// <note>Since Valkey 9.0.0.</note>
+    /// </remarks>
+    public string? NotLibraryName { get; private set; }
+
+    /// <summary>
+    /// Includes clients with the specified library version.
+    /// </summary>
+    /// <remarks>
+    /// <note>Since Valkey 9.0.0.</note>
+    /// </remarks>
+    public string? LibraryVersion { get; private set; }
+
+    /// <summary>
+    /// Excludes clients with the specified library version.
+    /// </summary>
+    /// <remarks>
+    /// <note>Since Valkey 9.0.0.</note>
+    /// </remarks>
+    public string? NotLibraryVersion { get; private set; }
+
+    /// <summary>
+    /// Includes clients with the specified database ID.
+    /// </summary>
+    /// <remarks>
+    /// <note>Since Valkey 9.0.0.</note>
+    /// </remarks>
+    public ushort? DatabaseId { get; private set; }
+
+    /// <summary>
+    /// Excludes clients with the specified database ID.
+    /// </summary>
+    /// <remarks>
+    /// <note>Since Valkey 9.0.0.</note>
+    /// </remarks>
+    public ushort? NotDatabaseId { get; private set; }
+
+    /// <summary>
+    /// Includes clients with the specified capabilities.
+    /// </summary>
+    /// <remarks>
+    /// <note>Since Valkey 9.0.0.</note>
+    /// </remarks>
+    public IReadOnlySet<ClientCapability> Capabilities => _capabilities;
+
+    /// <summary>
+    /// Excludes clients with the specified capabilities.
+    /// </summary>
+    /// <remarks>
+    /// <note>Since Valkey 9.0.0.</note>
+    /// </remarks>
+    public IReadOnlySet<ClientCapability> NotCapabilities => _notCapabilities;
+
+    /// <summary>
+    /// Includes clients with the specified IP address.
+    /// </summary>
+    /// <remarks>
+    /// <note>Since Valkey 9.0.0.</note>
+    /// </remarks>
+    public string? IpAddress { get; private set; }
+
+    /// <summary>
+    /// Excludes clients with the specified IP address.
+    /// </summary>
+    /// <remarks>
+    /// <note>Since Valkey 9.0.0.</note>
+    /// </remarks>
+    public string? NotIpAddress { get; private set; }
 
     #endregion
     #region Public Methods
 
-    /// <summary>
-    /// Filters by client ID.
-    /// </summary>
-    /// <param name="id">The client ID to filter by.</param>
-    public ClientFilterOptions WithId(long id)
-    {
-        _ = _ids.Add(id);
-        return this;
-    }
-
-    /// <summary>
-    /// Filters by one or more client IDs.
-    /// </summary>
-    /// <param name="ids">The client IDs to filter by.</param>
-    /// <remarks>
-    /// <note>Since Valkey 8.1.0.</note>
-    /// </remarks>
-    public ClientFilterOptions WithIds(IEnumerable<long> ids)
-    {
-        _ids.UnionWith(ids);
-        return this;
-    }
-
-    /// <summary>
-    /// Filters by client connection type.
-    /// </summary>
-    /// <param name="type">The type of client connections to filter by.</param>
+    /// <inheritdoc cref="Type" />
+    /// <returns>This instance for method chaining.</returns>
     public ClientFilterOptions WithType(ClientType type)
     {
         Type = type;
         return this;
     }
 
-    /// <summary>
-    /// Filters by authenticated ACL username.
-    /// </summary>
-    /// <param name="username">The ACL username to filter by.</param>
+    /// <inheritdoc cref="NotType" />
+    /// <returns>This instance for method chaining.</returns>
+    public ClientFilterOptions WithoutType(ClientType type)
+    {
+        NotType = type;
+        return this;
+    }
+
+    /// <inheritdoc cref="Ids" />
+    /// <returns>This instance for method chaining.</returns>
+    public ClientFilterOptions WithId(long id)
+    {
+        _ = _ids.Add(id);
+        return this;
+    }
+
+    /// <inheritdoc cref="Ids" />
+    /// <remarks><note>Since Valkey 8.1.0.</note></remarks>
+    /// <returns>This instance for method chaining.</returns>
+    public ClientFilterOptions WithIds(IEnumerable<long> ids)
+    {
+        _ids.UnionWith(ids);
+        return this;
+    }
+
+    /// <inheritdoc cref="NotIds" />
+    /// <returns>This instance for method chaining.</returns>
+    public ClientFilterOptions WithoutId(long id)
+    {
+        _ = _notIds.Add(id);
+        return this;
+    }
+
+    /// <inheritdoc cref="NotIds" />
+    /// <returns>This instance for method chaining.</returns>
+    public ClientFilterOptions WithoutIds(IEnumerable<long> ids)
+    {
+        _notIds.UnionWith(ids);
+        return this;
+    }
+
+    /// <inheritdoc cref="User" />
+    /// <returns>This instance for method chaining.</returns>
     public ClientFilterOptions WithUser(string username)
     {
         ArgumentException.ThrowIfNullOrEmpty(username);
@@ -105,53 +272,260 @@ public class ClientFilterOptions
         return this;
     }
 
-    /// <summary>
-    /// Filters by client address.
-    /// </summary>
-    /// <param name="host">The hostname or IP address.</param>
-    /// <param name="port">The port number.</param>
+    /// <inheritdoc cref="NotUser" />
+    /// <returns>This instance for method chaining.</returns>
+    public ClientFilterOptions WithoutUser(string username)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(username);
+        NotUser = username;
+        return this;
+    }
+
+    /// <inheritdoc cref="Address" />
+    /// <returns>This instance for method chaining.</returns>
     public ClientFilterOptions WithAddress(string host, ushort port)
     {
         ArgumentException.ThrowIfNullOrEmpty(host);
-        AddressHost = host;
-        AddressPort = port;
+        Address = (host, port);
         return this;
     }
 
-    /// <summary>
-    /// Filters by server-side local (bind) address.
-    /// </summary>
-    /// <param name="host">The local hostname or IP address.</param>
-    /// <param name="port">The local port number.</param>
+    /// <inheritdoc cref="NotAddress" />
+    /// <returns>This instance for method chaining.</returns>
+    public ClientFilterOptions WithoutAddress(string host, ushort port)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(host);
+        NotAddress = (host, port);
+        return this;
+    }
+
+    /// <inheritdoc cref="LocalAddress" />
+    /// <returns>This instance for method chaining.</returns>
     public ClientFilterOptions WithLocalAddress(string host, ushort port)
     {
         ArgumentException.ThrowIfNullOrEmpty(host);
-        LocalAddressHost = host;
-        LocalAddressPort = port;
+        LocalAddress = (host, port);
         return this;
     }
 
-    /// <summary>
-    /// Sets whether the current connection should be excluded.
-    /// </summary>
-    /// <param name="skipMe">If <see langword="true"/>, the calling client is excluded; if <see langword="false"/>, it is included.</param>
+    /// <inheritdoc cref="NotLocalAddress" />
+    /// <returns>This instance for method chaining.</returns>
+    public ClientFilterOptions WithoutLocalAddress(string host, ushort port)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(host);
+        NotLocalAddress = (host, port);
+        return this;
+    }
+
+    /// <inheritdoc cref="SkipMe" />
+    /// <returns>This instance for method chaining.</returns>
     public ClientFilterOptions WithSkipMe(bool skipMe)
     {
         SkipMe = skipMe;
         return this;
     }
 
-    /// <summary>
-    /// Filters by maximum connection age.
-    /// </summary>
-    /// <param name="maxAge">The minimum age of connections to match. Rounded to the nearest second.</param>
-    /// <exception cref="ArgumentOutOfRangeException">If <paramref name="maxAge"/> is negative.</exception>
-    /// <remarks>
-    /// <note>Since Valkey 8.0.0.</note>
-    /// </remarks>
+    /// <inheritdoc cref="MaxAge" />
+    /// <param name="maxAge">The maximum connection age.</param>
+    /// <returns>This instance for method chaining.</returns>
     public ClientFilterOptions WithMaxAge(TimeSpan maxAge)
     {
-        _maxAgeSecs = TimeUtils.ToULongSecs(maxAge, nameof(maxAge));
+        ArgumentOutOfRangeException.ThrowIfLessThan(maxAge, TimeSpan.Zero, nameof(maxAge));
+        MaxAge = maxAge;
+        return this;
+    }
+
+    /// <inheritdoc cref="Name" />
+    /// <returns>This instance for method chaining.</returns>
+    public ClientFilterOptions WithName(string name)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+        Name = name;
+        return this;
+    }
+
+    /// <inheritdoc cref="NotName" />
+    /// <returns>This instance for method chaining.</returns>
+    public ClientFilterOptions WithoutName(string name)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+        NotName = name;
+        return this;
+    }
+
+    /// <inheritdoc cref="Idle" />
+    /// <param name="idle">The minimum idle time of connections to match.</param>
+    /// <returns>This instance for method chaining.</returns>
+    public ClientFilterOptions WithIdle(TimeSpan idle)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(idle, TimeSpan.Zero, nameof(idle));
+        Idle = idle;
+        return this;
+    }
+
+    /// <inheritdoc cref="Flags" />
+    /// <returns>This instance for method chaining.</returns>
+    public ClientFilterOptions WithFlag(ClientFlag flag)
+    {
+        _ = _flags.Add(flag);
+        return this;
+    }
+
+    /// <inheritdoc cref="Flags" />
+    /// <returns>This instance for method chaining.</returns>
+    public ClientFilterOptions WithFlag(char flag)
+    {
+        _ = _flags.Add((ClientFlag)flag);
+        return this;
+    }
+
+    /// <inheritdoc cref="Flags" />
+    /// <returns>This instance for method chaining.</returns>
+    public ClientFilterOptions WithFlags(IEnumerable<ClientFlag> flags)
+    {
+        foreach (var f in flags)
+        {
+            _ = _flags.Add(f);
+        }
+
+        return this;
+    }
+
+    /// <inheritdoc cref="Flags" />
+    /// <returns>This instance for method chaining.</returns>
+    public ClientFilterOptions WithFlags(string flags)
+    {
+        foreach (char c in flags)
+        {
+            _ = _flags.Add((ClientFlag)c);
+        }
+
+        return this;
+    }
+
+    /// <inheritdoc cref="NotFlags" />
+    /// <returns>This instance for method chaining.</returns>
+    public ClientFilterOptions WithoutFlag(ClientFlag flag)
+    {
+        _ = _notFlags.Add(flag);
+        return this;
+    }
+
+    /// <inheritdoc cref="NotFlags" />
+    /// <returns>This instance for method chaining.</returns>
+    public ClientFilterOptions WithoutFlag(char flag)
+    {
+        _ = _notFlags.Add((ClientFlag)flag);
+        return this;
+    }
+
+    /// <inheritdoc cref="NotFlags" />
+    /// <returns>This instance for method chaining.</returns>
+    public ClientFilterOptions WithoutFlags(IEnumerable<ClientFlag> flags)
+    {
+        foreach (var f in flags)
+        {
+            _ = _notFlags.Add(f);
+        }
+
+        return this;
+    }
+
+    /// <inheritdoc cref="NotFlags" />
+    /// <returns>This instance for method chaining.</returns>
+    public ClientFilterOptions WithoutFlags(string flags)
+    {
+        foreach (char c in flags)
+        {
+            _ = _notFlags.Add((ClientFlag)c);
+        }
+
+        return this;
+    }
+
+    /// <inheritdoc cref="LibraryName" />
+    /// <returns>This instance for method chaining.</returns>
+    public ClientFilterOptions WithLibraryName(string name)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+        LibraryName = name;
+        return this;
+    }
+
+    /// <inheritdoc cref="NotLibraryName" />
+    /// <returns>This instance for method chaining.</returns>
+    public ClientFilterOptions WithoutLibraryName(string name)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+        NotLibraryName = name;
+        return this;
+    }
+
+    /// <inheritdoc cref="LibraryVersion" />
+    /// <returns>This instance for method chaining.</returns>
+    public ClientFilterOptions WithLibraryVersion(string version)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(version);
+        LibraryVersion = version;
+        return this;
+    }
+
+    /// <inheritdoc cref="NotLibraryVersion" />
+    /// <returns>This instance for method chaining.</returns>
+    public ClientFilterOptions WithoutLibraryVersion(string version)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(version);
+        NotLibraryVersion = version;
+        return this;
+    }
+
+    /// <inheritdoc cref="DatabaseId" />
+    /// <returns>This instance for method chaining.</returns>
+    public ClientFilterOptions WithDatabaseId(ushort id)
+    {
+        DatabaseId = id;
+        return this;
+    }
+
+    /// <inheritdoc cref="NotDatabaseId" />
+    /// <returns>This instance for method chaining.</returns>
+    public ClientFilterOptions WithoutDatabaseId(ushort id)
+    {
+        NotDatabaseId = id;
+        return this;
+    }
+
+    /// <inheritdoc cref="Capabilities" />
+    /// <returns>This instance for method chaining.</returns>
+    public ClientFilterOptions WithCapability(ClientCapability capability)
+    {
+        _ = _capabilities.Add(capability);
+        return this;
+    }
+
+    /// <inheritdoc cref="NotCapabilities" />
+    /// <returns>This instance for method chaining.</returns>
+    public ClientFilterOptions WithoutCapability(ClientCapability capability)
+    {
+        _ = _notCapabilities.Add(capability);
+        return this;
+    }
+
+    /// <inheritdoc cref="IpAddress" />
+    /// <returns>This instance for method chaining.</returns>
+    public ClientFilterOptions WithIpAddress(string address)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(address);
+        IpAddress = address;
+        return this;
+    }
+
+    /// <inheritdoc cref="NotIpAddress" />
+    /// <returns>This instance for method chaining.</returns>
+    public ClientFilterOptions WithoutIpAddress(string address)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(address);
+        NotIpAddress = address;
         return this;
     }
 
@@ -165,10 +539,10 @@ public class ClientFilterOptions
     {
         List<GlideString> args = BuildCommonArgs();
 
-        if (_maxAgeSecs.HasValue)
+        if (MaxAge.HasValue)
         {
             args.Add(ValkeyLiterals.MAXAGE);
-            args.Add(_maxAgeSecs.Value.ToGlideString());
+            args.Add(MaxAge.Value.TotalSeconds.ToGlideString());
         }
 
         return [.. args];
@@ -186,16 +560,26 @@ public class ClientFilterOptions
     {
         List<GlideString> args = [];
 
+        if (Type is not null)
+        {
+            args.Add(ValkeyLiterals.TYPE);
+            args.Add(ValkeyLiterals.Get(Type.Value));
+        }
+        if (NotType is not null)
+        {
+            args.Add(ValkeyLiterals.NOT_TYPE);
+            args.Add(ValkeyLiterals.Get(NotType.Value));
+        }
+
         foreach (long id in Ids)
         {
             args.Add(ValkeyLiterals.ID);
             args.Add(id.ToGlideString());
         }
-
-        if (Type is not null)
+        foreach (long id in NotIds)
         {
-            args.Add(ValkeyLiterals.TYPE);
-            args.Add(ValkeyLiterals.Get(Type.Value));
+            args.Add(ValkeyLiterals.NOT_ID);
+            args.Add(id.ToGlideString());
         }
 
         if (User is not null)
@@ -203,17 +587,32 @@ public class ClientFilterOptions
             args.Add(ValkeyLiterals.USER);
             args.Add(User);
         }
-
-        if (AddressHost is not null)
+        if (NotUser is not null)
         {
-            args.Add(ValkeyLiterals.ADDR);
-            args.Add(Utils.FormatAddress(AddressHost, AddressPort!.Value));
+            args.Add(ValkeyLiterals.NOT_USER);
+            args.Add(NotUser);
         }
 
-        if (LocalAddressHost is not null)
+        if (Address is not null)
+        {
+            args.Add(ValkeyLiterals.ADDR);
+            args.Add(Utils.FormatAddress(Address.Value.Host, Address.Value.Port));
+        }
+        if (NotAddress is not null)
+        {
+            args.Add(ValkeyLiterals.NOT_ADDR);
+            args.Add(Utils.FormatAddress(NotAddress.Value.Host, NotAddress.Value.Port));
+        }
+
+        if (LocalAddress is not null)
         {
             args.Add(ValkeyLiterals.LADDR);
-            args.Add(Utils.FormatAddress(LocalAddressHost, LocalAddressPort!.Value));
+            args.Add(Utils.FormatAddress(LocalAddress.Value.Host, LocalAddress.Value.Port));
+        }
+        if (NotLocalAddress is not null)
+        {
+            args.Add(ValkeyLiterals.NOT_LADDR);
+            args.Add(Utils.FormatAddress(NotLocalAddress.Value.Host, NotLocalAddress.Value.Port));
         }
 
         if (SkipMe is not null)
@@ -222,16 +621,104 @@ public class ClientFilterOptions
             args.Add(SkipMe.Value ? ValkeyLiterals.yes : ValkeyLiterals.no);
         }
 
+        if (Name is not null)
+        {
+            args.Add(ValkeyLiterals.NAME);
+            args.Add(Name);
+        }
+        if (NotName is not null)
+        {
+            args.Add(ValkeyLiterals.NOT_NAME);
+            args.Add(NotName);
+        }
+
+        if (Idle.HasValue)
+        {
+            args.Add(ValkeyLiterals.IDLE);
+            args.Add(Idle.Value.TotalSeconds.ToGlideString());
+        }
+
+        if (_flags.Count > 0)
+        {
+            args.Add(ValkeyLiterals.FLAGS);
+            args.Add(new string([.. _flags.Select(f => (char)f)]));
+        }
+        if (_notFlags.Count > 0)
+        {
+            args.Add(ValkeyLiterals.NOT_FLAGS);
+            args.Add(new string([.. _notFlags.Select(f => (char)f)]));
+        }
+
+        if (LibraryName is not null)
+        {
+            args.Add(ValkeyLiterals.LIB_NAME);
+            args.Add(LibraryName);
+        }
+        if (NotLibraryName is not null)
+        {
+            args.Add(ValkeyLiterals.NOT_LIB_NAME);
+            args.Add(NotLibraryName);
+        }
+
+        if (LibraryVersion is not null)
+        {
+            args.Add(ValkeyLiterals.LIB_VER);
+            args.Add(LibraryVersion);
+        }
+        if (NotLibraryVersion is not null)
+        {
+            args.Add(ValkeyLiterals.NOT_LIB_VER);
+            args.Add(NotLibraryVersion);
+        }
+
+        if (DatabaseId is not null)
+        {
+            args.Add(ValkeyLiterals.DB);
+            args.Add(DatabaseId.Value.ToGlideString());
+        }
+        if (NotDatabaseId is not null)
+        {
+            args.Add(ValkeyLiterals.NOT_DB);
+            args.Add(NotDatabaseId.Value.ToGlideString());
+        }
+
+        if (_capabilities.Count > 0)
+        {
+            args.Add(ValkeyLiterals.CAPA);
+            args.Add(new string([.. _capabilities.Select(c => (char)c)]));
+        }
+        if (_notCapabilities.Count > 0)
+        {
+            args.Add(ValkeyLiterals.NOT_CAPA);
+            args.Add(new string([.. _notCapabilities.Select(c => (char)c)]));
+        }
+
+        // IP / NOT-IP
+        if (IpAddress is not null)
+        {
+            args.Add(ValkeyLiterals.IP);
+            args.Add(IpAddress);
+        }
+
+        if (NotIpAddress is not null)
+        {
+            args.Add(ValkeyLiterals.NOT_IP);
+            args.Add(NotIpAddress);
+        }
+
         return args;
     }
 
     #endregion
     #region Private Fields
 
-    // Use sorted set to ensure deterministic behaviour.
+    // Use sorted sets to ensure deterministic behaviour.
     private readonly SortedSet<long> _ids = [];
-
-    private ulong? _maxAgeSecs;
+    private readonly SortedSet<long> _notIds = [];
+    private readonly SortedSet<ClientFlag> _flags = [];
+    private readonly SortedSet<ClientFlag> _notFlags = [];
+    private readonly SortedSet<ClientCapability> _capabilities = [];
+    private readonly SortedSet<ClientCapability> _notCapabilities = [];
 
     #endregion
 }
