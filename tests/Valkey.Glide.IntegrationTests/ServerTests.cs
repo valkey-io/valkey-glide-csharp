@@ -68,16 +68,14 @@ public class ServerTests(TestConfiguration config)
         var target = ConnectionMultiplexer.Connect(conn.RawConfig).GetServers().First();
         long targetId = await target.ClientIdAsync();
 
-        var server = conn.GetServers().First();
-
         // TODO #414: Update to use ClientInfoAsync() once available on IServer.
         var info = (await target.ExecuteAsync("CLIENT", ["INFO"])).AsString()!;
         var addr = info.Split(' ').First(f => f.StartsWith("addr=")).Split('=')[1];
         var endpoint = IPEndPoint.Parse(addr);
 
+        var server = conn.GetServers().First();
         await server.ClientKillAsync(endpoint);
 
-        // Wait for killed client to reconnect.
         await Polling.WaitForAsync(
             async () => targetId != await target.ClientIdAsync(),
             "Target connection did not reconnect with a new client ID after kill");
