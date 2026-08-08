@@ -5,6 +5,7 @@ using Valkey.Glide.TestUtils;
 
 using static Valkey.Glide.Commands.Options.InfoOptions;
 using static Valkey.Glide.Errors;
+using static Valkey.Glide.TestUtils.Assertions;
 using static Valkey.Glide.TestUtils.Builders;
 using static Valkey.Glide.TestUtils.Client;
 using static Valkey.Glide.TestUtils.Data;

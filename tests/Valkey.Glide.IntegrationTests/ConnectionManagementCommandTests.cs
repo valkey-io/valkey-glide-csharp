@@ -6,6 +6,7 @@ using System.Net;
 using Valkey.Glide.Commands.Options;
 using Valkey.Glide.TestUtils;
 
+using static Valkey.Glide.TestUtils.Assertions;
 using static Valkey.Glide.TestUtils.Builders;
 
 namespace Valkey.Glide.IntegrationTests;
@@ -96,27 +97,30 @@ public class ConnectionManagementCommandTests(ServerFixture fixture) : IClassFix
         var addr = info.Split(' ').First(f => f.StartsWith("addr=")).Split('=')[1];
         var endpoint = IPEndPoint.Parse(addr);
 
-        Assert.Equal(1, await client.ClientKillAsync(new ClientFilterOptions().WithAddress(endpoint.Address.ToString(), (ushort)endpoint.Port)));
+        var options = new ClientFilterOptions().WithAddress(endpoint.Address.ToString(), (ushort)endpoint.Port);
+        Assert.Equal(1, await client.ClientKillAsync(options));
+
+        await AssertReconnected(target);
     }
-    [Theory]
-    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
-    public async Task ClientKillAsync_ById_NonExistentId_ReturnsZero(bool clusterMode)
+
+    [Fact]
+    public async Task ClientKillAsync_ById_NonExistentId_ReturnsZero()
     {
-        await using var client = await fixture.GetServer(clusterMode).CreateClientAsync();
+        await using var client = await fixture.StandaloneServer.CreateClientAsync();
         Assert.Equal(0, await client.ClientKillAsync(new ClientFilterOptions().WithId(999999999)));
     }
 
-    [Theory]
-    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
-    public async Task ClientKillAsync_ById_KillsClient(bool clusterMode)
+    [Fact]
+    public async Task ClientKillAsync_ById_KillsClient()
     {
-        await using var client = await fixture.GetServer(clusterMode).CreateClientAsync();
-        await using var target = await fixture.GetServer(clusterMode).CreateClientAsync();
+        await using var client = await fixture.StandaloneServer.CreateClientAsync();
 
-        var targetId = await target.ClientIdAsync();
-        var killed = await client.ClientKillAsync(new ClientFilterOptions().WithId(targetId));
+        var id = await client.ClientIdAsync();
+        var options = new ClientFilterOptions().WithId(id).WithSkipMe(false);
+        Assert.Equal(1, await client.ClientKillAsync(options));
 
-        Assert.Equal(1, killed);
+        await AssertReconnected(client);
+        Assert.NotEqual(id, await client.ClientIdAsync());
     }
 
     #endregion

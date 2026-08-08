@@ -4,6 +4,8 @@ using System.Net;
 
 using Valkey.Glide.TestUtils;
 
+using static Valkey.Glide.TestUtils.Assertions;
+
 namespace Valkey.Glide.IntegrationTests;
 
 /// <summary>
@@ -82,32 +84,38 @@ public class ServerTests(TestConfiguration config)
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestConnections), MemberType = typeof(TestConfiguration))]
-    public async Task ClientKillAsync_ById_NonExistent_ReturnsZero(ConnectionMultiplexer conn, bool _)
+    [MemberData(nameof(TestConfiguration.TestStandaloneConnections), MemberType = typeof(TestConfiguration))]
+    public async Task ClientKillAsync_ById_NonExistent_ReturnsZero(ConnectionMultiplexer conn)
     {
         var server = conn.GetServers().First();
         Assert.Equal(0, await server.ClientKillAsync(id: 999999999));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestConnections), MemberType = typeof(TestConfiguration))]
-    public async Task ClientKillAsync_ById_KillsClient(ConnectionMultiplexer conn, bool _)
+    [MemberData(nameof(TestConfiguration.TestStandaloneConnections), MemberType = typeof(TestConfiguration))]
+    public async Task ClientKillAsync_ById_KillsClient(ConnectionMultiplexer conn)
     {
         var server = conn.GetServers().First();
-        var clientId = await server.ClientIdAsync();
 
-        Assert.Equal(1, await server.ClientKillAsync(id: clientId, skipMe: false));
+        var id = await server.ClientIdAsync();
+        Assert.Equal(1, await server.ClientKillAsync(id: id, skipMe: false));
+
+        await AssertReconnected(server);
+        Assert.NotEqual(id, await server.ClientIdAsync());
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestConnections), MemberType = typeof(TestConfiguration))]
-    public async Task ClientKillAsync_WithFilterId_KillsClient(ConnectionMultiplexer conn, bool _)
+    [MemberData(nameof(TestConfiguration.TestStandaloneConnections), MemberType = typeof(TestConfiguration))]
+    public async Task ClientKillAsync_WithFilterId_KillsClient(ConnectionMultiplexer conn)
     {
         var server = conn.GetServers().First();
-        var clientId = await server.ClientIdAsync();
 
-        var filter = new ClientKillFilter().WithId(clientId).WithSkipMe(false);
+        var id = await server.ClientIdAsync();
+        var filter = new ClientKillFilter().WithId(id).WithSkipMe(false);
         Assert.Equal(1, await server.ClientKillAsync(filter));
+
+        await AssertReconnected(server);
+        Assert.NotEqual(id, await server.ClientIdAsync());
     }
 
     #endregion

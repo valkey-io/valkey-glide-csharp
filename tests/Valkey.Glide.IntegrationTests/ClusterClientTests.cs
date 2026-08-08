@@ -8,6 +8,7 @@ using Valkey.Glide.TestUtils;
 using static Valkey.Glide.Commands.Options.InfoOptions;
 using static Valkey.Glide.Errors;
 using static Valkey.Glide.Route;
+using static Valkey.Glide.TestUtils.Assertions;
 using static Valkey.Glide.TestUtils.Data;
 
 namespace Valkey.Glide.IntegrationTests;
@@ -634,6 +635,6 @@ public class ClusterClientTests(TestConfiguration config)
         var builder = TestUtils.Config.BuildClusterConfig(address: new(address, server.Address.Port));
 
         await using var client = await GlideClusterClient.CreateClient(builder.Build());
-        await Client.AssertConnected(client);
+        await AssertConnected(client);
     }
 }
