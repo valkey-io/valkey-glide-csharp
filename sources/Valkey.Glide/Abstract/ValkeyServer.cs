@@ -149,14 +149,14 @@ internal partial class ValkeyServer(Database conn, EndPoint endpoint) : IServer
             _ = options.WithAddress(host, port);
         }
 
-        return await _conn.ClientKillAsync(options);
+        return await _conn.Command(Request.ClientKill(options), MakeRoute());
     }
 
     /// <inheritdoc/>
     public async Task<long> ClientKillAsync(ClientKillFilter filter, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await _conn.ClientKillAsync(ToClientFilterOptions(filter));
+        return await _conn.Command(Request.ClientKill(ToClientFilterOptions(filter)), MakeRoute());
     }
 
     /// <inheritdoc/>
