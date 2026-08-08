@@ -11,7 +11,7 @@ public class ClientFilterOptionsTests
     {
         Assert.Empty(new ClientFilterOptions().ToArgs());
         Assert.Equal(["ID", "1"], new ClientFilterOptions().WithId(1).ToArgs());
-        Assert.Equal(["ID", "1", "ID", "2", "ID", "3"], new ClientFilterOptions().WithIds([1, 2, 3]).ToArgs());
+        Assert.Equal(["ID", "1", "2", "3"], new ClientFilterOptions().WithIds([1, 2, 3]).ToArgs());
         Assert.Equal(["TYPE", "normal"], new ClientFilterOptions().WithType(ClientType.Normal).ToArgs());
         Assert.Equal(["TYPE", "master"], new ClientFilterOptions().WithType(ClientType.Primary).ToArgs());
         Assert.Equal(["TYPE", "replica"], new ClientFilterOptions().WithType(ClientType.Replica).ToArgs());
@@ -47,7 +47,7 @@ public class ClientFilterOptionsTests
 
         // Negative filters (Since Valkey 9.0.0)
         Assert.Equal(["NOT-ID", "1"], new ClientFilterOptions().WithoutId(1).ToArgs());
-        Assert.Equal(["NOT-ID", "1", "NOT-ID", "2", "NOT-ID", "3"], new ClientFilterOptions().WithoutIds([1, 2, 3]).ToArgs());
+        Assert.Equal(["NOT-ID", "1", "2", "3"], new ClientFilterOptions().WithoutIds([1, 2, 3]).ToArgs());
         Assert.Equal(["NOT-TYPE", "normal"], new ClientFilterOptions().WithoutType(ClientType.Normal).ToArgs());
         Assert.Equal(["NOT-TYPE", "master"], new ClientFilterOptions().WithoutType(ClientType.Primary).ToArgs());
         Assert.Equal(["NOT-TYPE", "replica"], new ClientFilterOptions().WithoutType(ClientType.Replica).ToArgs());

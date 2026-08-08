@@ -234,6 +234,7 @@ public class ClientFilterOptions
     /// <returns>This instance for method chaining.</returns>
     public ClientFilterOptions WithId(long id)
     {
+        _ids.Clear();
         _ = _ids.Add(id);
         return this;
     }
@@ -243,6 +244,7 @@ public class ClientFilterOptions
     /// <returns>This instance for method chaining.</returns>
     public ClientFilterOptions WithIds(IEnumerable<long> ids)
     {
+        _ids.Clear();
         _ids.UnionWith(ids);
         return this;
     }
@@ -251,6 +253,7 @@ public class ClientFilterOptions
     /// <returns>This instance for method chaining.</returns>
     public ClientFilterOptions WithoutId(long id)
     {
+        _notIds.Clear();
         _ = _notIds.Add(id);
         return this;
     }
@@ -259,6 +262,7 @@ public class ClientFilterOptions
     /// <returns>This instance for method chaining.</returns>
     public ClientFilterOptions WithoutIds(IEnumerable<long> ids)
     {
+        _notIds.Clear();
         _notIds.UnionWith(ids);
         return this;
     }
@@ -367,6 +371,7 @@ public class ClientFilterOptions
     /// <returns>This instance for method chaining.</returns>
     public ClientFilterOptions WithFlag(ClientFlag flag)
     {
+        _flags.Clear();
         _ = _flags.Add(flag);
         return this;
     }
@@ -375,6 +380,7 @@ public class ClientFilterOptions
     /// <returns>This instance for method chaining.</returns>
     public ClientFilterOptions WithFlag(char flag)
     {
+        _flags.Clear();
         _ = _flags.Add((ClientFlag)flag);
         return this;
     }
@@ -383,11 +389,8 @@ public class ClientFilterOptions
     /// <returns>This instance for method chaining.</returns>
     public ClientFilterOptions WithFlags(IEnumerable<ClientFlag> flags)
     {
-        foreach (var f in flags)
-        {
-            _ = _flags.Add(f);
-        }
-
+        _flags.Clear();
+        _flags.UnionWith(flags);
         return this;
     }
 
@@ -395,11 +398,8 @@ public class ClientFilterOptions
     /// <returns>This instance for method chaining.</returns>
     public ClientFilterOptions WithFlags(string flags)
     {
-        foreach (char c in flags)
-        {
-            _ = _flags.Add((ClientFlag)c);
-        }
-
+        _flags.Clear();
+        _flags.UnionWith(flags.Select(c => (ClientFlag)c));
         return this;
     }
 
@@ -407,6 +407,7 @@ public class ClientFilterOptions
     /// <returns>This instance for method chaining.</returns>
     public ClientFilterOptions WithoutFlag(ClientFlag flag)
     {
+        _notFlags.Clear();
         _ = _notFlags.Add(flag);
         return this;
     }
@@ -415,6 +416,7 @@ public class ClientFilterOptions
     /// <returns>This instance for method chaining.</returns>
     public ClientFilterOptions WithoutFlag(char flag)
     {
+        _notFlags.Clear();
         _ = _notFlags.Add((ClientFlag)flag);
         return this;
     }
@@ -423,11 +425,8 @@ public class ClientFilterOptions
     /// <returns>This instance for method chaining.</returns>
     public ClientFilterOptions WithoutFlags(IEnumerable<ClientFlag> flags)
     {
-        foreach (var f in flags)
-        {
-            _ = _notFlags.Add(f);
-        }
-
+        _notFlags.Clear();
+        _notFlags.UnionWith(flags);
         return this;
     }
 
@@ -435,11 +434,8 @@ public class ClientFilterOptions
     /// <returns>This instance for method chaining.</returns>
     public ClientFilterOptions WithoutFlags(string flags)
     {
-        foreach (char c in flags)
-        {
-            _ = _notFlags.Add((ClientFlag)c);
-        }
-
+        _notFlags.Clear();
+        _notFlags.UnionWith(flags.Select(c => (ClientFlag)c));
         return this;
     }
 
@@ -499,6 +495,7 @@ public class ClientFilterOptions
     /// <returns>This instance for method chaining.</returns>
     public ClientFilterOptions WithCapability(ClientCapability capability)
     {
+        _capabilities.Clear();
         _ = _capabilities.Add(capability);
         return this;
     }
@@ -507,6 +504,7 @@ public class ClientFilterOptions
     /// <returns>This instance for method chaining.</returns>
     public ClientFilterOptions WithoutCapability(ClientCapability capability)
     {
+        _notCapabilities.Clear();
         _ = _notCapabilities.Add(capability);
         return this;
     }
@@ -550,15 +548,15 @@ public class ClientFilterOptions
             args.Add(ValkeyLiterals.Get(NotType.Value));
         }
 
-        foreach (long id in Ids)
+        if (_ids.Count > 0)
         {
             args.Add(ValkeyLiterals.ID);
-            args.Add(id.ToGlideString());
+            args.AddRange(_ids.Select(id => id.ToGlideString()));
         }
-        foreach (long id in NotIds)
+        if (_notIds.Count > 0)
         {
             args.Add(ValkeyLiterals.NOT_ID);
-            args.Add(id.ToGlideString());
+            args.AddRange(_notIds.Select(id => id.ToGlideString()));
         }
 
         if (User is not null)
