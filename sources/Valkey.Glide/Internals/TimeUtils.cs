@@ -68,6 +68,16 @@ internal static class TimeUtils
     /// <summary>
     /// Converts a <see cref="TimeSpan"/> to <see cref="ulong"/> seconds, rounded to the nearest second.
     /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="timeSpan"/> is not positive.</exception>
+    public static ulong ToPositiveULongSecs(TimeSpan timeSpan, string paramName)
+    {
+        ArgumentOutOfRangeException.ThrowIfEqual(timeSpan, TimeSpan.Zero, paramName);
+        return ToULongSecs(timeSpan, paramName);
+    }
+
+    /// <summary>
+    /// Converts a <see cref="TimeSpan"/> to <see cref="ulong"/> seconds, rounded to the nearest second.
+    /// </summary>
     /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="timeSpan"/> is negative.</exception>
     public static ulong ToULongSecs(TimeSpan timeSpan, string paramName)
     {

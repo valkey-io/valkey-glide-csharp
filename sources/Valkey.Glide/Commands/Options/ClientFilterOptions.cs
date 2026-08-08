@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Internals;
+
 namespace Valkey.Glide.Commands.Options;
 
 /// <summary>
@@ -87,7 +89,7 @@ public class ClientFilterOptions
     /// <remarks>
     /// <note>Since Valkey 8.0.0.</note>
     /// </remarks>
-    public TimeSpan? MaxAge { get; private set; }
+    public TimeSpan? MaxAge => _maxAgeSecs.HasValue ? TimeSpan.FromSeconds(_maxAgeSecs.Value) : null;
 
     /// <summary>
     /// Includes clients with the specified name.
@@ -111,7 +113,7 @@ public class ClientFilterOptions
     /// <remarks>
     /// <note>Since Valkey 9.0.0.</note>
     /// </remarks>
-    public TimeSpan? Idle { get; private set; }
+    public TimeSpan? Idle => _idleSecs.HasValue ? TimeSpan.FromSeconds(_idleSecs.Value) : null;
 
     /// <summary>
     /// Includes clients with the specified flags.
@@ -324,12 +326,12 @@ public class ClientFilterOptions
     }
 
     /// <inheritdoc cref="MaxAge" />
-    /// <param name="maxAge">The maximum connection age.</param>
+    /// <param name="maxAge">The maximum connection age. Rounded to the nearest second.</param>
     /// <returns>This instance for method chaining.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="maxAge"/> is not positive.</exception>
     public ClientFilterOptions WithMaxAge(TimeSpan maxAge)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThan(maxAge, TimeSpan.Zero, nameof(maxAge));
-        MaxAge = maxAge;
+        _maxAgeSecs = TimeUtils.ToPositiveULongSecs(maxAge, nameof(maxAge));
         return this;
     }
 
@@ -352,12 +354,12 @@ public class ClientFilterOptions
     }
 
     /// <inheritdoc cref="Idle" />
-    /// <param name="idle">The minimum idle time of connections to match.</param>
+    /// <param name="idle">The minimum idle time of connections to match. Rounded to the nearest second.</param>
     /// <returns>This instance for method chaining.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="idle"/> is not positive.</exception>
     public ClientFilterOptions WithIdle(TimeSpan idle)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThan(idle, TimeSpan.Zero, nameof(idle));
-        Idle = idle;
+        _idleSecs = TimeUtils.ToPositiveULongSecs(idle, nameof(idle));
         return this;
     }
 
@@ -531,30 +533,9 @@ public class ClientFilterOptions
     #region Internal Methods
 
     /// <summary>
-    /// Converts to <c>CLIENT KILL</c> command arguments.
+    /// Converts to command arguments.
     /// </summary>
-    internal GlideString[] ToClientKillArgs()
-    {
-        List<GlideString> args = BuildCommonArgs();
-
-        if (MaxAge.HasValue)
-        {
-            args.Add(ValkeyLiterals.MAXAGE);
-            args.Add(MaxAge.Value.TotalSeconds.ToGlideString());
-        }
-
-        return [.. args];
-    }
-
-    // TODO #414: Add ToClientListArgs() (MAXAGE in milliseconds) when CLIENT LIST is implemented.
-
-    #endregion
-    #region Private Methods
-
-    /// <summary>
-    /// Converts command arguments that are common to both <c>CLIENT KILL</c> and <c>CLIENT LIST</c>.
-    /// </summary>
-    private List<GlideString> BuildCommonArgs()
+    internal GlideString[] ToArgs()
     {
         List<GlideString> args = [];
 
@@ -619,6 +600,12 @@ public class ClientFilterOptions
             args.Add(SkipMe.Value ? ValkeyLiterals.yes : ValkeyLiterals.no);
         }
 
+        if (_maxAgeSecs.HasValue)
+        {
+            args.Add(ValkeyLiterals.MAXAGE);
+            args.Add(_maxAgeSecs.Value.ToGlideString());
+        }
+
         if (Name is not null)
         {
             args.Add(ValkeyLiterals.NAME);
@@ -630,10 +617,10 @@ public class ClientFilterOptions
             args.Add(NotName);
         }
 
-        if (Idle.HasValue)
+        if (_idleSecs.HasValue)
         {
             args.Add(ValkeyLiterals.IDLE);
-            args.Add(Idle.Value.TotalSeconds.ToGlideString());
+            args.Add(_idleSecs.Value.ToGlideString());
         }
 
         if (_flags.Count > 0)
@@ -691,20 +678,18 @@ public class ClientFilterOptions
             args.Add(new string([.. _notCapabilities.Select(c => (char)c)]));
         }
 
-        // IP / NOT-IP
         if (IpAddress is not null)
         {
             args.Add(ValkeyLiterals.IP);
             args.Add(IpAddress);
         }
-
         if (NotIpAddress is not null)
         {
             args.Add(ValkeyLiterals.NOT_IP);
             args.Add(NotIpAddress);
         }
 
-        return args;
+        return [.. args];
     }
 
     #endregion
@@ -717,6 +702,9 @@ public class ClientFilterOptions
     private readonly SortedSet<ClientFlag> _notFlags = [];
     private readonly SortedSet<ClientCapability> _capabilities = [];
     private readonly SortedSet<ClientCapability> _notCapabilities = [];
+
+    private ulong? _maxAgeSecs;
+    private ulong? _idleSecs;
 
     #endregion
 }

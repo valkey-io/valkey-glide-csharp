@@ -7,68 +7,68 @@ namespace Valkey.Glide.UnitTests;
 public class ClientFilterOptionsTests
 {
     [Fact]
-    public void ToClientKillArgs_Success()
+    public void ToArgs_Success()
     {
-        Assert.Empty(new ClientFilterOptions().ToClientKillArgs());
-        Assert.Equal(["ID", "1"], new ClientFilterOptions().WithId(1).ToClientKillArgs());
-        Assert.Equal(["ID", "1", "ID", "2", "ID", "3"], new ClientFilterOptions().WithIds([1, 2, 3]).ToClientKillArgs());
-        Assert.Equal(["TYPE", "normal"], new ClientFilterOptions().WithType(ClientType.Normal).ToClientKillArgs());
-        Assert.Equal(["TYPE", "master"], new ClientFilterOptions().WithType(ClientType.Primary).ToClientKillArgs());
-        Assert.Equal(["TYPE", "replica"], new ClientFilterOptions().WithType(ClientType.Replica).ToClientKillArgs());
-        Assert.Equal(["TYPE", "pubsub"], new ClientFilterOptions().WithType(ClientType.PubSub).ToClientKillArgs());
-        Assert.Equal(["USER", "user"], new ClientFilterOptions().WithUser("user").ToClientKillArgs());
-        Assert.Equal(["ADDR", "addr:1234"], new ClientFilterOptions().WithAddress("addr", 1234).ToClientKillArgs());
-        Assert.Equal(["ADDR", "127.0.0.1:1234"], new ClientFilterOptions().WithAddress("127.0.0.1", 1234).ToClientKillArgs());
-        Assert.Equal(["ADDR", "[::1]:1234"], new ClientFilterOptions().WithAddress("::1", 1234).ToClientKillArgs());
-        Assert.Equal(["LADDR", "laddr:4321"], new ClientFilterOptions().WithLocalAddress("laddr", 4321).ToClientKillArgs());
-        Assert.Equal(["LADDR", "127.0.0.1:4321"], new ClientFilterOptions().WithLocalAddress("127.0.0.1", 4321).ToClientKillArgs());
-        Assert.Equal(["LADDR", "[::1]:4321"], new ClientFilterOptions().WithLocalAddress("::1", 4321).ToClientKillArgs());
-        Assert.Equal(["SKIPME", "yes"], new ClientFilterOptions().WithSkipMe(true).ToClientKillArgs());
-        Assert.Equal(["SKIPME", "no"], new ClientFilterOptions().WithSkipMe(false).ToClientKillArgs());
-        Assert.Equal(["MAXAGE", "0"], new ClientFilterOptions().WithMaxAge(TimeSpan.Zero).ToClientKillArgs());
-        Assert.Equal(["MAXAGE", "0.5"], new ClientFilterOptions().WithMaxAge(TimeSpan.FromSeconds(0.5)).ToClientKillArgs());
-        Assert.Equal(["MAXAGE", "1"], new ClientFilterOptions().WithMaxAge(TimeSpan.FromSeconds(1)).ToClientKillArgs());
+        Assert.Empty(new ClientFilterOptions().ToArgs());
+        Assert.Equal(["ID", "1"], new ClientFilterOptions().WithId(1).ToArgs());
+        Assert.Equal(["ID", "1", "ID", "2", "ID", "3"], new ClientFilterOptions().WithIds([1, 2, 3]).ToArgs());
+        Assert.Equal(["TYPE", "normal"], new ClientFilterOptions().WithType(ClientType.Normal).ToArgs());
+        Assert.Equal(["TYPE", "master"], new ClientFilterOptions().WithType(ClientType.Primary).ToArgs());
+        Assert.Equal(["TYPE", "replica"], new ClientFilterOptions().WithType(ClientType.Replica).ToArgs());
+        Assert.Equal(["TYPE", "pubsub"], new ClientFilterOptions().WithType(ClientType.PubSub).ToArgs());
+        Assert.Equal(["USER", "user"], new ClientFilterOptions().WithUser("user").ToArgs());
+        Assert.Equal(["ADDR", "addr:1234"], new ClientFilterOptions().WithAddress("addr", 1234).ToArgs());
+        Assert.Equal(["ADDR", "127.0.0.1:1234"], new ClientFilterOptions().WithAddress("127.0.0.1", 1234).ToArgs());
+        Assert.Equal(["ADDR", "[::1]:1234"], new ClientFilterOptions().WithAddress("::1", 1234).ToArgs());
+        Assert.Equal(["LADDR", "laddr:4321"], new ClientFilterOptions().WithLocalAddress("laddr", 4321).ToArgs());
+        Assert.Equal(["LADDR", "127.0.0.1:4321"], new ClientFilterOptions().WithLocalAddress("127.0.0.1", 4321).ToArgs());
+        Assert.Equal(["LADDR", "[::1]:4321"], new ClientFilterOptions().WithLocalAddress("::1", 4321).ToArgs());
+        Assert.Equal(["SKIPME", "yes"], new ClientFilterOptions().WithSkipMe(true).ToArgs());
+        Assert.Equal(["SKIPME", "no"], new ClientFilterOptions().WithSkipMe(false).ToArgs());
+        Assert.Equal(["MAXAGE", "1"], new ClientFilterOptions().WithMaxAge(TimeSpan.FromSeconds(1)).ToArgs());
+        Assert.Equal(["MAXAGE", "2"], new ClientFilterOptions().WithMaxAge(TimeSpan.FromSeconds(1.5)).ToArgs());
+        Assert.Equal(["MAXAGE", "60"], new ClientFilterOptions().WithMaxAge(TimeSpan.FromMinutes(1)).ToArgs());
 
         // Positive filters (Since Valkey 9.0.0)
-        Assert.Equal(["NAME", "myname"], new ClientFilterOptions().WithName("myname").ToClientKillArgs());
-        Assert.Equal(["IDLE", "0"], new ClientFilterOptions().WithIdle(TimeSpan.Zero).ToClientKillArgs());
-        Assert.Equal(["IDLE", "0.5"], new ClientFilterOptions().WithIdle(TimeSpan.FromMilliseconds(500)).ToClientKillArgs());
-        Assert.Equal(["IDLE", "1"], new ClientFilterOptions().WithIdle(TimeSpan.FromSeconds(1)).ToClientKillArgs());
-        Assert.Equal(["FLAGS", "P"], new ClientFilterOptions().WithFlag(ClientFlag.PubSub).ToClientKillArgs());
-        Assert.Equal(["FLAGS", "MP"], new ClientFilterOptions().WithFlags([ClientFlag.Primary, ClientFlag.PubSub]).ToClientKillArgs());
-        Assert.Equal(["FLAGS", "bx"], new ClientFilterOptions().WithFlags("bx").ToClientKillArgs());
-        Assert.Equal(["FLAGS", "N"], new ClientFilterOptions().WithFlag('N').ToClientKillArgs());
-        Assert.Equal(["LIB-NAME", "mylib"], new ClientFilterOptions().WithLibraryName("mylib").ToClientKillArgs());
-        Assert.Equal(["LIB-VER", "1.0.0"], new ClientFilterOptions().WithLibraryVersion("1.0.0").ToClientKillArgs());
-        Assert.Equal(["DB", "0"], new ClientFilterOptions().WithDatabaseId(0).ToClientKillArgs());
-        Assert.Equal(["DB", "5"], new ClientFilterOptions().WithDatabaseId(5).ToClientKillArgs());
-        Assert.Equal(["CAPA", "r"], new ClientFilterOptions().WithCapability(ClientCapability.Redirect).ToClientKillArgs());
-        Assert.Equal(["IP", "192.168.1.1"], new ClientFilterOptions().WithIpAddress("192.168.1.1").ToClientKillArgs());
+        Assert.Equal(["NAME", "myname"], new ClientFilterOptions().WithName("myname").ToArgs());
+        Assert.Equal(["IDLE", "1"], new ClientFilterOptions().WithIdle(TimeSpan.FromSeconds(1)).ToArgs());
+        Assert.Equal(["IDLE", "2"], new ClientFilterOptions().WithIdle(TimeSpan.FromSeconds(1.5)).ToArgs());
+        Assert.Equal(["IDLE", "90"], new ClientFilterOptions().WithIdle(TimeSpan.FromMinutes(1.5)).ToArgs());
+        Assert.Equal(["FLAGS", "P"], new ClientFilterOptions().WithFlag(ClientFlag.PubSub).ToArgs());
+        Assert.Equal(["FLAGS", "MP"], new ClientFilterOptions().WithFlags([ClientFlag.Primary, ClientFlag.PubSub]).ToArgs());
+        Assert.Equal(["FLAGS", "bx"], new ClientFilterOptions().WithFlags("bx").ToArgs());
+        Assert.Equal(["FLAGS", "N"], new ClientFilterOptions().WithFlag('N').ToArgs());
+        Assert.Equal(["LIB-NAME", "mylib"], new ClientFilterOptions().WithLibraryName("mylib").ToArgs());
+        Assert.Equal(["LIB-VER", "1.0.0"], new ClientFilterOptions().WithLibraryVersion("1.0.0").ToArgs());
+        Assert.Equal(["DB", "0"], new ClientFilterOptions().WithDatabaseId(0).ToArgs());
+        Assert.Equal(["DB", "5"], new ClientFilterOptions().WithDatabaseId(5).ToArgs());
+        Assert.Equal(["CAPA", "r"], new ClientFilterOptions().WithCapability(ClientCapability.Redirect).ToArgs());
+        Assert.Equal(["IP", "192.168.1.1"], new ClientFilterOptions().WithIpAddress("192.168.1.1").ToArgs());
 
         // Negative filters (Since Valkey 9.0.0)
-        Assert.Equal(["NOT-ID", "1"], new ClientFilterOptions().WithoutId(1).ToClientKillArgs());
-        Assert.Equal(["NOT-ID", "1", "NOT-ID", "2", "NOT-ID", "3"], new ClientFilterOptions().WithoutIds([1, 2, 3]).ToClientKillArgs());
-        Assert.Equal(["NOT-TYPE", "normal"], new ClientFilterOptions().WithoutType(ClientType.Normal).ToClientKillArgs());
-        Assert.Equal(["NOT-TYPE", "master"], new ClientFilterOptions().WithoutType(ClientType.Primary).ToClientKillArgs());
-        Assert.Equal(["NOT-TYPE", "replica"], new ClientFilterOptions().WithoutType(ClientType.Replica).ToClientKillArgs());
-        Assert.Equal(["NOT-TYPE", "pubsub"], new ClientFilterOptions().WithoutType(ClientType.PubSub).ToClientKillArgs());
-        Assert.Equal(["NOT-ADDR", "addr:1234"], new ClientFilterOptions().WithoutAddress("addr", 1234).ToClientKillArgs());
-        Assert.Equal(["NOT-ADDR", "127.0.0.1:1234"], new ClientFilterOptions().WithoutAddress("127.0.0.1", 1234).ToClientKillArgs());
-        Assert.Equal(["NOT-ADDR", "[::1]:1234"], new ClientFilterOptions().WithoutAddress("::1", 1234).ToClientKillArgs());
-        Assert.Equal(["NOT-LADDR", "laddr:4321"], new ClientFilterOptions().WithoutLocalAddress("laddr", 4321).ToClientKillArgs());
-        Assert.Equal(["NOT-LADDR", "127.0.0.1:4321"], new ClientFilterOptions().WithoutLocalAddress("127.0.0.1", 4321).ToClientKillArgs());
-        Assert.Equal(["NOT-LADDR", "[::1]:4321"], new ClientFilterOptions().WithoutLocalAddress("::1", 4321).ToClientKillArgs());
-        Assert.Equal(["NOT-USER", "user"], new ClientFilterOptions().WithoutUser("user").ToClientKillArgs());
-        Assert.Equal(["NOT-FLAGS", "S"], new ClientFilterOptions().WithoutFlag(ClientFlag.Replica).ToClientKillArgs());
-        Assert.Equal(["NOT-FLAGS", "MP"], new ClientFilterOptions().WithoutFlags("PM").ToClientKillArgs());
-        Assert.Equal(["NOT-FLAGS", "N"], new ClientFilterOptions().WithoutFlags("N").ToClientKillArgs());
-        Assert.Equal(["NOT-NAME", "myname"], new ClientFilterOptions().WithoutName("myname").ToClientKillArgs());
-        Assert.Equal(["NOT-LIB-NAME", "mylib"], new ClientFilterOptions().WithoutLibraryName("mylib").ToClientKillArgs());
-        Assert.Equal(["NOT-LIB-VER", "1.0.0"], new ClientFilterOptions().WithoutLibraryVersion("1.0.0").ToClientKillArgs());
-        Assert.Equal(["NOT-DB", "0"], new ClientFilterOptions().WithoutDatabaseId(0).ToClientKillArgs());
-        Assert.Equal(["NOT-DB", "5"], new ClientFilterOptions().WithoutDatabaseId(5).ToClientKillArgs());
-        Assert.Equal(["NOT-CAPA", "r"], new ClientFilterOptions().WithoutCapability(ClientCapability.Redirect).ToClientKillArgs());
-        Assert.Equal(["NOT-IP", "192.168.1.1"], new ClientFilterOptions().WithoutIpAddress("192.168.1.1").ToClientKillArgs());
+        Assert.Equal(["NOT-ID", "1"], new ClientFilterOptions().WithoutId(1).ToArgs());
+        Assert.Equal(["NOT-ID", "1", "NOT-ID", "2", "NOT-ID", "3"], new ClientFilterOptions().WithoutIds([1, 2, 3]).ToArgs());
+        Assert.Equal(["NOT-TYPE", "normal"], new ClientFilterOptions().WithoutType(ClientType.Normal).ToArgs());
+        Assert.Equal(["NOT-TYPE", "master"], new ClientFilterOptions().WithoutType(ClientType.Primary).ToArgs());
+        Assert.Equal(["NOT-TYPE", "replica"], new ClientFilterOptions().WithoutType(ClientType.Replica).ToArgs());
+        Assert.Equal(["NOT-TYPE", "pubsub"], new ClientFilterOptions().WithoutType(ClientType.PubSub).ToArgs());
+        Assert.Equal(["NOT-ADDR", "addr:1234"], new ClientFilterOptions().WithoutAddress("addr", 1234).ToArgs());
+        Assert.Equal(["NOT-ADDR", "127.0.0.1:1234"], new ClientFilterOptions().WithoutAddress("127.0.0.1", 1234).ToArgs());
+        Assert.Equal(["NOT-ADDR", "[::1]:1234"], new ClientFilterOptions().WithoutAddress("::1", 1234).ToArgs());
+        Assert.Equal(["NOT-LADDR", "laddr:4321"], new ClientFilterOptions().WithoutLocalAddress("laddr", 4321).ToArgs());
+        Assert.Equal(["NOT-LADDR", "127.0.0.1:4321"], new ClientFilterOptions().WithoutLocalAddress("127.0.0.1", 4321).ToArgs());
+        Assert.Equal(["NOT-LADDR", "[::1]:4321"], new ClientFilterOptions().WithoutLocalAddress("::1", 4321).ToArgs());
+        Assert.Equal(["NOT-USER", "user"], new ClientFilterOptions().WithoutUser("user").ToArgs());
+        Assert.Equal(["NOT-FLAGS", "S"], new ClientFilterOptions().WithoutFlag(ClientFlag.Replica).ToArgs());
+        Assert.Equal(["NOT-FLAGS", "MP"], new ClientFilterOptions().WithoutFlags("PM").ToArgs());
+        Assert.Equal(["NOT-FLAGS", "N"], new ClientFilterOptions().WithoutFlags("N").ToArgs());
+        Assert.Equal(["NOT-NAME", "myname"], new ClientFilterOptions().WithoutName("myname").ToArgs());
+        Assert.Equal(["NOT-LIB-NAME", "mylib"], new ClientFilterOptions().WithoutLibraryName("mylib").ToArgs());
+        Assert.Equal(["NOT-LIB-VER", "1.0.0"], new ClientFilterOptions().WithoutLibraryVersion("1.0.0").ToArgs());
+        Assert.Equal(["NOT-DB", "0"], new ClientFilterOptions().WithoutDatabaseId(0).ToArgs());
+        Assert.Equal(["NOT-DB", "5"], new ClientFilterOptions().WithoutDatabaseId(5).ToArgs());
+        Assert.Equal(["NOT-CAPA", "r"], new ClientFilterOptions().WithoutCapability(ClientCapability.Redirect).ToArgs());
+        Assert.Equal(["NOT-IP", "192.168.1.1"], new ClientFilterOptions().WithoutIpAddress("192.168.1.1").ToArgs());
 
         Assert.Equal(
             ["TYPE", "normal",
@@ -86,7 +86,7 @@ public class ClientFilterOptionsTests
                 .WithLocalAddress("laddr", 4321)
                 .WithSkipMe(false)
                 .WithMaxAge(TimeSpan.FromSeconds(1))
-                .ToClientKillArgs());
+                .ToArgs());
 
         // All positive filters (Since Valkey 9.0.0)
         Assert.Equal(
@@ -119,7 +119,7 @@ public class ClientFilterOptionsTests
                 .WithDatabaseId(3)
                 .WithCapability(ClientCapability.Redirect)
                 .WithIpAddress("10.0.0.1")
-                .ToClientKillArgs());
+                .ToArgs());
 
         // All negative filters (Since Valkey 9.0.0)
         Assert.Equal(
@@ -148,19 +148,21 @@ public class ClientFilterOptionsTests
                 .WithoutDatabaseId(7)
                 .WithoutCapability(ClientCapability.Redirect)
                 .WithoutIpAddress("192.168.0.1")
-                .ToClientKillArgs());
+                .ToArgs());
     }
 
     [Fact]
-    public void ToClientKillArgs_Failure()
+    public void ToArgs_Failure()
     {
         _ = Assert.Throws<ArgumentException>(() => new ClientFilterOptions().WithUser(""));
         _ = Assert.Throws<ArgumentException>(() => new ClientFilterOptions().WithAddress("", 6379));
         _ = Assert.Throws<ArgumentException>(() => new ClientFilterOptions().WithLocalAddress("", 6379));
+        _ = Assert.Throws<ArgumentOutOfRangeException>(() => new ClientFilterOptions().WithMaxAge(TimeSpan.Zero));
         _ = Assert.Throws<ArgumentOutOfRangeException>(() => new ClientFilterOptions().WithMaxAge(TimeSpan.FromSeconds(-1)));
 
         // Positive filters (Since Valkey 9.0.0)
         _ = Assert.Throws<ArgumentException>(() => new ClientFilterOptions().WithName(""));
+        _ = Assert.Throws<ArgumentOutOfRangeException>(() => new ClientFilterOptions().WithIdle(TimeSpan.Zero));
         _ = Assert.Throws<ArgumentOutOfRangeException>(() => new ClientFilterOptions().WithIdle(TimeSpan.FromMilliseconds(-1)));
         _ = Assert.Throws<ArgumentException>(() => new ClientFilterOptions().WithLibraryName(""));
         _ = Assert.Throws<ArgumentException>(() => new ClientFilterOptions().WithLibraryVersion(""));

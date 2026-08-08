@@ -23,7 +23,7 @@ internal partial class Request
         => Simple<long>(RequestType.ClientId, []);
 
     public static Cmd<long, long> ClientKill(ClientFilterOptions options)
-        => Simple<long>(RequestType.ClientKill, options.ToClientKillArgs());
+        => Simple<long>(RequestType.ClientKill, options.ToArgs());
 
     public static Cmd<string, ValkeyValue> ClientSetName(string name)
         => Ok(RequestType.ClientSetName, [name]);
