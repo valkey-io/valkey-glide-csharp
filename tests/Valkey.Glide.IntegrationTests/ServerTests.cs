@@ -65,6 +65,7 @@ public class ServerTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestStandaloneConnections), MemberType = typeof(TestConfiguration))]
+    // TODO #519: Test both standalone and cluster once ClientIdAsync no longer returns the ID for a random node.
     public async Task ClientKillAsync_ByAddress_KillsClient(ConnectionMultiplexer conn)
     {
         var server = conn.GetServers().First();
