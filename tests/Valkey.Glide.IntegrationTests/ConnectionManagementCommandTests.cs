@@ -88,19 +88,21 @@ public class ConnectionManagementCommandTests(ServerFixture fixture) : IClassFix
     public async Task ClientKillAsync_ByAddress_KillsClient(bool clusterMode)
     {
         await using var client = await fixture.GetServer(clusterMode).CreateClientAsync();
-        await using var target = await fixture.GetServer(clusterMode).CreateClientAsync();
+        var id = await client.ClientIdAsync();
 
         // TODO #414: Update to use ClientInfoAsync()
-        var info = target is GlideClusterClient clusterTarget
+        var info = client is GlideClusterClient clusterTarget
             ? (await clusterTarget.CustomCommand(InfoCommand, Route.Random)).SingleValue!.ToString()!
-            : (await ((GlideClient)target).CustomCommand(InfoCommand))!.ToString()!;
+            : (await ((GlideClient)client).CustomCommand(InfoCommand))!.ToString()!;
         var addr = info.Split(' ').First(f => f.StartsWith("addr=")).Split('=')[1];
         var endpoint = IPEndPoint.Parse(addr);
 
-        var options = new ClientFilterOptions().WithAddress(endpoint.Address.ToString(), (ushort)endpoint.Port);
+        var options = new ClientFilterOptions().WithAddress(endpoint.Address.ToString(), (ushort)endpoint.Port).WithSkipMe(false);
         Assert.Equal(1, await client.ClientKillAsync(options));
 
-        await AssertReconnected(target);
+        // Verify that client reconnected with new connection ID.
+        await AssertReconnected(client);
+        Assert.NotEqual(id, await client.ClientIdAsync());
     }
 
     [Fact]
@@ -114,11 +116,12 @@ public class ConnectionManagementCommandTests(ServerFixture fixture) : IClassFix
     public async Task ClientKillAsync_ById_KillsClient()
     {
         await using var client = await fixture.StandaloneServer.CreateClientAsync();
-
         var id = await client.ClientIdAsync();
+
         var options = new ClientFilterOptions().WithId(id).WithSkipMe(false);
         Assert.Equal(1, await client.ClientKillAsync(options));
 
+        // Verify that client reconnected with new connection ID.
         await AssertReconnected(client);
         Assert.NotEqual(id, await client.ClientIdAsync());
     }

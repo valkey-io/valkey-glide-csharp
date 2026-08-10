@@ -96,10 +96,11 @@ public class ServerTests(TestConfiguration config)
     public async Task ClientKillAsync_ById_KillsClient(ConnectionMultiplexer conn)
     {
         var server = conn.GetServers().First();
-
         var id = await server.ClientIdAsync();
+
         Assert.Equal(1, await server.ClientKillAsync(id: id, skipMe: false));
 
+        // Verify that client reconnected with new connection ID.
         await AssertReconnected(server);
         Assert.NotEqual(id, await server.ClientIdAsync());
     }
@@ -109,11 +110,12 @@ public class ServerTests(TestConfiguration config)
     public async Task ClientKillAsync_WithFilterId_KillsClient(ConnectionMultiplexer conn)
     {
         var server = conn.GetServers().First();
-
         var id = await server.ClientIdAsync();
+
         var filter = new ClientKillFilter().WithId(id).WithSkipMe(false);
         Assert.Equal(1, await server.ClientKillAsync(filter));
 
+        // Verify that client reconnected with new connection ID.
         await AssertReconnected(server);
         Assert.NotEqual(id, await server.ClientIdAsync());
     }
