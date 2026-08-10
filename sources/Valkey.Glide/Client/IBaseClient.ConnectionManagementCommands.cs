@@ -43,6 +43,8 @@ public partial interface IBaseClient : IConnectionManagementBaseCommands
     /// </code>
     /// </example>
     /// </remarks>
+    // TODO #519: Remove from IBaseClient. Standalone and cluster-specific signatures.
+    [Obsolete("In cluster mode, this returns an ID from a random node. #519.")]
     Task<long> ClientIdAsync();
 
     /// <summary>

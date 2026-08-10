@@ -13,6 +13,8 @@ public abstract partial class BaseClient
         => await Command(Request.ClientGetName());
 
     /// <inheritdoc cref="IBaseClient.ClientIdAsync()"/>
+    // TODO #519: Remove from BaseClient. Standalone and cluster-specific signatures.
+    [Obsolete("In cluster mode, this returns an ID from a random node. #519.")]
     public async Task<long> ClientIdAsync()
         => await Command(Request.ClientId());
 
