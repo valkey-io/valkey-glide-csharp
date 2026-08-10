@@ -64,8 +64,8 @@ public class ServerTests(TestConfiguration config)
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestConnections), MemberType = typeof(TestConfiguration))]
-    public async Task ClientKillAsync_ByAddress_KillsClient(ConnectionMultiplexer conn, bool _)
+    [MemberData(nameof(TestConfiguration.TestStandaloneConnections), MemberType = typeof(TestConfiguration))]
+    public async Task ClientKillAsync_ByAddress_KillsClient(ConnectionMultiplexer conn)
     {
         var target = ConnectionMultiplexer.Connect(conn.RawConfig).GetServers().First();
         long targetId = await target.ClientIdAsync();
