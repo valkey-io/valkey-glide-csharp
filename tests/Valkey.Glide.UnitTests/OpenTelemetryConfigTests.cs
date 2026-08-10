@@ -13,11 +13,11 @@ public class OpenTelemetryConfigTests
     #region Tests
 
     [Fact]
-    public void WithFlushInterval_WithInvalidInterval_ThrowsArgumentException()
+    public void WithFlushInterval_WithInvalidInterval_ThrowsArgumentOutOfRangeException()
     {
         var builder = OpenTelemetryConfig.CreateBuilder();
-        _ = Assert.Throws<ArgumentException>(() => builder.WithFlushInterval(TimeSpan.FromSeconds(-1)));
-        _ = Assert.Throws<ArgumentException>(() => builder.WithFlushInterval(TimeSpan.Zero));
+        _ = Assert.Throws<ArgumentOutOfRangeException>(() => builder.WithFlushInterval(TimeSpan.FromSeconds(-1)));
+        _ = Assert.Throws<ArgumentOutOfRangeException>(() => builder.WithFlushInterval(TimeSpan.Zero));
     }
 
     [Fact]

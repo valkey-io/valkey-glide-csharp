@@ -908,6 +908,64 @@ public class ConnectionConfigurationTests
     }
 
     #endregion
+    #region Periodic Checks Tests
+
+    [Fact]
+    public void PeriodicChecks_Default()
+    {
+        var request = new ClusterClientConfigurationBuilder()
+            .Build().Request;
+        Assert.Null(request.PeriodicChecksMode);
+        Assert.Null(request.PeriodicChecksIntervalSecs);
+    }
+
+    [Fact]
+    public void WithPeriodicChecks_NoArgs()
+    {
+        var request = new ClusterClientConfigurationBuilder()
+            .WithPeriodicChecks()
+            .Build().Request;
+        Assert.Equal(FFI.PeriodicChecksMode.Enabled, request.PeriodicChecksMode);
+        Assert.Null(request.PeriodicChecksIntervalSecs);
+    }
+
+    [Fact]
+    public void WithPeriodicChecks_Interval()
+    {
+        var request = new ClusterClientConfigurationBuilder()
+            .WithPeriodicChecks(TimeSpan.FromSeconds(30))
+            .Build().Request;
+        Assert.Equal(FFI.PeriodicChecksMode.ManualInterval, request.PeriodicChecksMode);
+        Assert.Equal(30u, request.PeriodicChecksIntervalSecs);
+    }
+
+    [Fact]
+    public void WithoutPeriodicChecks()
+    {
+        var request = new ClusterClientConfigurationBuilder()
+            .WithoutPeriodicChecks()
+            .Build().Request;
+        Assert.Equal(FFI.PeriodicChecksMode.Disabled, request.PeriodicChecksMode);
+        Assert.Null(request.PeriodicChecksIntervalSecs);
+    }
+
+    [Fact]
+    public void WithPeriodicChecks_Zero_Throws()
+        => _ = Assert.Throws<ArgumentOutOfRangeException>(()
+            => new ClusterClientConfigurationBuilder().WithPeriodicChecks(TimeSpan.Zero));
+
+    [Fact]
+    public void WithPeriodicChecks_Negative_Throws()
+        => _ = Assert.Throws<ArgumentOutOfRangeException>(()
+            => new ClusterClientConfigurationBuilder().WithPeriodicChecks(TimeSpan.FromSeconds(-1)));
+
+    [Fact]
+    public void WithPeriodicChecks_ExceedsMax_Throws()
+        => _ = Assert.Throws<ArgumentOutOfRangeException>(()
+            => new ClusterClientConfigurationBuilder().WithPeriodicChecks(
+                TimeSpan.FromSeconds(uint.MaxValue + 1.0)));
+
+    #endregion
     #region Address Resolver Tests
 
     [Fact]
