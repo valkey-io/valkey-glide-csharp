@@ -144,7 +144,7 @@ public static class OpenTelemetry
         var ffiConfig = new FFI.OpenTelemetryConfig(
             config.Traces != null ? new FFI.TracesConfig(config.Traces.Endpoint, config.Traces.SamplePercentage) : null,
             config.Metrics != null ? new FFI.MetricsConfig(config.Metrics.Endpoint) : null,
-            config.FlushInterval.HasValue ? (uint)config.FlushInterval.Value.TotalMilliseconds : null
+            config.FlushIntervalMs
         );
 
         // Marshal the config to unmanaged memory

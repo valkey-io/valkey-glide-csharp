@@ -1,9 +1,11 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+mod enums;
+use enums::{CacheMetricsType, PushKind};
 mod ffi;
 use ffi::{
-    BatchInfo, BatchOptionsInfo, CmdInfo, ConnectionConfig, PubSubCallback, PushKind,
-    ResponseValue, RouteInfo, create_cmd, create_connection_request, create_pipeline, create_route,
+    BatchInfo, BatchOptionsInfo, CmdInfo, ConnectionConfig, PubSubCallback, ResponseValue,
+    RouteInfo, create_cmd, create_connection_request, create_pipeline, create_route,
     get_pipeline_options,
 };
 use glide_core::{
@@ -1939,18 +1941,6 @@ fn create_span(command_name: &str) -> *const c_void {
 // ========================================================================================
 // Client-Side Cache Metrics
 // ========================================================================================
-
-/// Cache metrics type enum matching the Rust core's cache metric methods.
-#[repr(u32)]
-#[derive(Debug, Clone, Copy)]
-pub enum CacheMetricsType {
-    HitRate = 0,
-    MissRate = 1,
-    EntryCount = 2,
-    Evictions = 3,
-    Expirations = 4,
-    TotalLookups = 5,
-}
 
 /// Get a cache metric from the client.
 ///

@@ -21,9 +21,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Inflight requests limit configuration (#484)
-- Mutual TLS (mTLS) support (#488)
-- Circuit breaker configuration (#474)
+- Support additional configuration options:
+  - Circuit breaker (#474)
+  - Inflight requests limit (#484)
+  - Mutual TLS (#488)
+  - Periodic topology checks (#485)
 - Support additional commands (#435):
   - `BGREWRITEAOF` (#444)
   - `BGSAVE CANCEL` (#436)
