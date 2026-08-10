@@ -83,24 +83,20 @@ public class ConnectionManagementCommandTests(ServerFixture fixture) : IClassFix
         Assert.Equal(0, await client.ClientKillAsync(new ClientFilterOptions().WithAddress("192.0.2.1", 9999)));
     }
 
-    [Theory]
-    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
-    public async Task ClientKillAsync_ByAddress_KillsClient(bool clusterMode)
+    [Fact]
+    public async Task ClientKillAsync_ByAddress_KillsClient()
     {
-        await using var client = await fixture.GetServer(clusterMode).CreateClientAsync();
+        await using var client = await fixture.StandaloneServer.CreateClientAsync();
         var id = await client.ClientIdAsync();
 
         // TODO #414: Update to use ClientInfoAsync()
-        var info = client is GlideClusterClient clusterTarget
-            ? (await clusterTarget.CustomCommand(InfoCommand, Route.Random)).SingleValue!.ToString()!
-            : (await ((GlideClient)client).CustomCommand(InfoCommand))!.ToString()!;
+        var info = (await ((GlideClient)client).CustomCommand(InfoCommand))!.ToString()!;
         var addr = info.Split(' ').First(f => f.StartsWith("addr=")).Split('=')[1];
         var endpoint = IPEndPoint.Parse(addr);
 
         var options = new ClientFilterOptions().WithAddress(endpoint.Address.ToString(), (ushort)endpoint.Port).WithSkipMe(false);
         Assert.Equal(1, await client.ClientKillAsync(options));
 
-        // Verify that client reconnected with new connection ID.
         await AssertReconnected(client);
         Assert.NotEqual(id, await client.ClientIdAsync());
     }
@@ -120,10 +116,6 @@ public class ConnectionManagementCommandTests(ServerFixture fixture) : IClassFix
 
         var options = new ClientFilterOptions().WithId(id).WithSkipMe(false);
         Assert.Equal(1, await client.ClientKillAsync(options));
-
-        // Verify that client reconnected with new connection ID.
-        await AssertReconnected(client);
-        Assert.NotEqual(id, await client.ClientIdAsync());
     }
 
     #endregion

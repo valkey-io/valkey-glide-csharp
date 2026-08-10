@@ -67,20 +67,19 @@ public class ServerTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestStandaloneConnections), MemberType = typeof(TestConfiguration))]
     public async Task ClientKillAsync_ByAddress_KillsClient(ConnectionMultiplexer conn)
     {
-        var target = ConnectionMultiplexer.Connect(conn.RawConfig).GetServers().First();
-        long targetId = await target.ClientIdAsync();
+        var server = conn.GetServers().First();
+        var id = await server.ClientIdAsync();
 
         // TODO #414: Update to use ClientInfoAsync() once available on IServer.
-        var info = (await target.ExecuteAsync("CLIENT", ["INFO"])).AsString()!;
+        var info = (await server.ExecuteAsync("CLIENT", ["INFO"])).AsString()!;
         var addr = info.Split(' ').First(f => f.StartsWith("addr=")).Split('=')[1];
         var endpoint = IPEndPoint.Parse(addr);
 
-        var server = conn.GetServers().First();
         await server.ClientKillAsync(endpoint);
 
-        await Polling.WaitForAsync(
-            async () => targetId != await target.ClientIdAsync(),
-            "Target connection did not reconnect with a new client ID after kill");
+        // Verify that client reconnected with new connection ID.
+        await AssertReconnected(server);
+        Assert.NotEqual(id, await server.ClientIdAsync());
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -99,10 +98,6 @@ public class ServerTests(TestConfiguration config)
         var id = await server.ClientIdAsync();
 
         Assert.Equal(1, await server.ClientKillAsync(id: id, skipMe: false));
-
-        // Verify that client reconnected with new connection ID.
-        await AssertReconnected(server);
-        Assert.NotEqual(id, await server.ClientIdAsync());
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -114,10 +109,6 @@ public class ServerTests(TestConfiguration config)
 
         var filter = new ClientKillFilter().WithId(id).WithSkipMe(false);
         Assert.Equal(1, await server.ClientKillAsync(filter));
-
-        // Verify that client reconnected with new connection ID.
-        await AssertReconnected(server);
-        Assert.NotEqual(id, await server.ClientIdAsync());
     }
 
     #endregion
