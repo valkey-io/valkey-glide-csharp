@@ -184,9 +184,13 @@ public abstract class ConnectionConfiguration
         public string? Az;
 
         /// <summary>
-        /// Init strategy with <seealso cref="ReadFromStrategy.Primary" /> or <seealso cref="ReadFromStrategy.PreferReplica" /> strategy.
+        /// Init strategy with a read from strategy that does not require an Availability Zone
+        /// (any strategy other than <seealso cref="ReadFromStrategy.AzAffinity" /> or
+        /// <seealso cref="ReadFromStrategy.AzAffinityReplicasAndPrimary" />).
         /// </summary>
-        /// <param name="strategy">Either <seealso cref="ReadFromStrategy.Primary" /> or <seealso cref="ReadFromStrategy.PreferReplica" />.</param>
+        /// <param name="strategy">A strategy that does not require an Availability Zone, e.g.
+        /// <seealso cref="ReadFromStrategy.Primary" />, <seealso cref="ReadFromStrategy.PreferReplica" />,
+        /// or <seealso cref="ReadFromStrategy.AllNodes" />.</param>
         /// <exception cref="ArgumentException">Thrown if <paramref name="strategy"/> requires an Availability Zone.</exception>
         public ReadFrom(ReadFromStrategy strategy)
         {

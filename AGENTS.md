@@ -11,7 +11,7 @@ including commit requirements like DCO signoff and conventional commits.
 ## Repository Overview
 
 - Primary language: `C#` with a Rust core (glide-core) accessed via P/Invoke.
-- Solution: `Valkey.Glide.sln` – single-target library (`net8.0`) aync public API.
+- Solution: `Valkey.Glide.sln` – single-target library (`net8.0`) with an async public API.
 - Commands organized via partials in `BaseClient.*.cs`; cluster features use routing (`Route`, `ClusterValue<T>`).
 
 ## Working Effectively (Agents)

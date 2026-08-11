@@ -19,8 +19,8 @@ Install the following dependencies using the instructions below.
 Valkey GLIDE C# dependencies:
 
 - [.NET](https://dotnet.microsoft.com/en-us/)
-  - .NET 8 runtime
-  — .NET 10 SDK to build
+  - .NET 8 runtime to test
+  - .NET 10 SDK to build
 - [Git](https://git-scm.com/)
 - [Task](https://taskfile.dev/)
 - [Valkey](https://valkey.io/)
@@ -190,7 +190,7 @@ C# style and analysis rules are defined in the project `.editorconfig` files:
 
 ### Tests
 
-Run unit and integration tests for verify expected behaviour.
+Run unit and integration tests to verify expected behaviour.
 
 ```bash
 # Run tests
@@ -203,7 +203,7 @@ task test:unit filter=MyTestClass          # Filter by test class
 task test:integration filter=MyMethodName  # Filter by test method
 ```
 
-By default, integration tests starts Valkey servers automatically. To run against
+By default, integration tests start Valkey servers automatically. To run against
 existing servers instead, set the endpoint environment variables:
 
 - `standalone-endpoints` — standalone server(s)
