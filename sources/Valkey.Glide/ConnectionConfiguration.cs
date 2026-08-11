@@ -172,25 +172,20 @@ public abstract class ConnectionConfiguration
     public struct ReadFrom
     {
         /// <summary>
-        /// The read from strategy that determines how read operations are routed to nodes.
+        /// The read from strategy.
         /// </summary>
         public ReadFromStrategy Strategy;
 
         /// <summary>
-        /// The Availability Zone (AZ) identifier used with <see cref="ReadFromStrategy.AzAffinity"/>
-        /// or <see cref="ReadFromStrategy.AzAffinityReplicasAndPrimary"/> strategies.
+        /// The Availability Zone (AZ) identifier.
         /// </summary>
         [MarshalAs(UnmanagedType.LPUTF8Str)]
         public string? Az;
 
         /// <summary>
-        /// Init strategy with a read from strategy that does not require an Availability Zone
-        /// (any strategy other than <seealso cref="ReadFromStrategy.AzAffinity" /> or
-        /// <seealso cref="ReadFromStrategy.AzAffinityReplicasAndPrimary" />).
+        /// Constructs a read from strategy without an Availability Zone (AZ).
         /// </summary>
-        /// <param name="strategy">A strategy that does not require an Availability Zone, e.g.
-        /// <seealso cref="ReadFromStrategy.Primary" />, <seealso cref="ReadFromStrategy.PreferReplica" />,
-        /// or <seealso cref="ReadFromStrategy.AllNodes" />.</param>
+        /// <param name="strategy">A strategy that does not require an Availability Zone.</param>
         /// <exception cref="ArgumentException">Thrown if <paramref name="strategy"/> requires an Availability Zone.</exception>
         public ReadFrom(ReadFromStrategy strategy)
         {
@@ -204,10 +199,10 @@ public abstract class ConnectionConfiguration
         }
 
         /// <summary>
-        /// Init strategy with <seealso cref="ReadFromStrategy.AzAffinity" /> or <seealso cref="ReadFromStrategy.AzAffinityReplicasAndPrimary" /> strategy and an Availability Zone.
+        /// Constructs a read from strategy with an Availability Zone (AZ).
         /// </summary>
-        /// <param name="strategy">Either <seealso cref="ReadFromStrategy.AzAffinity" /> or <seealso cref="ReadFromStrategy.AzAffinityReplicasAndPrimary" />.</param>
-        /// <param name="az">An Availability Zone (AZ).</param>
+        /// <param name="strategy">A strategy that requires an Availability Zone.</param>
+        /// <param name="az">The corresponding Availability Zone.</param>
         /// <exception cref="ArgumentException">Thrown if <paramref name="strategy"/> does not accept an Availability Zone.</exception>
         /// <exception cref="ArgumentException">Thrown if <paramref name="az"/> is empty or whitespace.</exception>
         public ReadFrom(ReadFromStrategy strategy, string az)
