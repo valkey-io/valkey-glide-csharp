@@ -33,7 +33,7 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var ids = await clusterClient.ClientIdAsync(Route.AllPrimariesRoute);
+    /// var ids = await clusterClient.ClientIdAsync(Route.AllPrimaries);
     /// foreach (var (node, id) in ids.MultiValue)
     ///     Console.WriteLine($"{node}: {id}");
     /// </code>
