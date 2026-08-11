@@ -1,132 +1,39 @@
-# AGENTS: Unified Context for Agentic Tools
+# AGENTS: Context for Agentic Tools
 
-This document gives AI agents the minimum, accurate context needed to work productively in this repository. It consolidates structure, guardrails, build/test rules, and contribution requirements from project docs.
+This document contains information and instructions that are specific for agentic tools.
+Generic information for developers and contributors can be found in the corresponding guides:
+
+- [`DEVELOPER.md`](DEVELOPER.md) provides instructions for development work,
+including setup, building, testing, formatting, linting, and checks.
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) provides instruction for contributing to this project,
+including commit requirements like DCO signoff and conventional commits.
 
 ## Repository Overview
 
-- Primary language: `C#` with a Rust core via FFI
-- Solution: `Valkey.Glide.sln`
-
-## Architecture Quick Facts
-
-- Single-target library (net8.0).
-- Public APIs are async; cancellation is supported.
-- Rust core (glide-core) accessed via P/Invoke; be careful with marshaling.
+- Primary language: `C#` with a Rust core (glide-core) accessed via P/Invoke.
+- Solution: `Valkey.Glide.sln` – single-target library (`net8.0`) aync public API.
 - Commands organized via partials in `BaseClient.*.cs`; cluster features use routing (`Route`, `ClusterValue<T>`).
 
-## Build and Test Rules (Agents)
+## Working Effectively (Agents)
 
-- .NET 10 SDK is required to compile the solution.
-- Prefer `Task` runner commands when available; otherwise use `dotnet` directly with `--framework net8.0`.
-- Never pass individual `.cs` files to `dotnet test`; use project folders and filters.
-
-Common commands:
-
-- Build:
-  - `task build` (complete solution)
-  - `task build target=lib` (Valkey.Glide library only)
-  - `task build framework=net8.0` (.NET 8.0 only)
-
-- Test:
-  - `task test` (all tests)
-  - `task test:unit` (unit tests only)
-  - `task test:integration` (integration tests only)
-
-- Filter tests:
-  - By class: `task test:unit filter=MyTestClass`
-  - By method: `task test:integration filter=MyMethodName`
-
-- Coverage and reports (preferred via Task):
-  - `task test coverage=true` (collect), `task coverage:report` (generate)
-  - Coverage results go to `dev/coverage/results/`; reports to `dev/coverage/reports/`
-
-## Contribution Requirements
-
-### Developer Certificate of Origin (DCO) Signoff
-
-All commits to this repository MUST include a DCO signoff to certify authorship and license compliance.
-
-- Required signoff line (must appear at the end of every commit message):
-
-  ```text
-  Signed-off-by: Your Name <your.email@example.com>
-  ```
-
-- How to add signoffs:
-  - Automatic (recommended): `git commit -s -m "<message>"`
-  - Configure Git to always sign off: `git config --global format.signOff true`
-  - Amend last commit to add signoff: `git commit --amend --signoff --no-edit`
-  - Multiple commits missing signoffs: `git rebase -i HEAD~n --signoff`
-
-- What the signoff means (summary):
-  - You have the right to submit the work under the project license
-  - The work is either your own, appropriately licensed, or provided by someone who certified the same
-  - You understand contributions are public and recorded indefinitely
-
-- Enforcement:
-  - Pull requests are checked for proper signoffs
-  - Commits without signoffs will be rejected (applies to all contributors)
-
-### Conventional Commit Format
-
-Use Conventional Commits to make history and automation clearer.
-
-Note: Conventional Commits apply to commit messages only. Do not enforce this format for pull request titles or issue titles; use clear, descriptive English for those.
-
-- Message format:
-
-  ```text
-  <type>(<scope>): <description>
-
-  [optional body]
-
-  [optional footer(s)]
-
-  Signed-off-by: Your Name <your.email@example.com>
-  ```
-
-- Types:
-  - `feat`: New feature
-  - `fix`: Bug fix
-  - `docs`: Documentation changes
-  - `style`: Code style changes (formatting, whitespace, etc.)
-  - `refactor`: Code refactoring (no functional changes)
-  - `test`: Adding or updating tests
-  - `chore`: Maintenance tasks (build, tooling, deps)
-
-- Examples:
-  - `feat(config): add ReadFrom parsing support`
-  - `fix(client): resolve connection timeout issue`
-  - `docs(readme): update installation instructions`
-  - `test(config): add comprehensive ReadFrom tests`
-
-- Example full commit message:
-
-  ```text
-  feat: Add ReadFrom parsing support to ConfigurationOptions
-
-  - Implement ParseReadFromStrategy method
-  - Add validation for ReadFrom strategy and AZ parameter combinations
-  - Extend DoParse method to handle readFrom and az parameters
-
-  Addresses GitHub issue #26
-
-  Signed-off-by: Your Name <your.email@example.com>
-  ```
+- ALWAYS use `task` runner commands — do NOT invoke `dotnet`, `dotnet format`, `cargo`,
+  `cargo clippy`, or `cargo fmt` directly. `task` applies required flags (framework
+  scoping, analyzer/warning-as-error rules) that raw commands miss. Fall back to a raw
+  command only if no `task` target exists, and scope .NET to `--framework net8.0`.
+- `task test:integration` auto-starts throwaway servers; it just needs `python3` and a
+  `valkey-server`/`redis-server` binary on `PATH`. A `*-server not found on PATH` error
+  means the binary is missing — fix `PATH`, don't treat it as a test failure.
+- Never pass individual `.cs` files to `dotnet test`; use project folders and `filter=`.
+- Commit with `git commit -s` (DCO signoff is enforced) using Conventional Commit messages.
 
 ## Guardrails & Policies
 
-- Submodule:
-  - `valkey-glide/` is a read-only submodule.
-  - Only `valkey-glide/glide-core/` is relevant to this repo; ignore other language folders.
-  - Do not edit submodule code from this repository.
-- API compatibility:
-  - Maintain StackExchange.Redis API compatibility (target version 2.8.58) in the public API surface whenever possible.
-- Documentation:
-  - All public and protected members must have XML doc comments (`CS1591` should produce zero warnings).
-  - Follow the guidelines in `docs/documentation-guidelines.md`.
-- Analyzer quirks:
-  - `<ImplicitUsings>enable</ImplicitUsings>` can flag required `using` directives as unnecessary. Verify before removing (common false positives: `System.Net`, `System.ComponentModel`, `System.Text`, `Valkey.Glide.Internals`).
+- Submodule: `valkey-glide/` is a read-only submodule — do not edit it. Only
+  `valkey-glide/glide-core/` is relevant here; ignore other language folders.
+- API compatibility: maintain StackExchange.Redis API compatibility (target version 2.8.58)
+  in the public API surface whenever possible.
+- Documentation: all public and protected members need XML doc comments (`CS1591` should
+  produce zero warnings). Follow [`docs/documentation.md`](docs/documentation.md).
 
 ## Project Structure (Essential)
 
@@ -145,30 +52,20 @@ Note: Conventional Commits apply to commit messages only. Do not enforce this fo
   - `Valkey.Glide.UnitTests/` – unit-level validation, parsing, API construction
   - `Valkey.Glide.IntegrationTests/` – end-to-end standalone and cluster tests, batching, AZ Affinity, error handling
 
-<!-- Analyzer guidance and common commands consolidated under Guardrails & Policies and Build/Test above to reduce redundancy. -->
-
 ## Quality Gates (Agent Checklist)
 
-- [ ] Build passes (`task build`)
-- [ ] [Formatting](DEVELOPER.md#formatting) passes (`task format`)
-- [ ] [Linting](DEVELOPER.md#linting) passes (`task lint`)
-- [ ] [Checks](DEVELOPER.md#checks) pass (`task check`)
-- [ ] All unit tests pass (`task test:unit`)
-- [ ] Relevant integration tests pass (`task test:integration`)
+Run each via `task` (see [DEVELOPER.md](DEVELOPER.md) for the commands):
+
+- [ ] [Build](DEVELOPER.md#build)
+- [ ] [Format](DEVELOPER.md#format)
+- [ ] [Lint](DEVELOPER.md#lint)
+- [ ] [Checks](DEVELOPER.md#checks) pass.
+- [ ] [Unit and integration tests](DEVELOPER.md#tests) pass. Use filters to scope to relevant tests only.
 - [ ] Public API changes respect StackExchange.Redis compatibility.
-- [ ] All commits include DCO signoff.
+- [ ] All commits include DCO signoff (see [CONTRIBUTING.md](CONTRIBUTING.md)).
 
 ## Quick Facts for Reasoners
 
 - Engines supported (per README): Valkey 7.2, 8.0, 8.1; Redis 6.2–7.2.
 - Features include AZ Affinity, PubSub auto-reconnect, sharded PubSub, cluster MGET/MSET/DEL/FLUSHALL, cluster scan, batching, OpenTelemetry.
 - Error handling via typed exceptions; async-first API.
-
-## If You Need More
-
-- General overview: `README.md`
-- Developer setup and Task usage: `DEVELOPER.md`
-- Commit/DCO rules: `CONTRIBUTING.md`
-- Documentation guidelines: `docs/documentation-guidelines.md`
-
-This file is optimized for autonomous agents. Keep commands scoped to `net8.0`; avoid modifying submodules; preserve API compatibility and DCO signoffs.

@@ -6,6 +6,10 @@ Validation rules:
   1. Every TODO must follow the format `TODO #<github_id>: <description>`.
   2. The description should provide a summary of the proposed changes, and must be at least 10 characters long.
   3. The referenced number must correspond to an open Valkey GLIDE C# GitHub issue.
+  4. Files can be excluded from validation using `dev/conf/check-todos-ignore`.
+
+Example:
+    // TODO #472: Auto-generate this enum from the Rust source.
 
 Options:
   --fail-issues ID [ID ...]

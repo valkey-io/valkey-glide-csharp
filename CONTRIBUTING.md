@@ -33,13 +33,47 @@ To send us a pull request, please:
 GitHub provides additional document on [forking a repository](https://help.github.com/articles/fork-a-repo/) and
 [creating a pull request](https://help.github.com/articles/creating-a-pull-request/).
 
-## Finding contributions to work on
+## Commit Requirements
 
-Looking at the existing issues is a great way to find something to contribute on. As our projects, by default, use the default GitHub issue labels (enhancement/bug/duplicate/help wanted/invalid/question/wontfix), looking at any 'help wanted' issues is a great place to start.
+### Developer Certificate of Origin (DCO) Signoff
 
-## Developer Guide
+All commits MUST include a DCO signoff to certify authorship and license compliance. Pull
+requests are checked for proper signoffs, and commits without them are rejected.
 
-[C# Developer Guide](./DEVELOPER.md).
+- Required signoff line (must appear at the end of every commit message):
+
+  ```text
+  Signed-off-by: Your Name <your.email@example.com>
+  ```
+
+- How to add signoffs:
+  - Automatic (recommended): `git commit -s -m "<message>"`
+  - Configure Git to always sign off: `git config --global format.signOff true`
+  - Amend last commit to add signoff: `git commit --amend --signoff --no-edit`
+  - Multiple commits missing signoffs: `git rebase -i HEAD~n --signoff`
+
+### Conventional Commit Format
+
+Use [Conventional Commits](https://www.conventionalcommits.org/) for commit messages
+(this applies to commit messages only — use clear, descriptive English for pull request and
+issue titles).
+
+Example:
+
+  ```text
+  feat(config): add ReadFrom parsing support
+
+  - Implement ParseReadFromStrategy method
+  - Add validation for ReadFrom strategy and AZ parameter combinations
+
+  Addresses GitHub issue #26
+
+  Signed-off-by: Your Name <your.email@example.com>
+  ```
+
+## Finding Contributions to Work On
+
+Looking at the existing issues is a great way to find something to contribute on. Issues with the 'help wanted' label are a great place to start.
 
 ## Code of Conduct
 
@@ -47,7 +81,7 @@ This project has adopted the [Amazon Open Source Code of Conduct](https://aws.gi
 For more information see the [Code of Conduct FAQ](https://aws.github.io/code-of-conduct-faq) or contact
 <opensource-codeofconduct@amazon.com> with any additional questions or comments.
 
-## Security issue notifications
+## Security Issue Notifications
 
 [Reporting a Vulnerability](https://github.com/valkey-io/valkey-glide-csharp/security/policy)
 

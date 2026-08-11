@@ -4,7 +4,7 @@ This document describes how to set up your development environment to build and 
 
 ## Development Overview
 
-We're excited to share that the GLIDE C# client is currently in development! However, it's important to note that this client is a work in progress and is not yet complete or fully tested. Your contributions and feedback are highly encouraged as we work towards refining and improving this implementation. Thank you for your interest and understanding as we continue to develop this C# wrapper.
+The Valkey GLIDE C# client is released and available for use. Contributions and feedback are welcome as we continue to improve it.
 
 The C# client contains the following parts:
 
@@ -12,296 +12,236 @@ The C# client contains the following parts:
 2. C# part of the client located in `sources`; it translates Rust async API into .NET async API.
 3. Tests for the C# client located in `tests` directory.
 
-## Build from Source
+## Setup
 
-Software Dependencies:
+Install the following dependencies using the instructions below.
 
-- [Task](#task-installation)
-- [.NET](#net-installation)
-- [Git](#git-installation)
-- [WSL](#wsl-installation) (for Windows only)
-- [Valkey](#valkey-installation) (for testing)
+Valkey GLIDE C# dependencies:
 
-Install the following packages to build [GLIDE core rust library](./valkey-glide/glide-core/README.md):
+- [.NET](https://dotnet.microsoft.com/en-us/)
+  - .NET 8 runtime
+  — .NET 10 SDK to build
+- [Git](https://git-scm.com/)
+- [Task](https://taskfile.dev/)
+- [Valkey](https://valkey.io/)
+- [WSL](https://learn.microsoft.com/en-us/windows/wsl/install) (Windows only)
 
-- [ziglang and zigbuild](#ziglang-and-zigbuild-installation) (for GNU Linux only)
-- [Protoc](#protoc-installation)
-- rustup
-- GCC
-- pkg-config
-- cmake
-- openssl
-- openssl-dev
+Dependencies for building the [GLIDE core](./valkey-glide/glide-core/README.md):
 
-### Task Installation
+- [cargo-zigbuild](https://github.com/rust-cross/cargo-zigbuild) (GNU Linux only)
+- [cmake](https://cmake.org/)
+- [gcc](https://gcc.gnu.org/)
+- [openssl](https://www.openssl.org/)
+- [pkg-config](https://www.freedesktop.org/wiki/Software/pkg-config/)
+- [protobuf](https://github.com/protocolbuffers/protobuf)
+- [rustup](https://rustup.rs/)
+- [ziglang](https://ziglang.org/) (GNU Linux only)
 
-[Task](https://taskfile.dev/) is fast, cross-platform build tool.
+Developer tools:
 
-It's highly recommended to use `task` commands instead of raw `dotnet` commands for development.
+- [actionlint](https://github.com/rhysd/actionlint)
+- [cargo-deny](https://github.com/EmbarkStudios/cargo-deny)
+- [lychee](https://github.com/lycheeverse/lychee)
+- [Node.js](https://nodejs.org/)
+- [Python 3](https://www.python.org/)
+- [uv](https://github.com/astral-sh/uv)
+
+### macOS
 
 ```bash
-# Using Homebrew (macOS/Linux)
-brew install go-task/tap/go-task
+# 1. Install Homebrew packages:
+brew update
+brew install actionlint cmake coreutils dotnet@8 dotnet@10 git go-task/tap/go-task lychee node openssl python uv valkey
 
-# Using Chocolatey (Windows)
-choco install go-task
+# 2. Install Rust:
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source "$HOME/.cargo/env"
+cargo install --locked cargo-deny
 
-# Direct download from GitHub releases:
-# <https://github.com/go-task/task/releases>
+# 3. Install protoc:
+# Download a binary from https://github.com/protocolbuffers/protobuf/releases/tag/v25.1 and put it on your PATH.
 ```
 
-### .NET Installation
-
-[.NET](https://dotnet.microsoft.com/en-us/) is an open-source platform for building desktop, web, and mobile applications
-
-The Valkey GLIDE C# client requires .NET 10 SDK for building and .NET 8 for testing.
+### Linux
 
 ```bash
-# Using Homebrew (macOS/Linux)
-brew install dotnet@8 dotnet@10
+# 1. Install apt packages:
+sudo apt-get update -y
+sudo apt install -y cmake dotnet-sdk-8.0 dotnet-sdk-10.0 gcc git libssl-dev nodejs npm openssl pkg-config python3 valkey
 
-# Using Chocolatey (Windows)
-choco install dotnet-8.0-sdk dotnet-10.0-sdk
+# 2. Install Rust:
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source "$HOME/.cargo/env"
+cargo install --locked cargo-deny lychee
 
-# Direct download from Microsoft:
-# <https://dotnet.microsoft.com/en-us/download/dotnet/8.0>
-# <https://dotnet.microsoft.com/en-us/download/dotnet/10.0>
+# 3. Install uv:
+# See https://github.com/astral-sh/uv for other install methods.
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# 4. Install actionlint (x64):
+# See https://github.com/rhysd/actionlint/releases for other architectures.
+curl -fsSL https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz | sudo tar xz -C /usr/local/bin actionlint
+
+# 5. Install protoc:
+# Download a binary from https://github.com/protocolbuffers/protobuf/releases/tag/v25.1, then: sudo cp protoc /usr/bin/
+
+# 6. Install Task:
+# See https://taskfile.dev/installation/ for other methods.
+curl -1sLf 'https://dl.cloudsmith.io/public/task/task/setup.deb.sh' | sudo -E bash
+sudo apt install task
 ```
 
-### Git Installation
+#### GNU Linux
 
-[Git](https://git-scm.com/) is a free and open source distributed version control system.
-
-```bash
-# Using Homebrew (macOS/Linux)
-brew install git
-
-# Using Chocolatey (Windows)
-choco install git
-
-# Direct install from Git:
-# <https://git-scm.com/install>
-```
-
-### WSL Installation
-
-Windows Subsystem for Linux ([WSL](https://learn.microsoft.com/en-us/windows/wsl/install)) lets developers install a Linux distribution and use Linux applications, utilities, and Bash command-line tools directly on Windows.
-
-See [How to install Linux on Windows with WSL](https://learn.microsoft.com/en-us/windows/wsl/install) for installation instructions.
-
-### Valkey Installation
-
-[Valkey](https://valkey.io/) is required to to run tests. On Windows, it is recommended to install Valkey using [WSL](#wsl-installation).
+To build the Rust core on GNU Linux, additionally install [ziglang](https://ziglang.org/)
+(via pip) and [cargo-zigbuild](https://github.com/rust-cross/cargo-zigbuild):
 
 ```bash
-# Using Homebrew (macOS/Linux)
-# Install within WSL for Windows.
-brew install valkey
-
-# Direct installation from Valkey:
-# <https://valkey.io/topics/installation>
-```
-
-### `ziglang` and `zigbuild` Installation
-
-```bash
+# 1. Install ziglang (via pip):
+sudo apt install -y python3-pip
 pip3 install ziglang
+
+# 2. Install cargo-zigbuild:
 cargo install --locked cargo-zigbuild
 ```
 
-### Protoc Installation
-
-Download a binary matching your system from the [official release page](https://github.com/protocolbuffers/protobuf/releases/tag/v25.1) and make it accessible in your $PATH by moving it or creating a symlink. For example, on Linux you can copy it to `/usr/bin`:
+### Windows
 
 ```bash
-sudo cp protoc /usr/bin/
+# 1. Install Chocolatey packages:
+choco install actionlint cmake dotnet-8.0-sdk dotnet-10.0-sdk git go-task mingw nodejs openssl pkgconfiglite python uv
+
+# 2. Install Rust:
+# Install from https://rust-lang.org/tools/install/, then:
+cargo install --locked cargo-deny lychee
+
+# 3. Install protoc:
+# Download a binary from https://github.com/protocolbuffers/protobuf/releases/tag/v25.1 and put it on your PATH.
 ```
 
-### Additional Dependencies Installation for Ubuntu
+On Windows, integration tests additionally require [Windows Subsystem for Linux](https://learn.microsoft.com/en-us/windows/wsl/about) (WSL). Start by [installing WSL](https://learn.microsoft.com/en-us/windows/wsl/install), then install Python 3 within it:
 
 ```bash
-# Install dependecies using apt:
 sudo apt-get update -y
-sudo apt install -y gcc pkg-config openssl libssl-dev
-
-# Install Rust using curl:
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-source "$HOME/.cargo/env"
-
-# Install dependencies using cargo:
-cargo install --locked cargo-deny lychee
-
-# Install actionlint (x64) – see https://github.com/rhysd/actionlint/releases for other architectures:
-sudo curl -fsSL https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz \
-  | sudo tar xz -C /usr/local/bin actionlint
+sudo apt install -y python3
 ```
 
-### Additional Dependencies Installation for MacOS
+## Commands
+
+The project uses [Task](https://taskfile.dev/) for standardized development workflows.
+Run `task --list` to view all available tasks.
+
+### Build
 
 ```bash
-# Install dependencies using Homebrew:
-brew update
-brew install openssl coreutils lychee actionlint
-
-# Install Rust using curl:
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-source "$HOME/.cargo/env"
-
-# Install dependencies using cargo:
-cargo install --locked cargo-deny
+task build             # Build the solution
+task build target=lib  # Build only Valkey.Glide
 ```
 
-### Additional Dependencies Installation for Windows
+### Checks
+
+Run checks to validate examples, links, and TODOs.
 
 ```bash
-# Install dependencies using choco:
-choco install mingw pkgconfiglite openssl actionlint
-
-# Install Rust directly:
-# <https://rust-lang.org/tools/install/>
-
-# Install dependencies using cargo:
-cargo install --locked cargo-deny lychee
+task check           # Run all checks
+task check:examples  # Check C# examples in comments
+task check:links     # Check for broken links
+task check:todos     # Check that TODOs reference an open GitHub issue
 ```
 
-### Building and Installation
+For additional details:
 
-Before starting this step, make sure you've installed all software requirements.
+- Check examples script: `dev/scripts/check_examples.py`
+- Check links configuration: `dev/conf/lychee.toml`
+- Check TODOs script: `dev/scripts/check_todos.py`
 
-In Windows, run from following commands from the appropriate Visual Studio Command Prompt shell.
+### Format
 
-1. Clone the repository
-
-    ```bash
-    # Clone repository
-    git clone https://github.com/valkey-io/valkey-glide-csharp.git
-    cd valkey-glide-csharp
-    ```
-
-2. Build the C# wrapper
-
-    ```bash
-    # Using Task (preferred):
-    task build
-
-    # Using dotnet:
-    dotnet build
-    ```
-
-3. Run tests
-
-    Using Task (preferred):
-
-    ```bash
-    # Run all tests
-    task test
-
-    # Run specific test suites
-    task test:unit
-    task test:integration
-
-    # Run specific test classes or methods
-    task test:unit filter=MyTestClass
-    task test:integration filter=MyMethodName
-    ```
-
-    Using `dotnet`:
-
-    ```bash
-    # Run tests on supported dotnet versions sequentially
-    dotnet test -m:1
-
-    # Run tests on supported dotnet versions in parallel (may conflict and fail)
-    dotnet test
-
-    # Run tests with a specific dotnet version
-    dotnet test --framework net8.0
-    ```
-
-## Task Commands Overview
-
-The project uses Task for standardized development workflows. Here are the key commands:
+Run automated formatters to ensure consistent code style.
 
 ```bash
-# View all available tasks
-task --list
+task format           # Run all formatters
+task format:csharp    # Run C# formatter
+task format:markdown  # Run Markdown formatter
+task format:python    # Run Python formatter
+task format:rust      # Run Rust formatter
+task format:yaml      # Run YAML formatter
+```
 
-# Build and test workflows
-task build               # Build the solution
-task build target=lib    # Build only Valkey.Glide
-task test                # Run all tests
-task test coverage=true  # Run all tests with coverage
+### Lint
 
-# Specific test suites
-task test:unit                       # Unit tests only
-task test:integration                # Integration tests only
+Run linters to catch style issues and static analysis warnings.
+
+```bash
+task lint           # Run all linters
+task lint:actions   # Run GitHub Actions linter
+task lint:csharp    # Run C# linter
+task lint:markdown  # Run Markdown linter
+task lint:python    # Run Python linter
+task lint:rust      # Run Rust linter
+task lint:yaml      # Run YAML linter
+```
+
+C# style and analysis rules are defined in the project `.editorconfig` files:
+
+- [`.editorconfig`](.editorconfig) — repository-wide defaults.
+- [`sources/Valkey.Glide/abstract_Enums/.editorconfig`](sources/Valkey.Glide/abstract_Enums/.editorconfig)
+- [`sources/Valkey.Glide/abstract_APITypes/.editorconfig`](sources/Valkey.Glide/abstract_APITypes/.editorconfig)
+
+### Tests
+
+Run unit and integration tests for verify expected behaviour.
+
+```bash
+# Run tests
+task test
+task test:unit
+task test:integration
+
+# Run specific tests
+task test:unit filter=MyTestClass          # Filter by test class
+task test:integration filter=MyMethodName  # Filter by test method
+```
+
+By default, integration tests starts Valkey servers automatically. To run against
+existing servers instead, set the endpoint environment variables:
+
+- `standalone-endpoints` — standalone server(s)
+- `cluster-endpoints` — cluster server(s).
+- `tls=true` — connect over TLS.
+
+Each endpoint variable takes one or more comma-separated `host:port` values. If only
+standalone or cluster endpoint are specified, the other suite is skipped.
+
+```bash
+# Standalone integration tests only.
+env standalone-endpoints=localhost:6379 task test:integration
+
+# Standalone and cluster integration tests with TLS, filtered to one class:
+env standalone-endpoints=localhost:6379 cluster-endpoints=localhost:7000,localhost:7001,localhost:7002 tls=true task test:integration filter=ReadFromTests
+```
+
+### Test Coverage
+
+This project includes support for measuring line and branch coverage,
+including a coverage baseline and checks to ensure coverage does not decrease.
+See [docs/coverage.md](docs/coverage.md) for more details.
+
+```bash
+# Run tests with coverage.
+task test coverage=true              # Run all tests with coverage
 task test:unit coverage=true         # Unit tests with coverage
 task test:integration coverage=true  # Integration tests with coverage
 
-# Coverage
+# Coverage commands
 task coverage:install # Install coverage reporting tools
 task coverage:report  # Generate HTML + JSON coverage reports
 task coverage:check   # Compare measured coverage against baseline
 task coverage:update  # Update the coverage baseline
 task coverage:clean   # Remove coverage results and reports
-
-# See docs/coverage.md for full coverage documentation.
-
-# Linting and formatting
-task lint                   # Run all linters
-task format                 # Run all formatters
-task check                  # Run all checks
 ```
 
-## Advanced Testing Options
-
-By default, `dotnet test` produces no reporting and does not display the test results.  To log the test results to the console and/or produce a test report, you can use the `--logger` attribute with the test command.  For example:
-
-- `dotnet test --logger "html;LogFileName=TestReport.html"` (HTML reporting) or
-- `dotnet test --logger "console;verbosity=detailed"` (console reporting)
-
-To filter tests by class name or method name add the following expression to the command line: `--filter "FullyQualifiedName~<test or class name>"` (see the [.NET testing documentation](https://learn.microsoft.com/en-us/dotnet/core/testing/selective-unit-tests?pivots=xunit) for more details).
-
-A command line may contain all listed above parameters, for example:
-
-```bash
-dotnet test --framework net8.0 --logger "html;LogFileName=TestReport.html" --logger "console;verbosity=detailed" --filter "FullyQualifiedName~GetReturnsNull" --results-directory .
-```
-
-To run IT tests against an existing cluster and/or standalone endpoint, set `cluster-endpoints` and/or `standalone-endpoints` environment variables.
-In bash:
-
-```bash
-cluster-endpoints=localhost:7000 standalone-endpoints=localhost:6379 dotnet test
-```
-
-In Windows CMD:
-
-```cmd
-set cluster-endpoints=localhost:7000 && set standalone-endpoints=localhost:6379 && dotnet test
-```
-
-In Powershell:
-
-```powershell
-[Environment]::SetEnvironmentVariable('cluster-endpoints', 'localhost:7000')
-[Environment]::SetEnvironmentVariable('standalone-endpoints', 'localhost:6379')
-dotnet test
-```
-
-If those endpoints use TLS, add `tls` variable to `true` (applied to both endpoints):
-
-```bash
-cluster-endpoints=localhost:7000 standalone-endpoints=localhost:6379 tls=true dotnet test
-```
-
-You can combine this with test filter as well:
-
-```bash
-cluster-endpoints=localhost:7000 standalone-endpoints=localhost:6379 tls=true dotnet test --logger "console;verbosity=detailed" --filter "FullyQualifiedName~GetReturnsNull"
-```
-
-### IAM Authentication Tests
+#### IAM Authentication Tests
 
 To run [IAM authentication tests](tests/Valkey.Glide.IntegrationTests/IamAuthTests.cs) locally, set the following environment variables:
 
@@ -315,7 +255,7 @@ If any of these environment variables are not set, IAM authentication tests will
 
 **Note:** The credential values shown above (`test_access_key`, etc.) are arbitrary placeholder strings. The AWS SDK uses them to generate an authentication token, but the local test server doesn't validate the token. These tests verify that the IAM authentication flow works correctly (token generation, connection establishment, and token refresh), not that the credentials are valid.
 
-### DNS Tests
+#### DNS Tests
 
 To run [DNS tests](tests/Valkey.Glide.IntegrationTests/DnsTests.cs) locally:
 
@@ -338,63 +278,6 @@ To run [DNS tests](tests/Valkey.Glide.IntegrationTests/DnsTests.cs) locally:
 
 If the environment variable is not set, DNS tests will be skipped.
 
-## Formatting
-
-Run automated formatters to ensure consistent code style.
-
-```bash
-task format           # Run all formatters
-task format:csharp    # Run C# formatter
-task format:markdown  # Run Markdown formatter
-task format:python    # Run Python formatter
-task format:rust      # Run Rust formatter
-task format:yaml      # Run YAML formatter
-```
-
-## Linting
-
-Run linters to catch style issues and static analysis warnings.
-
-```bash
-task lint           # Run all linters
-task lint:actions   # Run GitHub Actions linter
-task lint:csharp    # Run C# linter
-task lint:markdown  # Run Markdown linter
-task lint:python    # Run Python linter
-task lint:rust      # Run Rust linter
-task lint:yaml      # Run YAML linter
-```
-
-## Checks
-
-Run checks to validate examples, links, and TODOs.
-
-```bash
-task check
-task check:examples
-task check:links
-task check:todos
-```
-
-### TODOs
-
-All TODOs must follow the format `TODO #<number>: <description>`, where:
-
-- `<number>` is an open GitHub issue in this repository.
-- `<description>` is a short explanation of what needs to change (at least 10 characters).
-
-Example:
-
-```csharp
-// TODO #472: Auto-generate this enum from the Rust source.
-```
-
-Files can be excluded from validation via `dev/conf/check-todos-ignore` (fnmatch glob patterns, one per line).
-
-## Test framework and Style
-
-The CSharp Valkey-Glide client uses xUnit v3 for testing code. The test code styles are defined in `.editorconfing` (see `dotnet_diagnostic.xUnit..` rules). The xUnit rules are enforced by the [xUnit analyzers](https://github.com/xunit/xunit.analyzers) referenced in the main xunit.v3 NuGet package. If you choose to use xunit.v3.core instead, you can reference xunit.analyzers explicitly. For additional info, please, refer to <https://xunit.NET> and <https://github.com/xunit/xunit>
-
 ## Documentation
 
 - [Valkey GLIDE](<https://glide.valkey.io/getting-started/quickstart/?lang=c%23>) – Official Valkey GLIDE documentation for users, including quick start guides, tutorials, and how-to guides.
@@ -405,16 +288,6 @@ The CSharp Valkey-Glide client uses xUnit v3 for testing code. The test code sty
 Performance benchmarking for the C# client can be performed using [resp-bench](https://github.com/ikolomi/resp-bench), a multi-language benchmark suite for RESP protocol compatible databases. It supports Valkey GLIDE C# and StackExchange.Redis out of the box.
 
 Refer to the [resp-bench README](https://github.com/ikolomi/resp-bench/blob/main/README.md) and [C# benchmark docs](https://github.com/ikolomi/resp-bench/blob/main/docs/BENCHMARKS_CSHARP.md) for setup and usage instructions.
-
-## Updating CI Test Matrices
-
-To update our GitHub workflow test runs, edit the JSON files in [`.github/json_matrices/`](.github/json_matrices/).
-
-It serves as a "test order", describing available properties and which `profiles` they belong to (`standard`, `full`). No workflow or script changes are needed.
-
-Ex: To add a new platform to the `standard` profile, add a new entry to `.github/json_matrices/os_matrix.json` with `profiles: ['standard']`
-
-See the [CI/CD Test Matrices README](docs/ci-cd.md) for details.
 
 ## Community and Feedback
 
