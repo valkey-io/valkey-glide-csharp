@@ -119,7 +119,7 @@ internal partial class ValkeyServer(Database conn, EndPoint endpoint) : IServer
 
     /// <inheritdoc/>
     public async Task ClientKillAsync(EndPoint endpoint, CommandFlags flags = CommandFlags.None)
-        => await ClientKillAsync(endpoint: endpoint, flags: flags);
+        => await ClientKillAsync(id: null, clientType: null, endpoint: endpoint, skipMe: true, flags: flags);
 
     /// <inheritdoc/>
     public async Task<long> ClientKillAsync(
