@@ -82,6 +82,10 @@ public class ServerTests(TestConfiguration config)
         Assert.NotEqual(targetId, await target.ClientIdAsync());
     }
 
+    // In Valkey, client IDs are only unique per-server. As a result, we only test killing
+    // clients by ID for standalone clients, since calls to ClientIdAsync() on cluster clients
+    // are routed to all nodes and so could unexpectedly kill other clients.
+
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestStandaloneConnections), MemberType = typeof(TestConfiguration))]
     public async Task ClientKillAsync_ById_NonExistent_ReturnsZero(ConnectionMultiplexer conn)

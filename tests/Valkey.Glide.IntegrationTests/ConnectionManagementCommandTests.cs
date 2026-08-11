@@ -99,6 +99,10 @@ public class ConnectionManagementCommandTests(ServerFixture fixture) : IClassFix
         Assert.Equal(1, await client.ClientKillAsync(options));
     }
 
+    // In Valkey, client IDs are only unique per-server. As a result, we only test killing
+    // clients by ID for standalone clients, since calls to ClientIdAsync() on cluster clients
+    // are routed to all nodes and so could unexpectedly kill other clients.
+
     [Fact]
     public async Task ClientKillAsync_ById_NonExistentId_ReturnsZero()
     {
