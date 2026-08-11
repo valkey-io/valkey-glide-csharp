@@ -1223,3 +1223,16 @@ public abstract class ConnectionConfiguration
         #endregion
     }
 }
+
+/// <summary>
+/// Internal helpers for <see cref="ConnectionConfiguration.ReadFromStrategy"/>.
+/// </summary>
+internal static class ReadFromStrategyExtensions
+{
+    /// <summary>
+    /// Returns <see langword="true"/> if the strategy requires an Availability Zone (AZ).
+    /// </summary>
+    internal static bool IsAzReadFromStrategy(this ConnectionConfiguration.ReadFromStrategy strategy) =>
+        strategy is ConnectionConfiguration.ReadFromStrategy.AzAffinity
+            or ConnectionConfiguration.ReadFromStrategy.AzAffinityReplicasAndPrimary;
+}
