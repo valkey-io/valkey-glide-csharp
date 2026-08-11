@@ -42,6 +42,18 @@ pub enum PushKind {
     SSubscribe = 11,
 }
 
+/// The read-from strategy for routing read commands.
+/// Must match [`glide_core::client::ReadFrom`] in glide-core.
+#[repr(u32)]
+#[derive(Clone, Copy)]
+pub enum ReadFromStrategy {
+    Primary = 0,
+    PreferReplica = 1,
+    AZAffinity = 2,
+    AZAffinityReplicasAndPrimary = 3,
+    AllNodes = 4,
+}
+
 /// The command routing type for cluster clients.
 /// Must match [`redis::cluster_routing::RoutingInfo`] in glide-core.
 #[repr(u32)]
