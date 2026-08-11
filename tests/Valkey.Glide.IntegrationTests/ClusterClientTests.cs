@@ -348,8 +348,9 @@ public class ClusterClientTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task TestClientId(GlideClusterClient client)
     {
-        long clientId = await client.ClientIdAsync();
-        Assert.True(clientId > 0, "Client ID should be a positive number");
+        // TODO #519: Remove explicit route.
+        var result = await client.ClientIdAsync(Route.AllNodes);
+        Assert.All(result.MultiValue.Values, id => Assert.True(id > 0));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]

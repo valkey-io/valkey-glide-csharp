@@ -186,10 +186,10 @@ public class StandaloneClientTests(TestConfiguration config)
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
     public async Task TestClientId(GlideClient client)
-    {
-        long clientId = await client.ClientIdAsync();
-        Assert.True(clientId > 0, "Client ID should be a positive number");
-    }
+    // TODO #519: ClientIdAsync on standalone is fine
+#pragma warning disable CS0618
+        => Assert.True(await client.ClientIdAsync() > 0);
+#pragma warning restore CS0618
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]

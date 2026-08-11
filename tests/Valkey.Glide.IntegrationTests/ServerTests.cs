@@ -65,22 +65,21 @@ public class ServerTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestStandaloneConnections), MemberType = typeof(TestConfiguration))]
-    // TODO #519: Test both standalone and cluster once ClientIdAsync no longer returns the ID for a random node.
     public async Task ClientKillAsync_ByAddress_KillsClient(ConnectionMultiplexer conn)
     {
-        var server = conn.GetServers().First();
-        var id = await server.ClientIdAsync();
+        var target = ConnectionMultiplexer.Connect(conn.RawConfig).GetServers().First();
+        var targetId = await target.ClientIdAsync();
 
         // TODO #414: Update to use ClientInfoAsync() once available on IServer.
-        var info = (await server.ExecuteAsync("CLIENT", ["INFO"])).AsString()!;
+        var info = (await target.ExecuteAsync("CLIENT", ["INFO"])).AsString()!;
         var addr = info.Split(' ').First(f => f.StartsWith("addr=")).Split('=')[1];
         var endpoint = IPEndPoint.Parse(addr);
 
+        var server = conn.GetServers().First();
         await server.ClientKillAsync(endpoint);
 
-        // Verify that client reconnected with new connection ID.
-        await AssertReconnected(server);
-        Assert.NotEqual(id, await server.ClientIdAsync());
+        await AssertReconnected(target);
+        Assert.NotEqual(targetId, await target.ClientIdAsync());
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]

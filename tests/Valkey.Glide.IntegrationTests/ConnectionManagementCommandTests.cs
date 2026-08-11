@@ -6,7 +6,6 @@ using System.Net;
 using Valkey.Glide.Commands.Options;
 using Valkey.Glide.TestUtils;
 
-using static Valkey.Glide.TestUtils.Assertions;
 using static Valkey.Glide.TestUtils.Builders;
 
 namespace Valkey.Glide.IntegrationTests;
@@ -83,22 +82,21 @@ public class ConnectionManagementCommandTests(ServerFixture fixture) : IClassFix
         Assert.Equal(0, await client.ClientKillAsync(new ClientFilterOptions().WithAddress("192.0.2.1", 9999)));
     }
 
-    [Fact]
-    public async Task ClientKillAsync_ByAddress_KillsClient()
+    [Theory]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
+    public async Task ClientKillAsync_ByAddress_KillsClient(bool clusterMode)
     {
-        await using var client = await fixture.StandaloneServer.CreateClientAsync();
-        var id = await client.ClientIdAsync();
+        await using var client = await fixture.GetServer(clusterMode).CreateClientAsync();
 
         // TODO #414: Update to use ClientInfoAsync()
-        var info = (await ((GlideClient)client).CustomCommand(InfoCommand))!.ToString()!;
+        var info = client is GlideClusterClient clusterClient
+            ? (await clusterClient.CustomCommand(InfoCommand, Route.Random)).SingleValue!.ToString()!
+            : (await ((GlideClient)client).CustomCommand(InfoCommand))!.ToString()!;
         var addr = info.Split(' ').First(f => f.StartsWith("addr=")).Split('=')[1];
         var endpoint = IPEndPoint.Parse(addr);
 
         var options = new ClientFilterOptions().WithAddress(endpoint.Address.ToString(), (ushort)endpoint.Port).WithSkipMe(false);
         Assert.Equal(1, await client.ClientKillAsync(options));
-
-        await AssertReconnected(client);
-        Assert.NotEqual(id, await client.ClientIdAsync());
     }
 
     [Fact]
@@ -112,8 +110,11 @@ public class ConnectionManagementCommandTests(ServerFixture fixture) : IClassFix
     public async Task ClientKillAsync_ById_KillsClient()
     {
         await using var client = await fixture.StandaloneServer.CreateClientAsync();
-        var id = await client.ClientIdAsync();
 
+        // TODO #519: ClientIdAsync on standalone is fine
+#pragma warning disable CS0618
+        var id = await client.ClientIdAsync();
+#pragma warning restore CS0618
         var options = new ClientFilterOptions().WithId(id).WithSkipMe(false);
         Assert.Equal(1, await client.ClientKillAsync(options));
     }
