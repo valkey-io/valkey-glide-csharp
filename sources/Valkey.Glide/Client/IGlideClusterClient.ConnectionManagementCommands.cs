@@ -25,7 +25,7 @@ public partial interface IGlideClusterClient
     Task<ClusterValue<ValkeyValue>> ClientGetNameAsync(Route route);
 
     /// <summary>
-    /// Gets the current connection ID.
+    /// Gets the connection IDs for the specified route.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/client-id/">Valkey commands – CLIENT ID</seealso>
     /// <param name="route">Specifies the routing configuration for the command.</param>
@@ -33,8 +33,9 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var id = (await clusterClient.ClientIdAsync(Route.Random)).SingleValue;
-    /// Console.WriteLine($"Connection ID: {id}");
+    /// var ids = await clusterClient.ClientIdAsync(Route.AllPrimaries);
+    /// foreach (var (node, id) in ids.MultiValue)
+    ///     Console.WriteLine($"{node}: {id}");
     /// </code>
     /// </example>
     /// </remarks>

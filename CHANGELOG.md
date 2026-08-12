@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `BGSAVE SCHEDULE` (#436)
   - `BGSAVE` (#436)
   - `CLIENT CACHING` (#451)
+  - `CLIENT KILL` (#276)
   - `CLIENT PAUSE` (#437)
   - `CLIENT TRACKING` (#451)
   - `CLIENT TRACKINGINFO` (#451)

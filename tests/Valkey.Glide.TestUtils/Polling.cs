@@ -1,7 +1,5 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using Xunit;
-
 namespace Valkey.Glide.TestUtils;
 
 /// <summary>
@@ -60,10 +58,16 @@ public static class Polling
         using CancellationTokenSource cts = new(timeout.Value);
         while (!cts.Token.IsCancellationRequested)
         {
-            if (await condition())
+            try
             {
-                return;
+                if (await condition())
+                {
+                    return;
+                }
             }
+
+            // Catch errors and retry.
+            catch when (!cts.Token.IsCancellationRequested) { }
 
             await Task.Delay(interval.Value);
         }

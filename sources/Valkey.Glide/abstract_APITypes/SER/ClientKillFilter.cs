@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
 using System.Net;
 
 namespace Valkey.Glide;
@@ -14,6 +13,8 @@ public class ClientKillFilter
     /// Filter arguments builder for `CLIENT KILL`.
     /// </summary>
     public ClientKillFilter() { }
+
+    #region Public Properties
 
     /// <summary>
     /// The ID of the client to kill.
@@ -49,6 +50,9 @@ public class ClientKillFilter
     /// Age of connection in seconds.
     /// </summary>
     public long? MaxAgeInSeconds { get; private set; }
+
+    #endregion
+    #region Public Methods
 
     /// <summary>
     /// Sets client id filter.
@@ -120,60 +124,5 @@ public class ClientKillFilter
         return this;
     }
 
-    internal List<ValkeyValue> ToList(bool withReplicaCommands)
-    {
-        var parts = new List<ValkeyValue>(15)
-        {
-            ValkeyLiterals.KILL,
-        };
-        if (Id != null)
-        {
-            parts.Add(ValkeyLiterals.ID);
-            parts.Add(Id.Value);
-        }
-        if (ClientType != null)
-        {
-            parts.Add(ValkeyLiterals.TYPE);
-            switch (ClientType.Value)
-            {
-                case Glide.ClientType.Normal:
-                    parts.Add(ValkeyLiterals.normal);
-                    break;
-                case Glide.ClientType.Replica:
-                    parts.Add(withReplicaCommands ? ValkeyLiterals.replica : ValkeyLiterals.slave);
-                    break;
-                case Glide.ClientType.PubSub:
-                    parts.Add(ValkeyLiterals.pubsub);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(ClientType));
-            }
-        }
-        if (Username != null)
-        {
-            parts.Add(ValkeyLiterals.USERNAME);
-            parts.Add(Username);
-        }
-        if (Endpoint != null)
-        {
-            parts.Add(ValkeyLiterals.ADDR);
-            parts.Add((ValkeyValue)Format.ToString(Endpoint));
-        }
-        if (ServerEndpoint != null)
-        {
-            parts.Add(ValkeyLiterals.LADDR);
-            parts.Add((ValkeyValue)Format.ToString(ServerEndpoint));
-        }
-        if (SkipMe != null)
-        {
-            parts.Add(ValkeyLiterals.SKIPME);
-            parts.Add(SkipMe.Value ? ValkeyLiterals.yes : ValkeyLiterals.no);
-        }
-        if (MaxAgeInSeconds != null)
-        {
-            parts.Add(ValkeyLiterals.MAXAGE);
-            parts.Add(MaxAgeInSeconds);
-        }
-        return parts;
-    }
+    #endregion
 }

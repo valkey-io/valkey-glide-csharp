@@ -1,7 +1,9 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using System.Diagnostics;
+using System.Net;
 
+using Valkey.Glide.Commands.Options;
 using Valkey.Glide.TestUtils;
 
 using static Valkey.Glide.TestUtils.Builders;
@@ -70,82 +72,55 @@ public class ConnectionManagementCommandTests(ServerFixture fixture) : IClassFix
     }
 
     #endregion
-    #region ClientTrackingInfoAsync
+    #region ClientKillAsync
 
     [Theory]
     [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
-    public async Task ClientTrackingInfo_Off(bool clusterMode)
+    public async Task ClientKillAsync_ByAddress_NonExistentAddress_ReturnsZero(bool clusterMode)
+    {
+        await using var client = await fixture.GetServer(clusterMode).CreateClientAsync();
+        Assert.Equal(0, await client.ClientKillAsync(new ClientFilterOptions().WithAddress("192.0.2.1", 9999)));
+    }
+
+    [Theory]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
+    public async Task ClientKillAsync_ByAddress_KillsClient(bool clusterMode)
     {
         await using var client = await fixture.GetServer(clusterMode).CreateClientAsync();
 
-        var info = await client.ClientTrackingInfoAsync();
-        AssertTrackingInfoOff(info);
+        // TODO #414: Update to use ClientInfoAsync()
+        var info = client is GlideClusterClient clusterClient
+            ? (await clusterClient.CustomCommand(InfoCommand, Route.Random)).SingleValue!.ToString()!
+            : (await ((GlideClient)client).CustomCommand(InfoCommand))!.ToString()!;
+        var addr = info.Split(' ').First(f => f.StartsWith("addr=")).Split('=')[1];
+        var endpoint = IPEndPoint.Parse(addr);
+
+        var options = new ClientFilterOptions().WithAddress(endpoint.Address.ToString(), (ushort)endpoint.Port).WithSkipMe(false);
+        Assert.Equal(1, await client.ClientKillAsync(options));
+    }
+
+    // In Valkey, client IDs are only unique per-server. As a result, we only test killing
+    // clients by ID for standalone clients, since calls to ClientIdAsync() on cluster clients
+    // are routed to all nodes and so could unexpectedly kill other clients.
+
+    [Fact]
+    public async Task ClientKillAsync_ById_NonExistentId_ReturnsZero()
+    {
+        await using var client = await fixture.StandaloneServer.CreateClientAsync();
+        Assert.Equal(0, await client.ClientKillAsync(new ClientFilterOptions().WithId(999999999)));
     }
 
     [Fact]
-    public async Task ClientTrackingInfo_Off_WithRoute()
+    public async Task ClientKillAsync_ById_KillsClient()
     {
-        await using GlideClusterClient client = await fixture.ClusterServer.CreateClusterClientAsync();
+        await using var client = await fixture.StandaloneServer.CreateClientAsync();
 
-        var response = await client.ClientTrackingInfoAsync(Route.AllNodes);
-
-        Assert.NotEmpty(response.MultiValue);
-        foreach (var info in response.MultiValue.Values)
-        {
-            AssertTrackingInfoOff(info);
-        }
-    }
-
-    [Theory]
-    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
-    public async Task ClientTrackingInfo_On(bool clusterMode)
-    {
-        var cache = BuildClientSideCacheConfig().WithServerAssisted();
-
-        await using BaseClient client = clusterMode
-            ? await GlideClusterClient.CreateClient(
-                fixture.ClusterServer.CreateConfigBuilder()
-                    .WithClientSideCache(cache)
-                    .Build())
-            : await GlideClient.CreateClient(
-                fixture.StandaloneServer.CreateConfigBuilder()
-                    .WithClientSideCache(cache)
-                    .Build());
-
-        AssertTrackingInfoOn(await client.ClientTrackingInfoAsync());
-    }
-
-    [Fact]
-    public async Task ClientTrackingInfo_On_WithRoute()
-    {
-        var cache = BuildClientSideCacheConfig().WithServerAssisted();
-
-        await using var client = await GlideClusterClient.CreateClient(
-            fixture.ClusterServer.CreateConfigBuilder()
-                .WithClientSideCache(cache)
-                .Build());
-
-        var response = await client.ClientTrackingInfoAsync(Route.AllNodes);
-
-        Assert.NotEmpty(response.MultiValue);
-        foreach (var multiInfo in response.MultiValue.Values)
-        {
-            AssertTrackingInfoOn(multiInfo);
-        }
-    }
-
-    private static void AssertTrackingInfoOff(ClientTrackingInfo info)
-    {
-        Assert.Equivalent(new HashSet<string> { "off" }, info.Flags);
-        Assert.Equal(-1, info.Redirect);
-        Assert.Empty(info.Prefixes);
-    }
-
-    private static void AssertTrackingInfoOn(ClientTrackingInfo info)
-    {
-        Assert.Equivalent(new HashSet<string> { "on", "bcast" }, info.Flags);
-        Assert.Equal(0, info.Redirect);
-        Assert.Equivalent(new HashSet<string> { "" }, info.Prefixes);
+        // TODO #519: ClientIdAsync on standalone is fine
+#pragma warning disable CS0618
+        var id = await client.ClientIdAsync();
+#pragma warning restore CS0618
+        var options = new ClientFilterOptions().WithId(id).WithSkipMe(false);
+        Assert.Equal(1, await client.ClientKillAsync(options));
     }
 
     #endregion
@@ -252,6 +227,85 @@ public class ConnectionManagementCommandTests(ServerFixture fixture) : IClassFix
         await client.ClientUnpauseAsync();
         await client.SetAsync(key, "after");
         Assert.True(sw.Elapsed < pausedFor);
+    }
+
+    #endregion
+    #region ClientTrackingInfoAsync
+
+    [Theory]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
+    public async Task ClientTrackingInfo_Off(bool clusterMode)
+    {
+        await using var client = await fixture.GetServer(clusterMode).CreateClientAsync();
+
+        var info = await client.ClientTrackingInfoAsync();
+        AssertTrackingInfoOff(info);
+    }
+
+    [Fact]
+    public async Task ClientTrackingInfo_Off_WithRoute()
+    {
+        await using GlideClusterClient client = await fixture.ClusterServer.CreateClusterClientAsync();
+
+        var response = await client.ClientTrackingInfoAsync(Route.AllNodes);
+
+        Assert.NotEmpty(response.MultiValue);
+        foreach (var info in response.MultiValue.Values)
+        {
+            AssertTrackingInfoOff(info);
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
+    public async Task ClientTrackingInfo_On(bool clusterMode)
+    {
+        var cache = BuildClientSideCacheConfig().WithServerAssisted();
+
+        await using BaseClient client = clusterMode
+            ? await GlideClusterClient.CreateClient(
+                fixture.ClusterServer.CreateConfigBuilder()
+                    .WithClientSideCache(cache)
+                    .Build())
+            : await GlideClient.CreateClient(
+                fixture.StandaloneServer.CreateConfigBuilder()
+                    .WithClientSideCache(cache)
+                    .Build());
+
+        AssertTrackingInfoOn(await client.ClientTrackingInfoAsync());
+    }
+
+    [Fact]
+    public async Task ClientTrackingInfo_On_WithRoute()
+    {
+        var cache = BuildClientSideCacheConfig().WithServerAssisted();
+
+        await using var client = await GlideClusterClient.CreateClient(
+            fixture.ClusterServer.CreateConfigBuilder()
+                .WithClientSideCache(cache)
+                .Build());
+
+        var response = await client.ClientTrackingInfoAsync(Route.AllNodes);
+
+        Assert.NotEmpty(response.MultiValue);
+        foreach (var multiInfo in response.MultiValue.Values)
+        {
+            AssertTrackingInfoOn(multiInfo);
+        }
+    }
+
+    private static void AssertTrackingInfoOff(ClientTrackingInfo info)
+    {
+        Assert.Equivalent(new HashSet<string> { "off" }, info.Flags);
+        Assert.Equal(-1, info.Redirect);
+        Assert.Empty(info.Prefixes);
+    }
+
+    private static void AssertTrackingInfoOn(ClientTrackingInfo info)
+    {
+        Assert.Equivalent(new HashSet<string> { "on", "bcast" }, info.Flags);
+        Assert.Equal(0, info.Redirect);
+        Assert.Equivalent(new HashSet<string> { "" }, info.Prefixes);
     }
 
     #endregion

@@ -118,6 +118,86 @@ internal partial class ValkeyServer(Database conn, EndPoint endpoint) : IServer
     }
 
     /// <inheritdoc/>
+    public async Task ClientKillAsync(EndPoint endpoint, CommandFlags flags = CommandFlags.None)
+        => await ClientKillAsync(id: null, clientType: null, endpoint: endpoint, skipMe: true, flags: flags);
+
+    /// <inheritdoc/>
+    public async Task<long> ClientKillAsync(
+        long? id = null,
+        ClientType? clientType = null,
+        EndPoint? endpoint = null,
+        bool skipMe = true,
+        CommandFlags flags = CommandFlags.None)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+        var options = new ClientFilterOptions().WithSkipMe(skipMe);
+
+        if (id is not null)
+        {
+            _ = options.WithId(id.Value);
+        }
+
+        if (clientType is not null)
+        {
+            _ = options.WithType(clientType.Value);
+        }
+
+        if (endpoint is not null)
+        {
+            (string host, ushort port) = Utils.SplitEndpoint(endpoint);
+            _ = options.WithAddress(host, port);
+        }
+
+        return await _conn.Command(Request.ClientKill(options), MakeRoute());
+    }
+
+    /// <inheritdoc/>
+    public async Task<long> ClientKillAsync(ClientKillFilter filter, CommandFlags flags = CommandFlags.None)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+        var options = new ClientFilterOptions();
+
+        if (filter.Id is not null)
+        {
+            _ = options.WithId(filter.Id.Value);
+        }
+
+        if (filter.ClientType is not null)
+        {
+            _ = options.WithType(filter.ClientType.Value);
+        }
+
+        if (filter.Username is not null)
+        {
+            _ = options.WithUser(filter.Username);
+        }
+
+        if (filter.Endpoint is not null)
+        {
+            (string host, ushort port) = Utils.SplitEndpoint(filter.Endpoint);
+            _ = options.WithAddress(host, port);
+        }
+
+        if (filter.ServerEndpoint is not null)
+        {
+            (string host, ushort port) = Utils.SplitEndpoint(filter.ServerEndpoint);
+            _ = options.WithLocalAddress(host, port);
+        }
+
+        if (filter.SkipMe is not null)
+        {
+            _ = options.WithSkipMe(filter.SkipMe.Value);
+        }
+
+        if (filter.MaxAgeInSeconds is not null)
+        {
+            _ = options.WithMaxAge(TimeSpan.FromSeconds(filter.MaxAgeInSeconds.Value));
+        }
+
+        return await _conn.Command(Request.ClientKill(options), MakeRoute());
+    }
+
+    /// <inheritdoc/>
     public async Task<KeyValuePair<string, string>[]> ConfigGetAsync(ValkeyValue pattern = default, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
