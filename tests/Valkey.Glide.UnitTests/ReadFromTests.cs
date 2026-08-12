@@ -76,8 +76,8 @@ public class ReadFromTests
     public void ReadFromProperty_SetValidConfiguration_DoesNotThrow()
     {
         // Arrange
-        ConfigurationOptions options = new ConfigurationOptions();
-        ReadFrom readFrom = new ReadFrom(ReadFromStrategy.AzAffinity, "us-east-1");
+        var options = new ConfigurationOptions();
+        var readFrom = new ReadFrom(ReadFromStrategy.AzAffinity, "us-east-1");
 
         // Act & Assert
         options.ReadFrom = readFrom;
@@ -89,13 +89,13 @@ public class ReadFromTests
     public void ReadFromProperty_SetAzAffinityWithoutAz_ThrowsArgumentException()
     {
         // Arrange
-        ConfigurationOptions options = new ConfigurationOptions();
+        var options = new ConfigurationOptions();
 
         // Act & Assert
         ArgumentException exception = Assert.Throws<ArgumentException>(() =>
         {
             // This should throw because ReadFrom constructor validates AZ requirement
-            ReadFrom readFrom = new ReadFrom(ReadFromStrategy.AzAffinity);
+            var readFrom = new ReadFrom(ReadFromStrategy.AzAffinity);
             options.ReadFrom = readFrom;
         });
         Assert.Contains("Availability zone should be set", exception.Message);
@@ -105,13 +105,13 @@ public class ReadFromTests
     public void ReadFromProperty_SetPrimaryWithAz_ThrowsArgumentException()
     {
         // Arrange
-        ConfigurationOptions options = new ConfigurationOptions();
+        var options = new ConfigurationOptions();
 
         // Act & Assert
         ArgumentException exception = Assert.Throws<ArgumentException>(() =>
         {
             // This should throw because ReadFrom constructor validates AZ requirement
-            ReadFrom readFrom = new ReadFrom(ReadFromStrategy.Primary, "us-east-1");
+            var readFrom = new ReadFrom(ReadFromStrategy.Primary, "us-east-1");
             options.ReadFrom = readFrom;
         });
         Assert.Contains("could be set only when using", exception.Message);
@@ -183,7 +183,7 @@ public class ReadFromTests
     public void ReadFromProperty_SetNull_DoesNotThrow()
     {
         // Arrange
-        ConfigurationOptions options = new ConfigurationOptions();
+        var options = new ConfigurationOptions();
 
         // Act & Assert - Setting to null should not throw
         options.ReadFrom = null;
@@ -194,7 +194,7 @@ public class ReadFromTests
     public void Clone_WithNullReadFrom_ClonesCorrectly()
     {
         // Arrange
-        ConfigurationOptions original = new ConfigurationOptions();
+        var original = new ConfigurationOptions();
         original.ReadFrom = null;
 
         // Act
@@ -220,7 +220,7 @@ public class ReadFromTests
     public void ToString_WithReadFromStrategyWithoutAz_IncludesCorrectFormat(ReadFromStrategy strategy, string expectedSubstring)
     {
         // Arrange
-        ConfigurationOptions options = new ConfigurationOptions();
+        var options = new ConfigurationOptions();
         options.ReadFrom = new ReadFrom(strategy);
 
         // Act
@@ -236,7 +236,7 @@ public class ReadFromTests
     public void ToString_WithReadFromStrategyWithAz_IncludesCorrectFormat(ReadFromStrategy strategy, string az, string expectedSubstring)
     {
         // Arrange
-        ConfigurationOptions options = new ConfigurationOptions();
+        var options = new ConfigurationOptions();
         options.ReadFrom = new ReadFrom(strategy, az);
 
         // Act
@@ -252,7 +252,7 @@ public class ReadFromTests
     public void ToString_WithAzAffinityStrategy_IncludesCorrectAzFormat(string azValue)
     {
         // Arrange
-        ConfigurationOptions options = new ConfigurationOptions();
+        var options = new ConfigurationOptions();
         options.ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinity, azValue);
 
         // Act
@@ -269,7 +269,7 @@ public class ReadFromTests
     public void ToString_WithAzAffinityReplicasAndPrimaryStrategy_IncludesCorrectAzFormat(string azValue)
     {
         // Arrange
-        ConfigurationOptions options = new ConfigurationOptions();
+        var options = new ConfigurationOptions();
         options.ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinityReplicasAndPrimary, azValue);
 
         // Act
@@ -284,7 +284,7 @@ public class ReadFromTests
     public void ToString_WithNullReadFrom_DoesNotIncludeReadFromOrAz()
     {
         // Arrange
-        ConfigurationOptions options = new ConfigurationOptions();
+        var options = new ConfigurationOptions();
         options.ReadFrom = null;
 
         // Act
@@ -299,7 +299,7 @@ public class ReadFromTests
     public void ToString_WithComplexConfiguration_IncludesAllParameters()
     {
         // Arrange
-        ConfigurationOptions options = new ConfigurationOptions();
+        var options = new ConfigurationOptions();
         options.EndPoints.Add("localhost:6379");
         options.ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinity, "us-east-1a");
         options.Ssl = true;
@@ -368,7 +368,7 @@ public class ReadFromTests
     public void RoundTrip_ProgrammaticallySetReadFrom_PreservesConfiguration()
     {
         // Arrange
-        ConfigurationOptions options1 = new ConfigurationOptions();
+        var options1 = new ConfigurationOptions();
         options1.EndPoints.Add("localhost:6379");
         options1.ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinityReplicasAndPrimary, "ap-south-1");
 
@@ -406,7 +406,7 @@ public class ReadFromTests
     public void ToString_DefaultConfigurationOptions_DoesNotIncludeReadFrom()
     {
         // Arrange
-        ConfigurationOptions options = new ConfigurationOptions();
+        var options = new ConfigurationOptions();
 
         // Act
         string result = options.ToString();
@@ -441,8 +441,8 @@ public class ReadFromTests
     public void ReadFromProperty_SetValidPrimaryStrategy_DoesNotThrow()
     {
         // Arrange
-        ConfigurationOptions options = new ConfigurationOptions();
-        ReadFrom readFrom = new ReadFrom(ReadFromStrategy.Primary);
+        var options = new ConfigurationOptions();
+        var readFrom = new ReadFrom(ReadFromStrategy.Primary);
 
         // Act & Assert
         options.ReadFrom = readFrom;
@@ -454,8 +454,8 @@ public class ReadFromTests
     public void ReadFromProperty_SetValidPreferReplicaStrategy_DoesNotThrow()
     {
         // Arrange
-        ConfigurationOptions options = new ConfigurationOptions();
-        ReadFrom readFrom = new ReadFrom(ReadFromStrategy.PreferReplica);
+        var options = new ConfigurationOptions();
+        var readFrom = new ReadFrom(ReadFromStrategy.PreferReplica);
 
         // Act & Assert
         options.ReadFrom = readFrom;
@@ -467,8 +467,8 @@ public class ReadFromTests
     public void ReadFromProperty_SetValidAzAffinityStrategy_DoesNotThrow()
     {
         // Arrange
-        ConfigurationOptions options = new ConfigurationOptions();
-        ReadFrom readFrom = new ReadFrom(ReadFromStrategy.AzAffinity, "us-east-1");
+        var options = new ConfigurationOptions();
+        var readFrom = new ReadFrom(ReadFromStrategy.AzAffinity, "us-east-1");
 
         // Act & Assert
         options.ReadFrom = readFrom;
@@ -480,8 +480,8 @@ public class ReadFromTests
     public void ReadFromProperty_SetValidAzAffinityReplicasAndPrimaryStrategy_DoesNotThrow()
     {
         // Arrange
-        ConfigurationOptions options = new ConfigurationOptions();
-        ReadFrom readFrom = new ReadFrom(ReadFromStrategy.AzAffinityReplicasAndPrimary, "eu-west-1");
+        var options = new ConfigurationOptions();
+        var readFrom = new ReadFrom(ReadFromStrategy.AzAffinityReplicasAndPrimary, "eu-west-1");
 
         // Act & Assert
         options.ReadFrom = readFrom;
@@ -495,7 +495,7 @@ public class ReadFromTests
     public void ReadFromProperty_SetMultipleTimes_UpdatesCorrectly()
     {
         // Arrange
-        ConfigurationOptions options = new ConfigurationOptions();
+        var options = new ConfigurationOptions();
 
         // Act & Assert - Set Primary first
         options.ReadFrom = new ReadFrom(ReadFromStrategy.Primary);
@@ -520,7 +520,7 @@ public class ReadFromTests
     public void ReadFromProperty_SetAzAffinityWithEmptyOrWhitespaceAz_ThrowsArgumentException(string azValue)
     {
         // Arrange
-        ConfigurationOptions options = new ConfigurationOptions();
+        var options = new ConfigurationOptions();
 
         // Act & Assert
         ArgumentException exception = Assert.Throws<ArgumentException>(() =>
@@ -538,7 +538,7 @@ public class ReadFromTests
     public void ReadFromProperty_SetAzAffinityReplicasAndPrimaryWithEmptyOrWhitespaceAz_ThrowsArgumentException(string azValue)
     {
         // Arrange
-        ConfigurationOptions options = new ConfigurationOptions();
+        var options = new ConfigurationOptions();
 
         // Act & Assert
         ArgumentException exception = Assert.Throws<ArgumentException>(() =>
@@ -552,7 +552,7 @@ public class ReadFromTests
     public void Clone_ModifyingClonedReadFrom_DoesNotAffectOriginal()
     {
         // Arrange
-        ConfigurationOptions original = new ConfigurationOptions();
+        var original = new ConfigurationOptions();
         original.ReadFrom = new ReadFrom(ReadFromStrategy.Primary);
 
         // Act
@@ -574,7 +574,7 @@ public class ReadFromTests
     public void Clone_WithComplexConfigurationIncludingReadFrom_PreservesAllSettings()
     {
         // Arrange
-        ConfigurationOptions original = new ConfigurationOptions();
+        var original = new ConfigurationOptions();
         original.EndPoints.Add("localhost:6379");
         original.ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinityReplicasAndPrimary, "ap-south-1");
         original.Ssl = true;
@@ -604,7 +604,7 @@ public class ReadFromTests
     public void ReadFromProperty_DefaultValue_IsNull()
     {
         // Arrange & Act
-        ConfigurationOptions options = new ConfigurationOptions();
+        var options = new ConfigurationOptions();
 
         // Assert
         Assert.Null(options.ReadFrom);
@@ -614,7 +614,7 @@ public class ReadFromTests
     public void ReadFromProperty_AfterSettingToNonNull_CanBeSetBackToNull()
     {
         // Arrange
-        ConfigurationOptions options = new ConfigurationOptions();
+        var options = new ConfigurationOptions();
         options.ReadFrom = new ReadFrom(ReadFromStrategy.Primary);
 
         // Act
@@ -628,7 +628,7 @@ public class ReadFromTests
     public void ReadFromProperty_NullValue_DoesNotAffectToString()
     {
         // Arrange
-        ConfigurationOptions options = new ConfigurationOptions();
+        var options = new ConfigurationOptions();
         options.EndPoints.Add("localhost:6379");
         options.ReadFrom = null;
 
@@ -645,7 +645,7 @@ public class ReadFromTests
     public void ReadFromProperty_NullValue_DoesNotAffectClone()
     {
         // Arrange
-        ConfigurationOptions original = new ConfigurationOptions();
+        var original = new ConfigurationOptions();
         original.EndPoints.Add("localhost:6379");
         original.Ssl = true;
         original.ReadFrom = null;
@@ -718,7 +718,7 @@ public class ReadFromTests
     public Task RoundTripSerialization_MaintainsConfigurationIntegrity(ReadFromStrategy? strategy, string? az)
     {
         // Arrange
-        ConfigurationOptions originalConfig = new ConfigurationOptions();
+        var originalConfig = new ConfigurationOptions();
         originalConfig.EndPoints.Add("localhost");
 
         originalConfig.ReadFrom = strategy.HasValue
