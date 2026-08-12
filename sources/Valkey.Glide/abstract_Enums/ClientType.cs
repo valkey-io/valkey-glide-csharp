@@ -1,33 +1,29 @@
-﻿using System;
-using System.ComponentModel;
-
 namespace Valkey.Glide;
 
 /// <summary>
-/// The class of the connection.
+/// The client connection type.
 /// </summary>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1069:Enums values should not be duplicated", Justification = "Compatibility")]
+/// <seealso href="https://valkey.io/commands/client-kill/" />
+/// <seealso href="https://valkey.io/commands/client-list/" />
 public enum ClientType
 {
     /// <summary>
-    /// Regular connections, including MONITOR connections.
+    /// Normal client connection.
     /// </summary>
-    Normal = 0,
+    Normal,
 
     /// <summary>
-    /// Replication connections.
+    /// Primary connection.
     /// </summary>
-    Replica = 1, // as an implementation detail, note that enum.ToString without [Flags] prefers *earlier* values
+    Primary,
 
     /// <summary>
-    /// Replication connections.
+    /// Replica node connection.
     /// </summary>
-    [Obsolete("Starting with Valkey version 5, Valkey has moved to 'replica' terminology. Please use " + nameof(Replica) + " instead, this will be removed in 3.0.")]
-    [Browsable(false), EditorBrowsable(EditorBrowsableState.Never)]
-    Slave = 1,
+    Replica,
 
     /// <summary>
-    /// Subscription connections.
+    /// Pub/sub subscriber connection.
     /// </summary>
-    PubSub = 2,
+    PubSub,
 }

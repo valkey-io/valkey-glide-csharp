@@ -7,20 +7,24 @@ namespace Valkey.Glide.UnitTests;
 public class FailoverOptionsTests
 {
     [Fact]
-    public void ToArgs_Success() => Assert.Multiple(
-        () => Assert.Equal(["ABORT"], FailoverOptions.Abort().ToArgs()),
-        () => Assert.Equal(["TIMEOUT", "5000"], FailoverOptions.Timeout(TimeSpan.FromSeconds(5)).ToArgs()),
-        () => Assert.Equal(["TO", "localhost", "6380"], FailoverOptions.To("localhost", 6380).ToArgs()),
-        () => Assert.Equal(["TO", "127.0.0.1", "0"], FailoverOptions.To("127.0.0.1", 0).ToArgs()),
-        () => Assert.Equal(["TO", "localhost", "6380", "TIMEOUT", "10000"], FailoverOptions.To("localhost", 6380, TimeSpan.FromSeconds(10)).ToArgs()),
-        () => Assert.Equal(["TO", "localhost", "6380", "FORCE", "TIMEOUT", "5000"], FailoverOptions.Forced("localhost", 6380, TimeSpan.FromSeconds(5)).ToArgs()));
+    public void ToArgs_Success()
+    {
+        Assert.Equal(["ABORT"], FailoverOptions.Abort().ToArgs());
+        Assert.Equal(["TIMEOUT", "5000"], FailoverOptions.Timeout(TimeSpan.FromSeconds(5)).ToArgs());
+        Assert.Equal(["TO", "localhost", "6380"], FailoverOptions.To("localhost", 6380).ToArgs());
+        Assert.Equal(["TO", "127.0.0.1", "0"], FailoverOptions.To("127.0.0.1", 0).ToArgs());
+        Assert.Equal(["TO", "localhost", "6380", "TIMEOUT", "10000"], FailoverOptions.To("localhost", 6380, TimeSpan.FromSeconds(10)).ToArgs());
+        Assert.Equal(["TO", "localhost", "6380", "FORCE", "TIMEOUT", "5000"], FailoverOptions.Forced("localhost", 6380, TimeSpan.FromSeconds(5)).ToArgs());
+    }
 
     [Fact]
-    public void ToArgs_Failure() => Assert.Multiple(
-        () => Assert.Throws<ArgumentOutOfRangeException>(() => FailoverOptions.Timeout(TimeSpan.Zero)),
-        () => Assert.Throws<ArgumentOutOfRangeException>(() => FailoverOptions.Timeout(TimeSpan.FromSeconds(-1))),
-        () => Assert.Throws<ArgumentOutOfRangeException>(() => FailoverOptions.To("localhost", 6380, TimeSpan.Zero)),
-        () => Assert.Throws<ArgumentOutOfRangeException>(() => FailoverOptions.To("localhost", 6380, TimeSpan.FromSeconds(-1))),
-        () => Assert.Throws<ArgumentOutOfRangeException>(() => FailoverOptions.Forced("localhost", 6380, TimeSpan.Zero)),
-        () => Assert.Throws<ArgumentOutOfRangeException>(() => FailoverOptions.Forced("localhost", 6380, TimeSpan.FromSeconds(-1))));
+    public void ToArgs_Failure()
+    {
+        _ = Assert.Throws<ArgumentOutOfRangeException>(() => FailoverOptions.Timeout(TimeSpan.Zero));
+        _ = Assert.Throws<ArgumentOutOfRangeException>(() => FailoverOptions.Timeout(TimeSpan.FromSeconds(-1)));
+        _ = Assert.Throws<ArgumentOutOfRangeException>(() => FailoverOptions.To("localhost", 6380, TimeSpan.Zero));
+        _ = Assert.Throws<ArgumentOutOfRangeException>(() => FailoverOptions.To("localhost", 6380, TimeSpan.FromSeconds(-1)));
+        _ = Assert.Throws<ArgumentOutOfRangeException>(() => FailoverOptions.Forced("localhost", 6380, TimeSpan.Zero));
+        _ = Assert.Throws<ArgumentOutOfRangeException>(() => FailoverOptions.Forced("localhost", 6380, TimeSpan.FromSeconds(-1)));
+    }
 }

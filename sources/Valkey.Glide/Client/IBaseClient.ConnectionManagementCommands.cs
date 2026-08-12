@@ -1,6 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using Valkey.Glide.Commands;
+using Valkey.Glide.Commands.Options;
 
 namespace Valkey.Glide;
 
@@ -42,7 +43,26 @@ public partial interface IBaseClient : IConnectionManagementBaseCommands
     /// </code>
     /// </example>
     /// </remarks>
+    // TODO #519: Remove from IBaseClient. Move to IGlideClient (standalone only).
+    [Obsolete("For cluster clients, use ClientIdAsync(Route) instead. See #519.")]
     Task<long> ClientIdAsync();
+
+    /// <summary>
+    /// Kills client connections matching the given filter options.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/client-kill/">Valkey commands – CLIENT KILL</seealso>
+    /// <param name="options">The options specifying which clients to kill.</param>
+    /// <returns>The number of clients killed.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var options = new ClientFilterOptions().WithMaxAge(TimeSpan.FromHours(1));
+    /// var killed = await client.ClientKillAsync(options);
+    /// Console.WriteLine($"Killed {killed} client(s)");
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<long> ClientKillAsync(ClientFilterOptions options);
 
     /// <summary>
     /// Suspends all clients for the specified timeout.
