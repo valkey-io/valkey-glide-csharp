@@ -151,6 +151,46 @@ public class GlideStringTests
     }
 
     [Fact]
+    public void ByteArrayConstructor_DoesNotAllocateHexDumpEagerly()
+    {
+        const int size = 65_536; // 64 KB — matches large-payload benchmark
+        byte[] payload = new byte[size];
+        Array.Fill(payload, (byte)'x');
+
+        // Warm up to avoid first-JIT noise
+        _ = new gs(payload);
+
+        long before = GC.GetAllocatedBytesForCurrentThread();
+        gs result = new(payload);
+        long allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+
+        // After fix: only GlideString object + lock object (~a few hundred bytes).
+        // Before fix: ~3.3 MB — 65,536 "$"{b:X2}"" strings + string.Join result.
+        Assert.True(allocated < 1024,
+            $"GlideString(byte[]) allocated {allocated:N0} bytes for a {size}-byte payload; " +
+            $"expected < 1 KB. The hex-dump Str field may be built eagerly.");
+
+        // Correctness: 'x' is valid UTF-8, so conversion must succeed
+        Assert.True(result.CanConvertToString());
+        Assert.Equal(new string('x', size), result.ToString());
+    }
+
+    [Fact]
+    public void ByteArrayConstructor_NonUtf8_HexDumpBuiltLazily()
+    {
+        byte[] binaryData = [0x00, 0xFF, 0x80, 0x7F, 0xC0, 0xC1]; // not valid UTF-8
+        gs result = new(binaryData);
+
+        // Conversion must fail
+        Assert.False(result.CanConvertToString());
+
+        // ToString() must still return the hex-dump fallback
+        string str = result.ToString();
+        Assert.Contains("Value isn't convertible to string", str);
+        Assert.Contains("00 FF 80 7F C0 C1", str);
+    }
+
+    [Fact]
     public void DoubleFormatting()
     {
         Assert.Equal("+inf", double.PositiveInfinity.ToGlideString());
