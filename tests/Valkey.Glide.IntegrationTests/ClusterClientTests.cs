@@ -8,6 +8,7 @@ using Valkey.Glide.TestUtils;
 using static Valkey.Glide.Commands.Options.InfoOptions;
 using static Valkey.Glide.Errors;
 using static Valkey.Glide.Route;
+using static Valkey.Glide.TestUtils.Assertions;
 using static Valkey.Glide.TestUtils.Data;
 
 namespace Valkey.Glide.IntegrationTests;
@@ -347,8 +348,9 @@ public class ClusterClientTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task TestClientId(GlideClusterClient client)
     {
-        long clientId = await client.ClientIdAsync();
-        Assert.True(clientId > 0, "Client ID should be a positive number");
+        // TODO #519: Remove explicit route.
+        var result = await client.ClientIdAsync(Route.AllNodes);
+        Assert.All(result.MultiValue.Values, id => Assert.True(id > 0));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -634,6 +636,6 @@ public class ClusterClientTests(TestConfiguration config)
         var builder = TestUtils.Config.BuildClusterConfig(address: new(address, server.Address.Port));
 
         await using var client = await GlideClusterClient.CreateClient(builder.Build());
-        await Client.AssertConnected(client);
+        await AssertConnected(client);
     }
 }
