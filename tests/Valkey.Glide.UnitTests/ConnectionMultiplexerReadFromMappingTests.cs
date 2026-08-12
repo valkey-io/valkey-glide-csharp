@@ -12,7 +12,7 @@ public class ConnectionMultiplexerReadFromMappingTests
     public void CreateClientConfigBuilder_WithReadFromPrimary_MapsCorrectly()
     {
         // Arrange
-        ConfigurationOptions options = new ConfigurationOptions();
+        var options = new ConfigurationOptions();
         options.ReadFrom = new ReadFrom(ReadFromStrategy.Primary);
 
         // Act
@@ -34,7 +34,7 @@ public class ConnectionMultiplexerReadFromMappingTests
     public void CreateClientConfigBuilder_WithReadFromPreferReplica_MapsCorrectly()
     {
         // Arrange
-        ConfigurationOptions options = new ConfigurationOptions();
+        var options = new ConfigurationOptions();
         options.ReadFrom = new ReadFrom(ReadFromStrategy.PreferReplica);
 
         // Act
@@ -56,7 +56,7 @@ public class ConnectionMultiplexerReadFromMappingTests
     public void CreateClientConfigBuilder_WithReadFromAzAffinity_MapsCorrectly()
     {
         // Arrange
-        ConfigurationOptions options = new ConfigurationOptions();
+        var options = new ConfigurationOptions();
         options.ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinity, "us-east-1a");
 
         // Act
@@ -78,7 +78,7 @@ public class ConnectionMultiplexerReadFromMappingTests
     public void CreateClientConfigBuilder_WithReadFromAzAffinityReplicasAndPrimary_MapsCorrectly()
     {
         // Arrange
-        ConfigurationOptions options = new ConfigurationOptions();
+        var options = new ConfigurationOptions();
         options.ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinityReplicasAndPrimary, "eu-west-1b");
 
         // Act
@@ -100,7 +100,7 @@ public class ConnectionMultiplexerReadFromMappingTests
     public void CreateClientConfigBuilder_WithNullReadFrom_HandlesCorrectly()
     {
         // Arrange
-        ConfigurationOptions options = new ConfigurationOptions();
+        var options = new ConfigurationOptions();
         options.ReadFrom = null;
 
         // Act
@@ -119,7 +119,7 @@ public class ConnectionMultiplexerReadFromMappingTests
     public void CreateClientConfigBuilder_ReadFromFlowsToConnectionConfig()
     {
         // Arrange
-        ConfigurationOptions options = new ConfigurationOptions();
+        var options = new ConfigurationOptions();
         options.ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinity, "ap-south-1");
 
         // Act
@@ -137,7 +137,7 @@ public class ConnectionMultiplexerReadFromMappingTests
     public void CreateClientConfigBuilder_ReadFromFlowsToFfiLayer()
     {
         // Arrange
-        ConfigurationOptions options = new ConfigurationOptions();
+        var options = new ConfigurationOptions();
         options.ReadFrom = new ReadFrom(ReadFromStrategy.PreferReplica);
 
         // Act
@@ -167,7 +167,7 @@ public class ConnectionMultiplexerReadFromMappingTests
     public void CreateClientConfigBuilder_AllReadFromStrategies_MapCorrectly(ReadFromStrategy strategy, string? az)
     {
         // Arrange
-        ConfigurationOptions options = new ConfigurationOptions();
+        var options = new ConfigurationOptions();
         options.ReadFrom = az != null ? new ReadFrom(strategy, az) : new ReadFrom(strategy);
 
         // Act
@@ -191,7 +191,7 @@ public class ConnectionMultiplexerReadFromMappingTests
     public void CreateClientConfigBuilder_WithComplexConfiguration_MapsReadFromCorrectly()
     {
         // Arrange
-        ConfigurationOptions options = new ConfigurationOptions();
+        var options = new ConfigurationOptions();
         options.EndPoints.Add("localhost:6379");
         options.Ssl = true;
         options.User = "testuser";
@@ -220,7 +220,7 @@ public class ConnectionMultiplexerReadFromMappingTests
     {
         // Arrange
         const string testAz = "us-west-2b";
-        ReadFrom readFromConfig = new ReadFrom(ReadFromStrategy.AzAffinity, testAz);
+        var readFromConfig = new ReadFrom(ReadFromStrategy.AzAffinity, testAz);
 
         // Act - Test Standalone Configuration
         StandaloneClientConfigurationBuilder standaloneBuilder = new StandaloneClientConfigurationBuilder()

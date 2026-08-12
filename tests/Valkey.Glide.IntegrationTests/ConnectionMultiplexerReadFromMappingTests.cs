@@ -19,7 +19,7 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
     public async Task ConfigurationOptions_ReadFromPrimary_MapsToStandaloneClientConfigurationBuilder()
     {
         // Arrange
-        ConfigurationOptions configOptions = new ConfigurationOptions
+        var configOptions = new ConfigurationOptions
         {
             ReadFrom = new ReadFrom(ReadFromStrategy.Primary)
         };
@@ -42,7 +42,7 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
     public async Task ConfigurationOptions_ReadFromPreferReplica_MapsToStandaloneClientConfigurationBuilder()
     {
         // Arrange
-        ConfigurationOptions configOptions = new ConfigurationOptions
+        var configOptions = new ConfigurationOptions
         {
             ReadFrom = new ReadFrom(ReadFromStrategy.PreferReplica)
         };
@@ -66,7 +66,7 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
     {
         // Arrange
         const string testAz = "us-east-1a";
-        ConfigurationOptions configOptions = new ConfigurationOptions
+        var configOptions = new ConfigurationOptions
         {
             ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinity, testAz)
         };
@@ -90,7 +90,7 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
     {
         // Arrange
         const string testAz = "eu-west-1b";
-        ConfigurationOptions configOptions = new ConfigurationOptions
+        var configOptions = new ConfigurationOptions
         {
             ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinityReplicasAndPrimary, testAz)
         };
@@ -113,7 +113,7 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
     public async Task ConfigurationOptions_ReadFromPrimary_MapsToClusterClientConfigurationBuilder()
     {
         // Arrange
-        ConfigurationOptions configOptions = new ConfigurationOptions
+        var configOptions = new ConfigurationOptions
         {
             ReadFrom = new ReadFrom(ReadFromStrategy.Primary)
         };
@@ -136,7 +136,7 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
     public async Task ConfigurationOptions_ReadFromPreferReplica_MapsToClusterClientConfigurationBuilder()
     {
         // Arrange
-        ConfigurationOptions configOptions = new ConfigurationOptions
+        var configOptions = new ConfigurationOptions
         {
             ReadFrom = new ReadFrom(ReadFromStrategy.PreferReplica)
         };
@@ -160,7 +160,7 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
     {
         // Arrange
         const string testAz = "us-west-2a";
-        ConfigurationOptions configOptions = new ConfigurationOptions
+        var configOptions = new ConfigurationOptions
         {
             ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinity, testAz)
         };
@@ -184,7 +184,7 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
     {
         // Arrange
         const string testAz = "ap-south-1c";
-        ConfigurationOptions configOptions = new ConfigurationOptions
+        var configOptions = new ConfigurationOptions
         {
             ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinityReplicasAndPrimary, testAz)
         };
@@ -207,7 +207,7 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
     public async Task ConfigurationOptions_NullReadFrom_DefaultsToNullInStandaloneClient()
     {
         // Arrange
-        ConfigurationOptions configOptions = new ConfigurationOptions
+        var configOptions = new ConfigurationOptions
         {
             ReadFrom = null
         };
@@ -228,7 +228,7 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
     public async Task ConfigurationOptions_NullReadFrom_DefaultsToNullInClusterClient()
     {
         // Arrange
-        ConfigurationOptions configOptions = new ConfigurationOptions
+        var configOptions = new ConfigurationOptions
         {
             ReadFrom = null
         };
