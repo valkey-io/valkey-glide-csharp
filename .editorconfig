@@ -82,7 +82,8 @@ dotnet_diagnostic.IDE0002.severity = none
 # IDE0008: Use explicit type - disabled to allow var usage for brevity
 dotnet_diagnostic.IDE0008.severity = none
 
-csharp_style_implicit_object_creation_when_type_is_apparent = true:suggestion
+# IDE0090: Simplify 'new' expression - use var for brevity
+csharp_style_implicit_object_creation_when_type_is_apparent = true:error
 
 # Expression-bodied members
 csharp_style_expression_bodied_accessors = true:silent

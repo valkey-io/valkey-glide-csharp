@@ -58,23 +58,23 @@ public class GlideStringTests
         Assert.Equal(new GlideString([]), result);
 
         // Test simple string key without prefix
-        ValkeyKey stringKey = new ValkeyKey("test");
+        var stringKey = new ValkeyKey("test");
         result = stringKey;
         Assert.Equal(new GlideString("test"), result);
 
         // Test simple byte array key without prefix
         byte[] testBytes = [1, 2, 3, 4];
-        ValkeyKey byteKey = new ValkeyKey(null, testBytes);
+        var byteKey = new ValkeyKey(null, testBytes);
         result = byteKey;
         Assert.Equal(new GlideString(testBytes), result);
 
         // Test empty string key
-        ValkeyKey emptyStringKey = new ValkeyKey("");
+        var emptyStringKey = new ValkeyKey("");
         result = emptyStringKey;
         Assert.Equal(new GlideString(""), result);
 
         // Test empty byte array key
-        ValkeyKey emptyByteKey = new ValkeyKey(null, new byte[0]);
+        var emptyByteKey = new ValkeyKey(null, new byte[0]);
         result = emptyByteKey;
         Assert.Equal(new GlideString([]), result);
     }
@@ -103,7 +103,7 @@ public class GlideStringTests
     public void ValkeyKeyComplexPrefixScenarios()
     {
         // Test multiple prefix concatenations
-        ValkeyKey baseKey = new ValkeyKey("value");
+        var baseKey = new ValkeyKey("value");
         ValkeyKey withPrefix1 = ValkeyKey.WithPrefix([0x41, 0x42], baseKey); // "AB" + "value"
         ValkeyKey withPrefix2 = ValkeyKey.WithPrefix([0x43, 0x44], withPrefix1); // "CD" + "AB" + "value"
 
@@ -133,7 +133,7 @@ public class GlideStringTests
     {
         // Test with binary data that's not valid UTF-8
         byte[] binaryData = [0x00, 0xFF, 0x80, 0x7F, 0xC0, 0xC1];
-        ValkeyKey binaryKey = new ValkeyKey(null, binaryData);
+        var binaryKey = new ValkeyKey(null, binaryData);
         GlideString result = binaryKey;
 
         Assert.Equal(new GlideString(binaryData), result);

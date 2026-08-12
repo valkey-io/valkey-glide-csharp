@@ -8,11 +8,11 @@ public class PubSubMessageHandlerTests
     public void Constructor_WithCallback_InitializesCorrectly()
     {
         // Arrange
-        MessageCallback callback = new MessageCallback((msg, ctx) => { });
-        object context = new object();
+        var callback = new MessageCallback((msg, ctx) => { });
+        var context = new object();
 
         // Act
-        using PubSubMessageHandler handler = new PubSubMessageHandler(callback, context);
+        using var handler = new PubSubMessageHandler(callback, context);
 
         // Assert - GetQueue should throw when callback is configured
         _ = Assert.Throws<InvalidOperationException>(() => handler.GetQueue());
@@ -22,7 +22,7 @@ public class PubSubMessageHandlerTests
     public void Constructor_WithoutCallback_InitializesCorrectly()
     {
         // Act
-        using PubSubMessageHandler handler = new PubSubMessageHandler(null, null);
+        using var handler = new PubSubMessageHandler(null, null);
 
         // Assert
         Assert.NotNull(handler.GetQueue());
@@ -35,16 +35,16 @@ public class PubSubMessageHandlerTests
         bool callbackInvoked = false;
         PubSubMessage? receivedMessage = null;
         object? receivedContext = null;
-        object context = new object();
+        var context = new object();
 
-        MessageCallback callback = new MessageCallback((msg, ctx) =>
+        var callback = new MessageCallback((msg, ctx) =>
         {
             callbackInvoked = true;
             receivedMessage = msg;
             receivedContext = ctx;
         });
 
-        using PubSubMessageHandler handler = new PubSubMessageHandler(callback, context);
+        using var handler = new PubSubMessageHandler(callback, context);
         PubSubMessage message = PubSubMessage.FromChannel("test-message", "test-channel");
 
         // Act
@@ -60,7 +60,7 @@ public class PubSubMessageHandlerTests
     public void HandleMessage_WithoutCallback_QueuesMessage()
     {
         // Arrange
-        using PubSubMessageHandler handler = new PubSubMessageHandler(null, null);
+        using var handler = new PubSubMessageHandler(null, null);
         PubSubMessage message = PubSubMessage.FromChannel("test-message", "test-channel");
 
         // Act
@@ -79,13 +79,13 @@ public class PubSubMessageHandlerTests
         // Arrange
         bool exceptionThrown = false;
 
-        MessageCallback callback = new MessageCallback((msg, ctx) =>
+        var callback = new MessageCallback((msg, ctx) =>
         {
             exceptionThrown = true;
             throw new InvalidOperationException("Test exception");
         });
 
-        using PubSubMessageHandler handler = new PubSubMessageHandler(callback, null);
+        using var handler = new PubSubMessageHandler(callback, null);
         PubSubMessage message = PubSubMessage.FromChannel("test-message", "test-channel");
 
         // Act & Assert - Exception should be caught and not propagate
@@ -99,9 +99,9 @@ public class PubSubMessageHandlerTests
     {
         // Arrange
         List<PubSubMessage> receivedMessages = [];
-        MessageCallback callback = new MessageCallback((msg, ctx) => receivedMessages.Add(msg));
+        var callback = new MessageCallback((msg, ctx) => receivedMessages.Add(msg));
 
-        using PubSubMessageHandler handler = new PubSubMessageHandler(callback, null);
+        using var handler = new PubSubMessageHandler(callback, null);
         PubSubMessage message1 = PubSubMessage.FromChannel("message1", "channel1");
         PubSubMessage message2 = PubSubMessage.FromChannel("message2", "channel2");
         PubSubMessage message3 = PubSubMessage.FromChannel("message3", "channel3");
@@ -123,9 +123,9 @@ public class PubSubMessageHandlerTests
     {
         // Arrange
         PubSubMessage? receivedMessage = null;
-        MessageCallback callback = new MessageCallback((msg, ctx) => receivedMessage = msg);
+        var callback = new MessageCallback((msg, ctx) => receivedMessage = msg);
 
-        using PubSubMessageHandler handler = new PubSubMessageHandler(callback, null);
+        using var handler = new PubSubMessageHandler(callback, null);
         PubSubMessage message = PubSubMessage.FromPattern("test-message", "test-channel", "test-pattern");
 
         // Act
@@ -143,7 +143,7 @@ public class PubSubMessageHandlerTests
     public void HandleMessage_NullMessage_ThrowsArgumentNullException()
     {
         // Arrange
-        using PubSubMessageHandler handler = new PubSubMessageHandler(null, null);
+        using var handler = new PubSubMessageHandler(null, null);
 
         // Act & Assert
         _ = Assert.Throws<ArgumentNullException>(() => handler.HandleMessage(null!));
@@ -153,7 +153,7 @@ public class PubSubMessageHandlerTests
     public void HandleMessage_DisposedHandler_ThrowsObjectDisposedException()
     {
         // Arrange
-        PubSubMessageHandler handler = new PubSubMessageHandler(null, null);
+        var handler = new PubSubMessageHandler(null, null);
         handler.Dispose();
         PubSubMessage message = PubSubMessage.FromChannel("test-message", "test-channel");
 
@@ -165,7 +165,7 @@ public class PubSubMessageHandlerTests
     public void GetQueue_ReturnsValidQueue()
     {
         // Arrange
-        using PubSubMessageHandler handler = new PubSubMessageHandler(null, null);
+        using var handler = new PubSubMessageHandler(null, null);
 
         // Act
         PubSubMessageQueue queue = handler.GetQueue();
@@ -179,7 +179,7 @@ public class PubSubMessageHandlerTests
     public void GetQueue_DisposedHandler_ThrowsObjectDisposedException()
     {
         // Arrange
-        PubSubMessageHandler handler = new PubSubMessageHandler(null, null);
+        var handler = new PubSubMessageHandler(null, null);
         handler.Dispose();
 
         // Act & Assert
@@ -190,7 +190,7 @@ public class PubSubMessageHandlerTests
     public void Dispose_MultipleCalls_DoesNotThrow()
     {
         // Arrange
-        PubSubMessageHandler handler = new PubSubMessageHandler(null, null);
+        var handler = new PubSubMessageHandler(null, null);
 
         // Act & Assert - Should not throw
         handler.Dispose();
@@ -203,15 +203,15 @@ public class PubSubMessageHandlerTests
     {
         // Arrange
         bool callbackInvoked = false;
-        object? receivedContext = new object(); // Initialize with non-null to verify it gets set to null
+        var receivedContext = new object(); // Initialize with non-null to verify it gets set to null
 
-        MessageCallback callback = new MessageCallback((msg, ctx) =>
+        var callback = new MessageCallback((msg, ctx) =>
         {
             callbackInvoked = true;
             receivedContext = ctx;
         });
 
-        using PubSubMessageHandler handler = new PubSubMessageHandler(callback, null);
+        using var handler = new PubSubMessageHandler(callback, null);
         PubSubMessage message = PubSubMessage.FromChannel("test-message", "test-channel");
 
         // Act
