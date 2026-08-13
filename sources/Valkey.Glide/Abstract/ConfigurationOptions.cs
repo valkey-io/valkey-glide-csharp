@@ -609,7 +609,6 @@ public sealed class ConfigurationOptions : ICloneable
         {
             return Enum.Parse<ReadFromStrategy>(readFrom, ignoreCase: true);
         }
-
         catch (ArgumentException)
         {
             throw new ArgumentException($"ReadFrom strategy '{readFrom}' is not supported. Valid strategies are: {string.Join(", ", Enum.GetNames<ReadFromStrategy>())}");
