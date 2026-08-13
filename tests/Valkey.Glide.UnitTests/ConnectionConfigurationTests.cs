@@ -1083,12 +1083,12 @@ public class ConnectionConfigurationTests
     }
 
     [Fact]
-    public void ClientInfoTag_Empty_AppendsEmptyParens()
+    public void ClientInfoTag_Empty_DoesNotAppendParens()
     {
         var config = new StandaloneClientConfigurationBuilder()
             .WithClientInfoTag("")
             .Build();
-        Assert.Equal("GlideC#()", config.Request.ResolvedLibName);
+        Assert.Equal("GlideC#", config.Request.ResolvedLibName);
     }
 
     [Fact]

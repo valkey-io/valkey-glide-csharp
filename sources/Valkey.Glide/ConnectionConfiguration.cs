@@ -42,6 +42,11 @@ public abstract class ConnectionConfiguration
 
     internal record ConnectionConfig
     {
+        /// <summary>
+        /// Default library name reported via CLIENT SETINFO LIB-NAME.
+        /// </summary>
+        internal const string DefaultLibName = "GlideC#";
+
         public List<NodeAddress> Addresses = [];
         public bool ClusterMode;
         public uint? RequestTimeoutMs;
@@ -91,8 +96,8 @@ public abstract class ConnectionConfiguration
         {
             get
             {
-                string baseName = LibName ?? "GlideC#";
-                return ClientInfoTag is not null
+                string baseName = LibName ?? DefaultLibName;
+                return !string.IsNullOrEmpty(ClientInfoTag)
                     ? $"{baseName}({ClientInfoTag})"
                     : baseName;
             }
