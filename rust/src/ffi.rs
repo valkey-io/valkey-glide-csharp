@@ -1,6 +1,6 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-use crate::enums::{PeriodicChecksMode, PushKind, RouteType, ServiceType};
+use crate::enums::{PeriodicChecksMode, PushKind, ReadFromStrategy, RouteType, ServiceType};
 use std::{
     ffi::{CStr, c_char},
     slice::from_raw_parts,
@@ -305,6 +305,7 @@ pub(crate) unsafe fn create_connection_request(
                         ptr_to_str(config.read_from.az)
                     }?)
                 }
+                ReadFromStrategy::AllNodes => coreReadFrom::AllNodes,
             })
         } else {
             None
@@ -508,15 +509,6 @@ unsafe fn convert_node_addresses(
 pub struct ReadFrom {
     pub strategy: ReadFromStrategy,
     pub az: *const c_char,
-}
-
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub enum ReadFromStrategy {
-    Primary,
-    PreferReplica,
-    AZAffinity,
-    AZAffinityReplicasAndPrimary,
 }
 
 /// A mirror of [`AuthenticationInfo`] adopted for FFI.

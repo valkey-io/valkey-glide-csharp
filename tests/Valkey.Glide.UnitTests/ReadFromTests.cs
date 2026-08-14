@@ -11,11 +11,14 @@ public class ReadFromTests
     [Theory]
     [InlineData("readFrom=Primary", ReadFromStrategy.Primary, null)]
     [InlineData("readFrom=PreferReplica", ReadFromStrategy.PreferReplica, null)]
+    [InlineData("readFrom=AllNodes", ReadFromStrategy.AllNodes, null)]
     [InlineData("readFrom=AzAffinity,Az=us-east-1", ReadFromStrategy.AzAffinity, "us-east-1")]
     [InlineData("readFrom=AzAffinityReplicasAndPrimary,Az=us-east-1", ReadFromStrategy.AzAffinityReplicasAndPrimary, "us-east-1")]
     [InlineData("readFrom=primary", ReadFromStrategy.Primary, null)]
+    [InlineData("readFrom=allnodes", ReadFromStrategy.AllNodes, null)]
     [InlineData("readFrom=azaffinity,Az=us-east-1", ReadFromStrategy.AzAffinity, "us-east-1")]
     [InlineData("READFrom=PRIMARY", ReadFromStrategy.Primary, null)]
+    [InlineData("READFrom=ALLNODES", ReadFromStrategy.AllNodes, null)]
     [InlineData("READFrom=AZAFFINITY,AZ=us-east-1", ReadFromStrategy.AzAffinity, "us-east-1")]
     public void Parse_ValidReadFromWithoutAz_SetsCorrectStrategy(string connectionString, ReadFromStrategy expectedStrategy, string? expectedAz)
     {
@@ -48,7 +51,7 @@ public class ReadFromTests
         // Act & Assert
         ArgumentException exception = Assert.Throws<ArgumentException>(() => ConfigurationOptions.Parse(connectionString));
         Assert.Contains("is not supported", exception.Message);
-        Assert.Contains("Primary, PreferReplica, AzAffinity, AzAffinityReplicasAndPrimary", exception.Message);
+        Assert.Contains(string.Join(", ", Enum.GetNames<ReadFromStrategy>()), exception.Message);
     }
 
     [Theory]
@@ -98,23 +101,17 @@ public class ReadFromTests
             var readFrom = new ReadFrom(ReadFromStrategy.AzAffinity);
             options.ReadFrom = readFrom;
         });
-        Assert.Contains("Availability zone should be set", exception.Message);
+        Assert.Contains("Availability zone must be specified", exception.Message);
     }
 
-    [Fact]
-    public void ReadFromProperty_SetPrimaryWithAz_ThrowsArgumentException()
+    [Theory]
+    [InlineData(ReadFromStrategy.Primary)]
+    [InlineData(ReadFromStrategy.PreferReplica)]
+    [InlineData(ReadFromStrategy.AllNodes)]
+    public void ReadFromProperty_SetNonAzStrategyWithAz_ThrowsArgumentException(ReadFromStrategy strategy)
     {
-        // Arrange
-        var options = new ConfigurationOptions();
-
-        // Act & Assert
-        ArgumentException exception = Assert.Throws<ArgumentException>(() =>
-        {
-            // This should throw because ReadFrom constructor validates AZ requirement
-            var readFrom = new ReadFrom(ReadFromStrategy.Primary, "us-east-1");
-            options.ReadFrom = readFrom;
-        });
-        Assert.Contains("could be set only when using", exception.Message);
+        var exception = Assert.Throws<ArgumentException>(() => new ReadFrom(strategy, "us-east-1"));
+        Assert.Contains("cannot be specified", exception.Message);
     }
 
     [Fact]
@@ -217,6 +214,7 @@ public class ReadFromTests
     [Theory]
     [InlineData(ReadFromStrategy.Primary, "readFrom=Primary")]
     [InlineData(ReadFromStrategy.PreferReplica, "readFrom=PreferReplica")]
+    [InlineData(ReadFromStrategy.AllNodes, "readFrom=AllNodes")]
     public void ToString_WithReadFromStrategyWithoutAz_IncludesCorrectFormat(ReadFromStrategy strategy, string expectedSubstring)
     {
         // Arrange
@@ -321,6 +319,7 @@ public class ReadFromTests
     [Theory]
     [InlineData("readFrom=Primary")]
     [InlineData("readFrom=PreferReplica")]
+    [InlineData("readFrom=AllNodes")]
     [InlineData("readFrom=AzAffinity,az=us-east-1")]
     [InlineData("readFrom=AzAffinityReplicasAndPrimary,az=eu-west-1")]
     public void RoundTrip_ParseToStringToParse_PreservesReadFromConfiguration(string originalConnectionString)

@@ -161,6 +161,7 @@ public class ConnectionMultiplexerReadFromMappingTests
     [Theory]
     [InlineData(ReadFromStrategy.Primary, null)]
     [InlineData(ReadFromStrategy.PreferReplica, null)]
+    [InlineData(ReadFromStrategy.AllNodes, null)]
     [InlineData(ReadFromStrategy.AzAffinity, "us-west-2")]
     [InlineData(ReadFromStrategy.AzAffinityReplicasAndPrimary, "eu-central-1")]
     public void CreateClientConfigBuilder_AllReadFromStrategies_MapCorrectly(ReadFromStrategy strategy, string? az)

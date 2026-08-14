@@ -192,7 +192,7 @@ tasks:
 
     check:links:
         desc: "Check for broken links"
-        cmd: lychee --config lychee.toml .
+        cmd: lychee --config dev/conf/lychee.toml .
 
     check:todos:
         desc: "Check that TODOs reference an open GitHub issue"

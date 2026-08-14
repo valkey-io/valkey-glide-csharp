@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Support additional configuration options:
+  - All nodes read-from strategy (#207)
   - Circuit breaker (#474)
   - Inflight requests limit (#484)
   - Mutual TLS (#488)

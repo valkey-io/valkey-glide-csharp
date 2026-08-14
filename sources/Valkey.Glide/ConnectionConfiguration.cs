@@ -172,48 +172,51 @@ public abstract class ConnectionConfiguration
     public struct ReadFrom
     {
         /// <summary>
-        /// The read from strategy that determines how read operations are routed to nodes.
+        /// The read from strategy.
         /// </summary>
         public ReadFromStrategy Strategy;
 
         /// <summary>
-        /// The Availability Zone (AZ) identifier used with <see cref="ReadFromStrategy.AzAffinity"/>
-        /// or <see cref="ReadFromStrategy.AzAffinityReplicasAndPrimary"/> strategies.
+        /// The Availability Zone (AZ) identifier.
         /// </summary>
         [MarshalAs(UnmanagedType.LPUTF8Str)]
         public string? Az;
 
         /// <summary>
-        /// Init strategy with <seealso cref="ReadFromStrategy.Primary" /> or <seealso cref="ReadFromStrategy.PreferReplica" /> strategy.
+        /// Constructs a read from strategy without an Availability Zone (AZ).
         /// </summary>
-        /// <param name="strategy">Either <seealso cref="ReadFromStrategy.Primary" /> or <seealso cref="ReadFromStrategy.PreferReplica" />.</param>
-        /// <exception cref="ArgumentException">Thrown if another strategy is used.</exception>
+        /// <param name="strategy">A strategy that does not require an Availability Zone.</param>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="strategy"/> requires an Availability Zone.</exception>
         public ReadFrom(ReadFromStrategy strategy)
         {
-            if (strategy is ReadFromStrategy.AzAffinity or ReadFromStrategy.AzAffinityReplicasAndPrimary)
+            if (strategy.IsAzReadFromStrategy())
             {
-                throw new ArgumentException("Availability zone should be set when using `AzAffinity` or `AzAffinityReplicasAndPrimary` strategy.");
+                throw new ArgumentException($"Availability zone must be specified for strategy '{strategy}'.");
             }
+
             Strategy = strategy;
             Az = null;
         }
 
         /// <summary>
-        /// Init strategy with <seealso cref="ReadFromStrategy.AzAffinity" /> or <seealso cref="ReadFromStrategy.AzAffinityReplicasAndPrimary" /> strategy and an Availability Zone.
+        /// Constructs a read from strategy with an Availability Zone (AZ).
         /// </summary>
-        /// <param name="strategy">Either <seealso cref="ReadFromStrategy.AzAffinity" /> or <seealso cref="ReadFromStrategy.AzAffinityReplicasAndPrimary" />.</param>
-        /// <param name="az">An Availability Zone (AZ).</param>
-        /// <exception cref="ArgumentException">Thrown if another strategy is used.</exception>
+        /// <param name="strategy">A strategy that requires an Availability Zone.</param>
+        /// <param name="az">The corresponding Availability Zone.</param>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="strategy"/> does not accept an Availability Zone.</exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="az"/> is empty or whitespace.</exception>
         public ReadFrom(ReadFromStrategy strategy, string az)
         {
-            if (strategy is ReadFromStrategy.Primary or ReadFromStrategy.PreferReplica)
+            if (!strategy.IsAzReadFromStrategy())
             {
-                throw new ArgumentException("Availability zone could be set only when using `AzAffinity` or `AzAffinityReplicasAndPrimary` strategy.");
+                throw new ArgumentException($"Availability zone cannot be specified for strategy '{strategy}'.");
             }
+
             if (string.IsNullOrWhiteSpace(az))
             {
                 throw new ArgumentException("Availability zone cannot be empty or whitespace");
             }
+
             Strategy = strategy;
             Az = az;
         }
@@ -222,27 +225,33 @@ public abstract class ConnectionConfiguration
     /// <summary>
     /// Represents the client's read from strategy.
     /// </summary>
+    /// <seealso href="https://glide.valkey.io/how-to/connections/read-strategy/">Valkey GLIDE – Read Strategy</seealso>
     public enum ReadFromStrategy : uint
     {
         /// <summary>
-        /// Always get from primary, in order to get the freshest data.
+        /// Always read from the primary, to get the freshest data.
         /// </summary>
         Primary = 0,
+
         /// <summary>
-        /// Spread the requests between all replicas in a round-robin manner. If no replica is available, route the requests to the primary.
+        /// Read from replicas in round-robin, falling back to the primary if none are available.
         /// </summary>
         PreferReplica = 1,
+
         /// <summary>
-        /// Spread the read requests between replicas in the same client's Availability Zone (AZ) in a
-        /// round-robin manner, falling back to other replicas or the primary if needed.
+        /// Read from replicas in the client's Availability Zone (AZ), falling back to other nodes if needed.
         /// </summary>
         AzAffinity,
+
         /// <summary>
-        /// Spread the read requests among nodes within the client's Availability Zone (AZ) in a
-        /// round-robin manner, prioritizing local replicas, then the local primary, and falling
-        /// back to any replica or the primary if needed.
+        /// Read from replicas or the primary in the client's Availability Zone (AZ), falling back to other nodes if needed.
         /// </summary>
         AzAffinityReplicasAndPrimary,
+
+        /// <summary>
+        /// Read from all nodes (primary and replicas) in round-robin.
+        /// </summary>
+        AllNodes,
     }
 
     /// <summary>
@@ -254,6 +263,7 @@ public abstract class ConnectionConfiguration
         /// Use RESP2 to communicate with the server nodes.
         /// </summary>
         RESP2 = 0,
+
         /// <summary>
         /// Use RESP3 to communicate with the server nodes.
         /// </summary>
@@ -1211,4 +1221,17 @@ public abstract class ConnectionConfiguration
 
         #endregion
     }
+}
+
+/// <summary>
+/// Internal helpers for <see cref="ConnectionConfiguration.ReadFromStrategy"/>.
+/// </summary>
+internal static class ReadFromStrategyExtensions
+{
+    /// <summary>
+    /// Returns <see langword="true"/> if the strategy requires an Availability Zone (AZ).
+    /// </summary>
+    internal static bool IsAzReadFromStrategy(this ConnectionConfiguration.ReadFromStrategy strategy) =>
+        strategy is ConnectionConfiguration.ReadFromStrategy.AzAffinity
+            or ConnectionConfiguration.ReadFromStrategy.AzAffinityReplicasAndPrimary;
 }
