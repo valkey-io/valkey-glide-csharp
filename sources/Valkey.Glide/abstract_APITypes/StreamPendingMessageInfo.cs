@@ -27,9 +27,17 @@ public readonly struct StreamPendingMessageInfo
     public ValkeyValue ConsumerName { get; }
 
     /// <summary>
-    /// The time that has passed since the message was last delivered to a consumer.
+    /// The numver of milliseconds that has passed since the message was last delivered to a consumer.
     /// </summary>
     public long IdleTimeInMilliseconds { get; }
+
+    /// <summary>
+    /// The time that has passed since the message was last delivered to a consumer.
+    /// </summary>
+    public TimeSpan IdleTime
+        // This is a Valkey GLIDE-only property. It extends the StackExchange.Redis
+        // interface to provide a `TimeSpan` property for user convenience.
+        => TimeSpan.FromMilliseconds(IdleTimeInMilliseconds);
 
     /// <summary>
     /// The number of times the message has been delivered to a consumer.

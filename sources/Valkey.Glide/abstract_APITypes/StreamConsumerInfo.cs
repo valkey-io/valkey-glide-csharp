@@ -20,13 +20,20 @@ public readonly struct StreamConsumerInfo
     public string Name { get; }
 
     /// <summary>
-    /// The number of pending messages for the consumer. A pending message is one that has been
-    /// received by the consumer but not yet acknowledged.
+    /// The number of pending messages for the consumer.
     /// </summary>
     public int PendingMessageCount { get; }
 
     /// <summary>
-    /// The idle time, if any, for the consumer.
+    /// The number of milliseconds that has passed since the consumer's last interaction.
     /// </summary>
     public long IdleTimeInMilliseconds { get; }
+
+    /// <summary>
+    /// The time that has passed since the consumer's last interaction.
+    /// </summary>
+    // This is a Valkey GLIDE-only property. It extends the StackExchange.Redis
+    // interface to provide a `TimeSpan` property for user convenience.
+    public TimeSpan IdleTime
+        => TimeSpan.FromMilliseconds(IdleTimeInMilliseconds);
 }
