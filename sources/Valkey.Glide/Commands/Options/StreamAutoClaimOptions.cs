@@ -3,7 +3,7 @@
 namespace Valkey.Glide.Commands.Options;
 
 /// <summary>
-/// Arguments for the XAUTOCLAIM command.
+/// Arguments for the <c>XAUTOCLAIM</c> command.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/xautoclaim/"/>
 public sealed class StreamAutoClaimOptions
@@ -11,7 +11,7 @@ public sealed class StreamAutoClaimOptions
     #region Public Methods
 
     /// <summary>
-    /// Sets the maximum number of entries to scan (COUNT).
+    /// Sets the maximum number of entries to scan (<c>COUNT</c>).
     /// </summary>
     /// <param name="count">The maximum number of entries to scan (COUNT).</param>
     /// <returns>The same <see cref="StreamAutoClaimOptions"/> instance, for chaining.</returns>
@@ -35,7 +35,7 @@ public sealed class StreamAutoClaimOptions
     public ValkeyValue StartAtId { get; }
 
     /// <summary>
-    /// The maximum number of entries to scan (COUNT),
+    /// The maximum number of entries to scan (<c>COUNT</c>),
     /// or <see langword="null"/> to use the server default.
     /// </summary>
     public int? Count { get; private set; }
