@@ -3,10 +3,10 @@
 namespace Valkey.Glide;
 
 /// <summary>
-/// Information about a consumer group.
+/// Information about a consumer group within a stream.
 /// </summary>
-/// <seealso href="https://valkey.io/commands/xinfo-groups/"/>
-public readonly struct StreamGroupInfo
+/// <seealso href="https://valkey.io/commands/xinfo-stream/"/>
+public readonly struct StreamGroupInfoFull
 {
     #region Public Properties
 
@@ -16,20 +16,9 @@ public readonly struct StreamGroupInfo
     public string Name { get; }
 
     /// <summary>
-    /// The number of consumers in the consumer group (<c>consumers</c>).
-    /// </summary>
-    public int ConsumerCount { get; }
-
-    /// <summary>
-    /// The total number of pending messages for the consumer group (<c>pending</c>). A pending message is
-    /// one that has been received by a consumer but not yet acknowledged.
-    /// </summary>
-    public int PendingMessageCount { get; }
-
-    /// <summary>
     /// The ID of the last entry delivered to the group (<c>last-delivered-id</c>).
     /// </summary>
-    public string? LastDeliveredId { get; }
+    public ValkeyValue LastDeliveredId { get; }
 
     /// <summary>
     /// The number of entries the group has read (<c>entries-read</c>),
@@ -45,17 +34,40 @@ public readonly struct StreamGroupInfo
     /// <remarks>Since Valkey 7.0.0.</remarks>
     public long? Lag { get; }
 
+    /// <summary>
+    /// The number of entries in the group's pending entries list (<c>pel-count</c>).
+    /// </summary>
+    public long PelCount { get; }
+
+    /// <summary>
+    /// The group's pending entries list (<c>pending</c>).
+    /// </summary>
+    public StreamPendingEntryInfo[] PendingEntries { get; }
+
+    /// <summary>
+    /// The consumers in the group (<c>consumers</c>).
+    /// </summary>
+    public StreamConsumerFullInfo[] Consumers { get; }
+
     #endregion
     #region Constructors
 
-    internal StreamGroupInfo(string name, int consumerCount, int pendingMessageCount, string? lastDeliveredId, long? entriesRead, long? lag)
+    internal StreamGroupInfoFull(
+        string name,
+        ValkeyValue lastDeliveredId,
+        long? entriesRead,
+        long? lag,
+        long pelCount,
+        StreamPendingEntryInfo[] pendingEntries,
+        StreamConsumerFullInfo[] consumers)
     {
         Name = name;
-        ConsumerCount = consumerCount;
-        PendingMessageCount = pendingMessageCount;
         LastDeliveredId = lastDeliveredId;
         EntriesRead = entriesRead;
         Lag = lag;
+        PelCount = pelCount;
+        PendingEntries = pendingEntries;
+        Consumers = consumers;
     }
 
     #endregion
