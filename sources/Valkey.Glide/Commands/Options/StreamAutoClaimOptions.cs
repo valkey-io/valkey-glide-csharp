@@ -8,6 +8,20 @@ namespace Valkey.Glide.Commands.Options;
 /// <seealso href="https://valkey.io/commands/xautoclaim/"/>
 public sealed class StreamAutoClaimOptions
 {
+    #region Public Methods
+
+    /// <summary>
+    /// Sets the maximum number of entries to scan (COUNT).
+    /// </summary>
+    /// <param name="count">The maximum number of entries to scan (COUNT).</param>
+    /// <returns>The same <see cref="StreamAutoClaimOptions"/> instance, for chaining.</returns>
+    public StreamAutoClaimOptions WithCount(int count)
+    {
+        Count = count;
+        return this;
+    }
+
+    #endregion
     #region Public Properties
 
     /// <summary>
@@ -24,16 +38,15 @@ public sealed class StreamAutoClaimOptions
     /// The maximum number of entries to scan (COUNT),
     /// or <see langword="null"/> to use the server default.
     /// </summary>
-    public int? Count { get; }
+    public int? Count { get; private set; }
 
     #endregion
     #region Constructors
 
-    private StreamAutoClaimOptions(TimeSpan minIdleTime, ValkeyValue startAtId, int? count)
+    private StreamAutoClaimOptions(TimeSpan minIdleTime, ValkeyValue startAtId)
     {
         MinIdleTime = minIdleTime;
         StartAtId = startAtId;
-        Count = count;
     }
 
     #endregion
@@ -45,12 +58,7 @@ public sealed class StreamAutoClaimOptions
     /// <param name="minIdleTime">The minimum idle time an entry must have to be claimed.</param>
     /// <returns>Options that scan pending entries from the beginning of the pending entries list.</returns>
     public static StreamAutoClaimOptions FromStart(TimeSpan minIdleTime)
-        => new(minIdleTime, StreamPosition.Beginning, null);
-
-    /// <inheritdoc cref="FromStart(TimeSpan)"/>
-    /// <param name="count">The maximum number of entries to scan (COUNT).</param>
-    public static StreamAutoClaimOptions FromStart(TimeSpan minIdleTime, int count)
-        => new(minIdleTime, StreamPosition.Beginning, count);
+        => new(minIdleTime, StreamPosition.Beginning);
 
     /// <summary>
     /// Creates options that scan pending entries starting from the given stream ID.
@@ -59,12 +67,7 @@ public sealed class StreamAutoClaimOptions
     /// <param name="startAtId">The stream ID at which to start scanning pending entries.</param>
     /// <returns>Options that scan pending entries starting from the given stream ID.</returns>
     public static StreamAutoClaimOptions FromId(TimeSpan minIdleTime, ValkeyValue startAtId)
-        => new(minIdleTime, startAtId, null);
-
-    /// <inheritdoc cref="FromId(TimeSpan, ValkeyValue)"/>
-    /// <param name="count">The maximum number of entries to scan (COUNT).</param>
-    public static StreamAutoClaimOptions FromId(TimeSpan minIdleTime, ValkeyValue startAtId, int count)
-        => new(minIdleTime, startAtId, count);
+        => new(minIdleTime, startAtId);
 
     #endregion
 }
