@@ -10,14 +10,22 @@ public struct StreamPosition
     #region Constants
 
     /// <summary>
-    /// The beginning of the stream ("0-0"). Valid for XREAD, XREADGROUP, and XAUTOCLAIM.
+    /// The beginning of the stream ("0-0").
+    /// Valid for XREAD, XREADGROUP, and XAUTOCLAIM.
     /// </summary>
     public static readonly ValkeyValue Beginning = ValkeyLiterals.StreamMinimumId;
 
     /// <summary>
-    /// Only messages not yet delivered to any consumer in the group (">"). Valid for XREADGROUP.
+    /// Only messages not yet delivered to any consumer in the group (">").
+    /// Valid for XREADGROUP.
     /// </summary>
     public static readonly ValkeyValue UndeliveredMessages = ValkeyLiterals.StreamUndeliveredMessages;
+
+    /// <summary>
+    /// Only new messages arriving after this point ("$").
+    /// Valid for XREAD, XGROUP CREATE, and XGROUP SETID.
+    /// </summary>
+    public static readonly ValkeyValue NewMessages = ValkeyLiterals.StreamNewMessages;
 
     #endregion
     #region Constructors
