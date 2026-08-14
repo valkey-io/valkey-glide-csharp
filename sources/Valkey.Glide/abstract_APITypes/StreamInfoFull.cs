@@ -3,75 +3,64 @@
 namespace Valkey.Glide;
 
 /// <summary>
-/// Describes detailed stream information retrieved using the <c>XINFO STREAM key FULL</c> command.
-/// This includes consumer group details, PEL entries per consumer, and the full entries list.
+/// Full information about a stream.
 /// </summary>
+/// <seealso href="https://valkey.io/commands/xinfo-stream/"/>
 public readonly struct StreamInfoFull
 {
-    internal StreamInfoFull(
-        long length,
-        long radixTreeKeys,
-        long radixTreeNodes,
-        ValkeyValue lastGeneratedId,
-        ValkeyValue maxDeletedEntryId,
-        long entriesAdded,
-        ValkeyValue recordedFirstEntryId,
-        StreamEntry[] entries,
-        StreamGroupFullInfo[] groups)
-    {
-        Length = length;
-        RadixTreeKeys = radixTreeKeys;
-        RadixTreeNodes = radixTreeNodes;
-        LastGeneratedId = lastGeneratedId;
-        MaxDeletedEntryId = maxDeletedEntryId;
-        EntriesAdded = entriesAdded;
-        RecordedFirstEntryId = recordedFirstEntryId;
-        Entries = entries;
-        Groups = groups;
-    }
+    #region Public Properties
 
     /// <summary>
-    /// The number of entries in the stream.
+    /// The number of entries in the stream (<c>length</c>).
     /// </summary>
-    public long Length { get; }
+    public int Length { get; internal init; }
 
     /// <summary>
-    /// The number of radix tree keys in the stream.
+    /// The number of radix tree keys in the stream (<c>radix-tree-keys</c>).
     /// </summary>
-    public long RadixTreeKeys { get; }
+    public int RadixTreeKeys { get; internal init; }
 
     /// <summary>
-    /// The number of radix tree nodes in the stream.
+    /// The number of radix tree nodes in the stream (<c>radix-tree-nodes</c>).
     /// </summary>
-    public long RadixTreeNodes { get; }
+    public int RadixTreeNodes { get; internal init; }
 
     /// <summary>
-    /// The last generated ID in the stream.
+    /// The last generated id (<c>last-generated-id</c>),
+    /// or <see cref="ValkeyValue.Null"/> if not specified.
     /// </summary>
-    public ValkeyValue LastGeneratedId { get; }
+    public ValkeyValue LastGeneratedId { get; internal init; }
 
     /// <summary>
-    /// The ID of the maximum deleted entry. Available since server 7.0.
+    /// The maximal entry ID that was deleted from the stream (<c>max-deleted-entry-id</c>),
+    /// or <see cref="ValkeyValue.Null"/> if not specified.
     /// </summary>
-    public ValkeyValue MaxDeletedEntryId { get; }
+    /// <remarks>Since Valkey 7.0.0.</remarks>
+    public ValkeyValue MaxDeletedEntryId { get; internal init; }
 
     /// <summary>
-    /// The total number of entries added to the stream since creation. Available since server 7.0.
+    /// The count of all entries added to the stream during its lifetime
+    /// (<c>entries-added</c>), or <c>-1</c> if not specified.
     /// </summary>
-    public long EntriesAdded { get; }
+    /// <remarks>Since Valkey 7.0.0.</remarks>
+    public long EntriesAdded { get; internal init; }
 
     /// <summary>
-    /// The recorded first entry ID. Available since server 7.0.
+    /// The first id recorded for the stream (<c>recorded-first-entry-id</c>),
+    /// or <see cref="ValkeyValue.Null"/> if not specified.
     /// </summary>
-    public ValkeyValue RecordedFirstEntryId { get; }
+    /// <remarks>Since Valkey 7.0.0.</remarks>
+    public ValkeyValue RecordedFirstEntryId { get; internal init; }
 
     /// <summary>
-    /// The stream entries.
+    /// The stream entries (<c>entries</c>).
     /// </summary>
-    public StreamEntry[] Entries { get; }
+    public StreamEntry[] Entries { get; internal init; }
 
     /// <summary>
-    /// The consumer groups associated with the stream.
+    /// The consumer groups defined for the stream (<c>groups</c>).
     /// </summary>
-    public StreamGroupFullInfo[] Groups { get; }
+    public StreamGroupInfoFull[] Groups { get; internal init; }
+
+    #endregion
 }
