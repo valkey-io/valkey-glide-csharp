@@ -6,7 +6,7 @@ namespace Valkey.Glide.Commands.Options;
 /// Optional arguments for the <c>XGROUP CREATE</c> command.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/xgroup-create/"/>
-public sealed class StreamGroupOptions
+public sealed class StreamGroupCreateOptions
 {
     #region Public Properties
 

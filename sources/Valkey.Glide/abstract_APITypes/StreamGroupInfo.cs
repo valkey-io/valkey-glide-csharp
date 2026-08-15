@@ -3,7 +3,7 @@
 namespace Valkey.Glide;
 
 /// <summary>
-/// Information about a consumer group.
+/// Consumer group information from a <c>XINFO GROUPS</c> response.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/xinfo-groups/"/>
 public readonly struct StreamGroupInfo

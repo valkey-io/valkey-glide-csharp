@@ -3,7 +3,7 @@
 namespace Valkey.Glide;
 
 /// <summary>
-/// Information about a stream.
+/// Stream information from a <c>XINFO STREAM</c> response.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/xinfo-stream/"/>
 public readonly struct StreamInfo

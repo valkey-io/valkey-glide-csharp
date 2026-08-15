@@ -3,7 +3,7 @@
 namespace Valkey.Glide.Commands.Options;
 
 /// <summary>
-/// Optional arguments for the XREAD command.
+/// Optional arguments for the <c>XREAD</c> command.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/xread/"/>
 public class StreamReadOptions
@@ -25,7 +25,7 @@ public class StreamReadOptions
 }
 
 /// <summary>
-/// Optional arguments for the XREADGROUP command.
+/// Optional arguments for the <c>XREADGROUP</c> command.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/xreadgroup/"/>
 public sealed class StreamReadGroupOptions : StreamReadOptions

@@ -3,7 +3,7 @@
 namespace Valkey.Glide.Commands.Options;
 
 /// <summary>
-/// Optional arguments for the XADD command.
+/// Optional arguments for the <c>XADD</c> command.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/xadd/"/>
 public sealed class StreamAddOptions

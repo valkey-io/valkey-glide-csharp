@@ -3,7 +3,7 @@
 namespace Valkey.Glide.Commands.Options;
 
 /// <summary>
-/// Arguments for the XCLAIM command.
+/// Arguments for the <c>XCLAIM</c> command.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/xclaim/"/>
 public sealed class StreamClaimOptions

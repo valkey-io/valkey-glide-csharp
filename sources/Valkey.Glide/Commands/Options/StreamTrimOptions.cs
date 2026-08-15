@@ -3,7 +3,7 @@
 namespace Valkey.Glide.Commands.Options;
 
 /// <summary>
-/// Trimming options for stream commands (XADD, XTRIM).
+/// Trimming options for the <c>XADD</c> and <c>XTRIM</c> commands.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/xadd/"/>
 /// <seealso href="https://valkey.io/commands/xtrim/"/>

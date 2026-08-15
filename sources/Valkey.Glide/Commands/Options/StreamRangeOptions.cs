@@ -3,7 +3,7 @@
 namespace Valkey.Glide.Commands.Options;
 
 /// <summary>
-/// Optional arguments for the XRANGE / XREVRANGE commands.
+/// Optional arguments for the <c>XRANGE</c> command.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/xrange/"/>
 /// <seealso href="https://valkey.io/commands/xrevrange/"/>

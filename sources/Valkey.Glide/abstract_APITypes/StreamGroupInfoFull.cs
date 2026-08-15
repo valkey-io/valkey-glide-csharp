@@ -3,7 +3,7 @@
 namespace Valkey.Glide;
 
 /// <summary>
-/// Information about a consumer group within a stream.
+/// Full consumer group information from a <c>XINFO STREAM</c> response.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/xinfo-stream/"/>
 public readonly struct StreamGroupInfoFull
@@ -42,12 +42,12 @@ public readonly struct StreamGroupInfoFull
     /// <summary>
     /// The group's pending entries list (<c>pending</c>).
     /// </summary>
-    public StreamPendingEntryInfo[] PendingEntries { get; }
+    public StreamPendingEntry[] PendingEntries { get; }
 
     /// <summary>
     /// The consumers in the group (<c>consumers</c>).
     /// </summary>
-    public StreamConsumerFullInfo[] Consumers { get; }
+    public StreamConsumerInfoFull[] Consumers { get; }
 
     #endregion
     #region Constructors
@@ -58,8 +58,8 @@ public readonly struct StreamGroupInfoFull
         long? entriesRead,
         long? lag,
         long pelCount,
-        StreamPendingEntryInfo[] pendingEntries,
-        StreamConsumerFullInfo[] consumers)
+        StreamPendingEntry[] pendingEntries,
+        StreamConsumerInfoFull[] consumers)
     {
         Name = name;
         LastDeliveredId = lastDeliveredId;

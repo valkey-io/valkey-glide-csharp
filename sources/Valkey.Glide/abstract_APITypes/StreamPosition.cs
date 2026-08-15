@@ -1,11 +1,12 @@
-﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
+// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 namespace Valkey.Glide;
 
 /// <summary>
-/// Describes a pair consisting of the Stream Key and the <see cref="Position"/> from which to begin reading a stream.
+/// A stream key and starting position for the <c>XREAD</c> command.
 /// </summary>
-public struct StreamPosition
+/// <seealso href="https://valkey.io/commands/xread/"/>
+public readonly struct StreamPosition
 {
     #region Constants
 
@@ -28,6 +29,19 @@ public struct StreamPosition
     public static readonly ValkeyValue NewMessages = ValkeyLiterals.StreamNewMessages;
 
     #endregion
+    #region Public Properties
+
+    /// <summary>
+    /// The stream key.
+    /// </summary>
+    public ValkeyKey Key { get; }
+
+    /// <summary>
+    /// The offset at which to begin reading the stream.
+    /// </summary>
+    public ValkeyValue Position { get; }
+
+    #endregion
     #region Constructors
 
     /// <summary>
@@ -40,19 +54,6 @@ public struct StreamPosition
         Key = key;
         Position = position;
     }
-
-    #endregion
-    #region Public Properties
-
-    /// <summary>
-    /// The stream key.
-    /// </summary>
-    public ValkeyKey Key { get; }
-
-    /// <summary>
-    /// The offset at which to begin reading the stream.
-    /// </summary>
-    public ValkeyValue Position { get; }
 
     #endregion
 }
