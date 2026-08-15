@@ -121,7 +121,7 @@ public partial interface IDatabaseAsync
     #region StreamCreateConsumerGroupAsync
 
     /// <summary>
-    /// Creates a consumer group for a stream.
+    /// Creates a new consumer group for a stream.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/xgroup-create/">Valkey commands – XGROUP CREATE</seealso>
     /// <param name="key">The stream key.</param>
@@ -156,7 +156,7 @@ public partial interface IDatabaseAsync
     #region StreamCreateConsumerAsync
 
     /// <summary>
-    /// Creates a consumer in a consumer group.
+    /// Creates a new consumer in a consumer group.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/xgroup-createconsumer/">Valkey commands – XGROUP CREATECONSUMER</seealso>
     /// <param name="key">The stream key.</param>
@@ -186,7 +186,7 @@ public partial interface IDatabaseAsync
     #region StreamConsumerGroupSetPositionAsync
 
     /// <summary>
-    /// Sets the position from which to read a stream for a consumer group.
+    /// Sets the last delivered ID for a consumer group.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/xgroup-setid/">Valkey commands – XGROUP SETID</seealso>
     /// <param name="key">The stream key.</param>
@@ -200,7 +200,7 @@ public partial interface IDatabaseAsync
     /// <inheritdoc cref="StreamConsumerGroupSetPositionAsync(ValkeyKey, ValkeyValue, ValkeyValue, CommandFlags)" path="/*[not(self::returns)]"/>
     /// <param name="entriesRead">The number of entries read (Valkey 7.0+).</param>
     /// <returns><see langword="true"/> if the position was set.</returns>
-    Task<bool> StreamConsumerGroupSetPositionAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue position, long? entriesRead, CommandFlags flags);
+    Task<bool> StreamConsumerGroupSetPositionAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue position, long? entriesRead, CommandFlags flags = CommandFlags.None);
 
     #endregion
     #region StreamAcknowledgeAsync
@@ -215,10 +215,10 @@ public partial interface IDatabaseAsync
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>The number of messages acknowledged.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<long> StreamAcknowledgeAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue messageId, CommandFlags flags = CommandFlags.None);
+    Task<long> StreamAcknowledgeAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue messageId, CommandFlags flags);
 
     /// <summary>
-    /// Acknowledges messages in a consumer group.
+    /// Acknowledges a message in a consumer group.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/xack/">Valkey commands – XACK</seealso>
     /// <param name="key">The stream key.</param>
@@ -227,13 +227,13 @@ public partial interface IDatabaseAsync
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>The number of messages acknowledged.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<long> StreamAcknowledgeAsync(ValkeyKey key, ValkeyValue groupName, IEnumerable<ValkeyValue> messageIds, CommandFlags flags = CommandFlags.None);
+    Task<long> StreamAcknowledgeAsync(ValkeyKey key, ValkeyValue groupName, IEnumerable<ValkeyValue> messageIds, CommandFlags flags);
 
     #endregion
     #region StreamPendingAsync
 
     /// <summary>
-    /// Returns pending messages summary for a consumer group.
+    /// Returns information about the pending messages for a consumer group.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/xpending/">Valkey commands – XPENDING</seealso>
     /// <param name="key">The stream key.</param>
@@ -241,13 +241,13 @@ public partial interface IDatabaseAsync
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>A <see cref="StreamPendingInfo"/> containing the pending messages summary.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<StreamPendingInfo> StreamPendingAsync(ValkeyKey key, ValkeyValue groupName, CommandFlags flags = CommandFlags.None);
+    Task<StreamPendingInfo> StreamPendingAsync(ValkeyKey key, ValkeyValue groupName, CommandFlags flags);
 
     #endregion
     #region StreamPendingMessagesAsync
 
     /// <summary>
-    /// Returns detailed pending messages for a consumer group.
+    /// Returns the detailed list of pending messages for a consumer group.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/xpending/">Valkey commands – XPENDING</seealso>
     /// <param name="key">The stream key.</param>
@@ -265,12 +265,12 @@ public partial interface IDatabaseAsync
     #region StreamClaimAsync
 
     /// <summary>
-    /// Claims pending messages for a consumer.
+    /// Changes the ownership of one or more pending messages to the given consumer.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/xclaim/">Valkey commands – XCLAIM</seealso>
     /// <param name="key">The stream key.</param>
     /// <param name="consumerGroup">The consumer group name.</param>
-    /// <param name="claimingConsumer">The consumer claiming the messages.</param>
+    /// <param name="claimingConsumer">The consumer that will take ownership of the messages.</param>
     /// <param name="minIdleTimeInMs">The minimum idle time in milliseconds.</param>
     /// <param name="messageIds">The message IDs to claim.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
@@ -282,12 +282,12 @@ public partial interface IDatabaseAsync
     #region StreamClaimIdsOnlyAsync
 
     /// <summary>
-    /// Claims pending messages for a consumer, returning only IDs.
+    /// Changes the ownership of one or more pending messages, returning only the claimed message IDs.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/xclaim/">Valkey commands – XCLAIM</seealso>
     /// <param name="key">The stream key.</param>
     /// <param name="consumerGroup">The consumer group name.</param>
-    /// <param name="claimingConsumer">The consumer claiming the messages.</param>
+    /// <param name="claimingConsumer">The consumer that will take ownership of the messages.</param>
     /// <param name="minIdleTimeInMs">The minimum idle time in milliseconds.</param>
     /// <param name="messageIds">The message IDs to claim.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
@@ -299,12 +299,12 @@ public partial interface IDatabaseAsync
     #region StreamAutoClaimAsync
 
     /// <summary>
-    /// Automatically claims pending messages.
+    /// Transfers ownership of pending messages.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/xautoclaim/">Valkey commands – XAUTOCLAIM</seealso>
     /// <param name="key">The stream key.</param>
     /// <param name="consumerGroup">The consumer group name.</param>
-    /// <param name="claimingConsumer">The consumer claiming the messages.</param>
+    /// <param name="claimingConsumer">The consumer that will take ownership of the messages.</param>
     /// <param name="minIdleTimeInMs">The minimum idle time in milliseconds.</param>
     /// <param name="startAtId">The message ID to start scanning from.</param>
     /// <param name="count">The maximum number of messages to claim.</param>
@@ -317,12 +317,12 @@ public partial interface IDatabaseAsync
     #region StreamAutoClaimIdsOnlyAsync
 
     /// <summary>
-    /// Automatically claims pending messages, returning only IDs.
+    /// Transfers ownership of pending messages, returning only the claimed IDs.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/xautoclaim/">Valkey commands – XAUTOCLAIM</seealso>
     /// <param name="key">The stream key.</param>
     /// <param name="consumerGroup">The consumer group name.</param>
-    /// <param name="claimingConsumer">The consumer claiming the messages.</param>
+    /// <param name="claimingConsumer">The consumer that will take ownership of the messages.</param>
     /// <param name="minIdleTimeInMs">The minimum idle time in milliseconds.</param>
     /// <param name="startAtId">The message ID to start scanning from.</param>
     /// <param name="count">The maximum number of messages to claim.</param>
@@ -335,7 +335,7 @@ public partial interface IDatabaseAsync
     #region StreamTrimAsync
 
     /// <summary>
-    /// Trims the stream to a specified size.
+    /// Trims a stream to a given size.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/xtrim/">Valkey commands – XTRIM</seealso>
     /// <param name="key">The stream key.</param>
@@ -395,20 +395,20 @@ public partial interface IDatabaseAsync
     #region StreamInfoAsync
 
     /// <summary>
-    /// Returns stream information.
+    /// Returns information about a stream.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/xinfo-stream/">Valkey commands – XINFO STREAM</seealso>
     /// <param name="key">The stream key.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>A <see cref="StreamInfo"/> containing the stream information.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<StreamInfo> StreamInfoAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None);
+    Task<StreamInfo> StreamInfoAsync(ValkeyKey key, CommandFlags flags);
 
     #endregion
     #region StreamGroupInfoAsync
 
     /// <summary>
-    /// Returns consumer group information for a stream.
+    /// Returns information about consumer groups.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/xinfo-groups/">Valkey commands – XINFO GROUPS</seealso>
     /// <param name="key">The stream key.</param>
@@ -421,7 +421,7 @@ public partial interface IDatabaseAsync
     #region StreamConsumerInfoAsync
 
     /// <summary>
-    /// Returns consumer information for a consumer group.
+    /// Returns information about the consumers of a consumer group.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/xinfo-consumers/">Valkey commands – XINFO CONSUMERS</seealso>
     /// <param name="key">The stream key.</param>
