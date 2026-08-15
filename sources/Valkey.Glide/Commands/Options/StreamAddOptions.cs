@@ -38,7 +38,9 @@ public sealed class StreamAddOptions
     #endregion
     #region Internal Methods
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Builds the command arguments for these options.
+    /// </summary>
     internal GlideString[] ToArgs()
     {
         List<GlideString> args = [];

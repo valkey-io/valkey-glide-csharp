@@ -68,8 +68,8 @@ internal partial class Request
     /// <param name="request">The request type</param>
     /// <param name="args">The command arguments</param>
     /// <returns>A command that converts an array to a ValkeyValue array</returns>
-    private static Cmd<object[], ValkeyValue[]> ObjectArrayToValkeyValueArray(RequestType request, GlideString[] args)
-        => new(request, args, false, set => [.. set.Cast<GlideString>().Select(gs => gs)]);
+    private static Cmd<object[], ValkeyValue[]> ToValkeyValueArray(RequestType request, GlideString[] args)
+        => new(request, args, false, ToValkeyValueArray);
 
     /// <summary>
     /// Converts a keyword and items into a counted array: <c>keyword count item1 item2 ...</c>.
@@ -117,7 +117,16 @@ internal partial class Request
         }
     }
 
-    #region Collection Converters
+    #region String Converters
+
+    /// <summary>
+    /// Converts the given objects to an <see cref="IReadOnlySet{String}"/>.
+    /// </summary>
+    private static IReadOnlySet<string> ToReadOnlyStringSet(IEnumerable<object> items)
+        => new HashSet<string>(items.Cast<GlideString>().Select(gs => gs.ToString()));
+
+    #endregion
+    #region ValkeyKey Converters
 
     /// <summary>
     /// Converts the given objects to a <see cref="ValkeyKey"/> set.
@@ -125,23 +134,32 @@ internal partial class Request
     private static ISet<ValkeyKey> ToValkeyKeySet(IEnumerable<object> items)
         => new HashSet<ValkeyKey>(items.Cast<GlideString>().Select(gs => (ValkeyKey)gs.Bytes));
 
+    #endregion
+    #region ValkeyValue Converters
+
+    /// <summary>
+    /// Converts the given object to a <see cref="ValkeyValue"/>.
+    /// </summary>
+    private static ValkeyValue ToValkeyValue(object? value)
+        => (GlideString?)value;
+
+    /// <summary>
+    /// Converts the given object to a <see cref="ValkeyValue"/> array.
+    /// </summary>
+    private static ValkeyValue[] ToValkeyValueArray(object value)
+        => ToValkeyValueArray((object[])value);
+
     /// <summary>
     /// Converts the given objects to a <see cref="ValkeyValue"/> array.
     /// </summary>
-    private static ValkeyValue[] ToValkeyValueArray(object[] items)
-        => [.. items.Cast<GlideString>().Select(gs => (ValkeyValue)gs)];
+    private static ValkeyValue[] ToValkeyValueArray(IEnumerable<object> items)
+        => [.. items.Select(ToValkeyValue)];
 
     /// <summary>
     /// Converts the given objects to a <see cref="ValkeyValue"/> set.
     /// </summary>
     private static ISet<ValkeyValue> ToValkeyValueSet(IEnumerable<object> items)
-        => new HashSet<ValkeyValue>(items.Cast<GlideString>().Select(gs => (ValkeyValue)gs));
-
-    /// <summary>
-    /// Converts the given objects to an <see cref="IReadOnlySet{String}"/>.
-    /// </summary>
-    private static IReadOnlySet<string> ToReadOnlyStringSet(IEnumerable<object> items)
-        => new HashSet<string>(items.Cast<GlideString>().Select(gs => gs.ToString()));
+        => new HashSet<ValkeyValue>(items.Select(ToValkeyValue));
 
     #endregion
     #region Response Map Helpers
@@ -235,7 +253,7 @@ internal partial class Request
     /// Returns an optional <see cref="ValkeyValue"/> from the given response dictionary.
     /// </summary>
     private static ValkeyValue TryGetValkeyValue(Dictionary<GlideString, object> map, string key)
-        => map.TryGetValue(key, out var value) ? (GlideString)value : ValkeyValue.Null;
+        => map.TryGetValue(key, out var value) ? ToValkeyValue(value) : ValkeyValue.Null;
 
     /// <summary>
     /// Returns a required <see cref="ValkeyValue"/> array from the given response dictionary.
@@ -260,7 +278,7 @@ internal partial class Request
             _ => throw new RequestException($"Response field '{key}' expected array, got {value.GetType()}"),
         };
 
-        return [.. items.Cast<GlideString>().Select(gs => (ValkeyValue)gs)];
+        return ToValkeyValueArray(items);
     }
 
     #endregion

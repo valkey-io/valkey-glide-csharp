@@ -41,10 +41,13 @@ internal partial class Database
     public Task<StreamAutoClaimResult> StreamAutoClaimAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, ValkeyValue startAtId, int? count = null, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        var minIdleTime = TimeSpan.FromMilliseconds(minIdleTimeInMs);
-        var options = count.HasValue
-            ? StreamAutoClaimOptions.FromId(minIdleTime, startAtId).WithCount(count.Value)
-            : StreamAutoClaimOptions.FromId(minIdleTime, startAtId);
+
+        var options = StreamAutoClaimOptions.FromId(TimeSpan.FromMilliseconds(minIdleTimeInMs), startAtId);
+        if (count.HasValue)
+        {
+            _ = options.WithCount(count.Value);
+        }
+
         return StreamAutoClaimAsync(key, consumerGroup, claimingConsumer, options);
     }
 
@@ -52,10 +55,13 @@ internal partial class Database
     public Task<StreamAutoClaimJustIdResult> StreamAutoClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, ValkeyValue startAtId, int? count = null, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        var minIdleTime = TimeSpan.FromMilliseconds(minIdleTimeInMs);
-        var options = count.HasValue
-            ? StreamAutoClaimOptions.FromId(minIdleTime, startAtId).WithCount(count.Value)
-            : StreamAutoClaimOptions.FromId(minIdleTime, startAtId);
+
+        var options = StreamAutoClaimOptions.FromId(TimeSpan.FromMilliseconds(minIdleTimeInMs), startAtId);
+        if (count.HasValue)
+        {
+            _ = options.WithCount(count.Value);
+        }
+
         return StreamAutoClaimJustIdAsync(key, consumerGroup, claimingConsumer, options);
     }
 
@@ -118,8 +124,10 @@ internal partial class Database
     public async Task<bool> StreamCreateConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue? position = null, bool createStream = true, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
+
         var options = new StreamGroupCreateOptions { MakeStream = createStream };
-        await StreamGroupCreateAsync(key, groupName, position ?? default, options);
+        await StreamGroupCreateAsync(key, groupName, position ?? StreamPosition.NewMessages, options);
+
         return true;
     }
 
@@ -127,8 +135,10 @@ internal partial class Database
     public async Task<bool> StreamCreateConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue? position, bool createStream, long? entriesRead, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
+
         var options = new StreamGroupCreateOptions { MakeStream = createStream, EntriesRead = entriesRead };
-        await StreamGroupCreateAsync(key, groupName, position ?? default, options);
+        await StreamGroupCreateAsync(key, groupName, position ?? StreamPosition.NewMessages, options);
+
         return true;
     }
 
@@ -201,8 +211,10 @@ internal partial class Database
     public Task<StreamEntry[]> StreamRangeAsync(ValkeyKey key, ValkeyValue? minId = null, ValkeyValue? maxId = null, int? count = null, Order messageOrder = Order.Ascending, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
+
         var range = StreamIdRange.Between(minId ?? StreamIdBound.Min, maxId ?? StreamIdBound.Max);
         var options = new StreamRangeOptions { Range = range, Count = count, Order = messageOrder };
+
         return StreamRangeAsync(key, options);
     }
 
@@ -224,8 +236,10 @@ internal partial class Database
     public Task<StreamEntry[]> StreamReadGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, ValkeyValue? position = null, int? count = null, bool noAck = false, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
+
         var options = new StreamReadGroupOptions { Count = count, NoAck = noAck };
         var sp = new StreamPosition(key, position ?? StreamPosition.UndeliveredMessages);
+
         return StreamReadGroupAsync(sp, groupName, consumerName, options);
     }
 
@@ -242,6 +256,7 @@ internal partial class Database
 
         var options = new StreamReadGroupOptions { Count = count, NoAck = noAck };
         var sp = new StreamPosition(key, position ?? StreamPosition.UndeliveredMessages);
+
         return StreamReadGroupAsync(sp, groupName, consumerName, options);
     }
 
@@ -259,11 +274,13 @@ internal partial class Database
         GuardClauses.ThrowIfCommandFlags(flags);
         ArgumentOutOfRangeException.ThrowIfLessThan(maxLength, 0, nameof(maxLength));
 
-        return StreamTrimAsync(key, new StreamTrimOptions.MaxLen
+        var options = new StreamTrimOptions.MaxLen
         {
             MaxLength = maxLength,
             Exact = !useApproximateMaxLength,
-        });
+        };
+
+        return StreamTrimAsync(key, options);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StreamTrimAsync(ValkeyKey, long?, bool, long?, StreamTrimMode, CommandFlags)"/>

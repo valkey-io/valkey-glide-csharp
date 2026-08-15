@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using static Valkey.Glide.Internals.TimeUtils;
+
 namespace Valkey.Glide.Commands.Options;
 
 /// <summary>
@@ -68,6 +70,25 @@ public sealed class StreamAutoClaimOptions
     /// <returns>Options that scan pending entries starting from the given stream ID.</returns>
     public static StreamAutoClaimOptions FromId(TimeSpan minIdleTime, ValkeyValue startAtId)
         => new(minIdleTime, startAtId);
+
+    #endregion
+    #region Internal Methods
+
+    /// <summary>
+    /// Builds the command arguments for these options.
+    /// </summary>
+    internal GlideString[] ToArgs()
+    {
+        List<GlideString> args = [ToULongMs(MinIdleTime, nameof(MinIdleTime)).ToGlideString(), StartAtId];
+
+        if (Count.HasValue)
+        {
+            args.Add(ValkeyLiterals.COUNT);
+            args.Add(Count.Value.ToGlideString());
+        }
+
+        return [.. args];
+    }
 
     #endregion
 }

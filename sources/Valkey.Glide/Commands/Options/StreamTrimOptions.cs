@@ -35,7 +35,9 @@ public abstract class StreamTrimOptions
     /// </summary>
     internal abstract GlideString Threshold { get; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Builds the command arguments for these options.
+    /// </summary>
     internal GlideString[] ToArgs()
     {
         if (Limit.HasValue && Exact != false)

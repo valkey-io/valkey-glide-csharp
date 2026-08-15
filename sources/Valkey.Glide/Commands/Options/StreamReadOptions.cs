@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using static Valkey.Glide.Internals.TimeUtils;
+
 namespace Valkey.Glide.Commands.Options;
 
 /// <summary>
@@ -22,21 +24,29 @@ public class StreamReadOptions
     public TimeSpan? Block { get; init; } = null;
 
     #endregion
-}
-
-/// <summary>
-/// Optional arguments for the <c>XREADGROUP</c> command.
-/// </summary>
-/// <seealso href="https://valkey.io/commands/xreadgroup/"/>
-public sealed class StreamReadGroupOptions : StreamReadOptions
-{
-    #region Public Properties
+    #region Internal Methods
 
     /// <summary>
-    /// If <see langword="true"/>, messages are not added to the Pending Entries List (PEL).
-    /// This is equivalent to acknowledging the message when it is read.
+    /// Builds the command arguments for these options.
     /// </summary>
-    public bool NoAck { get; init; } = false;
+    internal virtual GlideString[] ToArgs()
+    {
+        List<GlideString> args = [];
+
+        if (Count.HasValue)
+        {
+            args.Add(ValkeyLiterals.COUNT);
+            args.Add(Count.Value.ToGlideString());
+        }
+
+        if (Block.HasValue)
+        {
+            args.Add(ValkeyLiterals.BLOCK);
+            args.Add(ToULongMs(Block.Value, nameof(Block)).ToGlideString());
+        }
+
+        return [.. args];
+    }
 
     #endregion
 }

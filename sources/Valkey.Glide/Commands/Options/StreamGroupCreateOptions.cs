@@ -21,4 +21,28 @@ public sealed class StreamGroupCreateOptions
     public long? EntriesRead { get; init; } = null;
 
     #endregion
+    #region Internal Methods
+
+    /// <summary>
+    /// Builds the command arguments for these options.
+    /// </summary>
+    internal GlideString[] ToArgs()
+    {
+        List<GlideString> args = [];
+
+        if (MakeStream)
+        {
+            args.Add(ValkeyLiterals.MKSTREAM);
+        }
+
+        if (EntriesRead.HasValue)
+        {
+            args.Add(ValkeyLiterals.ENTRIESREAD);
+            args.Add(EntriesRead.Value.ToGlideString());
+        }
+
+        return [.. args];
+    }
+
+    #endregion
 }

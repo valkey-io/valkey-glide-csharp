@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using static Valkey.Glide.Internals.TimeUtils;
+
 namespace Valkey.Glide.Commands.Options;
 
 /// <summary>
@@ -99,6 +101,42 @@ public sealed class StreamClaimOptions
     /// <returns>Options that claim entries idle for at least the given time.</returns>
     public static StreamClaimOptions From(TimeSpan minIdleTime)
         => new(minIdleTime);
+
+    #endregion
+    #region Internal Methods
+
+    /// <summary>
+    /// Builds the command arguments for these options.
+    /// </summary>
+    internal GlideString[] ToArgs()
+    {
+        List<GlideString> args = [];
+
+        if (Idle.HasValue)
+        {
+            args.Add(ValkeyLiterals.IDLE);
+            args.Add(ToULongMs(Idle.Value, nameof(Idle)).ToGlideString());
+        }
+
+        if (IdleUnix.HasValue)
+        {
+            args.Add(ValkeyLiterals.TIME);
+            args.Add(IdleUnix.Value.ToUnixTimeMilliseconds().ToGlideString());
+        }
+
+        if (RetryCount.HasValue)
+        {
+            args.Add(ValkeyLiterals.RETRYCOUNT);
+            args.Add(RetryCount.Value.ToGlideString());
+        }
+
+        if (Force)
+        {
+            args.Add(ValkeyLiterals.FORCE);
+        }
+
+        return [.. args];
+    }
 
     #endregion
 }

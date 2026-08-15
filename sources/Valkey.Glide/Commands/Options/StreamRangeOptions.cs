@@ -30,9 +30,25 @@ public sealed class StreamRangeOptions
     #endregion
     #region Internal Methods
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Builds the command arguments for these options.
+    /// </summary>
     internal GlideString[] ToArgs()
-        => Count.HasValue ? [ValkeyLiterals.COUNT, Count.Value.ToGlideString()] : [];
+    {
+        var start = Range.Start.Value;
+        var end = Range.End.Value;
+
+        // The start and end IDs are reversed for a descending (XREVRANGE) query.
+        List<GlideString> args = Order == Order.Descending ? [end, start] : [start, end];
+
+        if (Count.HasValue)
+        {
+            args.Add(ValkeyLiterals.COUNT);
+            args.Add(Count.Value.ToGlideString());
+        }
+
+        return [.. args];
+    }
 
     #endregion
 }
