@@ -158,11 +158,13 @@ internal partial class Request
         var values = new NameValueEntry[fields.Length / 2];
         for (int i = 0; i < values.Length; i++)
         {
-            values[i] = new NameValueEntry(name: (GlideString)fields[2 * i], value: (GlideString)fields[2 * i + 1]);
+            values[i] = new NameValueEntry(
+                name: (GlideString)fields[2 * i],
+                value: (GlideString)fields[(2 * i) + 1]);
         }
 
         return new StreamEntry(
-            id: (GlideString)array[0], 
+            id: (GlideString)array[0],
             values: values);
     }
 

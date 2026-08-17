@@ -41,10 +41,10 @@ public readonly struct StreamConsumerInfoFull
     #region Constructors
 
     internal StreamConsumerInfoFull(
-        string name, 
-        DateTimeOffset seenTime, 
-        DateTimeOffset? activeTime, 
-        long pelCount, 
+        string name,
+        DateTimeOffset seenTime,
+        DateTimeOffset? activeTime,
+        long pelCount,
         StreamPendingEntry[] pendingEntries)
     {
         Name = name;

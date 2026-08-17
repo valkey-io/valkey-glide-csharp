@@ -37,9 +37,9 @@ public readonly struct StreamPendingEntry
     #region Constructors
 
     internal StreamPendingEntry(
-        ValkeyValue entryId, 
-        string consumer, 
-        DateTimeOffset deliveryTime, 
+        ValkeyValue entryId,
+        string consumer,
+        DateTimeOffset deliveryTime,
         int deliveryCount)
     {
         EntryId = entryId;
