@@ -41,11 +41,11 @@ public partial interface IDatabaseAsync
     /// <inheritdoc cref="IBaseClient.StreamReadAsync(StreamPosition)" path="/*[self::summary or self::seealso]"/>
     /// <param name="key">The stream key.</param>
     /// <param name="position">The position from which to start reading.</param>
-    /// <param name="countPerStream">The maximum number of entries to return.</param>
+    /// <param name="count">The maximum number of entries to return.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>An array of <see cref="StreamEntry"/> values.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<StreamEntry[]> StreamReadAsync(ValkeyKey key, ValkeyValue position, int? countPerStream = null, CommandFlags flags = CommandFlags.None);
+    Task<StreamEntry[]> StreamReadAsync(ValkeyKey key, ValkeyValue position, int? count = null, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="IBaseClient.StreamReadAsync(IEnumerable{StreamPosition})" path="/*[self::summary or self::seealso]"/>
     /// <param name="streamPositions">A collection of stream keys and their starting positions.</param>

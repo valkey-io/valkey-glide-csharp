@@ -219,10 +219,10 @@ internal partial class Database
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StreamReadAsync(ValkeyKey, ValkeyValue, int?, CommandFlags)"/>
-    public Task<StreamEntry[]> StreamReadAsync(ValkeyKey key, ValkeyValue position, int? countPerStream = null, CommandFlags flags = CommandFlags.None)
+    public Task<StreamEntry[]> StreamReadAsync(ValkeyKey key, ValkeyValue position, int? count = null, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return StreamReadAsync(new StreamPosition(key, position), new StreamReadOptions { Count = countPerStream });
+        return StreamReadAsync(new StreamPosition(key, position), new StreamReadOptions { Count = count });
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StreamReadAsync(IEnumerable{StreamPosition}, int?, CommandFlags)"/>
