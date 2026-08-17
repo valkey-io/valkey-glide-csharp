@@ -980,145 +980,174 @@ public class CommandTests
     [Fact]
     public void ValidateStreamCommandArgs()
     {
-        Assert.Multiple(
-            // StreamAdd
-            () => Assert.Equal(["XADD", "key", "*", "field", "value"], Request.StreamAddAsync("key", [new NameValueEntry("field", "value")], new StreamAddOptions()).GetArgs()),
-            () => Assert.Equal(["XADD", "key", "1-0", "field1", "value1", "field2", "value2"], Request.StreamAddAsync("key", [new NameValueEntry("field1", "value1"), new NameValueEntry("field2", "value2")], new StreamAddOptions { Id = "1-0" }).GetArgs()),
-            () => Assert.Equal(["XADD", "key", "MAXLEN", "~", "1000", "*", "field", "value"], Request.StreamAddAsync("key", [new NameValueEntry("field", "value")], new StreamAddOptions { Trim = new StreamTrimOptions.MaxLen { MaxLength = 1000, Exact = false } }).GetArgs()),
-            () => Assert.Equal(["XADD", "key", "MINID", "~", "0-1", "*", "field", "value"], Request.StreamAddAsync("key", [new NameValueEntry("field", "value")], new StreamAddOptions { Trim = new StreamTrimOptions.MinId { MinEntryId = "0-1", Exact = false } }).GetArgs()),
-            () => Assert.Equal(["XADD", "key", "NOMKSTREAM", "*", "field", "value"], Request.StreamAddAsync("key", [new NameValueEntry("field", "value")], new StreamAddOptions { MakeStream = false }).GetArgs()),
-
-            // StreamRead
-            () => Assert.Equal(["XREAD", "STREAMS", "key", "0-0"], Request.StreamReadAsync(new StreamPosition("key", "0-0"), new StreamReadOptions()).GetArgs()),
-            () => Assert.Equal(["XREAD", "COUNT", "10", "STREAMS", "key", "0-0"], Request.StreamReadAsync(new StreamPosition("key", "0-0"), new StreamReadOptions { Count = 10 }).GetArgs()),
-            () => Assert.Equal(["XREAD", "STREAMS", "key1", "key2", "0-0", "1-0"], Request.StreamReadAsync([new StreamPosition("key1", "0-0"), new StreamPosition("key2", "1-0")], new StreamReadOptions()).GetArgs()),
-
-            // StreamRange
-            () => Assert.Equal(["XRANGE", "key", "-", "+"], Request.StreamRangeAsync("key", new StreamRangeOptions()).GetArgs()),
-            () => Assert.Equal(["XRANGE", "key", "1-0", "2-0", "COUNT", "10"], Request.StreamRangeAsync("key", new StreamRangeOptions { Range = StreamIdRange.Between("1-0", "2-0"), Count = 10 }).GetArgs()),
-            () => Assert.Equal(["XREVRANGE", "key", "+", "-"], Request.StreamRangeAsync("key", new StreamRangeOptions { Order = Order.Descending }).GetArgs()),
-
-            // StreamLength
-            () => Assert.Equal(["XLEN", "key"], Request.StreamLengthAsync("key").GetArgs()),
-
-            // StreamDelete
-            () => Assert.Equal(["XDEL", "key", "1-0"], Request.StreamDeleteAsync("key", (ValkeyValue)"1-0").GetArgs()),
-            () => Assert.Equal(["XDEL", "key", "1-0", "2-0"], Request.StreamDeleteAsync("key", ["1-0", "2-0"]).GetArgs()),
-
-            // StreamTrim
-            () => Assert.Equal(["XTRIM", "key", "MAXLEN", "1000"], Request.StreamTrimAsync("key", new StreamTrimOptions.MaxLen { MaxLength = 1000 }).GetArgs()),
-            () => Assert.Equal(["XTRIM", "key", "MAXLEN", "~", "1000"], Request.StreamTrimAsync("key", new StreamTrimOptions.MaxLen { MaxLength = 1000, Exact = false }).GetArgs()),
-            () => Assert.Equal(["XTRIM", "key", "MINID", "0-1"], Request.StreamTrimAsync("key", new StreamTrimOptions.MinId { MinEntryId = "0-1" }).GetArgs()),
-
-            // StreamCreateConsumerGroup
-            () => Assert.Equal(["XGROUPCREATE", "key", "group", "$", "MKSTREAM"], Request.StreamCreateConsumerGroupAsync("key", "group", default, true, null).GetArgs()),
-            () => Assert.Equal(["XGROUPCREATE", "key", "group", "0"], Request.StreamCreateConsumerGroupAsync("key", "group", "0", false, null).GetArgs()),
-            () => Assert.Equal(["XGROUPCREATE", "key", "group", "0", "ENTRIESREAD", "10"], Request.StreamCreateConsumerGroupAsync("key", "group", "0", false, 10).GetArgs()),
-
-            // StreamDeleteConsumerGroup
-            () => Assert.Equal(["XGROUPDESTROY", "key", "group"], Request.StreamDeleteConsumerGroupAsync("key", "group").GetArgs()),
-
-            // StreamCreateConsumer
-            () => Assert.Equal(["XGROUPCREATECONSUMER", "key", "group", "consumer"], Request.StreamCreateConsumerAsync("key", "group", "consumer").GetArgs()),
-
-            // StreamDeleteConsumer
-            () => Assert.Equal(["XGROUPDELCONSUMER", "key", "group", "consumer"], Request.StreamDeleteConsumerAsync("key", "group", "consumer").GetArgs()),
-
-            // StreamConsumerGroupSetPosition
-            () => Assert.Equal(["XGROUPSETID", "key", "group", "0-0"], Request.StreamConsumerGroupSetPositionAsync("key", "group", "0-0", null).GetArgs()),
-            () => Assert.Equal(["XGROUPSETID", "key", "group", "0-0", "ENTRIESREAD", "5"], Request.StreamConsumerGroupSetPositionAsync("key", "group", "0-0", 5).GetArgs()),
-
-            // StreamReadGroup
-            () => Assert.Equal(["XREADGROUP", "GROUP", "group", "consumer", "STREAMS", "key", ">"], Request.StreamReadGroupAsync(new StreamPosition("key", ">"), "group", "consumer", new StreamReadGroupOptions()).GetArgs()),
-            () => Assert.Equal(["XREADGROUP", "GROUP", "group", "consumer", "COUNT", "10", "STREAMS", "key", ">"], Request.StreamReadGroupAsync(new StreamPosition("key", ">"), "group", "consumer", new StreamReadGroupOptions { Count = 10 }).GetArgs()),
-            () => Assert.Equal(["XREADGROUP", "GROUP", "group", "consumer", "NOACK", "STREAMS", "key", ">"], Request.StreamReadGroupAsync(new StreamPosition("key", ">"), "group", "consumer", new StreamReadGroupOptions { NoAck = true }).GetArgs()),
-            () => Assert.Equal(["XREADGROUP", "GROUP", "group", "consumer", "STREAMS", "key1", "key2", ">", ">"], Request.StreamReadGroupAsync([new StreamPosition("key1", ">"), new StreamPosition("key2", ">")], "group", "consumer", new StreamReadGroupOptions()).GetArgs()),
-            () => Assert.Equal(["XREADGROUP", "GROUP", "group", "consumer", "COUNT", "5", "STREAMS", "key1", "key2", ">", "0-0"], Request.StreamReadGroupAsync([new StreamPosition("key1", ">"), new StreamPosition("key2", "0-0")], "group", "consumer", new StreamReadGroupOptions { Count = 5 }).GetArgs()),
-            () => Assert.Equal(["XREADGROUP", "GROUP", "group", "consumer", "NOACK", "STREAMS", "key1", "key2", ">", ">"], Request.StreamReadGroupAsync([new StreamPosition("key1", ">"), new StreamPosition("key2", ">")], "group", "consumer", new StreamReadGroupOptions { NoAck = true }).GetArgs()),
-
-            // StreamAcknowledge
-            () => Assert.Equal(["XACK", "key", "group", "1-0", "2-0"], Request.StreamAcknowledgeAsync("key", "group", ["1-0", "2-0"]).GetArgs()),
-
-            // StreamPending
-            () => Assert.Equal(["XPENDING", "key", "group"], Request.StreamPendingAsync("key", "group").GetArgs()),
-
-            // StreamPendingMessages
-            () => Assert.Equal(["XPENDING", "key", "group", "-", "+", "10", "consumer"], Request.StreamPendingMessagesAsync("key", "group", "-", "+", 10, "consumer", null).GetArgs()),
-            () => Assert.Equal(["XPENDING", "key", "group", "IDLE", "1000", "-", "+", "10", "consumer"], Request.StreamPendingMessagesAsync("key", "group", "-", "+", 10, "consumer", OneSecond).GetArgs()),
-
-            // StreamClaim
-            () => Assert.Equal(["XCLAIM", "key", "group", "consumer", "1000", "1-0"], Request.StreamClaimAsync("key", "group", "consumer", OneSecond, ["1-0"]).GetArgs()),
-            () => Assert.Equal(["XCLAIM", "key", "group", "consumer", "1000", "1-0", "IDLE", "500"], Request.StreamClaimAsync("key", "group", "consumer", OneSecond, ["1-0"], new StreamClaimOptions { Idle = TimeSpan.FromMilliseconds(500) }).GetArgs()),
-            () => Assert.Equal(["XCLAIM", "key", "group", "consumer", "1000", "1-0", "FORCE"], Request.StreamClaimAsync("key", "group", "consumer", OneSecond, ["1-0"], new StreamClaimOptions { Force = true }).GetArgs()),
-
-            // StreamClaimIdsOnly
-            () => Assert.Equal(["XCLAIM", "key", "group", "consumer", "1000", "1-0", "JUSTID"], Request.StreamClaimIdsOnlyAsync("key", "group", "consumer", OneSecond, ["1-0"]).GetArgs()),
-
-            // StreamAutoClaim
-            () => Assert.Equal(["XAUTOCLAIM", "key", "group", "consumer", "1000", "0-0"], Request.StreamAutoClaimAsync("key", "group", "consumer", OneSecond, "0-0", null).GetArgs()),
-            () => Assert.Equal(["XAUTOCLAIM", "key", "group", "consumer", "1000", "0-0", "COUNT", "10"], Request.StreamAutoClaimAsync("key", "group", "consumer", OneSecond, "0-0", 10).GetArgs()),
-
-            // StreamAutoClaimJustId
-            () => Assert.Equal(["XAUTOCLAIM", "key", "group", "consumer", "1000", "0-0", "JUSTID"], Request.StreamAutoClaimJustIdAsync("key", "group", "consumer", OneSecond, "0-0", null).GetArgs()),
-
-            // StreamInfo
-            () => Assert.Equal(["XINFOSTREAM", "key"], Request.StreamInfoAsync("key").GetArgs()),
-
-            // StreamGroupInfo
-            () => Assert.Equal(["XINFOGROUPS", "key"], Request.StreamGroupInfoAsync("key").GetArgs()),
-
-            // StreamConsumerInfo
-            () => Assert.Equal(["XINFOCONSUMERS", "key", "group"], Request.StreamConsumerInfoAsync("key", "group").GetArgs())
-
-            // StreamInfoFull
-            // () => Assert.Equal(["XINFOSTREAM", "key", "FULL"], Request.StreamInfoFullAsync("key", null).GetArgs()),
-            // () => Assert.Equal(["XINFOSTREAM", "key", "FULL", "COUNT", "5"], Request.StreamInfoFullAsync("key", 5).GetArgs())
-        );
+        Assert.Equal(["XACK", "key", "group", "1-0"], Request.StreamAcknowledge("key", "group", (ValkeyValue)"1-0").GetArgs());
+        Assert.Equal(["XACK", "key", "group", "1-0", "2-0"], Request.StreamAcknowledge("key", "group", ["1-0", "2-0"]).GetArgs());
+        Assert.Equal(["XADD", "key", "*", "field", "value"], Request.StreamAdd("key", [new NameValueEntry("field", "value")], new StreamAddOptions()).GetArgs());
+        Assert.Equal(["XADD", "key", "1-0", "field1", "value1", "field2", "value2"], Request.StreamAdd("key", [new NameValueEntry("field1", "value1"), new NameValueEntry("field2", "value2")], new StreamAddOptions { Id = "1-0" }).GetArgs());
+        Assert.Equal(["XADD", "key", "MAXLEN", "~", "1000", "*", "field", "value"], Request.StreamAdd("key", [new NameValueEntry("field", "value")], new StreamAddOptions { Trim = new StreamTrimOptions.MaxLen { MaxLength = 1000, Exact = false } }).GetArgs());
+        Assert.Equal(["XADD", "key", "MINID", "~", "0-1", "*", "field", "value"], Request.StreamAdd("key", [new NameValueEntry("field", "value")], new StreamAddOptions { Trim = new StreamTrimOptions.MinId { MinEntryId = "0-1", Exact = false } }).GetArgs());
+        Assert.Equal(["XADD", "key", "NOMKSTREAM", "*", "field", "value"], Request.StreamAdd("key", [new NameValueEntry("field", "value")], new StreamAddOptions { MakeStream = false }).GetArgs());
+        Assert.Equal(["XAUTOCLAIM", "key", "group", "consumer", "1000", "0-0"], Request.StreamAutoClaim("key", "group", "consumer", StreamAutoClaimOptions.FromId(OneSecond, "0-0")).GetArgs());
+        Assert.Equal(["XAUTOCLAIM", "key", "group", "consumer", "1000", "0-0", "COUNT", "10"], Request.StreamAutoClaim("key", "group", "consumer", StreamAutoClaimOptions.FromId(OneSecond, "0-0").WithCount(10)).GetArgs());
+        Assert.Equal(["XAUTOCLAIM", "key", "group", "consumer", "1000", "0-0", "JUSTID"], Request.StreamAutoClaimJustId("key", "group", "consumer", StreamAutoClaimOptions.FromId(OneSecond, "0-0")).GetArgs());
+        Assert.Equal(["XCLAIM", "key", "group", "consumer", "1000", "1-0"], Request.StreamClaim("key", "group", "consumer", ["1-0"], StreamClaimOptions.From(OneSecond)).GetArgs());
+        Assert.Equal(["XCLAIM", "key", "group", "consumer", "1000", "1-0", "IDLE", "500"], Request.StreamClaim("key", "group", "consumer", ["1-0"], StreamClaimOptions.From(OneSecond).WithIdle(TimeSpan.FromMilliseconds(500))).GetArgs());
+        Assert.Equal(["XCLAIM", "key", "group", "consumer", "1000", "1-0", "FORCE"], Request.StreamClaim("key", "group", "consumer", ["1-0"], StreamClaimOptions.From(OneSecond).WithForce()).GetArgs());
+        Assert.Equal(["XCLAIM", "key", "group", "consumer", "1000", "1-0", "JUSTID"], Request.StreamClaimIdsOnly("key", "group", "consumer", ["1-0"], StreamClaimOptions.From(OneSecond)).GetArgs());
+        Assert.Equal(["XGROUPSETID", "key", "group", "0-0"], Request.StreamGroupSetId("key", "group", "0-0", null).GetArgs());
+        Assert.Equal(["XGROUPSETID", "key", "group", "0-0", "ENTRIESREAD", "5"], Request.StreamGroupSetId("key", "group", "0-0", 5).GetArgs());
+        Assert.Equal(["XINFOCONSUMERS", "key", "group"], Request.StreamInfoConsumers("key", "group").GetArgs());
+        Assert.Equal(["XGROUPCREATECONSUMER", "key", "group", "consumer"], Request.StreamGroupCreateConsumer("key", "group", "consumer").GetArgs());
+        Assert.Equal(["XGROUPCREATE", "key", "group", "$", "MKSTREAM"], Request.StreamGroupCreate("key", "group", StreamPosition.NewMessages, new StreamGroupCreateOptions { MakeStream = true }).GetArgs());
+        Assert.Equal(["XGROUPCREATE", "key", "group", "0"], Request.StreamGroupCreate("key", "group", "0", new StreamGroupCreateOptions { MakeStream = false }).GetArgs());
+        Assert.Equal(["XGROUPCREATE", "key", "group", "0", "ENTRIESREAD", "10"], Request.StreamGroupCreate("key", "group", "0", new StreamGroupCreateOptions { MakeStream = false, EntriesRead = 10 }).GetArgs());
+        Assert.Equal(["XDEL", "key", "1-0"], Request.StreamDelete("key", (ValkeyValue)"1-0").GetArgs());
+        Assert.Equal(["XDEL", "key", "1-0", "2-0"], Request.StreamDelete("key", ["1-0", "2-0"]).GetArgs());
+        Assert.Equal(["XGROUPDELCONSUMER", "key", "group", "consumer"], Request.StreamGroupDeleteConsumer("key", "group", "consumer").GetArgs());
+        Assert.Equal(["XGROUPDESTROY", "key", "group"], Request.StreamGroupDestroy("key", "group").GetArgs());
+        Assert.Equal(["XINFOGROUPS", "key"], Request.StreamInfoGroups("key").GetArgs());
+        Assert.Equal(["XINFOSTREAM", "key"], Request.StreamInfo("key").GetArgs());
+        Assert.Equal(["XINFOSTREAM", "key", "FULL"], Request.StreamInfoFull("key", null).GetArgs());
+        Assert.Equal(["XINFOSTREAM", "key", "FULL", "COUNT", "5"], Request.StreamInfoFull("key", 5).GetArgs());
+        Assert.Equal(["XLEN", "key"], Request.StreamLength("key").GetArgs());
+        Assert.Equal(["XPENDING", "key", "group"], Request.StreamPending("key", "group").GetArgs());
+        Assert.Equal(["XPENDING", "key", "group", "-", "+", "10", "consumer"], Request.StreamPending("key", "group", new StreamPendingOptions { Count = 10, ConsumerName = "consumer" }).GetArgs());
+        Assert.Equal(["XPENDING", "key", "group", "IDLE", "1000", "-", "+", "10", "consumer"], Request.StreamPending("key", "group", new StreamPendingOptions { Count = 10, ConsumerName = "consumer", MinIdleTime = OneSecond }).GetArgs());
+        Assert.Equal(["XRANGE", "key", "-", "+"], Request.StreamRange("key", new StreamRangeOptions()).GetArgs());
+        Assert.Equal(["XRANGE", "key", "1-0", "2-0", "COUNT", "10"], Request.StreamRange("key", new StreamRangeOptions { Range = StreamIdRange.Between("1-0", "2-0"), Count = 10 }).GetArgs());
+        Assert.Equal(["XREVRANGE", "key", "+", "-"], Request.StreamRange("key", new StreamRangeOptions { Order = Order.Descending }).GetArgs());
+        Assert.Equal(["XREAD", "STREAMS", "key", "0-0"], Request.StreamRead(new StreamPosition("key", "0-0"), new StreamReadOptions()).GetArgs());
+        Assert.Equal(["XREAD", "COUNT", "10", "STREAMS", "key", "0-0"], Request.StreamRead(new StreamPosition("key", "0-0"), new StreamReadOptions { Count = 10 }).GetArgs());
+        Assert.Equal(["XREAD", "STREAMS", "key1", "key2", "0-0", "1-0"], Request.StreamRead([new StreamPosition("key1", "0-0"), new StreamPosition("key2", "1-0")], new StreamReadOptions()).GetArgs());
+        Assert.Equal(["XREADGROUP", "GROUP", "group", "consumer", "STREAMS", "key", ">"], Request.StreamReadGroup(new StreamPosition("key", ">"), "group", "consumer", new StreamReadGroupOptions()).GetArgs());
+        Assert.Equal(["XREADGROUP", "GROUP", "group", "consumer", "COUNT", "10", "STREAMS", "key", ">"], Request.StreamReadGroup(new StreamPosition("key", ">"), "group", "consumer", new StreamReadGroupOptions { Count = 10 }).GetArgs());
+        Assert.Equal(["XREADGROUP", "GROUP", "group", "consumer", "NOACK", "STREAMS", "key", ">"], Request.StreamReadGroup(new StreamPosition("key", ">"), "group", "consumer", new StreamReadGroupOptions { NoAck = true }).GetArgs());
+        Assert.Equal(["XREADGROUP", "GROUP", "group", "consumer", "STREAMS", "key1", "key2", ">", ">"], Request.StreamReadGroup([new StreamPosition("key1", ">"), new StreamPosition("key2", ">")], "group", "consumer", new StreamReadGroupOptions()).GetArgs());
+        Assert.Equal(["XREADGROUP", "GROUP", "group", "consumer", "COUNT", "5", "STREAMS", "key1", "key2", ">", "0-0"], Request.StreamReadGroup([new StreamPosition("key1", ">"), new StreamPosition("key2", "0-0")], "group", "consumer", new StreamReadGroupOptions { Count = 5 }).GetArgs());
+        Assert.Equal(["XREADGROUP", "GROUP", "group", "consumer", "NOACK", "STREAMS", "key1", "key2", ">", ">"], Request.StreamReadGroup([new StreamPosition("key1", ">"), new StreamPosition("key2", ">")], "group", "consumer", new StreamReadGroupOptions { NoAck = true }).GetArgs());
+        Assert.Equal(["XTRIM", "key", "MAXLEN", "1000"], Request.StreamTrim("key", new StreamTrimOptions.MaxLen { MaxLength = 1000 }).GetArgs());
+        Assert.Equal(["XTRIM", "key", "MAXLEN", "~", "1000"], Request.StreamTrim("key", new StreamTrimOptions.MaxLen { MaxLength = 1000, Exact = false }).GetArgs());
+        Assert.Equal(["XTRIM", "key", "MINID", "0-1"], Request.StreamTrim("key", new StreamTrimOptions.MinId { MinEntryId = "0-1" }).GetArgs());
     }
 
     [Fact]
     public void ValidateStreamCommandConverters()
     {
-        Assert.Multiple(
-            // StreamAdd
-            () => Assert.Equal(new ValkeyValue("1-0"), Request.StreamAddAsync("key", [new NameValueEntry("f", "v")], new StreamAddOptions()).Converter("1-0")),
-            () => Assert.Equal(ValkeyValue.Null, Request.StreamAddAsync("key", [new NameValueEntry("f", "v")], new StreamAddOptions()).Converter(null!)),
+        Assert.True(Request.StreamAcknowledge("key", "group", (ValkeyValue)"1-0").Converter(1L));
+        Assert.False(Request.StreamAcknowledge("key", "group", (ValkeyValue)"1-0").Converter(0L));
+        Assert.Equal(2L, Request.StreamAcknowledge("key", "group", ["1-0", "2-0"]).Converter(2L));
+        Assert.Equal(new ValkeyValue("1-0"), Request.StreamAdd("key", [new NameValueEntry("f", "v")], new StreamAddOptions()).Converter("1-0"));
+        Assert.Equal(ValkeyValue.Null, Request.StreamAdd("key", [new NameValueEntry("f", "v")], new StreamAddOptions()).Converter(null!));
+        Assert.Equal(ValkeyValue.Ok, Request.StreamGroupSetId("key", "group", "0-0", null).Converter("OK"));
+        Assert.True(Request.StreamGroupCreateConsumer("key", "group", "consumer").Converter(1L));
+        Assert.False(Request.StreamGroupCreateConsumer("key", "group", "consumer").Converter(0L));
+        Assert.True(Request.StreamGroupCreateConsumer("key", "group", "consumer").Converter(true));
+        Assert.False(Request.StreamGroupCreateConsumer("key", "group", "consumer").Converter(false));
+        Assert.Equal(ValkeyValue.Ok, Request.StreamGroupCreate("key", "group", default, new StreamGroupCreateOptions { MakeStream = true }).Converter("OK"));
+        Assert.True(Request.StreamDelete("key", (ValkeyValue)"1-0").Converter(1L));
+        Assert.False(Request.StreamDelete("key", (ValkeyValue)"1-0").Converter(0L));
+        Assert.Equal(2L, Request.StreamDelete("key", ["1-0", "2-0"]).Converter(2L));
+        Assert.Equal(0L, Request.StreamDelete("key", ["1-0"]).Converter(0L));
+        Assert.Equal(5L, Request.StreamGroupDeleteConsumer("key", "group", "consumer").Converter(5L));
+        Assert.True(Request.StreamGroupDestroy("key", "group").Converter(true));
+        Assert.False(Request.StreamGroupDestroy("key", "group").Converter(false));
+        Assert.Equal(5L, Request.StreamLength("key").Converter(5L));
+        Assert.Equal(0L, Request.StreamLength("key").Converter(0L));
+        Assert.Equal(10L, Request.StreamTrim("key", new StreamTrimOptions.MaxLen { MaxLength = 100 }).Converter(10L));
+    }
 
-            // StreamLength
-            () => Assert.Equal(5L, Request.StreamLengthAsync("key").Converter(5L)),
-            () => Assert.Equal(0L, Request.StreamLengthAsync("key").Converter(0L)),
+    [Fact]
+    public void StreamInfo_Converter()
+    {
+        var raw = new Dictionary<GlideString, object>
+        {
+            ["length"] = 3L,
+            ["radix-tree-keys"] = 1L,
+            ["radix-tree-nodes"] = 2L,
+            ["groups"] = 1L,
+            ["last-generated-id"] = (GlideString)"5-0",
+            ["max-deleted-entry-id"] = (GlideString)"2-0",
+            ["entries-added"] = 4L,
+            ["recorded-first-entry-id"] = (GlideString)"3-0",
+        };
 
-            // StreamDelete
-            () => Assert.True(Request.StreamDeleteAsync("key", (ValkeyValue)"1-0").Converter(1L)),
-            () => Assert.False(Request.StreamDeleteAsync("key", (ValkeyValue)"1-0").Converter(0L)),
-            () => Assert.Equal(2L, Request.StreamDeleteAsync("key", ["1-0", "2-0"]).Converter(2L)),
-            () => Assert.Equal(0L, Request.StreamDeleteAsync("key", ["1-0"]).Converter(0L)),
+        var info = Request.StreamInfo("key").Converter(raw);
 
-            // StreamTrim
-            () => Assert.Equal(10L, Request.StreamTrimAsync("key", new StreamTrimOptions.MaxLen { MaxLength = 100 }).Converter(10L)),
+        Assert.Equal(3, info.Length);
+        Assert.Equal(1, info.RadixTreeKeys);
+        Assert.Equal(2, info.RadixTreeNodes);
+        Assert.Equal(1, info.ConsumerGroupCount);
+        Assert.Equal(new ValkeyValue("5-0"), info.LastGeneratedId);
 
-            // StreamCreateConsumerGroup
-            () => Assert.True(Request.StreamCreateConsumerGroupAsync("key", "group", default, true, null).Converter("OK")),
+        // Fields added since server 7.0.
+        Assert.Equal(new ValkeyValue("2-0"), info.MaxDeletedEntryId);
+        Assert.Equal(4L, info.EntriesAdded);
+        Assert.Equal(new ValkeyValue("3-0"), info.RecordedFirstEntryId);
+    }
 
-            // StreamDeleteConsumerGroup
-            () => Assert.True(Request.StreamDeleteConsumerGroupAsync("key", "group").Converter(true)),
-            () => Assert.False(Request.StreamDeleteConsumerGroupAsync("key", "group").Converter(false)),
+    [Fact]
+    public void StreamInfo_Converter_OmitsPre7Fields()
+    {
+        // Older servers (< 7.0) do not return the newer fields (max-deleted-entry-id, entries-added,
+        // recorded-first-entry-id); they should default cleanly. The remaining fields are always present.
+        var raw = new Dictionary<GlideString, object>
+        {
+            ["length"] = 1L,
+            ["radix-tree-keys"] = 1L,
+            ["radix-tree-nodes"] = 2L,
+            ["last-generated-id"] = (GlideString)"1-0",
+            ["groups"] = 0L,
+        };
 
-            // StreamCreateConsumer
-            () => Assert.True(Request.StreamCreateConsumerAsync("key", "group", "consumer").Converter(1L)),
-            () => Assert.False(Request.StreamCreateConsumerAsync("key", "group", "consumer").Converter(0L)),
-            () => Assert.True(Request.StreamCreateConsumerAsync("key", "group", "consumer").Converter(true)),
-            () => Assert.False(Request.StreamCreateConsumerAsync("key", "group", "consumer").Converter(false)),
+        var info = Request.StreamInfo("key").Converter(raw);
 
-            // StreamDeleteConsumer
-            () => Assert.Equal(5L, Request.StreamDeleteConsumerAsync("key", "group", "consumer").Converter(5L)),
+        Assert.Equal(1, info.Length);
+        Assert.Equal(ValkeyValue.Null, info.MaxDeletedEntryId);
+        Assert.Equal(-1L, info.EntriesAdded);
+        Assert.Equal(ValkeyValue.Null, info.RecordedFirstEntryId);
+    }
 
-            // StreamConsumerGroupSetPosition
-            () => Assert.True(Request.StreamConsumerGroupSetPositionAsync("key", "group", "0-0", null).Converter("OK")),
+    [Fact]
+    public void StreamConsumerInfo_Converter()
+    {
+        var raw = new object[]
+        {
+            new Dictionary<GlideString, object>
+            {
+                ["name"] = (GlideString)"consumer1",
+                ["pending"] = 3L,
+                ["idle"] = 5000L,
+                ["inactive"] = 8000L,
+            },
+        };
 
-            // StreamAcknowledge
-            () => Assert.Equal(2L, Request.StreamAcknowledgeAsync("key", "group", ["1-0", "2-0"]).Converter(2L))
-        );
+        StreamConsumerInfo consumer = Assert.Single(Request.StreamInfoConsumers("key", "group").Converter(raw));
+
+        Assert.Equal("consumer1", consumer.Name);
+        Assert.Equal(3, consumer.PendingMessageCount);
+        Assert.Equal(5000L, consumer.IdleTimeInMilliseconds);
+        Assert.Equal(TimeSpan.FromMilliseconds(5000), consumer.Idle);
+        Assert.Equal(TimeSpan.FromMilliseconds(8000), consumer.Inactive);
+    }
+
+    [Fact]
+    public void StreamConsumerInfo_Converter_OmitsInactive()
+    {
+        // Servers < 7.2 do not return the `inactive` field; InactiveTime should be null.
+        var raw = new object[]
+        {
+            new Dictionary<GlideString, object>
+            {
+                ["name"] = (GlideString)"consumer1",
+                ["pending"] = 1L,
+                ["idle"] = 100L,
+            },
+        };
+
+        StreamConsumerInfo consumer = Assert.Single(Request.StreamInfoConsumers("key", "group").Converter(raw));
+
+        Assert.Equal(TimeSpan.FromMilliseconds(100), consumer.Idle);
+        Assert.Null(consumer.Inactive);
     }
 
     #region StreamRead Converter Tests
@@ -1141,7 +1170,7 @@ public class CommandTests
             },
         };
 
-        var entries = Request.ConvertSingleStreamReadResponse(raw);
+        var entries = Request.StreamRead(new StreamPosition("mystream", "0")).Converter(raw);
 
         // Verify that nil entry is skipped.
         Assert.Equal(2, entries.Length);
@@ -1167,7 +1196,7 @@ public class CommandTests
             },
         };
 
-        var streams = Request.ConvertMultiStreamReadResponse(raw);
+        var streams = Request.ConvertValkeyStreamResponse(raw);
         Assert.Equal(2, streams.Length);
 
         // Verify empty stream.

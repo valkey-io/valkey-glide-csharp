@@ -871,19 +871,19 @@ public class StreamCommandTests
         Assert.Equal(2, group.PendingEntries.Length);
         Assert.Equal(id1.ToString(), group.PendingEntries[0].EntryId.ToString());
         Assert.Equal("consumer1", group.PendingEntries[0].Consumer);
-        Assert.True(group.PendingEntries[0].DeliveryTime > DateTime.UnixEpoch);
+        Assert.True(group.PendingEntries[0].DeliveryTime > DateTimeOffset.UnixEpoch);
         Assert.Equal(1, group.PendingEntries[0].DeliveryCount);
 
         // Verify consumer info
         _ = Assert.Single(group.Consumers);
         StreamConsumerInfoFull consumer = group.Consumers[0];
         Assert.Equal("consumer1", consumer.Name);
-        Assert.True(consumer.SeenTime > DateTime.UnixEpoch);
+        Assert.True(consumer.SeenTime > DateTimeOffset.UnixEpoch);
         Assert.Equal(2, consumer.PelCount);
 
         // Verify consumer-level PEL
         Assert.Equal(2, consumer.PendingEntries.Length);
-        Assert.True(consumer.PendingEntries[0].DeliveryTime > DateTime.UnixEpoch);
+        Assert.True(consumer.PendingEntries[0].DeliveryTime > DateTimeOffset.UnixEpoch);
         Assert.Equal(1, consumer.PendingEntries[0].DeliveryCount);
     }
 

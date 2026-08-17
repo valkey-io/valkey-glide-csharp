@@ -18,14 +18,14 @@ public readonly struct StreamConsumerInfoFull
     /// <summary>
     /// The last time the consumer was seen (<c>seen-time</c>).
     /// </summary>
-    public DateTime SeenTime { get; }
+    public DateTimeOffset SeenTime { get; }
 
     /// <summary>
     /// The last time the consumer was active (<c>active-time</c>),
     /// or <see langword="null"/> if not specified.
     /// </summary>
     /// <remarks>Since Valkey 7.2.0.</remarks>
-    public DateTime? ActiveTime { get; }
+    public DateTimeOffset? ActiveTime { get; }
 
     /// <summary>
     /// The number of entries in the consumer's pending entries list (<c>pel-count</c>).
@@ -40,7 +40,12 @@ public readonly struct StreamConsumerInfoFull
     #endregion
     #region Constructors
 
-    internal StreamConsumerInfoFull(string name, DateTime seenTime, DateTime? activeTime, long pelCount, StreamPendingEntry[] pendingEntries)
+    internal StreamConsumerInfoFull(
+        string name, 
+        DateTimeOffset seenTime, 
+        DateTimeOffset? activeTime, 
+        long pelCount, 
+        StreamPendingEntry[] pendingEntries)
     {
         Name = name;
         SeenTime = seenTime;

@@ -26,7 +26,7 @@ public readonly struct StreamPendingEntry
     /// <summary>
     /// The time the entry was last delivered to a consumer.
     /// </summary>
-    public DateTime DeliveryTime { get; }
+    public DateTimeOffset DeliveryTime { get; }
 
     /// <summary>
     /// The number of times this entry has been delivered to a consumer.
@@ -36,7 +36,11 @@ public readonly struct StreamPendingEntry
     #endregion
     #region Constructors
 
-    internal StreamPendingEntry(ValkeyValue entryId, string consumer, DateTime deliveryTime, int deliveryCount)
+    internal StreamPendingEntry(
+        ValkeyValue entryId, 
+        string consumer, 
+        DateTimeOffset deliveryTime, 
+        int deliveryCount)
     {
         EntryId = entryId;
         Consumer = consumer;

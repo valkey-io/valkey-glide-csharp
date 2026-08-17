@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Globalization;
+
 using Valkey.Glide.Commands.Options;
 
 using static Valkey.Glide.Errors;
@@ -162,6 +164,37 @@ internal partial class Request
         => new HashSet<ValkeyValue>(items.Select(ToValkeyValue));
 
     #endregion
+    #region Value Parsers
+
+    /// <summary>
+    /// Parses a response value as a <see langword="int"/>.
+    /// </summary>
+    private static int ToInt(object value)
+        => (int)ToLong(value);
+
+    /// <summary>
+    /// Parses a response value as a <see langword="long"/>.
+    /// </summary>
+    private static long ToLong(object value) => value switch
+    {
+        long l => l,
+        GlideString gs => long.Parse(gs.ToString(), CultureInfo.InvariantCulture),
+        _ => throw new RequestException($"Expected a long or numeric string, got {value.GetType()}"),
+    };
+
+    /// <summary>
+    /// Parses a response value in Unix milliseconds as a <see cref="DateTimeOffset"/>.
+    /// </summary>
+    private static DateTimeOffset ToDateTimeOffset(object value)
+        => DateTimeOffset.FromUnixTimeMilliseconds(ToLong(value));
+
+    /// <summary>
+    /// Parses a response value in milliseconds as a <see cref="TimeSpan"/>.
+    /// </summary>
+    private static TimeSpan ToTimeSpan(object value)
+        => TimeSpan.FromMilliseconds(ToLong(value));
+
+    #endregion
     #region Response Map Helpers
 
     /// <summary>
@@ -204,6 +237,12 @@ internal partial class Request
             } : null;
 
     /// <summary>
+    /// Returns a required <see langword="int"/> value from the given response dictionary.
+    /// </summary>
+    private static int GetInt(Dictionary<GlideString, object> map, string key)
+        => (int)GetLong(map, key);
+
+    /// <summary>
     /// Returns a required <see langword="long"/> value from the given response dictionary.
     /// </summary>
     private static long GetLong(Dictionary<GlideString, object> map, string key)
@@ -216,6 +255,7 @@ internal partial class Request
         => map.TryGetValue(key, out var value)
             ? value switch
             {
+                null => null,
                 long l => l,
                 GlideString gs => long.Parse(gs.ToString()),
                 _ => throw new RequestException($"Response field '{key}' expected long or string, got {value.GetType()}"),
