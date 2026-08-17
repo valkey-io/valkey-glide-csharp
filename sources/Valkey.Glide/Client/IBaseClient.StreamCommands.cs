@@ -41,10 +41,11 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var fields = [
-    ///     new NameValueEntry("sensor", "temperature"),
-    ///     new NameValueEntry("value", "23.5")
-    /// ];
+    /// var fields = new NameValueEntry[]
+    /// {
+    ///     new("sensor", "temperature"),
+    ///     new("value", "23.5")
+    /// };
     /// var entryId = await client.StreamAddAsync("mystream", fields);
     /// Console.WriteLine($"Added entry with ID: {entryId}");
     /// </code>
@@ -77,10 +78,11 @@ public partial interface IBaseClient
     /// <remarks>
     /// <example>
     /// <code>
-    /// var fields = [
-    ///     new NameValueEntry("sensor", "temperature"),
-    ///     new NameValueEntry("value", "23.5")
-    /// ];
+    /// var fields = new NameValueEntry[]
+    /// {
+    ///     new("sensor", "temperature"),
+    ///     new("value", "23.5")
+    /// };
     /// var options = new StreamAddOptions { MakeStream = false };
     /// var entryId = await client.StreamAddAsync("mystream", fields, options);
     /// Console.WriteLine($"Added entry with ID: {entryId}");
