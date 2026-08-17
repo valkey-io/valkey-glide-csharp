@@ -21,12 +21,12 @@ internal partial class Request
         => ToValkeyValue(RequestType.XAdd, [key, .. (options ?? new StreamAddOptions()).ToArgs(), .. streamPairs.SelectMany(pair => pair.ToArgs())], isNullable: true);
 
     public static Cmd<object[], StreamAutoClaimResult> StreamAutoClaim(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, StreamAutoClaimOptions options)
-        => new(RequestType.XAutoClaim, [key, groupName, consumerName, .. options.ToArgs()], false, ConvertStreamAutoClaimResponses);
+        => new(RequestType.XAutoClaim, [key, groupName, consumerName, .. options.ToArgs()], false, ConvertStreamAutoClaimResponse);
 
     public static Cmd<object[], StreamAutoClaimJustIdResult> StreamAutoClaimJustId(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, StreamAutoClaimOptions options)
-        => new(RequestType.XAutoClaim, [key, groupName, consumerName, .. options.ToArgs(), ValkeyLiterals.JUSTID], false, ConvertStreamAutoClaimJustIdResponses);
+        => new(RequestType.XAutoClaim, [key, groupName, consumerName, .. options.ToArgs(), ValkeyLiterals.JUSTID], false, ConvertStreamAutoClaimJustIdResponse);
 
-    public static Cmd<object, StreamEntry[]> StreamClaim(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, IEnumerable<ValkeyValue> messageIds, StreamClaimOptions options)
+    public static Cmd<Dictionary<GlideString, object>, StreamEntry[]> StreamClaim(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, IEnumerable<ValkeyValue> messageIds, StreamClaimOptions options)
         => new(RequestType.XClaim, [key, groupName, consumerName, ToULongMs(options.MinIdleTime, nameof(options.MinIdleTime)).ToGlideString(), .. messageIds, .. options.ToArgs()], false, ConvertStreamEntriesResponse);
 
     public static Cmd<object[], ValkeyValue[]> StreamClaimIdsOnly(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, IEnumerable<ValkeyValue> messageIds, StreamClaimOptions options)
@@ -98,39 +98,39 @@ internal partial class Request
         => Simple<long>(RequestType.XLen, [key]);
 
     public static Cmd<object[], StreamPendingInfo> StreamPending(ValkeyKey key, ValkeyValue groupName)
-        => new(RequestType.XPending, [key, groupName], false, ConvertStreamPendingInfoResponses);
+        => new(RequestType.XPending, [key, groupName], false, ConvertStreamPendingInfoResponse);
 
     public static Cmd<object[], StreamPendingMessageInfo[]> StreamPending(ValkeyKey key, ValkeyValue groupName, StreamPendingOptions options)
         => new(RequestType.XPending, [key, groupName, .. options.ToArgs()], false, ConvertStreamPendingMessageInfoResponses);
 
-    public static Cmd<object, StreamEntry[]> StreamRange(ValkeyKey key, StreamRangeOptions? options = null)
+    public static Cmd<Dictionary<GlideString, object>, StreamEntry[]> StreamRange(ValkeyKey key, StreamRangeOptions? options = null)
     {
         options ??= new StreamRangeOptions();
         var requestType = options.Order == Order.Descending ? RequestType.XRevRange : RequestType.XRange;
         return new(requestType, [key, .. options.ToArgs()], false, ConvertStreamEntriesResponse);
     }
 
-    public static Cmd<object, StreamEntry[]> StreamRead(StreamPosition position, StreamReadOptions? options = null)
+    public static Cmd<Dictionary<GlideString, object>, StreamEntry[]> StreamRead(StreamPosition position, StreamReadOptions? options = null)
     {
         List<GlideString> args = [.. (options ?? new StreamReadOptions()).ToArgs(), .. ToArgs([position])];
-        return new(RequestType.XRead, [.. args], false, ConvertStreamReadPosition, allowConverterToHandleNull: true);
+        return new(RequestType.XRead, [.. args], false, ConvertStreamReadPositionResponse, allowConverterToHandleNull: true);
     }
 
-    public static Cmd<object, ValkeyStream[]> StreamRead(IEnumerable<StreamPosition> positions, StreamReadOptions? options = null)
+    public static Cmd<Dictionary<GlideString, object>, ValkeyStream[]> StreamRead(IEnumerable<StreamPosition> positions, StreamReadOptions? options = null)
     {
         List<GlideString> args = [.. (options ?? new StreamReadOptions()).ToArgs(), .. ToArgs(positions)];
         return new(RequestType.XRead, [.. args], false, ConvertValkeyStreamResponse, allowConverterToHandleNull: true);
     }
 
-    public static Cmd<object, StreamEntry[]> StreamReadGroup(StreamPosition position, ValkeyValue group, ValkeyValue consumer, StreamReadGroupOptions? options = null)
+    public static Cmd<Dictionary<GlideString, object>, StreamEntry[]> StreamReadGroup(StreamPosition position, ValkeyValue groupName, ValkeyValue consumerName, StreamReadGroupOptions? options = null)
     {
-        List<GlideString> args = [ValkeyLiterals.GROUP, group, consumer, .. (options ?? new StreamReadGroupOptions()).ToArgs(), .. ToArgs([position])];
-        return new(RequestType.XReadGroup, [.. args], false, ConvertStreamReadPosition, allowConverterToHandleNull: true);
+        List<GlideString> args = [ValkeyLiterals.GROUP, groupName, consumerName, .. (options ?? new StreamReadGroupOptions()).ToArgs(), .. ToArgs([position])];
+        return new(RequestType.XReadGroup, [.. args], false, ConvertStreamReadPositionResponse, allowConverterToHandleNull: true);
     }
 
-    public static Cmd<object, ValkeyStream[]> StreamReadGroup(IEnumerable<StreamPosition> positions, ValkeyValue group, ValkeyValue consumer, StreamReadGroupOptions? options = null)
+    public static Cmd<Dictionary<GlideString, object>, ValkeyStream[]> StreamReadGroup(IEnumerable<StreamPosition> positions, ValkeyValue groupName, ValkeyValue consumerName, StreamReadGroupOptions? options = null)
     {
-        List<GlideString> args = [ValkeyLiterals.GROUP, group, consumer, .. (options ?? new StreamReadGroupOptions()).ToArgs(), .. ToArgs(positions)];
+        List<GlideString> args = [ValkeyLiterals.GROUP, groupName, consumerName, .. (options ?? new StreamReadGroupOptions()).ToArgs(), .. ToArgs(positions)];
         return new(RequestType.XReadGroup, [.. args], false, ConvertValkeyStreamResponse, allowConverterToHandleNull: true);
     }
 
@@ -140,15 +140,15 @@ internal partial class Request
     #endregion
     #region Response Converters
 
-    private static StreamAutoClaimJustIdResult ConvertStreamAutoClaimJustIdResponses(object[] responses)
-        => new(nextStartId: ToValkeyValue(responses[0]),
-            claimedIds: ToValkeyValueArray(responses[1]),
-            deletedIds: responses.Length > 2 ? ToValkeyValueArray(responses[2]) : []);
+    private static StreamAutoClaimJustIdResult ConvertStreamAutoClaimJustIdResponse(object[] response)
+        => new(nextStartId: ToValkeyValue(response[0]),
+            claimedIds: ToValkeyValueArray(response[1]),
+            deletedIds: response.Length > 2 ? ToValkeyValueArray(response[2]) : []);
 
-    private static StreamAutoClaimResult ConvertStreamAutoClaimResponses(object[] responses)
-        => new(nextStartId: ToValkeyValue(responses[0]),
-            claimedEntries: ConvertStreamEntriesResponse(responses[1]),
-            deletedIds: responses.Length > 2 ? ToValkeyValueArray(responses[2]) : []);
+    private static StreamAutoClaimResult ConvertStreamAutoClaimResponse(object[] response)
+        => new(nextStartId: ToValkeyValue(response[0]),
+            claimedEntries: ConvertStreamEntriesResponse((Dictionary<GlideString, object>)response[1]),
+            deletedIds: response.Length > 2 ? ToValkeyValueArray(response[2]) : []);
 
     private static StreamEntry ConvertStreamEntryResponse(object response)
     {
@@ -172,7 +172,7 @@ internal partial class Request
     {
         var map = ToFieldMap(response);
 
-        var consumers = (map.GetValueOrDefault("consumers") as object[] ?? []).Select(ToStreamConsumerInfoFull).ToArray();
+        var consumers = (map.GetValueOrDefault("consumers") as object[] ?? []).Select(ConvertStreamConsumerInfoFullResponse).ToArray();
         var pending = (map.GetValueOrDefault("pending") as object[] ?? []).Select(ConvertStreamPendingEntryResponse).ToArray();
 
         return new StreamGroupInfoFull(
@@ -266,14 +266,14 @@ internal partial class Request
         return result;
     }
 
-    private static StreamPendingInfo ConvertStreamPendingInfoResponses(object[] responses)
+    private static StreamPendingInfo ConvertStreamPendingInfoResponse(object[] response)
     {
-        var consumers = (responses[3] as object[] ?? []).Select(ConvertStreamConsumerResponse).ToArray();
+        var consumers = (response[3] as object[] ?? []).Select(ConvertStreamConsumerResponse).ToArray();
 
         return new StreamPendingInfo(
-            pendingMessageCount: ToInt(responses[0]),
-            lowestId: ToValkeyValue(responses[1]),
-            highestId: ToValkeyValue(responses[2]),
+            pendingMessageCount: ToInt(response[0]),
+            lowestId: ToValkeyValue(response[1]),
+            highestId: ToValkeyValue(response[2]),
             consumers: consumers);
     }
 
@@ -286,8 +286,15 @@ internal partial class Request
             pendingMessageCount: ToInt(data[1]));
     }
 
-    private static StreamEntry[] ConvertStreamReadPosition(object response)
-        => ConvertValkeyStreamResponse(response) is [var stream, ..] ? stream.Entries : [];
+    private static StreamEntry[] ConvertStreamReadPositionResponse(Dictionary<GlideString, object>? response)
+    {
+        if (response is null)
+        {
+            return [];
+        }
+
+        return ConvertStreamEntriesResponse((Dictionary<GlideString, object>)response.Values.First());
+    }
 
     private static Dictionary<GlideString, object> ToFieldMap(object response)
     {
@@ -319,10 +326,9 @@ internal partial class Request
             value: (GlideString)pair[1]);
     }
 
-
-    private static StreamConsumerInfoFull ToStreamConsumerInfoFull(object consumerResponse)
+    private static StreamConsumerInfoFull ConvertStreamConsumerInfoFullResponse(object response)
     {
-        var map = ToFieldMap(consumerResponse);
+        var map = ToFieldMap(response);
         var name = GetString(map, "name");
 
         // The consumer's PEL entries do not carry the consumer name on the wire; populate it from the owning consumer.
@@ -336,19 +342,19 @@ internal partial class Request
             pending);
     }
 
-    private static StreamEntry[] ConvertStreamEntriesResponse(object response)
+    private static StreamEntry[] ConvertStreamEntriesResponse(Dictionary<GlideString, object> response)
     {
         var entries = new List<StreamEntry>();
-        foreach (var entryKvp in (Dictionary<GlideString, object>)response)
+        foreach (var entry in response)
         {
             // Pending messages that have been acknowledged/deleted have nil field values.
-            if (entryKvp.Value is not object[] outerArray || outerArray.Length == 0)
+            if (entry.Value is not object[] outerArray || outerArray.Length == 0)
             {
                 continue;
             }
 
             entries.Add(new StreamEntry(
-                id: entryKvp.Key,
+                id: entry.Key,
                 values: [.. outerArray.Select(ConvertNameValueEntryResponse)]));
         }
 
@@ -375,7 +381,7 @@ internal partial class Request
             ToInt(arr[3]));
     }
 
-    internal static ValkeyStream[] ConvertValkeyStreamResponse(object response)
+    internal static ValkeyStream[] ConvertValkeyStreamResponse(Dictionary<GlideString, object>? response)
     {
         if (response is null)
         {
@@ -383,10 +389,10 @@ internal partial class Request
         }
 
         var result = new List<ValkeyStream>();
-        foreach (var kvp in (Dictionary<GlideString, object>)response)
+        foreach (var kvp in response)
         {
             var key = new ValkeyKey(kvp.Key);
-            var entries = ConvertStreamEntriesResponse(kvp.Value);
+            var entries = ConvertStreamEntriesResponse((Dictionary<GlideString, object>)kvp.Value);
             result.Add(new ValkeyStream(key, entries));
         }
 
@@ -399,7 +405,6 @@ internal partial class Request
 
     private static GlideString[] ToArgs(IEnumerable<StreamPosition> positions)
     {
-
         List<GlideString> args = [ValkeyLiterals.STREAMS];
 
         var array = positions.ToArray();
