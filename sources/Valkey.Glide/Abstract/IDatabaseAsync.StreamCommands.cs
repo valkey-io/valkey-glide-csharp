@@ -90,6 +90,18 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<StreamEntry[]> StreamReadGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, ValkeyValue? position, int? count, bool noAck, TimeSpan? claimMinIdleTime, CommandFlags flags);
 
+    /// <inheritdoc cref="IBaseClient.StreamReadGroupAsync(StreamPosition, ValkeyValue, ValkeyValue)" path="/*[self::summary or self::seealso]"/>
+    /// <param name="key">The stream key.</param>
+    /// <param name="groupName">The consumer group name.</param>
+    /// <param name="consumerName">The consumer name.</param>
+    /// <param name="position">The position from which to read.</param>
+    /// <param name="count">The maximum number of entries to return.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns>An array of <see cref="StreamEntry"/> values read from the stream.</returns>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <remarks>StackExchange.Redis compatibility overload; delegates with <c>noAck: false</c>.</remarks>
+    Task<StreamEntry[]> StreamReadGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, ValkeyValue? position, int? count, CommandFlags flags);
+
     /// <inheritdoc cref="IBaseClient.StreamReadGroupAsync(IEnumerable{StreamPosition}, ValkeyValue, ValkeyValue)" path="/*[self::summary or self::seealso]"/>
     /// <param name="streamPositions">A collection of stream keys and their starting positions.</param>
     /// <param name="groupName">The consumer group name.</param>
@@ -100,6 +112,17 @@ public partial interface IDatabaseAsync
     /// <returns>An array of <see cref="ValkeyStream"/> values.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<ValkeyStream[]> StreamReadGroupAsync(IEnumerable<StreamPosition> streamPositions, ValkeyValue groupName, ValkeyValue consumerName, int? countPerStream = null, bool noAck = false, CommandFlags flags = CommandFlags.None);
+
+    /// <inheritdoc cref="IBaseClient.StreamReadGroupAsync(IEnumerable{StreamPosition}, ValkeyValue, ValkeyValue)" path="/*[self::summary or self::seealso]"/>
+    /// <param name="streamPositions">A collection of stream keys and their starting positions.</param>
+    /// <param name="groupName">The consumer group name.</param>
+    /// <param name="consumerName">The consumer name.</param>
+    /// <param name="countPerStream">The maximum number of entries to return per stream.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns>An array of <see cref="ValkeyStream"/> values.</returns>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <remarks>StackExchange.Redis compatibility overload; delegates with <c>noAck: false</c>.</remarks>
+    Task<ValkeyStream[]> StreamReadGroupAsync(IEnumerable<StreamPosition> streamPositions, ValkeyValue groupName, ValkeyValue consumerName, int? countPerStream, CommandFlags flags);
 
     #endregion
     #region StreamLengthAsync
@@ -137,6 +160,16 @@ public partial interface IDatabaseAsync
     /// <param name="entriesRead">The number of entries read (Valkey 7.0+).</param>
     /// <returns><see langword="true"/> if the consumer group was created.</returns>
     Task<bool> StreamCreateConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue? position, bool createStream, long? entriesRead, CommandFlags flags);
+
+    /// <inheritdoc cref="StreamCreateConsumerGroupAsync(ValkeyKey, ValkeyValue, ValkeyValue?, bool, CommandFlags)" path="/*[self::summary or self::seealso]"/>
+    /// <param name="key">The stream key.</param>
+    /// <param name="groupName">The consumer group name.</param>
+    /// <param name="position">The position from which to start reading, or <see langword="null"/> for the latest.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns><see langword="true"/> if the consumer group was created.</returns>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <remarks>StackExchange.Redis compatibility overload; the stream is created if it does not already exist.</remarks>
+    Task<bool> StreamCreateConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue? position, CommandFlags flags);
 
     #endregion
     #region StreamDeleteConsumerGroupAsync

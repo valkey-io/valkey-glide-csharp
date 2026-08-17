@@ -143,6 +143,17 @@ internal partial class Database
         return true;
     }
 
+    /// <inheritdoc cref="IDatabaseAsync.StreamCreateConsumerGroupAsync(ValkeyKey, ValkeyValue, ValkeyValue?, CommandFlags)"/>
+    public async Task<bool> StreamCreateConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue? position, CommandFlags flags)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+
+        var options = new StreamGroupCreateOptions { MakeStream = true };
+        await StreamGroupCreateAsync(key, groupName, position ?? StreamPosition.NewMessages, options);
+
+        return true;
+    }
+
     /// <inheritdoc cref="IDatabaseAsync.StreamDeleteAsync(ValkeyKey, IEnumerable{ValkeyValue}, CommandFlags)"/>
     public Task<long> StreamDeleteAsync(ValkeyKey key, IEnumerable<ValkeyValue> messageIds, CommandFlags flags)
     {
@@ -261,11 +272,30 @@ internal partial class Database
         return StreamReadGroupAsync(sp, groupName, consumerName, options);
     }
 
+    /// <inheritdoc cref="IDatabaseAsync.StreamReadGroupAsync(ValkeyKey, ValkeyValue, ValkeyValue, ValkeyValue?, int?, CommandFlags)"/>
+    public Task<StreamEntry[]> StreamReadGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, ValkeyValue? position, int? count, CommandFlags flags)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+
+        var options = new StreamReadGroupOptions { Count = count, NoAck = false };
+        var sp = new StreamPosition(key, position ?? StreamPosition.UndeliveredMessages);
+
+        return StreamReadGroupAsync(sp, groupName, consumerName, options);
+    }
+
     /// <inheritdoc cref="IDatabaseAsync.StreamReadGroupAsync(IEnumerable{StreamPosition}, ValkeyValue, ValkeyValue, int?, bool, CommandFlags)"/>
     public Task<ValkeyStream[]> StreamReadGroupAsync(IEnumerable<StreamPosition> streamPositions, ValkeyValue groupName, ValkeyValue consumerName, int? countPerStream = null, bool noAck = false, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
         var options = new StreamReadGroupOptions { Count = countPerStream, NoAck = noAck };
+        return StreamReadGroupAsync(streamPositions, groupName, consumerName, options);
+    }
+
+    /// <inheritdoc cref="IDatabaseAsync.StreamReadGroupAsync(IEnumerable{StreamPosition}, ValkeyValue, ValkeyValue, int?, CommandFlags)"/>
+    public Task<ValkeyStream[]> StreamReadGroupAsync(IEnumerable<StreamPosition> streamPositions, ValkeyValue groupName, ValkeyValue consumerName, int? countPerStream, CommandFlags flags)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+        var options = new StreamReadGroupOptions { Count = countPerStream, NoAck = false };
         return StreamReadGroupAsync(streamPositions, groupName, consumerName, options);
     }
 
