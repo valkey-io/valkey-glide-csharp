@@ -52,7 +52,7 @@ internal partial class Database
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StreamAutoClaimIdsOnlyAsync(ValkeyKey, ValkeyValue, ValkeyValue, long, ValkeyValue, int?, CommandFlags)"/>
-    public Task<StreamAutoClaimJustIdResult> StreamAutoClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, ValkeyValue startAtId, int? count = null, CommandFlags flags = CommandFlags.None)
+    public async Task<StreamAutoClaimIdsOnlyResult> StreamAutoClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, ValkeyValue startAtId, int? count = null, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
 
@@ -62,7 +62,8 @@ internal partial class Database
             _ = options.WithCount(count.Value);
         }
 
-        return StreamAutoClaimJustIdAsync(key, consumerGroup, claimingConsumer, options);
+        var result = await StreamAutoClaimJustIdAsync(key, consumerGroup, claimingConsumer, options);
+        return new StreamAutoClaimIdsOnlyResult(result.NextStartId, result.ClaimedIds, result.DeletedIds);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StreamClaimAsync(ValkeyKey, ValkeyValue, ValkeyValue, long, IEnumerable{ValkeyValue}, CommandFlags)"/>

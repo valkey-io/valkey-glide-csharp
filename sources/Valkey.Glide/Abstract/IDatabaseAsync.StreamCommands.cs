@@ -329,7 +329,14 @@ public partial interface IDatabaseAsync
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>A <see cref="StreamAutoClaimJustIdResult"/> containing the claimed message IDs.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<StreamAutoClaimJustIdResult> StreamAutoClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, ValkeyValue startAtId, int? count = null, CommandFlags flags = CommandFlags.None);
+    Task<StreamAutoClaimIdsOnlyResult> StreamAutoClaimIdsOnlyAsync(
+        ValkeyKey key,
+        ValkeyValue consumerGroup,
+        ValkeyValue claimingConsumer,
+        long minIdleTimeInMs,
+        ValkeyValue startAtId,
+        int? count = null,
+        CommandFlags flags = CommandFlags.None);
 
     #endregion
     #region StreamTrimAsync

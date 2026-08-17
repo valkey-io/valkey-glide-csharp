@@ -244,14 +244,14 @@ public class StreamCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task StreamAutoClaimIdsOnlyAsync_SERNaming(IDatabaseAsync db)
+    public async Task StreamAutoClaimIdsOnlyAsync(IDatabaseAsync db)
     {
         string key = $"ser-xautoclaim-idsonly-{Guid.NewGuid()}";
         _ = await db.StreamAddAsync(key, "field", "value1");
         _ = await db.StreamCreateConsumerGroupAsync(key, "mygroup", "0");
         _ = await db.StreamReadGroupAsync(key, "mygroup", "consumer1", ">", count: 1);
 
-        StreamAutoClaimJustIdResult result = await db.StreamAutoClaimIdsOnlyAsync(key, "mygroup", "consumer2", 0, "0-0");
+        var result = await db.StreamAutoClaimIdsOnlyAsync(key, "mygroup", "consumer2", 0, "0-0");
         _ = Assert.Single(result.ClaimedIds);
     }
 
