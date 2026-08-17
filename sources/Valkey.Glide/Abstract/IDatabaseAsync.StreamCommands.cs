@@ -78,40 +78,22 @@ public partial interface IDatabaseAsync
     /// <param name="consumerName">The consumer name.</param>
     /// <param name="position">The position from which to read.</param>
     /// <param name="count">The maximum number of entries to return.</param>
-    /// <param name="noAck">Whether to skip adding entries to the PEL.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>An array of <see cref="StreamEntry"/> values read from the stream.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<StreamEntry[]> StreamReadGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, ValkeyValue? position = null, int? count = null, bool noAck = false, CommandFlags flags = CommandFlags.None);
-
-    /// <inheritdoc cref="StreamReadGroupAsync(ValkeyKey, ValkeyValue, ValkeyValue, ValkeyValue?, int?, bool, CommandFlags)" path="/*[not(self::returns)]"/>
-    /// <param name="claimMinIdleTime">The minimum idle time for claiming pending entries.</param>
-    /// <returns>An array of <see cref="StreamEntry"/> values read from the stream.</returns>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<StreamEntry[]> StreamReadGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, ValkeyValue? position, int? count, bool noAck, TimeSpan? claimMinIdleTime, CommandFlags flags);
-
-    /// <inheritdoc cref="IBaseClient.StreamReadGroupAsync(StreamPosition, ValkeyValue, ValkeyValue)" path="/*[self::summary or self::seealso]"/>
-    /// <param name="key">The stream key.</param>
-    /// <param name="groupName">The consumer group name.</param>
-    /// <param name="consumerName">The consumer name.</param>
-    /// <param name="position">The position from which to read.</param>
-    /// <param name="count">The maximum number of entries to return.</param>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <returns>An array of <see cref="StreamEntry"/> values read from the stream.</returns>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    /// <remarks>StackExchange.Redis compatibility overload; delegates with <c>noAck: false</c>.</remarks>
     Task<StreamEntry[]> StreamReadGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, ValkeyValue? position, int? count, CommandFlags flags);
 
-    /// <inheritdoc cref="IBaseClient.StreamReadGroupAsync(IEnumerable{StreamPosition}, ValkeyValue, ValkeyValue)" path="/*[self::summary or self::seealso]"/>
-    /// <param name="streamPositions">A collection of stream keys and their starting positions.</param>
-    /// <param name="groupName">The consumer group name.</param>
-    /// <param name="consumerName">The consumer name.</param>
-    /// <param name="countPerStream">The maximum number of entries to return per stream.</param>
+    /// <inheritdoc cref="StreamReadGroupAsync(ValkeyKey, ValkeyValue, ValkeyValue, ValkeyValue?, int?, CommandFlags)" path="/*[not(self::returns)]"/>
     /// <param name="noAck">Whether to skip adding entries to the PEL.</param>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <returns>An array of <see cref="ValkeyStream"/> values.</returns>
+    /// <returns>An array of <see cref="StreamEntry"/> values read from the stream.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<ValkeyStream[]> StreamReadGroupAsync(IEnumerable<StreamPosition> streamPositions, ValkeyValue groupName, ValkeyValue consumerName, int? countPerStream = null, bool noAck = false, CommandFlags flags = CommandFlags.None);
+    Task<StreamEntry[]> StreamReadGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, ValkeyValue? position, int? count, bool noAck, CommandFlags flags);
+
+    /// <inheritdoc cref="StreamReadGroupAsync(ValkeyKey, ValkeyValue, ValkeyValue, ValkeyValue?, int?, bool, CommandFlags)" path="/*[not(self::returns)]"/>
+    /// <param name="claimMinIdleTime">The minimum idle time for claiming pending entries (StackExchange.Redis-specific; combines XREADGROUP with auto-claim). Not supported by GLIDE (see issue #322).</param>
+    /// <returns>An array of <see cref="StreamEntry"/> values read from the stream.</returns>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>, or if <paramref name="claimMinIdleTime"/> is not <see langword="null"/>.</exception>
+    Task<StreamEntry[]> StreamReadGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, ValkeyValue? position = null, int? count = null, bool noAck = false, TimeSpan? claimMinIdleTime = null, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="IBaseClient.StreamReadGroupAsync(IEnumerable{StreamPosition}, ValkeyValue, ValkeyValue)" path="/*[self::summary or self::seealso]"/>
     /// <param name="streamPositions">A collection of stream keys and their starting positions.</param>
@@ -121,8 +103,19 @@ public partial interface IDatabaseAsync
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>An array of <see cref="ValkeyStream"/> values.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    /// <remarks>StackExchange.Redis compatibility overload; delegates with <c>noAck: false</c>.</remarks>
     Task<ValkeyStream[]> StreamReadGroupAsync(IEnumerable<StreamPosition> streamPositions, ValkeyValue groupName, ValkeyValue consumerName, int? countPerStream, CommandFlags flags);
+
+    /// <inheritdoc cref="StreamReadGroupAsync(IEnumerable{StreamPosition}, ValkeyValue, ValkeyValue, int?, CommandFlags)" path="/*[not(self::returns)]"/>
+    /// <param name="noAck">Whether to skip adding entries to the PEL.</param>
+    /// <returns>An array of <see cref="ValkeyStream"/> values.</returns>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    Task<ValkeyStream[]> StreamReadGroupAsync(IEnumerable<StreamPosition> streamPositions, ValkeyValue groupName, ValkeyValue consumerName, int? countPerStream, bool noAck, CommandFlags flags);
+
+    /// <inheritdoc cref="StreamReadGroupAsync(IEnumerable{StreamPosition}, ValkeyValue, ValkeyValue, int?, bool, CommandFlags)" path="/*[not(self::returns)]"/>
+    /// <param name="claimMinIdleTime">The minimum idle time for claiming pending entries (StackExchange.Redis-specific; combines XREADGROUP with auto-claim). Not supported by GLIDE (see issue #322).</param>
+    /// <returns>An array of <see cref="ValkeyStream"/> values.</returns>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>, or if <paramref name="claimMinIdleTime"/> is not <see langword="null"/>.</exception>
+    Task<ValkeyStream[]> StreamReadGroupAsync(IEnumerable<StreamPosition> streamPositions, ValkeyValue groupName, ValkeyValue consumerName, int? countPerStream = null, bool noAck = false, TimeSpan? claimMinIdleTime = null, CommandFlags flags = CommandFlags.None);
 
     #endregion
     #region StreamLengthAsync
@@ -143,10 +136,7 @@ public partial interface IDatabaseAsync
     #endregion
     #region StreamCreateConsumerGroupAsync
 
-    /// <summary>
-    /// Creates a new consumer group for a stream.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/xgroup-create/">Valkey commands – XGROUP CREATE</seealso>
+    /// <inheritdoc cref="IBaseClient.StreamGroupCreateAsync(ValkeyKey, ValkeyValue, ValkeyValue)" path="/*[self::summary or self::seealso]"/>
     /// <param name="key">The stream key.</param>
     /// <param name="groupName">The consumer group name.</param>
     /// <param name="position">The position from which to start reading, or <see langword="null"/> for the latest.</param>
@@ -174,10 +164,7 @@ public partial interface IDatabaseAsync
     #endregion
     #region StreamDeleteConsumerGroupAsync
 
-    /// <summary>
-    /// Destroys a consumer group.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/xgroup-destroy/">Valkey commands – XGROUP DESTROY</seealso>
+    /// <inheritdoc cref="IBaseClient.StreamGroupDestroyAsync(ValkeyKey, ValkeyValue)" path="/*[self::summary or self::seealso]"/>
     /// <param name="key">The stream key.</param>
     /// <param name="groupName">The consumer group name.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
@@ -188,10 +175,7 @@ public partial interface IDatabaseAsync
     #endregion
     #region StreamCreateConsumerAsync
 
-    /// <summary>
-    /// Creates a new consumer in a consumer group.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/xgroup-createconsumer/">Valkey commands – XGROUP CREATECONSUMER</seealso>
+    /// <inheritdoc cref="IBaseClient.StreamGroupCreateConsumerAsync(ValkeyKey, ValkeyValue, ValkeyValue)" path="/*[self::summary or self::seealso]"/>
     /// <param name="key">The stream key.</param>
     /// <param name="groupName">The consumer group name.</param>
     /// <param name="consumerName">The consumer name.</param>
@@ -203,10 +187,7 @@ public partial interface IDatabaseAsync
     #endregion
     #region StreamDeleteConsumerAsync
 
-    /// <summary>
-    /// Deletes a consumer from a consumer group.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/xgroup-delconsumer/">Valkey commands – XGROUP DELCONSUMER</seealso>
+    /// <inheritdoc cref="IBaseClient.StreamGroupDeleteConsumerAsync(ValkeyKey, ValkeyValue, ValkeyValue)" path="/*[self::summary or self::seealso]"/>
     /// <param name="key">The stream key.</param>
     /// <param name="groupName">The consumer group name.</param>
     /// <param name="consumerName">The consumer name.</param>
@@ -218,10 +199,7 @@ public partial interface IDatabaseAsync
     #endregion
     #region StreamConsumerGroupSetPositionAsync
 
-    /// <summary>
-    /// Sets the last delivered ID for a consumer group.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/xgroup-setid/">Valkey commands – XGROUP SETID</seealso>
+    /// <inheritdoc cref="IBaseClient.StreamGroupSetIdAsync(ValkeyKey, ValkeyValue, ValkeyValue)" path="/*[self::summary or self::seealso]"/>
     /// <param name="key">The stream key.</param>
     /// <param name="groupName">The consumer group name.</param>
     /// <param name="position">The new position.</param>
@@ -238,10 +216,7 @@ public partial interface IDatabaseAsync
     #endregion
     #region StreamAcknowledgeAsync
 
-    /// <summary>
-    /// Acknowledges a message in a consumer group.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/xack/">Valkey commands – XACK</seealso>
+    /// <inheritdoc cref="IStreamBaseCommands.StreamAcknowledgeAsync(ValkeyKey, ValkeyValue, ValkeyValue)" path="/*[self::summary or self::seealso]"/>
     /// <param name="key">The stream key.</param>
     /// <param name="groupName">The consumer group name.</param>
     /// <param name="messageId">The message ID to acknowledge.</param>
@@ -250,10 +225,7 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<long> StreamAcknowledgeAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue messageId, CommandFlags flags);
 
-    /// <summary>
-    /// Acknowledges a message in a consumer group.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/xack/">Valkey commands – XACK</seealso>
+    /// <inheritdoc cref="IStreamBaseCommands.StreamAcknowledgeAsync(ValkeyKey, ValkeyValue, IEnumerable{ValkeyValue})" path="/*[self::summary or self::seealso]"/>
     /// <param name="key">The stream key.</param>
     /// <param name="groupName">The consumer group name.</param>
     /// <param name="messageIds">The message IDs to acknowledge.</param>
@@ -265,10 +237,7 @@ public partial interface IDatabaseAsync
     #endregion
     #region StreamPendingAsync
 
-    /// <summary>
-    /// Returns information about the pending messages for a consumer group.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/xpending/">Valkey commands – XPENDING</seealso>
+    /// <inheritdoc cref="IStreamBaseCommands.StreamPendingAsync(ValkeyKey, ValkeyValue)" path="/*[self::summary or self::seealso]"/>
     /// <param name="key">The stream key.</param>
     /// <param name="groupName">The consumer group name.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
@@ -279,10 +248,7 @@ public partial interface IDatabaseAsync
     #endregion
     #region StreamPendingMessagesAsync
 
-    /// <summary>
-    /// Returns the detailed list of pending messages for a consumer group.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/xpending/">Valkey commands – XPENDING</seealso>
+    /// <inheritdoc cref="IBaseClient.StreamPendingAsync(ValkeyKey, ValkeyValue, Commands.Options.StreamPendingOptions)" path="/*[self::summary or self::seealso]"/>
     /// <param name="key">The stream key.</param>
     /// <param name="groupName">The consumer group name.</param>
     /// <param name="count">The maximum number of pending messages to return.</param>
@@ -297,10 +263,7 @@ public partial interface IDatabaseAsync
     #endregion
     #region StreamClaimAsync
 
-    /// <summary>
-    /// Changes the ownership of one or more pending messages to the given consumer.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/xclaim/">Valkey commands – XCLAIM</seealso>
+    /// <inheritdoc cref="IBaseClient.StreamClaimAsync(ValkeyKey, ValkeyValue, ValkeyValue, IEnumerable{ValkeyValue}, Commands.Options.StreamClaimOptions)" path="/*[self::summary or self::seealso]"/>
     /// <param name="key">The stream key.</param>
     /// <param name="consumerGroup">The consumer group name.</param>
     /// <param name="claimingConsumer">The consumer that will take ownership of the messages.</param>
@@ -314,10 +277,7 @@ public partial interface IDatabaseAsync
     #endregion
     #region StreamClaimIdsOnlyAsync
 
-    /// <summary>
-    /// Changes the ownership of one or more pending messages, returning only the claimed message IDs.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/xclaim/">Valkey commands – XCLAIM</seealso>
+    /// <inheritdoc cref="IBaseClient.StreamClaimJustIdAsync(ValkeyKey, ValkeyValue, ValkeyValue, IEnumerable{ValkeyValue}, Commands.Options.StreamClaimOptions)" path="/*[self::summary or self::seealso]"/>
     /// <param name="key">The stream key.</param>
     /// <param name="consumerGroup">The consumer group name.</param>
     /// <param name="claimingConsumer">The consumer that will take ownership of the messages.</param>
@@ -331,10 +291,7 @@ public partial interface IDatabaseAsync
     #endregion
     #region StreamAutoClaimAsync
 
-    /// <summary>
-    /// Transfers ownership of pending messages.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/xautoclaim/">Valkey commands – XAUTOCLAIM</seealso>
+    /// <inheritdoc cref="IBaseClient.StreamAutoClaimAsync(ValkeyKey, ValkeyValue, ValkeyValue, Commands.Options.StreamAutoClaimOptions)" path="/*[self::summary or self::seealso]"/>
     /// <param name="key">The stream key.</param>
     /// <param name="consumerGroup">The consumer group name.</param>
     /// <param name="claimingConsumer">The consumer that will take ownership of the messages.</param>
@@ -349,10 +306,7 @@ public partial interface IDatabaseAsync
     #endregion
     #region StreamAutoClaimIdsOnlyAsync
 
-    /// <summary>
-    /// Transfers ownership of pending messages, returning only the claimed IDs.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/xautoclaim/">Valkey commands – XAUTOCLAIM</seealso>
+    /// <inheritdoc cref="IBaseClient.StreamAutoClaimJustIdAsync(ValkeyKey, ValkeyValue, ValkeyValue, Commands.Options.StreamAutoClaimOptions)" path="/*[self::summary or self::seealso]"/>
     /// <param name="key">The stream key.</param>
     /// <param name="consumerGroup">The consumer group name.</param>
     /// <param name="claimingConsumer">The consumer that will take ownership of the messages.</param>
@@ -362,14 +316,7 @@ public partial interface IDatabaseAsync
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>A <see cref="StreamAutoClaimJustIdResult"/> containing the claimed message IDs.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<StreamAutoClaimIdsOnlyResult> StreamAutoClaimIdsOnlyAsync(
-        ValkeyKey key,
-        ValkeyValue consumerGroup,
-        ValkeyValue claimingConsumer,
-        long minIdleTimeInMs,
-        ValkeyValue startAtId,
-        int? count = null,
-        CommandFlags flags = CommandFlags.None);
+    Task<StreamAutoClaimIdsOnlyResult> StreamAutoClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, ValkeyValue startAtId, int? count = null, CommandFlags flags = CommandFlags.None);
 
     #endregion
     #region StreamTrimAsync
@@ -390,11 +337,7 @@ public partial interface IDatabaseAsync
     /// See <see href="https://github.com/valkey-io/valkey-glide-csharp/issues/486">#486</see>.
     /// </remarks>
     // TODO #486: Remove default parameter values to match StackExchange.Redis signature in 2.0.
-    Task<long> StreamTrimAsync(
-        ValkeyKey key,
-        int maxLength,
-        bool useApproximateMaxLength = false,
-        CommandFlags flags = CommandFlags.None);
+    Task<long> StreamTrimAsync(ValkeyKey key, int maxLength, bool useApproximateMaxLength = false, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="StreamTrimAsync(ValkeyKey, int, bool, CommandFlags)" path="/*[not(self::param[@name='maxLength']) and not(self::returns)]"/>
     /// <param name="maxLength">The maximum number of entries to keep. Must not be <c>null</c>.</param>
@@ -406,13 +349,7 @@ public partial interface IDatabaseAsync
     /// match StackExchange.Redis. See <see href="https://github.com/valkey-io/valkey-glide-csharp/issues/486">#486</see>.
     /// </remarks>
     // TODO #486: Change `long? maxLength = null` to `long maxLength` to match StackExchange.Redis signature in 2.0.
-    Task<long> StreamTrimAsync(
-        ValkeyKey key,
-        long? maxLength = null,
-        bool useApproximateMaxLength = false,
-        long? limit = null,
-        StreamTrimMode trimMode = StreamTrimMode.KeepReferences,
-        CommandFlags flags = CommandFlags.None);
+    Task<long> StreamTrimAsync(ValkeyKey key, long? maxLength = null, bool useApproximateMaxLength = false, long? limit = null, StreamTrimMode trimMode = StreamTrimMode.KeepReferences, CommandFlags flags = CommandFlags.None);
 
     #endregion
     #region StreamTrimByMinIdAsync
@@ -434,10 +371,7 @@ public partial interface IDatabaseAsync
     #endregion
     #region StreamInfoAsync
 
-    /// <summary>
-    /// Returns information about a stream.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/xinfo-stream/">Valkey commands – XINFO STREAM</seealso>
+    /// <inheritdoc cref="IStreamBaseCommands.StreamInfoAsync(ValkeyKey)" path="/*[self::summary or self::seealso]"/>
     /// <param name="key">The stream key.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>A <see cref="StreamInfo"/> containing the stream information.</returns>
@@ -447,10 +381,7 @@ public partial interface IDatabaseAsync
     #endregion
     #region StreamGroupInfoAsync
 
-    /// <summary>
-    /// Returns information about consumer groups.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/xinfo-groups/">Valkey commands – XINFO GROUPS</seealso>
+    /// <inheritdoc cref="IBaseClient.StreamInfoGroupsAsync(ValkeyKey)" path="/*[self::summary or self::seealso]"/>
     /// <param name="key">The stream key.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>An array of <see cref="StreamGroupInfo"/> values.</returns>
@@ -460,10 +391,7 @@ public partial interface IDatabaseAsync
     #endregion
     #region StreamConsumerInfoAsync
 
-    /// <summary>
-    /// Returns information about the consumers of a consumer group.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/xinfo-consumers/">Valkey commands – XINFO CONSUMERS</seealso>
+    /// <inheritdoc cref="IBaseClient.StreamInfoConsumersAsync(ValkeyKey, ValkeyValue)" path="/*[self::summary or self::seealso]"/>
     /// <param name="key">The stream key.</param>
     /// <param name="groupName">The consumer group name.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>

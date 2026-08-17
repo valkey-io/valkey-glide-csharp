@@ -1069,6 +1069,8 @@ public class CommandTests
             ["max-deleted-entry-id"] = (GlideString)"2-0",
             ["entries-added"] = 4L,
             ["recorded-first-entry-id"] = (GlideString)"3-0",
+            ["first-entry"] = new object[] { (GlideString)"3-0", new object[] { (GlideString)"f1", (GlideString)"v1" } },
+            ["last-entry"] = new object[] { (GlideString)"5-0", new object[] { (GlideString)"f2", (GlideString)"v2" } },
         };
 
         var info = Request.StreamInfo("key").Converter(raw);
@@ -1083,6 +1085,9 @@ public class CommandTests
         Assert.Equal(new ValkeyValue("2-0"), info.MaxDeletedEntryId);
         Assert.Equal(4L, info.EntriesAdded);
         Assert.Equal(new ValkeyValue("3-0"), info.RecordedFirstEntryId);
+
+        Assert.Equal(new ValkeyValue("3-0"), info.FirstEntry.Id);
+        Assert.Equal(new ValkeyValue("5-0"), info.LastEntry.Id);
     }
 
     [Fact]
@@ -1097,6 +1102,8 @@ public class CommandTests
             ["radix-tree-nodes"] = 2L,
             ["last-generated-id"] = (GlideString)"1-0",
             ["groups"] = 0L,
+            ["first-entry"] = null!,
+            ["last-entry"] = null!,
         };
 
         var info = Request.StreamInfo("key").Converter(raw);
@@ -1105,6 +1112,9 @@ public class CommandTests
         Assert.Equal(ValkeyValue.Null, info.MaxDeletedEntryId);
         Assert.Equal(-1L, info.EntriesAdded);
         Assert.Equal(ValkeyValue.Null, info.RecordedFirstEntryId);
+
+        Assert.True(info.FirstEntry.IsNull);
+        Assert.True(info.LastEntry.IsNull);
     }
 
     [Fact]

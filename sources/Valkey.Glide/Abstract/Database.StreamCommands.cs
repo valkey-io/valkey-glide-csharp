@@ -244,58 +244,41 @@ internal partial class Database
         return StreamReadAsync(streamPositions, new StreamReadOptions { Count = countPerStream });
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.StreamReadGroupAsync(ValkeyKey, ValkeyValue, ValkeyValue, ValkeyValue?, int?, bool, CommandFlags)"/>
-    public Task<StreamEntry[]> StreamReadGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, ValkeyValue? position = null, int? count = null, bool noAck = false, CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-
-        var options = new StreamReadGroupOptions { Count = count, NoAck = noAck };
-        var sp = new StreamPosition(key, position ?? StreamPosition.UndeliveredMessages);
-
-        return StreamReadGroupAsync(sp, groupName, consumerName, options);
-    }
-
-    /// <inheritdoc cref="IDatabaseAsync.StreamReadGroupAsync(ValkeyKey, ValkeyValue, ValkeyValue, ValkeyValue?, int?, bool, TimeSpan?, CommandFlags)"/>
-    public Task<StreamEntry[]> StreamReadGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, ValkeyValue? position, int? count, bool noAck, TimeSpan? claimMinIdleTime, CommandFlags flags)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-
-        // TODO #322: Support claimMinIdleTime (SER-specific XREADGROUP + XAUTOCLAIM combination).
-        if (claimMinIdleTime is not null)
-        {
-            throw new NotImplementedException("claimMinIdleTime is a StackExchange.Redis-specific feature that combines XREADGROUP with auto-claiming. Use StreamAutoClaimAsync separately instead.");
-        }
-
-        var options = new StreamReadGroupOptions { Count = count, NoAck = noAck };
-        var sp = new StreamPosition(key, position ?? StreamPosition.UndeliveredMessages);
-
-        return StreamReadGroupAsync(sp, groupName, consumerName, options);
-    }
-
     /// <inheritdoc cref="IDatabaseAsync.StreamReadGroupAsync(ValkeyKey, ValkeyValue, ValkeyValue, ValkeyValue?, int?, CommandFlags)"/>
     public Task<StreamEntry[]> StreamReadGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, ValkeyValue? position, int? count, CommandFlags flags)
+        => StreamReadGroupAsync(key, groupName, consumerName, position, count, noAck: false, claimMinIdleTime: null, flags: flags);
+
+    /// <inheritdoc cref="IDatabaseAsync.StreamReadGroupAsync(ValkeyKey, ValkeyValue, ValkeyValue, ValkeyValue?, int?, bool, CommandFlags)"/>
+    public Task<StreamEntry[]> StreamReadGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, ValkeyValue? position, int? count, bool noAck, CommandFlags flags)
+        => StreamReadGroupAsync(key, groupName, consumerName, position, count, noAck, claimMinIdleTime: null, flags: flags);
+
+    /// <inheritdoc cref="IDatabaseAsync.StreamReadGroupAsync(ValkeyKey, ValkeyValue, ValkeyValue, ValkeyValue?, int?, bool, TimeSpan?, CommandFlags)"/>
+    public Task<StreamEntry[]> StreamReadGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, ValkeyValue? position = null, int? count = null, bool noAck = false, TimeSpan? claimMinIdleTime = null, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
+        ThrowIfClaimMinIdleTime(claimMinIdleTime);
 
-        var options = new StreamReadGroupOptions { Count = count, NoAck = false };
+        var options = new StreamReadGroupOptions { Count = count, NoAck = noAck };
         var sp = new StreamPosition(key, position ?? StreamPosition.UndeliveredMessages);
 
         return StreamReadGroupAsync(sp, groupName, consumerName, options);
-    }
-
-    /// <inheritdoc cref="IDatabaseAsync.StreamReadGroupAsync(IEnumerable{StreamPosition}, ValkeyValue, ValkeyValue, int?, bool, CommandFlags)"/>
-    public Task<ValkeyStream[]> StreamReadGroupAsync(IEnumerable<StreamPosition> streamPositions, ValkeyValue groupName, ValkeyValue consumerName, int? countPerStream = null, bool noAck = false, CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        var options = new StreamReadGroupOptions { Count = countPerStream, NoAck = noAck };
-        return StreamReadGroupAsync(streamPositions, groupName, consumerName, options);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StreamReadGroupAsync(IEnumerable{StreamPosition}, ValkeyValue, ValkeyValue, int?, CommandFlags)"/>
     public Task<ValkeyStream[]> StreamReadGroupAsync(IEnumerable<StreamPosition> streamPositions, ValkeyValue groupName, ValkeyValue consumerName, int? countPerStream, CommandFlags flags)
+        => StreamReadGroupAsync(streamPositions, groupName, consumerName, countPerStream, noAck: false, claimMinIdleTime: null, flags: flags);
+
+    /// <inheritdoc cref="IDatabaseAsync.StreamReadGroupAsync(IEnumerable{StreamPosition}, ValkeyValue, ValkeyValue, int?, bool, CommandFlags)"/>
+    public Task<ValkeyStream[]> StreamReadGroupAsync(IEnumerable<StreamPosition> streamPositions, ValkeyValue groupName, ValkeyValue consumerName, int? countPerStream, bool noAck, CommandFlags flags)
+        => StreamReadGroupAsync(streamPositions, groupName, consumerName, countPerStream, noAck, claimMinIdleTime: null, flags: flags);
+
+    /// <inheritdoc cref="IDatabaseAsync.StreamReadGroupAsync(IEnumerable{StreamPosition}, ValkeyValue, ValkeyValue, int?, bool, TimeSpan?, CommandFlags)"/>
+    public Task<ValkeyStream[]> StreamReadGroupAsync(IEnumerable<StreamPosition> streamPositions, ValkeyValue groupName, ValkeyValue consumerName, int? countPerStream = null, bool noAck = false, TimeSpan? claimMinIdleTime = null, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        var options = new StreamReadGroupOptions { Count = countPerStream, NoAck = false };
+        ThrowIfClaimMinIdleTime(claimMinIdleTime);
+
+        var options = new StreamReadGroupOptions { Count = countPerStream, NoAck = noAck };
         return StreamReadGroupAsync(streamPositions, groupName, consumerName, options);
     }
 
@@ -351,6 +334,15 @@ internal partial class Database
 
     #endregion
     #region Private Methods
+
+    // TODO #322: Support claimMinIdleTime (SER-specific XREADGROUP + XAUTOCLAIM combination).
+    private static void ThrowIfClaimMinIdleTime(TimeSpan? claimMinIdleTime)
+    {
+        if (claimMinIdleTime is not null)
+        {
+            throw new NotImplementedException("claimMinIdleTime is a StackExchange.Redis-specific feature that combines XREADGROUP with auto-claiming. Use StreamAutoClaimAsync separately instead.");
+        }
+    }
 
     /// <summary>
     /// Converts the given arguments to a <see cref="StreamAddOptions"/> instance.

@@ -222,6 +222,61 @@ public class StreamCommandTests(TestConfiguration config)
         Assert.Equivalent(new NameValueEntry[] { new("field3", "value3") }, Assert.Single(entries).Values);
     }
 
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StreamReadGroupAsync_PositionalCommandFlags(IDatabaseAsync db)
+    {
+        var key = $"ser-xreadgroup-posflags-{Guid.NewGuid()}";
+        _ = await db.StreamAddAsync(key, "field1", "value1");
+        _ = await db.StreamAddAsync(key, "field2", "value2");
+        _ = await db.StreamCreateConsumerGroupAsync(key, "mygroup", "0");
+
+        var entries = await db.StreamReadGroupAsync(key, "mygroup", "consumer1", ">", 1, CommandFlags.None);
+        _ = Assert.Single(entries);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StreamReadGroupAsync_PositionalNoAckCommandFlags(IDatabaseAsync db)
+    {
+        var key = $"ser-xreadgroup-posnoack-{Guid.NewGuid()}";
+        _ = await db.StreamAddAsync(key, "field", "value");
+        _ = await db.StreamCreateConsumerGroupAsync(key, "mygroup", "0");
+
+        _ = await db.StreamReadGroupAsync(key, "mygroup", "consumer1", ">", 1, true, CommandFlags.None);
+
+        var pending = await db.StreamPendingAsync(key, "mygroup");
+        Assert.Equal(0, pending.PendingMessageCount);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StreamReadGroupAsync_MultiPositionalCommandFlags(IDatabaseAsync db)
+    {
+        var key = $"ser-xreadgroup-msposflags-{Guid.NewGuid()}";
+        _ = await db.StreamAddAsync(key, "f1", "v1");
+        _ = await db.StreamCreateConsumerGroupAsync(key, "mygroup", "0");
+
+        var streams = await db.StreamReadGroupAsync([new StreamPosition(key, ">")], "mygroup", "consumer1", 1, CommandFlags.None);
+        Assert.Equal(key, Assert.Single(streams).Key);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task StreamReadGroupAsync_ClaimMinIdleTime_Throws(IDatabaseAsync db)
+    {
+        // TODO #322: Support claimMinIdleTime (SER-specific XREADGROUP + XAUTOCLAIM combination).
+        var key = $"ser-xreadgroup-claim-{Guid.NewGuid()}";
+        _ = await db.StreamAddAsync(key, "field", "value");
+        _ = await db.StreamCreateConsumerGroupAsync(key, "mygroup", "0");
+
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StreamReadGroupAsync(key, "mygroup", "consumer1", ">", 1, false, TimeSpan.FromMinutes(1), CommandFlags.None));
+
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.StreamReadGroupAsync([new StreamPosition(key, ">")], "mygroup", "consumer1", 1, false, TimeSpan.FromMinutes(1), CommandFlags.None));
+    }
+
     #endregion
     #region StreamClaimIdsOnlyAsync
 

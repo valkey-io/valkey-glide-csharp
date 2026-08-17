@@ -274,6 +274,15 @@ internal partial class Request
         => map.TryGetValue(key, out var value) ? ((GlideString)value).ToString() : null;
 
     /// <summary>
+    /// Returns a required <see langword="object"/> array from the given response dictionary.
+    /// </summary>
+    private static object[] GetObjects(Dictionary<GlideString, object> map, string key)
+        // An empty array is represented by an explicit null value.
+        => map.TryGetValue(key, out var value)
+            ? (object[]?)value ?? []
+            : throw new RequestException($"Response missing required field '{key}'");
+
+    /// <summary>
     /// Returns a required <see cref="TimeSpan"/> value from the given response dictionary.
     /// </summary>
     private static TimeSpan GetTimeSpan(Dictionary<GlideString, object> map, string key)

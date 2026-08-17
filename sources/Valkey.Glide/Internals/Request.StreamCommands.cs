@@ -72,13 +72,13 @@ internal partial class Request
         return Ok(RequestType.XGroupSetId, [.. args]);
     }
 
-    public static Cmd<object, StreamInfo> StreamInfo(ValkeyKey key)
+    public static Cmd<Dictionary<GlideString, object>, StreamInfo> StreamInfo(ValkeyKey key)
         => new(RequestType.XInfoStream, [key], false, ConvertStreamInfoResponse);
 
     public static Cmd<object[], StreamConsumerInfo[]> StreamInfoConsumers(ValkeyKey key, ValkeyValue groupName)
         => new(RequestType.XInfoConsumers, [key, groupName], false, ConvertStreamConsumerInfoResponses);
 
-    public static Cmd<object, StreamInfoFull> StreamInfoFull(ValkeyKey key, int? count = null)
+    public static Cmd<Dictionary<GlideString, object>, StreamInfoFull> StreamInfoFull(ValkeyKey key, int? count = null)
     {
         List<GlideString> args = [key, ValkeyLiterals.FULL];
 
@@ -150,10 +150,14 @@ internal partial class Request
             claimedEntries: ConvertStreamEntriesResponse((Dictionary<GlideString, object>)response[1]),
             deletedIds: response.Length > 2 ? ToValkeyValueArray(response[2]) : []);
 
-    private static StreamEntry ConvertStreamEntryResponse(object response)
+    private static StreamEntry ConvertStreamEntryResponse(object[] response)
     {
-        var array = (object[])response;
-        var fields = (object[])array[1];
+        if (response.Length == 0)
+        {
+            return StreamEntry.Null;
+        }
+
+        var fields = (object[])response[1];
 
         var values = new NameValueEntry[fields.Length / 2];
         for (int i = 0; i < values.Length; i++)
@@ -164,44 +168,48 @@ internal partial class Request
         }
 
         return new StreamEntry(
-            id: (GlideString)array[0],
+            id: (GlideString)response[0],
             values: values);
     }
 
-    private static StreamGroupInfoFull ConvertStreamGroupInfoFullResponse(object response)
+    private static StreamGroupInfoFull ConvertStreamGroupInfoFullResponse(Dictionary<GlideString, object> map)
     {
-        var map = ToFieldMap(response);
+        var consumers = GetObjects(map, "consumers")
+            .Select(consumer => (Dictionary<GlideString, object>)consumer)
+            .Select(ConvertStreamConsumerInfoFullResponse)
+            .ToArray();
 
-        var consumers = (map.GetValueOrDefault("consumers") as object[] ?? []).Select(ConvertStreamConsumerInfoFullResponse).ToArray();
-        var pending = (map.GetValueOrDefault("pending") as object[] ?? []).Select(ConvertStreamPendingEntryResponse).ToArray();
-
-        return new StreamGroupInfoFull(
-            GetString(map, "name"),
-            TryGetValkeyValue(map, "last-delivered-id"),
-            TryGetLong(map, "entries-read"),
-            TryGetLong(map, "lag"),
-            GetLong(map, "pel-count"),
-            pending,
-            consumers);
+        return new(
+            name: GetString(map, "name"),
+            lastDeliveredId: TryGetValkeyValue(map, "last-delivered-id"),
+            entriesRead: TryGetLong(map, "entries-read"),
+            lag: TryGetLong(map, "lag"),
+            pelCount: GetLong(map, "pel-count"),
+            pendingEntries: [.. GetObjects(map, "pending").Select(ConvertStreamPendingEntryResponse)],
+            consumers: consumers);
     }
 
     private static StreamConsumerInfo[] ConvertStreamConsumerInfoResponses(object[] responses)
         => [.. responses.Select(response =>
         {
-            var map = ToFieldMap(response);
+            var map = (Dictionary<GlideString, object>)response;
             return new StreamConsumerInfo(
-                GetString(map, "name"),
-                GetInt(map, "pending"),
-                ToTimeSpan(map["idle"]),
-                map.TryGetValue("inactive", out var inactive) ? ToTimeSpan(inactive) : null);
+                name: GetString(map, "name"),
+                pendingMessageCount: GetInt(map, "pending"),
+                idle: ToTimeSpan(map["idle"]),
+                inactive: map.TryGetValue("inactive", out var inactive) ? ToTimeSpan(inactive) : null);
         })];
 
-    private static StreamInfoFull ConvertStreamInfoFullResponse(object response)
+    private static StreamInfoFull ConvertStreamInfoFullResponse(Dictionary<GlideString, object> map)
     {
-        var map = ToFieldMap(response);
-
-        var entries = (map.GetValueOrDefault("entries") as object[] ?? []).Select(ConvertStreamEntryResponse).ToArray();
-        var groups = (map.GetValueOrDefault("groups") as object[] ?? []).Select(ConvertStreamGroupInfoFullResponse).ToArray();
+        var entries = GetObjects(map, "entries")
+            .Select(entry => (object[])entry)
+            .Select(ConvertStreamEntryResponse)
+            .ToArray();
+        var groups = GetObjects(map, "groups")
+            .Select(group => (Dictionary<GlideString, object>)group)
+            .Select(ConvertStreamGroupInfoFullResponse)
+            .ToArray();
 
         return new StreamInfoFull(
             length: GetInt(map, "length"),
@@ -218,8 +226,7 @@ internal partial class Request
     private static StreamGroupInfo[] ConvertStreamGroupInfoResponses(object[] responses)
         => [.. responses.Select(response =>
         {
-            var map = ToFieldMap(response);
-
+            var map = (Dictionary<GlideString, object>)response;
             return new StreamGroupInfo(
                 name: GetString(map, "name"),
                 consumerCount: GetInt(map, "consumers"),
@@ -229,25 +236,18 @@ internal partial class Request
                 lag: TryGetLong(map, "lag"));
         })];
 
-    private static StreamInfo ConvertStreamInfoResponse(object response)
-    {
-        var map = ToFieldMap(response);
-
-        var firstEntry = map.GetValueOrDefault("first-entry") is object[] first ? ConvertStreamEntryResponse(first) : StreamEntry.Null;
-        var lastEntry = map.GetValueOrDefault("last-entry") is object[] last ? ConvertStreamEntryResponse(last) : StreamEntry.Null;
-
-        return new StreamInfo(
-            GetInt(map, "length"),
-            GetInt(map, "radix-tree-keys"),
-            GetInt(map, "radix-tree-nodes"),
-            TryGetValkeyValue(map, "last-generated-id"),
-            TryGetValkeyValue(map, "max-deleted-entry-id"),
-            TryGetLong(map, "entries-added") ?? -1L,
-            TryGetValkeyValue(map, "recorded-first-entry-id"),
-            GetInt(map, "groups"),
-            firstEntry,
-            lastEntry);
-    }
+    private static StreamInfo ConvertStreamInfoResponse(Dictionary<GlideString, object> map)
+        => new(
+            length: GetInt(map, "length"),
+            radixTreeKeys: GetInt(map, "radix-tree-keys"),
+            radixTreeNodes: GetInt(map, "radix-tree-nodes"),
+            lastGeneratedId: TryGetValkeyValue(map, "last-generated-id"),
+            maxDeletedEntryId: TryGetValkeyValue(map, "max-deleted-entry-id"),
+            entriesAdded: TryGetLong(map, "entries-added") ?? -1L,
+            recordedFirstEntryId: TryGetValkeyValue(map, "recorded-first-entry-id"),
+            consumerGroupCount: GetInt(map, "groups"),
+            firstEntry: ConvertStreamEntryResponse(GetObjects(map, "first-entry")),
+            lastEntry: ConvertStreamEntryResponse(GetObjects(map, "last-entry")));
 
     private static StreamPendingMessageInfo[] ConvertStreamPendingMessageInfoResponses(object[] responses)
     {
@@ -296,27 +296,6 @@ internal partial class Request
         return ConvertStreamEntriesResponse((Dictionary<GlideString, object>)response.Values.First());
     }
 
-    private static Dictionary<GlideString, object> ToFieldMap(object response)
-    {
-        // RESP3 already returns a field map; use it directly.
-        if (response is Dictionary<GlideString, object> dict)
-        {
-            return dict;
-        }
-
-        // RESP2 returns a flat key-value array; fold it into a map.
-        var result = new Dictionary<GlideString, object>();
-        if (response is object[] array)
-        {
-            for (int i = 0; i + 1 < array.Length; i += 2)
-            {
-                result[(GlideString)array[i]] = array[i + 1];
-            }
-        }
-
-        return result;
-    }
-
     private static NameValueEntry ConvertNameValueEntryResponse(object response)
     {
         var pair = (object[])response;
@@ -326,13 +305,12 @@ internal partial class Request
             value: (GlideString)pair[1]);
     }
 
-    private static StreamConsumerInfoFull ConvertStreamConsumerInfoFullResponse(object response)
+    private static StreamConsumerInfoFull ConvertStreamConsumerInfoFullResponse(Dictionary<GlideString, object> map)
     {
-        var map = ToFieldMap(response);
         var name = GetString(map, "name");
-
-        // The consumer's PEL entries do not carry the consumer name on the wire; populate it from the owning consumer.
-        var pending = (map.GetValueOrDefault("pending") as object[] ?? []).Select(entry => ConvertStreamPendingEntryResponse(entry, name)).ToArray();
+        var pending = GetObjects(map, "pending")
+            .Select(entry => ConvertStreamPendingEntryResponse(entry, name))
+            .ToArray();
 
         return new StreamConsumerInfoFull(
             name,
@@ -400,7 +378,6 @@ internal partial class Request
     }
 
     #endregion
-
     #region Argument Builders
 
     private static GlideString[] ToArgs(IEnumerable<StreamPosition> positions)
