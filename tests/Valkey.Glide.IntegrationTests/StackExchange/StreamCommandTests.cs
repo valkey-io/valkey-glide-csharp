@@ -361,7 +361,7 @@ public class StreamCommandTests(TestConfiguration config)
         _ = await db.StreamCreateConsumerGroupAsync(key, "mygroup", "0");
         _ = await db.StreamReadGroupAsync(key, "mygroup", "consumer1", ">", count: 1);
 
-        long acked = await db.StreamAcknowledgeAsync(key, "mygroup", id1);
+        long acked = await db.StreamAcknowledgeAsync(key, "mygroup", id1, CommandFlags.None);
         Assert.Equal(1, acked);
 
         StreamPendingInfo pending = await db.StreamPendingAsync(key, "mygroup");
