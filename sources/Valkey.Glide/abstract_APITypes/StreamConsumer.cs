@@ -3,7 +3,7 @@
 namespace Valkey.Glide;
 
 /// <summary>
-/// Represents a stream consumer response from <c>XAUTOCLAIM</c> command.
+/// Represents a stream consumer response from the <c>XPENDING</c> command.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/xpending/"/>
 public readonly struct StreamConsumer

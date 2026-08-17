@@ -5,7 +5,7 @@ using System;
 namespace Valkey.Glide;
 
 /// <summary>
-/// Stream entry reponse from the <c>XRANGE</c> command.
+/// Stream entry response from the <c>XRANGE</c> command.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/xrange/"/>
 public readonly struct StreamEntry

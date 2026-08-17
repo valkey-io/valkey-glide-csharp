@@ -147,7 +147,7 @@ public partial interface IBaseClient
     /// <param name="claimingConsumer">The consumer that will take ownership of the message.</param>
     /// <param name="messageId">The message ID to claim.</param>
     /// <param name="options">The stream claim options to apply.</param>
-    /// <returns>The stream entries that were succesfully claimed.</returns>
+    /// <returns>The stream entries that were successfully claimed.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -167,7 +167,7 @@ public partial interface IBaseClient
     /// <param name="claimingConsumer">The consumer that will take ownership of the messages.</param>
     /// <param name="messageIds">The message IDs to claim.</param>
     /// <param name="options">The stream claim options to apply.</param>
-    /// <returns>The stream entries that were succesfully claimed.</returns>
+    /// <returns>The stream entries that were successfully claimed.</returns>
     /// <remarks>
     /// <example>
     /// <code>
