@@ -35,11 +35,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Custom socket address resolution support via callback (#392)
 - `NodeDiscoveryMode` configuration option for standalone clients (#131)
 
-### Changed
-
-- Renamed `IDatabaseAsync.StreamReadAsync` parameter from `countPerStream`
-  to `count` to align with StackExchange.Redis (#326).
-
 ### Fixed
 
 - Marshalling of non-ASCII characters on Windows (#501)
@@ -51,6 +46,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `CONFIG REWRITE` routed to Random instead of AllNodes in cluster mode (#493)
   - `CONFIG RESETSTAT` routed to AllPrimaries instead of AllNodes in cluster mode (#493)
   - `FUNCTION KILL` routed to AllPrimaries instead of AllNodes in cluster mode (#494)
+- Compatibility with StackExchange.Redis:
+  - Renamed `IDatabaseAsync.StreamReadAsync` parameter from `countPerStream` to `count` (#326).
+  - `IDatabaseAsync.StreamAutoClaimIdsOnlyAsync` now returns `StreamAutoClaimIdsOnlyResult` type (#326).
 
 ## 1.1.0
 
