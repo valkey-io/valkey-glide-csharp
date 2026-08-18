@@ -140,6 +140,15 @@ internal partial class Request
     #endregion
     #region Response Converters
 
+    private static NameValueEntry ConvertNameValueEntryResponse(object response)
+    {
+        var pair = (object[])response;
+
+        return new NameValueEntry(
+            name: (GlideString)pair[0],
+            value: (GlideString)pair[1]);
+    }
+
     private static StreamAutoClaimJustIdResult ConvertStreamAutoClaimJustIdResponse(object[] response)
         => new(nextStartId: ToValkeyValue(response[0]),
             claimedIds: ToValkeyValueArray(response[1]),
@@ -149,6 +158,60 @@ internal partial class Request
         => new(nextStartId: ToValkeyValue(response[0]),
             claimedEntries: ConvertStreamEntriesResponse((Dictionary<GlideString, object>)response[1]),
             deletedIds: response.Length > 2 ? ToValkeyValueArray(response[2]) : []);
+
+    private static StreamConsumerInfoFull ConvertStreamConsumerInfoFullResponse(Dictionary<GlideString, object> map)
+    {
+        var name = GetString(map, "name");
+        var pending = GetObjects(map, "pending")
+            .Select(entry => ConvertStreamPendingEntryResponse(entry, name))
+            .ToArray();
+
+        return new StreamConsumerInfoFull(
+            name,
+            ToDateTimeOffset(map["seen-time"]),
+            map.TryGetValue("active-time", out var activeTime) ? ToDateTimeOffset(activeTime) : null,
+            GetLong(map, "pel-count"),
+            pending);
+    }
+
+    private static StreamConsumerInfo[] ConvertStreamConsumerInfoResponses(object[] responses)
+        => [.. responses.Select(response =>
+        {
+            var map = (Dictionary<GlideString, object>)response;
+            return new StreamConsumerInfo(
+                name: GetString(map, "name"),
+                pendingMessageCount: GetInt(map, "pending"),
+                idle: ToTimeSpan(map["idle"]),
+                inactive: map.TryGetValue("inactive", out var inactive) ? ToTimeSpan(inactive) : null);
+        })];
+
+    private static StreamConsumer ConvertStreamConsumerResponse(object response)
+    {
+        var data = (object[])response;
+
+        return new StreamConsumer(
+            name: ToValkeyValue(data[0]),
+            pendingMessageCount: ToInt(data[1]));
+    }
+
+    private static StreamEntry[] ConvertStreamEntriesResponse(Dictionary<GlideString, object> response)
+    {
+        var entries = new List<StreamEntry>();
+        foreach (var entry in response)
+        {
+            // Pending messages that have been acknowledged/deleted have nil field values.
+            if (entry.Value is not object[] outerArray || outerArray.Length == 0)
+            {
+                continue;
+            }
+
+            entries.Add(new StreamEntry(
+                id: entry.Key,
+                values: [.. outerArray.Select(ConvertNameValueEntryResponse)]));
+        }
+
+        return [.. entries];
+    }
 
     private static StreamEntry ConvertStreamEntryResponse(object[] response)
     {
@@ -189,15 +252,17 @@ internal partial class Request
             consumers: consumers);
     }
 
-    private static StreamConsumerInfo[] ConvertStreamConsumerInfoResponses(object[] responses)
+    private static StreamGroupInfo[] ConvertStreamGroupInfoResponses(object[] responses)
         => [.. responses.Select(response =>
         {
             var map = (Dictionary<GlideString, object>)response;
-            return new StreamConsumerInfo(
+            return new StreamGroupInfo(
                 name: GetString(map, "name"),
+                consumerCount: GetInt(map, "consumers"),
                 pendingMessageCount: GetInt(map, "pending"),
-                idle: ToTimeSpan(map["idle"]),
-                inactive: map.TryGetValue("inactive", out var inactive) ? ToTimeSpan(inactive) : null);
+                lastDeliveredId: TryGetValkeyValue(map, "last-delivered-id"),
+                entriesRead: TryGetLong(map, "entries-read"),
+                lag: TryGetLong(map, "lag"));
         })];
 
     private static StreamInfoFull ConvertStreamInfoFullResponse(Dictionary<GlideString, object> map)
@@ -223,19 +288,6 @@ internal partial class Request
             groups: groups);
     }
 
-    private static StreamGroupInfo[] ConvertStreamGroupInfoResponses(object[] responses)
-        => [.. responses.Select(response =>
-        {
-            var map = (Dictionary<GlideString, object>)response;
-            return new StreamGroupInfo(
-                name: GetString(map, "name"),
-                consumerCount: GetInt(map, "consumers"),
-                pendingMessageCount: GetInt(map, "pending"),
-                lastDeliveredId: TryGetValkeyValue(map, "last-delivered-id"),
-                entriesRead: TryGetLong(map, "entries-read"),
-                lag: TryGetLong(map, "lag"));
-        })];
-
     private static StreamInfo ConvertStreamInfoResponse(Dictionary<GlideString, object> map)
         => new(
             length: GetInt(map, "length"),
@@ -248,96 +300,6 @@ internal partial class Request
             consumerGroupCount: GetInt(map, "groups"),
             firstEntry: ConvertStreamEntryResponse(GetObjects(map, "first-entry")),
             lastEntry: ConvertStreamEntryResponse(GetObjects(map, "last-entry")));
-
-    private static StreamPendingMessageInfo[] ConvertStreamPendingMessageInfoResponses(object[] responses)
-    {
-        var result = new StreamPendingMessageInfo[responses.Length];
-        for (int i = 0; i < responses.Length; i++)
-        {
-            var msgData = (object[])responses[i];
-
-            result[i] = new StreamPendingMessageInfo(
-                messageId: ToValkeyValue(msgData[0]),
-                consumerName: ToValkeyValue(msgData[1]),
-                idle: ToTimeSpan(msgData[2]),
-                deliveryCount: ToInt(msgData[3])
-            );
-        }
-        return result;
-    }
-
-    private static StreamPendingInfo ConvertStreamPendingInfoResponse(object[] response)
-    {
-        var consumers = (response[3] as object[] ?? []).Select(ConvertStreamConsumerResponse).ToArray();
-
-        return new StreamPendingInfo(
-            pendingMessageCount: ToInt(response[0]),
-            lowestId: ToValkeyValue(response[1]),
-            highestId: ToValkeyValue(response[2]),
-            consumers: consumers);
-    }
-
-    private static StreamConsumer ConvertStreamConsumerResponse(object response)
-    {
-        var data = (object[])response;
-
-        return new StreamConsumer(
-            name: ToValkeyValue(data[0]),
-            pendingMessageCount: ToInt(data[1]));
-    }
-
-    private static StreamEntry[] ConvertStreamReadPositionResponse(Dictionary<GlideString, object>? response)
-    {
-        if (response is null)
-        {
-            return [];
-        }
-
-        return ConvertStreamEntriesResponse((Dictionary<GlideString, object>)response.Values.First());
-    }
-
-    private static NameValueEntry ConvertNameValueEntryResponse(object response)
-    {
-        var pair = (object[])response;
-
-        return new NameValueEntry(
-            name: (GlideString)pair[0],
-            value: (GlideString)pair[1]);
-    }
-
-    private static StreamConsumerInfoFull ConvertStreamConsumerInfoFullResponse(Dictionary<GlideString, object> map)
-    {
-        var name = GetString(map, "name");
-        var pending = GetObjects(map, "pending")
-            .Select(entry => ConvertStreamPendingEntryResponse(entry, name))
-            .ToArray();
-
-        return new StreamConsumerInfoFull(
-            name,
-            ToDateTimeOffset(map["seen-time"]),
-            map.TryGetValue("active-time", out var activeTime) ? ToDateTimeOffset(activeTime) : null,
-            GetLong(map, "pel-count"),
-            pending);
-    }
-
-    private static StreamEntry[] ConvertStreamEntriesResponse(Dictionary<GlideString, object> response)
-    {
-        var entries = new List<StreamEntry>();
-        foreach (var entry in response)
-        {
-            // Pending messages that have been acknowledged/deleted have nil field values.
-            if (entry.Value is not object[] outerArray || outerArray.Length == 0)
-            {
-                continue;
-            }
-
-            entries.Add(new StreamEntry(
-                id: entry.Key,
-                values: [.. outerArray.Select(ConvertNameValueEntryResponse)]));
-        }
-
-        return [.. entries];
-    }
 
     private static StreamPendingEntry ConvertStreamPendingEntryResponse(object response, string consumer)
     {
@@ -357,6 +319,44 @@ internal partial class Request
             ToValkeyValue(arr[1]).ToString(),
             ToDateTimeOffset(arr[2]),
             ToInt(arr[3]));
+    }
+
+    private static StreamPendingInfo ConvertStreamPendingInfoResponse(object[] response)
+    {
+        var consumers = (response[3] as object[] ?? []).Select(ConvertStreamConsumerResponse).ToArray();
+
+        return new StreamPendingInfo(
+            pendingMessageCount: ToInt(response[0]),
+            lowestId: ToValkeyValue(response[1]),
+            highestId: ToValkeyValue(response[2]),
+            consumers: consumers);
+    }
+
+    private static StreamPendingMessageInfo[] ConvertStreamPendingMessageInfoResponses(object[] responses)
+    {
+        var result = new StreamPendingMessageInfo[responses.Length];
+        for (int i = 0; i < responses.Length; i++)
+        {
+            var msgData = (object[])responses[i];
+
+            result[i] = new StreamPendingMessageInfo(
+                messageId: ToValkeyValue(msgData[0]),
+                consumerName: ToValkeyValue(msgData[1]),
+                idle: ToTimeSpan(msgData[2]),
+                deliveryCount: ToInt(msgData[3])
+            );
+        }
+        return result;
+    }
+
+    private static StreamEntry[] ConvertStreamReadPositionResponse(Dictionary<GlideString, object>? response)
+    {
+        if (response is null)
+        {
+            return [];
+        }
+
+        return ConvertStreamEntriesResponse((Dictionary<GlideString, object>)response.Values.First());
     }
 
     internal static ValkeyStream[] ConvertValkeyStreamResponse(Dictionary<GlideString, object>? response)
