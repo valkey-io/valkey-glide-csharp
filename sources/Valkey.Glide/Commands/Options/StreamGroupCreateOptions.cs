@@ -13,7 +13,7 @@ public sealed class StreamGroupCreateOptions
     /// <summary>
     /// Whether to create the stream if it does not already exist (MKSTREAM).
     /// </summary>
-    public bool MakeStream { get; init; } = true;
+    public bool MakeStream { get; init; } = false;
 
     /// <summary>
     /// If specified, sets the group's entries-read counter to the given value (ENTRIESREAD).

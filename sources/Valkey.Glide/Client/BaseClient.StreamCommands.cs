@@ -67,11 +67,11 @@ public abstract partial class BaseClient
 
     /// <inheritdoc cref="IBaseClient.StreamClaimJustIdAsync(ValkeyKey, ValkeyValue, ValkeyValue, ValkeyValue, StreamClaimOptions)"/>
     public Task<ValkeyValue[]> StreamClaimJustIdAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, ValkeyValue messageId, StreamClaimOptions options)
-        => Command(Request.StreamClaimIdsOnly(key, consumerGroup, claimingConsumer, [messageId], options));
+        => Command(Request.StreamClaimJustIds(key, consumerGroup, claimingConsumer, [messageId], options));
 
     /// <inheritdoc cref="IBaseClient.StreamClaimJustIdAsync(ValkeyKey, ValkeyValue, ValkeyValue, IEnumerable{ValkeyValue}, StreamClaimOptions)"/>
     public Task<ValkeyValue[]> StreamClaimJustIdAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, IEnumerable<ValkeyValue> messageIds, StreamClaimOptions options)
-        => Command(Request.StreamClaimIdsOnly(key, consumerGroup, claimingConsumer, messageIds, options));
+        => Command(Request.StreamClaimJustIds(key, consumerGroup, claimingConsumer, messageIds, options));
 
     #endregion
     #region StreamDeleteAsync

@@ -66,11 +66,11 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
 
     /// <inheritdoc cref="IBatchStreamCommands.StreamClaimJustId(ValkeyKey, ValkeyValue, ValkeyValue, ValkeyValue, StreamClaimOptions)" />
     public T StreamClaimJustId(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, ValkeyValue messageId, StreamClaimOptions options)
-        => AddCmd(Request.StreamClaimIdsOnly(key, consumerGroup, claimingConsumer, [messageId], options));
+        => AddCmd(Request.StreamClaimJustIds(key, consumerGroup, claimingConsumer, [messageId], options));
 
     /// <inheritdoc cref="IBatchStreamCommands.StreamClaimJustId(ValkeyKey, ValkeyValue, ValkeyValue, IEnumerable{ValkeyValue}, StreamClaimOptions)" />
     public T StreamClaimJustId(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, IEnumerable<ValkeyValue> messageIds, StreamClaimOptions options)
-        => AddCmd(Request.StreamClaimIdsOnly(key, consumerGroup, claimingConsumer, messageIds, options));
+        => AddCmd(Request.StreamClaimJustIds(key, consumerGroup, claimingConsumer, messageIds, options));
 
     #endregion
     #region StreamDelete

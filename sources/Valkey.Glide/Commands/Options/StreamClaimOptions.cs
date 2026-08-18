@@ -13,24 +13,28 @@ public sealed class StreamClaimOptions
     #region Public Methods
 
     /// <summary>
-    /// Sets the idle time of the message (IDLE).
+    /// Sets the idle time of the claimed message to the specified interval (IDLE).
+    /// Clears any idle time previously set by <see cref="WithIdle"/> or <see cref="WithIdleUnix"/>.
     /// </summary>
     /// <param name="idle">The idle time to set.</param>
     /// <returns>The same <see cref="StreamClaimOptions"/> instance, for chaining.</returns>
     public StreamClaimOptions WithIdle(TimeSpan idle)
     {
         Idle = idle;
+        IdleUnix = null;
         return this;
     }
 
     /// <summary>
-    /// Sets the idle time of the message to a timestamp (TIME).
+    /// Sets the idle time of the claimed message relative to the specified (IDLE).
+    /// Clears any idle time previously set by <see cref="WithIdle"/> or <see cref="WithIdleUnix"/>.
     /// </summary>
-    /// <param name="idleUnix">The Unix timestamp to set as the idle time.</param>
+    /// <param name="idleUnix">The Unix timestamp to set as the last delivery time.</param>
     /// <returns>The same <see cref="StreamClaimOptions"/> instance, for chaining.</returns>
     public StreamClaimOptions WithIdleUnix(DateTimeOffset idleUnix)
     {
         IdleUnix = idleUnix;
+        Idle = null;
         return this;
     }
 
@@ -106,11 +110,12 @@ public sealed class StreamClaimOptions
     #region Internal Methods
 
     /// <summary>
-    /// Builds the command arguments for these options.
+    /// Builds the command arguments for these options and the specified message IDs.
     /// </summary>
-    internal GlideString[] ToArgs()
+    /// <param name="messageIds">The message IDs to claim.</param>
+    internal GlideString[] ToArgs(IEnumerable<ValkeyValue> messageIds)
     {
-        List<GlideString> args = [];
+        List<GlideString> args = [ToULongMs(MinIdleTime, nameof(MinIdleTime)).ToGlideString(), .. messageIds];
 
         if (Idle.HasValue)
         {

@@ -3,7 +3,6 @@
 using Valkey.Glide.Commands.Options;
 
 using static Valkey.Glide.Internals.FFI;
-using static Valkey.Glide.Internals.TimeUtils;
 
 namespace Valkey.Glide.Internals;
 
@@ -27,10 +26,10 @@ internal partial class Request
         => new(RequestType.XAutoClaim, [key, groupName, consumerName, .. options.ToArgs(), ValkeyLiterals.JUSTID], false, ConvertStreamAutoClaimJustIdResponse);
 
     public static Cmd<Dictionary<GlideString, object>, StreamEntry[]> StreamClaim(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, IEnumerable<ValkeyValue> messageIds, StreamClaimOptions options)
-        => new(RequestType.XClaim, [key, groupName, consumerName, ToULongMs(options.MinIdleTime, nameof(options.MinIdleTime)).ToGlideString(), .. messageIds, .. options.ToArgs()], false, ConvertStreamEntriesResponse);
+        => new(RequestType.XClaim, [key, groupName, consumerName, .. options.ToArgs(messageIds)], false, ConvertStreamEntriesResponse);
 
-    public static Cmd<object[], ValkeyValue[]> StreamClaimIdsOnly(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, IEnumerable<ValkeyValue> messageIds, StreamClaimOptions options)
-        => new(RequestType.XClaim, [key, groupName, consumerName, ToULongMs(options.MinIdleTime, nameof(options.MinIdleTime)).ToGlideString(), .. messageIds, .. options.ToArgs(), ValkeyLiterals.JUSTID], false, ToValkeyValueArray);
+    public static Cmd<object[], ValkeyValue[]> StreamClaimJustIds(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, IEnumerable<ValkeyValue> messageIds, StreamClaimOptions options)
+        => new(RequestType.XClaim, [key, groupName, consumerName, .. options.ToArgs(messageIds), ValkeyLiterals.JUSTID], false, ToValkeyValueArray);
 
     public static Cmd<long, bool> StreamDelete(ValkeyKey key, ValkeyValue messageId)
         => Boolean<long>(RequestType.XDel, [key, messageId]);
@@ -50,8 +49,8 @@ internal partial class Request
         return Ok(RequestType.XGroupCreate, [.. args]);
     }
 
-    public static Cmd<object, bool> StreamGroupCreateConsumer(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName)
-        => Boolean<object>(RequestType.XGroupCreateConsumer, [key, groupName, consumerName]);
+    public static Cmd<bool, bool> StreamGroupCreateConsumer(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName)
+        => Simple<bool>(RequestType.XGroupCreateConsumer, [key, groupName, consumerName]);
 
     public static Cmd<long, long> StreamGroupDeleteConsumer(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName)
         => Simple<long>(RequestType.XGroupDelConsumer, [key, groupName, consumerName]);

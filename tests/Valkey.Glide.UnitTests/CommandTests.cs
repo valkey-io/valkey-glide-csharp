@@ -992,12 +992,15 @@ public class CommandTests
         Assert.Equal(["XAUTOCLAIM", "key", "group", "consumer", "1000", "0-0", "JUSTID"], Request.StreamAutoClaimJustId("key", "group", "consumer", StreamAutoClaimOptions.FromId(OneSecond, "0-0")).GetArgs());
         Assert.Equal(["XCLAIM", "key", "group", "consumer", "1000", "1-0"], Request.StreamClaim("key", "group", "consumer", ["1-0"], StreamClaimOptions.From(OneSecond)).GetArgs());
         Assert.Equal(["XCLAIM", "key", "group", "consumer", "1000", "1-0", "IDLE", "500"], Request.StreamClaim("key", "group", "consumer", ["1-0"], StreamClaimOptions.From(OneSecond).WithIdle(TimeSpan.FromMilliseconds(500))).GetArgs());
+        Assert.Equal(["XCLAIM", "key", "group", "consumer", "1000", "1-0", "TIME", "1500"], Request.StreamClaim("key", "group", "consumer", ["1-0"], StreamClaimOptions.From(OneSecond).WithIdleUnix(DateTimeOffset.FromUnixTimeMilliseconds(1500))).GetArgs());
         Assert.Equal(["XCLAIM", "key", "group", "consumer", "1000", "1-0", "FORCE"], Request.StreamClaim("key", "group", "consumer", ["1-0"], StreamClaimOptions.From(OneSecond).WithForce()).GetArgs());
-        Assert.Equal(["XCLAIM", "key", "group", "consumer", "1000", "1-0", "JUSTID"], Request.StreamClaimIdsOnly("key", "group", "consumer", ["1-0"], StreamClaimOptions.From(OneSecond)).GetArgs());
+        Assert.Equal(["XCLAIM", "key", "group", "consumer", "1000", "1-0", "JUSTID"], Request.StreamClaimJustIds("key", "group", "consumer", ["1-0"], StreamClaimOptions.From(OneSecond)).GetArgs());
         Assert.Equal(["XGROUPSETID", "key", "group", "0-0"], Request.StreamGroupSetId("key", "group", "0-0", null).GetArgs());
         Assert.Equal(["XGROUPSETID", "key", "group", "0-0", "ENTRIESREAD", "5"], Request.StreamGroupSetId("key", "group", "0-0", 5).GetArgs());
         Assert.Equal(["XINFOCONSUMERS", "key", "group"], Request.StreamInfoConsumers("key", "group").GetArgs());
         Assert.Equal(["XGROUPCREATECONSUMER", "key", "group", "consumer"], Request.StreamGroupCreateConsumer("key", "group", "consumer").GetArgs());
+        Assert.Equal(["XGROUPCREATE", "key", "group", "0"], Request.StreamGroupCreate("key", "group", "0").GetArgs());
+        Assert.Equal(["XGROUPCREATE", "key", "group", "0"], Request.StreamGroupCreate("key", "group", "0", new StreamGroupCreateOptions()).GetArgs());
         Assert.Equal(["XGROUPCREATE", "key", "group", "$", "MKSTREAM"], Request.StreamGroupCreate("key", "group", StreamPosition.NewMessages, new StreamGroupCreateOptions { MakeStream = true }).GetArgs());
         Assert.Equal(["XGROUPCREATE", "key", "group", "0"], Request.StreamGroupCreate("key", "group", "0", new StreamGroupCreateOptions { MakeStream = false }).GetArgs());
         Assert.Equal(["XGROUPCREATE", "key", "group", "0", "ENTRIESREAD", "10"], Request.StreamGroupCreate("key", "group", "0", new StreamGroupCreateOptions { MakeStream = false, EntriesRead = 10 }).GetArgs());
@@ -1039,8 +1042,6 @@ public class CommandTests
         Assert.Equal(new ValkeyValue("1-0"), Request.StreamAdd("key", [new NameValueEntry("f", "v")], new StreamAddOptions()).Converter("1-0"));
         Assert.Equal(ValkeyValue.Null, Request.StreamAdd("key", [new NameValueEntry("f", "v")], new StreamAddOptions()).Converter(null!));
         Assert.Equal(ValkeyValue.Ok, Request.StreamGroupSetId("key", "group", "0-0", null).Converter("OK"));
-        Assert.True(Request.StreamGroupCreateConsumer("key", "group", "consumer").Converter(1L));
-        Assert.False(Request.StreamGroupCreateConsumer("key", "group", "consumer").Converter(0L));
         Assert.True(Request.StreamGroupCreateConsumer("key", "group", "consumer").Converter(true));
         Assert.False(Request.StreamGroupCreateConsumer("key", "group", "consumer").Converter(false));
         Assert.Equal(ValkeyValue.Ok, Request.StreamGroupCreate("key", "group", default, new StreamGroupCreateOptions { MakeStream = true }).Converter("OK"));
