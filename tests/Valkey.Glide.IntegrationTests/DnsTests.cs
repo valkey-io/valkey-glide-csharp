@@ -5,7 +5,7 @@ using System.Net;
 using Valkey.Glide.TestUtils;
 
 using static Valkey.Glide.Errors;
-using static Valkey.Glide.TestUtils.Client;
+using static Valkey.Glide.TestUtils.Assertions;
 using static Valkey.Glide.TestUtils.Constants;
 using static Valkey.Glide.TestUtils.Data;
 

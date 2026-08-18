@@ -62,19 +62,25 @@ public abstract class ConnectionConfiguration
         public ClientSideCacheConfig? ClientSideCacheConfig;
         public CircuitBreakerConfig? CircuitBreakerConfig;
         public AddressResolverDelegate? AddressResolver;
-        public uint? InflightRequestsLimit;
 
-        // TLS configuration
+        // TLS
         public TlsMode TlsMode = TlsMode.NoTls;
         public readonly List<byte[]> RootCertificates = [];
 
-        // Mutual TLS configuration
+        // Mutual TLS
         public byte[]? ClientCertificate;
         public byte[]? ClientKey;
         public string? ClientCertificatePath;
         public string? ClientKeyPath;
         public bool CertReloadEnabled;
         public uint? CertReloadIntervalSeconds;
+
+        // Inflight requests limit
+        public uint? InflightRequestsLimit;
+
+        // Periodic checks
+        public PeriodicChecksMode? PeriodicChecksMode;
+        public uint? PeriodicChecksIntervalSecs;
 
         internal FFI.ConnectionConfig ToFfi() => new(
             Addresses,
@@ -97,11 +103,11 @@ public abstract class ConnectionConfiguration
             ClientSideCacheConfig?.ToFfi(),
             CircuitBreakerConfig?.ToFfi(),
 
-            // TLS configuration
+            // TLS
             TlsMode,
             RootCertificates,
 
-            // Mutual TLS configuration
+            // Mutual TLS
             ClientCertificate,
             ClientKey,
             ClientCertificatePath,
@@ -110,7 +116,11 @@ public abstract class ConnectionConfiguration
             CertReloadIntervalSeconds,
 
             // Inflight requests limit
-            InflightRequestsLimit
+            InflightRequestsLimit,
+
+            // Periodic checks
+            PeriodicChecksMode,
+            PeriodicChecksIntervalSecs
         );
     }
 
@@ -162,48 +172,51 @@ public abstract class ConnectionConfiguration
     public struct ReadFrom
     {
         /// <summary>
-        /// The read from strategy that determines how read operations are routed to nodes.
+        /// The read from strategy.
         /// </summary>
         public ReadFromStrategy Strategy;
 
         /// <summary>
-        /// The Availability Zone (AZ) identifier used with <see cref="ReadFromStrategy.AzAffinity"/>
-        /// or <see cref="ReadFromStrategy.AzAffinityReplicasAndPrimary"/> strategies.
+        /// The Availability Zone (AZ) identifier.
         /// </summary>
         [MarshalAs(UnmanagedType.LPUTF8Str)]
         public string? Az;
 
         /// <summary>
-        /// Init strategy with <seealso cref="ReadFromStrategy.Primary" /> or <seealso cref="ReadFromStrategy.PreferReplica" /> strategy.
+        /// Constructs a read from strategy without an Availability Zone (AZ).
         /// </summary>
-        /// <param name="strategy">Either <seealso cref="ReadFromStrategy.Primary" /> or <seealso cref="ReadFromStrategy.PreferReplica" />.</param>
-        /// <exception cref="ArgumentException">Thrown if another strategy is used.</exception>
+        /// <param name="strategy">A strategy that does not require an Availability Zone.</param>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="strategy"/> requires an Availability Zone.</exception>
         public ReadFrom(ReadFromStrategy strategy)
         {
-            if (strategy is ReadFromStrategy.AzAffinity or ReadFromStrategy.AzAffinityReplicasAndPrimary)
+            if (strategy.IsAzReadFromStrategy())
             {
-                throw new ArgumentException("Availability zone should be set when using `AzAffinity` or `AzAffinityReplicasAndPrimary` strategy.");
+                throw new ArgumentException($"Availability zone must be specified for strategy '{strategy}'.");
             }
+
             Strategy = strategy;
             Az = null;
         }
 
         /// <summary>
-        /// Init strategy with <seealso cref="ReadFromStrategy.AzAffinity" /> or <seealso cref="ReadFromStrategy.AzAffinityReplicasAndPrimary" /> strategy and an Availability Zone.
+        /// Constructs a read from strategy with an Availability Zone (AZ).
         /// </summary>
-        /// <param name="strategy">Either <seealso cref="ReadFromStrategy.AzAffinity" /> or <seealso cref="ReadFromStrategy.AzAffinityReplicasAndPrimary" />.</param>
-        /// <param name="az">An Availability Zone (AZ).</param>
-        /// <exception cref="ArgumentException">Thrown if another strategy is used.</exception>
+        /// <param name="strategy">A strategy that requires an Availability Zone.</param>
+        /// <param name="az">The corresponding Availability Zone.</param>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="strategy"/> does not accept an Availability Zone.</exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="az"/> is empty or whitespace.</exception>
         public ReadFrom(ReadFromStrategy strategy, string az)
         {
-            if (strategy is ReadFromStrategy.Primary or ReadFromStrategy.PreferReplica)
+            if (!strategy.IsAzReadFromStrategy())
             {
-                throw new ArgumentException("Availability zone could be set only when using `AzAffinity` or `AzAffinityReplicasAndPrimary` strategy.");
+                throw new ArgumentException($"Availability zone cannot be specified for strategy '{strategy}'.");
             }
+
             if (string.IsNullOrWhiteSpace(az))
             {
                 throw new ArgumentException("Availability zone cannot be empty or whitespace");
             }
+
             Strategy = strategy;
             Az = az;
         }
@@ -212,27 +225,33 @@ public abstract class ConnectionConfiguration
     /// <summary>
     /// Represents the client's read from strategy.
     /// </summary>
+    /// <seealso href="https://glide.valkey.io/how-to/connections/read-strategy/">Valkey GLIDE – Read Strategy</seealso>
     public enum ReadFromStrategy : uint
     {
         /// <summary>
-        /// Always get from primary, in order to get the freshest data.
+        /// Always read from the primary, to get the freshest data.
         /// </summary>
         Primary = 0,
+
         /// <summary>
-        /// Spread the requests between all replicas in a round-robin manner. If no replica is available, route the requests to the primary.
+        /// Read from replicas in round-robin, falling back to the primary if none are available.
         /// </summary>
         PreferReplica = 1,
+
         /// <summary>
-        /// Spread the read requests between replicas in the same client's Availability Zone (AZ) in a
-        /// round-robin manner, falling back to other replicas or the primary if needed.
+        /// Read from replicas in the client's Availability Zone (AZ), falling back to other nodes if needed.
         /// </summary>
         AzAffinity,
+
         /// <summary>
-        /// Spread the read requests among nodes within the client's Availability Zone (AZ) in a
-        /// round-robin manner, prioritizing local replicas, then the local primary, and falling
-        /// back to any replica or the primary if needed.
+        /// Read from replicas or the primary in the client's Availability Zone (AZ), falling back to other nodes if needed.
         /// </summary>
         AzAffinityReplicasAndPrimary,
+
+        /// <summary>
+        /// Read from all nodes (primary and replicas) in round-robin.
+        /// </summary>
+        AllNodes,
     }
 
     /// <summary>
@@ -244,6 +263,7 @@ public abstract class ConnectionConfiguration
         /// Use RESP2 to communicate with the server nodes.
         /// </summary>
         RESP2 = 0,
+
         /// <summary>
         /// Use RESP3 to communicate with the server nodes.
         /// </summary>
@@ -1113,6 +1133,11 @@ public abstract class ConnectionConfiguration
         /// </summary>
         public ClusterClientConfigurationBuilder() : base(true) { }
 
+        /// <summary>
+        /// Complete the configuration with given settings.
+        /// </summary>
+        public new ClusterClientConfiguration Build() => new() { Request = base.Build() };
+
         #region Refresh Topology
         /// <summary>
         /// Enables refreshing the cluster topology using only the initial nodes.
@@ -1135,14 +1160,51 @@ public abstract class ConnectionConfiguration
             RefreshTopologyFromInitialNodes = refreshTopologyFromInitialNodes;
             return this;
         }
+
         #endregion
+        #region Periodic Checks
 
         /// <summary>
-        /// Complete the configuration with given settings.
+        /// Enables periodic topology checks.
         /// </summary>
-        public new ClusterClientConfiguration Build() => new() { Request = base.Build() };
+        /// <seealso href="https://glide.valkey.io/how-to/connections/periodic-checks/">Valkey GLIDE – Configure Periodic Checks</seealso>
+        /// <returns>This configuration builder instance for method chaining.</returns>
+        public ClusterClientConfigurationBuilder WithPeriodicChecks()
+        {
+            Config.PeriodicChecksMode = PeriodicChecksMode.Enabled;
+            Config.PeriodicChecksIntervalSecs = null;
+            return this;
+        }
 
+        /// <summary>
+        /// Enables periodic topology checks at the specified interval.
+        /// </summary>
+        /// <seealso href="https://glide.valkey.io/how-to/connections/periodic-checks/">Valkey GLIDE – Configure Periodic Checks</seealso>
+        /// <param name="interval">The interval between periodic topology checks.</param>
+        /// <returns>This configuration builder instance for method chaining.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="interval"/> is not positive or exceeds <see cref="uint.MaxValue"/> seconds.</exception>
+        public ClusterClientConfigurationBuilder WithPeriodicChecks(TimeSpan interval)
+        {
+            Config.PeriodicChecksMode = PeriodicChecksMode.ManualInterval;
+            Config.PeriodicChecksIntervalSecs = TimeUtils.ToPositiveUintSecs(interval, nameof(interval));
+            return this;
+        }
+
+        /// <summary>
+        /// Disables periodic topology checks.
+        /// </summary>
+        /// <seealso href="https://glide.valkey.io/how-to/connections/periodic-checks/">Valkey GLIDE – Configure Periodic Checks</seealso>
+        /// <returns>This configuration builder instance for method chaining.</returns>
+        public ClusterClientConfigurationBuilder WithoutPeriodicChecks()
+        {
+            Config.PeriodicChecksMode = PeriodicChecksMode.Disabled;
+            Config.PeriodicChecksIntervalSecs = null;
+            return this;
+        }
+
+        #endregion
         #region PubSub Subscriptions
+
         /// <summary>
         /// Configure PubSub subscriptions for the cluster client.
         /// </summary>
@@ -1156,6 +1218,20 @@ public abstract class ConnectionConfiguration
             Config.PubSubSubscriptions = config;
             return this;
         }
+
         #endregion
     }
+}
+
+/// <summary>
+/// Internal helpers for <see cref="ConnectionConfiguration.ReadFromStrategy"/>.
+/// </summary>
+internal static class ReadFromStrategyExtensions
+{
+    /// <summary>
+    /// Returns <see langword="true"/> if the strategy requires an Availability Zone (AZ).
+    /// </summary>
+    internal static bool IsAzReadFromStrategy(this ConnectionConfiguration.ReadFromStrategy strategy) =>
+        strategy is ConnectionConfiguration.ReadFromStrategy.AzAffinity
+            or ConnectionConfiguration.ReadFromStrategy.AzAffinityReplicasAndPrimary;
 }

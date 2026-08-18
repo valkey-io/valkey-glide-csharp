@@ -9,15 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Inflight requests limit configuration (#484)
-- Mutual TLS (mTLS) support (#488)
-- Circuit breaker configuration (#474)
+- Support additional configuration options:
+  - All nodes read-from strategy (#207)
+  - Circuit breaker (#474)
+  - Inflight requests limit (#484)
+  - Mutual TLS (#488)
+  - Periodic topology checks (#485)
 - Support additional commands (#435):
   - `BGREWRITEAOF` (#444)
   - `BGSAVE CANCEL` (#436)
   - `BGSAVE SCHEDULE` (#436)
   - `BGSAVE` (#436)
   - `CLIENT CACHING` (#451)
+  - `CLIENT KILL` (#276)
   - `CLIENT PAUSE` (#437)
   - `CLIENT TRACKING` (#451)
   - `CLIENT TRACKINGINFO` (#451)

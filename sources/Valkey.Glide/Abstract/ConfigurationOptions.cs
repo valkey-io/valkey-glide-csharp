@@ -591,12 +591,9 @@ public sealed class ConfigurationOptions : ICloneable
         if (strategy.HasValue)
         {
             // Use ReadFrom constructors based on strategy type - the constructors contain the validation logic
-            return strategy.Value switch
-            {
-                ReadFromStrategy.AzAffinity or ReadFromStrategy.AzAffinityReplicasAndPrimary => new ReadFrom(strategy.Value, az!),
-                ReadFromStrategy.Primary or ReadFromStrategy.PreferReplica => new ReadFrom(strategy.Value),
-                _ => throw new ArgumentException($"ReadFrom strategy '{strategy.Value}' is not supported. Valid strategies are: Primary, PreferReplica, AzAffinity, AzAffinityReplicasAndPrimary"),
-            };
+            return strategy.Value.IsAzReadFromStrategy()
+                ? new ReadFrom(strategy.Value, az!)
+                : new ReadFrom(strategy.Value);
         }
         return null;
     }
@@ -614,7 +611,7 @@ public sealed class ConfigurationOptions : ICloneable
         }
         catch (ArgumentException)
         {
-            throw new ArgumentException($"ReadFrom strategy '{readFrom}' is not supported. Valid strategies are: Primary, PreferReplica, AzAffinity, AzAffinityReplicasAndPrimary");
+            throw new ArgumentException($"ReadFrom strategy '{readFrom}' is not supported. Valid strategies are: {string.Join(", ", Enum.GetNames<ReadFromStrategy>())}");
         }
     }
 

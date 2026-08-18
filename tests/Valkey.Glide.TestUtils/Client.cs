@@ -9,63 +9,6 @@ namespace Valkey.Glide.TestUtils;
 /// </summary>
 public static class Client
 {
-    // Assertion time spans.
-    private static readonly TimeSpan ReconnectTimeSpan = TimeSpan.FromSeconds(30);
-    private static readonly TimeSpan AssertTimeSpan = TimeSpan.FromSeconds(0.5);
-    private static readonly TimeSpan RetryTimeSpan = TimeSpan.FromSeconds(0.5);
-
-    /// <summary>
-    /// Asserts that the given client is connected.
-    /// </summary>
-    /// <param name="client">The client to test.</param>
-    public static async Task AssertConnected(BaseClient client)
-    {
-        Task<ValkeyValue> assertTask;
-        if (client is GlideClient standaloneClient)
-        {
-            assertTask = standaloneClient.PingAsync();
-        }
-        else if (client is GlideClusterClient clusterClient)
-        {
-            assertTask = clusterClient.PingAsync();
-        }
-        else
-        {
-            Assert.Fail("Unknown client type.");
-            return;
-        }
-
-        ValkeyValue response = await assertTask.WaitAsync(AssertTimeSpan);
-        Assert.Equal("PONG", response.ToString());
-    }
-
-    /// <summary>
-    /// Asserts that the given client is reconnected.
-    /// </summary>
-    /// <param name="client">The client to test.</param>
-    public static async Task AssertReconnected(BaseClient client)
-    {
-        // Retry connection until successful for timeout occurs.
-        using CancellationTokenSource cts = new(ReconnectTimeSpan);
-
-        while (!cts.Token.IsCancellationRequested)
-        {
-            try
-            {
-                Task assertTask = AssertConnected(client);
-                await assertTask.WaitAsync(AssertTimeSpan);
-                return;
-            }
-
-            catch (Exception)
-            {
-                await Task.Delay(RetryTimeSpan);
-            }
-        }
-
-        Assert.Fail("Reconnection failed.");
-    }
-
     /// <summary>
     /// Returns the total number of client connections to a server.
     /// </summary>

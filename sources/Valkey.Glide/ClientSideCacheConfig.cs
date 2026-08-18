@@ -92,10 +92,10 @@ public sealed class ClientSideCacheConfig
     /// <summary>
     /// Creates a new <see cref="ClientSideCacheConfig"/> with an auto-generated unique cache ID.
     /// </summary>
-    /// <param name="maxCacheKb">Maximum size of the cache in kilobytes (KB). Must be positive.</param>
+    /// <param name="maxCacheKb">Maximum size of the cache in kilobytes (KB).</param>
     /// <param name="entryTtl">Time-To-Live for cached entries. Use <see cref="TimeSpan.Zero"/> to disable expiration.</param>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="maxCacheKb"/> is zero.</exception>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="entryTtl"/> is negative.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="maxCacheKb"/> is zero.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="entryTtl"/> is negative.</exception>
     /// <example>
     /// <code>
     /// var cache = new ClientSideCacheConfig(1024, TimeSpan.FromMinutes(1))

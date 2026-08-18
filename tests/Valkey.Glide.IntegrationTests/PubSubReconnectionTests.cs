@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands.Options;
+
 using static Valkey.Glide.IntegrationTests.PubSubUtils;
 
 namespace Valkey.Glide.IntegrationTests;
@@ -11,8 +13,6 @@ namespace Valkey.Glide.IntegrationTests;
 [CollectionDefinition(DisableParallelization = true)]
 public class PubSubReconnectionTests
 {
-    private static readonly GlideString[] ClientKillArgs = ["CLIENT", "KILL", "SKIPME", "yes"];
-
     [Theory]
     [MemberData(nameof(ClusterAndChannelModeData), MemberType = typeof(PubSubUtils))]
     public static async Task AfterConnectionKill_ResubscribesAutomatically(bool isCluster, PubSubChannelMode channelMode)
@@ -23,7 +23,7 @@ public class PubSubReconnectionTests
         using var publisher = BuildPublisher(isCluster);
 
         // Kill connections and wait for reconnection.
-        await KillConnections(publisher);
+        _ = await publisher.ClientKillAsync(new ClientFilterOptions().WithSkipMe(true));
         await Task.Delay(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
 
         // Verify subscription after kill.
@@ -32,23 +32,5 @@ public class PubSubReconnectionTests
         // Publish message after kill and verify receipt.
         await PublishAsync(publisher, message);
         await AssertReceivedAsync(subscriber, message);
-    }
-
-    /// <summary>
-    /// Kills all normal client connections to the server used by the given client.
-    /// </summary>
-    private static async Task KillConnections(BaseClient client)
-    {
-        try
-        {
-            if (client is GlideClusterClient clusterClient)
-                _ = await clusterClient.CustomCommand(ClientKillArgs);
-            else if (client is GlideClient standaloneClient)
-                _ = await standaloneClient.CustomCommand(ClientKillArgs);
-        }
-        catch
-        {
-            // Expected - connection will be killed
-        }
     }
 }

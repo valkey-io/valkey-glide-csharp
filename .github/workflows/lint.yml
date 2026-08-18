@@ -38,7 +38,7 @@ jobs:
                   restore-keys: rust-lint-
 
             - name: Install cargo-deny
-              uses: taiki-e/install-action@41049aa56687c35e0afa74eed4f09cec4f9afabf # v2.85.2
+              uses: taiki-e/install-action@7f4eb899022d8fe70b20c4f3de697aa85c309026 # v2.85.11
               with:
                   tool: cargo-deny@0.19
 
@@ -55,7 +55,7 @@ jobs:
               uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
 
             - name: Install Task
-              uses: go-task/setup-task@01a4adf9db2d14c1de7a560f09170b6e0df736aa # v2.1.0
+              uses: go-task/setup-task@a00fbb05ce67b35648be3c78cbc9fd85354c757e # v2.2.0
 
             - name: Run lint
               run: task lint

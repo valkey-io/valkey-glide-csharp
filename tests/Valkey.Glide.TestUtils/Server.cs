@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands.Options;
+
 using static Valkey.Glide.ConnectionConfiguration;
 using static Valkey.Glide.Errors;
 
@@ -11,11 +13,6 @@ namespace Valkey.Glide.TestUtils;
 public abstract class Server : IDisposable
 {
     #region Constants
-
-    /// <summary>
-    /// Custom command arguments to kill all normal clients.
-    /// </summary>
-    protected static readonly GlideString[] KillClientArgs = ["CLIENT", "KILL", "TYPE", "NORMAL"];
 
     /// <summary>
     /// Maximum time to wait for the initial client connection to succeed.
@@ -159,7 +156,12 @@ public abstract class Server : IDisposable
     /// <summary>
     /// Kill all normal clients on the server.
     /// </summary>
-    public abstract Task KillClientsAsync();
+    public async Task KillClientsAsync()
+    {
+        using var client = await CreateClientAsync();
+        var options = new ClientFilterOptions().WithType(ClientType.Normal);
+        _ = await client.ClientKillAsync(options);
+    }
 
     #endregion
     #region Protected Methods
@@ -278,12 +280,6 @@ public sealed class ClusterServer(bool useTls = false, string? host = null) : Se
         _password = null;
     }
 
-    public override async Task KillClientsAsync()
-    {
-        using GlideClusterClient client = await CreateClusterClientAsync();
-        _ = await client.CustomCommand(KillClientArgs);
-    }
-
     #endregion
 }
 
@@ -370,11 +366,6 @@ public sealed class StandaloneServer(
         _password = null;
     }
 
-    public override async Task KillClientsAsync()
-    {
-        using GlideClient client = await CreateStandaloneClientAsync();
-        _ = await client.CustomCommand(KillClientArgs);
-    }
 
     /// <summary>
     /// Creates a <see cref="ConnectionMultiplexer"/> connected to this server.

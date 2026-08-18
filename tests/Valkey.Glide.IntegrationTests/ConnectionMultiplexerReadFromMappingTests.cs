@@ -19,7 +19,7 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
     public async Task ConfigurationOptions_ReadFromPrimary_MapsToStandaloneClientConfigurationBuilder()
     {
         // Arrange
-        ConfigurationOptions configOptions = new ConfigurationOptions
+        var configOptions = new ConfigurationOptions
         {
             ReadFrom = new ReadFrom(ReadFromStrategy.Primary)
         };
@@ -42,7 +42,7 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
     public async Task ConfigurationOptions_ReadFromPreferReplica_MapsToStandaloneClientConfigurationBuilder()
     {
         // Arrange
-        ConfigurationOptions configOptions = new ConfigurationOptions
+        var configOptions = new ConfigurationOptions
         {
             ReadFrom = new ReadFrom(ReadFromStrategy.PreferReplica)
         };
@@ -66,7 +66,7 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
     {
         // Arrange
         const string testAz = "us-east-1a";
-        ConfigurationOptions configOptions = new ConfigurationOptions
+        var configOptions = new ConfigurationOptions
         {
             ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinity, testAz)
         };
@@ -90,7 +90,7 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
     {
         // Arrange
         const string testAz = "eu-west-1b";
-        ConfigurationOptions configOptions = new ConfigurationOptions
+        var configOptions = new ConfigurationOptions
         {
             ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinityReplicasAndPrimary, testAz)
         };
@@ -113,7 +113,7 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
     public async Task ConfigurationOptions_ReadFromPrimary_MapsToClusterClientConfigurationBuilder()
     {
         // Arrange
-        ConfigurationOptions configOptions = new ConfigurationOptions
+        var configOptions = new ConfigurationOptions
         {
             ReadFrom = new ReadFrom(ReadFromStrategy.Primary)
         };
@@ -136,7 +136,7 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
     public async Task ConfigurationOptions_ReadFromPreferReplica_MapsToClusterClientConfigurationBuilder()
     {
         // Arrange
-        ConfigurationOptions configOptions = new ConfigurationOptions
+        var configOptions = new ConfigurationOptions
         {
             ReadFrom = new ReadFrom(ReadFromStrategy.PreferReplica)
         };
@@ -160,7 +160,7 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
     {
         // Arrange
         const string testAz = "us-west-2a";
-        ConfigurationOptions configOptions = new ConfigurationOptions
+        var configOptions = new ConfigurationOptions
         {
             ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinity, testAz)
         };
@@ -184,7 +184,7 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
     {
         // Arrange
         const string testAz = "ap-south-1c";
-        ConfigurationOptions configOptions = new ConfigurationOptions
+        var configOptions = new ConfigurationOptions
         {
             ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinityReplicasAndPrimary, testAz)
         };
@@ -207,7 +207,7 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
     public async Task ConfigurationOptions_NullReadFrom_DefaultsToNullInStandaloneClient()
     {
         // Arrange
-        ConfigurationOptions configOptions = new ConfigurationOptions
+        var configOptions = new ConfigurationOptions
         {
             ReadFrom = null
         };
@@ -228,7 +228,7 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
     public async Task ConfigurationOptions_NullReadFrom_DefaultsToNullInClusterClient()
     {
         // Arrange
-        ConfigurationOptions configOptions = new ConfigurationOptions
+        var configOptions = new ConfigurationOptions
         {
             ReadFrom = null
         };
@@ -304,6 +304,7 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
     [Theory]
     [InlineData(ReadFromStrategy.Primary, null)]
     [InlineData(ReadFromStrategy.PreferReplica, null)]
+    [InlineData(ReadFromStrategy.AllNodes, null)]
     [InlineData(ReadFromStrategy.AzAffinity, "us-east-1a")]
     [InlineData(ReadFromStrategy.AzAffinityReplicasAndPrimary, "eu-west-1b")]
     public async Task EndToEnd_ReadFromConfiguration_FlowsFromConnectionStringToConnectionConfig(ReadFromStrategy strategy, string? az)
@@ -311,34 +312,25 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
         // Arrange
         string connectionString = $"{TestConfiguration.STANDALONE_ADDRESS},ssl={TestConfiguration.TLS}";
 
-        switch (strategy)
+        connectionString += strategy switch
         {
-            case ReadFromStrategy.Primary:
-                connectionString += ",readFrom=Primary";
-                break;
-            case ReadFromStrategy.PreferReplica:
-                connectionString += ",readFrom=PreferReplica";
-                break;
-            case ReadFromStrategy.AzAffinity:
-                connectionString += $",readFrom=AzAffinity,az={az}";
-                break;
-            case ReadFromStrategy.AzAffinityReplicasAndPrimary:
-                connectionString += $",readFrom=AzAffinityReplicasAndPrimary,az={az}";
-                break;
-            default:
-                throw new ArgumentException("Invalid ReadFromStrategy for this test");
-        }
+            ReadFromStrategy.Primary => ",readFrom=Primary",
+            ReadFromStrategy.PreferReplica => ",readFrom=PreferReplica",
+            ReadFromStrategy.AllNodes => ",readFrom=AllNodes",
+            ReadFromStrategy.AzAffinity => $",readFrom=AzAffinity,az={az}",
+            ReadFromStrategy.AzAffinityReplicasAndPrimary => $",readFrom=AzAffinityReplicasAndPrimary,az={az}",
+            _ => throw new ArgumentException("Invalid ReadFromStrategy for this test"),
+        };
 
         // Act
-        using (ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(connectionString))
-        {
-            // Assert
-            Assert.NotNull(connectionMultiplexer);
-            Assert.NotNull(connectionMultiplexer.RawConfig);
-            Assert.True(connectionMultiplexer.RawConfig.ReadFrom.HasValue);
-            Assert.Equal(strategy, connectionMultiplexer.RawConfig.ReadFrom.Value.Strategy);
-            Assert.Equal(az, connectionMultiplexer.RawConfig.ReadFrom.Value.Az);
-        }
+        using var connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(connectionString);
+
+        // Assert
+        Assert.NotNull(connectionMultiplexer);
+        Assert.NotNull(connectionMultiplexer.RawConfig);
+        Assert.True(connectionMultiplexer.RawConfig.ReadFrom.HasValue);
+        Assert.Equal(strategy, connectionMultiplexer.RawConfig.ReadFrom.Value.Strategy);
+        Assert.Equal(az, connectionMultiplexer.RawConfig.ReadFrom.Value.Az);
     }
 
     [Fact]
