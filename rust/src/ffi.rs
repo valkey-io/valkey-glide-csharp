@@ -447,6 +447,7 @@ pub(crate) unsafe fn create_connection_request(
 
         // Unimplemented configuration options
         // -----------------------------------
+        
         tcp_nodelay: false,    // TODO #490: Expose TCP_NODELAY.
         periodic_checks: None, // TODO #485: Expose cluster periodic checks.
         recovery_requests_queue_size: None,
