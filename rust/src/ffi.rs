@@ -200,6 +200,10 @@ pub struct ConnectionConfig {
     pub has_periodic_checks_config: bool,
     pub periodic_checks_mode: PeriodicChecksMode,
     pub periodic_checks_interval_sec: u32,
+
+    /// Optional library name override for CLIENT SETINFO LIB-NAME.
+    /// When null, uses the compiled-in GLIDE_NAME default.
+    pub lib_name: *const c_char,
 }
 
 #[repr(C)]

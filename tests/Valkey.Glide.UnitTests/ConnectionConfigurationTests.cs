@@ -1001,6 +1001,123 @@ public class ConnectionConfigurationTests
         => Assert.Null(new ClusterClientConfigurationBuilder { AddressResolver = null }.Build().Request.AddressResolver);
 
     #endregion
+    #region LibName and ClientInfoTag Tests
+
+    [Fact]
+    public void LibName_NotSet_DefaultsToGlideCSharp()
+    {
+        var config = new StandaloneClientConfigurationBuilder().Build();
+        Assert.Null(config.Request.LibName);
+        Assert.Equal("GlideC#", config.Request.ResolvedLibName);
+    }
+
+    [Fact]
+    public void LibName_Set_OverridesDefault()
+    {
+        var config = new StandaloneClientConfigurationBuilder()
+            .WithLibName("custom-lib")
+            .Build();
+        Assert.Equal("custom-lib", config.Request.LibName);
+        Assert.Equal("custom-lib", config.Request.ResolvedLibName);
+    }
+
+    [Fact]
+    public void LibName_SetNull_FallsBackToDefault()
+    {
+        var config = new StandaloneClientConfigurationBuilder()
+            .WithLibName(null)
+            .Build();
+        Assert.Null(config.Request.LibName);
+        Assert.Equal("GlideC#", config.Request.ResolvedLibName);
+    }
+
+    [Fact]
+    public void ClientInfoTag_Set_AppendsToDefaultLibName()
+    {
+        var config = new StandaloneClientConfigurationBuilder()
+            .WithClientInfoTag("my-framework:1.0")
+            .Build();
+        Assert.Equal("my-framework:1.0", config.Request.ClientInfoTag);
+        Assert.Equal("GlideC#(my-framework:1.0)", config.Request.ResolvedLibName);
+    }
+
+    [Fact]
+    public void ClientInfoTag_WithLibName_AppendsToCustomLibName()
+    {
+        var config = new StandaloneClientConfigurationBuilder()
+            .WithLibName("custom")
+            .WithClientInfoTag("lmcache:1.2")
+            .Build();
+        Assert.Equal("custom(lmcache:1.2)", config.Request.ResolvedLibName);
+    }
+
+    [Fact]
+    public void ClientInfoTag_WithWhitespace_ThrowsArgumentException()
+    {
+        var builder = new StandaloneClientConfigurationBuilder();
+        _ = Assert.Throws<ArgumentException>(() => builder.WithClientInfoTag("bad tag"));
+    }
+
+    [Fact]
+    public void ClientInfoTag_WithTab_ThrowsArgumentException()
+    {
+        var builder = new StandaloneClientConfigurationBuilder();
+        _ = Assert.Throws<ArgumentException>(() => builder.WithClientInfoTag("bad\ttag"));
+    }
+
+    [Fact]
+    public void ClientInfoTag_WithNewline_ThrowsArgumentException()
+    {
+        var builder = new StandaloneClientConfigurationBuilder();
+        _ = Assert.Throws<ArgumentException>(() => builder.WithClientInfoTag("bad\ntag"));
+    }
+
+    [Fact]
+    public void ClientInfoTag_Null_PreservesDefaultLibName()
+    {
+        var config = new StandaloneClientConfigurationBuilder()
+            .WithClientInfoTag(null)
+            .Build();
+        Assert.Null(config.Request.ClientInfoTag);
+        Assert.Equal("GlideC#", config.Request.ResolvedLibName);
+    }
+
+    [Fact]
+    public void ClientInfoTag_Empty_AppendsEmptyParens()
+    {
+        var config = new StandaloneClientConfigurationBuilder()
+            .WithClientInfoTag("")
+            .Build();
+        Assert.Equal("GlideC#()", config.Request.ResolvedLibName);
+    }
+
+    [Fact]
+    public void LibName_Cluster_Set_OverridesDefault()
+    {
+        var config = new ClusterClientConfigurationBuilder()
+            .WithLibName("cluster-lib")
+            .Build();
+        Assert.Equal("cluster-lib", config.Request.LibName);
+        Assert.Equal("cluster-lib", config.Request.ResolvedLibName);
+    }
+
+    [Fact]
+    public void ClientInfoTag_Cluster_AppendsToDefaultLibName()
+    {
+        var config = new ClusterClientConfigurationBuilder()
+            .WithClientInfoTag("my-svc:2.0")
+            .Build();
+        Assert.Equal("GlideC#(my-svc:2.0)", config.Request.ResolvedLibName);
+    }
+
+    [Fact]
+    public void ClientInfoTag_Cluster_WithWhitespace_ThrowsArgumentException()
+    {
+        var builder = new ClusterClientConfigurationBuilder();
+        _ = Assert.Throws<ArgumentException>(() => builder.WithClientInfoTag("has space"));
+    }
+
+    #endregion
     #region Helpers
 
     private static dynamic GetConfigurationBuilder(bool clusterMode)

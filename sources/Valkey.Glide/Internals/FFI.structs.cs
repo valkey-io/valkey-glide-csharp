@@ -244,7 +244,10 @@ internal partial class FFI
 
             // Periodic checks
             PeriodicChecksMode? periodicChecksMode,
-            uint? periodicChecksIntervalSec)
+            uint? periodicChecksIntervalSec,
+
+            // CLIENT SETINFO LIB-NAME
+            string? libName)
         {
             _request = new()
             {
@@ -306,6 +309,9 @@ internal partial class FFI
                 HasPeriodicChecksConfig = periodicChecksMode.HasValue,
                 PeriodicChecksMode = periodicChecksMode ?? default,
                 PeriodicChecksIntervalSec = periodicChecksIntervalSec ?? 0,
+
+                // CLIENT SETINFO LIB-NAME
+                LibName = libName,
             };
         }
 
@@ -810,6 +816,12 @@ internal partial class FFI
         public bool HasPeriodicChecksConfig;
         public PeriodicChecksMode PeriodicChecksMode;
         public uint PeriodicChecksIntervalSec;
+
+        #endregion
+        #region CLIENT SETINFO LIB-NAME
+
+        [MarshalAs(UnmanagedType.LPUTF8Str)]
+        public string? LibName;
 
         #endregion
     }
