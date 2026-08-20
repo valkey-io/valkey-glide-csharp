@@ -1070,6 +1070,42 @@ public class ConnectionConfigurationTests
         Assert.Equal("GlideC#", config.Request.ResolvedLibName);
     }
 
+    [Theory]
+    [InlineData(" ")]
+    [InlineData("   ")]
+    [InlineData("\t")]
+    [InlineData("\n")]
+    [InlineData(" \t \n ")]
+    public void ClientInfoTag_WhitespaceOnly_DoesNotAppendParens(string tag)
+    {
+        // A whitespace-only tag would compose "GlideC#(...)" with spaces, which CLIENT SETINFO
+        // LIB-NAME rejects; glide-core ignores that error, dropping the whole lib-name. It must
+        // instead degrade to the plain base name (no parens).
+        var config = new StandaloneClientConfigurationBuilder()
+            .WithClientInfoTag(tag)
+            .Build();
+        Assert.Equal("GlideC#", config.Request.ResolvedLibName);
+    }
+
+    [Fact]
+    public void ClientInfoTag_WhitespaceOnly_WithLibraryName_DoesNotAppendParens()
+    {
+        var config = new StandaloneClientConfigurationBuilder()
+            .WithLibraryName("custom")
+            .WithClientInfoTag("   ")
+            .Build();
+        Assert.Equal("custom", config.Request.ResolvedLibName);
+    }
+
+    [Fact]
+    public void ClientInfoTag_Cluster_WhitespaceOnly_DoesNotAppendParens()
+    {
+        var config = new ClusterClientConfigurationBuilder()
+            .WithClientInfoTag("   ")
+            .Build();
+        Assert.Equal("GlideC#", config.Request.ResolvedLibName);
+    }
+
     [Fact]
     public void LibName_Cluster_Set_OverridesDefault()
     {

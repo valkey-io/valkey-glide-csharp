@@ -97,7 +97,12 @@ public abstract class ConnectionConfiguration
             get
             {
                 string baseName = LibName ?? DefaultLibName;
-                return !string.IsNullOrEmpty(ClientInfoTag)
+                // A whitespace-only tag would compose e.g. "GlideC#(   )", which CLIENT SETINFO
+                // LIB-NAME rejects (no spaces/newlines/special chars); glide-core .ignore()s that
+                // failure, silently dropping the entire lib-name. Treat such a tag as absent so the
+                // base name is still reported. This is output-composition hygiene, not input
+                // validation, so it does not reintroduce client-side validation on the setter.
+                return !string.IsNullOrWhiteSpace(ClientInfoTag)
                     ? $"{baseName}({ClientInfoTag})"
                     : baseName;
             }
