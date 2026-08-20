@@ -1139,6 +1139,38 @@ public class ConnectionConfigurationTests
         Assert.Equal("GlideC#", builder.LibraryName);
     }
 
+    [Fact]
+    public void LibraryNameAndTag_ToFfi_PassesResolvedLibNameToFfiLayer()
+    {
+        var config = new StandaloneClientConfigurationBuilder()
+            .WithLibraryName("custom")
+            .WithClientInfoTag("tag:1")
+            .Build();
+
+        using FFI.ConnectionConfig ffi = config.Request.ToFfi();
+        Assert.Equal("custom(tag:1)", ffi.LibName);
+    }
+
+    [Fact]
+    public void ClientInfoTag_ToFfi_PassesComposedDefaultLibNameToFfiLayer()
+    {
+        var config = new StandaloneClientConfigurationBuilder()
+            .WithClientInfoTag("lmcache:1.2")
+            .Build();
+
+        using FFI.ConnectionConfig ffi = config.Request.ToFfi();
+        Assert.Equal("GlideC#(lmcache:1.2)", ffi.LibName);
+    }
+
+    [Fact]
+    public void LibraryName_Default_ToFfi_PassesGlideCSharpToFfiLayer()
+    {
+        var config = new StandaloneClientConfigurationBuilder().Build();
+
+        using FFI.ConnectionConfig ffi = config.Request.ToFfi();
+        Assert.Equal("GlideC#", ffi.LibName);
+    }
+
     #endregion
     #region Helpers
 

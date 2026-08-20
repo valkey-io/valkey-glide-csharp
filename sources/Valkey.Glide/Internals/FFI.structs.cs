@@ -206,6 +206,13 @@ internal partial class FFI
         /// </summary>
         internal NodeDiscoveryMode NodeDiscoveryMode => _request.NodeDiscoveryMode;
 
+        /// <summary>
+        /// The resolved library name marshalled into the underlying FFI request. Exposed for testing
+        /// that <see cref="ConnectionConfiguration.ConnectionConfig.ResolvedLibName"/> is correctly
+        /// wired through to the FFI layer.
+        /// </summary>
+        internal string LibName => _request.LibName;
+
         public ConnectionConfig(
             List<NodeAddress> addresses,
             bool clusterMode,
