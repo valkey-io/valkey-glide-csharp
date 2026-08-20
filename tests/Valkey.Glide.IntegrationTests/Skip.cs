@@ -12,8 +12,17 @@ internal static class Skip
     #region Version Checks
 
     private static readonly Version Valkey7_0 = new("7.0.0");
+    private static readonly Version Valkey7_2 = new("7.2.0");
     private static readonly Version Valkey8_1 = new("8.1.0");
     private static readonly Version Valkey9_0 = new("9.0.0");
+
+    /// <summary>
+    /// Skips the test if <c>CLIENT SETINFO</c> (lib-name / lib-ver reporting) is not supported.
+    /// </summary>
+    public static void IfClientSetInfoNotSupported()
+        => Assert.SkipWhen(
+            TestConfiguration.SERVER_VERSION < Valkey7_2,
+            "CLIENT SETINFO requires Valkey 7.2+");
 
     /// <summary>
     /// Skips the test if background save cancel commands are not supported.

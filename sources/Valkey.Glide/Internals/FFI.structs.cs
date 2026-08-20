@@ -246,8 +246,8 @@ internal partial class FFI
             PeriodicChecksMode? periodicChecksMode,
             uint? periodicChecksIntervalSec,
 
-            // CLIENT SETINFO LIB-NAME
-            string? libName)
+            // Library name
+            string libName)
         {
             _request = new()
             {
@@ -818,10 +818,10 @@ internal partial class FFI
         public uint PeriodicChecksIntervalSec;
 
         #endregion
-        #region CLIENT SETINFO LIB-NAME
+        #region Library Name
 
         [MarshalAs(UnmanagedType.LPUTF8Str)]
-        public string? LibName;
+        public string LibName;
 
         #endregion
     }

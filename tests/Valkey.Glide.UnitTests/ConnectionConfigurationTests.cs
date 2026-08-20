@@ -1015,7 +1015,7 @@ public class ConnectionConfigurationTests
     public void LibName_Set_OverridesDefault()
     {
         var config = new StandaloneClientConfigurationBuilder()
-            .WithLibName("custom-lib")
+            .WithLibraryName("custom-lib")
             .Build();
         Assert.Equal("custom-lib", config.Request.LibName);
         Assert.Equal("custom-lib", config.Request.ResolvedLibName);
@@ -1025,7 +1025,7 @@ public class ConnectionConfigurationTests
     public void LibName_SetNull_FallsBackToDefault()
     {
         var config = new StandaloneClientConfigurationBuilder()
-            .WithLibName(null)
+            .WithLibraryName(null)
             .Build();
         Assert.Null(config.Request.LibName);
         Assert.Equal("GlideC#", config.Request.ResolvedLibName);
@@ -1045,31 +1045,10 @@ public class ConnectionConfigurationTests
     public void ClientInfoTag_WithLibName_AppendsToCustomLibName()
     {
         var config = new StandaloneClientConfigurationBuilder()
-            .WithLibName("custom")
+            .WithLibraryName("custom")
             .WithClientInfoTag("lmcache:1.2")
             .Build();
         Assert.Equal("custom(lmcache:1.2)", config.Request.ResolvedLibName);
-    }
-
-    [Fact]
-    public void ClientInfoTag_WithWhitespace_ThrowsArgumentException()
-    {
-        var builder = new StandaloneClientConfigurationBuilder();
-        _ = Assert.Throws<ArgumentException>(() => builder.WithClientInfoTag("bad tag"));
-    }
-
-    [Fact]
-    public void ClientInfoTag_WithTab_ThrowsArgumentException()
-    {
-        var builder = new StandaloneClientConfigurationBuilder();
-        _ = Assert.Throws<ArgumentException>(() => builder.WithClientInfoTag("bad\ttag"));
-    }
-
-    [Fact]
-    public void ClientInfoTag_WithNewline_ThrowsArgumentException()
-    {
-        var builder = new StandaloneClientConfigurationBuilder();
-        _ = Assert.Throws<ArgumentException>(() => builder.WithClientInfoTag("bad\ntag"));
     }
 
     [Fact]
@@ -1095,7 +1074,7 @@ public class ConnectionConfigurationTests
     public void LibName_Cluster_Set_OverridesDefault()
     {
         var config = new ClusterClientConfigurationBuilder()
-            .WithLibName("cluster-lib")
+            .WithLibraryName("cluster-lib")
             .Build();
         Assert.Equal("cluster-lib", config.Request.LibName);
         Assert.Equal("cluster-lib", config.Request.ResolvedLibName);
@@ -1111,10 +1090,17 @@ public class ConnectionConfigurationTests
     }
 
     [Fact]
-    public void ClientInfoTag_Cluster_WithWhitespace_ThrowsArgumentException()
+    public void LibraryName_NotSet_ExposesDefaultGlideCSharp()
+    {
+        var builder = new StandaloneClientConfigurationBuilder();
+        Assert.Equal("GlideC#", builder.LibraryName);
+    }
+
+    [Fact]
+    public void LibraryName_Cluster_NotSet_ExposesDefaultGlideCSharp()
     {
         var builder = new ClusterClientConfigurationBuilder();
-        _ = Assert.Throws<ArgumentException>(() => builder.WithClientInfoTag("has space"));
+        Assert.Equal("GlideC#", builder.LibraryName);
     }
 
     #endregion

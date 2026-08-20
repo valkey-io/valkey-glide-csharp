@@ -92,7 +92,7 @@ public abstract class ConnectionConfiguration
         /// <summary>
         /// Computes the resolved library name to send via CLIENT SETINFO LIB-NAME.
         /// </summary>
-        internal string? ResolvedLibName
+        internal string ResolvedLibName
         {
             get
             {
@@ -895,21 +895,21 @@ public abstract class ConnectionConfiguration
 
         /// <summary>
         /// Full override for the library name reported via <c>CLIENT SETINFO LIB-NAME</c> during connection establishment.
-        /// When set, this replaces the default <c>GlideC#</c> identifier entirely.
+        /// Defaults to <c>GlideC#</c>. When set, this replaces the default identifier entirely.
         /// <para/>
         /// Use <see cref="ClientInfoTag"/> instead if you want to preserve the GLIDE identity while adding a framework tag.
         /// </summary>
         /// <seealso cref="ClientInfoTag"/>
-        public string? LibName
+        public string? LibraryName
         {
-            get => Config.LibName;
+            get => Config.LibName ?? ConnectionConfig.DefaultLibName;
             set => Config.LibName = value;
         }
 
-        /// <inheritdoc cref="LibName" />
-        public T WithLibName(string? libName)
+        /// <inheritdoc cref="LibraryName" />
+        public T WithLibraryName(string? libraryName)
         {
-            LibName = libName;
+            LibraryName = libraryName;
             return (T)this;
         }
 
@@ -921,23 +921,12 @@ public abstract class ConnectionConfiguration
         /// The tag is appended in parentheses to preserve the underlying GLIDE identity for adoption tracking.
         /// <para/>
         /// For example, setting <c>ClientInfoTag = "my-framework:1.0"</c> produces <c>GlideC#(my-framework:1.0)</c>.
-        /// <para/>
-        /// The tag must not contain whitespace characters.
         /// </summary>
-        /// <exception cref="ArgumentException">Thrown when the tag contains whitespace characters.</exception>
-        /// <seealso cref="LibName"/>
+        /// <seealso cref="LibraryName"/>
         public string? ClientInfoTag
         {
             get => Config.ClientInfoTag;
-            set
-            {
-                if (value is not null && value.Any(char.IsWhiteSpace))
-                {
-                    throw new ArgumentException("ClientInfoTag must not contain whitespace characters.", nameof(value));
-                }
-
-                Config.ClientInfoTag = value;
-            }
+            set => Config.ClientInfoTag = value;
         }
 
         /// <inheritdoc cref="ClientInfoTag" />

@@ -201,8 +201,8 @@ pub struct ConnectionConfig {
     pub periodic_checks_mode: PeriodicChecksMode,
     pub periodic_checks_interval_sec: u32,
 
-    /// Optional library name override for CLIENT SETINFO LIB-NAME.
-    /// When null, uses the compiled-in GLIDE_NAME default.
+    /// Library name override for CLIENT SETINFO LIB-NAME.
+    /// Always provided by the C# layer (defaults to "GlideC#"); must be non-null.
     pub lib_name: *const c_char,
 }
 
@@ -315,10 +315,9 @@ pub(crate) unsafe fn create_connection_request(
             None
         },
         client_name: unsafe { ptr_to_opt_str(config.client_name) }?,
-        // Fallback: C# always provides ResolvedLibName, but kept defensively
-        // in case the FFI contract changes.
-        lib_name: unsafe { ptr_to_opt_str(config.lib_name) }?
-            .or_else(|| Some(env!("GLIDE_NAME").to_string())),
+        // C# always provides a resolved library name (defaulting to "GlideC#"),
+        // so this is a required, non-optional pointer.
+        lib_name: Some(unsafe { ptr_to_str(config.lib_name) }?),
         authentication_info: if config.has_authentication_info {
             let auth_info = config.authentication_info;
             let iam_config = if auth_info.has_iam_credentials {
