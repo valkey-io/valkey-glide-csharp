@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `GlideString(byte[])` no longer builds the hex-dump representation on construction, eliminating ~3.3 MB of allocations per instance for large binary payloads (#522)
 - Marshalling of non-ASCII characters on Windows (#501)
 - `FailoverOptions` throws `ArgumentOutOfRangeException` for zero timeout (#488)
 - `StreamReadGroupAsync` returning only the first field-value pair per stream entry (#430)
