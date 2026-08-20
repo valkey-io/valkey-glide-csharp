@@ -29,6 +29,7 @@ internal partial class FFI
             if (_ptr != IntPtr.Zero)
             {
                 FreeMemory();
+                DestroyStruct(_ptr);
                 FreeStructPtr(_ptr);
                 _ptr = IntPtr.Zero;
             }
@@ -38,6 +39,14 @@ internal partial class FFI
         protected abstract IntPtr AllocateAndCopy();
 
         protected abstract void FreeMemory();
+
+        /// <summary>
+        /// Releases unmanaged memory the runtime marshaller allocated for reference-typed struct
+        /// fields (e.g. <see cref="UnmanagedType.LPUTF8Str"/> strings), which <see cref="FreeMemory"/>
+        /// (manual <see cref="IntPtr"/> frees) does not cover. No-op by default; override for structs
+        /// that contain such fields. Called after <see cref="FreeMemory"/> and before the block is freed.
+        /// </summary>
+        protected virtual void DestroyStruct(IntPtr ptr) { }
     }
 
     // A wrapper for a command, resposible for marshalling (allocating and freeing) the required data
@@ -211,7 +220,7 @@ internal partial class FFI
         /// that <see cref="ConnectionConfiguration.ConnectionConfig.ResolvedLibName"/> is correctly
         /// wired through to the FFI layer.
         /// </summary>
-        internal string LibName => _request.LibName;
+        internal string ResolvedLibName => _request.ResolvedLibName;
 
         public ConnectionConfig(
             List<NodeAddress> addresses,
@@ -253,8 +262,8 @@ internal partial class FFI
             PeriodicChecksMode? periodicChecksMode,
             uint? periodicChecksIntervalSec,
 
-            // Library name
-            string libName)
+            // Resolved library name
+            string resolvedLibName)
         {
             _request = new()
             {
@@ -318,7 +327,7 @@ internal partial class FFI
                 PeriodicChecksIntervalSec = periodicChecksIntervalSec ?? 0,
 
                 // CLIENT SETINFO LIB-NAME
-                LibName = libName,
+                ResolvedLibName = resolvedLibName,
             };
         }
 
@@ -386,6 +395,11 @@ internal partial class FFI
 
         protected override IntPtr AllocateAndCopy()
             => StructToPtr(_request);
+
+        // Frees the runtime-marshaller-allocated LPUTF8Str buffers (e.g. ClientName, ResolvedLibName)
+        // that FreeMemory (which only frees manually-allocated IntPtr fields) does not release.
+        protected override void DestroyStruct(IntPtr ptr)
+            => Marshal.DestroyStructure(ptr, typeof(ConnectionRequest));
 
         /// <summary>
         /// Marshals the node addresses.
@@ -827,8 +841,12 @@ internal partial class FFI
         #endregion
         #region Library Name
 
+        /// <summary>
+        /// The fully composed value sent to <c>CLIENT SETINFO LIB-NAME</c> (already includes any
+        /// <c>ClientInfoTag</c>). Named distinctly from the raw <c>LibName</c> to avoid re-composing.
+        /// </summary>
         [MarshalAs(UnmanagedType.LPUTF8Str)]
-        public string LibName;
+        public string ResolvedLibName;
 
         #endregion
     }
