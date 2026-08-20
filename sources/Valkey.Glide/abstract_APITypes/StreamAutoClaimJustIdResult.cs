@@ -5,7 +5,7 @@ using System;
 namespace Valkey.Glide;
 
 /// <summary>
-/// Represents an <c>XAUTOCLAIM</c> response with the <c>JUST ID</c> option.
+/// Represents an <c>XAUTOCLAIM</c> response with the <c>JUSTID</c> option.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/xautoclaim/"/>
 public readonly struct StreamAutoClaimJustIdResult

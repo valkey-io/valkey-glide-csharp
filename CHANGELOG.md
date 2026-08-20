@@ -36,6 +36,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `REPLICAOF` (#446)
   - `RESET` (#435)
   - `SAVE` (#440)
+  - `XINFO STREAM FULL` (#326)
+  - `XPENDING` (detailed form) (#326)
+- Re-enable the GLIDE-native stream command interface for clients and batches (#326)
 - Custom socket address resolution support via callback (#392)
 - `NodeDiscoveryMode` configuration option for standalone clients (#131)
 
@@ -51,8 +54,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `CONFIG RESETSTAT` routed to AllPrimaries instead of AllNodes in cluster mode (#493)
   - `FUNCTION KILL` routed to AllPrimaries instead of AllNodes in cluster mode (#494)
 - Compatibility with StackExchange.Redis:
-  - Renamed `IDatabaseAsync.StreamReadAsync` parameter from `countPerStream` to `count` (#326).
-  - `IDatabaseAsync.StreamAutoClaimIdsOnlyAsync` now returns `StreamAutoClaimIdsOnlyResult` type (#326).
+  - Renamed `IDatabaseAsync.StreamReadAsync` parameter from `countPerStream` to `count` (#326)
+  - `IDatabaseAsync.StreamAutoClaimIdsOnlyAsync` now returns `StreamAutoClaimIdsOnlyResult` type (#326)
 
 ## 1.1.0
 
@@ -63,7 +66,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Client-side caching with TTL-based expiration, LRU/LFU eviction policies, and cache metrics API (#330)
 - Compression support for CustomCommand with incompatible command detection and improved error messages (#348)
 
-### Fixed
+### Security
 
 - Remove credential leakage vectors from FFI debug output (#371)
 

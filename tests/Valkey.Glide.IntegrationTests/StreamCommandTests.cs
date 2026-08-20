@@ -23,7 +23,7 @@ public class StreamCommandTests
         string key = "{StreamAdd}" + Guid.NewGuid();
 
         // Add entry with auto-generated ID
-        ValkeyValue messageId = await client.StreamAddAsync(key, "field1", "value1");
+        var messageId = await client.StreamAddAsync(key, "field1", "value1");
         AssertIsValidMessageId(messageId);
     }
 
@@ -39,7 +39,7 @@ public class StreamCommandTests
             new NameValueEntry("field3", "value3")
         ];
 
-        ValkeyValue messageId = await client.StreamAddAsync(key, entries);
+        var messageId = await client.StreamAddAsync(key, entries);
         AssertIsValidMessageId(messageId);
     }
 
@@ -115,7 +115,8 @@ public class StreamCommandTests
         string key = "{StreamAdd}" + Guid.NewGuid();
 
         // Try to add to non-existent stream with NOMKSTREAM - should return null
-        ValkeyValue messageId = await client.StreamAddAsync(key, "field", "value", new StreamAddOptions { MakeStream = false });
+        var options = new StreamAddOptions { NoMakeStream = true };
+        var messageId = await client.StreamAddAsync(key, "field", "value", options);
         Assert.True(messageId.IsNull);
     }
 
@@ -129,7 +130,8 @@ public class StreamCommandTests
         _ = await client.StreamAddAsync(key, "field", "value1");
 
         // Add to existing stream with NOMKSTREAM - should succeed
-        ValkeyValue messageId = await client.StreamAddAsync(key, "field", "value2", new StreamAddOptions { MakeStream = false });
+        var options = new StreamAddOptions { NoMakeStream = true };
+        var messageId = await client.StreamAddAsync(key, "field", "value2", options);
         AssertIsValidMessageId(messageId);
     }
 

@@ -19,16 +19,14 @@ public sealed class StreamAddOptions
     #region Public Properties
 
     /// <summary>
-    /// The stream entry ID. If set to <see cref="AutoGenerateId"/> the server auto-generates a unique ID.
-    /// A well-formed ID consists of two 64-bit numbers separated by "-" (e.g., "1526919030474-55").
-    /// An incomplete ID with only the milliseconds part (e.g., "{ms}-*") will have its sequence number auto-generated.
+    /// The stream entry ID. If set to <see cref="AutoGenerateId"/>, the server auto-generates a unique ID.
     /// </summary>
     public ValkeyValue Id { get; init; } = AutoGenerateId;
 
     /// <summary>
-    /// If <see langword="false"/>, a new stream will not be created if no stream matches the given key.
+    /// If <see langword="true"/>, the stream will not be created when it does not already exist (NOMKSTREAM).
     /// </summary>
-    public bool MakeStream { get; init; } = true;
+    public bool NoMakeStream { get; init; } = false;
 
     /// <summary>
     /// If set, the add operation will also trim older entries in the stream.
@@ -45,7 +43,7 @@ public sealed class StreamAddOptions
     {
         List<GlideString> args = [];
 
-        if (!MakeStream)
+        if (NoMakeStream)
         {
             args.Add(ValkeyLiterals.NOMKSTREAM.ToGlideString());
         }

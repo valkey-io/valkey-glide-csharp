@@ -26,7 +26,7 @@ public sealed class StreamClaimOptions
     }
 
     /// <summary>
-    /// Sets the idle time of the claimed message relative to the specified (IDLE).
+    /// Sets the last delivery time of the claimed message to the specified timestamp (TIME).
     /// Clears any idle time previously set by <see cref="WithIdle"/> or <see cref="WithIdleUnix"/>.
     /// </summary>
     /// <param name="idleUnix">The Unix timestamp to set as the last delivery time.</param>

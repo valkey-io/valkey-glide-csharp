@@ -57,12 +57,12 @@ public partial interface IBaseClient
     /// <param name="options">The stream add options to apply.</param>
     /// <returns>
     /// The ID of the added entry, or <see cref="ValkeyValue.Null"/> if
-    /// <see cref="StreamAddOptions.MakeStream"/> is <see langword="false"/> and the stream does not exist.
+    /// <see cref="StreamAddOptions.NoMakeStream"/> is <see langword="true"/> and the stream does not exist.
     /// </returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// var options = new StreamAddOptions { MakeStream = false };
+    /// var options = new StreamAddOptions { NoMakeStream = true };
     /// var entryId = await client.StreamAddAsync("mystream", "sensor", "temperature", options);
     /// Console.WriteLine($"Added entry with ID: {entryId}");
     /// </code>
@@ -73,7 +73,7 @@ public partial interface IBaseClient
     /// <inheritdoc cref="StreamAddAsync(ValkeyKey, IEnumerable{NameValueEntry})" path="/*[not(self::returns) and not(self::remarks)]"/>
     /// <param name="options">The stream add options to apply.</param>
     /// <returns>The ID of the added entry, or <see cref="ValkeyValue.Null"/> if
-    /// <see cref="StreamAddOptions.MakeStream"/> is <see langword="false"/> and the stream does not exist.
+    /// <see cref="StreamAddOptions.NoMakeStream"/> is <see langword="true"/> and the stream does not exist.
     /// </returns>
     /// <remarks>
     /// <example>
@@ -83,7 +83,7 @@ public partial interface IBaseClient
     ///     new("sensor", "temperature"),
     ///     new("value", "23.5")
     /// };
-    /// var options = new StreamAddOptions { MakeStream = false };
+    /// var options = new StreamAddOptions { NoMakeStream = true };
     /// var entryId = await client.StreamAddAsync("mystream", fields, options);
     /// Console.WriteLine($"Added entry with ID: {entryId}");
     /// </code>
@@ -102,7 +102,7 @@ public partial interface IBaseClient
     /// <param name="consumerGroup">The consumer group name.</param>
     /// <param name="claimingConsumer">The consumer that will take ownership of the messages.</param>
     /// <param name="options">The stream auto-claim options to apply.</param>
-    /// <returns>The claimed entries and the next scan cursor.</returns>
+    /// <returns>The claimed entries, the next scan cursor, and the deleted message IDs.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -124,7 +124,7 @@ public partial interface IBaseClient
     /// <param name="consumerGroup">The consumer group name.</param>
     /// <param name="claimingConsumer">The consumer that will take ownership of the messages.</param>
     /// <param name="options">The stream auto-claim options to apply.</param>
-    /// <returns>The claimed entries and the next scan cursor.</returns>
+    /// <returns>The claimed message IDs, the next scan cursor, and the deleted message IDs.</returns>
     /// <remarks>
     /// <example>
     /// <code>
@@ -231,6 +231,7 @@ public partial interface IBaseClient
     /// <param name="key">The stream key.</param>
     /// <param name="groupName">The name of the consumer group to create.</param>
     /// <param name="position">The position from which the group starts reading.</param>
+    /// <exception cref="Errors.RequestException">Thrown if the stream does not exist.</exception>
     /// <remarks>
     /// <example>
     /// <code>
@@ -240,8 +241,9 @@ public partial interface IBaseClient
     /// </remarks>
     Task StreamGroupCreateAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue position);
 
-    /// <inheritdoc cref="StreamGroupCreateAsync(ValkeyKey, ValkeyValue, ValkeyValue)" path="/*[not(self::remarks)]"/>
+    /// <inheritdoc cref="StreamGroupCreateAsync(ValkeyKey, ValkeyValue, ValkeyValue)" path="/*[not(self::remarks) and not(self::exception)]"/>
     /// <param name="options">The stream group create options to apply.</param>
+    /// <exception cref="Errors.RequestException">Thrown if <see cref="StreamGroupCreateOptions.MakeStream"/> is <see langword="false"/> and the stream does not exist.</exception>
     /// <remarks>
     /// <example>
     /// <code>
