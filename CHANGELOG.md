@@ -15,6 +15,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Inflight requests limit (#484)
   - Mutual TLS (#488)
   - Periodic topology checks (#485)
+- Support missing stream commands for GLIDE client (#326):
+  - `XAUTOCLAIM`
+  - `XCLAIM`
+  - `XGROUP CREATE`
+  - `XGROUP CREATECONSUMER`
+  - `XGROUP DELCONSUMER`
+  - `XGROUP DESTROY`
+  - `XGROUP SETID`
+  - `XINFO CONSUMERS`
+  - `XINFO GROUPS`
+  - `XINFO STREAM FULL`
+  - `XPENDING`
 - Support additional commands (#435):
   - `BGREWRITEAOF` (#444)
   - `BGSAVE CANCEL` (#436)
@@ -36,9 +48,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `REPLICAOF` (#446)
   - `RESET` (#435)
   - `SAVE` (#440)
-  - `XINFO STREAM FULL` (#326)
-  - `XPENDING` (detailed form) (#326)
-- Re-enable the GLIDE-native stream command interface for clients and batches (#326)
 - Custom socket address resolution support via callback (#392)
 - `NodeDiscoveryMode` configuration option for standalone clients (#131)
 
@@ -47,6 +56,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - For compatibility with StackExchange.Redis:
   - `IDatabaseAsync.StreamReadAsync` parameter renamed to `count` (#326)
   - `IDatabaseAsync.StreamAutoClaimIdsOnlyAsync` returns `StreamAutoClaimIdsOnlyResult` (#326)
+- Renamed unused `XINFO STREAM FULL` result types (#326):
+  - `StreamGroupFullInfo` renamed to `StreamGroupInfoFull`
+  - `StreamConsumerFullInfo` renamed to `StreamConsumerInfoFull`
+  - `StreamPendingEntryInfo` renamed to `StreamPendingEntry`
 
 ### Fixed
 
