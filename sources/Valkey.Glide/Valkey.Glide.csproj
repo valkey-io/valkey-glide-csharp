@@ -50,6 +50,13 @@
     <InternalsVisibleTo Include="Valkey.Glide.UnitTests" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(Configuration)' == 'Lint'">
+    <PackageReference Include="Roslynator.Analyzers" Version="4.16.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent" Condition="'$(SkipCargo)' != 'true'">
     <Exec Condition="'$(Configuration)' == 'Debug'" Command="cargo build" EnvironmentVariables="CARGO_TERM_COLOR=always" ConsoleToMSBuild="true" WorkingDirectory="$(MSBuildThisFileDirectory)../../rust">
       <Output TaskParameter="ConsoleOutput" PropertyName="OutputOfExec" />
