@@ -45,7 +45,7 @@ public abstract class ConnectionConfiguration
         /// <summary>
         /// Default library name reported via CLIENT SETINFO LIB-NAME.
         /// </summary>
-        internal const string DefaultLibName = "GlideC#";
+        internal const string DefaultLibName = Internals.LibNameResolver.Default;
 
         public List<NodeAddress> Addresses = [];
         public bool ClusterMode;
@@ -92,21 +92,7 @@ public abstract class ConnectionConfiguration
         /// <summary>
         /// Computes the resolved library name to send via CLIENT SETINFO LIB-NAME.
         /// </summary>
-        internal string ResolvedLibName
-        {
-            get
-            {
-                string baseName = LibName ?? DefaultLibName;
-                // A whitespace-only tag would compose e.g. "GlideC#(   )", which CLIENT SETINFO
-                // LIB-NAME rejects (no spaces/newlines/special chars); glide-core .ignore()s that
-                // failure, silently dropping the entire lib-name. Treat such a tag as absent so the
-                // base name is still reported. This is output-composition hygiene, not input
-                // validation, so it does not reintroduce client-side validation on the setter.
-                return !string.IsNullOrWhiteSpace(ClientInfoTag)
-                    ? $"{baseName}({ClientInfoTag})"
-                    : baseName;
-            }
-        }
+        internal string ResolvedLibName => Internals.LibNameResolver.Resolve(LibName, ClientInfoTag);
 
         internal FFI.ConnectionConfig ToFfi() => new(
             Addresses,

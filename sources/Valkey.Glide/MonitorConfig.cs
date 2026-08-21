@@ -44,8 +44,31 @@ public sealed class MonitorConfig(string host, ushort port) : IDisposable
         private set;
     } = null;
 
+    /// <summary>
+    /// Full override for the library name reported via <c>CLIENT SETINFO LIB-NAME</c> for the
+    /// MONITOR connection. Defaults to <c>GlideC#</c>. When set, this replaces the default entirely.
+    /// </summary>
+    /// <seealso cref="ClientInfoTag"/>
+    public string? LibraryName
+    {
+        get => field ?? Internals.LibNameResolver.Default;
+        private set;
+    } = null;
+
+    /// <summary>
+    /// A tag appended in parentheses to the library name reported via <c>CLIENT SETINFO LIB-NAME</c>
+    /// for the MONITOR connection, e.g. <c>GlideC#(my-framework:1.0)</c>, preserving the GLIDE identity.
+    /// </summary>
+    /// <seealso cref="LibraryName"/>
+    public string? ClientInfoTag { get; private set; } = null;
+
     #endregion
     #region Internal Properties
+
+    /// <summary>
+    /// The fully composed library name sent to the server for the MONITOR connection.
+    /// </summary>
+    internal string ResolvedLibName => Internals.LibNameResolver.Resolve(LibraryName, ClientInfoTag);
 
     /// <summary>
     /// The password for authentication.
@@ -117,6 +140,30 @@ public sealed class MonitorConfig(string host, ushort port) : IDisposable
     public MonitorConfig WithDatabase(ushort database)
     {
         Database = database;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets a full override for the library name reported via <c>CLIENT SETINFO LIB-NAME</c>.
+    /// </summary>
+    /// <param name="libraryName">The library name, or <see langword="null"/> to use the default (<c>GlideC#</c>).</param>
+    /// <returns>This instance for method chaining.</returns>
+    public MonitorConfig WithLibraryName(string? libraryName)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        LibraryName = libraryName;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets a tag appended in parentheses to the library name reported via <c>CLIENT SETINFO LIB-NAME</c>.
+    /// </summary>
+    /// <param name="clientInfoTag">The tag, or <see langword="null"/> for none.</param>
+    /// <returns>This instance for method chaining.</returns>
+    public MonitorConfig WithClientInfoTag(string? clientInfoTag)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        ClientInfoTag = clientInfoTag;
         return this;
     }
 

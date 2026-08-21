@@ -96,6 +96,20 @@ public class MonitorClientTests(StandaloneClientFixture fixture) : IClassFixture
         await monitor.DisposeAsync(); // Should not throw
     }
 
+    [Fact]
+    public async Task Monitor_ReportsConfiguredLibNameAndTag()
+    {
+        Skip.IfClientSetInfoNotSupported();
+
+        const string tag = "monitor-tag:1.0";
+        var addr = fixture.Server.Address;
+        using var config = BuildMonitorConfig(addr.Host, addr.Port).WithClientInfoTag(tag);
+        await using var monitor = await MonitorClient.CreateClient(config);
+
+        string? monitorLibName = await PollMonitorLibNameAsync();
+        Assert.Equal($"GlideC#({tag})", monitorLibName);
+    }
+
     #endregion
     #region Helpers
 
@@ -104,6 +118,35 @@ public class MonitorClientTests(StandaloneClientFixture fixture) : IClassFixture
         var addr = fixture.Server.Address;
         using var config = BuildMonitorConfig(addr.Host, addr.Port);
         return await MonitorClient.CreateClient(config);
+    }
+
+    /// <summary>
+    /// Polls <c>CLIENT LIST</c> (via a normal client) for the MONITOR connection (flag <c>O</c>)
+    /// and returns its reported <c>lib-name</c>, or <see langword="null"/> if not found in time.
+    /// </summary>
+    private async Task<string?> PollMonitorLibNameAsync()
+    {
+        GlideString[] clientListCommand = ["CLIENT", "LIST"];
+        for (int attempt = 0; attempt < 30; attempt++)
+        {
+            object? result = await Client.CustomCommand(clientListCommand);
+            foreach (string line in result!.ToString()!.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+            {
+                string[] fields = line.Split(' ');
+                string? flags = fields.FirstOrDefault(f => f.StartsWith("flags=", StringComparison.Ordinal));
+                if (flags is null || !flags["flags=".Length..].Contains('O'))
+                {
+                    continue;
+                }
+
+                string? libName = fields.FirstOrDefault(f => f.StartsWith("lib-name=", StringComparison.Ordinal));
+                return libName?["lib-name=".Length..];
+            }
+
+            await Task.Delay(100);
+        }
+
+        return null;
     }
 
     #endregion

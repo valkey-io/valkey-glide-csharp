@@ -2039,6 +2039,7 @@ pub struct MonitorConfig {
     pub database: u16,
     pub username: *const c_char,
     pub password: *const c_char,
+    pub lib_name: *const c_char,
 }
 
 struct MonitorAdapter {
@@ -2114,13 +2115,28 @@ pub unsafe extern "C-unwind" fn create_monitor_client(
         }
     };
 
+    // The C# layer always supplies the resolved library name (defaulting to "GlideC#"),
+    // so this mirrors the standard/cluster client and no longer relies on the compile-time
+    // GLIDE_NAME env var for the MONITOR connection.
+    let lib_name = match unsafe { CStr::from_ptr(config.lib_name) }.to_str() {
+        Ok(s) => s.to_owned(),
+        Err(e) => {
+            let err_msg =
+                CString::new(format!("Invalid UTF-8 in lib_name: {e}")).unwrap_or_default();
+            return Box::into_raw(Box::new(MonitorConnectionResponse {
+                conn_ptr: std::ptr::null(),
+                connection_error_message: err_msg.into_raw(),
+            }));
+        }
+    };
+
     let redis_conn_info = redis::RedisConnectionInfo {
         db: config.database as i64,
         username,
         password,
         protocol: redis::ProtocolVersion::RESP2,
         client_name: None,
-        lib_name: Some(env!("GLIDE_NAME").to_string()),
+        lib_name: Some(lib_name),
         server_assisted_cache: false,
         cache: None,
     };

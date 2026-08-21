@@ -102,5 +102,48 @@ public class MonitorConfigTests
         Assert.All(passwordRef, c => Assert.Equal('\0', c));
     }
 
+    [Fact]
+    public void LibraryName_NotSet_DefaultsToGlideCSharp()
+    {
+        using var config = BuildMonitorConfig();
+        Assert.Equal("GlideC#", config.LibraryName);
+        Assert.Equal("GlideC#", config.ResolvedLibName);
+    }
+
+    [Fact]
+    public void WithLibraryName_OverridesDefault()
+    {
+        using var config = BuildMonitorConfig().WithLibraryName("custom-mon");
+        Assert.Equal("custom-mon", config.LibraryName);
+        Assert.Equal("custom-mon", config.ResolvedLibName);
+    }
+
+    [Fact]
+    public void WithClientInfoTag_AppendsToDefaultLibName()
+    {
+        using var config = BuildMonitorConfig().WithClientInfoTag("svc:1.0");
+        Assert.Equal("GlideC#(svc:1.0)", config.ResolvedLibName);
+    }
+
+    [Fact]
+    public void WithLibraryNameAndClientInfoTag_Composes()
+    {
+        using var config = BuildMonitorConfig()
+            .WithLibraryName("custom-mon")
+            .WithClientInfoTag("svc:1.0");
+        Assert.Equal("custom-mon(svc:1.0)", config.ResolvedLibName);
+    }
+
+    [Theory]
+    [InlineData(" ")]
+    [InlineData("   ")]
+    [InlineData("\t")]
+    [InlineData("\n")]
+    public void WithClientInfoTag_WhitespaceOnly_DoesNotAppendParens(string tag)
+    {
+        using var config = BuildMonitorConfig().WithClientInfoTag(tag);
+        Assert.Equal("GlideC#", config.ResolvedLibName);
+    }
+
     #endregion
 }

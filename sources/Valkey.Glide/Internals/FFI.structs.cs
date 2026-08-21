@@ -1312,6 +1312,12 @@ internal partial class FFI
         /// or <see langword="null"/> if not set.</summary>
         [MarshalAs(UnmanagedType.LPUTF8Str)]
         public string? Password;
+
+        /// <summary>
+        /// The resolved library name reported via CLIENT SETINFO LIB-NAME for the MONITOR connection.
+        /// </summary>
+        [MarshalAs(UnmanagedType.LPUTF8Str)]
+        public string LibName;
     }
 
     /// <summary>
