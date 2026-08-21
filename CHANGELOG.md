@@ -56,10 +56,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - For compatibility with StackExchange.Redis:
   - `IDatabaseAsync.StreamReadAsync` parameter renamed to `count` (#326)
   - `IDatabaseAsync.StreamAutoClaimIdsOnlyAsync` returns `StreamAutoClaimIdsOnlyResult` (#326)
-- Renamed unused `XINFO STREAM FULL` result types (#326):
-  - `StreamGroupFullInfo` renamed to `StreamGroupInfoFull`
-  - `StreamConsumerFullInfo` renamed to `StreamConsumerInfoFull`
-  - `StreamPendingEntryInfo` renamed to `StreamPendingEntry`
+- Updated released but previously unused stream types (#326):
+  - Rename `StreamGroupFullInfo` to `StreamGroupInfoFull`
+  - Rename `StreamConsumerFullInfo` to `StreamConsumerInfoFull`
+  - Rename `StreamPendingEntryInfo` to `StreamPendingEntry`
+  - Update `StreamClaimOptions` to use factory and fluent methods instead of an object initializer
 
 ### Fixed
 
