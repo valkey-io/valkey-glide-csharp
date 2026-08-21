@@ -77,7 +77,7 @@ public abstract class StreamTrimOptions
         /// </summary>
         public required long MaxLength { get; init; }
 
-        internal override GlideString Method => ValkeyLiterals.MAXLEN.ToGlideString();
+        internal override GlideString Method => ValkeyLiterals.MAXLEN;
         internal override GlideString Threshold => MaxLength.ToGlideString();
     }
 
@@ -91,7 +91,7 @@ public abstract class StreamTrimOptions
         /// </summary>
         public required ValkeyValue MinEntryId { get; init; }
 
-        internal override GlideString Method => ValkeyLiterals.MINID.ToGlideString();
+        internal override GlideString Method => ValkeyLiterals.MINID;
         internal override GlideString Threshold => MinEntryId.ToGlideString();
     }
 }
