@@ -12,7 +12,6 @@ using static Valkey.Glide.Errors;
 using static Valkey.Glide.Internals.FFI;
 using static Valkey.Glide.Internals.ResponseHandler;
 using static Valkey.Glide.Pipeline.Options;
-using static Valkey.Glide.Route;
 
 namespace Valkey.Glide;
 
