@@ -10,7 +10,7 @@ public abstract partial class BaseClient
 {
     #region StreamAcknowledgeAsync
 
-    /// <inheritdoc cref="IStreamBaseCommands.StreamAcknowledgeAsync(ValkeyKey, ValkeyValue, ValkeyValue)"/>
+    /// <inheritdoc cref="IBaseClient.StreamAcknowledgeAsync(ValkeyKey, ValkeyValue, ValkeyValue)"/>
     public Task<bool> StreamAcknowledgeAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue messageId)
         => Command(Request.StreamAcknowledge(key, groupName, messageId));
 

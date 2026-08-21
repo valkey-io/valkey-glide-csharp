@@ -11,6 +11,27 @@ namespace Valkey.Glide;
 
 public partial interface IBaseClient
 {
+    #region StreamAcknowledgeAsync
+
+    /// <summary>
+    /// Acknowledges a message in a consumer group.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/xack/">Valkey commands – XACK</seealso>
+    /// <param name="key">The stream key.</param>
+    /// <param name="groupName">The consumer group name.</param>
+    /// <param name="messageId">The message ID to acknowledge.</param>
+    /// <returns><see langword="true"/> if the message was acknowledged, or <see langword="false"/> if it was not pending for the group.</returns>
+    /// <remarks>
+    /// <example>
+    /// <code>
+    /// var acknowledged = await client.StreamAcknowledgeAsync("mystream", "mygroup", "1526569495631-0");
+    /// Console.WriteLine($"Message acknowledged: {acknowledged}");
+    /// </code>
+    /// </example>
+    /// </remarks>
+    Task<bool> StreamAcknowledgeAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue messageId);
+
+    #endregion
     #region StreamAddAsync
 
     /// <summary>

@@ -216,14 +216,14 @@ public partial interface IDatabaseAsync
     #endregion
     #region StreamAcknowledgeAsync
 
-    /// <inheritdoc cref="IStreamBaseCommands.StreamAcknowledgeAsync(ValkeyKey, ValkeyValue, ValkeyValue)" path="/*[self::summary or self::seealso]"/>
+    /// <inheritdoc cref="IBaseClient.StreamAcknowledgeAsync(ValkeyKey, ValkeyValue, ValkeyValue)" path="/*[self::summary or self::seealso]"/>
     /// <param name="key">The stream key.</param>
     /// <param name="groupName">The consumer group name.</param>
     /// <param name="messageId">The message ID to acknowledge.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>The number of messages acknowledged.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<long> StreamAcknowledgeAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue messageId, CommandFlags flags);
+    Task<long> StreamAcknowledgeAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue messageId, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="IStreamBaseCommands.StreamAcknowledgeAsync(ValkeyKey, ValkeyValue, IEnumerable{ValkeyValue})" path="/*[self::summary or self::seealso]"/>
     /// <param name="key">The stream key.</param>

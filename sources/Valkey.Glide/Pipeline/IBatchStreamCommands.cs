@@ -9,8 +9,8 @@ internal interface IBatchStreamCommands
 {
     #region StreamAcknowledge
 
-    /// <inheritdoc cref="Commands.IStreamBaseCommands.StreamAcknowledgeAsync(ValkeyKey, ValkeyValue, ValkeyValue)" path="/*[not(self::remarks) and not(self::returns)]" />
-    /// <returns>Command Response - <inheritdoc cref="Commands.IStreamBaseCommands.StreamAcknowledgeAsync(ValkeyKey, ValkeyValue, ValkeyValue)" /></returns>
+    /// <inheritdoc cref="IBaseClient.StreamAcknowledgeAsync(ValkeyKey, ValkeyValue, ValkeyValue)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.StreamAcknowledgeAsync(ValkeyKey, ValkeyValue, ValkeyValue)" /></returns>
     IBatch StreamAcknowledge(ValkeyKey key, ValkeyValue groupName, ValkeyValue messageId);
 
     /// <inheritdoc cref="Commands.IStreamBaseCommands.StreamAcknowledgeAsync(ValkeyKey, ValkeyValue, IEnumerable{ValkeyValue})" path="/*[not(self::remarks) and not(self::returns)]" />
