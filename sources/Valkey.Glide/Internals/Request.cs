@@ -239,8 +239,16 @@ internal partial class Request
     /// <summary>
     /// Returns a required <see langword="int"/> value from the given response dictionary.
     /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if the value cannot be converted to an integer.</exception>
     private static int GetInt(Dictionary<GlideString, object> map, string key)
-        => (int)GetLong(map, key);
+    {
+        var value = GetLong(map, key);
+
+        ArgumentOutOfRangeException.ThrowIfLessThan(value, int.MinValue);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(value, int.MaxValue);
+
+        return (int)value;
+    }
 
     /// <summary>
     /// Returns a required <see langword="long"/> value from the given response dictionary.
