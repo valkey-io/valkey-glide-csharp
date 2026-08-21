@@ -73,6 +73,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `CONFIG REWRITE` routed to Random instead of AllNodes in cluster mode (#493)
   - `CONFIG RESETSTAT` routed to AllPrimaries instead of AllNodes in cluster mode (#493)
   - `FUNCTION KILL` routed to AllPrimaries instead of AllNodes in cluster mode (#494)
+- `GlideString(byte[])` no longer builds the hex-dump representation on construction (#522)
 
 ## 1.1.0
 
