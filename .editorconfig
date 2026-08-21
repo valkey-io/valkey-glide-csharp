@@ -181,7 +181,6 @@ csharp_preserve_single_line_blocks = true
 csharp_preserve_single_line_statements = true
 
 #### Naming styles ####
-[*.{cs,vb}]
 
 # Naming rules
 
@@ -559,6 +558,16 @@ dotnet_diagnostic.xUnit3000.severity = error
 dotnet_diagnostic.xUnit3001.severity = error
 # Classes which are JSON serializable should not be tested for their concrete type
 dotnet_diagnostic.xUnit3002.severity = error
+
+# Roslynator Analyzers
+# ====================
+
+# Disable all rules by default and opt in only to the ones we want.
+roslynator_analyzers.enabled_by_default = false
+dotnet_analyzer_diagnostic.category-Roslynator.severity = none
+
+# RCS1213: Remove unused member declaration
+dotnet_diagnostic.RCS1213.severity = error
 
 # IDE0130: Namespace does not match folder structure
 [sources/Valkey.Glide/{Abstract,Client}/*.cs]
