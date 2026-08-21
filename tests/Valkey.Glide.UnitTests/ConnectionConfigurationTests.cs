@@ -1001,6 +1001,177 @@ public class ConnectionConfigurationTests
         => Assert.Null(new ClusterClientConfigurationBuilder { AddressResolver = null }.Build().Request.AddressResolver);
 
     #endregion
+    #region LibName and ClientInfoTag Tests
+
+    [Fact]
+    public void LibName_NotSet_DefaultsToGlideCSharp()
+    {
+        var config = new StandaloneClientConfigurationBuilder().Build();
+        Assert.Null(config.Request.LibName);
+        Assert.Equal("GlideC#", config.Request.ResolvedLibName);
+    }
+
+    [Fact]
+    public void LibName_Set_OverridesDefault()
+    {
+        var config = new StandaloneClientConfigurationBuilder()
+            .WithLibraryName("custom-lib")
+            .Build();
+        Assert.Equal("custom-lib", config.Request.LibName);
+        Assert.Equal("custom-lib", config.Request.ResolvedLibName);
+    }
+
+    [Fact]
+    public void LibName_SetNull_FallsBackToDefault()
+    {
+        var config = new StandaloneClientConfigurationBuilder()
+            .WithLibraryName(null)
+            .Build();
+        Assert.Null(config.Request.LibName);
+        Assert.Equal("GlideC#", config.Request.ResolvedLibName);
+    }
+
+    [Fact]
+    public void ClientInfoTag_Set_AppendsToDefaultLibName()
+    {
+        var config = new StandaloneClientConfigurationBuilder()
+            .WithClientInfoTag("my-framework:1.0")
+            .Build();
+        Assert.Equal("my-framework:1.0", config.Request.ClientInfoTag);
+        Assert.Equal("GlideC#(my-framework:1.0)", config.Request.ResolvedLibName);
+    }
+
+    [Fact]
+    public void ClientInfoTag_WithLibName_AppendsToCustomLibName()
+    {
+        var config = new StandaloneClientConfigurationBuilder()
+            .WithLibraryName("custom")
+            .WithClientInfoTag("lmcache:1.2")
+            .Build();
+        Assert.Equal("custom(lmcache:1.2)", config.Request.ResolvedLibName);
+    }
+
+    [Fact]
+    public void ClientInfoTag_Null_PreservesDefaultLibName()
+    {
+        var config = new StandaloneClientConfigurationBuilder()
+            .WithClientInfoTag(null)
+            .Build();
+        Assert.Null(config.Request.ClientInfoTag);
+        Assert.Equal("GlideC#", config.Request.ResolvedLibName);
+    }
+
+    [Fact]
+    public void ClientInfoTag_Empty_DoesNotAppendParens()
+    {
+        var config = new StandaloneClientConfigurationBuilder()
+            .WithClientInfoTag("")
+            .Build();
+        Assert.Equal("GlideC#", config.Request.ResolvedLibName);
+    }
+
+    [Theory]
+    [InlineData(" ")]
+    [InlineData("   ")]
+    [InlineData("\t")]
+    [InlineData("\n")]
+    [InlineData(" \t \n ")]
+    public void ClientInfoTag_WhitespaceOnly_DoesNotAppendParens(string tag)
+    {
+        // A whitespace-only tag would compose "GlideC#(...)" with spaces, which CLIENT SETINFO
+        // LIB-NAME rejects; glide-core ignores that error, dropping the whole lib-name. It must
+        // instead degrade to the plain base name (no parens).
+        var config = new StandaloneClientConfigurationBuilder()
+            .WithClientInfoTag(tag)
+            .Build();
+        Assert.Equal("GlideC#", config.Request.ResolvedLibName);
+    }
+
+    [Fact]
+    public void ClientInfoTag_WhitespaceOnly_WithLibraryName_DoesNotAppendParens()
+    {
+        var config = new StandaloneClientConfigurationBuilder()
+            .WithLibraryName("custom")
+            .WithClientInfoTag("   ")
+            .Build();
+        Assert.Equal("custom", config.Request.ResolvedLibName);
+    }
+
+    [Fact]
+    public void ClientInfoTag_Cluster_WhitespaceOnly_DoesNotAppendParens()
+    {
+        var config = new ClusterClientConfigurationBuilder()
+            .WithClientInfoTag("   ")
+            .Build();
+        Assert.Equal("GlideC#", config.Request.ResolvedLibName);
+    }
+
+    [Fact]
+    public void LibName_Cluster_Set_OverridesDefault()
+    {
+        var config = new ClusterClientConfigurationBuilder()
+            .WithLibraryName("cluster-lib")
+            .Build();
+        Assert.Equal("cluster-lib", config.Request.LibName);
+        Assert.Equal("cluster-lib", config.Request.ResolvedLibName);
+    }
+
+    [Fact]
+    public void ClientInfoTag_Cluster_AppendsToDefaultLibName()
+    {
+        var config = new ClusterClientConfigurationBuilder()
+            .WithClientInfoTag("my-svc:2.0")
+            .Build();
+        Assert.Equal("GlideC#(my-svc:2.0)", config.Request.ResolvedLibName);
+    }
+
+    [Fact]
+    public void LibraryName_NotSet_ExposesDefaultGlideCSharp()
+    {
+        var builder = new StandaloneClientConfigurationBuilder();
+        Assert.Equal("GlideC#", builder.LibraryName);
+    }
+
+    [Fact]
+    public void LibraryName_Cluster_NotSet_ExposesDefaultGlideCSharp()
+    {
+        var builder = new ClusterClientConfigurationBuilder();
+        Assert.Equal("GlideC#", builder.LibraryName);
+    }
+
+    [Fact]
+    public void LibraryNameAndTag_ToFfi_PassesResolvedLibNameToFfiLayer()
+    {
+        var config = new StandaloneClientConfigurationBuilder()
+            .WithLibraryName("custom")
+            .WithClientInfoTag("tag:1")
+            .Build();
+
+        using FFI.ConnectionConfig ffi = config.Request.ToFfi();
+        Assert.Equal("custom(tag:1)", ffi.ResolvedLibName);
+    }
+
+    [Fact]
+    public void ClientInfoTag_ToFfi_PassesComposedDefaultLibNameToFfiLayer()
+    {
+        var config = new StandaloneClientConfigurationBuilder()
+            .WithClientInfoTag("lmcache:1.2")
+            .Build();
+
+        using FFI.ConnectionConfig ffi = config.Request.ToFfi();
+        Assert.Equal("GlideC#(lmcache:1.2)", ffi.ResolvedLibName);
+    }
+
+    [Fact]
+    public void LibraryName_Default_ToFfi_PassesGlideCSharpToFfiLayer()
+    {
+        var config = new StandaloneClientConfigurationBuilder().Build();
+
+        using FFI.ConnectionConfig ffi = config.Request.ToFfi();
+        Assert.Equal("GlideC#", ffi.ResolvedLibName);
+    }
+
+    #endregion
     #region Helpers
 
     private static dynamic GetConfigurationBuilder(bool clusterMode)
