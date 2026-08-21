@@ -5,71 +5,71 @@ using static Valkey.Glide.Internals.TimeUtils;
 
 namespace Valkey.Glide.Internals;
 
-internal partial class Request
+internal static partial class Request
 {
     #region Command Builders
 
-    public static Cmd<object[], ValkeyValue[]?> ListBlockingLeftPopAsync(ValkeyKey[] keys, TimeSpan timeout)
+    public static Cmd<object[], ValkeyValue[]?> ListBlockingLeftPop(ValkeyKey[] keys, TimeSpan timeout)
         => new(RequestType.BLPop, [.. keys, ToNonNegativeDoubleSecs(timeout, nameof(timeout)).ToGlideString()], true, array =>
             array is null ? null : [.. array.Cast<GlideString>().Select(gs => (ValkeyValue)gs)]);
 
-    public static Cmd<GlideString, ValkeyValue> ListBlockingMoveAsync(ValkeyKey source, ValkeyKey destination, ListSide sourceSide, ListSide destinationSide, TimeSpan timeout)
+    public static Cmd<GlideString, ValkeyValue> ListBlockingMove(ValkeyKey source, ValkeyKey destination, ListSide sourceSide, ListSide destinationSide, TimeSpan timeout)
         => new(RequestType.BLMove, [source, destination, sourceSide.ToLiteral(), destinationSide.ToLiteral(), ToNonNegativeDoubleSecs(timeout, nameof(timeout)).ToGlideString()], true, gs => gs is null ? ValkeyValue.Null : (ValkeyValue)gs, allowConverterToHandleNull: true);
 
-    public static Cmd<Dictionary<GlideString, object>, ListPopResult> ListBlockingPopAsync(ValkeyKey[] keys, ListSide side, TimeSpan timeout)
+    public static Cmd<Dictionary<GlideString, object>, ListPopResult> ListBlockingPop(ValkeyKey[] keys, ListSide side, TimeSpan timeout)
         => new(RequestType.BLMPop, [ToNonNegativeDoubleSecs(timeout, nameof(timeout)).ToGlideString(), keys.Length.ToGlideString(), .. keys.ToGlideStrings(), side.ToLiteral()], true, dict =>
             dict is null ? ListPopResult.Null : ConvertDictToListPopResult(dict), allowConverterToHandleNull: true);
 
-    public static Cmd<Dictionary<GlideString, object>, ListPopResult> ListBlockingPopAsync(ValkeyKey[] keys, ListSide side, long count, TimeSpan timeout)
+    public static Cmd<Dictionary<GlideString, object>, ListPopResult> ListBlockingPop(ValkeyKey[] keys, ListSide side, long count, TimeSpan timeout)
         => new(RequestType.BLMPop, [ToNonNegativeDoubleSecs(timeout, nameof(timeout)).ToGlideString(), keys.Length.ToGlideString(), .. keys.ToGlideStrings(), side.ToLiteral(), ValkeyLiterals.COUNT, count.ToGlideString()], true, dict =>
             dict is null ? ListPopResult.Null : ConvertDictToListPopResult(dict), allowConverterToHandleNull: true);
 
-    public static Cmd<object[], ValkeyValue[]?> ListBlockingRightPopAsync(ValkeyKey[] keys, TimeSpan timeout)
+    public static Cmd<object[], ValkeyValue[]?> ListBlockingRightPop(ValkeyKey[] keys, TimeSpan timeout)
         => new(RequestType.BRPop, [.. keys, ToNonNegativeDoubleSecs(timeout, nameof(timeout)).ToGlideString()], true, array =>
             array is null ? null : [.. array.Cast<GlideString>().Select(gs => (ValkeyValue)gs)]);
 
-    public static Cmd<GlideString, ValkeyValue> ListGetByIndexAsync(ValkeyKey key, long index)
+    public static Cmd<GlideString, ValkeyValue> ListGetByIndex(ValkeyKey key, long index)
         => new(RequestType.LIndex, [key, index.ToGlideString()], true, gs => gs is null ? ValkeyValue.Null : (ValkeyValue)gs, allowConverterToHandleNull: true);
 
-    public static Cmd<long, long> ListInsertAfterAsync(ValkeyKey key, ValkeyValue pivot, ValkeyValue value)
+    public static Cmd<long, long> ListInsertAfter(ValkeyKey key, ValkeyValue pivot, ValkeyValue value)
         => Simple<long>(RequestType.LInsert, [key, ValkeyLiterals.AFTER, pivot, value]);
 
-    public static Cmd<long, long> ListInsertBeforeAsync(ValkeyKey key, ValkeyValue pivot, ValkeyValue value)
+    public static Cmd<long, long> ListInsertBefore(ValkeyKey key, ValkeyValue pivot, ValkeyValue value)
         => Simple<long>(RequestType.LInsert, [key, ValkeyLiterals.BEFORE, pivot, value]);
 
-    public static Cmd<GlideString, ValkeyValue> ListLeftPopAsync(ValkeyKey key)
+    public static Cmd<GlideString, ValkeyValue> ListLeftPop(ValkeyKey key)
         => new(RequestType.LPop, [key], true, gs => gs is null ? ValkeyValue.Null : (ValkeyValue)gs, allowConverterToHandleNull: true);
 
-    public static Cmd<object[], ValkeyValue[]?> ListLeftPopAsync(ValkeyKey key, long count)
+    public static Cmd<object[], ValkeyValue[]?> ListLeftPop(ValkeyKey key, long count)
         => new(RequestType.LPop, [key, count.ToGlideString()], true, array =>
             array is null ? null : [.. array.Cast<GlideString>().Select(gs => (ValkeyValue)gs)]);
 
-    public static Cmd<Dictionary<GlideString, object>, ListPopResult> ListLeftPopAsync(ValkeyKey[] keys, long count)
+    public static Cmd<Dictionary<GlideString, object>, ListPopResult> ListLeftPop(ValkeyKey[] keys, long count)
         => new(RequestType.LMPop, [keys.Length.ToGlideString(), .. keys.ToGlideStrings(), ValkeyLiterals.LEFT, ValkeyLiterals.COUNT, count.ToGlideString()], true, dict =>
             dict is null ? ListPopResult.Null : ConvertDictToListPopResult(dict), allowConverterToHandleNull: true);
 
-    public static Cmd<long, long> ListLeftPushAsync(ValkeyKey key, ValkeyValue value, When when = When.Always)
+    public static Cmd<long, long> ListLeftPush(ValkeyKey key, ValkeyValue value, When when = When.Always)
     {
         RequestType requestType = when == When.Exists ? RequestType.LPushX : RequestType.LPush;
         return Simple<long>(requestType, [key, value]);
     }
 
-    public static Cmd<long, long> ListLeftPushAsync(ValkeyKey key, ValkeyValue[] values, When when = When.Always)
+    public static Cmd<long, long> ListLeftPush(ValkeyKey key, ValkeyValue[] values, When when = When.Always)
     {
         RequestType requestType = when == When.Exists ? RequestType.LPushX : RequestType.LPush;
         return Simple<long>(requestType, [key, .. values.ToGlideStrings()]);
     }
 
-    public static Cmd<long, long> ListLeftPushAsync(ValkeyKey key, ValkeyValue[] values)
+    public static Cmd<long, long> ListLeftPush(ValkeyKey key, ValkeyValue[] values)
         => Simple<long>(RequestType.LPush, [key, .. values.ToGlideStrings()]);
 
-    public static Cmd<long, long> ListLengthAsync(ValkeyKey key)
+    public static Cmd<long, long> ListLength(ValkeyKey key)
         => Simple<long>(RequestType.LLen, [key]);
 
-    public static Cmd<GlideString, ValkeyValue> ListMoveAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, ListSide sourceSide, ListSide destinationSide)
+    public static Cmd<GlideString, ValkeyValue> ListMove(ValkeyKey sourceKey, ValkeyKey destinationKey, ListSide sourceSide, ListSide destinationSide)
         => new(RequestType.LMove, [sourceKey, destinationKey, sourceSide.ToLiteral(), destinationSide.ToLiteral()], true, gs => gs is null ? ValkeyValue.Null : (ValkeyValue)gs, allowConverterToHandleNull: true);
 
-    public static Cmd<long?, long> ListPositionAsync(ValkeyKey key, ValkeyValue element, long rank = 1, long maxLength = 0)
+    public static Cmd<long?, long> ListPosition(ValkeyKey key, ValkeyValue element, long rank = 1, long maxLength = 0)
     {
         List<GlideString> args = [key, element];
         if (rank != 1)
@@ -84,7 +84,7 @@ internal partial class Request
         return new(RequestType.LPos, [.. args], true, response => response is null ? -1L : (long)response, allowConverterToHandleNull: true);
     }
 
-    public static Cmd<object[], long[]> ListPositionsAsync(ValkeyKey key, ValkeyValue element, long count, long rank = 1, long maxLength = 0)
+    public static Cmd<object[], long[]> ListPositions(ValkeyKey key, ValkeyValue element, long count, long rank = 1, long maxLength = 0)
     {
         List<GlideString> args = [key, element, ValkeyLiterals.COUNT, count.ToGlideString()];
         if (rank != 1)
@@ -98,43 +98,43 @@ internal partial class Request
         return new(RequestType.LPos, [.. args], false, array => [.. array.Cast<long>()]);
     }
 
-    public static Cmd<object[], ValkeyValue[]> ListRangeAsync(ValkeyKey key, long start = 0, long stop = -1)
+    public static Cmd<object[], ValkeyValue[]> ListRange(ValkeyKey key, long start = 0, long stop = -1)
         => new(RequestType.LRange, [key, start.ToGlideString(), stop.ToGlideString()], false, array =>
             [.. array.Cast<GlideString>().Select(gs => (ValkeyValue)gs)]);
 
-    public static Cmd<long, long> ListRemoveAsync(ValkeyKey key, ValkeyValue value, long count = 0)
+    public static Cmd<long, long> ListRemove(ValkeyKey key, ValkeyValue value, long count = 0)
         => Simple<long>(RequestType.LRem, [key, count.ToGlideString(), value]);
 
-    public static Cmd<GlideString, ValkeyValue> ListRightPopAsync(ValkeyKey key)
+    public static Cmd<GlideString, ValkeyValue> ListRightPop(ValkeyKey key)
         => new(RequestType.RPop, [key], true, gs => gs is null ? ValkeyValue.Null : (ValkeyValue)gs, allowConverterToHandleNull: true);
 
-    public static Cmd<object[], ValkeyValue[]?> ListRightPopAsync(ValkeyKey key, long count)
+    public static Cmd<object[], ValkeyValue[]?> ListRightPop(ValkeyKey key, long count)
         => new(RequestType.RPop, [key, count.ToGlideString()], true, array =>
             array is null ? null : [.. array.Cast<GlideString>().Select(gs => (ValkeyValue)gs)]);
 
-    public static Cmd<Dictionary<GlideString, object>, ListPopResult> ListRightPopAsync(ValkeyKey[] keys, long count)
+    public static Cmd<Dictionary<GlideString, object>, ListPopResult> ListRightPop(ValkeyKey[] keys, long count)
         => new(RequestType.LMPop, [keys.Length.ToGlideString(), .. keys.ToGlideStrings(), ValkeyLiterals.RIGHT, ValkeyLiterals.COUNT, count.ToGlideString()], true, dict =>
             dict is null ? ListPopResult.Null : ConvertDictToListPopResult(dict), allowConverterToHandleNull: true);
 
-    public static Cmd<long, long> ListRightPushAsync(ValkeyKey key, ValkeyValue value, When when = When.Always)
+    public static Cmd<long, long> ListRightPush(ValkeyKey key, ValkeyValue value, When when = When.Always)
     {
         RequestType requestType = when == When.Exists ? RequestType.RPushX : RequestType.RPush;
         return Simple<long>(requestType, [key, value]);
     }
 
-    public static Cmd<long, long> ListRightPushAsync(ValkeyKey key, ValkeyValue[] values, When when = When.Always)
+    public static Cmd<long, long> ListRightPush(ValkeyKey key, ValkeyValue[] values, When when = When.Always)
     {
         RequestType requestType = when == When.Exists ? RequestType.RPushX : RequestType.RPush;
         return Simple<long>(requestType, [key, .. values.ToGlideStrings()]);
     }
 
-    public static Cmd<long, long> ListRightPushAsync(ValkeyKey key, ValkeyValue[] values)
+    public static Cmd<long, long> ListRightPush(ValkeyKey key, ValkeyValue[] values)
         => Simple<long>(RequestType.RPush, [key, .. values.ToGlideStrings()]);
 
-    public static Cmd<string, ValkeyValue> ListSetByIndexAsync(ValkeyKey key, long index, ValkeyValue value)
+    public static Cmd<string, ValkeyValue> ListSetByIndex(ValkeyKey key, long index, ValkeyValue value)
         => Ok(RequestType.LSet, [key, index.ToGlideString(), value]);
 
-    public static Cmd<string, ValkeyValue> ListTrimAsync(ValkeyKey key, long start, long stop)
+    public static Cmd<string, ValkeyValue> ListTrim(ValkeyKey key, long start, long stop)
         => Ok(RequestType.LTrim, [key, start.ToGlideString(), stop.ToGlideString()]);
 
     #endregion

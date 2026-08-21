@@ -29,15 +29,15 @@ public sealed class Batch(bool isAtomic) : BaseBatch<Batch>(isAtomic), IBatch, I
 {
     /// <inheritdoc cref="IBatchStandalone.Copy(ValkeyKey, ValkeyKey, int, bool)" />
     public Batch Copy(ValkeyKey source, ValkeyKey destination, int destinationDatabase, bool replace = false)
-        => AddCmd(Request.CopyAsync(source, destination, destinationDatabase, replace));
+        => AddCmd(Request.Copy(source, destination, destinationDatabase, replace));
 
     /// <inheritdoc cref="IBatchStandalone.Migrate(IEnumerable{ValkeyKey}, MigrateOptions)" />
     public Batch Migrate(IEnumerable<ValkeyKey> keys, MigrateOptions options)
-        => AddCmd(Request.MigrateAsync(keys, options));
+        => AddCmd(Request.Migrate(keys, options));
 
     /// <inheritdoc cref="IBatchStandalone.Move(ValkeyKey, int)" />
     public Batch Move(ValkeyKey key, int database)
-        => AddCmd(Request.MoveAsync(key, database));
+        => AddCmd(Request.Move(key, database));
 
     // Explicit interface implementations for IBatchStandalone
     IBatch IBatchStandalone.Copy(ValkeyKey source, ValkeyKey destination, int destinationDatabase, bool replace) => Copy(source, destination, destinationDatabase, replace);

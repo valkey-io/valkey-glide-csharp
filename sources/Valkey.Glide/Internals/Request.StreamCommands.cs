@@ -9,11 +9,11 @@ using static Valkey.Glide.Internals.TimeUtils;
 
 namespace Valkey.Glide.Internals;
 
-internal partial class Request
+internal static partial class Request
 {
     #region Command Builders
 
-    public static Cmd<long, long> StreamAcknowledgeAsync(ValkeyKey key, ValkeyValue groupName, params ValkeyValue[] messageIds)
+    public static Cmd<long, long> StreamAcknowledge(ValkeyKey key, ValkeyValue groupName, params ValkeyValue[] messageIds)
     {
         List<GlideString> args = [key, groupName];
         foreach (var id in messageIds)
@@ -23,7 +23,7 @@ internal partial class Request
         return new(RequestType.XAck, [.. args], false, response => response);
     }
 
-    public static Cmd<GlideString, ValkeyValue> StreamAddAsync(ValkeyKey key, NameValueEntry[] streamPairs, StreamAddOptions options)
+    public static Cmd<GlideString, ValkeyValue> StreamAdd(ValkeyKey key, NameValueEntry[] streamPairs, StreamAddOptions options)
     {
         List<GlideString> args = [key, .. options.ToArgs()];
 
@@ -36,7 +36,7 @@ internal partial class Request
         return new(RequestType.XAdd, [.. args], true, response => (ValkeyValue)response);
     }
 
-    public static Cmd<object[], StreamAutoClaimResult> StreamAutoClaimAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, TimeSpan minIdleTime, ValkeyValue startId, int? count)
+    public static Cmd<object[], StreamAutoClaimResult> StreamAutoClaim(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, TimeSpan minIdleTime, ValkeyValue startId, int? count)
     {
         List<GlideString> args = [key, groupName, consumerName, ToULongMs(minIdleTime, nameof(minIdleTime)).ToGlideString(), startId];
 
@@ -49,7 +49,7 @@ internal partial class Request
         return new(RequestType.XAutoClaim, [.. args], false, ConvertAutoClaimResult);
     }
 
-    public static Cmd<object[], StreamAutoClaimJustIdResult> StreamAutoClaimJustIdAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, TimeSpan minIdleTime, ValkeyValue startId, int? count)
+    public static Cmd<object[], StreamAutoClaimJustIdResult> StreamAutoClaimJustId(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, TimeSpan minIdleTime, ValkeyValue startId, int? count)
     {
         List<GlideString> args = [key, groupName, consumerName, ToULongMs(minIdleTime, nameof(minIdleTime)).ToGlideString(), startId];
         if (count.HasValue)
@@ -61,16 +61,16 @@ internal partial class Request
         return new(RequestType.XAutoClaim, [.. args], false, ConvertAutoClaimIdsOnlyResult);
     }
 
-    public static Cmd<object, StreamEntry[]> StreamClaimAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, TimeSpan minIdleTime, ValkeyValue[] messageIds, StreamClaimOptions? options = null)
-        => StreamClaimAsync<object, StreamEntry[]>(key, groupName, consumerName, minIdleTime, messageIds, options, false, ConvertStreamEntryMapResponse);
+    public static Cmd<object, StreamEntry[]> StreamClaim(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, TimeSpan minIdleTime, ValkeyValue[] messageIds, StreamClaimOptions? options = null)
+        => StreamClaimCore<object, StreamEntry[]>(key, groupName, consumerName, minIdleTime, messageIds, options, false, ConvertStreamEntryMapResponse);
 
-    public static Cmd<object[], ValkeyValue[]> StreamClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, TimeSpan minIdleTime, ValkeyValue[] messageIds, StreamClaimOptions? options = null)
-        => StreamClaimAsync<object[], ValkeyValue[]>(key, groupName, consumerName, minIdleTime, messageIds, options, true, ConvertClaimIdsOnly);
+    public static Cmd<object[], ValkeyValue[]> StreamClaimIdsOnly(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, TimeSpan minIdleTime, ValkeyValue[] messageIds, StreamClaimOptions? options = null)
+        => StreamClaimCore<object[], ValkeyValue[]>(key, groupName, consumerName, minIdleTime, messageIds, options, true, ConvertClaimIdsOnly);
 
-    public static Cmd<object[], StreamConsumerInfo[]> StreamConsumerInfoAsync(ValkeyKey key, ValkeyValue groupName)
+    public static Cmd<object[], StreamConsumerInfo[]> StreamConsumerInfo(ValkeyKey key, ValkeyValue groupName)
         => new(RequestType.XInfoConsumers, [key, groupName], false, ConvertStreamConsumerInfo);
 
-    public static Cmd<string, bool> StreamConsumerGroupSetPositionAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue position, long? entriesRead)
+    public static Cmd<string, bool> StreamConsumerGroupSetPosition(ValkeyKey key, ValkeyValue groupName, ValkeyValue position, long? entriesRead)
     {
         List<GlideString> args = [key, groupName, position];
 
@@ -83,11 +83,11 @@ internal partial class Request
         return new(RequestType.XGroupSetId, [.. args], false, response => response == "OK");
     }
 
-    public static Cmd<object, bool> StreamCreateConsumerAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName)
+    public static Cmd<object, bool> StreamCreateConsumer(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName)
         => new(RequestType.XGroupCreateConsumer, [key, groupName, consumerName], false, response
             => response is bool b ? b : (long)response == 1);
 
-    public static Cmd<string, bool> StreamCreateConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue position, bool createStream, long? entriesRead)
+    public static Cmd<string, bool> StreamCreateConsumerGroup(ValkeyKey key, ValkeyValue groupName, ValkeyValue position, bool createStream, long? entriesRead)
     {
         List<GlideString> args = [key, groupName, position.IsNull ? "$" : (GlideString)position];
 
@@ -105,10 +105,10 @@ internal partial class Request
         return new(RequestType.XGroupCreate, [.. args], false, response => response == "OK");
     }
 
-    public static Cmd<long, bool> StreamDeleteAsync(ValkeyKey key, ValkeyValue messageId)
+    public static Cmd<long, bool> StreamDelete(ValkeyKey key, ValkeyValue messageId)
         => Boolean<long>(RequestType.XDel, [key, messageId]);
 
-    public static Cmd<long, long> StreamDeleteAsync(ValkeyKey key, params ValkeyValue[] messageIds)
+    public static Cmd<long, long> StreamDelete(ValkeyKey key, params ValkeyValue[] messageIds)
     {
         List<GlideString> args = [key];
         foreach (var id in messageIds)
@@ -118,25 +118,25 @@ internal partial class Request
         return new(RequestType.XDel, [.. args], false, response => response);
     }
 
-    public static Cmd<long, long> StreamDeleteConsumerAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName)
+    public static Cmd<long, long> StreamDeleteConsumer(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName)
         => new(RequestType.XGroupDelConsumer, [key, groupName, consumerName], false, response => response);
 
-    public static Cmd<bool, bool> StreamDeleteConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName)
+    public static Cmd<bool, bool> StreamDeleteConsumerGroup(ValkeyKey key, ValkeyValue groupName)
         => new(RequestType.XGroupDestroy, [key, groupName], false, response => response);
 
-    public static Cmd<object[], StreamGroupInfo[]> StreamGroupInfoAsync(ValkeyKey key)
+    public static Cmd<object[], StreamGroupInfo[]> StreamGroupInfo(ValkeyKey key)
         => new(RequestType.XInfoGroups, [key], false, ConvertStreamGroupInfo);
 
-    public static Cmd<object, StreamInfo> StreamInfoAsync(ValkeyKey key)
+    public static Cmd<object, StreamInfo> StreamInfo(ValkeyKey key)
         => new(RequestType.XInfoStream, [key], false, ConvertStreamInfo);
 
-    public static Cmd<long, long> StreamLengthAsync(ValkeyKey key)
+    public static Cmd<long, long> StreamLength(ValkeyKey key)
         => new(RequestType.XLen, [key], false, response => response);
 
-    public static Cmd<object[], StreamPendingInfo> StreamPendingAsync(ValkeyKey key, ValkeyValue groupName)
+    public static Cmd<object[], StreamPendingInfo> StreamPending(ValkeyKey key, ValkeyValue groupName)
         => new(RequestType.XPending, [key, groupName], false, ConvertStreamPendingInfo);
 
-    public static Cmd<object[], StreamPendingMessageInfo[]> StreamPendingMessagesAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue minId, ValkeyValue maxId, int count, ValkeyValue consumerName, TimeSpan? minIdleTime)
+    public static Cmd<object[], StreamPendingMessageInfo[]> StreamPendingMessages(ValkeyKey key, ValkeyValue groupName, ValkeyValue minId, ValkeyValue maxId, int count, ValkeyValue consumerName, TimeSpan? minIdleTime)
     {
         List<GlideString> args = [key, groupName];
 
@@ -158,7 +158,7 @@ internal partial class Request
         return new(RequestType.XPending, [.. args], false, ConvertStreamPendingMessages);
     }
 
-    public static Cmd<object, StreamEntry[]> StreamRangeAsync(ValkeyKey key, StreamRangeOptions options)
+    public static Cmd<object, StreamEntry[]> StreamRange(ValkeyKey key, StreamRangeOptions options)
     {
         var range = options.Range;
         var start = range.Start.Value;
@@ -173,19 +173,19 @@ internal partial class Request
         return new(RequestType.XRange, [key, start, end, .. options.ToArgs()], false, ConvertStreamEntryMapResponse);
     }
 
-    public static Cmd<object, StreamEntry[]> StreamReadAsync(StreamPosition position, StreamReadOptions options)
+    public static Cmd<object, StreamEntry[]> StreamRead(StreamPosition position, StreamReadOptions options)
         => new(RequestType.XRead, BuildStreamReadArgs([position], options), false, ConvertSingleStreamReadResponse, allowConverterToHandleNull: true);
 
-    public static Cmd<object, ValkeyStream[]> StreamReadAsync(IEnumerable<StreamPosition> positions, StreamReadOptions options)
+    public static Cmd<object, ValkeyStream[]> StreamRead(IEnumerable<StreamPosition> positions, StreamReadOptions options)
         => new(RequestType.XRead, BuildStreamReadArgs([.. positions], options), false, ConvertMultiStreamReadResponse, allowConverterToHandleNull: true);
 
-    public static Cmd<object, StreamEntry[]> StreamReadGroupAsync(StreamPosition position, ValkeyValue group, ValkeyValue consumer, StreamReadGroupOptions options)
+    public static Cmd<object, StreamEntry[]> StreamReadGroup(StreamPosition position, ValkeyValue group, ValkeyValue consumer, StreamReadGroupOptions options)
         => new(RequestType.XReadGroup, BuildStreamReadGroupArgs([position], group, consumer, options), false, ConvertSingleStreamReadResponse, allowConverterToHandleNull: true);
 
-    public static Cmd<object, ValkeyStream[]> StreamReadGroupAsync(IEnumerable<StreamPosition> positions, ValkeyValue group, ValkeyValue consumer, StreamReadGroupOptions options)
+    public static Cmd<object, ValkeyStream[]> StreamReadGroup(IEnumerable<StreamPosition> positions, ValkeyValue group, ValkeyValue consumer, StreamReadGroupOptions options)
         => new(RequestType.XReadGroup, BuildStreamReadGroupArgs([.. positions], group, consumer, options), false, ConvertMultiStreamReadResponse, allowConverterToHandleNull: true);
 
-    public static Cmd<long, long> StreamTrimAsync(ValkeyKey key, StreamTrimOptions options)
+    public static Cmd<long, long> StreamTrim(ValkeyKey key, StreamTrimOptions options)
         => Simple<long>(RequestType.XTrim, [key, .. options.ToArgs()]);
 
     #endregion
@@ -588,7 +588,7 @@ internal partial class Request
         return [.. args];
     }
 
-    private static Cmd<TResponse, TResult> StreamClaimAsync<TResponse, TResult>(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, TimeSpan minIdleTime, ValkeyValue[] messageIds, StreamClaimOptions? options, bool justId, Func<TResponse, TResult> converter)
+    private static Cmd<TResponse, TResult> StreamClaimCore<TResponse, TResult>(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, TimeSpan minIdleTime, ValkeyValue[] messageIds, StreamClaimOptions? options, bool justId, Func<TResponse, TResult> converter)
     {
         List<GlideString> args = [key, groupName, consumerName, ToULongMs(minIdleTime, nameof(minIdleTime)).ToGlideString()];
         foreach (var id in messageIds)

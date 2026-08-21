@@ -6,7 +6,7 @@ namespace Valkey.Glide.Internals;
 
 internal static partial class Request
 {
-    public static Cmd<long, bool> GeoAddAsync(ValkeyKey key, ValkeyValue member, GeoPosition position, GeoAddOptions options = default)
+    public static Cmd<long, bool> GeoAdd(ValkeyKey key, ValkeyValue member, GeoPosition position, GeoAddOptions options = default)
     {
         List<GlideString> args = [key.ToGlideString()];
         args.AddRange(options.ToArgs());
@@ -16,7 +16,7 @@ internal static partial class Request
         return Boolean<long>(RequestType.GeoAdd, [.. args]);
     }
 
-    public static Cmd<long, long> GeoAddAsync(ValkeyKey key, IDictionary<ValkeyValue, GeoPosition> members, GeoAddOptions options = default)
+    public static Cmd<long, long> GeoAdd(ValkeyKey key, IDictionary<ValkeyValue, GeoPosition> members, GeoAddOptions options = default)
     {
         List<GlideString> args = [key.ToGlideString()];
         args.AddRange(options.ToArgs());
@@ -30,33 +30,33 @@ internal static partial class Request
         return Simple<long>(RequestType.GeoAdd, [.. args]);
     }
 
-    public static Cmd<double?, double?> GeoDistanceAsync(ValkeyKey key, ValkeyValue member1, ValkeyValue member2, GeoUnit unit)
+    public static Cmd<double?, double?> GeoDistance(ValkeyKey key, ValkeyValue member1, ValkeyValue member2, GeoUnit unit)
     {
         GlideString[] args = [key.ToGlideString(), member1.ToGlideString(), member2.ToGlideString(), unit.ToLiteral()];
         return Simple<double?>(RequestType.GeoDist, args, true);
     }
 
-    public static Cmd<object[], string?> GeoHashAsync(ValkeyKey key, ValkeyValue member)
+    public static Cmd<object[], string?> GeoHash(ValkeyKey key, ValkeyValue member)
     {
         GlideString[] args = [key.ToGlideString(), member.ToGlideString()];
         return new(RequestType.GeoHash, args, false, response => response.Length > 0 ? response[0]?.ToString() : null);
     }
 
-    public static Cmd<object[], string?[]> GeoHashAsync(ValkeyKey key, ValkeyValue[] members)
+    public static Cmd<object[], string?[]> GeoHash(ValkeyKey key, ValkeyValue[] members)
     {
         var args = new List<GlideString> { key.ToGlideString() };
         args.AddRange(members.Select(m => m.ToGlideString()));
         return new(RequestType.GeoHash, [.. args], false, response => [.. response.Select(item => item?.ToString())]);
     }
 
-    public static Cmd<object[], GeoPosition?> GeoPositionAsync(ValkeyKey key, ValkeyValue member)
+    public static Cmd<object[], GeoPosition?> GeoPosition(ValkeyKey key, ValkeyValue member)
     {
         GlideString[] args = [key.ToGlideString(), member.ToGlideString()];
         return new(RequestType.GeoPos, args, false, response =>
             response.Length > 0 ? ParseGeoPosition(response[0]) : null);
     }
 
-    public static Cmd<object[], GeoPosition?[]> GeoPositionAsync(ValkeyKey key, ValkeyValue[] members)
+    public static Cmd<object[], GeoPosition?[]> GeoPosition(ValkeyKey key, ValkeyValue[] members)
     {
         var args = new List<GlideString> { key.ToGlideString() };
         args.AddRange(members.Select(m => m.ToGlideString()));
@@ -64,7 +64,7 @@ internal static partial class Request
             [.. response.Select(ParseGeoPosition)]);
     }
 
-    public static Cmd<object[], GeoSearchResult[]> GeoSearchAsync(ValkeyKey key, ValkeyValue from, GeoSearchShape shape, GeoSearchOptions options = default)
+    public static Cmd<object[], GeoSearchResult[]> GeoSearch(ValkeyKey key, ValkeyValue from, GeoSearchShape shape, GeoSearchOptions options = default)
     {
         List<GlideString> args = [key.ToGlideString(), ValkeyLiterals.FROMMEMBER.ToGlideString(), from.ToGlideString()];
         args.AddRange(shape.ToArgs());
@@ -72,7 +72,7 @@ internal static partial class Request
         return new(RequestType.GeoSearch, [.. args], false, response => ProcessGeoSearchResponse(response, options));
     }
 
-    public static Cmd<object[], GeoSearchResult[]> GeoSearchAsync(ValkeyKey key, GeoPosition from, GeoSearchShape shape, GeoSearchOptions options = default)
+    public static Cmd<object[], GeoSearchResult[]> GeoSearch(ValkeyKey key, GeoPosition from, GeoSearchShape shape, GeoSearchOptions options = default)
     {
         List<GlideString> args = [key.ToGlideString(), ValkeyLiterals.FROMLONLAT.ToGlideString(), from.Longitude.ToGlideString(), from.Latitude.ToGlideString()];
         args.AddRange(shape.ToArgs());
@@ -80,7 +80,7 @@ internal static partial class Request
         return new(RequestType.GeoSearch, [.. args], false, response => ProcessGeoSearchResponse(response, options));
     }
 
-    public static Cmd<long, long> GeoSearchAndStoreAsync(ValkeyKey source, ValkeyKey destination, ValkeyValue from, GeoSearchShape shape, GeoSearchStoreOptions options = default)
+    public static Cmd<long, long> GeoSearchAndStore(ValkeyKey source, ValkeyKey destination, ValkeyValue from, GeoSearchShape shape, GeoSearchStoreOptions options = default)
     {
         List<GlideString> args = [destination.ToGlideString(), source.ToGlideString(), ValkeyLiterals.FROMMEMBER.ToGlideString(), from.ToGlideString()];
         args.AddRange(shape.ToArgs());
@@ -88,7 +88,7 @@ internal static partial class Request
         return Simple<long>(RequestType.GeoSearchStore, [.. args]);
     }
 
-    public static Cmd<long, long> GeoSearchAndStoreAsync(ValkeyKey source, ValkeyKey destination, GeoPosition from, GeoSearchShape shape, GeoSearchStoreOptions options = default)
+    public static Cmd<long, long> GeoSearchAndStore(ValkeyKey source, ValkeyKey destination, GeoPosition from, GeoSearchShape shape, GeoSearchStoreOptions options = default)
     {
         List<GlideString> args = [destination.ToGlideString(), source.ToGlideString(), ValkeyLiterals.FROMLONLAT.ToGlideString(), from.Longitude.ToGlideString(), from.Latitude.ToGlideString()];
         args.AddRange(shape.ToArgs());

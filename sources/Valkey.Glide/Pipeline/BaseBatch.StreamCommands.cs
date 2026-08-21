@@ -19,11 +19,11 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
 
     /// <inheritdoc cref="IBatchStreamCommands.StreamAdd(ValkeyKey, ValkeyValue, ValkeyValue, StreamAddOptions)" />
     public T StreamAdd(ValkeyKey key, ValkeyValue streamField, ValkeyValue streamValue, StreamAddOptions options) =>
-        AddCmd(Request.StreamAddAsync(key, [new NameValueEntry(streamField, streamValue)], options));
+        AddCmd(Request.StreamAdd(key, [new NameValueEntry(streamField, streamValue)], options));
 
     /// <inheritdoc cref="IBatchStreamCommands.StreamAdd(ValkeyKey, IEnumerable{NameValueEntry}, StreamAddOptions)" />
     public T StreamAdd(ValkeyKey key, IEnumerable<NameValueEntry> streamPairs, StreamAddOptions options) =>
-        AddCmd(Request.StreamAddAsync(key, [.. streamPairs], options));
+        AddCmd(Request.StreamAdd(key, [.. streamPairs], options));
 
     #endregion
     #region StreamRead
@@ -38,26 +38,26 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
 
     /// <inheritdoc cref="IBatchStreamCommands.StreamRead(StreamPosition, StreamReadOptions)" />
     public T StreamRead(StreamPosition position, StreamReadOptions options) =>
-        AddCmd(Request.StreamReadAsync(position, options));
+        AddCmd(Request.StreamRead(position, options));
 
     /// <inheritdoc cref="IBatchStreamCommands.StreamRead(IEnumerable{StreamPosition}, StreamReadOptions)" />
     public T StreamRead(IEnumerable<StreamPosition> streamPositions, StreamReadOptions options) =>
-        AddCmd(Request.StreamReadAsync(streamPositions, options));
+        AddCmd(Request.StreamRead(streamPositions, options));
 
     #endregion
     #region StreamLength
 
     /// <inheritdoc cref="IBatchStreamCommands.StreamLength(ValkeyKey)" />
-    public T StreamLength(ValkeyKey key) => AddCmd(Request.StreamLengthAsync(key));
+    public T StreamLength(ValkeyKey key) => AddCmd(Request.StreamLength(key));
 
     #endregion
     #region StreamDelete
 
     /// <inheritdoc cref="IBatchStreamCommands.StreamDelete(ValkeyKey, IEnumerable{ValkeyValue})" />
-    public T StreamDelete(ValkeyKey key, IEnumerable<ValkeyValue> messageIds) => AddCmd(Request.StreamDeleteAsync(key, [.. messageIds]));
+    public T StreamDelete(ValkeyKey key, IEnumerable<ValkeyValue> messageIds) => AddCmd(Request.StreamDelete(key, [.. messageIds]));
 
     /// <inheritdoc cref="IBatchStreamCommands.StreamDelete(ValkeyKey, ValkeyValue)" />
-    public T StreamDelete(ValkeyKey key, ValkeyValue messageId) => AddCmd(Request.StreamDeleteAsync(key, messageId));
+    public T StreamDelete(ValkeyKey key, ValkeyValue messageId) => AddCmd(Request.StreamDelete(key, messageId));
 
     #endregion
     #region StreamRange
@@ -68,7 +68,7 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
 
     /// <inheritdoc cref="IBatchStreamCommands.StreamRange(ValkeyKey, StreamRangeOptions)" />
     public T StreamRange(ValkeyKey key, StreamRangeOptions options) =>
-        AddCmd(Request.StreamRangeAsync(key, options));
+        AddCmd(Request.StreamRange(key, options));
 
     #endregion
     #region StreamReadGroup
@@ -83,11 +83,11 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
 
     /// <inheritdoc cref="IBatchStreamCommands.StreamReadGroup(StreamPosition, ValkeyValue, ValkeyValue, StreamReadGroupOptions)" />
     public T StreamReadGroup(StreamPosition position, ValkeyValue groupName, ValkeyValue consumerName, StreamReadGroupOptions options) =>
-        AddCmd(Request.StreamReadGroupAsync(position, groupName, consumerName, options));
+        AddCmd(Request.StreamReadGroup(position, groupName, consumerName, options));
 
     /// <inheritdoc cref="IBatchStreamCommands.StreamReadGroup(IEnumerable{StreamPosition}, ValkeyValue, ValkeyValue, StreamReadGroupOptions)" />
     public T StreamReadGroup(IEnumerable<StreamPosition> positions, ValkeyValue groupName, ValkeyValue consumerName, StreamReadGroupOptions options) =>
-        AddCmd(Request.StreamReadGroupAsync(positions, groupName, consumerName, options));
+        AddCmd(Request.StreamReadGroup(positions, groupName, consumerName, options));
 
     #endregion
     #region Explicit interface implementations

@@ -1,8 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using Valkey.Glide.Commands.Options;
-
-using static Valkey.Glide.Internals.Request;
+using Valkey.Glide.Internals;
 
 namespace Valkey.Glide.Pipeline;
 
@@ -12,85 +11,85 @@ namespace Valkey.Glide.Pipeline;
 public abstract partial class BaseBatch<T>
 {
     /// <inheritdoc cref="IBatchSetCommands.SetAdd(ValkeyKey, ValkeyValue)" />
-    public T SetAdd(ValkeyKey key, ValkeyValue value) => AddCmd(SetAddAsync(key, value));
+    public T SetAdd(ValkeyKey key, ValkeyValue value) => AddCmd(Request.SetAdd(key, value));
 
     /// <inheritdoc cref="IBatchSetCommands.SetAdd(ValkeyKey, IEnumerable{ValkeyValue})" />
-    public T SetAdd(ValkeyKey key, IEnumerable<ValkeyValue> values) => AddCmd(SetAddAsync(key, values));
+    public T SetAdd(ValkeyKey key, IEnumerable<ValkeyValue> values) => AddCmd(Request.SetAdd(key, values));
 
     /// <inheritdoc cref="IBatchSetCommands.SetRemove(ValkeyKey, ValkeyValue)" />
-    public T SetRemove(ValkeyKey key, ValkeyValue value) => AddCmd(SetRemoveAsync(key, value));
+    public T SetRemove(ValkeyKey key, ValkeyValue value) => AddCmd(Request.SetRemove(key, value));
 
     /// <inheritdoc cref="IBatchSetCommands.SetRemove(ValkeyKey, IEnumerable{ValkeyValue})" />
-    public T SetRemove(ValkeyKey key, IEnumerable<ValkeyValue> values) => AddCmd(SetRemoveAsync(key, values));
+    public T SetRemove(ValkeyKey key, IEnumerable<ValkeyValue> values) => AddCmd(Request.SetRemove(key, values));
 
     /// <inheritdoc cref="IBatchSetCommands.SetMembers(ValkeyKey)" />
-    public T SetMembers(ValkeyKey key) => AddCmd(SetMembersAsync(key));
+    public T SetMembers(ValkeyKey key) => AddCmd(Request.SetMembers(key));
 
     /// <inheritdoc cref="IBatchSetCommands.SetCard(ValkeyKey)" />
-    public T SetCard(ValkeyKey key) => AddCmd(SetCardAsync(key));
+    public T SetCard(ValkeyKey key) => AddCmd(Request.SetCard(key));
 
     /// <inheritdoc cref="IBatchSetCommands.SetInterCard(IEnumerable{ValkeyKey}, long)" />
-    public T SetInterCard(IEnumerable<ValkeyKey> keys, long limit = 0) => AddCmd(SetInterCardAsync(keys, limit));
+    public T SetInterCard(IEnumerable<ValkeyKey> keys, long limit = 0) => AddCmd(Request.SetInterCard(keys, limit));
 
     /// <inheritdoc cref="IBatchSetCommands.SetPop(ValkeyKey)" />
-    public T SetPop(ValkeyKey key) => AddCmd(SetPopAsync(key));
+    public T SetPop(ValkeyKey key) => AddCmd(Request.SetPop(key));
 
     /// <inheritdoc cref="IBatchSetCommands.SetPop(ValkeyKey, long)" />
-    public T SetPop(ValkeyKey key, long count) => AddCmd(SetPopAsync(key, count));
+    public T SetPop(ValkeyKey key, long count) => AddCmd(Request.SetPop(key, count));
 
     /// <inheritdoc cref="IBatchSetCommands.SetUnion(ValkeyKey, ValkeyKey)" />
-    public T SetUnion(ValkeyKey first, ValkeyKey second) => AddCmd(SetUnionAsync([first, second]));
+    public T SetUnion(ValkeyKey first, ValkeyKey second) => AddCmd(Request.SetUnion([first, second]));
 
     /// <inheritdoc cref="IBatchSetCommands.SetUnion(IEnumerable{ValkeyKey})" />
-    public T SetUnion(IEnumerable<ValkeyKey> keys) => AddCmd(SetUnionAsync(keys));
+    public T SetUnion(IEnumerable<ValkeyKey> keys) => AddCmd(Request.SetUnion(keys));
 
     /// <inheritdoc cref="IBatchSetCommands.SetInter(ValkeyKey, ValkeyKey)" />
-    public T SetInter(ValkeyKey first, ValkeyKey second) => AddCmd(SetInterAsync([first, second]));
+    public T SetInter(ValkeyKey first, ValkeyKey second) => AddCmd(Request.SetInter([first, second]));
 
     /// <inheritdoc cref="IBatchSetCommands.SetInter(IEnumerable{ValkeyKey})" />
-    public T SetInter(IEnumerable<ValkeyKey> keys) => AddCmd(SetInterAsync(keys));
+    public T SetInter(IEnumerable<ValkeyKey> keys) => AddCmd(Request.SetInter(keys));
 
     /// <inheritdoc cref="IBatchSetCommands.SetDiff(ValkeyKey, ValkeyKey)" />
-    public T SetDiff(ValkeyKey first, ValkeyKey second) => AddCmd(SetDiffAsync([first, second]));
+    public T SetDiff(ValkeyKey first, ValkeyKey second) => AddCmd(Request.SetDiff([first, second]));
 
     /// <inheritdoc cref="IBatchSetCommands.SetDiff(IEnumerable{ValkeyKey})" />
-    public T SetDiff(IEnumerable<ValkeyKey> keys) => AddCmd(SetDiffAsync(keys));
+    public T SetDiff(IEnumerable<ValkeyKey> keys) => AddCmd(Request.SetDiff(keys));
 
     /// <inheritdoc cref="IBatchSetCommands.SetUnionStore(ValkeyKey, ValkeyKey, ValkeyKey)" />
-    public T SetUnionStore(ValkeyKey destination, ValkeyKey first, ValkeyKey second) => AddCmd(SetUnionStoreAsync(destination, [first, second]));
+    public T SetUnionStore(ValkeyKey destination, ValkeyKey first, ValkeyKey second) => AddCmd(Request.SetUnionStore(destination, [first, second]));
 
     /// <inheritdoc cref="IBatchSetCommands.SetUnionStore(ValkeyKey, IEnumerable{ValkeyKey})" />
-    public T SetUnionStore(ValkeyKey destination, IEnumerable<ValkeyKey> keys) => AddCmd(SetUnionStoreAsync(destination, keys));
+    public T SetUnionStore(ValkeyKey destination, IEnumerable<ValkeyKey> keys) => AddCmd(Request.SetUnionStore(destination, keys));
 
     /// <inheritdoc cref="IBatchSetCommands.SetInterStore(ValkeyKey, ValkeyKey, ValkeyKey)" />
-    public T SetInterStore(ValkeyKey destination, ValkeyKey first, ValkeyKey second) => AddCmd(SetInterStoreAsync(destination, [first, second]));
+    public T SetInterStore(ValkeyKey destination, ValkeyKey first, ValkeyKey second) => AddCmd(Request.SetInterStore(destination, [first, second]));
 
     /// <inheritdoc cref="IBatchSetCommands.SetInterStore(ValkeyKey, IEnumerable{ValkeyKey})" />
-    public T SetInterStore(ValkeyKey destination, IEnumerable<ValkeyKey> keys) => AddCmd(SetInterStoreAsync(destination, keys));
+    public T SetInterStore(ValkeyKey destination, IEnumerable<ValkeyKey> keys) => AddCmd(Request.SetInterStore(destination, keys));
 
     /// <inheritdoc cref="IBatchSetCommands.SetDiffStore(ValkeyKey, ValkeyKey, ValkeyKey)" />
-    public T SetDiffStore(ValkeyKey destination, ValkeyKey first, ValkeyKey second) => AddCmd(SetDiffStoreAsync(destination, [first, second]));
+    public T SetDiffStore(ValkeyKey destination, ValkeyKey first, ValkeyKey second) => AddCmd(Request.SetDiffStore(destination, [first, second]));
 
     /// <inheritdoc cref="IBatchSetCommands.SetDiffStore(ValkeyKey, IEnumerable{ValkeyKey})" />
-    public T SetDiffStore(ValkeyKey destination, IEnumerable<ValkeyKey> keys) => AddCmd(SetDiffStoreAsync(destination, keys));
+    public T SetDiffStore(ValkeyKey destination, IEnumerable<ValkeyKey> keys) => AddCmd(Request.SetDiffStore(destination, keys));
 
     /// <inheritdoc cref="IBatchSetCommands.SetIsMember(ValkeyKey, ValkeyValue)" />
-    public T SetIsMember(ValkeyKey key, ValkeyValue value) => AddCmd(SetIsMemberAsync(key, value));
+    public T SetIsMember(ValkeyKey key, ValkeyValue value) => AddCmd(Request.SetIsMember(key, value));
 
     /// <inheritdoc cref="IBatchSetCommands.SetIsMember(ValkeyKey, IEnumerable{ValkeyValue})" />
-    public T SetIsMember(ValkeyKey key, IEnumerable<ValkeyValue> values) => AddCmd(SetIsMemberAsync(key, values));
+    public T SetIsMember(ValkeyKey key, IEnumerable<ValkeyValue> values) => AddCmd(Request.SetIsMember(key, values));
 
     /// <inheritdoc cref="IBatchSetCommands.SetRandomMember(ValkeyKey)" />
-    public T SetRandomMember(ValkeyKey key) => AddCmd(SetRandomMemberAsync(key));
+    public T SetRandomMember(ValkeyKey key) => AddCmd(Request.SetRandomMember(key));
 
     /// <inheritdoc cref="IBatchSetCommands.SetRandomMembers(ValkeyKey, long)" />
-    public T SetRandomMembers(ValkeyKey key, long count) => AddCmd(SetRandomMembersAsync(key, count));
+    public T SetRandomMembers(ValkeyKey key, long count) => AddCmd(Request.SetRandomMembers(key, count));
 
     /// <inheritdoc cref="IBatchSetCommands.SetMove(ValkeyKey, ValkeyKey, ValkeyValue)" />
-    public T SetMove(ValkeyKey source, ValkeyKey destination, ValkeyValue value) => AddCmd(SetMoveAsync(source, destination, value));
+    public T SetMove(ValkeyKey source, ValkeyKey destination, ValkeyValue value) => AddCmd(Request.SetMove(source, destination, value));
 
     /// <inheritdoc cref="IBatchSetCommands.SetScan(ValkeyKey, long, ScanOptions)" />
-    public T SetScan(ValkeyKey key, long cursor = 0, ScanOptions? options = null) => AddCmd(SetScanAsync(key, cursor, options));
+    public T SetScan(ValkeyKey key, long cursor = 0, ScanOptions? options = null) => AddCmd(Request.SetScan(key, cursor, options));
 
     // Explicit interface implementations for IBatchSetCommands
     IBatch IBatchSetCommands.SetAdd(ValkeyKey key, ValkeyValue value) => SetAdd(key, value);

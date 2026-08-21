@@ -4,7 +4,7 @@ using static Valkey.Glide.Internals.FFI;
 
 namespace Valkey.Glide.Internals;
 
-internal partial class Request
+internal static partial class Request
 {
     #region Command Builders
 
@@ -14,7 +14,7 @@ internal partial class Request
     /// <param name="key">The key of the HyperLogLog.</param>
     /// <param name="element">The element to add.</param>
     /// <returns>A command that adds the element to the HyperLogLog and returns true if altered.</returns>
-    public static Cmd<bool, bool> HyperLogLogAddAsync(ValkeyKey key, ValkeyValue element)
+    public static Cmd<bool, bool> HyperLogLogAdd(ValkeyKey key, ValkeyValue element)
         => Simple<bool>(RequestType.PfAdd, [key, element]);
 
     /// <summary>
@@ -23,7 +23,7 @@ internal partial class Request
     /// <param name="key">The key of the HyperLogLog.</param>
     /// <param name="elements">The elements to add.</param>
     /// <returns>A command that adds the elements to the HyperLogLog and returns true if altered.</returns>
-    public static Cmd<bool, bool> HyperLogLogAddAsync(ValkeyKey key, ValkeyValue[] elements)
+    public static Cmd<bool, bool> HyperLogLogAdd(ValkeyKey key, ValkeyValue[] elements)
     {
         GlideString[] args = new GlideString[elements.Length + 1];
         args[0] = key;
@@ -39,7 +39,7 @@ internal partial class Request
     /// </summary>
     /// <param name="key">The key of the HyperLogLog.</param>
     /// <returns>A command that returns the approximated cardinality of the HyperLogLog.</returns>
-    public static Cmd<long, long> HyperLogLogLengthAsync(ValkeyKey key)
+    public static Cmd<long, long> HyperLogLogLength(ValkeyKey key)
         => Simple<long>(RequestType.PfCount, [key]);
 
     /// <summary>
@@ -47,7 +47,7 @@ internal partial class Request
     /// </summary>
     /// <param name="keys">The keys of the HyperLogLogs.</param>
     /// <returns>A command that returns the approximated cardinality of the union of HyperLogLogs.</returns>
-    public static Cmd<long, long> HyperLogLogLengthAsync(ValkeyKey[] keys)
+    public static Cmd<long, long> HyperLogLogLength(ValkeyKey[] keys)
         => Simple<long>(RequestType.PfCount, keys.ToGlideStrings());
 
     /// <summary>
@@ -57,7 +57,7 @@ internal partial class Request
     /// <param name="first">The key of the first source HyperLogLog.</param>
     /// <param name="second">The key of the second source HyperLogLog.</param>
     /// <returns>A command that merges the HyperLogLogs.</returns>
-    public static Cmd<string, ValkeyValue> HyperLogLogMergeAsync(ValkeyKey destination, ValkeyKey first, ValkeyKey second)
+    public static Cmd<string, ValkeyValue> HyperLogLogMerge(ValkeyKey destination, ValkeyKey first, ValkeyKey second)
         => Ok(RequestType.PfMerge, [destination, first, second]);
 
     /// <summary>
@@ -66,7 +66,7 @@ internal partial class Request
     /// <param name="destination">The key of the destination HyperLogLog.</param>
     /// <param name="sourceKeys">The keys of the source HyperLogLogs.</param>
     /// <returns>A command that merges the HyperLogLogs.</returns>
-    public static Cmd<string, ValkeyValue> HyperLogLogMergeAsync(ValkeyKey destination, ValkeyKey[] sourceKeys)
+    public static Cmd<string, ValkeyValue> HyperLogLogMerge(ValkeyKey destination, ValkeyKey[] sourceKeys)
     {
         GlideString[] args = new GlideString[sourceKeys.Length + 1];
         args[0] = destination;

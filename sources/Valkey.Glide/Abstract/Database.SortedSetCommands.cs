@@ -252,7 +252,7 @@ internal partial class Database
     public Task<SortedSetEntry[]> SortedSetRandomMembersWithScoresAsync(ValkeyKey key, long count, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return Command(Request.SortedSetRandomMembersWithScoresAsync(key, count));
+        return Command(Request.SortedSetRandomMembersWithScores(key, count));
     }
 
     /// <inheritdoc cref="IDatabaseAsync.SortedSetRangeAndStoreAsync(ValkeyKey, ValkeyKey, ValkeyValue, ValkeyValue, SortedSetOrder, Exclude, Order, long, long?, CommandFlags)"/>

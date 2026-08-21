@@ -13,13 +13,13 @@ public partial class GlideClient
         FunctionListOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        return await Command(Request.FunctionListAsync(options));
+        return await Command(Request.FunctionList(options));
     }
 
     /// <inheritdoc cref="IGlideClient.FunctionStatsAsync(CancellationToken)"/>
     public async Task<FunctionStatsResult> FunctionStatsAsync(
         CancellationToken cancellationToken = default)
     {
-        return await Command(Request.FunctionStatsAsync());
+        return await Command(Request.FunctionStats());
     }
 }

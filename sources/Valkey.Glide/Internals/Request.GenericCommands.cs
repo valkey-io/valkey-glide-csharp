@@ -7,7 +7,7 @@ using static Valkey.Glide.Internals.TimeUtils;
 
 namespace Valkey.Glide.Internals;
 
-internal partial class Request
+internal static partial class Request
 {
     #region Constants
 
@@ -16,7 +16,7 @@ internal partial class Request
     #endregion
     #region Command Builders
 
-    public static Cmd<bool, bool> CopyAsync(ValkeyKey source, ValkeyKey destination, bool replace = false)
+    public static Cmd<bool, bool> Copy(ValkeyKey source, ValkeyKey destination, bool replace = false)
     {
         List<GlideString> args = [source, destination];
 
@@ -28,7 +28,7 @@ internal partial class Request
         return Simple<bool>(RequestType.Copy, [.. args]);
     }
 
-    public static Cmd<bool, bool> CopyAsync(ValkeyKey source, ValkeyKey destination, int destinationDatabase, bool replace = false)
+    public static Cmd<bool, bool> Copy(ValkeyKey source, ValkeyKey destination, int destinationDatabase, bool replace = false)
     {
         List<GlideString> args = [source, destination, ValkeyLiterals.DB, destinationDatabase.ToGlideString()];
 
@@ -40,22 +40,22 @@ internal partial class Request
         return Simple<bool>(RequestType.Copy, [.. args]);
     }
 
-    public static Cmd<long, bool> DeleteAsync(ValkeyKey key)
+    public static Cmd<long, bool> Delete(ValkeyKey key)
         => Boolean<long>(RequestType.Del, [key]);
 
-    public static Cmd<long, long> DeleteAsync(ValkeyKey[] keys)
+    public static Cmd<long, long> Delete(ValkeyKey[] keys)
         => Simple<long>(RequestType.Del, keys.ToGlideStrings());
 
-    public static Cmd<GlideString, byte[]?> DumpAsync(ValkeyKey key)
+    public static Cmd<GlideString, byte[]?> Dump(ValkeyKey key)
         => new(RequestType.Dump, [key], true, response => response?.Bytes);
 
-    public static Cmd<long, bool> ExistsAsync(ValkeyKey key)
+    public static Cmd<long, bool> Exists(ValkeyKey key)
         => Boolean<long>(RequestType.Exists, [key]);
 
-    public static Cmd<long, long> ExistsAsync(ValkeyKey[] keys)
+    public static Cmd<long, long> Exists(ValkeyKey[] keys)
         => Simple<long>(RequestType.Exists, keys.ToGlideStrings());
 
-    public static Cmd<bool, bool> ExpireAsync(ValkeyKey key, TimeSpan? expiry, ExpireCondition condition = ExpireCondition.Always)
+    public static Cmd<bool, bool> Expire(ValkeyKey key, TimeSpan? expiry, ExpireCondition condition = ExpireCondition.Always)
     {
         List<GlideString> args = [key];
         args.Add(expiry.HasValue ? ToULongMs(expiry.Value, nameof(expiry)).ToGlideString() : InstantExpiry);
@@ -64,7 +64,7 @@ internal partial class Request
         return Simple<bool>(RequestType.PExpire, [.. args]);
     }
 
-    public static Cmd<bool, bool> ExpireAsync(ValkeyKey key, DateTimeOffset? expiry, ExpireCondition condition = ExpireCondition.Always)
+    public static Cmd<bool, bool> Expire(ValkeyKey key, DateTimeOffset? expiry, ExpireCondition condition = ExpireCondition.Always)
     {
         List<GlideString> args = [key];
         args.Add(expiry.HasValue ? expiry.Value.ToUnixTimeMilliseconds().ToGlideString() : InstantExpiry);
@@ -73,42 +73,42 @@ internal partial class Request
         return Simple<bool>(RequestType.PExpireAt, [.. args]);
     }
 
-    public static Cmd<long, DateTimeOffset?> ExpireTimeAsync(ValkeyKey key)
+    public static Cmd<long, DateTimeOffset?> ExpireTime(ValkeyKey key)
         => new(RequestType.PExpireTime, [key], true, response =>
             response is -1 or -2 ? null : DateTimeOffset.FromUnixTimeMilliseconds(response));
 
-    public static Cmd<object, bool> MigrateAsync(IEnumerable<ValkeyKey> keys, MigrateOptions options)
+    public static Cmd<object, bool> Migrate(IEnumerable<ValkeyKey> keys, MigrateOptions options)
         => new(RequestType.Migrate, options.ToArgs(keys.ToGlideStrings()), false, response => response is string s && s == "OK");
 
-    public static Cmd<bool, bool> MoveAsync(ValkeyKey key, int database)
+    public static Cmd<bool, bool> Move(ValkeyKey key, int database)
         => Simple<bool>(RequestType.Move, [(GlideString)key, database.ToGlideString()]);
 
-    public static Cmd<GlideString, string?> ObjectEncodingAsync(ValkeyKey key)
+    public static Cmd<GlideString, string?> ObjectEncoding(ValkeyKey key)
         => new(RequestType.ObjectEncoding, [key], true, response => response?.ToString());
 
-    public static Cmd<long, long?> ObjectFrequencyAsync(ValkeyKey key)
+    public static Cmd<long, long?> ObjectFrequency(ValkeyKey key)
         => new(RequestType.ObjectFreq, [key], true, response => response == -1 ? null : response);
 
-    public static Cmd<long, TimeSpan?> ObjectIdleTimeAsync(ValkeyKey key)
+    public static Cmd<long, TimeSpan?> ObjectIdleTime(ValkeyKey key)
         => new(RequestType.ObjectIdleTime, [key], true, response => response == -1 ? null : TimeSpan.FromSeconds(response));
 
-    public static Cmd<long, long?> ObjectRefCountAsync(ValkeyKey key)
+    public static Cmd<long, long?> ObjectRefCount(ValkeyKey key)
         => new(RequestType.ObjectRefCount, [key], true, response => response == -1 ? null : response);
 
-    public static Cmd<bool, bool> PersistAsync(ValkeyKey key)
+    public static Cmd<bool, bool> Persist(ValkeyKey key)
         => Simple<bool>(RequestType.Persist, [key]);
 
-    public static Cmd<GlideString, ValkeyKey?> RandomKeyAsync()
+    public static Cmd<GlideString, ValkeyKey?> RandomKey()
         => new(RequestType.RandomKey, [], true, response => response is null ? (ValkeyKey?)null : new ValkeyKey(response.ToString()));
 
     // TODO #454: Should return ValkeyValue.Ok instead of bool.
-    public static Cmd<string, bool> RenameAsync(ValkeyKey key, ValkeyKey newKey)
+    public static Cmd<string, bool> Rename(ValkeyKey key, ValkeyKey newKey)
         => new(RequestType.Rename, [key, newKey], false, _ => true);
 
-    public static Cmd<bool, bool> RenameIfNotExistsAsync(ValkeyKey key, ValkeyKey newKey)
+    public static Cmd<bool, bool> RenameIfNotExists(ValkeyKey key, ValkeyKey newKey)
         => Simple<bool>(RequestType.RenameNX, [key, newKey]);
 
-    public static Cmd<string, ValkeyValue> RestoreAsync(ValkeyKey key, byte[] value, RestoreOptions? options = null)
+    public static Cmd<string, ValkeyValue> Restore(ValkeyKey key, byte[] value, RestoreOptions? options = null)
     {
         List<GlideString> args = [key];
 
@@ -132,7 +132,7 @@ internal partial class Request
         return Ok(RequestType.Restore, [.. args]);
     }
 
-    public static Cmd<object[], (string, ValkeyKey[])> ScanAsync(string cursor, ScanOptions? options = null)
+    public static Cmd<object[], (string, ValkeyKey[])> Scan(string cursor, ScanOptions? options = null)
     {
         List<GlideString> args = [cursor.ToGlideString()];
         args.AddRange(ToScanArgs(options));
@@ -145,7 +145,7 @@ internal partial class Request
         });
     }
 
-    public static Cmd<long, long> SortAndStoreAsync(ValkeyKey destination, ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, ValkeyValue[]? get = null)
+    public static Cmd<long, long> SortAndStore(ValkeyKey destination, ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, ValkeyValue[]? get = null)
     {
         List<GlideString> args = [key];
 
@@ -187,7 +187,7 @@ internal partial class Request
         return Simple<long>(RequestType.Sort, [.. args]);
     }
 
-    public static Cmd<object[], ValkeyValue[]> SortAsync(ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, ValkeyValue[]? get = null, Version? serverVersion = null)
+    public static Cmd<object[], ValkeyValue[]> Sort(ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, ValkeyValue[]? get = null, Version? serverVersion = null)
     {
         List<GlideString> args = [key];
 
@@ -230,7 +230,7 @@ internal partial class Request
         return new(requestType, [.. args], false, response => response?.Cast<GlideString>().Select(item => (ValkeyValue)item).ToArray() ?? []);
     }
 
-    public static Cmd<object[], ValkeyValue[]> SortReadOnlyAsync(ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, ValkeyValue[]? get = null)
+    public static Cmd<object[], ValkeyValue[]> SortReadOnly(ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, ValkeyValue[]? get = null)
     {
         List<GlideString> args = [key];
 
@@ -269,16 +269,16 @@ internal partial class Request
         return new(RequestType.SortReadOnly, [.. args], false, response => response?.Cast<GlideString>().Select(item => (ValkeyValue)item).ToArray() ?? []);
     }
 
-    public static Cmd<long, TimeToLiveResult> TimeToLiveAsync(ValkeyKey key)
+    public static Cmd<long, TimeToLiveResult> TimeToLive(ValkeyKey key)
         => new(RequestType.PTTL, [key], true, response => new TimeToLiveResult(response));
 
-    public static Cmd<long, bool> TouchAsync(ValkeyKey key)
+    public static Cmd<long, bool> Touch(ValkeyKey key)
         => Boolean<long>(RequestType.Touch, [key]);
 
-    public static Cmd<long, long> TouchAsync(ValkeyKey[] keys)
+    public static Cmd<long, long> Touch(ValkeyKey[] keys)
         => Simple<long>(RequestType.Touch, keys.ToGlideStrings());
 
-    public static Cmd<GlideString, ValkeyType> TypeAsync(ValkeyKey key)
+    public static Cmd<GlideString, ValkeyType> Type(ValkeyKey key)
         => new(RequestType.Type, [key], false, response =>
         {
             string typeStr = response.ToString();
@@ -294,16 +294,16 @@ internal partial class Request
             };
         });
 
-    public static Cmd<long, bool> UnlinkAsync(ValkeyKey key)
+    public static Cmd<long, bool> Unlink(ValkeyKey key)
         => Boolean<long>(RequestType.Unlink, [key]);
 
-    public static Cmd<long, long> UnlinkAsync(ValkeyKey[] keys)
+    public static Cmd<long, long> Unlink(ValkeyKey[] keys)
         => Simple<long>(RequestType.Unlink, keys.ToGlideStrings());
 
-    public static Cmd<long, long> WaitAsync(long numreplicas, TimeSpan timeout)
+    public static Cmd<long, long> Wait(long numreplicas, TimeSpan timeout)
         => Simple<long>(RequestType.Wait, [numreplicas.ToGlideString(), ToULongMs(timeout, nameof(timeout)).ToGlideString()]);
 
-    public static Cmd<object[], long[]> WaitAofAsync(bool localAof, long numreplicas, TimeSpan timeout)
+    public static Cmd<object[], long[]> WaitAof(bool localAof, long numreplicas, TimeSpan timeout)
         => new(RequestType.WaitAof, [(localAof ? 1L : 0L).ToGlideString(), numreplicas.ToGlideString(), ToULongMs(timeout, nameof(timeout)).ToGlideString()], false, arr =>
             {
                 long local = Convert.ToInt64(arr[0] is GlideString gs0 ? gs0.ToString() : arr[0]);

@@ -4,11 +4,11 @@ using static Valkey.Glide.Internals.FFI;
 
 namespace Valkey.Glide.Internals;
 
-internal partial class Request
+internal static partial class Request
 {
     #region Command Builders
 
-    public static Cmd<object?, ValkeyResult> EvalAsync(string script, string[]? keys = null, string[]? args = null)
+    public static Cmd<object?, ValkeyResult> Eval(string script, string[]? keys = null, string[]? args = null)
     {
         List<GlideString> cmdArgs = [script];
 
@@ -20,7 +20,7 @@ internal partial class Request
         return new(RequestType.Eval, [.. cmdArgs], true, ValkeyResult.Create, allowConverterToHandleNull: true);
     }
 
-    public static Cmd<object?, ValkeyResult> EvalShaAsync(string hash, string[]? keys = null, string[]? args = null)
+    public static Cmd<object?, ValkeyResult> EvalSha(string hash, string[]? keys = null, string[]? args = null)
     {
         List<GlideString> cmdArgs = [hash];
 
@@ -32,7 +32,7 @@ internal partial class Request
         return new(RequestType.EvalSha, [.. cmdArgs], true, ValkeyResult.Create, allowConverterToHandleNull: true);
     }
 
-    public static Cmd<object?, ValkeyResult> FCallAsync(string function, string[]? keys = null, string[]? args = null)
+    public static Cmd<object?, ValkeyResult> FCall(string function, string[]? keys = null, string[]? args = null)
     {
         List<GlideString> cmdArgs = [function];
 
@@ -44,7 +44,7 @@ internal partial class Request
         return new(RequestType.FCall, [.. cmdArgs], true, ValkeyResult.Create, allowConverterToHandleNull: true);
     }
 
-    public static Cmd<object?, ValkeyResult> FCallReadOnlyAsync(string function, string[]? keys = null, string[]? args = null)
+    public static Cmd<object?, ValkeyResult> FCallReadOnly(string function, string[]? keys = null, string[]? args = null)
     {
         List<GlideString> cmdArgs = [function];
 
@@ -56,22 +56,22 @@ internal partial class Request
         return new(RequestType.FCallReadOnly, [.. cmdArgs], true, ValkeyResult.Create, allowConverterToHandleNull: true);
     }
 
-    public static Cmd<string, ValkeyValue> FunctionDeleteAsync(string libraryName)
+    public static Cmd<string, ValkeyValue> FunctionDelete(string libraryName)
         => Ok(RequestType.FunctionDelete, [libraryName]);
 
-    public static Cmd<GlideString, byte[]> FunctionDumpAsync()
+    public static Cmd<GlideString, byte[]> FunctionDump()
         => new(RequestType.FunctionDump, [], false, gs => gs.Bytes);
 
-    public static Cmd<string, ValkeyValue> FunctionFlushAsync()
+    public static Cmd<string, ValkeyValue> FunctionFlush()
         => Ok(RequestType.FunctionFlush);
 
-    public static Cmd<string, ValkeyValue> FunctionFlushAsync(FlushMode mode)
+    public static Cmd<string, ValkeyValue> FunctionFlush(FlushMode mode)
         => Ok(RequestType.FunctionFlush, [mode == FlushMode.Sync ? ValkeyLiterals.SYNC : ValkeyLiterals.ASYNC]);
 
-    public static Cmd<string, ValkeyValue> FunctionKillAsync()
+    public static Cmd<string, ValkeyValue> FunctionKill()
         => Ok(RequestType.FunctionKill);
 
-    public static Cmd<object[], LibraryInfo[]> FunctionListAsync(FunctionListOptions? options = null)
+    public static Cmd<object[], LibraryInfo[]> FunctionList(FunctionListOptions? options = null)
     {
         List<GlideString> cmdArgs = [];
 
@@ -92,7 +92,7 @@ internal partial class Request
     /// <summary>
     /// Creates a command to load a function library.
     /// </summary>
-    public static Cmd<GlideString, string> FunctionLoadAsync(string libraryCode, bool replace)
+    public static Cmd<GlideString, string> FunctionLoad(string libraryCode, bool replace)
     {
         List<GlideString> cmdArgs = [];
         if (replace)
@@ -107,7 +107,7 @@ internal partial class Request
     /// <summary>
     /// Creates a command to restore functions from a binary payload.
     /// </summary>
-    public static Cmd<string, ValkeyValue> FunctionRestoreAsync(byte[] payload, FunctionRestorePolicy? policy = null)
+    public static Cmd<string, ValkeyValue> FunctionRestore(byte[] payload, FunctionRestorePolicy? policy = null)
     {
         List<GlideString> cmdArgs = [payload];
 
@@ -128,13 +128,13 @@ internal partial class Request
     /// <summary>
     /// Creates a command to get function statistics.
     /// </summary>
-    public static Cmd<object, FunctionStatsResult> FunctionStatsAsync()
+    public static Cmd<object, FunctionStatsResult> FunctionStats()
         => new(RequestType.FunctionStats, [], false, ParseFunctionStatsResponse);
 
     /// <summary>
     /// Creates a command to check if scripts exist in the cache.
     /// </summary>
-    public static Cmd<object[], bool[]> ScriptExistsAsync(string[] sha1Hashes)
+    public static Cmd<object[], bool[]> ScriptExists(string[] sha1Hashes)
     {
         var cmdArgs = sha1Hashes.Select(h => (GlideString)h).ToArray();
         return new(RequestType.ScriptExists, cmdArgs, false, arr => [.. arr.Select(o => Convert.ToInt64(o) == 1)]);
@@ -143,25 +143,25 @@ internal partial class Request
     /// <summary>
     /// Creates a command to flush all scripts from the cache.
     /// </summary>
-    public static Cmd<string, ValkeyValue> ScriptFlushAsync()
+    public static Cmd<string, ValkeyValue> ScriptFlush()
         => Ok(RequestType.ScriptFlush);
 
     /// <summary>
     /// Creates a command to flush all scripts from the cache with specified mode.
     /// </summary>
-    public static Cmd<string, ValkeyValue> ScriptFlushAsync(FlushMode mode)
+    public static Cmd<string, ValkeyValue> ScriptFlush(FlushMode mode)
         => Ok(RequestType.ScriptFlush, [mode == FlushMode.Sync ? ValkeyLiterals.SYNC : ValkeyLiterals.ASYNC]);
 
     /// <summary>
     /// Creates a command to kill a currently executing script.
     /// </summary>
-    public static Cmd<string, ValkeyValue> ScriptKillAsync()
+    public static Cmd<string, ValkeyValue> ScriptKill()
         => Ok(RequestType.ScriptKill);
 
     /// <summary>
     /// Creates a command to get the source code of a cached script.
     /// </summary>
-    public static Cmd<GlideString?, string?> ScriptShowAsync(string sha1Hash)
+    public static Cmd<GlideString?, string?> ScriptShow(string sha1Hash)
         => new(RequestType.ScriptShow, [sha1Hash], true, gs => gs?.ToString());
 
     #endregion

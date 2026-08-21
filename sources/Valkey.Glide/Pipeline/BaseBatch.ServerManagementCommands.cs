@@ -8,49 +8,49 @@ namespace Valkey.Glide.Pipeline;
 public abstract partial class BaseBatch<T> where T : BaseBatch<T>
 {
     /// <inheritdoc cref="IBatchServerManagementCommands.ConfigGetAsync(ValkeyValue)" />
-    public T ConfigGetAsync(ValkeyValue pattern = default) => AddCmd(Request.ConfigGetAsync(pattern));
+    public T ConfigGetAsync(ValkeyValue pattern = default) => AddCmd(Request.ConfigGet(pattern));
 
     /// <inheritdoc cref="IBatchServerManagementCommands.ConfigGetAsync(IEnumerable{ValkeyValue})" />
-    public T ConfigGetAsync(IEnumerable<ValkeyValue> patterns) => AddCmd(Request.ConfigGetAsync(patterns));
+    public T ConfigGetAsync(IEnumerable<ValkeyValue> patterns) => AddCmd(Request.ConfigGet(patterns));
 
     /// <inheritdoc cref="IBatchServerManagementCommands.ConfigResetStatisticsAsync()" />
-    public T ConfigResetStatisticsAsync() => AddCmd(Request.ConfigResetStatisticsAsync());
+    public T ConfigResetStatisticsAsync() => AddCmd(Request.ConfigResetStatistics());
 
     /// <inheritdoc cref="IBatchServerManagementCommands.ConfigRewriteAsync()" />
-    public T ConfigRewriteAsync() => AddCmd(Request.ConfigRewriteAsync());
+    public T ConfigRewriteAsync() => AddCmd(Request.ConfigRewrite());
 
     /// <inheritdoc cref="IBatchServerManagementCommands.ConfigSetAsync(ValkeyValue, ValkeyValue)" />
-    public T ConfigSetAsync(ValkeyValue setting, ValkeyValue value) => AddCmd(Request.ConfigSetAsync(setting, value));
+    public T ConfigSetAsync(ValkeyValue setting, ValkeyValue value) => AddCmd(Request.ConfigSet(setting, value));
 
     /// <inheritdoc cref="IBatchServerManagementCommands.ConfigSetAsync(IDictionary{ValkeyValue, ValkeyValue})" />
-    public T ConfigSetAsync(IDictionary<ValkeyValue, ValkeyValue> parameters) => AddCmd(Request.ConfigSetAsync(parameters));
+    public T ConfigSetAsync(IDictionary<ValkeyValue, ValkeyValue> parameters) => AddCmd(Request.ConfigSet(parameters));
 
     /// <inheritdoc cref="IBatchServerManagementCommands.DatabaseSizeAsync()" />
-    public T DatabaseSizeAsync() => AddCmd(Request.DatabaseSizeAsync());
+    public T DatabaseSizeAsync() => AddCmd(Request.DatabaseSize());
 
     /// <inheritdoc cref="IBatchServerManagementCommands.FlushAllDatabasesAsync()" />
-    public T FlushAllDatabasesAsync() => AddCmd(Request.FlushAllDatabasesAsync());
+    public T FlushAllDatabasesAsync() => AddCmd(Request.FlushAllDatabases());
 
     /// <inheritdoc cref="IBatchServerManagementCommands.FlushAllDatabasesAsync(FlushMode)" />
-    public T FlushAllDatabasesAsync(FlushMode mode) => AddCmd(Request.FlushAllDatabasesAsync(mode));
+    public T FlushAllDatabasesAsync(FlushMode mode) => AddCmd(Request.FlushAllDatabases(mode));
 
     /// <inheritdoc cref="IBatchServerManagementCommands.FlushDatabaseAsync()" />
-    public T FlushDatabaseAsync() => AddCmd(Request.FlushDatabaseAsync());
+    public T FlushDatabaseAsync() => AddCmd(Request.FlushDatabase());
 
     /// <inheritdoc cref="IBatchServerManagementCommands.FlushDatabaseAsync(FlushMode)" />
-    public T FlushDatabaseAsync(FlushMode mode) => AddCmd(Request.FlushDatabaseAsync(mode));
+    public T FlushDatabaseAsync(FlushMode mode) => AddCmd(Request.FlushDatabase(mode));
 
     /// <inheritdoc cref="IBatchServerManagementCommands.LastSaveAsync()" />
-    public T LastSaveAsync() => AddCmd(Request.LastSaveAsync());
+    public T LastSaveAsync() => AddCmd(Request.LastSave());
 
     /// <inheritdoc cref="IBatchServerManagementCommands.LolwutAsync()" />
-    public T LolwutAsync() => AddCmd(Request.LolwutAsync());
+    public T LolwutAsync() => AddCmd(Request.Lolwut());
 
     /// <inheritdoc cref="IBatchServerManagementCommands.LolwutAsync(LolwutOptions)" />
-    public T LolwutAsync(LolwutOptions options) => AddCmd(Request.LolwutAsync(options));
+    public T LolwutAsync(LolwutOptions options) => AddCmd(Request.Lolwut(options));
 
     /// <inheritdoc cref="IBatchServerManagementCommands.TimeAsync()" />
-    public T TimeAsync() => AddCmd(Request.TimeAsync());
+    public T TimeAsync() => AddCmd(Request.Time());
 
     // Interface implementations
     IBatch IBatchServerManagementCommands.ConfigGetAsync(ValkeyValue pattern) => ConfigGetAsync(pattern);

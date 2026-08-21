@@ -10,11 +10,11 @@ public partial class GlideClient
 {
     /// <inheritdoc cref="IGlideClient.MigrateAsync(IEnumerable{ValkeyKey}, MigrateOptions)"/>
     public async Task<bool> MigrateAsync(IEnumerable<ValkeyKey> keys, MigrateOptions options)
-        => await Command(Request.MigrateAsync(keys, options));
+        => await Command(Request.Migrate(keys, options));
 
     /// <inheritdoc/>
     public async Task<(string cursor, ValkeyKey[] keys)> ScanAsync(string cursor, ScanOptions? options = null)
-        => await Command(Request.ScanAsync(cursor, options));
+        => await Command(Request.Scan(cursor, options));
 
     /// <inheritdoc cref="IGlideClient.ScanAsync(ScanOptions?)"/>
     public IAsyncEnumerable<ValkeyKey> ScanAsync(ScanOptions? options = null)
@@ -25,7 +25,7 @@ public partial class GlideClient
     {
         do
         {
-            (cursor, var keys) = await Command(Request.ScanAsync(cursor, options));
+            (cursor, var keys) = await Command(Request.Scan(cursor, options));
             foreach (var key in keys)
             {
                 yield return key;

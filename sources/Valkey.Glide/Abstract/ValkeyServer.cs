@@ -201,56 +201,56 @@ internal partial class ValkeyServer(Database conn, EndPoint endpoint) : IServer
     public async Task<KeyValuePair<string, string>[]> ConfigGetAsync(ValkeyValue pattern = default, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await _conn.Command(Request.ConfigGetAsync(pattern), MakeRoute());
+        return await _conn.Command(Request.ConfigGet(pattern), MakeRoute());
     }
 
     /// <inheritdoc/>
     public async Task ConfigResetStatisticsAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        _ = await _conn.Command(Request.ConfigResetStatisticsAsync(), MakeRoute());
+        _ = await _conn.Command(Request.ConfigResetStatistics(), MakeRoute());
     }
 
     /// <inheritdoc/>
     public async Task ConfigRewriteAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        _ = await _conn.Command(Request.ConfigRewriteAsync(), MakeRoute());
+        _ = await _conn.Command(Request.ConfigRewrite(), MakeRoute());
     }
 
     /// <inheritdoc/>
     public async Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        _ = await _conn.Command(Request.ConfigSetAsync(setting, value), MakeRoute());
+        _ = await _conn.Command(Request.ConfigSet(setting, value), MakeRoute());
     }
 
     /// <inheritdoc/>
     public async Task<long> DatabaseSizeAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await _conn.Command(Request.DatabaseSizeAsync(), MakeRoute());
+        return await _conn.Command(Request.DatabaseSize(), MakeRoute());
     }
 
     /// <inheritdoc/>
     public async Task FlushAllDatabasesAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        _ = await _conn.Command(Request.FlushAllDatabasesAsync(), MakeRoute());
+        _ = await _conn.Command(Request.FlushAllDatabases(), MakeRoute());
     }
 
     /// <inheritdoc/>
     public async Task FlushDatabaseAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        _ = await _conn.Command(Request.FlushDatabaseAsync(), MakeRoute());
+        _ = await _conn.Command(Request.FlushDatabase(), MakeRoute());
     }
 
     /// <inheritdoc/>
     public async Task<DateTime> LastSaveAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return (await _conn.Command(Request.LastSaveAsync(), MakeRoute())).DateTime;
+        return (await _conn.Command(Request.LastSave(), MakeRoute())).DateTime;
     }
 
     /// <inheritdoc/>
@@ -259,8 +259,8 @@ internal partial class ValkeyServer(Database conn, EndPoint endpoint) : IServer
         GuardClauses.ThrowIfCommandFlags(flags);
         _ = type switch
         {
-            SaveType.BackgroundSave => await _conn.Command(Request.BackgroundSaveAsync(), MakeRoute()),
-            SaveType.BackgroundRewriteAppendOnlyFile => await _conn.Command(Request.BgRewriteAofAsync(), MakeRoute()),
+            SaveType.BackgroundSave => await _conn.Command(Request.BackgroundSave(), MakeRoute()),
+            SaveType.BackgroundRewriteAppendOnlyFile => await _conn.Command(Request.BgRewriteAof(), MakeRoute()),
             _ => throw new ArgumentOutOfRangeException(nameof(type), type, $"Unknown SaveType value '{type}'."),
         };
     }
@@ -269,14 +269,14 @@ internal partial class ValkeyServer(Database conn, EndPoint endpoint) : IServer
     public async Task<DateTime> TimeAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return (await _conn.Command(Request.TimeAsync(), MakeRoute())).DateTime;
+        return (await _conn.Command(Request.Time(), MakeRoute())).DateTime;
     }
 
     /// <inheritdoc/>
     public async Task<string> LolwutAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await _conn.Command(Request.LolwutAsync(), MakeRoute());
+        return await _conn.Command(Request.Lolwut(), MakeRoute());
     }
 
     /// <inheritdoc/>
@@ -294,7 +294,7 @@ internal partial class ValkeyServer(Database conn, EndPoint endpoint) : IServer
         string hash = scriptObj.Hash;
 
         // Call SCRIPT EXISTS with the hash
-        bool[] results = await _conn.Command(Request.ScriptExistsAsync([hash]), MakeRoute());
+        bool[] results = await _conn.Command(Request.ScriptExists([hash]), MakeRoute());
         return results.Length > 0 && results[0];
     }
 
@@ -312,7 +312,7 @@ internal partial class ValkeyServer(Database conn, EndPoint endpoint) : IServer
         string hash = BitConverter.ToString(sha1).Replace("-", "").ToLowerInvariant();
 
         // Call SCRIPT EXISTS with the hash
-        bool[] results = await _conn.Command(Request.ScriptExistsAsync([hash]), MakeRoute());
+        bool[] results = await _conn.Command(Request.ScriptExists([hash]), MakeRoute());
         return results.Length > 0 && results[0];
     }
 
@@ -358,7 +358,7 @@ internal partial class ValkeyServer(Database conn, EndPoint endpoint) : IServer
     public async Task ScriptFlushAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        _ = await _conn.Command(Request.ScriptFlushAsync(), MakeRoute());
+        _ = await _conn.Command(Request.ScriptFlush(), MakeRoute());
     }
 
     /// <inheritdoc/>
@@ -383,12 +383,12 @@ internal partial class ValkeyServer(Database conn, EndPoint endpoint) : IServer
 
         if (master is null)
         {
-            _ = await _conn.Command(Request.ReplicaOfNoOneAsync(), MakeRoute());
+            _ = await _conn.Command(Request.ReplicaOfNoOne(), MakeRoute());
         }
         else
         {
             (string host, ushort port) = Utils.SplitEndpoint(master);
-            _ = await _conn.Command(Request.ReplicaOfAsync(host, port), MakeRoute());
+            _ = await _conn.Command(Request.ReplicaOf(host, port), MakeRoute());
         }
     }
 
@@ -407,7 +407,7 @@ internal partial class ValkeyServer(Database conn, EndPoint endpoint) : IServer
 
         do
         {
-            (cursor, ValkeyKey[] keys) = await _conn.Command(Request.ScanAsync(cursor, options), route);
+            (cursor, ValkeyKey[] keys) = await _conn.Command(Request.Scan(cursor, options), route);
             foreach (ValkeyKey key in keys)
             {
                 yield return key;
