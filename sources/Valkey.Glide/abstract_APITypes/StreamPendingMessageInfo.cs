@@ -3,18 +3,12 @@
 namespace Valkey.Glide;
 
 /// <summary>
-/// Describes properties of a pending message.
-/// A pending message is one that has been received by a consumer but has not yet been acknowledged.
+/// A pending message from a <c>XPENDING</c> response.
 /// </summary>
+/// <seealso href="https://valkey.io/commands/xpending/"/>
 public readonly struct StreamPendingMessageInfo
 {
-    internal StreamPendingMessageInfo(ValkeyValue messageId, ValkeyValue consumerName, long idleTimeInMs, int deliveryCount)
-    {
-        MessageId = messageId;
-        ConsumerName = consumerName;
-        IdleTimeInMilliseconds = idleTimeInMs;
-        DeliveryCount = deliveryCount;
-    }
+    #region Public Properties
 
     /// <summary>
     /// The ID of the pending message.
@@ -29,10 +23,29 @@ public readonly struct StreamPendingMessageInfo
     /// <summary>
     /// The time that has passed since the message was last delivered to a consumer.
     /// </summary>
-    public long IdleTimeInMilliseconds { get; }
+    /// <remarks>Valkey GLIDE only.</remarks>
+    public TimeSpan Idle { get; }
 
     /// <summary>
     /// The number of times the message has been delivered to a consumer.
     /// </summary>
     public int DeliveryCount { get; }
+
+    /// <summary>
+    /// The number of milliseconds that has passed since the message was last delivered to a consumer.
+    /// </summary>
+    public long IdleTimeInMilliseconds => (long)Idle.TotalMilliseconds;
+
+    #endregion
+    #region Constructors
+
+    internal StreamPendingMessageInfo(ValkeyValue messageId, ValkeyValue consumerName, TimeSpan idle, int deliveryCount)
+    {
+        MessageId = messageId;
+        ConsumerName = consumerName;
+        Idle = idle;
+        DeliveryCount = deliveryCount;
+    }
+
+    #endregion
 }
