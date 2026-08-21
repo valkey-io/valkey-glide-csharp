@@ -78,12 +78,12 @@ public partial interface IBaseClient
     /// <param name="options">The stream add options to apply.</param>
     /// <returns>
     /// The ID of the added entry, or <see cref="ValkeyValue.Null"/> if
-    /// <see cref="StreamAddOptions.NoMakeStream"/> is <see langword="true"/> and the stream does not exist.
+    /// <see cref="StreamAddOptions.MakeStream"/> is <see langword="false"/> and the stream does not exist.
     /// </returns>
     /// <remarks>
     /// <example>
     /// <code>
-    /// var options = new StreamAddOptions { NoMakeStream = true };
+    /// var options = new StreamAddOptions { MakeStream = false };
     /// var entryId = await client.StreamAddAsync("mystream", "sensor", "temperature", options);
     /// Console.WriteLine($"Added entry with ID: {entryId}");
     /// </code>
@@ -94,7 +94,7 @@ public partial interface IBaseClient
     /// <inheritdoc cref="StreamAddAsync(ValkeyKey, IEnumerable{NameValueEntry})" path="/*[not(self::returns) and not(self::remarks)]"/>
     /// <param name="options">The stream add options to apply.</param>
     /// <returns>The ID of the added entry, or <see cref="ValkeyValue.Null"/> if
-    /// <see cref="StreamAddOptions.NoMakeStream"/> is <see langword="true"/> and the stream does not exist.
+    /// <see cref="StreamAddOptions.MakeStream"/> is <see langword="false"/> and the stream does not exist.
     /// </returns>
     /// <remarks>
     /// <example>
@@ -104,7 +104,7 @@ public partial interface IBaseClient
     ///     new("sensor", "temperature"),
     ///     new("value", "23.5")
     /// };
-    /// var options = new StreamAddOptions { NoMakeStream = true };
+    /// var options = new StreamAddOptions { MakeStream = false };
     /// var entryId = await client.StreamAddAsync("mystream", fields, options);
     /// Console.WriteLine($"Added entry with ID: {entryId}");
     /// </code>

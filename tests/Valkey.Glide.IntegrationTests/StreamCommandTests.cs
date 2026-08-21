@@ -115,7 +115,7 @@ public class StreamCommandTests
         string key = "{StreamAdd}" + Guid.NewGuid();
 
         // Try to add to non-existent stream with NOMKSTREAM - should return null
-        var options = new StreamAddOptions { NoMakeStream = true };
+        var options = new StreamAddOptions { MakeStream = false };
         var messageId = await client.StreamAddAsync(key, "field", "value", options);
         Assert.True(messageId.IsNull);
     }
@@ -130,7 +130,7 @@ public class StreamCommandTests
         _ = await client.StreamAddAsync(key, "field", "value1");
 
         // Add to existing stream with NOMKSTREAM - should succeed
-        var options = new StreamAddOptions { NoMakeStream = true };
+        var options = new StreamAddOptions { MakeStream = false };
         var messageId = await client.StreamAddAsync(key, "field", "value2", options);
         AssertIsValidMessageId(messageId);
     }
