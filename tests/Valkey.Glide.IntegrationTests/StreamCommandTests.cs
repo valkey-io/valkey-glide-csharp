@@ -682,10 +682,7 @@ public class StreamCommandTests
         StreamAutoClaimResult result = await client.StreamAutoClaimAsync(key, "mygroup", "consumer2", StreamAutoClaimOptions.FromStart(TimeSpan.Zero));
 
         Assert.Equal(2, result.ClaimedEntries.Length);
-        if (result.DeletedIds != null && result.DeletedIds.Length > 0)
-        {
-            Assert.Contains(result.DeletedIds, deletedId => deletedId.ToString() == id2.ToString());
-        }
+        Assert.Contains(id2, result.DeletedIds.ToHashSet());
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -905,13 +902,13 @@ public class StreamCommandTests
         // Get full stream info with count=1 to limit PEL entries
         StreamInfoFull info = await client.StreamInfoFullAsync(key, count: 1);
         Assert.Equal(3, info.Length);
-        _ = Assert.Single(info.Groups);
 
         // PEL entries should be limited by count
-        StreamGroupInfoFull group = info.Groups[0];
-        Assert.True(group.PendingEntries.Length <= 1);
-        _ = Assert.Single(group.Consumers);
-        Assert.True(group.Consumers[0].PendingEntries.Length <= 1);
+        var group = Assert.Single(info.Groups);
+        _ = Assert.Single(group.PendingEntries);
+
+        var consumer = Assert.Single(group.Consumers);
+        _ = Assert.Single(consumer.PendingEntries);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]

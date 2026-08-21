@@ -343,19 +343,22 @@ public class StreamConsumerGroupTests
         string key = "{StreamGroup}" + Guid.NewGuid();
 
         // Add entries and create group
-        _ = await client.StreamAddAsync(key, "field1", "value1");
-        _ = await client.StreamAddAsync(key, "field2", "value2");
+        var id1 = await client.StreamAddAsync(key, "field1", "value1");
+        var id2 = await client.StreamAddAsync(key, "field2", "value2");
         await client.StreamGroupCreateAsync(key, "mygroup", "0");
 
         // Read messages without acknowledging
         _ = await client.StreamReadGroupAsync(new StreamPosition(key, StreamPosition.UndeliveredMessages), "mygroup", "consumer1");
 
         // Get pending summary
-        StreamPendingInfo info = await client.StreamPendingAsync(key, "mygroup");
+        var info = await client.StreamPendingAsync(key, "mygroup");
         Assert.Equal(2, info.PendingMessageCount);
-        _ = Assert.Single(info.Consumers);
-        Assert.Equal("consumer1", info.Consumers[0].Name.ToString());
-        Assert.Equal(2, info.Consumers[0].PendingMessageCount);
+        Assert.Equal(id1, info.LowestPendingMessageId);
+        Assert.Equal(id2, info.HighestPendingMessageId);
+
+        var consumer = Assert.Single(info.Consumers);
+        Assert.Equal("consumer1", consumer.Name);
+        Assert.Equal(2, consumer.PendingMessageCount);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
