@@ -209,7 +209,7 @@ public sealed class GlideString : IComparable<GlideString>
         _canConvertToString = null;
         bytes ??= [];
         Bytes = bytes;
-        Str = $"Value isn't convertible to string: [{string.Join(' ', [.. bytes.Select(b => $"{b:X2}")])}]";
+        Str = null!; // computed lazily in CanConvertToString() — avoids O(N) allocation on every response
     }
 
     /// <summary>
@@ -298,6 +298,7 @@ public sealed class GlideString : IComparable<GlideString>
                 return true;
             }
             _canConvertToString = false;
+            Str = $"Value isn't convertible to string: [{string.Join(' ', [.. Bytes.Select(b => $"{b:X2}")])}]";
             return false;
         }
     }
