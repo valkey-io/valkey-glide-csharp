@@ -281,7 +281,7 @@ internal partial class Request
             radixTreeNodes: GetInt(map, "radix-tree-nodes"),
             lastGeneratedId: TryGetValkeyValue(map, "last-generated-id"),
             maxDeletedEntryId: TryGetValkeyValue(map, "max-deleted-entry-id"),
-            entriesAdded: TryGetLong(map, "entries-added") ?? -1L,
+            entriesAdded: TryGetLong(map, "entries-added"),
             recordedFirstEntryId: TryGetValkeyValue(map, "recorded-first-entry-id"),
             entries: entries,
             groups: groups);
@@ -294,7 +294,7 @@ internal partial class Request
             radixTreeNodes: GetInt(map, "radix-tree-nodes"),
             lastGeneratedId: TryGetValkeyValue(map, "last-generated-id"),
             maxDeletedEntryId: TryGetValkeyValue(map, "max-deleted-entry-id"),
-            entriesAdded: TryGetLong(map, "entries-added") ?? -1L,
+            entriesAdded: TryGetLong(map, "entries-added"),
             recordedFirstEntryId: TryGetValkeyValue(map, "recorded-first-entry-id"),
             consumerGroupCount: GetInt(map, "groups"),
             firstEntry: ConvertStreamEntryResponse(GetObjects(map, "first-entry")),

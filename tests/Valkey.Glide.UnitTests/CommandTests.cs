@@ -1111,7 +1111,7 @@ public class CommandTests
 
         Assert.Equal(1, info.Length);
         Assert.Equal(ValkeyValue.Null, info.MaxDeletedEntryId);
-        Assert.Equal(-1L, info.EntriesAdded);
+        Assert.Null(info.EntriesAdded);
         Assert.Equal(ValkeyValue.Null, info.RecordedFirstEntryId);
 
         Assert.True(info.FirstEntry.IsNull);

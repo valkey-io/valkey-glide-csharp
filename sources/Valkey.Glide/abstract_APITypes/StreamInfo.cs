@@ -40,10 +40,10 @@ public readonly struct StreamInfo
 
     /// <summary>
     /// The count of all entries added to the stream during its lifetime
-    /// (<c>entries-added</c>), or <c>-1</c> if not specified.
+    /// (<c>entries-added</c>), or <see langword="null"/> if not specified.
     /// </summary>
     /// <remarks>Since Valkey 7.0.0.</remarks>
-    public long EntriesAdded { get; }
+    public long? EntriesAdded { get; }
 
     /// <summary>
     /// The first id recorded for the stream (<c>recorded-first-entry-id</c>),
@@ -76,7 +76,7 @@ public readonly struct StreamInfo
         int radixTreeNodes,
         ValkeyValue lastGeneratedId,
         ValkeyValue maxDeletedEntryId,
-        long entriesAdded,
+        long? entriesAdded,
         ValkeyValue recordedFirstEntryId,
         int consumerGroupCount,
         StreamEntry firstEntry,
