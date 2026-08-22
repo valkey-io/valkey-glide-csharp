@@ -57,7 +57,7 @@ public sealed class LuaScript
     /// </summary>
     /// <param name="script">Script with @parameter syntax.</param>
     /// <returns>A LuaScript instance ready for execution.</returns>
-    /// <exception cref="ArgumentException">Thrown when script is null or empty.</exception>
+    /// <exception cref="ArgumentException">Thrown if script is null or empty.</exception>
     /// <remarks>
     /// The Prepare method caches scripts using weak references. If a script is no longer
     /// referenced elsewhere, it may be garbage collected and will be re-parsed on next use.
@@ -69,10 +69,7 @@ public sealed class LuaScript
     /// </example>
     public static LuaScript Prepare(string script)
     {
-        if (string.IsNullOrEmpty(script))
-        {
-            throw new ArgumentException("Script cannot be null or empty", nameof(script));
-        }
+        ArgumentNullException.ThrowIfNullOrEmpty(script, nameof(script));
 
         // Check cache first
         if (Cache.TryGetValue(script, out WeakReference<LuaScript>? weakRef) && weakRef.TryGetTarget(out LuaScript? cachedScript))
@@ -127,8 +124,8 @@ public sealed class LuaScript
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <returns>A task representing the asynchronous operation, containing the result of the script execution.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when db is null.</exception>
-    /// <exception cref="ArgumentException">Thrown when parameters object is missing required properties or has invalid types.</exception>
+    /// <exception cref="ArgumentNullException">Thrown if db is null.</exception>
+    /// <exception cref="ArgumentException">Thrown if parameters object is missing required properties or has invalid types.</exception>
     /// <example>
     /// <code>
     /// var script = LuaScript.Prepare("return redis.call('SET', @key, @value)");
@@ -157,6 +154,7 @@ public sealed class LuaScript
     /// <param name="parameters">The parameter object.</param>
     /// <param name="keyPrefix">Optional key prefix to apply.</param>
     /// <returns>A tuple containing the keys and arguments arrays.</returns>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="parameters"/> is missing a required member or has a member of an invalid type.</exception>
     internal (ValkeyKey[] Keys, ValkeyValue[] Args) ExtractParametersInternal(object? parameters, ValkeyKey? keyPrefix)
     {
         if (parameters == null || Arguments.Length == 0)
@@ -198,7 +196,7 @@ public sealed class LuaScript
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <returns>A task representing the asynchronous operation, containing a LoadedLuaScript instance.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when server is null.</exception>
+    /// <exception cref="ArgumentNullException">Thrown if server is null.</exception>
     /// <remarks>
     /// This method loads the script onto the server using the SCRIPT LOAD command.
     /// The returned LoadedLuaScript contains the SHA1 hash and can be used to execute

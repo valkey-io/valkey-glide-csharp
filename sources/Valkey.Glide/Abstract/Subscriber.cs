@@ -225,7 +225,7 @@ internal sealed class Subscriber : ISubscriber
     /// <summary>
     /// Throws if the client is not in cluster mode.
     /// </summary>
-    /// <exception cref="InvalidOperationException">Thrown when sharded pub/sub is used in standalone mode.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if sharded pub/sub is used in standalone mode.</exception>
     private void ThrowIfNotClusterMode()
     {
         if (!_client.IsCluster)

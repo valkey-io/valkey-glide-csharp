@@ -235,6 +235,7 @@ internal static partial class Request
     /// </summary>
     /// <param name="args">The arguments list to append to.</param>
     /// <param name="condition">The expire condition to add.</param>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="condition"/> is not a supported <see cref="ExpireCondition"/> value.</exception>
     internal static void AddExpireCondition(List<GlideString> args, ExpireCondition condition)
     {
         switch (condition)

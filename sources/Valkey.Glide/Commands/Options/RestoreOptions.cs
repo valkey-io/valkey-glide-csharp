@@ -45,7 +45,7 @@ public class RestoreOptions
     /// Creates the TTL value and flags for the RESTORE command.
     /// </summary>
     /// <returns>A tuple containing (ttlMilliseconds, useAbsttl).</returns>
-    /// <exception cref="ArgumentException">Thrown when both Ttl and ExpireAt are set.</exception>
+    /// <exception cref="ArgumentException">Thrown if both Ttl and ExpireAt are set.</exception>
     internal (long ttlMs, bool useAbsttl) GetTtlArgs()
     {
         if (Ttl.HasValue && ExpireAt.HasValue)
@@ -70,7 +70,7 @@ public class RestoreOptions
     /// Creates the argument array for the RESTORE command (excluding TTL).
     /// </summary>
     /// <returns>A string array that holds the subcommands and their arguments.</returns>
-    /// <exception cref="ArgumentException">Thrown when both IdleTime and Frequency are set.</exception>
+    /// <exception cref="ArgumentException">Thrown if both IdleTime and Frequency are set.</exception>
     internal GlideString[] ToArgs()
     {
         List<GlideString> resultList = [];

@@ -111,6 +111,7 @@ internal static partial class Request
     /// </summary>
     /// <param name="payload">The serialized function library payload to restore.</param>
     /// <param name="policy">The policy controlling how existing libraries are handled.</param>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="policy"/> is not a supported <see cref="FunctionRestorePolicy"/> value.</exception>
     public static Cmd<string, ValkeyValue> FunctionRestore(byte[] payload, FunctionRestorePolicy? policy = null)
     {
         List<GlideString> cmdArgs = [payload];

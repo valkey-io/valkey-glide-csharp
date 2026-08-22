@@ -26,14 +26,12 @@ public sealed class SetCondition
     public static readonly SetCondition OnlyIfDoesNotExist = new(SetConditionType.OnlyIfDoesNotExist);
 
     #endregion Public Properties
-
     #region Internal Properties
 
     internal SetConditionType Type { get; }
     internal ValkeyValue? ComparisonValue { get; }
 
     #endregion Internal Properties
-
     #region Constructors
 
     private SetCondition(SetConditionType type, ValkeyValue? comparisonValue = null)
@@ -43,7 +41,6 @@ public sealed class SetCondition
     }
 
     #endregion Constructors
-
     #region Public Methods
 
     /// <summary>
@@ -55,12 +52,12 @@ public sealed class SetCondition
         => new(SetConditionType.OnlyIfEqual, comparisonValue);
 
     #endregion Public Methods
-
     #region Internal Methods
 
     /// <summary>
     /// Converts to command arguments.
     /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown if the condition type is not a supported <see cref="SetConditionType"/> value.</exception>
     internal GlideString[] ToArgs() => Type switch
     {
         SetConditionType.Always => [],

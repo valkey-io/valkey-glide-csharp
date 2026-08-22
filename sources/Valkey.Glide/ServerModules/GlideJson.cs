@@ -45,6 +45,8 @@ public static partial class GlideJson
     /// <param name="client">The client to execute the command on.</param>
     /// <param name="args">The command arguments.</param>
     /// <returns>The command result.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the command returns an unexpected multi-node response.</exception>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="client"/> is not a <see cref="GlideClient"/> or <see cref="GlideClusterClient"/>.</exception>
     private static async Task<object?> ExecuteCommandAsync(BaseClient client, GlideString[] args)
     {
         if (client is GlideClient gc)
@@ -74,7 +76,7 @@ public static partial class GlideJson
     /// Converts an object result to ValkeyValue.
     /// </summary>
     /// <param name="result">The command result to convert.</param>
-    /// <exception cref="InvalidOperationException">Thrown when the result type is unexpected.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if the result type is unexpected.</exception>
     private static ValkeyValue ToValkeyValue(object? result) => result switch
     {
         null => ValkeyValue.Null,
@@ -95,7 +97,7 @@ public static partial class GlideJson
     /// Converts a ValkeyValue to GlideString for command arguments.
     /// </summary>
     /// <param name="value">The value to convert.</param>
-    /// <exception cref="ArgumentException">Thrown when value is null.</exception>
+    /// <exception cref="ArgumentException">Thrown if value is null.</exception>
     private static GlideString ToGlideString(ValkeyValue value)
     {
         if (value.IsNull)
@@ -107,7 +109,7 @@ public static partial class GlideJson
     /// Converts an object result to long, throwing if the result is unexpectedly null.
     /// </summary>
     /// <param name="result">The command result to convert.</param>
-    /// <exception cref="InvalidOperationException">Thrown when the result is null.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if the result is null.</exception>
     private static long ToLong(object? result) =>
         result is long l ? l : throw new InvalidOperationException("Unexpected null result from server");
 
@@ -635,6 +637,7 @@ public static partial class GlideJson
     /// Used for write commands that throw when key doesn't exist.
     /// </summary>
     /// <param name="result">The command result to convert.</param>
+    /// <exception cref="InvalidOperationException">Thrown if <paramref name="result"/> is null.</exception>
     private static long?[] ConvertToNullableLongArrayNonNull(object? result)
     {
         if (result is null)

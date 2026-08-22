@@ -57,6 +57,7 @@ public static class GlideJsonBatch
     /// <param name="condition">The condition for setting (NX or XX).</param>
     /// <returns>The batch for chaining.</returns>
     /// <remarks>Command Response - "OK" if successful, null if condition not met.</remarks>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="condition"/> is not a supported <see cref="GlideJson.SetCondition"/> value.</exception>
     public static T Set<T>(T batch, GlideString key, GlideString path, GlideString value, GlideJson.SetCondition condition)
         where T : BaseBatch<T>
     {

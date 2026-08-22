@@ -24,6 +24,7 @@ public abstract class Condition
     /// <param name="key">The key of the hash to check.</param>
     /// <param name="hashField">The field in the hash to check.</param>
     /// <param name="value">The value that the hash field must match.</param>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="hashField"/> is null.</exception>
     public static Condition HashEqual(ValkeyKey key, ValkeyValue hashField, ValkeyValue value)
     {
         if (hashField.IsNull) throw new ArgumentNullException(nameof(hashField));
@@ -36,6 +37,7 @@ public abstract class Condition
     /// </summary>
     /// <param name="key">The key of the hash to check.</param>
     /// <param name="hashField">The field in the hash to check.</param>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="hashField"/> is null.</exception>
     public static Condition HashExists(ValkeyKey key, ValkeyValue hashField)
     {
         if (hashField.IsNull) throw new ArgumentNullException(nameof(hashField));
@@ -48,6 +50,7 @@ public abstract class Condition
     /// <param name="key">The key of the hash to check.</param>
     /// <param name="hashField">The field in the hash to check.</param>
     /// <param name="value">The value that the hash field must not match.</param>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="hashField"/> is null.</exception>
     public static Condition HashNotEqual(ValkeyKey key, ValkeyValue hashField, ValkeyValue value)
     {
         if (hashField.IsNull) throw new ArgumentNullException(nameof(hashField));
@@ -60,6 +63,7 @@ public abstract class Condition
     /// </summary>
     /// <param name="key">The key of the hash to check.</param>
     /// <param name="hashField">The field in the hash that must not exist.</param>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="hashField"/> is null.</exception>
     public static Condition HashNotExists(ValkeyKey key, ValkeyValue hashField)
     {
         if (hashField.IsNull) throw new ArgumentNullException(nameof(hashField));

@@ -37,7 +37,7 @@ public sealed class PubSubMessageQueue : IDisposable
     /// </summary>
     /// <param name="message">The retrieved message, or null if no message is available.</param>
     /// <returns>true if a message was retrieved; otherwise, false.</returns>
-    /// <exception cref="ObjectDisposedException">Thrown when the queue has been disposed.</exception>
+    /// <exception cref="ObjectDisposedException">Thrown if the queue has been disposed.</exception>
     public bool TryGetMessage(out PubSubMessage? message)
     {
         ThrowIfDisposed();
@@ -58,8 +58,9 @@ public sealed class PubSubMessageQueue : IDisposable
     /// </summary>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
     /// <returns>The retrieved message.</returns>
-    /// <exception cref="ObjectDisposedException">Thrown when the queue has been disposed.</exception>
-    /// <exception cref="OperationCanceledException">Thrown when the operation is cancelled.</exception>
+    /// <exception cref="ObjectDisposedException">Thrown if the queue has been disposed.</exception>
+    /// <exception cref="OperationCanceledException">Thrown if the operation is cancelled.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if the queue is in an inconsistent state.</exception>
     public async Task<PubSubMessage> GetMessageAsync(CancellationToken cancellationToken = default)
     {
         ThrowIfDisposed();
@@ -98,7 +99,7 @@ public sealed class PubSubMessageQueue : IDisposable
     /// </summary>
     /// <param name="cancellationToken">Token to cancel the enumeration.</param>
     /// <returns>An async enumerable that yields messages as they become available.</returns>
-    /// <exception cref="ObjectDisposedException">Thrown when the queue has been disposed.</exception>
+    /// <exception cref="ObjectDisposedException">Thrown if the queue has been disposed.</exception>
     public async IAsyncEnumerable<PubSubMessage> GetMessagesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         while (!_disposed && !cancellationToken.IsCancellationRequested)
@@ -128,8 +129,8 @@ public sealed class PubSubMessageQueue : IDisposable
     /// This method is intended for internal use by the PubSub message handler.
     /// </summary>
     /// <param name="message">The message to enqueue.</param>
-    /// <exception cref="ArgumentNullException">Thrown when message is null.</exception>
-    /// <exception cref="ObjectDisposedException">Thrown when the queue has been disposed.</exception>
+    /// <exception cref="ArgumentNullException">Thrown if message is null.</exception>
+    /// <exception cref="ObjectDisposedException">Thrown if the queue has been disposed.</exception>
     internal void EnqueueMessage(PubSubMessage message)
     {
         ArgumentNullException.ThrowIfNull(message);
@@ -181,6 +182,7 @@ public sealed class PubSubMessageQueue : IDisposable
     /// <summary>
     /// Throws an ObjectDisposedException if the queue has been disposed.
     /// </summary>
+    /// <exception cref="ObjectDisposedException">Thrown if the queue has been disposed.</exception>
     private void ThrowIfDisposed()
     {
         if (_disposed)

@@ -163,6 +163,7 @@ internal partial class Request
     /// </summary>
     /// <param name="map">The response dictionary.</param>
     /// <param name="key">The field key to read.</param>
+    /// <exception cref="RequestException">Thrown if <paramref name="key"/> is missing from <paramref name="map"/>.</exception>
     private static bool GetBool(Dictionary<GlideString, object> map, string key)
         => TryGetBool(map, key) ?? throw new RequestException($"Response missing required field '{key}'");
 
@@ -179,6 +180,7 @@ internal partial class Request
     /// </summary>
     /// <param name="map">The response dictionary.</param>
     /// <param name="key">The field key to read.</param>
+    /// <exception cref="RequestException">Thrown if <paramref name="key"/> is missing from <paramref name="map"/> or is not a single character.</exception>
     private static char GetChar(Dictionary<GlideString, object> map, string key)
     {
         var s = GetString(map, key);
@@ -190,6 +192,7 @@ internal partial class Request
     /// </summary>
     /// <param name="map">The response dictionary.</param>
     /// <param name="key">The field key to read.</param>
+    /// <exception cref="RequestException">Thrown if <paramref name="key"/> is missing from <paramref name="map"/>.</exception>
     private static double GetDouble(Dictionary<GlideString, object> map, string key)
         => TryGetDouble(map, key) ?? throw new RequestException($"Response missing required field '{key}'");
 
@@ -198,6 +201,7 @@ internal partial class Request
     /// </summary>
     /// <param name="map">The response dictionary.</param>
     /// <param name="key">The field key to read.</param>
+    /// <exception cref="RequestException">Thrown if the value for <paramref name="key"/> is not a supported type.</exception>
     private static double? TryGetDouble(Dictionary<GlideString, object> map, string key)
         => map.TryGetValue(key, out var value)
             ? value switch
@@ -212,6 +216,7 @@ internal partial class Request
     /// </summary>
     /// <param name="map">The response dictionary.</param>
     /// <param name="key">The field key to read.</param>
+    /// <exception cref="RequestException">Thrown if <paramref name="key"/> is missing from <paramref name="map"/>.</exception>
     private static long GetLong(Dictionary<GlideString, object> map, string key)
         => TryGetLong(map, key) ?? throw new RequestException($"Response missing required field '{key}'");
 
@@ -220,6 +225,7 @@ internal partial class Request
     /// </summary>
     /// <param name="map">The response dictionary.</param>
     /// <param name="key">The field key to read.</param>
+    /// <exception cref="RequestException">Thrown if the value for <paramref name="key"/> is not a supported type.</exception>
     private static long? TryGetLong(Dictionary<GlideString, object> map, string key)
         => map.TryGetValue(key, out var value)
             ? value switch
@@ -234,6 +240,7 @@ internal partial class Request
     /// </summary>
     /// <param name="map">The response dictionary.</param>
     /// <param name="key">The field key to read.</param>
+    /// <exception cref="RequestException">Thrown if <paramref name="key"/> is missing from <paramref name="map"/>.</exception>
     private static string GetString(Dictionary<GlideString, object> map, string key)
         => TryGetString(map, key) ?? throw new RequestException($"Response missing required field '{key}'");
 
@@ -259,6 +266,7 @@ internal partial class Request
     /// </summary>
     /// <param name="map">The response dictionary.</param>
     /// <param name="key">The field key to read.</param>
+    /// <exception cref="RequestException">Thrown if <paramref name="key"/> is missing from <paramref name="map"/>.</exception>
     private static ValkeyValue GetValkeyValue(Dictionary<GlideString, object> map, string key)
     {
         var result = TryGetValkeyValue(map, key);
@@ -278,6 +286,7 @@ internal partial class Request
     /// </summary>
     /// <param name="map">The response dictionary.</param>
     /// <param name="key">The field key to read.</param>
+    /// <exception cref="RequestException">Thrown if <paramref name="key"/> is missing from <paramref name="map"/>.</exception>
     private static ValkeyValue[] GetValkeyValues(Dictionary<GlideString, object> map, string key)
         => TryGetValkeyValues(map, key) ?? throw new RequestException($"Response missing required field '{key}'");
 
@@ -286,6 +295,7 @@ internal partial class Request
     /// </summary>
     /// <param name="map">The response dictionary.</param>
     /// <param name="key">The field key to read.</param>
+    /// <exception cref="RequestException">Thrown if the value for <paramref name="key"/> is not an array.</exception>
     private static ValkeyValue[]? TryGetValkeyValues(Dictionary<GlideString, object> map, string key)
     {
         if (!map.TryGetValue(key, out var value))

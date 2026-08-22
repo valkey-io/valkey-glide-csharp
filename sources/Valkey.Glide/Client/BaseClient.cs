@@ -179,7 +179,7 @@ public abstract partial class BaseClient : IBaseClient
     /// <param name="config">The client configuration settings.</param>
     /// <param name="ctor">A factory function that creates a new instance of the client.</param>
     /// <returns>The initialized client instance.</returns>
-    /// <exception cref="ConnectionException">Thrown when the client fails to connect to the server.</exception>
+    /// <exception cref="ConnectionException">Thrown if the client fails to connect to the server.</exception>
     protected static async Task<T> CreateClient<T>(BaseClientConfiguration config, Func<T> ctor) where T : BaseClient
     {
         T client = ctor();

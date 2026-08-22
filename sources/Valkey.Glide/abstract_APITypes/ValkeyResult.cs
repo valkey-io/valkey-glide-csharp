@@ -306,6 +306,7 @@ public abstract class ValkeyResult
     /// Get a sub-item by index.
     /// </summary>
     /// <param name="index">The zero-based index of the sub-item to retrieve.</param>
+    /// <exception cref="InvalidOperationException">Thrown if the result is not an array.</exception>
     public virtual ValkeyResult this[int index] => throw new InvalidOperationException("Indexers can only be used on array results");
 
     internal abstract bool AsBoolean();

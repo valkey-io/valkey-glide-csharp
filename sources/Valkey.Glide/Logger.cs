@@ -117,7 +117,7 @@ public class Logger
     /// If provided the target of the logs will be the file mentioned.<br />
     /// Otherwise, logs will be printed to the console.
     /// </param>
-    /// <exception cref="InvalidOperationException">Thrown when the native logger fails to initialize.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if the native logger fails to initialize.</exception>
     public static void SetLoggerConfig(Level level, string? filename = null)
     {
         IntPtr errorPtr = InitInternalLogger(Convert.ToInt32(level), filename, out Level resolvedLevel);

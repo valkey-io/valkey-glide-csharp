@@ -770,6 +770,8 @@ public abstract class ConnectionConfiguration
         /// </summary>
         /// <param name="credentials">The server credentials for authentication.</param>
         /// <returns>The builder instance for method chaining.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="credentials"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if the IAM authentication service type is not a supported <see cref="ServiceType"/> value.</exception>
         public T WithCredentials(ServerCredentials credentials)
         {
             ArgumentNullException.ThrowIfNull(credentials);
@@ -1023,7 +1025,7 @@ public abstract class ConnectionConfiguration
         /// The maximum number of concurrent requests allowed to be in-flight. When this limit is
         /// reached, new requests will immediately fail with a <see cref="Errors.RequestException"/>.
         /// </summary>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown when value is zero.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if value is zero.</exception>
         /// <seealso href="https://glide.valkey.io/how-to/connections/limit-inflight-requests/">Valkey GLIDE – Limit Inflight Requests</seealso>
         public uint? InflightRequestsLimit
         {
@@ -1112,8 +1114,8 @@ public abstract class ConnectionConfiguration
         /// </summary>
         /// <param name="config">The PubSub subscription configuration.</param>
         /// <returns>This configuration builder instance for method chaining.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when config is null.</exception>
-        /// <exception cref="ArgumentException">Thrown when config is invalid.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if config is null.</exception>
+        /// <exception cref="ArgumentException">Thrown if config is invalid.</exception>
         public StandaloneClientConfigurationBuilder WithPubSubSubscriptions(StandalonePubSubSubscriptionConfig config)
         {
             ArgumentNullException.ThrowIfNull(config);
@@ -1211,8 +1213,8 @@ public abstract class ConnectionConfiguration
         /// </summary>
         /// <param name="config">The PubSub subscription configuration.</param>
         /// <returns>This configuration builder instance for method chaining.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when config is null.</exception>
-        /// <exception cref="ArgumentException">Thrown when config is invalid.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if config is null.</exception>
+        /// <exception cref="ArgumentException">Thrown if config is invalid.</exception>
         public ClusterClientConfigurationBuilder WithPubSubSubscriptions(ClusterPubSubSubscriptionConfig config)
         {
             ArgumentNullException.ThrowIfNull(config);

@@ -273,6 +273,7 @@ internal static partial class Request
     /// Handles the standard response format: [key, Dictionary&lt;member, score&gt;] or null.
     /// </summary>
     /// <param name="response">The pop response.</param>
+    /// <exception cref="InvalidOperationException">Thrown if <paramref name="response"/> is not in the expected format.</exception>
     private static SortedSetPopResult HandleSortedSetPopResultResponse(object? response)
     {
         if (response == null)

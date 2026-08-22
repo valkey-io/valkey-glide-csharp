@@ -270,6 +270,7 @@ public readonly struct ValkeyChannel : IEquatable<ValkeyChannel>
     /// <param name="key">The key to monitor.</param>
     /// <param name="database">The database index.</param>
     /// <returns>A channel representing <c>__keyspace@{database}__:{key}</c>.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="key"/> is null or empty.</exception>
     public static ValkeyChannel KeySpaceSingleKey(in ValkeyKey key, int database)
     {
         if (key.IsNull || key.IsEmpty)
@@ -302,6 +303,7 @@ public readonly struct ValkeyChannel : IEquatable<ValkeyChannel>
     /// <param name="prefix">The key prefix to monitor. Must not be empty.</param>
     /// <param name="database">The database index. If null, matches all databases.</param>
     /// <returns>A channel representing <c>__keyspace@{database|*}__:{prefix}*</c>.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="prefix"/> is null or empty.</exception>
     public static ValkeyChannel KeySpacePrefix(in ValkeyKey prefix, int? database = null)
     {
         if (prefix.IsNull || prefix.IsEmpty)
@@ -318,6 +320,7 @@ public readonly struct ValkeyChannel : IEquatable<ValkeyChannel>
     /// <param name="prefix">The key prefix bytes to monitor. Must not be empty.</param>
     /// <param name="database">The database index. If null, matches all databases.</param>
     /// <returns>A channel representing <c>__keyspace@{database|*}__:{prefix}*</c>.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="prefix"/> is empty.</exception>
     public static ValkeyChannel KeySpacePrefix(ReadOnlySpan<byte> prefix, int? database = null)
     {
         if (prefix.IsEmpty)
@@ -343,6 +346,7 @@ public readonly struct ValkeyChannel : IEquatable<ValkeyChannel>
     /// <param name="type">The event type bytes. Must not be empty.</param>
     /// <param name="database">The database index. If null, matches all databases.</param>
     /// <returns>A channel representing <c>__keyevent@{database|*}__:{type}</c>.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="type"/> is empty.</exception>
     public static ValkeyChannel KeyEvent(ReadOnlySpan<byte> type, int? database)
     {
         if (type.IsEmpty)

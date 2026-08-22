@@ -137,6 +137,7 @@ public static class OpenTelemetry
     /// <summary>
     /// Initialize OpenTelemetry via FFI.
     /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown if OpenTelemetry initialization fails.</exception>
     private static void InitInternal()
     {
         var config = s_config!;

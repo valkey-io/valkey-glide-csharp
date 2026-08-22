@@ -417,6 +417,7 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
     /// </summary>
     /// <param name="message">The <see cref="PubSubMessage"/> to convert.</param>
     /// <returns>A ValkeyChannel representing the message's channel.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if <see cref="PubSubMessage.ChannelMode"/> is not a supported <see cref="PubSubChannelMode"/> value.</exception>
     private static ValkeyChannel ToValkeyChannel(PubSubMessage message)
     {
         var channelMode = message.ChannelMode;

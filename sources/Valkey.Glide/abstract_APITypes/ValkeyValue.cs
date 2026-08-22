@@ -90,6 +90,7 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
     /// Parse this object as a value - to be used alongside Box.
     /// </summary>
     /// <param name="value">The value to unbox.</param>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="value"/> cannot be converted into a <see cref="ValkeyValue"/>.</exception>
     public static ValkeyValue Unbox(object? value)
     {
         var val = TryParse(value, out var valid);
@@ -347,6 +348,7 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
     /// <summary>
     /// Get the size of this value in bytes.
     /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown if the storage type is not a supported <see cref="StorageType"/> value.</exception>
     public long Length() => Type switch
     {
         StorageType.Null => 0,

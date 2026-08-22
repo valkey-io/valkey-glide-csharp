@@ -29,6 +29,7 @@ internal static class SortedSetOrderExtensions
     /// Converts to command arguments.
     /// </summary>
     /// <param name="sortedSetOrder">The sorted set ordering to convert.</param>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="sortedSetOrder"/> is not a supported <see cref="SortedSetOrder"/> value.</exception>
     internal static GlideString[] ToArgs(this SortedSetOrder sortedSetOrder)
         => sortedSetOrder switch
         {

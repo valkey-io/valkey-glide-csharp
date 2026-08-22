@@ -40,7 +40,7 @@ public sealed class PubSubPerformanceConfig
     /// <summary>
     /// Validates the configuration.
     /// </summary>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when configuration values are invalid.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if configuration values are invalid.</exception>
     internal void Validate()
     {
         if (ChannelCapacity <= 0)

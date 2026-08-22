@@ -35,6 +35,7 @@ internal class ResponseConverters
     /// <param name="allowConverterToHandleNull">Whether to let the converter handle a <see langword="null"/> value.</param>
     /// <returns>A converted value.</returns>
     /// <exception cref="Exception">When <paramref name="value"/> has incorrect type or value.</exception>
+    /// <exception cref="RequestException">Thrown if <paramref name="value"/> is <see langword="null"/> and not nullable, or is not of the expected type.</exception>
     public static T HandleServerValue<R, T>(object? value, bool isNullable, Func<R, T> converter, bool allowConverterToHandleNull = false)
     {
         if (value is null)

@@ -41,6 +41,7 @@ public readonly struct GeoSearchOptions
     /// <summary>
     /// Converts to command arguments.
     /// </summary>
+    /// <exception cref="ArgumentException">Thrown if <see cref="Any"/> is set without <see cref="Count"/>.</exception>
     internal readonly GlideString[] ToArgs()
     {
         if (Any && !Count.HasValue)

@@ -567,7 +567,8 @@ internal partial class FFI
     /// <param name="patternPtr">Pointer to the raw pattern bytes (null if no pattern).</param>
     /// <param name="patternLen">The length of the pattern in bytes (unsigned, 0 if no pattern).</param>
     /// <returns>A managed PubSubMessage object.</returns>
-    /// <exception cref="ArgumentException">Thrown when the parameters are invalid or marshaling fails.</exception>
+    /// <exception cref="ArgumentException">Thrown if the parameters are invalid or marshaling fails.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if <paramref name="pushKind"/> is not a supported <see cref="PushKind"/> value.</exception>
     internal static PubSubMessage MarshalPubSubMessage(
         PushKind pushKind,
         IntPtr messagePtr,
@@ -1034,8 +1035,8 @@ internal partial class FFI
     /// </summary>
     /// <param name="script">The Lua script code.</param>
     /// <returns>The SHA1 hash of the script.</returns>
-    /// <exception cref="ArgumentException">Thrown when script is null or empty.</exception>
-    /// <exception cref="InvalidOperationException">Thrown when script storage fails.</exception>
+    /// <exception cref="ArgumentException">Thrown if script is null or empty.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if script storage fails.</exception>
     internal static string StoreScript(string script)
     {
         if (string.IsNullOrEmpty(script))
@@ -1086,8 +1087,8 @@ internal partial class FFI
     /// Removes a script from Rust core storage.
     /// </summary>
     /// <param name="hash">The SHA1 hash of the script to remove.</param>
-    /// <exception cref="ArgumentException">Thrown when hash is null or empty.</exception>
-    /// <exception cref="InvalidOperationException">Thrown when script removal fails.</exception>
+    /// <exception cref="ArgumentException">Thrown if hash is null or empty.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if script removal fails.</exception>
     internal static void DropScript(string hash)
     {
         if (string.IsNullOrEmpty(hash))
