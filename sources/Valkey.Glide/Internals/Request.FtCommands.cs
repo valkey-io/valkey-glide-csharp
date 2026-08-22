@@ -104,7 +104,7 @@ internal partial class Request
     }
 
     /// <summary>
-    /// Converts the given <see cref="Ft.CreateOptions"/> to command arguments.
+    /// Converts the given <see cref="Ft.SearchOptions"/> to command arguments.
     /// </summary>
     /// <param name="options">The search options to convert.</param>
     private static GlideString[] ToArgs(Ft.SearchOptions? options)
