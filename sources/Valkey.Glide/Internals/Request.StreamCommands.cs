@@ -221,6 +221,7 @@ internal static partial class Request
     /// <summary>
     /// Converts a multi-stream read response (XREAD and XREADGROUP).
     /// </summary>
+    /// <param name="response">The multi-stream read response.</param>
     internal static ValkeyStream[] ConvertMultiStreamReadResponse(object response)
     {
         // Null when BLOCK times out or no undelivered entries exist.
@@ -243,6 +244,7 @@ internal static partial class Request
     /// <summary>
     /// Converts a single-stream read response (XREAD and XREADGROUP).
     /// </summary>
+    /// <param name="response">The single-stream read response.</param>
     internal static StreamEntry[] ConvertSingleStreamReadResponse(object response)
     {
         var streams = ConvertMultiStreamReadResponse(response);
@@ -350,6 +352,7 @@ internal static partial class Request
     /// <summary>
     /// Converts a stream entry map response (XREAD, XREADGROUP, XRANGE, XREVRANGE, XCLAIM, and XAUTOCLAIM).
     /// </summary>
+    /// <param name="response">The stream entry map response.</param>
     private static StreamEntry[] ConvertStreamEntryMapResponse(object response)
     {
         var entries = new List<StreamEntry>();

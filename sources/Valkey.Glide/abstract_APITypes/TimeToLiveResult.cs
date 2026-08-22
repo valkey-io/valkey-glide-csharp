@@ -35,6 +35,7 @@ public readonly struct TimeToLiveResult
     /// <summary>
     /// Creates a <see cref="TimeToLiveResult"/> from given value.
     /// </summary>
+    /// <param name="timeToLiveMs">The remaining time to live, in milliseconds.</param>
     internal TimeToLiveResult(long timeToLiveMs)
     {
         TimeToLiveMs = timeToLiveMs;

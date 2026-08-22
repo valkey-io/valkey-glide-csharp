@@ -78,6 +78,7 @@ public abstract class ValkeyResult
     /// <summary>
     /// An empty array result.
     /// </summary>
+    /// <param name="type">The result type of the empty array.</param>
     internal static ValkeyResult EmptyArray(ResultType type) => type switch
     {
         ResultType.Array => s_EmptyArray ??= new ArrayResult(Array.Empty<ValkeyResult>(), type),
@@ -304,6 +305,7 @@ public abstract class ValkeyResult
     /// <summary>
     /// Get a sub-item by index.
     /// </summary>
+    /// <param name="index">The zero-based index of the sub-item to retrieve.</param>
     public virtual ValkeyResult this[int index] => throw new InvalidOperationException("Indexers can only be used on array results");
 
     internal abstract bool AsBoolean();

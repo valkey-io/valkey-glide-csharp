@@ -39,6 +39,7 @@ public sealed class MetricsConfig
         /// <summary>
         /// Sets the endpoint for metrics export.
         /// </summary>
+        /// <param name="endpoint">The endpoint to export metrics to.</param>
         /// <exception cref="ArgumentException">Thrown if endpoint is null, empty, or not a valid absolute URI.</exception>
         public Builder WithEndpoint(string endpoint)
         {

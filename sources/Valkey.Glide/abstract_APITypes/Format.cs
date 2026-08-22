@@ -278,6 +278,8 @@ internal static class Format
     /// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
     /// </para>
     /// </summary>
+    /// <param name="addressWithPort">The address, optionally including a port, to parse.</param>
+    /// <param name="endpoint">The parsed endpoint, if parsing succeeded.</param>
     /// <exception cref="PlatformNotSupportedException">If Unix sockets are attempted but not supported.</exception>
     internal static bool TryParseEndPoint(string? addressWithPort, [NotNullWhen(true)] out EndPoint? endpoint)
     {

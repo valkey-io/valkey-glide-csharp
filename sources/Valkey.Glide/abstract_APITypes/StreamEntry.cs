@@ -10,6 +10,8 @@ public readonly struct StreamEntry
     /// <summary>
     /// Creates an stream entry.
     /// </summary>
+    /// <param name="id">The ID assigned to the entry.</param>
+    /// <param name="values">The field name/value pairs contained in the entry.</param>
     public StreamEntry(ValkeyValue id, NameValueEntry[] values)
     {
         Id = id;
@@ -34,6 +36,7 @@ public readonly struct StreamEntry
     /// <summary>
     /// Search for a specific field by name, returning the value.
     /// </summary>
+    /// <param name="fieldName">The field name to look up.</param>
     public ValkeyValue this[ValkeyValue fieldName]
     {
         get

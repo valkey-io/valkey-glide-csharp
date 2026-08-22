@@ -47,9 +47,10 @@ public sealed class SetCondition
     #region Public Methods
 
     /// <summary>
-    /// Only set the value if the current value equals <paramref name="comparisonValue"/> (IFEQ).
+    /// Only set the value if the current value equals the comparison value (<c>IFEQ</c>).
     /// </summary>
     /// <note>Since Valkey 8.1.0.</note>
+    /// <param name="comparisonValue">The comparison value.</param>
     public static SetCondition OnlyIfEqual(ValkeyValue comparisonValue)
         => new(SetConditionType.OnlyIfEqual, comparisonValue);
 

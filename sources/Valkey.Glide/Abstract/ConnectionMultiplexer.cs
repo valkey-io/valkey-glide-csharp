@@ -297,6 +297,7 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
     /// Adds a subscription queue for the specified channel.
     /// </summary>
     /// <param name="channel">The channel to subscribe to.</param>
+    /// <param name="queue">The queue to receive messages published to the channel.</param>
     /// <returns>True if a new subscription was added, false if an existing subscription was updated.</returns>
     internal bool AddSubscriptionQueue(ValkeyChannel channel, ChannelMessageQueue queue)
     {

@@ -16,16 +16,22 @@ namespace Valkey.Glide;
 /// <seealso cref="ConnectionConfiguration.ClientConfigurationBuilder{T}.PubSubReconciliationInterval"/>
 public class PubSubState
 {
-    /// <summary>The desired subscriptions, indexed by channel mode.</summary>
+    /// <summary>
+    /// The desired subscriptions, indexed by channel mode.
+    /// </summary>
     public IReadOnlyDictionary<PubSubChannelMode, IReadOnlySet<ValkeyKey>> Desired { get; }
 
-    /// <summary>The actual subscriptions, indexed by channel mode.</summary>
+    /// <summary>
+    /// The actual subscriptions, indexed by channel mode.
+    /// </summary>
     public IReadOnlyDictionary<PubSubChannelMode, IReadOnlySet<ValkeyKey>> Actual { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PubSubState"/> class
     /// with the specified desired and actual subscription states.
     /// </summary>
+    /// <param name="desired">The desired subscriptions, indexed by channel mode.</param>
+    /// <param name="actual">The actual subscriptions, indexed by channel mode.</param>
     internal PubSubState(
         IReadOnlyDictionary<PubSubChannelMode, IReadOnlySet<ValkeyKey>> desired,
         IReadOnlyDictionary<PubSubChannelMode, IReadOnlySet<ValkeyKey>> actual)

@@ -219,6 +219,8 @@ internal static partial class Request
     /// <summary>
     /// Adds the given key-value pairs to the arguments list.
     /// </summary>
+    /// <param name="args">The arguments list to append to.</param>
+    /// <param name="pairs">The field-value pairs to add.</param>
     private static void AddPairs(List<GlideString> args, IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>> pairs)
     {
         foreach (var kvp in pairs)
@@ -231,6 +233,8 @@ internal static partial class Request
     /// <summary>
     /// Adds the given expire condition to the arguments list.
     /// </summary>
+    /// <param name="args">The arguments list to append to.</param>
+    /// <param name="condition">The expire condition to add.</param>
     internal static void AddExpireCondition(List<GlideString> args, ExpireCondition condition)
     {
         switch (condition)

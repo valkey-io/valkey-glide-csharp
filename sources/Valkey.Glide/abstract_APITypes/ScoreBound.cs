@@ -59,6 +59,7 @@ public sealed class ScoreBound
     /// <summary>
     /// Implicitly converts a <see langword="double"/> to an inclusive <see cref="ScoreBound"/>.
     /// </summary>
+    /// <param name="value">The value to convert.</param>
     public static implicit operator ScoreBound(double value) => new(value, isExclusive: false);
 
     /// <inheritdoc/>

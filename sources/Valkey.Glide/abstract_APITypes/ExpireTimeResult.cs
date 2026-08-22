@@ -35,6 +35,7 @@ public readonly struct ExpireTimeResult
     /// <summary>
     /// Creates an <see cref="ExpireTimeResult"/> from the given value.
     /// </summary>
+    /// <param name="expireTimeMs">The expiry timestamp, in milliseconds since the Unix epoch.</param>
     internal ExpireTimeResult(long expireTimeMs)
     {
         ExpireTimeMs = expireTimeMs;

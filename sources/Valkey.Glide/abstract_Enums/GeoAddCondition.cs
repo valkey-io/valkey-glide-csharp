@@ -29,6 +29,7 @@ internal static class GeoAddConditionExtensions
     /// <summary>
     /// Converts to command arguments.
     /// </summary>
+    /// <param name="condition">The condition to convert.</param>
     internal static GlideString[] ToArgs(this GeoAddCondition condition)
         => condition switch
         {

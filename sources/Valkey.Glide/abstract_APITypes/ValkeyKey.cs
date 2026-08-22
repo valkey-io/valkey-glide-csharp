@@ -25,6 +25,7 @@ public readonly struct ValkeyKey : IEquatable<ValkeyKey>
     /// <summary>
     /// Creates a <see cref="ValkeyKey"/> from a string.
     /// </summary>
+    /// <param name="key">The string to create the key from.</param>
     public ValkeyKey(string? key) : this(null, key) { }
 
     internal ValkeyKey AsPrefix() => new ValkeyKey((byte[]?)this, null);

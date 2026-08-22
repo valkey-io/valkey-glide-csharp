@@ -168,6 +168,7 @@ public sealed class MigrateOptions(string host, ushort port, ushort destinationD
     /// <summary>
     /// Converts the options to command arguments.
     /// </summary>
+    /// <param name="keys">The keys to migrate.</param>
     internal GlideString[] ToArgs(GlideString[] keys)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);

@@ -36,6 +36,7 @@ internal partial class Request
     /// <summary>
     /// Converts the given <see cref="Ft.CreateOptions"/> to command arguments.
     /// </summary>
+    /// <param name="options">The index creation options to convert.</param>
     private static GlideString[] ToArgs(Ft.CreateOptions? options)
     {
         if (options is null)
@@ -91,6 +92,7 @@ internal partial class Request
     /// <summary>
     /// Converts the given <see cref="Ft.CreateField"/> array to command arguments.
     /// </summary>
+    /// <param name="schema">The index schema fields to convert.</param>
     private static GlideString[] ToArgs(IEnumerable<Ft.CreateField> schema)
     {
         List<GlideString> args = [ValkeyLiterals.SCHEMA];
@@ -104,6 +106,7 @@ internal partial class Request
     /// <summary>
     /// Converts the given <see cref="Ft.CreateOptions"/> to command arguments.
     /// </summary>
+    /// <param name="options">The search options to convert.</param>
     private static GlideString[] ToArgs(Ft.SearchOptions? options)
     {
         if (options is null)
@@ -224,6 +227,7 @@ internal partial class Request
     /// <summary>
     /// Converts the given <see cref="Ft.AggregateOptions"/> to command arguments.
     /// </summary>
+    /// <param name="options">The aggregation options to convert.</param>
     private static GlideString[] ToArgs(Ft.AggregateOptions? options)
     {
         if (options is null)
@@ -287,6 +291,7 @@ internal partial class Request
     /// <summary>
     /// Converts the given <see cref="Ft.InfoOptions"/> to command arguments (without scope keyword).
     /// </summary>
+    /// <param name="options">The info options to convert.</param>
     private static GlideString[] ToArgs(Ft.InfoOptions? options)
     {
         if (options is null)
@@ -312,6 +317,7 @@ internal partial class Request
     /// <summary>
     /// Converts the given <see cref="Ft.CreateField"/> to command arguments.
     /// </summary>
+    /// <param name="field">The schema field to convert.</param>
     private static GlideString[] ToArgs(Ft.CreateField field)
     {
         List<GlideString> args = [field.Identifier];
@@ -415,6 +421,7 @@ internal partial class Request
     /// <summary>
     /// Converts the given <see cref="Ft.DistanceMetric"/> to command arguments.
     /// </summary>
+    /// <param name="metric">The distance metric to convert.</param>
     private static GlideString ToArgs(Ft.DistanceMetric metric) => metric switch
     {
         Ft.DistanceMetric.Cosine => ValkeyLiterals.COSINE,

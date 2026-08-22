@@ -272,6 +272,7 @@ internal static partial class Request
     /// Shared response handler for sorted set pop operations (both blocking and non-blocking).
     /// Handles the standard response format: [key, Dictionary&lt;member, score&gt;] or null.
     /// </summary>
+    /// <param name="response">The pop response.</param>
     private static SortedSetPopResult HandleSortedSetPopResultResponse(object? response)
     {
         if (response == null)

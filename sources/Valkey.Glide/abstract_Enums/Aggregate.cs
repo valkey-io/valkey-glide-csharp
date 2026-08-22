@@ -28,6 +28,7 @@ internal static class AggregateExtensions
     /// <summary>
     /// Converts to command arguments.
     /// </summary>
+    /// <param name="aggregate">The aggregation mode to convert.</param>
     internal static GlideString[] ToArgs(this Aggregate aggregate)
         => aggregate switch
         {

@@ -28,6 +28,7 @@ public class ClusterValue<T>
     /// <summary>
     /// A constructor for the value with type auto-detection.
     /// </summary>
+    /// <param name="obj">The value to wrap.</param>
     internal static ClusterValue<T> Of(object obj)
     {
         if (obj is Dictionary<string, T> dict)

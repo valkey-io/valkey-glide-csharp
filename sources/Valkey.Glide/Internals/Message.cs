@@ -8,6 +8,8 @@ namespace Valkey.Glide.Internals;
 /// Reusable source of ValueTask. This object can be allocated once and then reused
 /// to create multiple asynchronous operations, as long as each call to CreateTask
 /// is awaited to completion before the next call begins.
+/// <param name="index">The index of the message in the external message array.</param>
+/// <param name="container">The container that owns this message.</param>
 internal class Message(int index, MessageContainer container) : INotifyCompletion
 {
     /// This is the index of the message in an external array, that allows the user to
@@ -28,6 +30,7 @@ internal class Message(int index, MessageContainer container) : INotifyCompletio
 
     /// Triggers a succesful completion of the task returned from the latest call
     /// to CreateTask.
+    /// <param name="result">The result value to complete the task with.</param>
     public void SetResult(IntPtr result)
     {
         _result = result;
@@ -36,6 +39,7 @@ internal class Message(int index, MessageContainer container) : INotifyCompletio
 
     /// Triggers a failure completion of the task returned from the latest call to
     /// CreateTask.
+    /// <param name="exc">The exception to fail the task with.</param>
     public void SetException(Exception exc)
     {
         _exception = exc;
@@ -71,6 +75,7 @@ internal class Message(int index, MessageContainer container) : INotifyCompletio
     /// This returns a task that will complete once SetException / SetResult are called,
     /// and ensures that the internal state of the message is set-up before the task is created,
     /// and cleaned once it is complete.
+    /// <param name="client">The client to associate with the operation; held to prevent it being garbage collected.</param>
     public void SetupTask(object client)
     {
         _continuation = null;

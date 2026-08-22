@@ -61,6 +61,7 @@ public class ScanOptions
     /// <summary>
     /// Converts the ValkeyType enum to a string.
     /// </summary>
+    /// <param name="type">The type to convert.</param>
     private static GlideString ToType(ValkeyType type) => type switch
     {
         ValkeyType.String => "string",

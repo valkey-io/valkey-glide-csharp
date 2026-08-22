@@ -73,6 +73,7 @@ public static partial class GlideJson
     /// <summary>
     /// Converts an object result to ValkeyValue.
     /// </summary>
+    /// <param name="result">The command result to convert.</param>
     /// <exception cref="InvalidOperationException">Thrown when the result type is unexpected.</exception>
     private static ValkeyValue ToValkeyValue(object? result) => result switch
     {
@@ -87,11 +88,13 @@ public static partial class GlideJson
     /// <summary>
     /// Converts a ValkeyKey to GlideString for command arguments.
     /// </summary>
+    /// <param name="key">The key to convert.</param>
     private static GlideString ToGlideString(ValkeyKey key) => (GlideString)key;
 
     /// <summary>
     /// Converts a ValkeyValue to GlideString for command arguments.
     /// </summary>
+    /// <param name="value">The value to convert.</param>
     /// <exception cref="ArgumentException">Thrown when value is null.</exception>
     private static GlideString ToGlideString(ValkeyValue value)
     {
@@ -103,6 +106,7 @@ public static partial class GlideJson
     /// <summary>
     /// Converts an object result to long, throwing if the result is unexpectedly null.
     /// </summary>
+    /// <param name="result">The command result to convert.</param>
     /// <exception cref="InvalidOperationException">Thrown when the result is null.</exception>
     private static long ToLong(object? result) =>
         result is long l ? l : throw new InvalidOperationException("Unexpected null result from server");
@@ -630,6 +634,7 @@ public static partial class GlideJson
     /// Converts result to non-nullable array with nullable elements.
     /// Used for write commands that throw when key doesn't exist.
     /// </summary>
+    /// <param name="result">The command result to convert.</param>
     private static long?[] ConvertToNullableLongArrayNonNull(object? result)
     {
         if (result is null)

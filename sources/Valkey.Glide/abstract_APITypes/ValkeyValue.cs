@@ -43,6 +43,7 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
     /// <summary>
     /// Creates a <see cref="ValkeyValue"/> from a string.
     /// </summary>
+    /// <param name="value">The string to create the value from.</param>
     public ValkeyValue(string value) : this(0, default, value) { }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1085:Use auto-implemented property.", Justification = "Intentional field ref")]

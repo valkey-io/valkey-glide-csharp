@@ -63,6 +63,7 @@ public sealed class OpenTelemetryConfig
         /// <summary>
         /// Sets the traces configuration.
         /// </summary>
+        /// <param name="traces">The traces configuration to use.</param>
         public Builder WithTraces(TracesConfig traces)
         {
             _traces = traces;
@@ -72,6 +73,7 @@ public sealed class OpenTelemetryConfig
         /// <summary>
         /// Sets the metrics configuration.
         /// </summary>
+        /// <param name="metrics">The metrics configuration to use.</param>
         public Builder WithMetrics(MetricsConfig metrics)
         {
             _metrics = metrics;
@@ -81,6 +83,7 @@ public sealed class OpenTelemetryConfig
         /// <summary>
         /// Sets the flush interval.
         /// </summary>
+        /// <param name="flushInterval">The interval for flushing telemetry data to the collector.</param>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="flushInterval"/> is not positive or exceeds <see cref="uint.MaxValue"/> milliseconds.</exception>
         public Builder WithFlushInterval(TimeSpan flushInterval)
         {

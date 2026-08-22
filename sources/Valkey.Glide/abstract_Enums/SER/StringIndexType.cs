@@ -30,6 +30,7 @@ internal static class StringIndexTypeExtensions
     /// <summary>
     /// Converts a <see cref="StringIndexType"/> to <see cref="BitmapIndexType"/>.
     /// </summary>
+    /// <param name="indexType">The index type to convert.</param>
     internal static BitmapIndexType ToBitmapIndexType(this StringIndexType indexType) => indexType switch
     {
         StringIndexType.Bit => BitmapIndexType.Bit,

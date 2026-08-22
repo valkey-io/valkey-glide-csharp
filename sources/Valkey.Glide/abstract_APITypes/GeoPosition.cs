@@ -29,6 +29,8 @@ public readonly struct GeoPosition : IEquatable<GeoPosition>
     /// <summary>
     /// Creates a new GeoPosition.
     /// </summary>
+    /// <param name="longitude">The longitude of the position.</param>
+    /// <param name="latitude">The latitude of the position.</param>
     public GeoPosition(double longitude, double latitude)
     {
         Longitude = longitude;

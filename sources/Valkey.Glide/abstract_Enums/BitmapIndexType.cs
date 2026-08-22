@@ -29,6 +29,7 @@ internal static class BitmapIndexTypeExtensions
     /// <summary>
     /// Converts the <see cref="BitmapIndexType"/> to its wire format literal.
     /// </summary>
+    /// <param name="indexType">The index type to convert.</param>
     internal static ValkeyValue ToLiteral(this BitmapIndexType indexType) => indexType switch
     {
         BitmapIndexType.Bit => ValkeyLiterals.BIT,

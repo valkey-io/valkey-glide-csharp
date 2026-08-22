@@ -33,6 +33,7 @@ public abstract partial class BaseBatch<T>(bool isAtomic) : IBatch where T : Bas
     /// <summary>
     /// Convert a response received from the server.
     /// </summary>
+    /// <param name="response">The batch response.</param>
     internal object?[]? ConvertResponse(object?[]? response)
     {
         if (response is null)

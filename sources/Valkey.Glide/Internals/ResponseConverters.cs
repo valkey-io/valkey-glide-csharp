@@ -32,6 +32,7 @@ internal class ResponseConverters
     /// <param name="value">Value from GLIDE core to handle.</param>
     /// <param name="isNullable">Whether it could be nullable.</param>
     /// <param name="converter">Optional function to convert <typeparamref name="R" /> to <typeparamref name="T" />.</param>
+    /// <param name="allowConverterToHandleNull">Whether to let the converter handle a <see langword="null"/> value.</param>
     /// <returns>A converted value.</returns>
     /// <exception cref="Exception">When <paramref name="value"/> has incorrect type or value.</exception>
     public static T HandleServerValue<R, T>(object? value, bool isNullable, Func<R, T> converter, bool allowConverterToHandleNull = false)

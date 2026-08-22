@@ -273,6 +273,10 @@ internal partial class Database
     /// <summary>
     /// Converts the given arguments to a <see cref="StreamAddOptions"/> instance.
     /// </summary>
+    /// <param name="messageId">The entry ID to assign, or <see langword="null"/> to auto-generate one.</param>
+    /// <param name="maxLength">The maximum length to trim the stream to, or <see langword="null"/> for no trimming.</param>
+    /// <param name="useApproximateMaxLength">Whether to trim to an approximate rather than exact length.</param>
+    /// <param name="limit">The maximum number of entries to trim in a single call.</param>
     private static StreamAddOptions ToStreamAddOptions(
         ValkeyValue? messageId,
         long? maxLength,

@@ -686,6 +686,7 @@ public abstract class Condition
 /// <summary>
 /// Indicates the status of a condition as part of a transaction.
 /// </summary>
+/// <param name="condition">The condition to track.</param>
 public sealed class ConditionResult(Condition condition)
 {
     internal readonly Condition Condition = condition;

@@ -92,6 +92,8 @@ internal static partial class Request
     /// <summary>
     /// Creates a command to load a function library.
     /// </summary>
+    /// <param name="libraryCode">The source code of the library to load.</param>
+    /// <param name="replace">Whether to replace an existing library with the same name.</param>
     public static Cmd<GlideString, string> FunctionLoad(string libraryCode, bool replace)
     {
         List<GlideString> cmdArgs = [];
@@ -107,6 +109,8 @@ internal static partial class Request
     /// <summary>
     /// Creates a command to restore functions from a binary payload.
     /// </summary>
+    /// <param name="payload">The serialized function library payload to restore.</param>
+    /// <param name="policy">The policy controlling how existing libraries are handled.</param>
     public static Cmd<string, ValkeyValue> FunctionRestore(byte[] payload, FunctionRestorePolicy? policy = null)
     {
         List<GlideString> cmdArgs = [payload];
@@ -134,6 +138,7 @@ internal static partial class Request
     /// <summary>
     /// Creates a command to check if scripts exist in the cache.
     /// </summary>
+    /// <param name="sha1Hashes">The SHA1 hashes of the scripts to check.</param>
     public static Cmd<object[], bool[]> ScriptExists(string[] sha1Hashes)
     {
         var cmdArgs = sha1Hashes.Select(h => (GlideString)h).ToArray();
@@ -149,6 +154,7 @@ internal static partial class Request
     /// <summary>
     /// Creates a command to flush all scripts from the cache with specified mode.
     /// </summary>
+    /// <param name="mode">The flush mode.</param>
     public static Cmd<string, ValkeyValue> ScriptFlush(FlushMode mode)
         => Ok(RequestType.ScriptFlush, [mode == FlushMode.Sync ? ValkeyLiterals.SYNC : ValkeyLiterals.ASYNC]);
 
@@ -161,6 +167,7 @@ internal static partial class Request
     /// <summary>
     /// Creates a command to get the source code of a cached script.
     /// </summary>
+    /// <param name="sha1Hash">The SHA1 hash of the script to retrieve.</param>
     public static Cmd<GlideString?, string?> ScriptShow(string sha1Hash)
         => new(RequestType.ScriptShow, [sha1Hash], true, gs => gs?.ToString());
 
@@ -498,6 +505,9 @@ internal static partial class Request
     /// <summary>
     /// Adds keys and args to the command arguments list for script/function execution.
     /// </summary>
+    /// <param name="cmdArgs">The command arguments list to append to.</param>
+    /// <param name="keys">The keys to add, or <see langword="null"/> if none.</param>
+    /// <param name="args">The additional arguments to add, or <see langword="null"/> if none.</param>
     private static void AddKeysAndArgs(List<GlideString> cmdArgs, string[]? keys, string[]? args)
     {
         if (keys != null)

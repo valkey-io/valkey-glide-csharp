@@ -98,6 +98,10 @@ public sealed class PubSubMessage
     /// <summary>
     /// Initializes a new instance of the <see cref="PubSubMessage"/> class.
     /// </summary>
+    /// <param name="channelMode">The channel mode the message was received on.</param>
+    /// <param name="message">The message received.</param>
+    /// <param name="channel">The channel the message was received on.</param>
+    /// <param name="pattern">The pattern the message matched, or <see langword="null"/> if not pattern-based.</param>
     private PubSubMessage(
         PubSubChannelMode channelMode,
         ValkeyValue message,

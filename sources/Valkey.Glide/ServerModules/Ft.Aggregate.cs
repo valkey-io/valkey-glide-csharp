@@ -323,6 +323,7 @@ public static partial class Ft
     /// A filter expression for an aggregate command.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ft.aggregate/">Valkey commands – FT.AGGREGATE</seealso>
+    /// <param name="expression">The filter expression.</param>
     [method: SetsRequiredMembers]
     public sealed class AggregateFilter(ValkeyValue expression) : IAggregateClause
     {

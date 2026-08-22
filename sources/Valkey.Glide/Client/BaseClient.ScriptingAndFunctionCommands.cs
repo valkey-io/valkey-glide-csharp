@@ -153,6 +153,13 @@ public abstract partial class BaseClient
     /// <summary>
     /// Frees all allocated memory for script invocation.
     /// </summary>
+    /// <param name="hashPtr">Pointer to the allocated script hash.</param>
+    /// <param name="keyPtrs">Pointers to the allocated key strings.</param>
+    /// <param name="keysPtr">Pointer to the allocated array of key pointers.</param>
+    /// <param name="keysLenPtr">Pointer to the allocated array of key lengths.</param>
+    /// <param name="argPtrs">Pointers to the allocated argument strings.</param>
+    /// <param name="argsPtr">Pointer to the allocated array of argument pointers.</param>
+    /// <param name="argsLenPtr">Pointer to the allocated array of argument lengths.</param>
     private static void FreeScriptMemory(
         IntPtr hashPtr,
         IntPtr[]? keyPtrs,

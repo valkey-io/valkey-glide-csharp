@@ -46,6 +46,8 @@ internal static class Helpers
     /// <summary>
     /// Skips the first <paramref name="skip"/> elements from an async sequence.
     /// </summary>
+    /// <param name="source">The async sequence to skip elements from.</param>
+    /// <param name="skip">The number of elements to skip.</param>
     public static async IAsyncEnumerable<T> SkipAsync<T>(this IAsyncEnumerable<T> source, int skip)
     {
         int skipped = 0;

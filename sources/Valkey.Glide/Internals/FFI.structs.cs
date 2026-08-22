@@ -450,6 +450,7 @@ internal partial class FFI
         /// Copies a byte array into unmanaged memory for FFI.
         /// Returns <see cref="IntPtr.Zero"/> if null.
         /// </summary>
+        /// <param name="data">The byte array to copy.</param>
         private static IntPtr MarshalBytes(byte[]? data)
         {
             if (data is null)
@@ -505,6 +506,7 @@ internal partial class FFI
         /// <summary>
         /// Marshals an array of <see cref="GlideString"/> values.
         /// </summary>
+        /// <param name="strings">The strings to marshal.</param>
         private static IntPtr MarshalStrings(GlideString[] strings)
         {
             if (strings.Length == 0)
@@ -527,6 +529,7 @@ internal partial class FFI
         /// <summary>
         /// Marshals a <see cref="GlideString"/> into unmanaged memory.
         /// </summary>
+        /// <param name="str">The string to marshal.</param>
         private static IntPtr MarshalString(GlideString str)
         {
             byte[] bytes = str.Bytes;

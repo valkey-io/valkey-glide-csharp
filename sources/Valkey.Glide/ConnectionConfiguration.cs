@@ -436,6 +436,7 @@ public abstract class ConnectionConfiguration
         /// <summary>
         /// <b>Add</b> a new address to the list with default port.
         /// </summary>
+        /// <param name="host">The host to add.</param>
         public T WithAddress(string host)
         {
             Address = (host, DEFAULT_PORT);
@@ -1231,6 +1232,7 @@ internal static class ReadFromStrategyExtensions
     /// <summary>
     /// Returns <see langword="true"/> if the strategy requires an Availability Zone (AZ).
     /// </summary>
+    /// <param name="strategy">The read-from strategy to check.</param>
     internal static bool IsAzReadFromStrategy(this ConnectionConfiguration.ReadFromStrategy strategy) =>
         strategy is ConnectionConfiguration.ReadFromStrategy.AzAffinity
             or ConnectionConfiguration.ReadFromStrategy.AzAffinityReplicasAndPrimary;

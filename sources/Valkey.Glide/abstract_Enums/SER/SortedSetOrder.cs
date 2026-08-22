@@ -28,6 +28,7 @@ internal static class SortedSetOrderExtensions
     /// <summary>
     /// Converts to command arguments.
     /// </summary>
+    /// <param name="sortedSetOrder">The sorted set ordering to convert.</param>
     internal static GlideString[] ToArgs(this SortedSetOrder sortedSetOrder)
         => sortedSetOrder switch
         {

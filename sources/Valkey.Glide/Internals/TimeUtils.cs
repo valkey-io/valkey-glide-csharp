@@ -14,6 +14,8 @@ internal static class TimeUtils
     /// <summary>
     /// Converts a <see cref="TimeSpan"/> to <see cref="uint"/> milliseconds.
     /// </summary>
+    /// <param name="timeSpan">The time span to convert.</param>
+    /// <param name="paramName">The name of the argument being validated.</param>
     /// <exception cref="ArgumentOutOfRangeException">
     /// Thrown if <paramref name="timeSpan"/> is not positive or exceeds <see cref="uint.MaxValue"/> milliseconds.
     /// </exception>
@@ -29,6 +31,8 @@ internal static class TimeUtils
     /// <summary>
     /// Converts a <see cref="TimeSpan"/> to <see cref="uint"/> seconds, rounded to the nearest second.
     /// </summary>
+    /// <param name="timeSpan">The time span to convert.</param>
+    /// <param name="paramName">The name of the argument being validated.</param>
     /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="timeSpan"/> is not positive or exceeds <see cref="uint.MaxValue"/> seconds.</exception>
     public static uint ToPositiveUintSecs(TimeSpan timeSpan, string paramName)
     {
@@ -46,6 +50,8 @@ internal static class TimeUtils
     /// <summary>
     /// Converts a <see cref="TimeSpan"/> to <see cref="ulong"/> milliseconds.
     /// </summary>
+    /// <param name="timeSpan">The time span to convert.</param>
+    /// <param name="paramName">The name of the argument being validated.</param>
     /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="timeSpan"/> is not positive.</exception>
     public static ulong ToPositiveULongMs(TimeSpan timeSpan, string paramName)
     {
@@ -56,6 +62,8 @@ internal static class TimeUtils
     /// <summary>
     /// Converts a <see cref="TimeSpan"/> to <see cref="ulong"/> milliseconds.
     /// </summary>
+    /// <param name="timeSpan">The time span to convert.</param>
+    /// <param name="paramName">The name of the argument being validated.</param>
     /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="timeSpan"/> is negative.</exception>
     public static ulong ToULongMs(TimeSpan timeSpan, string paramName)
     {
@@ -68,6 +76,8 @@ internal static class TimeUtils
     /// <summary>
     /// Converts a <see cref="TimeSpan"/> to <see cref="ulong"/> seconds, rounded to the nearest second.
     /// </summary>
+    /// <param name="timeSpan">The time span to convert.</param>
+    /// <param name="paramName">The name of the argument being validated.</param>
     /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="timeSpan"/> is not positive.</exception>
     public static ulong ToPositiveULongSecs(TimeSpan timeSpan, string paramName)
     {
@@ -78,6 +88,8 @@ internal static class TimeUtils
     /// <summary>
     /// Converts a <see cref="TimeSpan"/> to <see cref="ulong"/> seconds, rounded to the nearest second.
     /// </summary>
+    /// <param name="timeSpan">The time span to convert.</param>
+    /// <param name="paramName">The name of the argument being validated.</param>
     /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="timeSpan"/> is negative.</exception>
     public static ulong ToULongSecs(TimeSpan timeSpan, string paramName)
     {
@@ -91,6 +103,8 @@ internal static class TimeUtils
     /// <summary>
     /// Converts a <see cref="TimeSpan"/> to <see cref="double"/> seconds.
     /// </summary>
+    /// <param name="timeSpan">The time span to convert.</param>
+    /// <param name="paramName">The name of the argument being validated.</param>
     /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="timeSpan"/> is negative.</exception>
     public static double ToNonNegativeDoubleSecs(TimeSpan timeSpan, string paramName)
     {

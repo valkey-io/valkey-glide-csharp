@@ -87,6 +87,7 @@ internal class Cmd<R, T> : ICmd
     /// <summary>
     /// Convert a command to one which handles a <see cref="ClusterValue{T}" /> for the given route.
     /// </summary>
+    /// <param name="route">The route for the command.</param>
     public Cmd<object, ClusterValue<T>> ToClusterValue(Route route)
         => route is Route.SingleNodeRoute
             ? new(Request, ArgsArray.Args, IsNullable, value => ClusterValue<T>.OfSingleValue(Converter((R)value)), AllowConverterToHandleNull)

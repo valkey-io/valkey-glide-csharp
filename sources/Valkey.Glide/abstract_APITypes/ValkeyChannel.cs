@@ -53,36 +53,44 @@ public readonly struct ValkeyChannel : IEquatable<ValkeyChannel>
     /// <summary>
     /// Creates a new <see cref="ValkeyChannel"/> that does not act as a wildcard subscription.
     /// </summary>
+    /// <param name="value">The channel name.</param>
     public static ValkeyChannel Literal(string value) => new(value, ValkeyChannelOptions.None);
 
     /// <summary>
     /// Creates a new <see cref="ValkeyChannel"/> that does not act as a wildcard subscription.
     /// </summary>
+    /// <param name="value">The channel name bytes.</param>
     public static ValkeyChannel Literal(byte[] value) => new(value, ValkeyChannelOptions.None);
 
     /// <summary>
     /// Creates a new <see cref="ValkeyChannel"/> that does not act as a wildcard subscription.
     /// </summary>
+    /// <param name="value">The channel name.</param>
     internal static ValkeyChannel Literal(ValkeyKey value) => new((byte[]?)value, ValkeyChannelOptions.None);
 
     /// <summary>
     /// Creates a new <see cref="ValkeyChannel"/> that acts as a wildcard subscription.
     /// </summary>
+    /// <param name="value">The channel name pattern.</param>
     public static ValkeyChannel Pattern(string value) => new(value, ValkeyChannelOptions.Pattern);
 
     /// <summary>
     /// Creates a new <see cref="ValkeyChannel"/> that acts as a wildcard subscription.
     /// </summary>
+    /// <param name="value">The channel name pattern bytes.</param>
     public static ValkeyChannel Pattern(byte[] value) => new(value, ValkeyChannelOptions.Pattern);
 
     /// <summary>
     /// Creates a new <see cref="ValkeyChannel"/> that acts as a wildcard subscription.
     /// </summary>
+    /// <param name="value">The channel name pattern.</param>
     internal static ValkeyChannel Pattern(ValkeyKey value) => new((byte[]?)value, ValkeyChannelOptions.Pattern);
 
     /// <summary>
     /// Create a new channel from a buffer, explicitly controlling the pattern mode.
     /// </summary>
+    /// <param name="value">The channel name bytes.</param>
+    /// <param name="mode">The pattern mode to apply.</param>
     public ValkeyChannel(byte[]? value, PatternMode mode) : this(value, DeterminePatternBased(value, mode) ? ValkeyChannelOptions.Pattern : ValkeyChannelOptions.None)
     {
     }
@@ -90,6 +98,8 @@ public readonly struct ValkeyChannel : IEquatable<ValkeyChannel>
     /// <summary>
     /// Create a new channel from a string, explicitly controlling the pattern mode.
     /// </summary>
+    /// <param name="value">The channel name.</param>
+    /// <param name="mode">The pattern mode to apply.</param>
     public ValkeyChannel(string value, PatternMode mode) : this(value is null ? null : Encoding.UTF8.GetBytes(value), mode)
     {
     }
@@ -97,16 +107,19 @@ public readonly struct ValkeyChannel : IEquatable<ValkeyChannel>
     /// <summary>
     /// Create a new channel from a buffer, representing a sharded channel.
     /// </summary>
+    /// <param name="value">The channel name bytes.</param>
     public static ValkeyChannel Sharded(byte[]? value) => new(value, ValkeyChannelOptions.Sharded);
 
     /// <summary>
     /// Create a new channel from a string, representing a sharded channel.
     /// </summary>
+    /// <param name="value">The channel name.</param>
     public static ValkeyChannel Sharded(string value) => new(value, ValkeyChannelOptions.Sharded);
 
     /// <summary>
     /// Create a new channel from a <see cref="ValkeyKey"/>, representing a sharded channel.
     /// </summary>
+    /// <param name="value">The channel name.</param>
     internal static ValkeyChannel Sharded(ValkeyKey value) => new((byte[]?)value, ValkeyChannelOptions.Sharded);
 
     internal ValkeyChannel(byte[]? value, ValkeyChannelOptions options)
@@ -132,31 +145,43 @@ public readonly struct ValkeyChannel : IEquatable<ValkeyChannel>
     /// <summary>
     /// Indicate whether two channel names are not equal.
     /// </summary>
+    /// <param name="x">The first channel name.</param>
+    /// <param name="y">The second channel name.</param>
     public static bool operator !=(ValkeyChannel x, ValkeyChannel y) => !(x == y);
 
     /// <summary>
     /// Indicate whether two channel names are not equal.
     /// </summary>
+    /// <param name="x">The first channel name string.</param>
+    /// <param name="y">The second channel name.</param>
     public static bool operator !=(string x, ValkeyChannel y) => !(x == y);
 
     /// <summary>
     /// Indicate whether two channel names are not equal.
     /// </summary>
+    /// <param name="x">The first channel name bytes.</param>
+    /// <param name="y">The second channel name.</param>
     public static bool operator !=(byte[] x, ValkeyChannel y) => !(x == y);
 
     /// <summary>
     /// Indicate whether two channel names are not equal.
     /// </summary>
+    /// <param name="x">The first channel name.</param>
+    /// <param name="y">The second channel name string.</param>
     public static bool operator !=(ValkeyChannel x, string y) => !(x == y);
 
     /// <summary>
     /// Indicate whether two channel names are not equal.
     /// </summary>
+    /// <param name="x">The first channel name.</param>
+    /// <param name="y">The second channel name bytes.</param>
     public static bool operator !=(ValkeyChannel x, byte[] y) => !(x == y);
 
     /// <summary>
     /// Indicate whether two channel names are equal.
     /// </summary>
+    /// <param name="x">The first channel name.</param>
+    /// <param name="y">The second channel name.</param>
     public static bool operator ==(ValkeyChannel x, ValkeyChannel y) =>
         (x.Options == y.Options)
         && ValkeyValue.Equals(x.Value, y.Value);
@@ -164,23 +189,31 @@ public readonly struct ValkeyChannel : IEquatable<ValkeyChannel>
     /// <summary>
     /// Indicate whether two channel names are equal.
     /// </summary>
+    /// <param name="x">The first channel name string.</param>
+    /// <param name="y">The second channel name.</param>
     public static bool operator ==(string x, ValkeyChannel y) =>
         ValkeyValue.Equals(x is null ? null : Encoding.UTF8.GetBytes(x), y.Value);
 
     /// <summary>
     /// Indicate whether two channel names are equal.
     /// </summary>
+    /// <param name="x">The first channel name bytes.</param>
+    /// <param name="y">The second channel name.</param>
     public static bool operator ==(byte[] x, ValkeyChannel y) => ValkeyValue.Equals(x, y.Value);
 
     /// <summary>
     /// Indicate whether two channel names are equal.
     /// </summary>
+    /// <param name="x">The first channel name.</param>
+    /// <param name="y">The second channel name string.</param>
     public static bool operator ==(ValkeyChannel x, string y) =>
         ValkeyValue.Equals(x.Value, y is null ? null : Encoding.UTF8.GetBytes(y));
 
     /// <summary>
     /// Indicate whether two channel names are equal.
     /// </summary>
+    /// <param name="x">The first channel name.</param>
+    /// <param name="y">The second channel name bytes.</param>
     public static bool operator ==(ValkeyChannel x, byte[] y) => ValkeyValue.Equals(x.Value, y);
 
     /// <inheritdoc/>
@@ -195,6 +228,7 @@ public readonly struct ValkeyChannel : IEquatable<ValkeyChannel>
     /// <summary>
     /// Indicate whether two channel names are equal.
     /// </summary>
+    /// <param name="other">The channel name to compare.</param>
     public bool Equals(ValkeyChannel other) =>
         (Options == other.Options)
         && ValkeyValue.Equals(Value, other.Value);
@@ -454,11 +488,13 @@ public readonly struct ValkeyChannel : IEquatable<ValkeyChannel>
     /// <summary>
     /// Obtain the channel name as a <c>byte[]</c>.
     /// </summary>
+    /// <param name="key">The channel to convert.</param>
     public static implicit operator byte[]?(ValkeyChannel key) => key.Value;
 
     /// <summary>
     /// Obtain the channel name as a <see cref="string"/>.
     /// </summary>
+    /// <param name="key">The channel to convert.</param>
     public static implicit operator string?(ValkeyChannel key)
     {
         var arr = key.Value;

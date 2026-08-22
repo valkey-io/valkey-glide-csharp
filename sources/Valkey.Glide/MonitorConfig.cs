@@ -6,6 +6,8 @@ namespace Valkey.Glide;
 /// Configuration for a <see href="https://valkey.io/commands/monitor/">MONITOR</see> connection.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/monitor/"/>
+/// <param name="host">The server host to connect to.</param>
+/// <param name="port">The server port to connect to.</param>
 public sealed class MonitorConfig(string host, ushort port) : IDisposable
 {
     #region Private Fields
