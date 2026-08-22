@@ -91,7 +91,6 @@ public abstract partial class BaseBatch<T>
     /// <inheritdoc cref="IBatchSetCommands.SetScan(ValkeyKey, long, ScanOptions)" />
     public T SetScan(ValkeyKey key, long cursor = 0, ScanOptions? options = null) => AddCmd(Request.SetScan(key, cursor, options));
 
-    // Explicit interface implementations for IBatchSetCommands
     IBatch IBatchSetCommands.SetAdd(ValkeyKey key, ValkeyValue value) => SetAdd(key, value);
     IBatch IBatchSetCommands.SetAdd(ValkeyKey key, IEnumerable<ValkeyValue> values) => SetAdd(key, values);
     IBatch IBatchSetCommands.SetRemove(ValkeyKey key, ValkeyValue value) => SetRemove(key, value);

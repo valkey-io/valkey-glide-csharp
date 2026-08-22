@@ -55,13 +55,12 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
     /// <inheritdoc cref="IBatchServerManagementCommands.TimeAsync()" />
     public T TimeAsync() => AddCmd(Request.Time());
 
-    // Interface implementations
-    IBatch IBatchServerManagementCommands.ConfigGetAsync(ValkeyValue pattern) => ConfigGetAsync(pattern);
     IBatch IBatchServerManagementCommands.ConfigGetAsync(IEnumerable<ValkeyValue> patterns) => ConfigGetAsync(patterns);
+    IBatch IBatchServerManagementCommands.ConfigGetAsync(ValkeyValue pattern) => ConfigGetAsync(pattern);
     IBatch IBatchServerManagementCommands.ConfigResetStatisticsAsync() => ConfigResetStatisticsAsync();
     IBatch IBatchServerManagementCommands.ConfigRewriteAsync() => ConfigRewriteAsync();
-    IBatch IBatchServerManagementCommands.ConfigSetAsync(ValkeyValue setting, ValkeyValue value) => ConfigSetAsync(setting, value);
     IBatch IBatchServerManagementCommands.ConfigSetAsync(IDictionary<ValkeyValue, ValkeyValue> parameters) => ConfigSetAsync(parameters);
+    IBatch IBatchServerManagementCommands.ConfigSetAsync(ValkeyValue setting, ValkeyValue value) => ConfigSetAsync(setting, value);
     IBatch IBatchServerManagementCommands.DatabaseSizeAsync() => DatabaseSizeAsync();
     IBatch IBatchServerManagementCommands.FlushAllDatabasesAsync() => FlushAllDatabasesAsync();
     IBatch IBatchServerManagementCommands.FlushAllDatabasesAsync(FlushMode mode) => FlushAllDatabasesAsync(mode);

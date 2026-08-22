@@ -190,7 +190,6 @@ public abstract partial class BaseBatch<T>
     /// <inheritdoc cref="IBatchSortedSetCommands.SortedSetDiffAndStore(ValkeyKey, IEnumerable{ValkeyKey})" />
     public T SortedSetDiffAndStore(ValkeyKey destination, IEnumerable<ValkeyKey> keys) => AddCmd(Request.SortedSetDiffAndStore(destination, [.. keys]));
 
-    // Explicit interface implementations for IBatchSortedSetCommands
     IBatch IBatchSortedSetCommands.SortedSetAdd(ValkeyKey key, ValkeyValue member, double score) => SortedSetAdd(key, member, score);
     IBatch IBatchSortedSetCommands.SortedSetAdd(ValkeyKey key, SortedSetEntry member) => SortedSetAdd(key, member);
     IBatch IBatchSortedSetCommands.SortedSetAdd(ValkeyKey key, IEnumerable<SortedSetEntry> members) => SortedSetAdd(key, members);

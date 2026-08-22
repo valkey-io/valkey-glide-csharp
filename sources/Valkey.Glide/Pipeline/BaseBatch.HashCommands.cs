@@ -109,37 +109,33 @@ public abstract partial class BaseBatch<T>
     /// <inheritdoc cref="IBatchHashCommands.HashTimeToLive(ValkeyKey, IEnumerable{ValkeyValue})" />
     public T HashTimeToLive(ValkeyKey key, IEnumerable<ValkeyValue> hashFields) => AddCmd(Request.HashTimeToLive(key, [.. hashFields]));
 
-
-    // Explicit interface implementations for IBatchHashCommands
-    IBatch IBatchHashCommands.HashGet(ValkeyKey key, ValkeyValue hashField) => HashGet(key, hashField);
-    IBatch IBatchHashCommands.HashGet(ValkeyKey key, IEnumerable<ValkeyValue> hashFields) => HashGet(key, hashFields);
-    IBatch IBatchHashCommands.HashGet(ValkeyKey key) => HashGet(key);
-    IBatch IBatchHashCommands.HashSet(ValkeyKey key, IEnumerable<HashEntry> hashFields) => HashSet(key, hashFields);
-    IBatch IBatchHashCommands.HashSet(ValkeyKey key, ValkeyValue hashField, ValkeyValue value, When when) => HashSet(key, hashField, value, when);
-    IBatch IBatchHashCommands.HashDelete(ValkeyKey key, ValkeyValue hashField) => HashDelete(key, hashField);
     IBatch IBatchHashCommands.HashDelete(ValkeyKey key, IEnumerable<ValkeyValue> hashFields) => HashDelete(key, hashFields);
+    IBatch IBatchHashCommands.HashDelete(ValkeyKey key, ValkeyValue hashField) => HashDelete(key, hashField);
     IBatch IBatchHashCommands.HashExists(ValkeyKey key, ValkeyValue hashField) => HashExists(key, hashField);
-    IBatch IBatchHashCommands.HashIncrement(ValkeyKey key, ValkeyValue hashField, long value) => HashIncrement(key, hashField, value);
-    IBatch IBatchHashCommands.HashIncrement(ValkeyKey key, ValkeyValue hashField, double value) => HashIncrement(key, hashField, value);
-    IBatch IBatchHashCommands.HashKeys(ValkeyKey key) => HashKeys(key);
-    IBatch IBatchHashCommands.HashLength(ValkeyKey key) => HashLength(key);
-    IBatch IBatchHashCommands.HashStringLength(ValkeyKey key, ValkeyValue hashField) => HashStringLength(key, hashField);
-    IBatch IBatchHashCommands.HashValues(ValkeyKey key) => HashValues(key);
-    IBatch IBatchHashCommands.HashRandomField(ValkeyKey key) => HashRandomField(key);
-    IBatch IBatchHashCommands.HashRandomFields(ValkeyKey key, long count) => HashRandomFields(key, count);
-    IBatch IBatchHashCommands.HashRandomFieldWithValue(ValkeyKey key) => HashRandomFieldWithValue(key);
-    IBatch IBatchHashCommands.HashRandomFieldsWithValues(ValkeyKey key, long count) => HashRandomFieldsWithValues(key, count);
-
-    // Hash Field Expire Commands explicit interface implementations
-    IBatch IBatchHashCommands.HashGet(ValkeyKey key, IEnumerable<ValkeyValue> fields, GetExpiryOptions options) => HashGet(key, fields, options);
-    IBatch IBatchHashCommands.HashSet(ValkeyKey key, ValkeyValue hashField, ValkeyValue value, HashSetCondition condition) => HashSet(key, hashField, value, condition);
-    IBatch IBatchHashCommands.HashSet(ValkeyKey key, IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>> hashFieldsAndValues, HashSetCondition condition) => HashSet(key, hashFieldsAndValues, condition);
-    IBatch IBatchHashCommands.HashSet(ValkeyKey key, IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>> hashFieldsAndValues, HashSetOptions options) => HashSet(key, hashFieldsAndValues, options);
-    IBatch IBatchHashCommands.HashSet(ValkeyKey key, ValkeyValue hashField, ValkeyValue value, SetExpiryOptions expiry) => HashSet(key, hashField, value, expiry);
-    IBatch IBatchHashCommands.HashSet(ValkeyKey key, IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>> hashFieldsAndValues, SetExpiryOptions expiry) => HashSet(key, hashFieldsAndValues, expiry);
-    IBatch IBatchHashCommands.HashPersist(ValkeyKey key, IEnumerable<ValkeyValue> hashFields) => HashPersist(key, hashFields);
     IBatch IBatchHashCommands.HashExpire(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, TimeSpan expiry, ExpireCondition condition) => HashExpire(key, hashFields, expiry, condition);
     IBatch IBatchHashCommands.HashExpireAt(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, DateTimeOffset expiry, ExpireCondition condition) => HashExpireAt(key, hashFields, expiry, condition);
     IBatch IBatchHashCommands.HashExpireTime(ValkeyKey key, IEnumerable<ValkeyValue> hashFields) => HashExpireTime(key, hashFields);
+    IBatch IBatchHashCommands.HashGet(ValkeyKey key, IEnumerable<ValkeyValue> fields, GetExpiryOptions options) => HashGet(key, fields, options);
+    IBatch IBatchHashCommands.HashGet(ValkeyKey key, IEnumerable<ValkeyValue> hashFields) => HashGet(key, hashFields);
+    IBatch IBatchHashCommands.HashGet(ValkeyKey key, ValkeyValue hashField) => HashGet(key, hashField);
+    IBatch IBatchHashCommands.HashGet(ValkeyKey key) => HashGet(key);
+    IBatch IBatchHashCommands.HashIncrement(ValkeyKey key, ValkeyValue hashField, double value) => HashIncrement(key, hashField, value);
+    IBatch IBatchHashCommands.HashIncrement(ValkeyKey key, ValkeyValue hashField, long value) => HashIncrement(key, hashField, value);
+    IBatch IBatchHashCommands.HashKeys(ValkeyKey key) => HashKeys(key);
+    IBatch IBatchHashCommands.HashLength(ValkeyKey key) => HashLength(key);
+    IBatch IBatchHashCommands.HashPersist(ValkeyKey key, IEnumerable<ValkeyValue> hashFields) => HashPersist(key, hashFields);
+    IBatch IBatchHashCommands.HashRandomField(ValkeyKey key) => HashRandomField(key);
+    IBatch IBatchHashCommands.HashRandomFields(ValkeyKey key, long count) => HashRandomFields(key, count);
+    IBatch IBatchHashCommands.HashRandomFieldsWithValues(ValkeyKey key, long count) => HashRandomFieldsWithValues(key, count);
+    IBatch IBatchHashCommands.HashRandomFieldWithValue(ValkeyKey key) => HashRandomFieldWithValue(key);
+    IBatch IBatchHashCommands.HashSet(ValkeyKey key, IEnumerable<HashEntry> hashFields) => HashSet(key, hashFields);
+    IBatch IBatchHashCommands.HashSet(ValkeyKey key, IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>> hashFieldsAndValues, HashSetCondition condition) => HashSet(key, hashFieldsAndValues, condition);
+    IBatch IBatchHashCommands.HashSet(ValkeyKey key, IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>> hashFieldsAndValues, HashSetOptions options) => HashSet(key, hashFieldsAndValues, options);
+    IBatch IBatchHashCommands.HashSet(ValkeyKey key, IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>> hashFieldsAndValues, SetExpiryOptions expiry) => HashSet(key, hashFieldsAndValues, expiry);
+    IBatch IBatchHashCommands.HashSet(ValkeyKey key, ValkeyValue hashField, ValkeyValue value, HashSetCondition condition) => HashSet(key, hashField, value, condition);
+    IBatch IBatchHashCommands.HashSet(ValkeyKey key, ValkeyValue hashField, ValkeyValue value, SetExpiryOptions expiry) => HashSet(key, hashField, value, expiry);
+    IBatch IBatchHashCommands.HashSet(ValkeyKey key, ValkeyValue hashField, ValkeyValue value, When when) => HashSet(key, hashField, value, when);
+    IBatch IBatchHashCommands.HashStringLength(ValkeyKey key, ValkeyValue hashField) => HashStringLength(key, hashField);
     IBatch IBatchHashCommands.HashTimeToLive(ValkeyKey key, IEnumerable<ValkeyValue> hashFields) => HashTimeToLive(key, hashFields);
+    IBatch IBatchHashCommands.HashValues(ValkeyKey key) => HashValues(key);
 }

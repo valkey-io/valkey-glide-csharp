@@ -99,7 +99,6 @@ public abstract partial class BaseBatch<T>
     /// <inheritdoc cref="IBatchListCommands.ListBlockingPop(IEnumerable{ValkeyKey}, ListSide, long, TimeSpan)" />
     public T ListBlockingPop(IEnumerable<ValkeyKey> keys, ListSide side, long count, TimeSpan timeout) => AddCmd(Request.ListBlockingPop([.. keys], side, count, timeout));
 
-    // Explicit interface implementations for IBatchListCommands
     IBatch IBatchListCommands.ListLeftPop(ValkeyKey key) => ListLeftPop(key);
     IBatch IBatchListCommands.ListLeftPop(ValkeyKey key, long count) => ListLeftPop(key, count);
     IBatch IBatchListCommands.ListLeftPush(ValkeyKey key, ValkeyValue value) => ListLeftPush(key, value);

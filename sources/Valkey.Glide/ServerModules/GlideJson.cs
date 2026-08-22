@@ -12,8 +12,8 @@ namespace Valkey.Glide.ServerModules;
 public static partial class GlideJson
 {
     private const string JsonPrefix = "JSON.";
+    #region Command constants
 
-    // Command constants - internal so GlideJsonBatch can reuse them
     internal const string JsonSet = JsonPrefix + "SET";
     internal const string JsonGet = JsonPrefix + "GET";
     internal const string JsonMGet = JsonPrefix + "MGET";
@@ -37,6 +37,7 @@ public static partial class GlideJson
     internal const string JsonDebug = JsonPrefix + "DEBUG";
     internal const string JsonResp = JsonPrefix + "RESP";
 
+    #endregion Command constants
     #region Helper Methods
 
     /// <summary>
@@ -114,7 +115,6 @@ public static partial class GlideJson
         result is long l ? l : throw new InvalidOperationException("Unexpected null result from server");
 
     #endregion Helper Methods
-
     #region JSON.SET
 
     /// <summary>
@@ -176,7 +176,6 @@ public static partial class GlideJson
     }
 
     #endregion JSON.SET
-
     #region JSON.GET
 
     /// <summary>
@@ -293,7 +292,6 @@ public static partial class GlideJson
     }
 
     #endregion JSON.GET
-
     #region JSON.MGET
 
     /// <summary>
@@ -341,7 +339,6 @@ public static partial class GlideJson
     }
 
     #endregion JSON.MGET
-
     #region JSON.DEL
 
     /// <summary>
@@ -390,7 +387,6 @@ public static partial class GlideJson
     }
 
     #endregion JSON.DEL
-
     #region JSON.FORGET
 
     /// <summary>
@@ -417,7 +413,6 @@ public static partial class GlideJson
         => DelAsync(client, key);
 
     #endregion JSON.FORGET
-
     #region JSON.CLEAR
 
     /// <summary>
@@ -466,7 +461,6 @@ public static partial class GlideJson
     }
 
     #endregion JSON.CLEAR
-
     #region JSON.TYPE
 
     /// <summary>
@@ -528,7 +522,6 @@ public static partial class GlideJson
     }
 
     #endregion JSON.TYPE
-
     #region JSON.NUMINCRBY
 
     /// <summary>
@@ -559,7 +552,6 @@ public static partial class GlideJson
     }
 
     #endregion JSON.NUMINCRBY
-
     #region JSON.NUMMULTBY
 
     /// <summary>
@@ -590,7 +582,6 @@ public static partial class GlideJson
     }
 
     #endregion JSON.NUMMULTBY
-
     #region JSON.STRAPPEND
 
     /// <summary>
@@ -672,7 +663,6 @@ public static partial class GlideJson
     }
 
     #endregion JSON.STRAPPEND
-
     #region JSON.STRLEN
 
     /// <summary>
@@ -728,7 +718,6 @@ public static partial class GlideJson
     }
 
     #endregion JSON.STRLEN
-
     #region JSON.TOGGLE
 
     /// <summary>

@@ -1106,9 +1106,10 @@ public abstract class ConnectionConfiguration
             NodeDiscoveryMode = nodeDiscoveryMode;
             return this;
         }
-        #endregion Node Discovery Mode
 
+        #endregion Node Discovery Mode
         #region PubSub Subscriptions
+
         /// <summary>
         /// Configure PubSub subscriptions for the standalone client.
         /// </summary>
@@ -1123,6 +1124,7 @@ public abstract class ConnectionConfiguration
             Config.PubSubSubscriptions = config;
             return this;
         }
+
         #endregion PubSub Subscriptions
     }
 

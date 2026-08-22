@@ -117,7 +117,6 @@ public abstract partial class BaseBatch<T>
     /// <inheritdoc cref="IBatchGenericCommands.Wait(long, TimeSpan)" />
     public T Wait(long numreplicas, TimeSpan timeout) => AddCmd(Request.Wait(numreplicas, timeout));
 
-    // Explicit interface implementations for IBatchGenericCommands
     IBatch IBatchGenericCommands.Copy(ValkeyKey source, ValkeyKey destination, bool replace) => Copy(source, destination, replace);
     IBatch IBatchGenericCommands.Delete(IEnumerable<ValkeyKey> keys) => Delete(keys);
     IBatch IBatchGenericCommands.Delete(ValkeyKey key) => Delete(key);
