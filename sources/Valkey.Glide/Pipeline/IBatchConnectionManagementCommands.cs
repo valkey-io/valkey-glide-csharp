@@ -6,6 +6,9 @@ namespace Valkey.Glide.Pipeline;
 
 internal interface IBatchConnectionManagementCommands
 {
+    // TODO #538: Rename '*Async' methods
+#pragma warning disable RCS1047 // Non-asynchronous method name should not end with 'Async'
+
     /// <inheritdoc cref="IBaseClient.ClientGetNameAsync()" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.ClientGetNameAsync()" /></returns>
     IBatch ClientGetNameAsync();
@@ -48,4 +51,6 @@ internal interface IBatchConnectionManagementCommands
     /// <inheritdoc cref="IConnectionManagementBaseCommands.SelectAsync(long)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IConnectionManagementBaseCommands.SelectAsync(long)" /></returns>
     IBatch SelectAsync(long index);
+
+#pragma warning restore RCS1047
 }

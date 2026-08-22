@@ -7,6 +7,9 @@ namespace Valkey.Glide.Pipeline;
 
 public abstract partial class BaseBatch<T> where T : BaseBatch<T>
 {
+    // TODO #538: Rename '*Async' methods
+#pragma warning disable RCS1047 // Non-asynchronous method name should not end with 'Async'
+
     /// <inheritdoc cref="IBatchServerManagementCommands.ConfigGetAsync(ValkeyValue)" />
     public T ConfigGetAsync(ValkeyValue pattern = default) => AddCmd(Request.ConfigGet(pattern));
 
@@ -68,4 +71,6 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
     IBatch IBatchServerManagementCommands.LolwutAsync() => LolwutAsync();
     IBatch IBatchServerManagementCommands.LolwutAsync(LolwutOptions options) => LolwutAsync(options);
     IBatch IBatchServerManagementCommands.TimeAsync() => TimeAsync();
+
+#pragma warning restore RCS1047
 }

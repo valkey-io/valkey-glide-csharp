@@ -7,6 +7,9 @@ namespace Valkey.Glide.Pipeline;
 
 public abstract partial class BaseBatch<T> where T : BaseBatch<T>
 {
+    // TODO #538: Rename '*Async' methods
+#pragma warning disable RCS1047 // Non-asynchronous method name should not end with 'Async'
+
     /// <inheritdoc cref="IBatchBitmapCommands.GetBit(ValkeyKey, long)" />
     public T GetBitAsync(ValkeyKey key, long offset) => AddCmd(Request.GetBit(key, offset));
 
@@ -30,6 +33,8 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
 
     /// <inheritdoc cref="IBatchBitmapCommands.BitFieldReadOnly(ValkeyKey, IEnumerable{BitFieldOptions.IBitFieldReadOnlySubCommand})" />
     public T BitFieldReadOnlyAsync(ValkeyKey key, IEnumerable<BitFieldOptions.IBitFieldReadOnlySubCommand> subCommands) => AddCmd(Request.BitFieldReadOnly(key, [.. subCommands]));
+
+#pragma warning restore RCS1047
 
     IBatch IBatchBitmapCommands.GetBit(ValkeyKey key, long offset) => GetBitAsync(key, offset);
     IBatch IBatchBitmapCommands.SetBit(ValkeyKey key, long offset, bool value) => SetBitAsync(key, offset, value);

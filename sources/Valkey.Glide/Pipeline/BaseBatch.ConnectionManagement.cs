@@ -6,6 +6,9 @@ namespace Valkey.Glide.Pipeline;
 
 public abstract partial class BaseBatch<T> : IBatchConnectionManagementCommands where T : BaseBatch<T>
 {
+    // TODO #538: Rename '*Async' methods
+#pragma warning disable RCS1047 // Non-asynchronous method name should not end with 'Async'
+
     /// <inheritdoc cref="IBatchConnectionManagementCommands.ClientGetNameAsync()" />
     public T ClientGetNameAsync() => AddCmd(Request.ClientGetName());
 
@@ -46,4 +49,6 @@ public abstract partial class BaseBatch<T> : IBatchConnectionManagementCommands 
     IBatch IBatchConnectionManagementCommands.Ping(ValkeyValue message) => Ping(message);
     IBatch IBatchConnectionManagementCommands.ResetAsync() => ResetAsync();
     IBatch IBatchConnectionManagementCommands.SelectAsync(long index) => SelectAsync(index);
+
+#pragma warning restore RCS1047
 }
