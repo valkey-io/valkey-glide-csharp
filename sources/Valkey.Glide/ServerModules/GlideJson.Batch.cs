@@ -70,7 +70,7 @@ public static class GlideJsonBatch
         return batch.CustomCommand(args);
     }
 
-    #endregion
+    #endregion JSON.SET
 
     #region JSON.GET
 
@@ -131,7 +131,7 @@ public static class GlideJsonBatch
         return batch.CustomCommand(args);
     }
 
-    #endregion
+    #endregion JSON.GET
 
     #region JSON.MGET
 
@@ -153,7 +153,7 @@ public static class GlideJsonBatch
         return batch.CustomCommand(args);
     }
 
-    #endregion
+    #endregion JSON.MGET
 
     #region JSON.DEL
 
@@ -182,7 +182,7 @@ public static class GlideJsonBatch
         where T : BaseBatch<T>
         => batch.CustomCommand([GlideJson.JsonDel, key, path]);
 
-    #endregion
+    #endregion JSON.DEL
 
     #region JSON.FORGET
 
@@ -213,7 +213,7 @@ public static class GlideJsonBatch
         where T : BaseBatch<T>
         => Del(batch, key, path);
 
-    #endregion
+    #endregion JSON.FORGET
 
     #region JSON.CLEAR
 
@@ -241,7 +241,7 @@ public static class GlideJsonBatch
         where T : BaseBatch<T>
         => batch.CustomCommand([GlideJson.JsonClear, key, path]);
 
-    #endregion
+    #endregion JSON.CLEAR
 
     #region JSON.TYPE
 
@@ -269,7 +269,7 @@ public static class GlideJsonBatch
         where T : BaseBatch<T>
         => batch.CustomCommand([GlideJson.JsonType, key, path]);
 
-    #endregion
+    #endregion JSON.TYPE
 
     #region JSON.NUMINCRBY
 
@@ -287,7 +287,7 @@ public static class GlideJsonBatch
         where T : BaseBatch<T>
         => batch.CustomCommand([GlideJson.JsonNumIncrBy, key, path, increment.ToString(CultureInfo.InvariantCulture)]);
 
-    #endregion
+    #endregion JSON.NUMINCRBY
 
     #region JSON.NUMMULTBY
 
@@ -305,7 +305,7 @@ public static class GlideJsonBatch
         where T : BaseBatch<T>
         => batch.CustomCommand([GlideJson.JsonNumMultBy, key, path, multiplier.ToString(CultureInfo.InvariantCulture)]);
 
-    #endregion
+    #endregion JSON.NUMMULTBY
 
     #region JSON.STRAPPEND
 
@@ -323,7 +323,7 @@ public static class GlideJsonBatch
         where T : BaseBatch<T>
         => batch.CustomCommand([GlideJson.JsonStrAppend, key, path, value]);
 
-    #endregion
+    #endregion JSON.STRAPPEND
 
     #region JSON.STRLEN
 
@@ -340,7 +340,7 @@ public static class GlideJsonBatch
         where T : BaseBatch<T>
         => batch.CustomCommand([GlideJson.JsonStrLen, key, path]);
 
-    #endregion
+    #endregion JSON.STRLEN
 
     #region JSON.ARRAPPEND
 
@@ -362,7 +362,7 @@ public static class GlideJsonBatch
         return batch.CustomCommand(args);
     }
 
-    #endregion
+    #endregion JSON.ARRAPPEND
 
     #region JSON.ARRINSERT
 
@@ -385,7 +385,7 @@ public static class GlideJsonBatch
         return batch.CustomCommand(args);
     }
 
-    #endregion
+    #endregion JSON.ARRINSERT
 
     #region JSON.ARRINDEX
 
@@ -403,7 +403,7 @@ public static class GlideJsonBatch
         where T : BaseBatch<T>
         => batch.CustomCommand([GlideJson.JsonArrIndex, key, path, value]);
 
-    #endregion
+    #endregion JSON.ARRINDEX
 
     #region JSON.ARRLEN
 
@@ -420,7 +420,7 @@ public static class GlideJsonBatch
         where T : BaseBatch<T>
         => batch.CustomCommand([GlideJson.JsonArrLen, key, path]);
 
-    #endregion
+    #endregion JSON.ARRLEN
 
     #region JSON.ARRPOP
 
@@ -451,7 +451,7 @@ public static class GlideJsonBatch
         where T : BaseBatch<T>
         => batch.CustomCommand([GlideJson.JsonArrPop, key, path, index.ToString()]);
 
-    #endregion
+    #endregion JSON.ARRPOP
 
     #region JSON.ARRTRIM
 
@@ -470,7 +470,7 @@ public static class GlideJsonBatch
         where T : BaseBatch<T>
         => batch.CustomCommand([GlideJson.JsonArrTrim, key, path, start.ToString(), stop.ToString()]);
 
-    #endregion
+    #endregion JSON.ARRTRIM
 
     #region JSON.OBJLEN
 
@@ -498,7 +498,7 @@ public static class GlideJsonBatch
         where T : BaseBatch<T>
         => batch.CustomCommand([GlideJson.JsonObjLen, key, path]);
 
-    #endregion
+    #endregion JSON.OBJLEN
 
     #region JSON.OBJKEYS
 
@@ -526,7 +526,7 @@ public static class GlideJsonBatch
         where T : BaseBatch<T>
         => batch.CustomCommand([GlideJson.JsonObjKeys, key, path]);
 
-    #endregion
+    #endregion JSON.OBJKEYS
 
     #region JSON.TOGGLE
 
@@ -543,7 +543,7 @@ public static class GlideJsonBatch
         where T : BaseBatch<T>
         => batch.CustomCommand([GlideJson.JsonToggle, key, path]);
 
-    #endregion
+    #endregion JSON.TOGGLE
 
     #region JSON.DEBUG
 
@@ -595,7 +595,7 @@ public static class GlideJsonBatch
         where T : BaseBatch<T>
         => batch.CustomCommand([GlideJson.JsonDebug, ValkeyLiterals.FIELDS, key, path]);
 
-    #endregion
+    #endregion JSON.DEBUG
 
     #region JSON.RESP
 
@@ -623,5 +623,5 @@ public static class GlideJsonBatch
         where T : BaseBatch<T>
         => batch.CustomCommand([GlideJson.JsonResp, key, path]);
 
-    #endregion
+    #endregion JSON.RESP
 }

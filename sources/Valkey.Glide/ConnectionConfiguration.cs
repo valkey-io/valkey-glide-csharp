@@ -270,7 +270,7 @@ public abstract class ConnectionConfiguration
         RESP3 = 1,
     }
 
-    #endregion
+    #endregion Structs and Enums definitions
 
     private static readonly string DEFAULT_HOST = "localhost";
     private static readonly ushort DEFAULT_PORT = 6379;
@@ -488,7 +488,7 @@ public abstract class ConnectionConfiguration
             set { } // needed for +=
         }
 
-        #endregion
+        #endregion Address
         #region TLS
 
         /// <summary>
@@ -604,7 +604,7 @@ public abstract class ConnectionConfiguration
             return (T)this;
         }
 
-        #endregion
+        #endregion TLS
         #region Mutual TLS
 
         /// <summary>
@@ -693,7 +693,7 @@ public abstract class ConnectionConfiguration
             Config.CertReloadIntervalSeconds = null;
         }
 
-        #endregion
+        #endregion Mutual TLS
         #region Request Timeout
 
         /// <summary>
@@ -718,7 +718,7 @@ public abstract class ConnectionConfiguration
             return (T)this;
         }
 
-        #endregion
+        #endregion Request Timeout
         #region Connection Timeout
 
         /// <summary>
@@ -742,7 +742,7 @@ public abstract class ConnectionConfiguration
             return (T)this;
         }
 
-        #endregion
+        #endregion Connection Timeout
         #region Read From
 
         /// <summary>
@@ -760,7 +760,7 @@ public abstract class ConnectionConfiguration
             return (T)this;
         }
 
-        #endregion
+        #endregion Read From
         #region Authentication
 
         /// <summary>
@@ -827,7 +827,7 @@ public abstract class ConnectionConfiguration
         public T WithAuthentication(string username, IamAuthConfig iamConfig)
             => WithCredentials(new ServerCredentials(username, iamConfig));
 
-        #endregion
+        #endregion Authentication
         #region Protocol
 
         /// <summary>
@@ -847,7 +847,7 @@ public abstract class ConnectionConfiguration
             return (T)this;
         }
 
-        #endregion
+        #endregion Protocol
         #region Client Name
 
         /// <summary>
@@ -866,7 +866,7 @@ public abstract class ConnectionConfiguration
             return (T)this;
         }
 
-        #endregion
+        #endregion Client Name
         #region Connection Retry Strategy
 
         /// <summary>
@@ -890,7 +890,7 @@ public abstract class ConnectionConfiguration
         public T WithConnectionRetryStrategy(uint numberOfRetries, uint factor, uint exponentBase, uint? jitterPercent = null)
             => WithConnectionRetryStrategy(new RetryStrategy(numberOfRetries, factor, exponentBase, jitterPercent));
 
-        #endregion
+        #endregion Connection Retry Strategy
         #region Database ID
 
         /// <summary>
@@ -910,7 +910,7 @@ public abstract class ConnectionConfiguration
             return (T)this;
         }
 
-        #endregion
+        #endregion Database ID
         #region Lazy Connect
 
         /// <summary>
@@ -930,7 +930,7 @@ public abstract class ConnectionConfiguration
             return (T)this;
         }
 
-        #endregion
+        #endregion Lazy Connect
         #region PubSub Reconciliation Interval
 
         /// <summary>
@@ -949,7 +949,7 @@ public abstract class ConnectionConfiguration
             return (T)this;
         }
 
-        #endregion
+        #endregion PubSub Reconciliation Interval
         #region Compression
 
         /// <summary>
@@ -970,7 +970,7 @@ public abstract class ConnectionConfiguration
             return (T)this;
         }
 
-        #endregion
+        #endregion Compression
         #region Client-Side Cache
 
         /// <summary>
@@ -993,7 +993,7 @@ public abstract class ConnectionConfiguration
             return (T)this;
         }
 
-        #endregion
+        #endregion Client-Side Cache
         #region Circuit Breaker
 
         /// <summary>
@@ -1015,7 +1015,7 @@ public abstract class ConnectionConfiguration
             return (T)this;
         }
 
-        #endregion
+        #endregion Circuit Breaker
         #region Inflight Requests Limit
 
         /// <summary>
@@ -1044,7 +1044,7 @@ public abstract class ConnectionConfiguration
             return (T)this;
         }
 
-        #endregion
+        #endregion Inflight Requests Limit
         #region Address Resolver
 
         /// <summary>
@@ -1065,7 +1065,7 @@ public abstract class ConnectionConfiguration
             return (T)this;
         }
 
-        #endregion
+        #endregion Address Resolver
 
         internal ConnectionConfig Build() => Config;
     }
@@ -1103,7 +1103,7 @@ public abstract class ConnectionConfiguration
             NodeDiscoveryMode = nodeDiscoveryMode;
             return this;
         }
-        #endregion
+        #endregion Node Discovery Mode
 
         #region PubSub Subscriptions
         /// <summary>
@@ -1120,7 +1120,7 @@ public abstract class ConnectionConfiguration
             Config.PubSubSubscriptions = config;
             return this;
         }
-        #endregion
+        #endregion PubSub Subscriptions
     }
 
     /// <summary>
@@ -1161,7 +1161,7 @@ public abstract class ConnectionConfiguration
             return this;
         }
 
-        #endregion
+        #endregion Refresh Topology
         #region Periodic Checks
 
         /// <summary>
@@ -1202,7 +1202,7 @@ public abstract class ConnectionConfiguration
             return this;
         }
 
-        #endregion
+        #endregion Periodic Checks
         #region PubSub Subscriptions
 
         /// <summary>
@@ -1219,7 +1219,7 @@ public abstract class ConnectionConfiguration
             return this;
         }
 
-        #endregion
+        #endregion PubSub Subscriptions
     }
 }
 

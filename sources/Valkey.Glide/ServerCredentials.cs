@@ -13,7 +13,7 @@ public sealed class ServerCredentials : IDisposable
 
     private bool _disposed;
 
-    #endregion
+    #endregion Private Fields
     #region Public Properties
 
     /// <summary>
@@ -35,7 +35,7 @@ public sealed class ServerCredentials : IDisposable
         private set;
     }
 
-    #endregion
+    #endregion Public Properties
     #region Internal Properties
 
     /// <summary>
@@ -48,7 +48,7 @@ public sealed class ServerCredentials : IDisposable
         private set;
     }
 
-    #endregion
+    #endregion Internal Properties
     #region Constructors & Builders
 
     /// <summary>
@@ -93,7 +93,7 @@ public sealed class ServerCredentials : IDisposable
         IamAuthConfig = iamConfig;
     }
 
-    #endregion
+    #endregion Constructors & Builders
     #region Public Methods
 
     /// <summary>
@@ -137,7 +137,7 @@ public sealed class ServerCredentials : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    #endregion
+    #endregion Public Methods
     #region Private Methods
 
     /// <summary>
@@ -146,5 +146,5 @@ public sealed class ServerCredentials : IDisposable
     private void ThrowIfDisposed()
         => ObjectDisposedException.ThrowIf(_disposed, this);
 
-    #endregion
+    #endregion Private Methods
 }

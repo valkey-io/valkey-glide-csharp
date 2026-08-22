@@ -27,12 +27,12 @@ public sealed class StreamRangeOptions
     /// </summary>
     public Order Order { get; init; } = Order.Ascending;
 
-    #endregion
+    #endregion Public Properties
     #region Internal Methods
 
     /// <inheritdoc/>
     internal GlideString[] ToArgs()
         => Count.HasValue ? [ValkeyLiterals.COUNT, Count.Value.ToGlideString()] : [];
 
-    #endregion
+    #endregion Internal Methods
 }

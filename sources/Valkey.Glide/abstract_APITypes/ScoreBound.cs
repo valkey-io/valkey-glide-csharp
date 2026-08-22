@@ -22,13 +22,13 @@ public sealed class ScoreBound
     /// </summary>
     public static readonly ScoreBound Max = new(double.PositiveInfinity, isExclusive: false);
 
-    #endregion
+    #endregion Constants
     #region Fields
 
     private readonly double _score;
     private readonly bool _isExclusive;
 
-    #endregion
+    #endregion Fields
     #region Constructors
 
     private ScoreBound(double score, bool isExclusive)
@@ -39,7 +39,7 @@ public sealed class ScoreBound
         _isExclusive = isExclusive && !double.IsInfinity(_score);
     }
 
-    #endregion
+    #endregion Constructors
     #region Public Methods
 
     /// <summary>
@@ -92,7 +92,7 @@ public sealed class ScoreBound
     /// <inheritdoc/>
     public static bool operator >=(ScoreBound left, ScoreBound right) => left.CompareTo(right) >= 0;
 
-    #endregion
+    #endregion Public Methods
     #region Internal Methods
 
     /// <summary>
@@ -115,5 +115,5 @@ public sealed class ScoreBound
             : [_score.ToGlideString()];
     }
 
-    #endregion
+    #endregion Internal Methods
 }

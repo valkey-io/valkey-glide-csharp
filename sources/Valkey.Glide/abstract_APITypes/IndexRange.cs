@@ -31,13 +31,13 @@ public sealed class IndexRange : Range
     /// </summary>
     public static readonly IndexRange LastToFirst = new(Last, First);
 
-    #endregion
+    #endregion Constants
     #region Fields
 
     private readonly long _start;
     private readonly long _stop;
 
-    #endregion
+    #endregion Fields
     #region Constructors
 
     private IndexRange(long start, long stop)
@@ -46,7 +46,7 @@ public sealed class IndexRange : Range
         _stop = stop;
     }
 
-    #endregion
+    #endregion Constructors
     #region Public Methods
 
     /// <summary>
@@ -57,11 +57,11 @@ public sealed class IndexRange : Range
     /// <returns>An <see cref="IndexRange"/> between start and stop indices.</returns>
     public static IndexRange Between(long start, long stop) => new(start, stop);
 
-    #endregion
+    #endregion Public Methods
     #region Internal Methods
 
     /// <inheritdoc/>
     internal override GlideString[] ToArgs() => [_start.ToGlideString(), _stop.ToGlideString()];
 
-    #endregion
+    #endregion Internal Methods
 }

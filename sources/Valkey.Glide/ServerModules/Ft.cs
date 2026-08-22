@@ -46,5 +46,5 @@ public static partial class Ft
     public static Task<ISet<ValkeyValue>> ListAsync(BaseClient client)
         => client.Command(Request.FtList());
 
-    #endregion
+    #endregion Public Methods
 }

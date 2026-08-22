@@ -35,7 +35,7 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<ValkeyValue> StreamAddAsync(ValkeyKey key, IEnumerable<NameValueEntry> streamPairs, ValkeyValue? messageId = null, int? maxLength = null, bool useApproximateMaxLength = false, CommandFlags flags = CommandFlags.None);
 
-    #endregion
+    #endregion StreamAddAsync
     #region StreamReadAsync
 
     /// <inheritdoc cref="IBaseClient.StreamReadAsync(StreamPosition)" path="/*[self::summary or self::seealso]"/>
@@ -55,7 +55,7 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<ValkeyStream[]> StreamReadAsync(IEnumerable<StreamPosition> streamPositions, int? countPerStream = null, CommandFlags flags = CommandFlags.None);
 
-    #endregion
+    #endregion StreamReadAsync
     #region StreamRangeAsync
 
     /// <inheritdoc cref="IBaseClient.StreamRangeAsync(ValkeyKey)" path="/*[self::summary or self::seealso]"/>
@@ -69,7 +69,7 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<StreamEntry[]> StreamRangeAsync(ValkeyKey key, ValkeyValue? minId = null, ValkeyValue? maxId = null, int? count = null, Order messageOrder = Order.Ascending, CommandFlags flags = CommandFlags.None);
 
-    #endregion
+    #endregion StreamRangeAsync
     #region StreamReadGroupAsync
 
     /// <inheritdoc cref="IBaseClient.StreamReadGroupAsync(StreamPosition, ValkeyValue, ValkeyValue)" path="/*[self::summary or self::seealso]"/>
@@ -101,7 +101,7 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<ValkeyStream[]> StreamReadGroupAsync(IEnumerable<StreamPosition> streamPositions, ValkeyValue groupName, ValkeyValue consumerName, int? countPerStream = null, bool noAck = false, CommandFlags flags = CommandFlags.None);
 
-    #endregion
+    #endregion StreamReadGroupAsync
     #region StreamLengthAsync
 
     /// <inheritdoc cref="IStreamBaseCommands.StreamLengthAsync(ValkeyKey)"/>
@@ -109,7 +109,7 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<long> StreamLengthAsync(ValkeyKey key, CommandFlags flags);
 
-    #endregion
+    #endregion StreamLengthAsync
     #region StreamDeleteAsync
 
     /// <inheritdoc cref="IStreamBaseCommands.StreamDeleteAsync(ValkeyKey, IEnumerable{ValkeyValue})"/>
@@ -117,7 +117,7 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<long> StreamDeleteAsync(ValkeyKey key, IEnumerable<ValkeyValue> messageIds, CommandFlags flags);
 
-    #endregion
+    #endregion StreamDeleteAsync
     #region StreamCreateConsumerGroupAsync
 
     /// <summary>
@@ -138,7 +138,7 @@ public partial interface IDatabaseAsync
     /// <returns><see langword="true"/> if the consumer group was created.</returns>
     Task<bool> StreamCreateConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue? position, bool createStream, long? entriesRead, CommandFlags flags);
 
-    #endregion
+    #endregion StreamCreateConsumerGroupAsync
     #region StreamDeleteConsumerGroupAsync
 
     /// <summary>
@@ -152,7 +152,7 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<bool> StreamDeleteConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, CommandFlags flags = CommandFlags.None);
 
-    #endregion
+    #endregion StreamDeleteConsumerGroupAsync
     #region StreamCreateConsumerAsync
 
     /// <summary>
@@ -167,7 +167,7 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<bool> StreamCreateConsumerAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, CommandFlags flags = CommandFlags.None);
 
-    #endregion
+    #endregion StreamCreateConsumerAsync
     #region StreamDeleteConsumerAsync
 
     /// <summary>
@@ -182,7 +182,7 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<long> StreamDeleteConsumerAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, CommandFlags flags = CommandFlags.None);
 
-    #endregion
+    #endregion StreamDeleteConsumerAsync
     #region StreamConsumerGroupSetPositionAsync
 
     /// <summary>
@@ -202,7 +202,7 @@ public partial interface IDatabaseAsync
     /// <returns><see langword="true"/> if the position was set.</returns>
     Task<bool> StreamConsumerGroupSetPositionAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue position, long? entriesRead, CommandFlags flags);
 
-    #endregion
+    #endregion StreamConsumerGroupSetPositionAsync
     #region StreamAcknowledgeAsync
 
     /// <summary>
@@ -229,7 +229,7 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<long> StreamAcknowledgeAsync(ValkeyKey key, ValkeyValue groupName, IEnumerable<ValkeyValue> messageIds, CommandFlags flags = CommandFlags.None);
 
-    #endregion
+    #endregion StreamAcknowledgeAsync
     #region StreamPendingAsync
 
     /// <summary>
@@ -243,7 +243,7 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<StreamPendingInfo> StreamPendingAsync(ValkeyKey key, ValkeyValue groupName, CommandFlags flags = CommandFlags.None);
 
-    #endregion
+    #endregion StreamPendingAsync
     #region StreamPendingMessagesAsync
 
     /// <summary>
@@ -261,7 +261,7 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<StreamPendingMessageInfo[]> StreamPendingMessagesAsync(ValkeyKey key, ValkeyValue groupName, int count, ValkeyValue consumerName, ValkeyValue? minId = null, ValkeyValue? maxId = null, CommandFlags flags = CommandFlags.None);
 
-    #endregion
+    #endregion StreamPendingMessagesAsync
     #region StreamClaimAsync
 
     /// <summary>
@@ -278,7 +278,7 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<StreamEntry[]> StreamClaimAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, IEnumerable<ValkeyValue> messageIds, CommandFlags flags = CommandFlags.None);
 
-    #endregion
+    #endregion StreamClaimAsync
     #region StreamClaimIdsOnlyAsync
 
     /// <summary>
@@ -295,7 +295,7 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<ValkeyValue[]> StreamClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, IEnumerable<ValkeyValue> messageIds, CommandFlags flags = CommandFlags.None);
 
-    #endregion
+    #endregion StreamClaimIdsOnlyAsync
     #region StreamAutoClaimAsync
 
     /// <summary>
@@ -313,7 +313,7 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<StreamAutoClaimResult> StreamAutoClaimAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, ValkeyValue startAtId, int? count = null, CommandFlags flags = CommandFlags.None);
 
-    #endregion
+    #endregion StreamAutoClaimAsync
     #region StreamAutoClaimIdsOnlyAsync
 
     /// <summary>
@@ -331,7 +331,7 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<StreamAutoClaimJustIdResult> StreamAutoClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, ValkeyValue startAtId, int? count = null, CommandFlags flags = CommandFlags.None);
 
-    #endregion
+    #endregion StreamAutoClaimIdsOnlyAsync
     #region StreamTrimAsync
 
     /// <summary>
@@ -374,7 +374,7 @@ public partial interface IDatabaseAsync
         StreamTrimMode trimMode = StreamTrimMode.KeepReferences,
         CommandFlags flags = CommandFlags.None);
 
-    #endregion
+    #endregion StreamTrimAsync
     #region StreamTrimByMinIdAsync
 
     /// <summary>
@@ -391,7 +391,7 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<long> StreamTrimByMinIdAsync(ValkeyKey key, ValkeyValue minId, bool useApproximateMaxLength = false, long? limit = null, StreamTrimMode trimMode = StreamTrimMode.KeepReferences, CommandFlags flags = CommandFlags.None);
 
-    #endregion
+    #endregion StreamTrimByMinIdAsync
     #region StreamInfoAsync
 
     /// <summary>
@@ -404,7 +404,7 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<StreamInfo> StreamInfoAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None);
 
-    #endregion
+    #endregion StreamInfoAsync
     #region StreamGroupInfoAsync
 
     /// <summary>
@@ -417,7 +417,7 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<StreamGroupInfo[]> StreamGroupInfoAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None);
 
-    #endregion
+    #endregion StreamGroupInfoAsync
     #region StreamConsumerInfoAsync
 
     /// <summary>
@@ -431,5 +431,5 @@ public partial interface IDatabaseAsync
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<StreamConsumerInfo[]> StreamConsumerInfoAsync(ValkeyKey key, ValkeyValue groupName, CommandFlags flags = CommandFlags.None);
 
-    #endregion
+    #endregion StreamConsumerInfoAsync
 }

@@ -79,7 +79,7 @@ public static partial class Ft
     public static Task<IDictionary<ValkeyValue, ValkeyValue>[]> AggregateAsync(BaseClient client, ValkeyKey index, ValkeyValue query, AggregateOptions options)
         => client.Command(Request.FtAggregate(index, query, options));
 
-    #endregion
+    #endregion Public Methods
 
     #region Nested Types
 
@@ -375,7 +375,7 @@ public static partial class Ft
         /// </summary>
         public static readonly IEnumerable<ValkeyValue>? LoadAll = null;
 
-        #endregion
+        #endregion Constants
         #region Public Properties
 
         /// <summary>
@@ -415,10 +415,10 @@ public static partial class Ft
         /// </summary>
         public IEnumerable<IAggregateClause> Clauses { get; init; } = [];
 
-        #endregion
+        #endregion Public Properties
     }
 
-    #endregion
+    #endregion Nested Types
 
     #region Private Methods
 
@@ -435,5 +435,5 @@ public static partial class Ft
             _ => throw new ArgumentOutOfRangeException(nameof(function)),
         };
 
-    #endregion
+    #endregion Private Methods
 }

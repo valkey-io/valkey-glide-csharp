@@ -212,7 +212,7 @@ internal static partial class Request
         => new(RequestType.HVals, [key], false, response =>
             [.. response.Cast<GlideString>().Select(gs => (ValkeyValue)gs)]);
 
-    #endregion
+    #endregion Command Builders
 
     #region Argument Builders
 
@@ -254,5 +254,5 @@ internal static partial class Request
         }
     }
 
-    #endregion
+    #endregion Argument Builders
 }

@@ -166,7 +166,7 @@ public partial interface IBaseClient
     Task ScriptKillAsync(
         CancellationToken cancellationToken = default);
 
-    #endregion
+    #endregion Script Commands
     #region Function Commands
 
     /// <summary>
@@ -438,5 +438,5 @@ public partial interface IBaseClient
         FunctionRestorePolicy policy,
         CancellationToken cancellationToken = default);
 
-    #endregion
+    #endregion Function Commands
 }

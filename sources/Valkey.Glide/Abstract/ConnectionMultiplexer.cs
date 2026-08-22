@@ -428,7 +428,7 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
         };
     }
 
-    #endregion
+    #endregion Subscriptions
 
     /// <summary>
     /// Determines whether the given configuration corresponds to a cluster server.

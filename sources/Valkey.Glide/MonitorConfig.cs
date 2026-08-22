@@ -12,7 +12,7 @@ public sealed class MonitorConfig(string host, ushort port) : IDisposable
 
     private bool _disposed;
 
-    #endregion
+    #endregion Private Fields
     #region Public Properties
 
     /// <summary>
@@ -44,7 +44,7 @@ public sealed class MonitorConfig(string host, ushort port) : IDisposable
         private set;
     } = null;
 
-    #endregion
+    #endregion Public Properties
     #region Internal Properties
 
     /// <summary>
@@ -56,7 +56,7 @@ public sealed class MonitorConfig(string host, ushort port) : IDisposable
         private set;
     } = null;
 
-    #endregion
+    #endregion Internal Properties
     #region Public Methods
 
     /// <summary>
@@ -141,7 +141,7 @@ public sealed class MonitorConfig(string host, ushort port) : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    #endregion
+    #endregion Public Methods
     #region Private Methods
 
     private void ClearPassword()
@@ -153,5 +153,5 @@ public sealed class MonitorConfig(string host, ushort port) : IDisposable
         }
     }
 
-    #endregion
+    #endregion Private Methods
 }

@@ -23,7 +23,7 @@ public sealed class GetExpiryOptions
     /// </summary>
     internal DateTimeOffset? Timestamp { get; }
 
-    #endregion
+    #endregion Internal Properties
     #region Constructors
 
     private GetExpiryOptions(ulong? durationMs = null, DateTimeOffset? timestamp = null)
@@ -32,7 +32,7 @@ public sealed class GetExpiryOptions
         Timestamp = timestamp;
     }
 
-    #endregion
+    #endregion Constructors
     #region Public Methods
 
     /// <summary>
@@ -58,7 +58,7 @@ public sealed class GetExpiryOptions
     /// <returns>A new <see cref="GetExpiryOptions"/> instance.</returns>
     public static GetExpiryOptions Persist() => new();
 
-    #endregion
+    #endregion Public Methods
     #region Internal Methods
 
     internal GlideString[] ToArgs()
@@ -76,5 +76,5 @@ public sealed class GetExpiryOptions
         return [ValkeyLiterals.PERSIST];
     }
 
-    #endregion
+    #endregion Internal Methods
 }

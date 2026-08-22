@@ -187,7 +187,7 @@ internal partial class Database
         return Command(Request.LongestCommonSubsequenceWithMatches(first, second, minLength));
     }
 
-    #endregion
+    #endregion Public Methods
     #region Private Methods
 
     private static SetOptions ToSetOptions(When when, TimeSpan? expiry, bool keepTtl)
@@ -216,5 +216,5 @@ internal partial class Database
         return keepTtl ? SetExpiryOptions.KeepTimeToLive() : null;
     }
 
-    #endregion
+    #endregion Private Methods
 }

@@ -23,5 +23,5 @@ public abstract class Range
     /// </summary>
     internal abstract GlideString[] ToArgs();
 
-    #endregion
+    #endregion Internal Methods
 }

@@ -20,5 +20,5 @@ public sealed class SetOptions
     /// </summary>
     public SetExpiryOptions? Expiry { get; init; }
 
-    #endregion
+    #endregion Public Properties
 }

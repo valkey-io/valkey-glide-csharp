@@ -20,7 +20,7 @@ public sealed class RangeOptions
     private const long NoOffset = 0L;
     private const long NoCount = -1L;
 
-    #endregion
+    #endregion Constants
     #region Public Properties
 
     /// <summary>
@@ -47,7 +47,7 @@ public sealed class RangeOptions
     /// </summary>
     public long Count { get; init; } = NoCount;
 
-    #endregion
+    #endregion Public Properties
     #region Internal Methods
 
     /// <summary>
@@ -88,5 +88,5 @@ public sealed class RangeOptions
         return [.. args];
     }
 
-    #endregion
+    #endregion Internal Methods
 }

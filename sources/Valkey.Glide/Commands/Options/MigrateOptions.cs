@@ -20,7 +20,7 @@ public sealed class MigrateOptions(string host, ushort port, ushort destinationD
     private bool _disposed;
     private readonly ulong _timeoutMs = ToULongMs(timeout, nameof(timeout));
 
-    #endregion
+    #endregion Private Fields
     #region Public Properties
 
     /// <summary>
@@ -58,7 +58,7 @@ public sealed class MigrateOptions(string host, ushort port, ushort destinationD
     /// </summary>
     public string? Username { get; private set; }
 
-    #endregion
+    #endregion Public Properties
     #region Internal Properties
 
     /// <summary>
@@ -66,7 +66,7 @@ public sealed class MigrateOptions(string host, ushort port, ushort destinationD
     /// </summary>
     internal char[]? Password { get; private set; }
 
-    #endregion
+    #endregion Internal Properties
     #region Public Methods
 
     /// <summary>
@@ -150,7 +150,7 @@ public sealed class MigrateOptions(string host, ushort port, ushort destinationD
         GC.SuppressFinalize(this);
     }
 
-    #endregion
+    #endregion Public Methods
     #region Private Methods
 
     private void ClearPassword()
@@ -162,7 +162,7 @@ public sealed class MigrateOptions(string host, ushort port, ushort destinationD
         }
     }
 
-    #endregion
+    #endregion Private Methods
     #region Internal Methods
 
     /// <summary>
@@ -219,5 +219,5 @@ public sealed class MigrateOptions(string host, ushort port, ushort destinationD
         return [.. args];
     }
 
-    #endregion
+    #endregion Internal Methods
 }

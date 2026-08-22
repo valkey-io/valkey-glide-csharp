@@ -12,7 +12,7 @@ internal static partial class Request
 
     private const string MemoryStatsDbPrefix = "db.";
 
-    #endregion
+    #endregion Constants
     #region Command Builders
 
     public static Cmd<GlideString, string> BackgroundSave()
@@ -134,7 +134,7 @@ internal static partial class Request
                 .AddMicroseconds(microseconds);
         });
 
-    #endregion
+    #endregion Command Builders
     #region Response Converters
 
     private static Cmd<object, KeyValuePair<string, string>[]> ConfigGetAsyncInternal(GlideString[] args)
@@ -293,5 +293,5 @@ internal static partial class Request
             OverheadHashtableExpires = GetLong(map, "overhead.hashtable.expires"),
         };
 
-    #endregion
+    #endregion Response Converters
 }

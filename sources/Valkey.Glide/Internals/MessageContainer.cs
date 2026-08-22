@@ -12,7 +12,7 @@ internal class MessageContainer(BaseClient client) : IDisposable
     private readonly ConcurrentQueue<Message> _availableMessages = new();
     private readonly BaseClient _client = client;
 
-    #endregion
+    #endregion Private Fields
     #region Public Methods
 
     /// <inheritdoc/>
@@ -39,7 +39,7 @@ internal class MessageContainer(BaseClient client) : IDisposable
         }
     }
 
-    #endregion
+    #endregion Public Methods
     #region Internal Methods
 
     internal Message GetMessage(int index) => _messages[index];
@@ -54,7 +54,7 @@ internal class MessageContainer(BaseClient client) : IDisposable
     internal void ReturnFreeMessage(Message message)
         => _availableMessages.Enqueue(message);
 
-    #endregion
+    #endregion Internal Methods
     #region Private Methods
 
     private Message GetFreeMessage()
@@ -71,5 +71,5 @@ internal class MessageContainer(BaseClient client) : IDisposable
         return message;
     }
 
-    #endregion
+    #endregion Private Methods
 }

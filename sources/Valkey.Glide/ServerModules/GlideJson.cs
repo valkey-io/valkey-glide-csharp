@@ -107,7 +107,7 @@ public static partial class GlideJson
     private static long ToLong(object? result) =>
         result is long l ? l : throw new InvalidOperationException("Unexpected null result from server");
 
-    #endregion
+    #endregion Helper Methods
 
     #region JSON.SET
 
@@ -169,7 +169,7 @@ public static partial class GlideJson
         };
     }
 
-    #endregion
+    #endregion JSON.SET
 
     #region JSON.GET
 
@@ -286,7 +286,7 @@ public static partial class GlideJson
         return [.. args];
     }
 
-    #endregion
+    #endregion JSON.GET
 
     #region JSON.MGET
 
@@ -334,7 +334,7 @@ public static partial class GlideJson
         return [ToValkeyValue(result)];
     }
 
-    #endregion
+    #endregion JSON.MGET
 
     #region JSON.DEL
 
@@ -383,7 +383,7 @@ public static partial class GlideJson
         return ToLong(result);
     }
 
-    #endregion
+    #endregion JSON.DEL
 
     #region JSON.FORGET
 
@@ -410,7 +410,7 @@ public static partial class GlideJson
     public static Task<long> ForgetAsync(BaseClient client, ValkeyKey key)
         => DelAsync(client, key);
 
-    #endregion
+    #endregion JSON.FORGET
 
     #region JSON.CLEAR
 
@@ -459,7 +459,7 @@ public static partial class GlideJson
         return ToLong(result);
     }
 
-    #endregion
+    #endregion JSON.CLEAR
 
     #region JSON.TYPE
 
@@ -521,7 +521,7 @@ public static partial class GlideJson
         return result?.ToString();
     }
 
-    #endregion
+    #endregion JSON.TYPE
 
     #region JSON.NUMINCRBY
 
@@ -552,7 +552,7 @@ public static partial class GlideJson
         return ToValkeyValue(result);
     }
 
-    #endregion
+    #endregion JSON.NUMINCRBY
 
     #region JSON.NUMMULTBY
 
@@ -583,7 +583,7 @@ public static partial class GlideJson
         return ToValkeyValue(result);
     }
 
-    #endregion
+    #endregion JSON.NUMMULTBY
 
     #region JSON.STRAPPEND
 
@@ -663,7 +663,7 @@ public static partial class GlideJson
         return ToLong(result);
     }
 
-    #endregion
+    #endregion JSON.STRAPPEND
 
     #region JSON.STRLEN
 
@@ -719,7 +719,7 @@ public static partial class GlideJson
         return result is null ? null : (long)result;
     }
 
-    #endregion
+    #endregion JSON.STRLEN
 
     #region JSON.TOGGLE
 
@@ -758,5 +758,5 @@ public static partial class GlideJson
         return [Convert.ToBoolean(result)];
     }
 
-    #endregion
+    #endregion JSON.TOGGLE
 }

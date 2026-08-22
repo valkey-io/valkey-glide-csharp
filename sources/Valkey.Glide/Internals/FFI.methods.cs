@@ -120,7 +120,7 @@ internal partial class FFI
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial void DropOpenTelemetrySpanFfi(IntPtr spanPtr);
 
-    #endregion
+    #endregion OpenTelemetry
     #region Monitor
 
     /// <summary>
@@ -159,5 +159,5 @@ internal partial class FFI
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial void FreeMonitorConnectionResponseFfi(IntPtr responsePtr);
 
-    #endregion
+    #endregion Monitor
 }

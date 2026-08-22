@@ -148,5 +148,5 @@ public class Logger
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "free_string")]
     private static extern void FreeString(IntPtr strPtr);
 
-    #endregion
+    #endregion FFI function declaration
 }

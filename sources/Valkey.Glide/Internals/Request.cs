@@ -143,7 +143,7 @@ internal partial class Request
     private static IReadOnlySet<string> ToReadOnlyStringSet(IEnumerable<object> items)
         => new HashSet<string>(items.Cast<GlideString>().Select(gs => gs.ToString()));
 
-    #endregion
+    #endregion Collection Converters
     #region Response Map Helpers
 
     /// <summary>
@@ -263,5 +263,5 @@ internal partial class Request
         return [.. items.Cast<GlideString>().Select(gs => (ValkeyValue)gs)];
     }
 
-    #endregion
+    #endregion Response Map Helpers
 }

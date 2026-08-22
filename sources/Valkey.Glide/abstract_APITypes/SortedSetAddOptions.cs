@@ -21,7 +21,7 @@ public readonly struct SortedSetAddOptions
     /// </summary>
     public bool Changed { get; init; }
 
-    #endregion
+    #endregion Public Properties
     #region Internal Methods
 
     /// <summary>
@@ -40,5 +40,5 @@ public readonly struct SortedSetAddOptions
         return [.. args];
     }
 
-    #endregion
+    #endregion Internal Methods
 }

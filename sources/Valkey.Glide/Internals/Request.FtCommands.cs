@@ -30,7 +30,7 @@ internal partial class Request
     public static Cmd<object, Ft.InfoLocalResult> FtInfoLocal(ValkeyKey indexName, Ft.InfoOptions? options = null)
         => new(RequestType.FtInfo, [indexName, ValkeyLiterals.LOCAL, .. ToArgs(options)], false, ParseFtInfoLocalResponse);
 
-    #endregion
+    #endregion Public Methods
     #region Private Methods
 
     /// <summary>
@@ -639,5 +639,5 @@ internal partial class Request
         _ => throw new RequestException($"Unknown FT.INFO distance metric: '{metric}'"),
     };
 
-    #endregion
+    #endregion Private Methods
 }

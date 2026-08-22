@@ -21,7 +21,7 @@ public class StreamReadOptions
     /// </summary>
     public TimeSpan? Block { get; init; } = null;
 
-    #endregion
+    #endregion Public Properties
 }
 
 /// <summary>
@@ -38,5 +38,5 @@ public sealed class StreamReadGroupOptions : StreamReadOptions
     /// </summary>
     public bool NoAck { get; init; } = false;
 
-    #endregion
+    #endregion Public Properties
 }

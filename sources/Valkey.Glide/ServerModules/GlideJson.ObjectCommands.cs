@@ -61,7 +61,7 @@ public static partial class GlideJson
         return result is null ? null : (long)result;
     }
 
-    #endregion
+    #endregion JSON.OBJLEN
 
     #region JSON.OBJKEYS
 
@@ -141,7 +141,7 @@ public static partial class GlideJson
         return [];
     }
 
-    #endregion
+    #endregion JSON.OBJKEYS
 
     #region JSON.DEBUG MEMORY
 
@@ -198,7 +198,7 @@ public static partial class GlideJson
         return result is null ? null : (long)result;
     }
 
-    #endregion
+    #endregion JSON.DEBUG MEMORY
 
     #region JSON.DEBUG FIELDS
 
@@ -254,7 +254,7 @@ public static partial class GlideJson
         return result is null ? null : (long)result;
     }
 
-    #endregion
+    #endregion JSON.DEBUG FIELDS
 
     #region JSON.RESP
 
@@ -303,5 +303,5 @@ public static partial class GlideJson
         return ValkeyResult.Create(result);
     }
 
-    #endregion
+    #endregion JSON.RESP
 }

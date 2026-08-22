@@ -12,7 +12,7 @@ public sealed class IamAuthConfig : IDisposable
 
     private bool _disposed;
 
-    #endregion
+    #endregion Private Fields
     #region Public Properties
 
     /// <summary>
@@ -47,7 +47,7 @@ public sealed class IamAuthConfig : IDisposable
         private set;
     }
 
-    #endregion
+    #endregion Public Properties
     #region Constructors & Builders
 
     /// <summary>
@@ -72,7 +72,7 @@ public sealed class IamAuthConfig : IDisposable
         RefreshIntervalSeconds = refreshIntervalSeconds;
     }
 
-    #endregion
+    #endregion Constructors & Builders
     #region Public Methods
 
     /// <summary>
@@ -98,7 +98,7 @@ public sealed class IamAuthConfig : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    #endregion
+    #endregion Public Methods
     #region Private Methods
 
     /// <summary>
@@ -107,5 +107,5 @@ public sealed class IamAuthConfig : IDisposable
     private void ThrowIfDisposed()
         => ObjectDisposedException.ThrowIf(_disposed, this);
 
-    #endregion
+    #endregion Private Methods
 }

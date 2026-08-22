@@ -22,13 +22,13 @@ public sealed class LexBound
     /// </summary>
     public static readonly LexBound Max = new(ValkeyLiterals.LexRangeMax, isInclusive: false);
 
-    #endregion
+    #endregion Constants
     #region Fields
 
     private readonly ValkeyValue _value;
     private readonly bool _isInclusive;
 
-    #endregion
+    #endregion Fields
     #region Constructors
 
     private LexBound(ValkeyValue value, bool isInclusive)
@@ -41,7 +41,7 @@ public sealed class LexBound
             && value != ValkeyLiterals.LexRangeMax;
     }
 
-    #endregion
+    #endregion Constructors
     #region Public Methods
 
     /// <summary>
@@ -73,7 +73,7 @@ public sealed class LexBound
     /// </summary>
     public static implicit operator LexBound(ValkeyValue value) => Inclusive((ValkeyValue)value);
 
-    #endregion
+    #endregion Public Methods
     #region Internal Methods
 
     /// <summary>
@@ -97,5 +97,5 @@ public sealed class LexBound
             : [ValkeyLiterals.RangeExclusive.ToGlideString() + value];
     }
 
-    #endregion
+    #endregion Internal Methods
 }

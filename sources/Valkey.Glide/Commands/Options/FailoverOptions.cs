@@ -18,7 +18,7 @@ public sealed class FailoverOptions
     private bool _abort;
     private ulong? _timeoutMs;
 
-    #endregion
+    #endregion Private Fields
     #region Constructors & Builders
 
     private FailoverOptions() { }
@@ -65,7 +65,7 @@ public sealed class FailoverOptions
     public static FailoverOptions Forced(string host, int port, TimeSpan timeout)
         => new() { _host = host, _port = port, _force = true, _timeoutMs = ToPositiveULongMs(timeout, nameof(timeout)) };
 
-    #endregion
+    #endregion Constructors & Builders
     #region Internal Methods
 
     /// <summary>
@@ -103,5 +103,5 @@ public sealed class FailoverOptions
         return [.. args];
     }
 
-    #endregion
+    #endregion Internal Methods
 }

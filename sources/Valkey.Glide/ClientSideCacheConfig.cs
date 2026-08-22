@@ -48,7 +48,7 @@ public sealed class ClientSideCacheConfig
     internal string CacheId { get; } = Guid.NewGuid().ToString("N");
     internal ulong EntryTtlMs { get; } = 0;
 
-    #endregion
+    #endregion Internal Properties
     #region Public Properties
 
     /// <summary>
@@ -86,7 +86,7 @@ public sealed class ClientSideCacheConfig
     /// </note>
     public bool ServerAssisted { get; private set; }
 
-    #endregion
+    #endregion Public Properties
     #region Constructors & Builders
 
     /// <summary>
@@ -117,7 +117,7 @@ public sealed class ClientSideCacheConfig
         EntryTtlMs = ToULongMs(entryTtl, nameof(entryTtl));
     }
 
-    #endregion
+    #endregion Constructors & Builders
     #region Public Methods
 
     /// <summary>
@@ -153,7 +153,7 @@ public sealed class ClientSideCacheConfig
         return this;
     }
 
-    #endregion
+    #endregion Public Methods
     #region Internal Methods
 
     /// <summary>
@@ -169,5 +169,5 @@ public sealed class ClientSideCacheConfig
         ServerAssisted
     );
 
-    #endregion
+    #endregion Internal Methods
 }

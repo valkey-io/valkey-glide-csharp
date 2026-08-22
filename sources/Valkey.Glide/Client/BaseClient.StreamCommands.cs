@@ -26,7 +26,7 @@ public abstract partial class BaseClient
     public Task<ValkeyValue> StreamAddAsync(ValkeyKey key, IEnumerable<NameValueEntry> streamPairs, StreamAddOptions options)
         => Command(Request.StreamAdd(key, [.. streamPairs], options));
 
-    #endregion
+    #endregion StreamAddAsync
     #region StreamReadAsync
 
     /// <inheritdoc cref="IBaseClient.StreamReadAsync(StreamPosition)"/>
@@ -45,7 +45,7 @@ public abstract partial class BaseClient
     public Task<ValkeyStream[]> StreamReadAsync(IEnumerable<StreamPosition> streamPositions, StreamReadOptions options)
         => Command(Request.StreamRead(streamPositions, options));
 
-    #endregion
+    #endregion StreamReadAsync
     #region StreamRangeAsync
 
     /// <inheritdoc cref="IBaseClient.StreamRangeAsync(ValkeyKey)"/>
@@ -56,7 +56,7 @@ public abstract partial class BaseClient
     public Task<StreamEntry[]> StreamRangeAsync(ValkeyKey key, StreamRangeOptions options)
         => Command(Request.StreamRange(key, options));
 
-    #endregion
+    #endregion StreamRangeAsync
     #region StreamReadGroupAsync
 
     /// <inheritdoc cref="IBaseClient.StreamReadGroupAsync(StreamPosition, ValkeyValue, ValkeyValue)"/>
@@ -75,14 +75,14 @@ public abstract partial class BaseClient
     public Task<ValkeyStream[]> StreamReadGroupAsync(IEnumerable<StreamPosition> positions, ValkeyValue groupName, ValkeyValue consumerName, StreamReadGroupOptions options)
         => Command(Request.StreamReadGroup(positions, groupName, consumerName, options));
 
-    #endregion
+    #endregion StreamReadGroupAsync
     #region StreamLengthAsync
 
     /// <inheritdoc cref="IStreamBaseCommands.StreamLengthAsync(ValkeyKey)"/>
     public Task<long> StreamLengthAsync(ValkeyKey key)
         => Command(Request.StreamLength(key));
 
-    #endregion
+    #endregion StreamLengthAsync
     #region StreamDeleteAsync
 
     /// <inheritdoc cref="IStreamBaseCommands.StreamDeleteAsync(ValkeyKey, IEnumerable{ValkeyValue})"/>
@@ -93,7 +93,7 @@ public abstract partial class BaseClient
     public Task<bool> StreamDeleteAsync(ValkeyKey key, ValkeyValue messageId)
         => Command(Request.StreamDelete(key, messageId));
 
-    #endregion
+    #endregion StreamDeleteAsync
 
     // TODO #326: Redesign and expose these methods
 
@@ -173,7 +173,7 @@ public abstract partial class BaseClient
     public Task<long> StreamTrimAsync(ValkeyKey key, StreamTrimOptions options)
         => Command(Request.StreamTrim(key, options));
 
-    #endregion
+    #endregion StreamTrimAsync
 
     // #region XINFO
     // public async Task<StreamInfo> StreamInfoAsync(ValkeyKey key)

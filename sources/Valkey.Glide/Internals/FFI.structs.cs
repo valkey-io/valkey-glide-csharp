@@ -758,14 +758,14 @@ internal partial class FFI
         public bool HasClientSideCacheConfig;
         public ClientSideCacheConfig ClientSideCacheConfig;
 
-        #endregion
+        #endregion Client-Side Cache
         #region Circuit Breaker
 
         [MarshalAs(UnmanagedType.U1)]
         public bool HasCircuitBreakerConfig;
         public CircuitBreakerConfig CircuitBreakerConfig;
 
-        #endregion
+        #endregion Circuit Breaker
         #region TLS
 
         public TlsMode TlsMode;
@@ -774,7 +774,7 @@ internal partial class FFI
         public IntPtr RootCertsPtr;
         public IntPtr RootCertsLensPtr;
 
-        #endregion
+        #endregion TLS
         #region Mutual TLS
 
         public nuint ClientCertLen;
@@ -796,14 +796,14 @@ internal partial class FFI
         public bool HasCertReloadIntervalSeconds;
         public uint CertReloadIntervalSeconds;
 
-        #endregion
+        #endregion Mutual TLS
         #region Inflight Requests Limit
 
         [MarshalAs(UnmanagedType.U1)]
         public bool HasInflightRequestsLimit;
         public uint InflightRequestsLimit;
 
-        #endregion
+        #endregion Inflight Requests Limit
         #region Periodic Checks
 
         [MarshalAs(UnmanagedType.U1)]
@@ -811,7 +811,7 @@ internal partial class FFI
         public PeriodicChecksMode PeriodicChecksMode;
         public uint PeriodicChecksIntervalSec;
 
-        #endregion
+        #endregion Periodic Checks
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -1296,5 +1296,5 @@ internal partial class FFI
         public IntPtr ConnectionErrorMessage;
     }
 
-    #endregion
+    #endregion Monitor
 }

@@ -65,7 +65,7 @@ public static partial class Ft
     public static Task<SearchResult> SearchAsync(BaseClient client, ValkeyKey index, ValkeyValue query, SearchOptions options)
         => client.Command(Request.FtSearch(index, query, options));
 
-    #endregion
+    #endregion Public Methods
 
     #region Nested Types
 
@@ -82,7 +82,7 @@ public static partial class Ft
         /// </summary>
         public static readonly IEnumerable<SearchReturnField> NoContent = [];
 
-        #endregion
+        #endregion Constants
         #region Public Properties
 
         /// <summary>
@@ -137,7 +137,7 @@ public static partial class Ft
         /// </summary>
         public bool Verbatim { get; init; }
 
-        #endregion
+        #endregion Public Properties
     }
 
     /// <summary>
@@ -280,5 +280,5 @@ public static partial class Ft
         }
     }
 
-    #endregion
+    #endregion Nested Types
 }

@@ -86,7 +86,7 @@ internal partial class Request
         => Simple<object>(RequestType.UnsubscribeBlocking,
             [.. channels, ToULongMs(timeout, nameof(timeout)).ToGlideString()], isNullable: true);
 
-    #endregion
+    #endregion Command Builders
     #region Response Converters
 
     /// <summary>
@@ -107,5 +107,5 @@ internal partial class Request
         return resultDict;
     }
 
-    #endregion
+    #endregion Response Converters
 }

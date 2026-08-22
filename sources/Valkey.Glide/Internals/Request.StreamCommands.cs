@@ -188,7 +188,7 @@ internal static partial class Request
     public static Cmd<long, long> StreamTrim(ValkeyKey key, StreamTrimOptions options)
         => Simple<long>(RequestType.XTrim, [key, .. options.ToArgs()]);
 
-    #endregion
+    #endregion Command Builders
 
     #region Response Converters
 
@@ -521,7 +521,7 @@ internal static partial class Request
         return result;
     }
 
-    #endregion
+    #endregion Response Converters
 
     #region Argument Builders
 
@@ -629,5 +629,5 @@ internal static partial class Request
         return new(RequestType.XClaim, [.. args], false, converter);
     }
 
-    #endregion
+    #endregion Argument Builders
 }

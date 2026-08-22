@@ -191,10 +191,10 @@ public sealed record MemoryStats
     /// <note>Since Valkey 8.0.0.</note>
     public long? OverheadDbHashtableRehashing { get; init; }
 
-    #endregion
+    #endregion Public Properties
     #region Constructors & Builders
 
     internal MemoryStats() { }
 
-    #endregion
+    #endregion Constructors & Builders
 }

@@ -42,7 +42,7 @@ public sealed class MonitorClient : IAsyncDisposable, IDisposable
     /// </summary>
     private readonly MonitorMessageCallback _callbackDelegate;
 
-    #endregion
+    #endregion Private Fields
     #region Constructors & Builders
 
     /// <summary>
@@ -111,7 +111,7 @@ public sealed class MonitorClient : IAsyncDisposable, IDisposable
         _callbackDelegate = OnMonitorMessage;
     }
 
-    #endregion
+    #endregion Constructors & Builders
     #region Public Methods
 
     /// <summary>
@@ -174,7 +174,7 @@ public sealed class MonitorClient : IAsyncDisposable, IDisposable
         return ValueTask.CompletedTask;
     }
 
-    #endregion
+    #endregion Public Methods
     #region Private Methods
 
     private void OnMonitorMessage(
@@ -225,5 +225,5 @@ public sealed class MonitorClient : IAsyncDisposable, IDisposable
         }
     }
 
-    #endregion
+    #endregion Private Methods
 }

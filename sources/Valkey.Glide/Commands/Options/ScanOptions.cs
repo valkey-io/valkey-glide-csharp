@@ -27,7 +27,7 @@ public class ScanOptions
     /// </summary>
     public ValkeyType? Type { get; set; }
 
-    #endregion
+    #endregion Public Properties
     #region Internal Methods
 
     /// <summary>
@@ -72,5 +72,5 @@ public class ScanOptions
         ValkeyType.Unknown or ValkeyType.None or _ => throw new ArgumentException($"Unsupported ValkeyType '{type}'")
     };
 
-    #endregion
+    #endregion Internal Methods
 }

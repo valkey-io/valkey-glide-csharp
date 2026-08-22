@@ -22,13 +22,13 @@ public sealed class ScoreRange : Range
     /// </summary>
     public static readonly ScoreRange MaxToMin = new(ScoreBound.Max, ScoreBound.Min);
 
-    #endregion
+    #endregion Constants
     #region Fields
 
     private readonly ScoreBound _start;
     private readonly ScoreBound _stop;
 
-    #endregion
+    #endregion Fields
     #region Constructors
 
     private ScoreRange(ScoreBound start, ScoreBound stop)
@@ -37,7 +37,7 @@ public sealed class ScoreRange : Range
         _stop = stop;
     }
 
-    #endregion
+    #endregion Constructors
     #region Public Methods
 
     /// <summary>
@@ -48,11 +48,11 @@ public sealed class ScoreRange : Range
     /// <returns>A <see cref="ScoreRange"/> between the two bounds.</returns>
     public static ScoreRange Between(ScoreBound start, ScoreBound stop) => new(start, stop);
 
-    #endregion
+    #endregion Public Methods
     #region Internal Methods
 
     /// <inheritdoc/>
     internal override GlideString[] ToArgs() => [.. _start.ToArgs(), .. _stop.ToArgs()];
 
-    #endregion
+    #endregion Internal Methods
 }

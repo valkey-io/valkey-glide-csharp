@@ -170,7 +170,7 @@ public static class GlideStringExtensions
         return args;
     }
 
-    #endregion
+    #endregion ToGlideStrings
 }
 
 /// <summary>

@@ -21,7 +21,7 @@ public sealed class SetExpiryOptions
     /// </summary>
     internal DateTimeOffset? Timestamp { get; }
 
-    #endregion
+    #endregion Internal Properties
     #region Constructors
 
     private SetExpiryOptions(TimeSpan? duration = null, DateTimeOffset? timestamp = null)
@@ -30,7 +30,7 @@ public sealed class SetExpiryOptions
         Timestamp = timestamp;
     }
 
-    #endregion
+    #endregion Constructors
     #region Public Methods
 
     /// <summary>
@@ -53,5 +53,5 @@ public sealed class SetExpiryOptions
     /// <returns>A new <see cref="SetExpiryOptions"/> instance.</returns>
     public static SetExpiryOptions KeepTimeToLive() => new();
 
-    #endregion
+    #endregion Public Methods
 }
