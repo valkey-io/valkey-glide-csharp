@@ -63,7 +63,6 @@ public partial interface IDatabaseAsync
     /// <seealso href="https://valkey.io/commands/sunion/">Valkey commands – SUNION</seealso>
     /// <seealso href="https://valkey.io/commands/sinter/">Valkey commands – SINTER</seealso>
     /// <seealso href="https://valkey.io/commands/sdiff/">Valkey commands – SDIFF</seealso>
-    /// <note>When in cluster mode, <paramref name="first"/> and <paramref name="second"/> must map to the same hash slot.</note>
     /// <param name="operation">The set operation to perform (union, intersect, or difference).</param>
     /// <param name="first">The key of the first set.</param>
     /// <param name="second">The key of the second set.</param>
@@ -78,6 +77,7 @@ public partial interface IDatabaseAsync
     /// var members = await db.SetCombineAsync(SetOperation.Intersect, "set1", "set2");  // ["b", "c"]
     /// </code>
     /// </example>
+    /// <para>When in cluster mode, <paramref name="first"/> and <paramref name="second"/> must map to the same hash slot.</para>
     /// </remarks>
     Task<ValkeyValue[]> SetCombineAsync(SetOperation operation, ValkeyKey first, ValkeyKey second, CommandFlags flags = CommandFlags.None);
 
@@ -87,7 +87,6 @@ public partial interface IDatabaseAsync
     /// <seealso href="https://valkey.io/commands/sunion/">Valkey commands – SUNION</seealso>
     /// <seealso href="https://valkey.io/commands/sinter/">Valkey commands – SINTER</seealso>
     /// <seealso href="https://valkey.io/commands/sdiff/">Valkey commands – SDIFF</seealso>
-    /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
     /// <param name="operation">The set operation to perform (union, intersect, or difference).</param>
     /// <param name="keys">The keys of the sets to combine.</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
@@ -101,6 +100,7 @@ public partial interface IDatabaseAsync
     /// var members = await db.SetCombineAsync(SetOperation.Union, ["set1", "set2"]);  // ["a", "b", "c"]
     /// </code>
     /// </example>
+    /// <para>When in cluster mode, all keys must map to the same hash slot.</para>
     /// </remarks>
     Task<ValkeyValue[]> SetCombineAsync(SetOperation operation, IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None);
 
@@ -110,7 +110,6 @@ public partial interface IDatabaseAsync
     /// <seealso href="https://valkey.io/commands/sunionstore/">Valkey commands – SUNIONSTORE</seealso>
     /// <seealso href="https://valkey.io/commands/sinterstore/">Valkey commands – SINTERSTORE</seealso>
     /// <seealso href="https://valkey.io/commands/sdiffstore/">Valkey commands – SDIFFSTORE</seealso>
-    /// <note>When in cluster mode, <paramref name="destination"/>, <paramref name="first"/>, and <paramref name="second"/> must map to the same hash slot.</note>
     /// <param name="operation">The set operation to perform (union, intersect, or difference).</param>
     /// <param name="destination">The key to store the resulting set.</param>
     /// <param name="first">The key of the first set.</param>
@@ -126,6 +125,7 @@ public partial interface IDatabaseAsync
     /// var count = await db.SetCombineAndStoreAsync(SetOperation.Intersect, "dest", "set1", "set2");  // 2
     /// </code>
     /// </example>
+    /// <para>When in cluster mode, <paramref name="destination"/>, <paramref name="first"/>, and <paramref name="second"/> must map to the same hash slot.</para>
     /// </remarks>
     Task<long> SetCombineAndStoreAsync(SetOperation operation, ValkeyKey destination, ValkeyKey first, ValkeyKey second, CommandFlags flags = CommandFlags.None);
 
@@ -135,7 +135,6 @@ public partial interface IDatabaseAsync
     /// <seealso href="https://valkey.io/commands/sunionstore/">Valkey commands – SUNIONSTORE</seealso>
     /// <seealso href="https://valkey.io/commands/sinterstore/">Valkey commands – SINTERSTORE</seealso>
     /// <seealso href="https://valkey.io/commands/sdiffstore/">Valkey commands – SDIFFSTORE</seealso>
-    /// <note>When in cluster mode, <paramref name="destination"/> and all <paramref name="keys"/> must map to the same hash slot.</note>
     /// <param name="operation">The set operation to perform (union, intersect, or difference).</param>
     /// <param name="destination">The key to store the resulting set.</param>
     /// <param name="keys">The keys of the sets to combine.</param>
@@ -150,6 +149,7 @@ public partial interface IDatabaseAsync
     /// var count = await db.SetCombineAndStoreAsync(SetOperation.Union, "dest", ["set1", "set2"]);  // 3
     /// </code>
     /// </example>
+    /// <para>When in cluster mode, <paramref name="destination"/> and all <paramref name="keys"/> must map to the same hash slot.</para>
     /// </remarks>
     Task<long> SetCombineAndStoreAsync(SetOperation operation, ValkeyKey destination, IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None);
 

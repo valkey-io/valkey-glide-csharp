@@ -134,7 +134,6 @@ public partial interface IBaseClient
     /// Returns the source code of a cached script by its SHA1 hash.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/script-show/">Valkey commands – SCRIPT SHOW</seealso>
-    /// <note>Since Valkey 8.0.0.</note>
     /// <param name="sha1Hash">The SHA1 hash of the script.</param>
     /// <param name="cancellationToken">A token to cancel the async operation.</param>
     /// <returns>The script source code, or <see langword="null"/> if the script is not in the cache.</returns>
@@ -145,6 +144,7 @@ public partial interface IBaseClient
     /// var source = await client.ScriptShowAsync(script.Hash);  // "return 1"
     /// </code>
     /// </example>
+    /// <para>Since Valkey 8.0.0.</para>
     /// </remarks>
     Task<string?> ScriptShowAsync(
         string sha1Hash,
@@ -173,7 +173,6 @@ public partial interface IBaseClient
     /// Executes a loaded function by name.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/fcall/">Valkey commands – FCALL</seealso>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="function">The name of the function to execute.</param>
     /// <param name="cancellationToken">A token to cancel the async operation.</param>
     /// <returns>The result of the function execution.</returns>
@@ -187,6 +186,7 @@ public partial interface IBaseClient
     /// var result = await client.FCallAsync("myfunc");  // "Hello, World!"
     /// </code>
     /// </example>
+    /// <para>Since Valkey 7.0.0.</para>
     /// </remarks>
     Task<ValkeyResult> FCallAsync(
         string function,
@@ -196,7 +196,6 @@ public partial interface IBaseClient
     /// Executes a loaded function with keys and arguments.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/fcall/">Valkey commands – FCALL</seealso>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="function">The name of the function to execute.</param>
     /// <param name="keys">The keys to pass to the function.</param>
     /// <param name="args">The arguments to pass to the function.</param>
@@ -212,6 +211,7 @@ public partial interface IBaseClient
     /// var result = await client.FCallAsync("myfunc", ["Hello, "], ["World!"]);  // "Hello, World!"
     /// </code>
     /// </example>
+    /// <para>Since Valkey 7.0.0.</para>
     /// </remarks>
     Task<ValkeyResult> FCallAsync(
         string function,
@@ -223,7 +223,6 @@ public partial interface IBaseClient
     /// Executes a loaded function in read-only mode.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/fcall_ro/">Valkey commands – FCALL_RO</seealso>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="function">The name of the function to execute.</param>
     /// <param name="cancellationToken">A token to cancel the async operation.</param>
     /// <returns>The result of the function execution.</returns>
@@ -242,6 +241,7 @@ public partial interface IBaseClient
     /// var result = await client.FCallReadOnlyAsync("myfunc");  // "Hello, World!"
     /// </code>
     /// </example>
+    /// <para>Since Valkey 7.0.0.</para>
     /// </remarks>
     Task<ValkeyResult> FCallReadOnlyAsync(
         string function,
@@ -251,7 +251,6 @@ public partial interface IBaseClient
     /// Executes a loaded function in read-only mode with keys and arguments.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/fcall_ro/">Valkey commands – FCALL_RO</seealso>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="function">The name of the function to execute.</param>
     /// <param name="keys">The keys to pass to the function.</param>
     /// <param name="args">The arguments to pass to the function.</param>
@@ -272,6 +271,7 @@ public partial interface IBaseClient
     /// var result = await client.FCallReadOnlyAsync("myfunc", ["Hello, "], ["World!"]);  // "Hello, World!"
     /// </code>
     /// </example>
+    /// <para>Since Valkey 7.0.0.</para>
     /// </remarks>
     Task<ValkeyResult> FCallReadOnlyAsync(
         string function,
@@ -283,7 +283,6 @@ public partial interface IBaseClient
     /// Loads a function library from Lua code.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/function-load/">Valkey commands – FUNCTION LOAD</seealso>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="libraryCode">The Lua code defining the function library.</param>
     /// <param name="replace">Whether to replace an existing library with the same name.</param>
     /// <param name="cancellationToken">A token to cancel the async operation.</param>
@@ -298,6 +297,7 @@ public partial interface IBaseClient
     ///     """, replace: true);  // "mylib"
     /// </code>
     /// </example>
+    /// <para>Since Valkey 7.0.0.</para>
     /// </remarks>
     Task<string> FunctionLoadAsync(
         string libraryCode,
@@ -308,16 +308,16 @@ public partial interface IBaseClient
     /// Flushes all loaded functions.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/function-flush/">Valkey commands – FUNCTION FLUSH</seealso>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="cancellationToken">A token to cancel the async operation.</param>
     /// <remarks>
-    /// The flush behavior (sync or async) is determined by the server's <c>lazyfree-lazy-user-flush</c> configuration.
-    /// Use the overload with <see cref="FlushMode"/> to explicitly specify the behavior.
     /// <example>
     /// <code>
     /// await client.FunctionFlushAsync();
     /// </code>
     /// </example>
+    /// <para>Since Valkey 7.0.0.</para>
+    /// <para>The flush behavior (sync or async) is determined by the server's <c>lazyfree-lazy-user-flush</c> configuration.
+    /// Use the overload with <see cref="FlushMode"/> to explicitly specify the behavior.</para>
     /// </remarks>
     Task FunctionFlushAsync(
         CancellationToken cancellationToken = default);
@@ -326,7 +326,6 @@ public partial interface IBaseClient
     /// Flushes all loaded functions with the specified flush mode.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/function-flush/">Valkey commands – FUNCTION FLUSH</seealso>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="mode">The flush mode.</param>
     /// <param name="cancellationToken">A token to cancel the async operation.</param>
     /// <remarks>
@@ -335,6 +334,7 @@ public partial interface IBaseClient
     /// await client.FunctionFlushAsync(FlushMode.Async);
     /// </code>
     /// </example>
+    /// <para>Since Valkey 7.0.0.</para>
     /// </remarks>
     Task FunctionFlushAsync(
         FlushMode mode,
@@ -344,7 +344,6 @@ public partial interface IBaseClient
     /// Deletes a function library by name.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/function-delete/">Valkey commands – FUNCTION DELETE</seealso>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="libraryName">The name of the library to delete.</param>
     /// <param name="cancellationToken">A token to cancel the async operation.</param>
     /// <exception cref="Errors.ValkeyServerException">Thrown if the library does not exist.</exception>
@@ -354,6 +353,7 @@ public partial interface IBaseClient
     /// await client.FunctionDeleteAsync("mylib");
     /// </code>
     /// </example>
+    /// <para>Since Valkey 7.0.0.</para>
     /// </remarks>
     Task FunctionDeleteAsync(
         string libraryName,
@@ -363,7 +363,6 @@ public partial interface IBaseClient
     /// Terminates a currently executing function that has not written data.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/function-kill/">Valkey commands – FUNCTION KILL</seealso>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="cancellationToken">A token to cancel the async operation.</param>
     /// <exception cref="Errors.ValkeyServerException">Thrown if no function is running or if the function has written data.</exception>
     /// <remarks>
@@ -372,6 +371,7 @@ public partial interface IBaseClient
     /// await client.FunctionKillAsync();
     /// </code>
     /// </example>
+    /// <para>Since Valkey 7.0.0.</para>
     /// </remarks>
     Task FunctionKillAsync(
         CancellationToken cancellationToken = default);
@@ -380,7 +380,6 @@ public partial interface IBaseClient
     /// Creates a binary backup of all loaded functions.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/function-dump/">Valkey commands – FUNCTION DUMP</seealso>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="cancellationToken">A token to cancel the async operation.</param>
     /// <returns>A binary payload containing all loaded functions.</returns>
     /// <remarks>
@@ -390,6 +389,7 @@ public partial interface IBaseClient
     /// Console.WriteLine($"Dumped {backup.Length} bytes");
     /// </code>
     /// </example>
+    /// <para>Since Valkey 7.0.0.</para>
     /// </remarks>
     Task<byte[]> FunctionDumpAsync(
         CancellationToken cancellationToken = default);
@@ -398,19 +398,19 @@ public partial interface IBaseClient
     /// Restores functions from a binary backup.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/function-restore/">Valkey commands – FUNCTION RESTORE</seealso>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="payload">The binary payload from <see cref="FunctionDumpAsync"/>.</param>
     /// <param name="cancellationToken">A token to cancel the async operation.</param>
     /// <exception cref="Errors.ValkeyServerException">Thrown if restoration fails (e.g., library conflict with the default <see cref="FunctionRestorePolicy.Append"/> policy).</exception>
     /// <remarks>
-    /// Uses the default <see cref="FunctionRestorePolicy.Append"/> policy. Use the overload with
-    /// <see cref="FunctionRestorePolicy"/> to specify a different policy.
     /// <example>
     /// <code>
     /// var backup = await client.FunctionDumpAsync();
     /// await client.FunctionRestoreAsync(backup);
     /// </code>
     /// </example>
+    /// <para>Since Valkey 7.0.0.</para>
+    /// <para>Uses the default <see cref="FunctionRestorePolicy.Append"/> policy. Use the overload with
+    /// <see cref="FunctionRestorePolicy"/> to specify a different policy.</para>
     /// </remarks>
     Task FunctionRestoreAsync(
         byte[] payload,
@@ -420,7 +420,6 @@ public partial interface IBaseClient
     /// Restores functions from a binary backup with the specified policy.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/function-restore/">Valkey commands – FUNCTION RESTORE</seealso>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="payload">The binary payload from <see cref="FunctionDumpAsync"/>.</param>
     /// <param name="policy">The restore policy.</param>
     /// <param name="cancellationToken">A token to cancel the async operation.</param>
@@ -432,6 +431,7 @@ public partial interface IBaseClient
     /// await client.FunctionRestoreAsync(backup, FunctionRestorePolicy.Replace);
     /// </code>
     /// </example>
+    /// <para>Since Valkey 7.0.0.</para>
     /// </remarks>
     Task FunctionRestoreAsync(
         byte[] payload,

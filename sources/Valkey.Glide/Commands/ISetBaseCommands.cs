@@ -136,7 +136,6 @@ public interface ISetBaseCommands
     /// Creates the destination set if needed.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/smove/">Valkey commands – SMOVE</seealso>
-    /// <note>When in cluster mode, <paramref name="source"/> and <paramref name="destination"/> must map to the same hash slot.</note>
     /// <param name="source">The source set key.</param>
     /// <param name="destination">The destination set key.</param>
     /// <param name="value">The set element to move.</param>
@@ -148,6 +147,7 @@ public interface ISetBaseCommands
     /// var moved = await client.SetMoveAsync("source", "dest", "a");  // true
     /// </code>
     /// </example>
+    /// <para>When in cluster mode, <paramref name="source"/> and <paramref name="destination"/> must map to the same hash slot.</para>
     /// </remarks>
     Task<bool> SetMoveAsync(ValkeyKey source, ValkeyKey destination, ValkeyValue value);
 }

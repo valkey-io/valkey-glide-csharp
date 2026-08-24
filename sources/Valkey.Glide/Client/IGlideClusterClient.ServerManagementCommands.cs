@@ -60,7 +60,6 @@ public partial interface IGlideClusterClient
     /// The command will be routed to all primary nodes.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/bgsave/">Valkey commands – BGSAVE</seealso>
-    /// <note>Since Valkey 8.1.</note>
     /// <returns>A <see cref="ClusterValue{T}" /> containing status strings.</returns>
     /// <exception cref="Errors.RequestException">Thrown if no background save is currently in progress or scheduled.</exception>
     /// <remarks>
@@ -73,6 +72,7 @@ public partial interface IGlideClusterClient
     /// }
     /// </code>
     /// </example>
+    /// <para>Since Valkey 8.1.</para>
     /// </remarks>
     Task<ClusterValue<string>> BackgroundSaveCancelAsync();
 
@@ -81,7 +81,6 @@ public partial interface IGlideClusterClient
     /// The command will be routed to the nodes defined by <paramref name="route" />.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/bgsave/">Valkey commands – BGSAVE</seealso>
-    /// <note>Since Valkey 8.1.</note>
     /// <param name="route">Specifies the routing configuration for the command.</param>
     /// <returns>A <see cref="ClusterValue{T}" /> containing status strings.</returns>
     /// <exception cref="Errors.RequestException">Thrown if no background save is currently in progress or scheduled.</exception>
@@ -95,6 +94,7 @@ public partial interface IGlideClusterClient
     /// }
     /// </code>
     /// </example>
+    /// <para>Since Valkey 8.1.</para>
     /// </remarks>
     Task<ClusterValue<string>> BackgroundSaveCancelAsync(Route route);
 
@@ -948,7 +948,6 @@ public partial interface IGlideClusterClient
     /// If the timeout is reached, the command returns even if the specified number of acknowledgments were not yet reached.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/waitaof/">Valkey commands – WAITAOF</seealso>
-    /// <note>Since Valkey 7.2.0.</note>
     /// <param name="localAof">Whether to wait for the local node to acknowledge AOF sync.</param>
     /// <param name="numreplicas">The number of replica nodes to wait for AOF sync.</param>
     /// <param name="timeout">The timeout to wait.</param>
@@ -962,6 +961,7 @@ public partial interface IGlideClusterClient
     /// // result[0] = number of local nodes, result[1] = number of replica nodes
     /// </code>
     /// </example>
+    /// <para>Since Valkey 7.2.0.</para>
     /// </remarks>
     Task<long[]> WaitAofAsync(bool localAof, long numreplicas, TimeSpan timeout, Route route);
 }

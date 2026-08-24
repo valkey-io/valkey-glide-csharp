@@ -35,7 +35,6 @@ public partial interface IGlideClient
     /// Aborts all in-progress and scheduled background saves.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/bgsave/">Valkey commands – BGSAVE</seealso>
-    /// <note>Since Valkey 8.1.</note>
     /// <returns>A status string.</returns>
     /// <exception cref="Errors.RequestException">Thrown if no background save is currently in progress or scheduled.</exception>
     /// <remarks>
@@ -45,6 +44,7 @@ public partial interface IGlideClient
     /// Console.WriteLine(response); // "Background saving cancelled"
     /// </code>
     /// </example>
+    /// <para>Since Valkey 8.1.</para>
     /// </remarks>
     Task<string> BackgroundSaveCancelAsync();
 

@@ -49,7 +49,6 @@ public interface IListBaseCommands
     /// among the provided keys.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/lmpop/">Valkey commands – LMPOP</seealso>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="keys">A collection of list keys.</param>
     /// <param name="count">The maximum number of elements to pop.</param>
     /// <returns>
@@ -64,6 +63,7 @@ public interface IListBaseCommands
     /// // popResult.Key == "list1", popResult.Values == ["a", "b"]
     /// </code>
     /// </example>
+    /// <para>Since Valkey 7.0.0.</para>
     /// </remarks>
     Task<ListPopResult> ListLeftPopAsync(IEnumerable<ValkeyKey> keys, long count);
 
@@ -171,7 +171,6 @@ public interface IListBaseCommands
     /// among the provided keys.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/lmpop/">Valkey commands – LMPOP</seealso>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="keys">A collection of list keys.</param>
     /// <param name="count">The maximum number of elements to pop.</param>
     /// <returns>
@@ -186,6 +185,7 @@ public interface IListBaseCommands
     /// // popResult.Key == "list1", popResult.Values == ["b", "a"]
     /// </code>
     /// </example>
+    /// <para>Since Valkey 7.0.0.</para>
     /// </remarks>
     Task<ListPopResult> ListRightPopAsync(IEnumerable<ValkeyKey> keys, long count);
 

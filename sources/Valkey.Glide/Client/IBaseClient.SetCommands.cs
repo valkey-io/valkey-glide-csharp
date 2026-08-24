@@ -43,7 +43,6 @@ public partial interface IBaseClient
     /// Returns the members of the set resulting from the union of all given sets.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/sunion/">Valkey commands – SUNION</seealso>
-    /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
     /// <param name="keys">The keys of the sets to union.</param>
     /// <returns>A set containing all members that exist in at least one of the given sets.</returns>
     /// <remarks>
@@ -55,6 +54,7 @@ public partial interface IBaseClient
     /// // union contains {"a", "b", "c"}
     /// </code>
     /// </example>
+    /// <para>When in cluster mode, all keys must map to the same hash slot.</para>
     /// </remarks>
     Task<ISet<ValkeyValue>> SetUnionAsync(IEnumerable<ValkeyKey> keys);
 
@@ -62,7 +62,6 @@ public partial interface IBaseClient
     /// Returns the members of the set resulting from the intersection of all given sets.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/sinter/">Valkey commands – SINTER</seealso>
-    /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
     /// <param name="keys">The keys of the sets to intersect.</param>
     /// <returns>A set containing only members that exist in all of the given sets.</returns>
     /// <remarks>
@@ -74,6 +73,7 @@ public partial interface IBaseClient
     /// // intersection contains {"b", "c"}
     /// </code>
     /// </example>
+    /// <para>When in cluster mode, all keys must map to the same hash slot.</para>
     /// </remarks>
     Task<ISet<ValkeyValue>> SetInterAsync(IEnumerable<ValkeyKey> keys);
 
@@ -81,7 +81,6 @@ public partial interface IBaseClient
     /// Returns the members of the set resulting from the difference between the first set and all successive sets.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/sdiff/">Valkey commands – SDIFF</seealso>
-    /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
     /// <param name="keys">The keys of the sets. The first key is the base set; subsequent keys are subtracted from it.</param>
     /// <returns>A set containing members that exist in the first set but not in any of the subsequent sets.</returns>
     /// <remarks>
@@ -93,6 +92,7 @@ public partial interface IBaseClient
     /// // difference contains {"a"}
     /// </code>
     /// </example>
+    /// <para>When in cluster mode, all keys must map to the same hash slot.</para>
     /// </remarks>
     Task<ISet<ValkeyValue>> SetDiffAsync(IEnumerable<ValkeyKey> keys);
 
@@ -100,7 +100,6 @@ public partial interface IBaseClient
     /// Stores the union of all given sets into <paramref name="destination"/>.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/sunionstore/">Valkey commands – SUNIONSTORE</seealso>
-    /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
     /// <param name="destination">The key of the destination set.</param>
     /// <param name="keys">The keys of the sets to union.</param>
     /// <returns>The number of elements in the resulting set.</returns>
@@ -112,6 +111,7 @@ public partial interface IBaseClient
     /// var count = await client.SetUnionStoreAsync("dest", ["set1", "set2"]);  // 3
     /// </code>
     /// </example>
+    /// <para>When in cluster mode, all keys must map to the same hash slot.</para>
     /// </remarks>
     Task<long> SetUnionStoreAsync(ValkeyKey destination, IEnumerable<ValkeyKey> keys);
 
@@ -119,7 +119,6 @@ public partial interface IBaseClient
     /// Stores the intersection of all given sets into <paramref name="destination"/>.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/sinterstore/">Valkey commands – SINTERSTORE</seealso>
-    /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
     /// <param name="destination">The key of the destination set.</param>
     /// <param name="keys">The keys of the sets to intersect.</param>
     /// <returns>The number of elements in the resulting set.</returns>
@@ -131,6 +130,7 @@ public partial interface IBaseClient
     /// var count = await client.SetInterStoreAsync("dest", ["set1", "set2"]);  // 2
     /// </code>
     /// </example>
+    /// <para>When in cluster mode, all keys must map to the same hash slot.</para>
     /// </remarks>
     Task<long> SetInterStoreAsync(ValkeyKey destination, IEnumerable<ValkeyKey> keys);
 
@@ -138,7 +138,6 @@ public partial interface IBaseClient
     /// Stores the difference between the first set and all successive sets into <paramref name="destination"/>.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/sdiffstore/">Valkey commands – SDIFFSTORE</seealso>
-    /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
     /// <param name="destination">The key of the destination set.</param>
     /// <param name="keys">The keys of the sets. The first key is the base set; subsequent keys are subtracted from it.</param>
     /// <returns>The number of elements in the resulting set.</returns>
@@ -150,6 +149,7 @@ public partial interface IBaseClient
     /// var count = await client.SetDiffStoreAsync("dest", ["set1", "set2"]);  // 1
     /// </code>
     /// </example>
+    /// <para>When in cluster mode, all keys must map to the same hash slot.</para>
     /// </remarks>
     Task<long> SetDiffStoreAsync(ValkeyKey destination, IEnumerable<ValkeyKey> keys);
 
@@ -157,8 +157,6 @@ public partial interface IBaseClient
     /// Returns the number of elements in the intersection of all given sets.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/sintercard/">Valkey commands – SINTERCARD</seealso>
-    /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="keys">The keys of the sets to intersect.</param>
     /// <param name="limit">
     /// The maximum number of elements to count. A value of <c>0</c> means no limit.
@@ -174,6 +172,8 @@ public partial interface IBaseClient
     /// var limited = await client.SetInterCardAsync(["set1", "set2"], limit: 1);  // 1
     /// </code>
     /// </example>
+    /// <para>Since Valkey 7.0.0.</para>
+    /// <para>When in cluster mode, all keys must map to the same hash slot.</para>
     /// </remarks>
     Task<long> SetInterCardAsync(IEnumerable<ValkeyKey> keys, long limit = 0);
 

@@ -28,7 +28,6 @@ public partial interface IBaseClient
     /// Gets the value of a hash field and sets its expiry.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hgetex/">Valkey commands – HGETEX</seealso>
-    /// <note>Since Valkey 9.0.0.</note>
     /// <param name="key">The hash key.</param>
     /// <param name="hashField">The field to retrieve and set the expiry for.</param>
     /// <param name="options">The expiry options to apply.</param>
@@ -41,6 +40,7 @@ public partial interface IBaseClient
     /// var value = await client.HashGetAsync("myhash", "field1", options);  // "value1"
     /// </code>
     /// </example>
+    /// <para>Since Valkey 9.0.0.</para>
     /// </remarks>
     Task<ValkeyValue> HashGetAsync(
         ValkeyKey key,
@@ -51,7 +51,6 @@ public partial interface IBaseClient
     /// Gets the values of multiple hash fields and sets their expiry.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hgetex/">Valkey commands – HGETEX</seealso>
-    /// <note>Since Valkey 9.0.0.</note>
     /// <param name="key">The hash key.</param>
     /// <param name="hashFields">The fields to retrieve and set the expiry for.</param>
     /// <param name="options">The expiry options to apply.</param>
@@ -64,6 +63,7 @@ public partial interface IBaseClient
     /// var values = await client.HashGetAsync("myhash", ["field1", "field2"], options);  // ["value1", "value2"]
     /// </code>
     /// </example>
+    /// <para>Since Valkey 9.0.0.</para>
     /// </remarks>
     Task<ValkeyValue[]> HashGetAsync(
         ValkeyKey key,
@@ -107,7 +107,6 @@ public partial interface IBaseClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hexpire/">Valkey commands – HEXPIRE</seealso>
     /// <seealso href="https://valkey.io/commands/hpexpire/">Valkey commands – HPEXPIRE</seealso>
-    /// <note>Since Valkey 9.0.0.</note>
     /// <param name="key">The hash key.</param>
     /// <param name="hashField">The field to set the expiry for.</param>
     /// <param name="expiry">The expiry duration.</param>
@@ -120,6 +119,7 @@ public partial interface IBaseClient
     /// var result = await client.HashExpireAsync("myhash", "field1", expireIn);  // HashExpireResult.Success
     /// </code>
     /// </example>
+    /// <para>Since Valkey 9.0.0.</para>
     /// </remarks>
     Task<HashExpireResult> HashExpireAsync(
         ValkeyKey key,
@@ -132,7 +132,6 @@ public partial interface IBaseClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hexpire/">Valkey commands – HEXPIRE</seealso>
     /// <seealso href="https://valkey.io/commands/hpexpire/">Valkey commands – HPEXPIRE</seealso>
-    /// <note>Since Valkey 9.0.0.</note>
     /// <param name="key">The hash key.</param>
     /// <param name="hashFields">The fields to set the expiry for.</param>
     /// <param name="expiry">The expiry duration.</param>
@@ -145,6 +144,7 @@ public partial interface IBaseClient
     /// var results = await client.HashExpireAsync("myhash", ["field1", "field2"], expireIn);  // [HashExpireResult.Success, HashExpireResult.Success]
     /// </code>
     /// </example>
+    /// <para>Since Valkey 9.0.0.</para>
     /// </remarks>
     Task<HashExpireResult[]> HashExpireAsync(
         ValkeyKey key,
@@ -157,7 +157,6 @@ public partial interface IBaseClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hexpireat/">Valkey commands – HEXPIREAT</seealso>
     /// <seealso href="https://valkey.io/commands/hpexpireat/">Valkey commands – HPEXPIREAT</seealso>
-    /// <note>Since Valkey 9.0.0.</note>
     /// <param name="key">The hash key.</param>
     /// <param name="hashField">The field to set the expiry for.</param>
     /// <param name="expiry">The expiry timestamp.</param>
@@ -170,6 +169,7 @@ public partial interface IBaseClient
     /// var result = await client.HashExpireAtAsync("myhash", "field1", expireAt);  // HashExpireResult.Success
     /// </code>
     /// </example>
+    /// <para>Since Valkey 9.0.0.</para>
     /// </remarks>
     Task<HashExpireResult> HashExpireAtAsync(
         ValkeyKey key,
@@ -182,7 +182,6 @@ public partial interface IBaseClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hexpireat/">Valkey commands – HEXPIREAT</seealso>
     /// <seealso href="https://valkey.io/commands/hpexpireat/">Valkey commands – HPEXPIREAT</seealso>
-    /// <note>Since Valkey 9.0.0.</note>
     /// <param name="key">The hash key.</param>
     /// <param name="hashFields">The fields to set the expiry for.</param>
     /// <param name="expiry">The expiry timestamp.</param>
@@ -195,6 +194,7 @@ public partial interface IBaseClient
     /// var results = await client.HashExpireAtAsync("myhash", ["field1", "field2"], expireAt);  // [HashExpireResult.Success, HashExpireResult.Success]
     /// </code>
     /// </example>
+    /// <para>Since Valkey 9.0.0.</para>
     /// </remarks>
     Task<HashExpireResult[]> HashExpireAtAsync(
         ValkeyKey key,
@@ -207,7 +207,6 @@ public partial interface IBaseClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hexpiretime/">Valkey commands – HEXPIRETIME</seealso>
     /// <seealso href="https://valkey.io/commands/hpexpiretime/">Valkey commands – HPEXPIRETIME</seealso>
-    /// <note>Since Valkey 9.0.0.</note>
     /// <param name="key">The hash key.</param>
     /// <param name="hashField">The field to get the expiry time for.</param>
     /// <returns>An <see cref="ExpireTimeResult"/> for <paramref name="hashField"/>.</returns>
@@ -218,6 +217,7 @@ public partial interface IBaseClient
     /// Console.WriteLine($"field1 expires at Unix timestamp {expireTime}");
     /// </code>
     /// </example>
+    /// <para>Since Valkey 9.0.0.</para>
     /// </remarks>
     Task<ExpireTimeResult> HashExpireTimeAsync(
         ValkeyKey key,
@@ -228,7 +228,6 @@ public partial interface IBaseClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hexpiretime/">Valkey commands – HEXPIRETIME</seealso>
     /// <seealso href="https://valkey.io/commands/hpexpiretime/">Valkey commands – HPEXPIRETIME</seealso>
-    /// <note>Since Valkey 9.0.0.</note>
     /// <param name="key">The hash key.</param>
     /// <param name="hashFields">The fields to get the expiry time for.</param>
     /// <returns>An <see cref="ExpireTimeResult"/> array with one entry per field.</returns>
@@ -239,6 +238,7 @@ public partial interface IBaseClient
     /// Console.WriteLine($"field2 expires at Unix timestamp {expireTimes[1]}");
     /// </code>
     /// </example>
+    /// <para>Since Valkey 9.0.0.</para>
     /// </remarks>
     Task<ExpireTimeResult[]> HashExpireTimeAsync(
         ValkeyKey key,
@@ -249,7 +249,6 @@ public partial interface IBaseClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/httl/">Valkey commands – HTTL</seealso>
     /// <seealso href="https://valkey.io/commands/hpttl/">Valkey commands – HPTTL</seealso>
-    /// <note>Since Valkey 9.0.0.</note>
     /// <param name="key">The hash key.</param>
     /// <param name="hashField">The field to get the time to live for.</param>
     /// <returns>A <see cref="TimeToLiveResult"/> for <paramref name="hashField"/>.</returns>
@@ -260,6 +259,7 @@ public partial interface IBaseClient
     /// Console.WriteLine($"field1 has {ttl} remaining");
     /// </code>
     /// </example>
+    /// <para>Since Valkey 9.0.0.</para>
     /// </remarks>
     Task<TimeToLiveResult> HashTimeToLiveAsync(
         ValkeyKey key,
@@ -270,7 +270,6 @@ public partial interface IBaseClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/httl/">Valkey commands – HTTL</seealso>
     /// <seealso href="https://valkey.io/commands/hpttl/">Valkey commands – HPTTL</seealso>
-    /// <note>Since Valkey 9.0.0.</note>
     /// <param name="key">The hash key.</param>
     /// <param name="hashFields">The fields to get the time to live for.</param>
     /// <returns>A <see cref="TimeToLiveResult"/> array with one entry per field.</returns>
@@ -281,6 +280,7 @@ public partial interface IBaseClient
     /// Console.WriteLine($"field2 has {ttls[1]} remaining");
     /// </code>
     /// </example>
+    /// <para>Since Valkey 9.0.0.</para>
     /// </remarks>
     Task<TimeToLiveResult[]> HashTimeToLiveAsync(
         ValkeyKey key,
@@ -290,7 +290,6 @@ public partial interface IBaseClient
     /// Removes the expiry from a hash field.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hpersist/">Valkey commands – HPERSIST</seealso>
-    /// <note>Since Valkey 9.0.0.</note>
     /// <param name="key">The hash key.</param>
     /// <param name="hashField">The field to remove the expiry from.</param>
     /// <returns>A <see cref="HashPersistResult"/> for <paramref name="hashField"/>.</returns>
@@ -300,6 +299,7 @@ public partial interface IBaseClient
     /// var result = await client.HashPersistAsync("myhash", "field1");  // HashPersistResult.Success
     /// </code>
     /// </example>
+    /// <para>Since Valkey 9.0.0.</para>
     /// </remarks>
     Task<HashPersistResult> HashPersistAsync(
         ValkeyKey key,
@@ -309,7 +309,6 @@ public partial interface IBaseClient
     /// Removes the expiry from multiple hash fields.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hpersist/">Valkey commands – HPERSIST</seealso>
-    /// <note>Since Valkey 9.0.0.</note>
     /// <param name="key">The hash key.</param>
     /// <param name="hashFields">The fields to remove the expiry from.</param>
     /// <returns>A <see cref="HashPersistResult"/> array with one entry per field.</returns>
@@ -319,6 +318,7 @@ public partial interface IBaseClient
     /// var results = await client.HashPersistAsync("myhash", ["field1", "field2"]);  // [HashPersistResult.Success, HashPersistResult.Success]
     /// </code>
     /// </example>
+    /// <para>Since Valkey 9.0.0.</para>
     /// </remarks>
     Task<HashPersistResult[]> HashPersistAsync(
         ValkeyKey key,
@@ -345,7 +345,6 @@ public partial interface IBaseClient
     /// Sets a hash field value with a condition, without expiry.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hsetex/">Valkey commands – HSETEX</seealso>
-    /// <note>Since Valkey 9.0.0.</note>
     /// <param name="key">The hash key.</param>
     /// <param name="hashField">The field to set.</param>
     /// <param name="value">The value to set.</param>
@@ -357,6 +356,7 @@ public partial interface IBaseClient
     /// var wasSet = await client.HashSetAsync("myhash", "field1", "value1", HashSetCondition.OnlyIfNoneExist);  // true
     /// </code>
     /// </example>
+    /// <para>Since Valkey 9.0.0.</para>
     /// </remarks>
     Task<bool> HashSetAsync(
         ValkeyKey key,
@@ -368,7 +368,6 @@ public partial interface IBaseClient
     /// Sets multiple hash field values with a condition, without expiry.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hsetex/">Valkey commands – HSETEX</seealso>
-    /// <note>Since Valkey 9.0.0.</note>
     /// <param name="key">The hash key.</param>
     /// <param name="hashFieldsAndValues">The field-value pairs to set.</param>
     /// <param name="condition">The condition under which to set the fields.</param>
@@ -383,6 +382,7 @@ public partial interface IBaseClient
     /// var wasSet = await client.HashSetAsync("myhash", pairs, HashSetCondition.OnlyIfNoneExist);  // true
     /// </code>
     /// </example>
+    /// <para>Since Valkey 9.0.0.</para>
     /// </remarks>
     Task<bool> HashSetAsync(
         ValkeyKey key,
@@ -393,7 +393,6 @@ public partial interface IBaseClient
     /// Sets a hash field value with options for expiry and condition.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hsetex/">Valkey commands – HSETEX</seealso>
-    /// <note>Since Valkey 9.0.0.</note>
     /// <param name="key">The hash key.</param>
     /// <param name="hashField">The field to set.</param>
     /// <param name="value">The value to set.</param>
@@ -410,6 +409,7 @@ public partial interface IBaseClient
     /// var wasSet = await client.HashSetAsync("myhash", "field1", "value1", setOptions);  // true
     /// </code>
     /// </example>
+    /// <para>Since Valkey 9.0.0.</para>
     /// </remarks>
     Task<bool> HashSetAsync(
         ValkeyKey key,
@@ -421,7 +421,6 @@ public partial interface IBaseClient
     /// Sets multiple hash field values with options for expiry and condition.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hsetex/">Valkey commands – HSETEX</seealso>
-    /// <note>Since Valkey 9.0.0.</note>
     /// <param name="key">The hash key.</param>
     /// <param name="hashFieldsAndValues">The field-value pairs to set.</param>
     /// <param name="options">The options including expiry and condition.</param>
@@ -441,6 +440,7 @@ public partial interface IBaseClient
     /// var wasSet = await client.HashSetAsync("myhash", pairs, setOptions);  // true
     /// </code>
     /// </example>
+    /// <para>Since Valkey 9.0.0.</para>
     /// </remarks>
     Task<bool> HashSetAsync(
         ValkeyKey key,
@@ -451,7 +451,6 @@ public partial interface IBaseClient
     /// Sets a hash field value with an expiry.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hsetex/">Valkey commands – HSETEX</seealso>
-    /// <note>Since Valkey 9.0.0.</note>
     /// <param name="key">The hash key.</param>
     /// <param name="hashField">The field to set.</param>
     /// <param name="value">The value to set.</param>
@@ -464,6 +463,7 @@ public partial interface IBaseClient
     /// var wasSet = await client.HashSetAsync("myhash", "field1", "value1", expiry);  // true
     /// </code>
     /// </example>
+    /// <para>Since Valkey 9.0.0.</para>
     /// </remarks>
     Task<bool> HashSetAsync(
         ValkeyKey key,
@@ -474,7 +474,6 @@ public partial interface IBaseClient
     /// Sets multiple hash field values with an expiry.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hsetex/">Valkey commands – HSETEX</seealso>
-    /// <note>Since Valkey 9.0.0.</note>
     /// <param name="key">The hash key.</param>
     /// <param name="hashFieldsAndValues">The field-value pairs to set.</param>
     /// <param name="expiry">The expiry configuration for the fields.</param>
@@ -490,6 +489,7 @@ public partial interface IBaseClient
     /// var wasSet = await client.HashSetAsync("myhash", pairs, expiry);  // true
     /// </code>
     /// </example>
+    /// <para>Since Valkey 9.0.0.</para>
     /// </remarks>
     Task<bool> HashSetAsync(
         ValkeyKey key,

@@ -32,12 +32,6 @@ public partial interface IBaseClient
     /// Returns the values of keys.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/mget/">Valkey commands – MGET</seealso>
-    /// <note>In cluster mode, if keys in <paramref name="keys"/> map to different hash slots, the command
-    /// will be split across these slots and executed separately for each. This means the command
-    /// is atomic only at the slot level. If one or more slot-specific requests fail, the entire
-    /// call will return the first encountered error, even though some requests may have succeeded
-    /// while others did not. If this behavior impacts your application logic, consider splitting
-    /// the request into sub-requests per slot to ensure atomicity.</note>
     /// <param name="keys">The keys to retrieve.</param>
     /// <returns>An array with the value for each key, or <see cref="ValkeyValue.Null"/> if it does not exist.
     /// </returns>
@@ -48,6 +42,12 @@ public partial interface IBaseClient
     /// var values = await client.GetAsync(["key", "nonexistent"]);  // ["hello", ValkeyValue.Null]
     /// </code>
     /// </example>
+    /// <para>In cluster mode, if keys in <paramref name="keys"/> map to different hash slots, the command
+    /// will be split across these slots and executed separately for each. This means the command
+    /// is atomic only at the slot level. If one or more slot-specific requests fail, the entire
+    /// call will return the first encountered error, even though some requests may have succeeded
+    /// while others did not. If this behavior impacts your application logic, consider splitting
+    /// the request into sub-requests per slot to ensure atomicity.</para>
     /// </remarks>
     Task<ValkeyValue[]> GetAsync(IEnumerable<ValkeyKey> keys);
 
@@ -222,12 +222,6 @@ public partial interface IBaseClient
     /// Sets multiple keys to multiple values in a single unconditional operation.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/mset/">Valkey commands – MSET</seealso>
-    /// <note>In cluster mode, if keys in <paramref name="values"/> map to different hash slots, the command
-    /// will be split across these slots and executed separately for each. This means the command
-    /// is atomic only at the slot level. If one or more slot-specific requests fail, the entire
-    /// call will return the first encountered error, even though some requests may have succeeded
-    /// while others did not. If this behavior impacts your application logic, consider splitting
-    /// the request into sub-requests per slot to ensure atomicity.</note>
     /// <param name="values">A collection of key-value pairs to set.</param>
     /// <returns>A task that completes when all values have been set.</returns>
     /// <remarks>
@@ -240,6 +234,12 @@ public partial interface IBaseClient
     /// await client.SetAsync(pairs);
     /// </code>
     /// </example>
+    /// <para>In cluster mode, if keys in <paramref name="values"/> map to different hash slots, the command
+    /// will be split across these slots and executed separately for each. This means the command
+    /// is atomic only at the slot level. If one or more slot-specific requests fail, the entire
+    /// call will return the first encountered error, even though some requests may have succeeded
+    /// while others did not. If this behavior impacts your application logic, consider splitting
+    /// the request into sub-requests per slot to ensure atomicity.</para>
     /// </remarks>
     Task SetAsync(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values);
 

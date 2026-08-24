@@ -21,9 +21,7 @@ public class ClientFilterOptions
     /// <summary>
     /// Excludes clients with the specified connection type.
     /// </summary>
-    /// <remarks>
-    /// <note>Since Valkey 9.0.0.</note>
-    /// </remarks>
+    /// <remarks>Since Valkey 9.0.0.</remarks>
     public ClientType? NotType { get; private set; }
 
     /// <summary>
@@ -34,9 +32,7 @@ public class ClientFilterOptions
     /// <summary>
     /// Excludes clients with the specified client IDs.
     /// </summary>
-    /// <remarks>
-    /// <note>Since Valkey 9.0.0.</note>
-    /// </remarks>
+    /// <remarks>Since Valkey 9.0.0.</remarks>
     public IReadOnlySet<long> NotIds => _notIds;
 
     /// <summary>
@@ -47,9 +43,7 @@ public class ClientFilterOptions
     /// <summary>
     /// Excludes clients with the specified ACL username.
     /// </summary>
-    /// <remarks>
-    /// <note>Since Valkey 9.0.0.</note>
-    /// </remarks>
+    /// <remarks>Since Valkey 9.0.0.</remarks>
     public string? NotUser { get; private set; }
 
     /// <summary>
@@ -60,9 +54,7 @@ public class ClientFilterOptions
     /// <summary>
     /// Excludes clients with the specified address.
     /// </summary>
-    /// <remarks>
-    /// <note>Since Valkey 9.0.0.</note>
-    /// </remarks>
+    /// <remarks>Since Valkey 9.0.0.</remarks>
     public (string Host, ushort Port)? NotAddress { get; private set; }
 
     /// <summary>
@@ -73,9 +65,7 @@ public class ClientFilterOptions
     /// <summary>
     /// Excludes clients with the specified local address.
     /// </summary>
-    /// <remarks>
-    /// <note>Since Valkey 9.0.0.</note>
-    /// </remarks>
+    /// <remarks>Since Valkey 9.0.0.</remarks>
     public (string Host, ushort Port)? NotLocalAddress { get; private set; }
 
     /// <summary>
@@ -86,129 +76,97 @@ public class ClientFilterOptions
     /// <summary>
     /// Includes clients older than the specified age.
     /// </summary>
-    /// <remarks>
-    /// <note>Since Valkey 8.0.0.</note>
-    /// </remarks>
+    /// <remarks>Since Valkey 8.0.0.</remarks>
     public TimeSpan? MaxAge => _maxAgeSecs.HasValue ? TimeSpan.FromSeconds(_maxAgeSecs.Value) : null;
 
     /// <summary>
     /// Includes clients with the specified name.
     /// </summary>
-    /// <remarks>
-    /// <note>Since Valkey 9.0.0.</note>
-    /// </remarks>
+    /// <remarks>Since Valkey 9.0.0.</remarks>
     public string? Name { get; private set; }
 
     /// <summary>
     /// Excludes clients with the specified name.
     /// </summary>
-    /// <remarks>
-    /// <note>Since Valkey 9.0.0.</note>
-    /// </remarks>
+    /// <remarks>Since Valkey 9.0.0.</remarks>
     public string? NotName { get; private set; }
 
     /// <summary>
     /// Includes clients that have been idle for at least the specified time.
     /// </summary>
-    /// <remarks>
-    /// <note>Since Valkey 9.0.0.</note>
-    /// </remarks>
+    /// <remarks>Since Valkey 9.0.0.</remarks>
     public TimeSpan? Idle => _idleSecs.HasValue ? TimeSpan.FromSeconds(_idleSecs.Value) : null;
 
     /// <summary>
     /// Includes clients with the specified flags.
     /// </summary>
-    /// <remarks>
-    /// <note>Since Valkey 9.0.0.</note>
-    /// </remarks>
+    /// <remarks>Since Valkey 9.0.0.</remarks>
     public IReadOnlySet<ClientFlag> Flags => _flags;
 
     /// <summary>
     /// Excludes clients with the specified flags.
     /// </summary>
-    /// <remarks>
-    /// <note>Since Valkey 9.0.0.</note>
-    /// </remarks>
+    /// <remarks>Since Valkey 9.0.0.</remarks>
     public IReadOnlySet<ClientFlag> NotFlags => _notFlags;
 
     /// <summary>
     /// Includes clients with the specified library name.
     /// </summary>
-    /// <remarks>
-    /// <note>Since Valkey 9.0.0.</note>
-    /// </remarks>
+    /// <remarks>Since Valkey 9.0.0.</remarks>
     public string? LibraryName { get; private set; }
 
     /// <summary>
     /// Excludes clients with the specified library name.
     /// </summary>
-    /// <remarks>
-    /// <note>Since Valkey 9.0.0.</note>
-    /// </remarks>
+    /// <remarks>Since Valkey 9.0.0.</remarks>
     public string? NotLibraryName { get; private set; }
 
     /// <summary>
     /// Includes clients with the specified library version.
     /// </summary>
-    /// <remarks>
-    /// <note>Since Valkey 9.0.0.</note>
-    /// </remarks>
+    /// <remarks>Since Valkey 9.0.0.</remarks>
     public string? LibraryVersion { get; private set; }
 
     /// <summary>
     /// Excludes clients with the specified library version.
     /// </summary>
-    /// <remarks>
-    /// <note>Since Valkey 9.0.0.</note>
-    /// </remarks>
+    /// <remarks>Since Valkey 9.0.0.</remarks>
     public string? NotLibraryVersion { get; private set; }
 
     /// <summary>
     /// Includes clients with the specified database ID.
     /// </summary>
-    /// <remarks>
-    /// <note>Since Valkey 9.0.0.</note>
-    /// </remarks>
+    /// <remarks>Since Valkey 9.0.0.</remarks>
     public ushort? DatabaseId { get; private set; }
 
     /// <summary>
     /// Excludes clients with the specified database ID.
     /// </summary>
-    /// <remarks>
-    /// <note>Since Valkey 9.0.0.</note>
-    /// </remarks>
+    /// <remarks>Since Valkey 9.0.0.</remarks>
     public ushort? NotDatabaseId { get; private set; }
 
     /// <summary>
     /// Includes clients with the specified capabilities.
     /// </summary>
-    /// <remarks>
-    /// <note>Since Valkey 9.0.0.</note>
-    /// </remarks>
+    /// <remarks>Since Valkey 9.0.0.</remarks>
     public IReadOnlySet<ClientCapability> Capabilities => _capabilities;
 
     /// <summary>
     /// Excludes clients with the specified capabilities.
     /// </summary>
-    /// <remarks>
-    /// <note>Since Valkey 9.0.0.</note>
-    /// </remarks>
+    /// <remarks>Since Valkey 9.0.0.</remarks>
     public IReadOnlySet<ClientCapability> NotCapabilities => _notCapabilities;
 
     /// <summary>
     /// Includes clients with the specified IP address.
     /// </summary>
-    /// <remarks>
-    /// <note>Since Valkey 9.0.0.</note>
-    /// </remarks>
+    /// <remarks>Since Valkey 9.0.0.</remarks>
     public string? IpAddress { get; private set; }
 
     /// <summary>
     /// Excludes clients with the specified IP address.
     /// </summary>
-    /// <remarks>
-    /// <note>Since Valkey 9.0.0.</note>
-    /// </remarks>
+    /// <remarks>Since Valkey 9.0.0.</remarks>
     public string? NotIpAddress { get; private set; }
 
     #endregion
@@ -223,6 +181,7 @@ public class ClientFilterOptions
     }
 
     /// <inheritdoc cref="NotType" />
+    /// <remarks>Since Valkey 9.0.0.</remarks>
     /// <returns>This instance for method chaining.</returns>
     public ClientFilterOptions WithoutType(ClientType type)
     {
@@ -240,7 +199,7 @@ public class ClientFilterOptions
     }
 
     /// <inheritdoc cref="Ids" />
-    /// <remarks><note>Since Valkey 8.1.0.</note></remarks>
+    /// <remarks>Since Valkey 8.1.0.</remarks>
     /// <returns>This instance for method chaining.</returns>
     public ClientFilterOptions WithIds(IEnumerable<long> ids)
     {
@@ -250,6 +209,7 @@ public class ClientFilterOptions
     }
 
     /// <inheritdoc cref="NotIds" />
+    /// <remarks>Since Valkey 9.0.0.</remarks>
     /// <returns>This instance for method chaining.</returns>
     public ClientFilterOptions WithoutId(long id)
     {
@@ -259,6 +219,7 @@ public class ClientFilterOptions
     }
 
     /// <inheritdoc cref="NotIds" />
+    /// <remarks>Since Valkey 9.0.0.</remarks>
     /// <returns>This instance for method chaining.</returns>
     public ClientFilterOptions WithoutIds(IEnumerable<long> ids)
     {
@@ -277,6 +238,7 @@ public class ClientFilterOptions
     }
 
     /// <inheritdoc cref="NotUser" />
+    /// <remarks>Since Valkey 9.0.0.</remarks>
     /// <returns>This instance for method chaining.</returns>
     public ClientFilterOptions WithoutUser(string username)
     {
@@ -295,6 +257,7 @@ public class ClientFilterOptions
     }
 
     /// <inheritdoc cref="NotAddress" />
+    /// <remarks>Since Valkey 9.0.0.</remarks>
     /// <returns>This instance for method chaining.</returns>
     public ClientFilterOptions WithoutAddress(string host, ushort port)
     {
@@ -313,6 +276,7 @@ public class ClientFilterOptions
     }
 
     /// <inheritdoc cref="NotLocalAddress" />
+    /// <remarks>Since Valkey 9.0.0.</remarks>
     /// <returns>This instance for method chaining.</returns>
     public ClientFilterOptions WithoutLocalAddress(string host, ushort port)
     {
@@ -330,6 +294,7 @@ public class ClientFilterOptions
     }
 
     /// <inheritdoc cref="MaxAge" />
+    /// <remarks>Since Valkey 8.0.0.</remarks>
     /// <param name="maxAge">The maximum connection age. Rounded to the nearest second.</param>
     /// <returns>This instance for method chaining.</returns>
     /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="maxAge"/> is not positive.</exception>
@@ -340,6 +305,7 @@ public class ClientFilterOptions
     }
 
     /// <inheritdoc cref="Name" />
+    /// <remarks>Since Valkey 9.0.0.</remarks>
     /// <returns>This instance for method chaining.</returns>
     public ClientFilterOptions WithName(string name)
     {
@@ -349,6 +315,7 @@ public class ClientFilterOptions
     }
 
     /// <inheritdoc cref="NotName" />
+    /// <remarks>Since Valkey 9.0.0.</remarks>
     /// <returns>This instance for method chaining.</returns>
     public ClientFilterOptions WithoutName(string name)
     {
@@ -358,6 +325,7 @@ public class ClientFilterOptions
     }
 
     /// <inheritdoc cref="Idle" />
+    /// <remarks>Since Valkey 9.0.0.</remarks>
     /// <param name="idle">The minimum idle time of connections to match. Rounded to the nearest second.</param>
     /// <returns>This instance for method chaining.</returns>
     /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="idle"/> is not positive.</exception>
@@ -368,6 +336,7 @@ public class ClientFilterOptions
     }
 
     /// <inheritdoc cref="Flags" />
+    /// <remarks>Since Valkey 9.0.0.</remarks>
     /// <returns>This instance for method chaining.</returns>
     public ClientFilterOptions WithFlag(ClientFlag flag)
     {
@@ -377,6 +346,7 @@ public class ClientFilterOptions
     }
 
     /// <inheritdoc cref="Flags" />
+    /// <remarks>Since Valkey 9.0.0.</remarks>
     /// <returns>This instance for method chaining.</returns>
     public ClientFilterOptions WithFlag(char flag)
     {
@@ -386,6 +356,7 @@ public class ClientFilterOptions
     }
 
     /// <inheritdoc cref="Flags" />
+    /// <remarks>Since Valkey 9.0.0.</remarks>
     /// <returns>This instance for method chaining.</returns>
     public ClientFilterOptions WithFlags(IEnumerable<ClientFlag> flags)
     {
@@ -395,6 +366,7 @@ public class ClientFilterOptions
     }
 
     /// <inheritdoc cref="Flags" />
+    /// <remarks>Since Valkey 9.0.0.</remarks>
     /// <returns>This instance for method chaining.</returns>
     public ClientFilterOptions WithFlags(string flags)
     {
@@ -404,6 +376,7 @@ public class ClientFilterOptions
     }
 
     /// <inheritdoc cref="NotFlags" />
+    /// <remarks>Since Valkey 9.0.0.</remarks>
     /// <returns>This instance for method chaining.</returns>
     public ClientFilterOptions WithoutFlag(ClientFlag flag)
     {
@@ -413,6 +386,7 @@ public class ClientFilterOptions
     }
 
     /// <inheritdoc cref="NotFlags" />
+    /// <remarks>Since Valkey 9.0.0.</remarks>
     /// <returns>This instance for method chaining.</returns>
     public ClientFilterOptions WithoutFlag(char flag)
     {
@@ -422,6 +396,7 @@ public class ClientFilterOptions
     }
 
     /// <inheritdoc cref="NotFlags" />
+    /// <remarks>Since Valkey 9.0.0.</remarks>
     /// <returns>This instance for method chaining.</returns>
     public ClientFilterOptions WithoutFlags(IEnumerable<ClientFlag> flags)
     {
@@ -431,6 +406,7 @@ public class ClientFilterOptions
     }
 
     /// <inheritdoc cref="NotFlags" />
+    /// <remarks>Since Valkey 9.0.0.</remarks>
     /// <returns>This instance for method chaining.</returns>
     public ClientFilterOptions WithoutFlags(string flags)
     {
@@ -440,6 +416,7 @@ public class ClientFilterOptions
     }
 
     /// <inheritdoc cref="LibraryName" />
+    /// <remarks>Since Valkey 9.0.0.</remarks>
     /// <returns>This instance for method chaining.</returns>
     public ClientFilterOptions WithLibraryName(string name)
     {
@@ -449,6 +426,7 @@ public class ClientFilterOptions
     }
 
     /// <inheritdoc cref="NotLibraryName" />
+    /// <remarks>Since Valkey 9.0.0.</remarks>
     /// <returns>This instance for method chaining.</returns>
     public ClientFilterOptions WithoutLibraryName(string name)
     {
@@ -458,6 +436,7 @@ public class ClientFilterOptions
     }
 
     /// <inheritdoc cref="LibraryVersion" />
+    /// <remarks>Since Valkey 9.0.0.</remarks>
     /// <returns>This instance for method chaining.</returns>
     public ClientFilterOptions WithLibraryVersion(string version)
     {
@@ -467,6 +446,7 @@ public class ClientFilterOptions
     }
 
     /// <inheritdoc cref="NotLibraryVersion" />
+    /// <remarks>Since Valkey 9.0.0.</remarks>
     /// <returns>This instance for method chaining.</returns>
     public ClientFilterOptions WithoutLibraryVersion(string version)
     {
@@ -476,6 +456,7 @@ public class ClientFilterOptions
     }
 
     /// <inheritdoc cref="DatabaseId" />
+    /// <remarks>Since Valkey 9.0.0.</remarks>
     /// <returns>This instance for method chaining.</returns>
     public ClientFilterOptions WithDatabaseId(ushort id)
     {
@@ -484,6 +465,7 @@ public class ClientFilterOptions
     }
 
     /// <inheritdoc cref="NotDatabaseId" />
+    /// <remarks>Since Valkey 9.0.0.</remarks>
     /// <returns>This instance for method chaining.</returns>
     public ClientFilterOptions WithoutDatabaseId(ushort id)
     {
@@ -492,6 +474,7 @@ public class ClientFilterOptions
     }
 
     /// <inheritdoc cref="Capabilities" />
+    /// <remarks>Since Valkey 9.0.0.</remarks>
     /// <returns>This instance for method chaining.</returns>
     public ClientFilterOptions WithCapability(ClientCapability capability)
     {
@@ -501,6 +484,7 @@ public class ClientFilterOptions
     }
 
     /// <inheritdoc cref="NotCapabilities" />
+    /// <remarks>Since Valkey 9.0.0.</remarks>
     /// <returns>This instance for method chaining.</returns>
     public ClientFilterOptions WithoutCapability(ClientCapability capability)
     {
@@ -510,6 +494,7 @@ public class ClientFilterOptions
     }
 
     /// <inheritdoc cref="IpAddress" />
+    /// <remarks>Since Valkey 9.0.0.</remarks>
     /// <returns>This instance for method chaining.</returns>
     public ClientFilterOptions WithIpAddress(string address)
     {
@@ -519,6 +504,7 @@ public class ClientFilterOptions
     }
 
     /// <inheritdoc cref="NotIpAddress" />
+    /// <remarks>Since Valkey 9.0.0.</remarks>
     /// <returns>This instance for method chaining.</returns>
     public ClientFilterOptions WithoutIpAddress(string address)
     {

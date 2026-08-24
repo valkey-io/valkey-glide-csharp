@@ -242,8 +242,6 @@ public partial interface IBaseClient
     /// Returns the number of members in the intersection of the sorted sets specified by <paramref name="keys"/>.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/zintercard/">Valkey commands – ZINTERCARD</seealso>
-    /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="keys">The keys of the sorted sets.</param>
     /// <param name="limit">If the intersection cardinality reaches this limit, the algorithm exits early. A value of <c>0</c> means no limit.</param>
     /// <returns>The number of elements in the resulting intersection.</returns>
@@ -257,6 +255,8 @@ public partial interface IBaseClient
     /// // count == 1
     /// </code>
     /// </example>
+    /// <para>Since Valkey 7.0.0.</para>
+    /// <para>When in cluster mode, all keys must map to the same hash slot.</para>
     /// </remarks>
     Task<long> SortedSetInterCardAsync(IEnumerable<ValkeyKey> keys, long limit = 0);
 
@@ -337,8 +337,6 @@ public partial interface IBaseClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/zmpop/">Valkey commands – ZMPOP</seealso>
     /// <seealso href="https://valkey.io/commands/bzmpop/">Valkey commands – BZMPOP</seealso>
-    /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="keys">The keys of the sorted sets.</param>
     /// <param name="timeout">Optional timeout for blocking. If <see langword="null"/>, uses non-blocking pop.</param>
     /// <returns>The removed element, or <see langword="null"/> when no element could be popped.</returns>
@@ -350,6 +348,8 @@ public partial interface IBaseClient
     /// // entry == { Element: "alice", Score: 1 }
     /// </code>
     /// </example>
+    /// <para>Since Valkey 7.0.0.</para>
+    /// <para>When in cluster mode, all keys must map to the same hash slot.</para>
     /// </remarks>
     Task<SortedSetEntry?> SortedSetPopMinAsync(IEnumerable<ValkeyKey> keys, TimeSpan? timeout = null);
 
@@ -358,8 +358,6 @@ public partial interface IBaseClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/zmpop/">Valkey commands – ZMPOP</seealso>
     /// <seealso href="https://valkey.io/commands/bzmpop/">Valkey commands – BZMPOP</seealso>
-    /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="keys">The keys of the sorted sets.</param>
     /// <param name="timeout">Optional timeout for blocking. If <see langword="null"/>, uses non-blocking pop.</param>
     /// <returns>The removed element, or <see langword="null"/> when no element could be popped.</returns>
@@ -371,6 +369,8 @@ public partial interface IBaseClient
     /// // entry == { Element: "alice", Score: 1 }
     /// </code>
     /// </example>
+    /// <para>Since Valkey 7.0.0.</para>
+    /// <para>When in cluster mode, all keys must map to the same hash slot.</para>
     /// </remarks>
     Task<SortedSetEntry?> SortedSetPopMaxAsync(IEnumerable<ValkeyKey> keys, TimeSpan? timeout = null);
 
@@ -379,8 +379,6 @@ public partial interface IBaseClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/zmpop/">Valkey commands – ZMPOP</seealso>
     /// <seealso href="https://valkey.io/commands/bzmpop/">Valkey commands – BZMPOP</seealso>
-    /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="keys">The keys of the sorted sets.</param>
     /// <param name="count">The maximum number of records to pop.</param>
     /// <param name="timeout">Optional timeout for blocking. If <see langword="null"/>, uses non-blocking pop.</param>
@@ -394,6 +392,8 @@ public partial interface IBaseClient
     /// // popResult.Key == "zset1", popResult.Entries.Length == 2
     /// </code>
     /// </example>
+    /// <para>Since Valkey 7.0.0.</para>
+    /// <para>When in cluster mode, all keys must map to the same hash slot.</para>
     /// </remarks>
     Task<SortedSetPopResult> SortedSetPopMinAsync(IEnumerable<ValkeyKey> keys, long count, TimeSpan? timeout = null);
 
@@ -402,8 +402,6 @@ public partial interface IBaseClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/zmpop/">Valkey commands – ZMPOP</seealso>
     /// <seealso href="https://valkey.io/commands/bzmpop/">Valkey commands – BZMPOP</seealso>
-    /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="keys">The keys of the sorted sets.</param>
     /// <param name="count">The maximum number of records to pop.</param>
     /// <param name="timeout">Optional timeout for blocking. If <see langword="null"/>, uses non-blocking pop.</param>
@@ -417,6 +415,8 @@ public partial interface IBaseClient
     /// // popResult.Key == "zset1", popResult.Entries.Length == 2
     /// </code>
     /// </example>
+    /// <para>Since Valkey 7.0.0.</para>
+    /// <para>When in cluster mode, all keys must map to the same hash slot.</para>
     /// </remarks>
     Task<SortedSetPopResult> SortedSetPopMaxAsync(IEnumerable<ValkeyKey> keys, long count, TimeSpan? timeout = null);
 
@@ -460,7 +460,6 @@ public partial interface IBaseClient
     /// Computes the union of multiple sorted sets specified by <paramref name="keys"/>.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/zunion/">Valkey commands – ZUNION</seealso>
-    /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
     /// <param name="keys">The keys of the sorted sets.</param>
     /// <param name="aggregate">The aggregation method.</param>
     /// <returns>The resulting members, ordered ascending by score.</returns>
@@ -473,6 +472,7 @@ public partial interface IBaseClient
     /// // members == ["alice", "bob"]
     /// </code>
     /// </example>
+    /// <para>When in cluster mode, all keys must map to the same hash slot.</para>
     /// </remarks>
     Task<ValkeyValue[]> SortedSetUnionAsync(IEnumerable<ValkeyKey> keys, Aggregate aggregate = Aggregate.Sum);
 
@@ -480,7 +480,6 @@ public partial interface IBaseClient
     /// Computes the union of multiple sorted sets with weights.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/zunion/">Valkey commands – ZUNION</seealso>
-    /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
     /// <param name="keysAndWeights">A dictionary of sorted set keys and their corresponding weights.</param>
     /// <param name="aggregate">The aggregation method.</param>
     /// <returns>The resulting members, ordered ascending by score.</returns>
@@ -494,6 +493,7 @@ public partial interface IBaseClient
     /// // members == ["bob", "alice"]
     /// </code>
     /// </example>
+    /// <para>When in cluster mode, all keys must map to the same hash slot.</para>
     /// </remarks>
     Task<ValkeyValue[]> SortedSetUnionAsync(IDictionary<ValkeyKey, double> keysAndWeights, Aggregate aggregate = Aggregate.Sum);
 
@@ -501,7 +501,6 @@ public partial interface IBaseClient
     /// Computes the union of multiple sorted sets specified by <paramref name="keys"/>, returning members with scores.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/zunion/">Valkey commands – ZUNION</seealso>
-    /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
     /// <param name="keys">The keys of the sorted sets.</param>
     /// <param name="aggregate">The aggregation method.</param>
     /// <returns>The resulting members with scores, ordered ascending by score.</returns>
@@ -514,6 +513,7 @@ public partial interface IBaseClient
     /// // entries[0] == { Element: "alice", Score: 1 }
     /// </code>
     /// </example>
+    /// <para>When in cluster mode, all keys must map to the same hash slot.</para>
     /// </remarks>
     Task<SortedSetEntry[]> SortedSetUnionWithScoreAsync(IEnumerable<ValkeyKey> keys, Aggregate aggregate = Aggregate.Sum);
 
@@ -521,7 +521,6 @@ public partial interface IBaseClient
     /// Computes the union of multiple sorted sets with weights, returning members with scores.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/zunion/">Valkey commands – ZUNION</seealso>
-    /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
     /// <param name="keysAndWeights">A dictionary of sorted set keys and their corresponding weights.</param>
     /// <param name="aggregate">The aggregation method.</param>
     /// <returns>The resulting members with scores, ordered ascending by score.</returns>
@@ -535,6 +534,7 @@ public partial interface IBaseClient
     /// // entries[0] == { Element: "bob", Score: 2 }
     /// </code>
     /// </example>
+    /// <para>When in cluster mode, all keys must map to the same hash slot.</para>
     /// </remarks>
     Task<SortedSetEntry[]> SortedSetUnionWithScoreAsync(IDictionary<ValkeyKey, double> keysAndWeights, Aggregate aggregate = Aggregate.Sum);
 
@@ -542,7 +542,6 @@ public partial interface IBaseClient
     /// Computes the intersection of multiple sorted sets specified by <paramref name="keys"/>.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/zinter/">Valkey commands – ZINTER</seealso>
-    /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
     /// <param name="keys">The keys of the sorted sets.</param>
     /// <param name="aggregate">The aggregation method.</param>
     /// <returns>The resulting members, ordered ascending by score.</returns>
@@ -556,6 +555,7 @@ public partial interface IBaseClient
     /// // members == ["alice"]
     /// </code>
     /// </example>
+    /// <para>When in cluster mode, all keys must map to the same hash slot.</para>
     /// </remarks>
     Task<ValkeyValue[]> SortedSetInterAsync(IEnumerable<ValkeyKey> keys, Aggregate aggregate = Aggregate.Sum);
 
@@ -563,7 +563,6 @@ public partial interface IBaseClient
     /// Computes the intersection of multiple sorted sets with weights.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/zinter/">Valkey commands – ZINTER</seealso>
-    /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
     /// <param name="keysAndWeights">A dictionary of sorted set keys and their corresponding weights.</param>
     /// <param name="aggregate">The aggregation method.</param>
     /// <returns>The resulting members, ordered ascending by score.</returns>
@@ -577,6 +576,7 @@ public partial interface IBaseClient
     /// // members == ["alice"]
     /// </code>
     /// </example>
+    /// <para>When in cluster mode, all keys must map to the same hash slot.</para>
     /// </remarks>
     Task<ValkeyValue[]> SortedSetInterAsync(IDictionary<ValkeyKey, double> keysAndWeights, Aggregate aggregate = Aggregate.Sum);
 
@@ -584,7 +584,6 @@ public partial interface IBaseClient
     /// Computes the intersection of multiple sorted sets specified by <paramref name="keys"/>, returning members with scores.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/zinter/">Valkey commands – ZINTER</seealso>
-    /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
     /// <param name="keys">The keys of the sorted sets.</param>
     /// <param name="aggregate">The aggregation method.</param>
     /// <returns>The resulting members with scores, ordered ascending by score.</returns>
@@ -597,6 +596,7 @@ public partial interface IBaseClient
     /// // entries[0] == { Element: "alice", Score: 4 }
     /// </code>
     /// </example>
+    /// <para>When in cluster mode, all keys must map to the same hash slot.</para>
     /// </remarks>
     Task<SortedSetEntry[]> SortedSetInterWithScoreAsync(IEnumerable<ValkeyKey> keys, Aggregate aggregate = Aggregate.Sum);
 
@@ -604,7 +604,6 @@ public partial interface IBaseClient
     /// Computes the intersection of multiple sorted sets with weights, returning members with scores.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/zinter/">Valkey commands – ZINTER</seealso>
-    /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
     /// <param name="keysAndWeights">A dictionary of sorted set keys and their corresponding weights.</param>
     /// <param name="aggregate">The aggregation method.</param>
     /// <returns>The resulting members with scores, ordered ascending by score.</returns>
@@ -618,6 +617,7 @@ public partial interface IBaseClient
     /// // entries[0] == { Element: "alice", Score: 5 }
     /// </code>
     /// </example>
+    /// <para>When in cluster mode, all keys must map to the same hash slot.</para>
     /// </remarks>
     Task<SortedSetEntry[]> SortedSetInterWithScoreAsync(IDictionary<ValkeyKey, double> keysAndWeights, Aggregate aggregate = Aggregate.Sum);
 
@@ -625,7 +625,6 @@ public partial interface IBaseClient
     /// Computes the difference between the first sorted set and all successive sorted sets specified by <paramref name="keys"/>.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/zdiff/">Valkey commands – ZDIFF</seealso>
-    /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
     /// <param name="keys">The keys of the sorted sets.</param>
     /// <returns>The resulting members, ordered ascending by score.</returns>
     /// <remarks>
@@ -638,6 +637,7 @@ public partial interface IBaseClient
     /// // members == ["bob"]
     /// </code>
     /// </example>
+    /// <para>When in cluster mode, all keys must map to the same hash slot.</para>
     /// </remarks>
     Task<ValkeyValue[]> SortedSetDiffAsync(IEnumerable<ValkeyKey> keys);
 
@@ -645,7 +645,6 @@ public partial interface IBaseClient
     /// Computes the difference between the first sorted set and all successive sorted sets specified by <paramref name="keys"/>, returning members with scores.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/zdiff/">Valkey commands – ZDIFF</seealso>
-    /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
     /// <param name="keys">The keys of the sorted sets.</param>
     /// <returns>The resulting members with scores, ordered ascending by score.</returns>
     /// <remarks>
@@ -658,6 +657,7 @@ public partial interface IBaseClient
     /// // entries[0] == { Element: "bob", Score: 2 }
     /// </code>
     /// </example>
+    /// <para>When in cluster mode, all keys must map to the same hash slot.</para>
     /// </remarks>
     Task<SortedSetEntry[]> SortedSetDiffWithScoreAsync(IEnumerable<ValkeyKey> keys);
 
@@ -665,7 +665,6 @@ public partial interface IBaseClient
     /// Computes the union of multiple sorted sets and stores the result in <paramref name="destination"/>.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/zunionstore/">Valkey commands – ZUNIONSTORE</seealso>
-    /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
     /// <param name="destination">The key to store the results in.</param>
     /// <param name="keys">The keys of the sorted sets.</param>
     /// <param name="aggregate">The aggregation method.</param>
@@ -679,6 +678,7 @@ public partial interface IBaseClient
     /// // count == 2
     /// </code>
     /// </example>
+    /// <para>When in cluster mode, all keys must map to the same hash slot.</para>
     /// </remarks>
     Task<long> SortedSetUnionAndStoreAsync(ValkeyKey destination, IEnumerable<ValkeyKey> keys, Aggregate aggregate = Aggregate.Sum);
 
@@ -686,7 +686,6 @@ public partial interface IBaseClient
     /// Computes the union of multiple sorted sets with weights and stores the result in <paramref name="destination"/>.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/zunionstore/">Valkey commands – ZUNIONSTORE</seealso>
-    /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
     /// <param name="destination">The key to store the results in.</param>
     /// <param name="keysAndWeights">A dictionary of sorted set keys and their corresponding weights.</param>
     /// <param name="aggregate">The aggregation method.</param>
@@ -701,6 +700,7 @@ public partial interface IBaseClient
     /// // count == 2
     /// </code>
     /// </example>
+    /// <para>When in cluster mode, all keys must map to the same hash slot.</para>
     /// </remarks>
     Task<long> SortedSetUnionAndStoreAsync(ValkeyKey destination, IDictionary<ValkeyKey, double> keysAndWeights, Aggregate aggregate = Aggregate.Sum);
 
@@ -708,7 +708,6 @@ public partial interface IBaseClient
     /// Computes the intersection of multiple sorted sets and stores the result in <paramref name="destination"/>.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/zinterstore/">Valkey commands – ZINTERSTORE</seealso>
-    /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
     /// <param name="destination">The key to store the results in.</param>
     /// <param name="keys">The keys of the sorted sets.</param>
     /// <param name="aggregate">The aggregation method.</param>
@@ -722,6 +721,7 @@ public partial interface IBaseClient
     /// // count == 1
     /// </code>
     /// </example>
+    /// <para>When in cluster mode, all keys must map to the same hash slot.</para>
     /// </remarks>
     Task<long> SortedSetInterAndStoreAsync(ValkeyKey destination, IEnumerable<ValkeyKey> keys, Aggregate aggregate = Aggregate.Sum);
 
@@ -729,7 +729,6 @@ public partial interface IBaseClient
     /// Computes the intersection of multiple sorted sets with weights and stores the result in <paramref name="destination"/>.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/zinterstore/">Valkey commands – ZINTERSTORE</seealso>
-    /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
     /// <param name="destination">The key to store the results in.</param>
     /// <param name="keysAndWeights">A dictionary of sorted set keys and their corresponding weights.</param>
     /// <param name="aggregate">The aggregation method.</param>
@@ -744,6 +743,7 @@ public partial interface IBaseClient
     /// // count == 1
     /// </code>
     /// </example>
+    /// <para>When in cluster mode, all keys must map to the same hash slot.</para>
     /// </remarks>
     Task<long> SortedSetInterAndStoreAsync(ValkeyKey destination, IDictionary<ValkeyKey, double> keysAndWeights, Aggregate aggregate = Aggregate.Sum);
 
@@ -751,7 +751,6 @@ public partial interface IBaseClient
     /// Computes the difference between the first sorted set and all successive sorted sets and stores the result in <paramref name="destination"/>.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/zdiffstore/">Valkey commands – ZDIFFSTORE</seealso>
-    /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
     /// <param name="destination">The key to store the results in.</param>
     /// <param name="keys">The keys of the sorted sets.</param>
     /// <returns>The number of elements in the resulting sorted set.</returns>
@@ -765,6 +764,7 @@ public partial interface IBaseClient
     /// // count == 1
     /// </code>
     /// </example>
+    /// <para>When in cluster mode, all keys must map to the same hash slot.</para>
     /// </remarks>
     Task<long> SortedSetDiffAndStoreAsync(ValkeyKey destination, IEnumerable<ValkeyKey> keys);
 
@@ -794,7 +794,6 @@ public partial interface IBaseClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/zrank/">Valkey commands – ZRANK</seealso>
     /// <seealso href="https://valkey.io/commands/zrevrank/">Valkey commands – ZREVRANK</seealso>
-    /// <note>Since Valkey 7.2.0.</note>
     /// <param name="key">The sorted set key.</param>
     /// <param name="member">The member to get the rank and score of.</param>
     /// <param name="order">The order to sort by.</param>
@@ -808,6 +807,7 @@ public partial interface IBaseClient
     /// // rankAndScore == { Rank: 1, Score: 2 }
     /// </code>
     /// </example>
+    /// <para>Since Valkey 7.2.0.</para>
     /// </remarks>
     Task<(long Rank, double Score)?> SortedSetRankWithScoreAsync(ValkeyKey key, ValkeyValue member, Order order = Order.Ascending);
 
@@ -969,8 +969,6 @@ public partial interface IBaseClient
     /// Blocks the connection until it pops and returns up to <paramref name="count"/> entries from the first non-empty sorted set among the given <paramref name="keys"/>.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/bzmpop/">Valkey commands – BZMPOP</seealso>
-    /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="keys">The keys of the sorted sets.</param>
     /// <param name="count">The maximum number of records to pop out of the sorted set.</param>
     /// <param name="order">The order to sort by when popping items out of the set.</param>
@@ -984,6 +982,8 @@ public partial interface IBaseClient
     /// // popResult.Key == "zset1"
     /// </code>
     /// </example>
+    /// <para>Since Valkey 7.0.0.</para>
+    /// <para>When in cluster mode, all keys must map to the same hash slot.</para>
     /// </remarks>
     Task<SortedSetPopResult> SortedSetBlockingPopAsync(IEnumerable<ValkeyKey> keys, long count, Order order, TimeSpan timeout);
 
