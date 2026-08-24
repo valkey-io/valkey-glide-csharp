@@ -22,9 +22,7 @@ public static class BitFieldOptions
     /// <summary>
     /// Interface for read-only BitField subcommands.
     /// </summary>
-    public interface IBitFieldReadOnlySubCommand : IBitFieldSubCommand
-    {
-    }
+    public interface IBitFieldReadOnlySubCommand : IBitFieldSubCommand;
 
     /// <summary>
     /// Interface for bit field offsets.

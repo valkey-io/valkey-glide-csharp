@@ -9,6 +9,4 @@ namespace Valkey.Glide.Commands;
 /// Server management commands for cluster clients.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/#server">Valkey – Server Management Commands</seealso>
-public interface IServerManagementClusterCommands
-{
-}
+public interface IServerManagementClusterCommands;

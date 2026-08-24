@@ -25,6 +25,4 @@ public partial interface IBaseClient :
     ISetBaseCommands,
     ISortedSetBaseCommands,
     IStreamBaseCommands,
-    IStringBaseCommands
-{
-}
+    IStringBaseCommands;

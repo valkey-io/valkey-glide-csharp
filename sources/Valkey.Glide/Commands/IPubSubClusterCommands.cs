@@ -11,4 +11,4 @@ namespace Valkey.Glide.Commands;
 /// StackExchange.Redis does not have cluster-specific pub/sub methods.
 /// </remarks>
 /// <seealso href="https://valkey.io/commands/#pubsub">Valkey – Pub/Sub Commands</seealso>
-public interface IPubSubClusterCommands { }
+public interface IPubSubClusterCommands;

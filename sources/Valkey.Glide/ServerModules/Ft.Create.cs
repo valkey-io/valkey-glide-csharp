@@ -282,9 +282,7 @@ public static partial class Ft
     /// A new vector search index field using the brute-force algorithm (<c>VECTOR FLAT</c>).
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ft.create/">Valkey commands – FT.CREATE</seealso>
-    public sealed class CreateVectorFieldFlat : CreateVectorField
-    {
-    }
+    public sealed class CreateVectorFieldFlat : CreateVectorField;
 
     /// <summary>
     /// A new vector search index field using the Hierarchical Navigable Small World algorithm (<c>VECTOR HNSW</c>).
