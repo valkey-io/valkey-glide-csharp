@@ -567,6 +567,7 @@ roslynator_analyzers.enabled_by_default = false
 dotnet_analyzer_diagnostic.category-Roslynator.severity = none
 
 dotnet_diagnostic.RCS1047.severity = error
+dotnet_diagnostic.RCS1071.severity = error
 dotnet_diagnostic.RCS1102.severity = error
 dotnet_diagnostic.RCS1108.severity = error
 dotnet_diagnostic.RCS1139.severity = error

@@ -15,7 +15,7 @@ public static class Errors
         /// <summary>
         /// Initializes a new instance of the <see cref="GlideException"/> class.
         /// </summary>
-        public GlideException() : base() { }
+        public GlideException() { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GlideException"/> class with a specified error message.
@@ -40,7 +40,7 @@ public static class Errors
         /// <summary>
         /// Initializes a new instance of the <see cref="RequestException"/> class.
         /// </summary>
-        public RequestException() : base() { }
+        public RequestException() { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RequestException"/> class with a specified error message.
@@ -66,7 +66,7 @@ public static class Errors
         /// <summary>
         /// Initializes a new instance of the <see cref="ValkeyServerException"/> class.
         /// </summary>
-        public ValkeyServerException() : base() { }
+        public ValkeyServerException() { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ValkeyServerException"/> class with a specified error message.
@@ -91,7 +91,7 @@ public static class Errors
         /// <summary>
         /// Initializes a new instance of the <see cref="ExecAbortException"/> class.
         /// </summary>
-        public ExecAbortException() : base() { }
+        public ExecAbortException() { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ExecAbortException"/> class with a specified error message.
@@ -192,7 +192,7 @@ public static class Errors
         /// <summary>
         /// Initializes a new instance of the <see cref="CircuitBreakerException"/> class.
         /// </summary>
-        public CircuitBreakerException() : base() { }
+        public CircuitBreakerException() { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CircuitBreakerException"/> class with a specified error message.
