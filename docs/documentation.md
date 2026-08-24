@@ -45,9 +45,7 @@ Command method documentation template:
 /// ...
 /// </code>
 /// </example>
-/// <remarks>
-///   <para>...</para>
-/// </remarks>
+/// <remarks>...</remarks>
 ```
 
 ### Content
@@ -66,7 +64,7 @@ Guidelines for command method documentation content:
    - Format: `<seealso href="https://valkey.io/commands/{command}/">Valkey commands – {COMMAND}</seealso>`
    - If a method maps to multiple Valkey commands, include a `<seealso>` for each.
 
-3. `<typeparam>` — Required for each type parameter. Zero or more occurences.
+3. `<typeparam>` — Required for each type parameter. Zero or more occurrences.
    - Document every type parameter of a generic method.
    - Describe what the type parameter represents.
 
@@ -83,7 +81,7 @@ Guidelines for command method documentation content:
    - Document exceptions that callers should be aware of.
    - Use `<exception cref="...">` with a description of when the exception is thrown.
 
-7. `<example>` / `<code>` — Required. One or more occurences.
+7. `<example>` / `<code>` — Required. One or more occurrences.
    - Examples should be **self-contained**: they should include any setup needed to determine the
      expected return value from the example alone; this should include populating any relevant keys
      first (e.g., call `SetAsync` before `GetAsync`).
@@ -102,7 +100,7 @@ Guidelines for command method documentation content:
    - **Be concise**: use `var`, collection expressions (`["a", "b"]`), and other modern
      C# features to keep examples short without sacrificing clarity.
 
-8. `<remarks>` — Optional. Zero or one occurences.
+8. `<remarks>` — Optional. Zero or one occurrences.
    - Use `<para>` blocks to separate remarks.
    - Common examples:
      - Version requirements: minimum Valkey version (e.g., `Since Valkey 6.2.0.`).
@@ -166,6 +164,7 @@ Basic command method:
 /// var values = await client.GetAsync(["key", "nonexistent"]);  // ["hello", ValkeyValue.Null]
 /// </code>
 /// </example>
+/// <remarks>Since Valkey 6.2.0.</remarks>
 Task<ValkeyValue[]> GetAsync(IEnumerable<ValkeyKey> keys);
 ```
 
