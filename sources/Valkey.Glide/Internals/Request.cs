@@ -19,6 +19,7 @@ internal static partial class Request
     /// <summary>
     /// Create a Cmd which does not need type conversion
     /// </summary>
+    /// <typeparam name="T">The command response type.</typeparam>
     /// <param name="request">The request type.</param>
     /// <param name="args">The command arguments.</param>
     /// <param name="isNullable">Whether the response can be null.</param>

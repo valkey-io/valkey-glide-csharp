@@ -5,9 +5,6 @@ using Valkey.Glide.Internals;
 
 namespace Valkey.Glide.Pipeline;
 
-/// <summary>
-/// Hash commands for BaseBatch.
-/// </summary>
 public abstract partial class BaseBatch<T>
 {
     /// <inheritdoc cref="IBatchHashCommands.HashGet(ValkeyKey, ValkeyValue)" />

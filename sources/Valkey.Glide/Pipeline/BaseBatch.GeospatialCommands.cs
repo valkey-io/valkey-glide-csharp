@@ -4,9 +4,6 @@ using Valkey.Glide.Internals;
 
 namespace Valkey.Glide.Pipeline;
 
-/// <summary>
-/// Geospatial commands for BaseBatch.
-/// </summary>
 public abstract partial class BaseBatch<T>
 {
     /// <inheritdoc cref="IBatchGeospatialCommands.GeoAdd(ValkeyKey, ValkeyValue, GeoPosition, GeoAddCondition)" />

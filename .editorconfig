@@ -573,6 +573,8 @@ dotnet_diagnostic.RCS1140.severity = error
 dotnet_diagnostic.RCS1141.severity = error
 # RCS1251: Remove unnecessary braces
 dotnet_diagnostic.RCS1251.severity = error
+# RCS1142: Add 'typeparam' element to documentation comment (library only)
+dotnet_diagnostic.RCS1142.severity = error
 dotnet_diagnostic.RCS1213.severity = error
 
 # IDE0130: Namespace does not match folder structure
@@ -585,3 +587,4 @@ dotnet_diagnostic.IDE0130.severity = none
 # Disable documentation rules for tests
 dotnet_diagnostic.RCS1140.severity = none
 dotnet_diagnostic.RCS1141.severity = none
+dotnet_diagnostic.RCS1142.severity = none
