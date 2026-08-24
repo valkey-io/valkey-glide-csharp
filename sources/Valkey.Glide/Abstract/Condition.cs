@@ -411,9 +411,9 @@ public abstract class Condition
     /// <summary>
     /// Validates the result of the condition check against the expected outcome.
     /// </summary>
-    /// <param name="res">The result from the condition command execution.</param>
+    /// <param name="result">The result from the condition command execution.</param>
     /// <returns><see langword="true"/> if the condition is satisfied; otherwise, <see langword="false"/>.</returns>
-    protected abstract bool ValidateImpl(object? res);
+    protected abstract bool ValidateImpl(object? result);
 
 #pragma warning disable IDE1006 // Naming Styles
 #pragma warning disable IDE0045 // Convert to conditional expression
