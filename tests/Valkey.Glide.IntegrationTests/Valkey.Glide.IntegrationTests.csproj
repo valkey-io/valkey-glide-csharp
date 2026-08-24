@@ -16,6 +16,12 @@
     <WarningLevel>0</WarningLevel>
     <IsPackable>false</IsPackable>
     <OutputType>exe</OutputType>
+    <!-- Keep dotnet test on the classic VSTest runner. xunit.runner.visualstudio 4.x marks
+         this as a Microsoft.Testing.Platform (MTP) app, but coverlet.collector ("XPlat Code
+         Coverage") is not compatible with MTP, and MTP v2 hard-errors when the VSTest target is
+         used against an MTP app on the .NET 10 SDK. Clearing this flag disables the MTP MSBuild
+         hook so tests run through the xunit VSTest adapter. See dev/scripts/test.py. -->
+    <IsTestingPlatformApplication>false</IsTestingPlatformApplication>
     <Configurations>Debug;Release;Lint</Configurations>
   </PropertyGroup>
 
