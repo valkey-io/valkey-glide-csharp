@@ -20,7 +20,7 @@ namespace Valkey.Glide;
 /// </summary>
 public abstract partial class BaseClient : IBaseClient
 {
-    #region public methods
+    #region Public Methods
 
     /// <inheritdoc/>
     public void Dispose()
@@ -169,8 +169,7 @@ public abstract partial class BaseClient : IBaseClient
     }
 
     #endregion
-
-    #region protected methods
+    #region Protected Methods
 
     /// <summary>
     /// Creates and initializes a new client instance with the specified configuration.
@@ -283,6 +282,9 @@ public abstract partial class BaseClient : IBaseClient
     /// <returns>The converted response value.</returns>
     protected internal delegate T ResponseHandler<T>(IntPtr response);
 
+    /// <summary>
+    /// Executes a command against the server and converts the response.
+    /// </summary>
     /// <typeparam name="R">Type received from server.</typeparam>
     /// <typeparam name="T">Type we return to the user.</typeparam>
     /// <param name="command"></param>
@@ -388,7 +390,7 @@ public abstract partial class BaseClient : IBaseClient
     }
 
     #endregion
-    #region protected fields
+    #region Protected Fields
 
     /// <summary>
     /// Cached server version retrieved from the connected server.
@@ -399,15 +401,19 @@ public abstract partial class BaseClient : IBaseClient
     /// The default server version assumed when the actual version cannot be determined.
     /// </summary>
     protected static readonly Version DefaultServerVersion = new(8, 0, 0);
-    #endregion
 
-    #region internal fields
+    #endregion
+    #region Internal Fields
+
+    /// <summary>
     /// Raw pointer to the underlying native client.
+    /// </summary>
     internal IntPtr ClientPointer;
     internal readonly MessageContainer MessageContainer;
-    #endregion
 
-    #region private methods
+    #endregion
+    #region Private Methods
+
     private void SuccessCallback(ulong index, IntPtr ptr) =>
         ThreadPool.UnsafeQueueUserWorkItem(_ => MessageContainer.GetMessage((int)index).SetResult(ptr), null);
 
@@ -686,41 +692,61 @@ public abstract partial class BaseClient : IBaseClient
 
     #region private fields
 
+    /// <summary>
     /// Held as a measure to prevent the delegate being garbage collected. These are delegated once
     /// and held in order to prevent the cost of marshalling on each function call.
+    /// </summary>
     private readonly FailureAction _failureCallbackDelegate;
 
+    /// <summary>
     /// Held as a measure to prevent the delegate being garbage collected. These are delegated once
     /// and held in order to prevent the cost of marshalling on each function call.
+    /// </summary>
     private readonly SuccessAction _successCallbackDelegate;
 
+    /// <summary>
     /// Held as a measure to prevent the delegate being garbage collected. These are delegated once
     /// and held in order to prevent the cost of marshalling on each function call.
+    /// </summary>
     private readonly PubSubAction _pubsubCallbackDelegate;
 
+    /// <summary>
     /// Held to prevent the delegate being garbage collected.
+    /// </summary>
     private AddressResolverAction? _addressResolverDelegate;
 
     private readonly object _lock = new();
     private string _clientInfo = ""; // used to distinguish and identify clients during tests
 
+    /// <summary>
     /// PubSub message handler for routing messages to callbacks or queues.
     /// Uses volatile to ensure visibility across threads without locking on every read.
+    /// </summary>
     private volatile PubSubMessageHandler? _pubSubHandler;
 
+    /// <summary>
     /// Lock object for coordinating PubSub handler access and disposal.
+    /// </summary>
     private readonly object _pubSubLock = new();
 
+    /// <summary>
     /// Channel for bounded message queuing with backpressure support.
+    /// </summary>
     private Channel<PubSubMessage>? _messageChannel;
 
+    /// <summary>
     /// Dedicated background task for processing PubSub messages.
+    /// </summary>
     private Task? _messageProcessingTask;
 
+    /// <summary>
     /// Cancellation token source for graceful shutdown of message processing.
+    /// </summary>
     private CancellationTokenSource? _processingCancellation;
 
+    /// <summary>
     /// Timeout for graceful shutdown of PubSub processing.
+    /// </summary>
     private TimeSpan _shutdownTimeout = TimeSpan.FromSeconds(PubSubPerformanceConfig.DefaultShutdownTimeoutSeconds);
 
     #endregion

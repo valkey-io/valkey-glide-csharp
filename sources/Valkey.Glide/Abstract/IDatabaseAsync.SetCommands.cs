@@ -4,10 +4,14 @@ using Valkey.Glide.Commands;
 
 namespace Valkey.Glide;
 
-/// ATTENTION: Methods should only be added to this interface if they are implemented
-/// by StackExchange.Redis databases but NOT by Valkey GLIDE clients. Methods implemented
-/// by both should be added to <see cref="ISetBaseCommands"/> instead.
+// ATTENTION: Methods should only be added to this interface if they are implemented
+// by StackExchange.Redis databases but NOT by Valkey GLIDE clients. Methods implemented
+// by both should be added to ISetBaseCommands instead.
 
+/// <summary>
+/// Set commands for StackExchange.Redis databases.
+/// </summary>
+/// <seealso href="https://valkey.io/commands/#set">Valkey – Set Commands</seealso>
 public partial interface IDatabaseAsync
 {
     /// <inheritdoc cref="ISetBaseCommands.SetAddAsync(ValkeyKey, ValkeyValue)"/>

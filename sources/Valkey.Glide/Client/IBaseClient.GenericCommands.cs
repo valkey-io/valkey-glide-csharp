@@ -4,13 +4,13 @@ using Valkey.Glide.Commands.Options;
 
 namespace Valkey.Glide;
 
+// ATTENTION: Methods should only be added to this interface if they are implemented
+// by Valkey GLIDE clients but NOT by StackExchange.Redis databases. Methods implemented
+// by both should be added to IGenericBaseCommands instead.
+
 /// <summary>
 /// Generic commands for Valkey GLIDE clients.
 /// </summary>
-/// <remarks>
-/// These methods use Valkey GLIDE naming conventions. For StackExchange.Redis-compatible
-/// methods with "Key" prefix, use <see cref="IDatabaseAsync"/>.
-/// </remarks>
 /// <seealso href="https://valkey.io/commands/#generic">Valkey – Generic Commands</seealso>
 public partial interface IBaseClient
 {

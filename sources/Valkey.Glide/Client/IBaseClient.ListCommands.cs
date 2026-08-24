@@ -2,13 +2,13 @@
 
 namespace Valkey.Glide;
 
+// ATTENTION: Methods should only be added to this interface if they are implemented
+// by Valkey GLIDE clients but NOT by StackExchange.Redis databases. Methods implemented
+// by both should be added to IListBaseCommands instead.
+
 /// <summary>
 /// List commands for Valkey GLIDE clients.
 /// </summary>
-/// <remarks>
-/// These methods use Valkey GLIDE naming conventions. For StackExchange.Redis-compatible
-/// methods with "List" prefix, use <see cref="IDatabaseAsync"/>.
-/// </remarks>
 /// <seealso href="https://valkey.io/commands/#list">Valkey – List Commands</seealso>
 public partial interface IBaseClient
 {

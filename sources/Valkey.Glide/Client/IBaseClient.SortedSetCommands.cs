@@ -4,6 +4,14 @@ using Valkey.Glide.Commands.Options;
 
 namespace Valkey.Glide;
 
+// ATTENTION: Methods should only be added to this interface if they are implemented
+// by Valkey GLIDE clients but NOT by StackExchange.Redis databases. Methods implemented
+// by both should be added to ISortedSetBaseCommands instead.
+
+/// <summary>
+/// Sorted set commands for Valkey GLIDE clients.
+/// </summary>
+/// <seealso href="https://valkey.io/commands/#sorted-set">Valkey – Sorted set Commands</seealso>
 public partial interface IBaseClient
 {
     /// <summary>

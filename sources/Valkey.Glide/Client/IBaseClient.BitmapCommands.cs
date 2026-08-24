@@ -4,6 +4,10 @@ using Valkey.Glide.Commands.Options;
 
 namespace Valkey.Glide;
 
+// ATTENTION: Methods should only be added to this interface if they are implemented
+// by Valkey GLIDE clients but NOT by StackExchange.Redis databases. Methods implemented
+// by both should be added to IBitmapBaseCommands instead.
+
 /// <summary>
 /// Bitmap commands for Valkey GLIDE clients.
 /// </summary>

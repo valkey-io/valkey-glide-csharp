@@ -1,14 +1,17 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using Valkey.Glide.Commands;
 using Valkey.Glide.Commands.Options;
 
 namespace Valkey.Glide;
 
-/// ATTENTION: Methods should only be added to this interface if they are implemented
-/// by <see cref="IBaseClient"/> but NOT by <see cref="IDatabaseAsync"/>. Methods
-/// implemented by both should be added to <see cref="IStreamBaseCommands"/> instead.
+// ATTENTION: Methods should only be added to this interface if they are implemented
+// by Valkey GLIDE clients but NOT by StackExchange.Redis databases. Methods implemented
+// by both should be added to IStreamBaseCommands instead.
 
+/// <summary>
+/// Stream commands for Valkey GLIDE clients.
+/// </summary>
+/// <seealso href="https://valkey.io/commands/#stream">Valkey – Stream Commands</seealso>
 public partial interface IBaseClient
 {
     #region StreamReadGroupAsync

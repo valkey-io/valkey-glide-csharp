@@ -4,10 +4,14 @@ using Valkey.Glide.Commands;
 
 namespace Valkey.Glide;
 
-/// ATTENTION: Methods should only be added to this interface if they are implemented
-/// by StackExchange.Redis databases but NOT by Valkey GLIDE clients. Methods implemented
-/// by both should be added to <see cref="ISortedSetBaseCommands"/> instead.
+// ATTENTION: Methods should only be added to this interface if they are implemented
+// by StackExchange.Redis databases but NOT by Valkey GLIDE clients. Methods implemented
+// by both should be added to ISortedSetBaseCommands instead.
 
+/// <summary>
+/// Sorted set commands for StackExchange.Redis databases.
+/// </summary>
+/// <seealso href="https://valkey.io/commands/#sorted-set">Valkey – Sorted set Commands</seealso>
 public partial interface IDatabaseAsync
 {
     /// <inheritdoc cref="IBaseClient.SortedSetAddAsync(ValkeyKey, ValkeyValue, double, SortedSetAddCondition)" path="/*[self::summary or self::seealso]"/>
