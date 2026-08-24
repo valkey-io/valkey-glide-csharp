@@ -3,17 +3,12 @@
 namespace Valkey.Glide;
 
 /// <summary>
-/// Describes basic information about pending messages for a consumer group.
+/// A summary from a <c>XPENDING</c> response.
 /// </summary>
+/// <seealso href="https://valkey.io/commands/xpending/"/>
 public readonly struct StreamPendingInfo
 {
-    internal StreamPendingInfo(int pendingMessageCount, ValkeyValue lowestId, ValkeyValue highestId, StreamConsumer[] consumers)
-    {
-        PendingMessageCount = pendingMessageCount;
-        LowestPendingMessageId = lowestId;
-        HighestPendingMessageId = highestId;
-        Consumers = consumers;
-    }
+    #region Public Properties
 
     /// <summary>
     /// The number of pending messages. A pending message is a message that has been consumed but not yet acknowledged.
@@ -34,4 +29,17 @@ public readonly struct StreamPendingInfo
     /// An array of consumers within the consumer group that have pending messages.
     /// </summary>
     public StreamConsumer[] Consumers { get; }
+
+    #endregion
+    #region Constructors
+
+    internal StreamPendingInfo(int pendingMessageCount, ValkeyValue lowestId, ValkeyValue highestId, StreamConsumer[] consumers)
+    {
+        PendingMessageCount = pendingMessageCount;
+        LowestPendingMessageId = lowestId;
+        HighestPendingMessageId = highestId;
+        Consumers = consumers;
+    }
+
+    #endregion
 }
