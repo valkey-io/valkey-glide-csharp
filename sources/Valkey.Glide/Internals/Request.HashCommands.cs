@@ -92,7 +92,7 @@ internal partial class Request
         => ToValkeyValue(RequestType.HRandField, [key], isNullable: true);
 
     public static Cmd<object[], ValkeyValue[]> HashRandomFieldsAsync(ValkeyKey key, long count)
-        => ObjectArrayToValkeyValueArray(RequestType.HRandField, [key, count.ToGlideString()]);
+        => ToValkeyValueArray(RequestType.HRandField, [key, count.ToGlideString()]);
 
     public static Cmd<object[], HashEntry[]> HashRandomFieldsWithValuesAsync(ValkeyKey key, long count)
     {

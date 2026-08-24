@@ -5,21 +5,20 @@ using System;
 namespace Valkey.Glide;
 
 /// <summary>
-/// Result of the <see href="https://valkey.io/commands/xautoclaim/">XAUTOCLAIM</see> command.
+/// Represents an <c>XAUTOCLAIM</c> response.
 /// </summary>
+/// <seealso href="https://valkey.io/commands/xautoclaim/"/>
 public readonly struct StreamAutoClaimResult
 {
-    internal StreamAutoClaimResult(ValkeyValue nextStartId, StreamEntry[] claimedEntries, ValkeyValue[] deletedIds)
-    {
-        NextStartId = nextStartId;
-        ClaimedEntries = claimedEntries;
-        DeletedIds = deletedIds;
-    }
+    #region Constants
 
     /// <summary>
     /// A null <see cref="StreamAutoClaimResult"/>, indicating no results.
     /// </summary>
     public static StreamAutoClaimResult Null { get; } = new StreamAutoClaimResult(ValkeyValue.Null, Array.Empty<StreamEntry>(), Array.Empty<ValkeyValue>());
+
+    #endregion
+    #region Public Properties
 
     /// <summary>
     /// Whether this object is null/empty.
@@ -40,4 +39,16 @@ public readonly struct StreamAutoClaimResult
     /// An array of message IDs deleted from the stream.
     /// </summary>
     public ValkeyValue[] DeletedIds { get; }
+
+    #endregion
+    #region Constructors
+
+    internal StreamAutoClaimResult(ValkeyValue nextStartId, StreamEntry[] claimedEntries, ValkeyValue[] deletedIds)
+    {
+        NextStartId = nextStartId;
+        ClaimedEntries = claimedEntries;
+        DeletedIds = deletedIds;
+    }
+
+    #endregion
 }
