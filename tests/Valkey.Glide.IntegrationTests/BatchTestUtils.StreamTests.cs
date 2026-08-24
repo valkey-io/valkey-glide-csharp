@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Commands.Options;
+
 namespace Valkey.Glide.IntegrationTests;
 
 internal partial class BatchTestUtils
@@ -10,9 +12,9 @@ internal partial class BatchTestUtils
         string atomicPrefix = isAtomic ? prefix : "";
         string key1 = $"{atomicPrefix}1-{Guid.NewGuid()}";
 
-        // string groupName = "mygroup";
-        // string consumer1 = "consumer1";
-        // string consumer2 = "consumer2";
+        string groupName = "mygroup";
+        string consumer1 = "consumer1";
+        string consumer2 = "consumer2";
 
         List<TestInfo> testData = [];
 
@@ -29,20 +31,15 @@ internal partial class BatchTestUtils
 
         // Test StreamRead
         _ = batch.StreamRead(new StreamPosition(key1, StreamPosition.Beginning));
-        testData.Add(new(Array.Empty<StreamEntry>(), "StreamRead(key1, 0-0, count: 10)", true));
+        testData.Add(new(Array.Empty<StreamEntry>(), "StreamRead(key1, 0-0)", true));
 
-        // ──────────────────────────────────────────────────────────────────────
-        // Batch methods below are temporarily commented out pending cleanup.
-        // The underlying IBatchStreamCommands methods are commented out.
-        // ──────────────────────────────────────────────────────────────────────
+        // Test StreamTrim
+        _ = batch.StreamTrim(key1, new StreamTrimOptions.MaxLen { MaxLength = 1 });
+        testData.Add(new(1L, "StreamTrim(key1, maxLength: 1)"));
 
-        // // Test StreamTrim
-        // _ = batch.StreamTrim(key1, maxLength: 1);
-        // testData.Add(new(1L, "StreamTrim(key1, maxLength: 1)"));
-
-        // // Test StreamCreateConsumerGroup
-        // _ = batch.StreamCreateConsumerGroup(key1, groupName, "0");
-        // testData.Add(new(true, "StreamCreateConsumerGroup(key1, mygroup, 0)"));
+        // Test StreamCreateConsumerGroup
+        _ = batch.StreamGroupCreate(key1, groupName, "0");
+        testData.Add(new(ValkeyValue.Ok, "StreamGroupCreate(key1, mygroup, 0)"));
 
         // Add more entries for consumer group tests
         _ = batch.StreamAdd(key1, "field4", "value4");
@@ -52,25 +49,36 @@ internal partial class BatchTestUtils
         testData.Add(new(new ValkeyValue(""), "StreamAdd(key1, field5, value5)", true));
 
         // Test StreamReadGroup
-        // NOTE: Temporarily commented out — depends on StreamCreateConsumerGroup which is disabled.
-        // _ = batch.StreamReadGroup(new StreamPosition(key1, StreamPosition.UndeliveredMessages), groupName, consumer1, new StreamReadGroupOptions { Count = 2 });
-        // testData.Add(new(Array.Empty<StreamEntry>(), "StreamReadGroup(key1, mygroup, consumer1, >, count: 2)", true));
+        _ = batch.StreamReadGroup(new StreamPosition(key1, StreamPosition.UndeliveredMessages), groupName, consumer1);
+        testData.Add(new(Array.Empty<StreamEntry>(), "StreamReadGroup(key1, mygroup, consumer1, >)", true));
 
-        // // Test StreamAcknowledge - need to get IDs from previous read, so we'll use dummy IDs
-        // _ = batch.StreamAcknowledge(key1, groupName, ["0-0"]);
-        // testData.Add(new(0L, "StreamAcknowledge(key1, mygroup, [0-0])", true));
+        // Test StreamPending
+        _ = batch.StreamPending(key1, groupName);
+        testData.Add(new(default(StreamPendingInfo), "StreamPending(key1, mygroup)", true));
 
-        // // Test StreamClaim
-        // _ = batch.StreamClaim(key1, groupName, consumer2, TimeSpan.Zero, ["0-0"]);
-        // testData.Add(new(Array.Empty<StreamEntry>(), "StreamClaim(key1, mygroup, consumer2, 0, [0-0])", true));
+        // Test StreamAcknowledge
+        _ = batch.StreamAcknowledge(key1, groupName, ["0-0"]);
+        testData.Add(new(0L, "StreamAcknowledge(key1, mygroup, [0-0])", true));
 
-        // // Test StreamGroupInfo
-        // _ = batch.StreamGroupInfo(key1);
-        // testData.Add(new(Array.Empty<StreamGroupInfo>(), "StreamGroupInfo(key1)", true));
+        // Test StreamClaim
+        _ = batch.StreamClaim(key1, groupName, consumer2, ["0-0"], StreamClaimOptions.From(TimeSpan.Zero));
+        testData.Add(new(Array.Empty<StreamEntry>(), "StreamClaim(key1, mygroup, consumer2, 0, [0-0])", true));
 
-        // // Test StreamConsumerInfo
-        // _ = batch.StreamConsumerInfo(key1, groupName);
-        // testData.Add(new(Array.Empty<StreamConsumerInfo>(), "StreamConsumerInfo(key1, mygroup)", true));
+        // Test StreamGroupInfo
+        _ = batch.StreamInfoGroups(key1);
+        testData.Add(new(Array.Empty<StreamGroupInfo>(), "StreamInfoGroups(key1)", true));
+
+        // Test StreamConsumerInfo
+        _ = batch.StreamInfoConsumers(key1, groupName);
+        testData.Add(new(Array.Empty<StreamConsumerInfo>(), "StreamInfoConsumers(key1, mygroup)", true));
+
+        // Test StreamInfo
+        _ = batch.StreamInfo(key1);
+        testData.Add(new(default(StreamInfo), "StreamInfo(key1)", true));
+
+        // Test StreamInfoFull
+        _ = batch.StreamInfoFull(key1);
+        testData.Add(new(default(StreamInfoFull), "StreamInfoFull(key1)", true));
 
         // Test StreamDelete (multi-ID)
         _ = batch.StreamDelete(key1, ["0-0"]);
@@ -80,13 +88,13 @@ internal partial class BatchTestUtils
         _ = batch.StreamDelete(key1, "0-0");
         testData.Add(new(false, "StreamDelete(key1, 0-0)", true));
 
-        // // Test StreamDeleteConsumer
-        // _ = batch.StreamDeleteConsumer(key1, groupName, consumer1);
-        // testData.Add(new(0L, "StreamDeleteConsumer(key1, mygroup, consumer1)", true));
+        // Test StreamDeleteConsumer
+        _ = batch.StreamGroupDeleteConsumer(key1, groupName, consumer1);
+        testData.Add(new(default(long), "StreamGroupDeleteConsumer(key1, mygroup, consumer1)", true));
 
-        // // Test StreamDeleteConsumerGroup
-        // _ = batch.StreamDeleteConsumerGroup(key1, groupName);
-        // testData.Add(new(true, "StreamDeleteConsumerGroup(key1, mygroup)"));
+        // Test StreamDeleteConsumerGroup
+        _ = batch.StreamGroupDestroy(key1, groupName);
+        testData.Add(new(true, "StreamGroupDestroy(key1, mygroup)"));
 
         return testData;
     }

@@ -3,7 +3,7 @@
 namespace Valkey.Glide.Commands.Options;
 
 /// <summary>
-/// Optional arguments for the XADD command.
+/// Optional arguments for the <c>XADD</c> command.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/xadd/"/>
 public sealed class StreamAddOptions
@@ -19,14 +19,13 @@ public sealed class StreamAddOptions
     #region Public Properties
 
     /// <summary>
-    /// The stream entry ID. If set to <see cref="AutoGenerateId"/> the server auto-generates a unique ID.
-    /// A well-formed ID consists of two 64-bit numbers separated by "-" (e.g., "1526919030474-55").
-    /// An incomplete ID with only the milliseconds part (e.g., "{ms}-*") will have its sequence number auto-generated.
+    /// The stream entry ID. If set to <see cref="AutoGenerateId"/>, the server auto-generates a unique ID.
     /// </summary>
     public ValkeyValue Id { get; init; } = AutoGenerateId;
 
+    // TODO #536: Rename to `NoMakeStream` with a `false` default.
     /// <summary>
-    /// If <see langword="false"/>, a new stream will not be created if no stream matches the given key.
+    /// Whether to create the stream if it does not already exist (NOMKSTREAM).
     /// </summary>
     public bool MakeStream { get; init; } = true;
 
@@ -38,11 +37,14 @@ public sealed class StreamAddOptions
     #endregion
     #region Internal Methods
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Builds the command arguments for these options.
+    /// </summary>
     internal GlideString[] ToArgs()
     {
         List<GlideString> args = [];
 
+        // TODO #536: Invert to `if (NoMakeStream)` when the property is renamed.
         if (!MakeStream)
         {
             args.Add(ValkeyLiterals.NOMKSTREAM.ToGlideString());

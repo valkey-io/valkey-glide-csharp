@@ -3,7 +3,7 @@
 namespace Valkey.Glide.Commands.Options;
 
 /// <summary>
-/// Trimming options for stream commands (XADD, XTRIM).
+/// Trimming options for the <c>XADD</c> and <c>XTRIM</c> commands.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/xadd/"/>
 /// <seealso href="https://valkey.io/commands/xtrim/"/>
@@ -35,7 +35,9 @@ public abstract class StreamTrimOptions
     /// </summary>
     internal abstract GlideString Threshold { get; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Builds the command arguments for these options.
+    /// </summary>
     internal GlideString[] ToArgs()
     {
         if (Limit.HasValue && Exact != false)
@@ -75,7 +77,7 @@ public abstract class StreamTrimOptions
         /// </summary>
         public required long MaxLength { get; init; }
 
-        internal override GlideString Method => ValkeyLiterals.MAXLEN.ToGlideString();
+        internal override GlideString Method => ValkeyLiterals.MAXLEN;
         internal override GlideString Threshold => MaxLength.ToGlideString();
     }
 
@@ -89,7 +91,7 @@ public abstract class StreamTrimOptions
         /// </summary>
         public required ValkeyValue MinEntryId { get; init; }
 
-        internal override GlideString Method => ValkeyLiterals.MINID.ToGlideString();
+        internal override GlideString Method => ValkeyLiterals.MINID;
         internal override GlideString Threshold => MinEntryId.ToGlideString();
     }
 }

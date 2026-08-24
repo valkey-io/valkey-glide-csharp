@@ -78,4 +78,14 @@ public readonly struct NameValueEntry : IEquatable<NameValueEntry>
     /// <param name="x">The first <see cref="NameValueEntry"/> to compare.</param>
     /// <param name="y">The second <see cref="NameValueEntry"/> to compare.</param>
     public static bool operator !=(NameValueEntry x, NameValueEntry y) => x.name != y.name || x.value != y.value;
+
+    #region Internal Methods
+
+    /// <summary>
+    /// Builds the command arguments for this entry.
+    /// </summary>
+    internal GlideString[] ToArgs()
+        => [name, value];
+
+    #endregion
 }
