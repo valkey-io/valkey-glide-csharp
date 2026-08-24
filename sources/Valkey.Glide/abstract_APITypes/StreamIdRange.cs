@@ -3,7 +3,7 @@
 namespace Valkey.Glide;
 
 /// <summary>
-/// A stream entry ID range for XRANGE and XREVRANGE queries.
+/// A stream entry ID range for the <c>XRANGE</c> command.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/xrange/"/>
 /// <seealso href="https://valkey.io/commands/xrevrange/"/>

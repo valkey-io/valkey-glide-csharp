@@ -1,25 +1,24 @@
-﻿using System;
+// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
+
+using System;
 
 namespace Valkey.Glide;
 
 /// <summary>
-/// Describes an entry contained in a Valkey Stream.
+/// Stream entry response from the <c>XRANGE</c> command.
 /// </summary>
+/// <seealso href="https://valkey.io/commands/xrange/"/>
 public readonly struct StreamEntry
 {
-    /// <summary>
-    /// Creates an stream entry.
-    /// </summary>
-    public StreamEntry(ValkeyValue id, NameValueEntry[] values)
-    {
-        Id = id;
-        Values = values;
-    }
+    #region Constants
 
     /// <summary>
     /// A null stream entry.
     /// </summary>
     public static StreamEntry Null { get; } = new StreamEntry(ValkeyValue.Null, Array.Empty<NameValueEntry>());
+
+    #endregion
+    #region Public Properties
 
     /// <summary>
     /// The ID assigned to the message.
@@ -52,7 +51,21 @@ public readonly struct StreamEntry
     }
 
     /// <summary>
-    /// Indicates that the Valkey Stream Entry is null.
+    /// Indicates that the entry is null.
     /// </summary>
     public bool IsNull => Id == ValkeyValue.Null && Values == Array.Empty<NameValueEntry>();
+
+    #endregion
+    #region Constructors
+
+    /// <summary>
+    /// Creates an stream entry.
+    /// </summary>
+    public StreamEntry(ValkeyValue id, NameValueEntry[] values)
+    {
+        Id = id;
+        Values = values;
+    }
+
+    #endregion
 }
