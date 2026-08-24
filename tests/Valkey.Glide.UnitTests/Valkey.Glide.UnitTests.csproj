@@ -16,7 +16,6 @@
     <WarningLevel>0</WarningLevel>
     <IsPackable>false</IsPackable>
     <OutputType>exe</OutputType>
-    <IsTestingPlatformApplication>false</IsTestingPlatformApplication>
     <Configurations>Debug;Release;Lint</Configurations>
   </PropertyGroup>
 
@@ -45,10 +44,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="coverlet.collector" Version="10.0.1">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
+    <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.10.0" />
   </ItemGroup>
 
   <ItemGroup>

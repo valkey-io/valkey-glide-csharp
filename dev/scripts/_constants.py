@@ -16,7 +16,6 @@ LIBRARY_DIR = os.path.join(SOURCES_DIR, "Valkey.Glide")
 
 CONF_DIR = os.path.join(PROJECT_ROOT, "dev", "conf")
 COVERAGE_BASELINE_PATH = os.path.join(CONF_DIR, "coverage-baseline.json")
-COVERAGE_RUNSETTINGS_PATH = os.path.join(CONF_DIR, "coverage-runsettings.xml")
 
 COVERAGE_DIR = os.path.join(PROJECT_ROOT, "dev", "coverage")
 COVERAGE_RESULTS_DIR = os.path.join(COVERAGE_DIR, "results")
