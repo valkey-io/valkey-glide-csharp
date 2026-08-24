@@ -84,7 +84,7 @@ internal partial class Request
     public static Cmd<long, ValkeyValue> SetRange(GlideString key, long offset, GlideString value)
         => new(RequestType.SetRange, [key, offset.ToGlideString(), value], false, response => (ValkeyValue)response);
 
-    #endregion Command Builders
+    #endregion
 
     #region Response Converters
 
@@ -131,7 +131,7 @@ internal partial class Request
         return new LCSMatchResult([.. matches], totalLength);
     }
 
-    #endregion Response Converters
+    #endregion
 
     #region Argument Builders
 
@@ -147,5 +147,5 @@ internal partial class Request
     }
 
 
-    #endregion Argument Builders
+    #endregion
 }

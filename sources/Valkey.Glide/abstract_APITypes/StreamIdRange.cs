@@ -16,7 +16,7 @@ public sealed class StreamIdRange
     /// </summary>
     public static readonly StreamIdRange All = new(StreamIdBound.Min, StreamIdBound.Max);
 
-    #endregion Constants
+    #endregion
     #region Public Properties
 
     /// <summary>
@@ -29,7 +29,7 @@ public sealed class StreamIdRange
     /// </summary>
     public StreamIdBound End { get; }
 
-    #endregion Public Properties
+    #endregion
     #region Constructors
 
     private StreamIdRange(StreamIdBound start, StreamIdBound end)
@@ -38,7 +38,7 @@ public sealed class StreamIdRange
         End = end;
     }
 
-    #endregion Constructors
+    #endregion
     #region StreamIdBound Builders
 
     /// <summary>
@@ -63,7 +63,7 @@ public sealed class StreamIdRange
     /// <returns>A <see cref="StreamIdRange"/> from <paramref name="start"/> to <paramref name="end"/>.</returns>
     public static StreamIdRange Between(StreamIdBound start, StreamIdBound end) => new(start, end);
 
-    #endregion StreamIdBound Builders
+    #endregion
     #region ValkeyValue Builders
 
     /// <inheritdoc cref="From(StreamIdBound)"/>
@@ -75,7 +75,7 @@ public sealed class StreamIdRange
     /// <inheritdoc cref="Between(StreamIdBound, StreamIdBound)"/>
     public static StreamIdRange Between(ValkeyValue start, ValkeyValue end) => new(start, end);
 
-    #endregion ValkeyValue Builders
+    #endregion
     #region String Builders
 
     /// <inheritdoc cref="From(StreamIdBound)"/>
@@ -87,5 +87,5 @@ public sealed class StreamIdRange
     /// <inheritdoc cref="Between(StreamIdBound, StreamIdBound)"/>
     public static StreamIdRange Between(string start, string end) => new(start, end);
 
-    #endregion String Builders
+    #endregion
 }

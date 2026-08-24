@@ -44,7 +44,7 @@ internal static class TimeUtils
         return (uint)secs;
     }
 
-    #endregion To Uint
+    #endregion
     #region To ULong
 
     /// <summary>
@@ -97,7 +97,7 @@ internal static class TimeUtils
         return (ulong)Math.Round(timeSpan.TotalSeconds);
     }
 
-    #endregion To ULong
+    #endregion
     #region To Double
 
     /// <summary>
@@ -112,5 +112,5 @@ internal static class TimeUtils
         return timeSpan.TotalSeconds;
     }
 
-    #endregion To Double
+    #endregion
 }

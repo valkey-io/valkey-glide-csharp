@@ -172,7 +172,7 @@ internal static partial class Request
     public static Cmd<GlideString?, string?> ScriptShow(string sha1Hash)
         => new(RequestType.ScriptShow, [sha1Hash], true, gs => gs?.ToString());
 
-    #endregion Command Builders
+    #endregion
 
     #region Response Converters
 
@@ -499,7 +499,7 @@ internal static partial class Request
         }
     }
 
-    #endregion Response Converters
+    #endregion
 
     #region Argument Builders
 
@@ -522,5 +522,5 @@ internal static partial class Request
         }
     }
 
-    #endregion Argument Builders
+    #endregion
 }

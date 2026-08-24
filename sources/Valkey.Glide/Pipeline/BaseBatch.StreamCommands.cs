@@ -25,7 +25,7 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
     public T StreamAdd(ValkeyKey key, IEnumerable<NameValueEntry> streamPairs, StreamAddOptions options) =>
         AddCmd(Request.StreamAdd(key, [.. streamPairs], options));
 
-    #endregion StreamAdd
+    #endregion
     #region StreamRead
 
     /// <inheritdoc cref="IBatchStreamCommands.StreamRead(StreamPosition)" />
@@ -44,13 +44,13 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
     public T StreamRead(IEnumerable<StreamPosition> streamPositions, StreamReadOptions options) =>
         AddCmd(Request.StreamRead(streamPositions, options));
 
-    #endregion StreamRead
+    #endregion
     #region StreamLength
 
     /// <inheritdoc cref="IBatchStreamCommands.StreamLength(ValkeyKey)" />
     public T StreamLength(ValkeyKey key) => AddCmd(Request.StreamLength(key));
 
-    #endregion StreamLength
+    #endregion
     #region StreamDelete
 
     /// <inheritdoc cref="IBatchStreamCommands.StreamDelete(ValkeyKey, IEnumerable{ValkeyValue})" />
@@ -59,7 +59,7 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
     /// <inheritdoc cref="IBatchStreamCommands.StreamDelete(ValkeyKey, ValkeyValue)" />
     public T StreamDelete(ValkeyKey key, ValkeyValue messageId) => AddCmd(Request.StreamDelete(key, messageId));
 
-    #endregion StreamDelete
+    #endregion
     #region StreamRange
 
     /// <inheritdoc cref="IBatchStreamCommands.StreamRange(ValkeyKey)" />
@@ -70,7 +70,7 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
     public T StreamRange(ValkeyKey key, StreamRangeOptions options) =>
         AddCmd(Request.StreamRange(key, options));
 
-    #endregion StreamRange
+    #endregion
     #region StreamReadGroup
 
     /// <inheritdoc cref="IBatchStreamCommands.StreamReadGroup(StreamPosition, ValkeyValue, ValkeyValue)" />
@@ -89,7 +89,7 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
     public T StreamReadGroup(IEnumerable<StreamPosition> positions, ValkeyValue groupName, ValkeyValue consumerName, StreamReadGroupOptions options) =>
         AddCmd(Request.StreamReadGroup(positions, groupName, consumerName, options));
 
-    #endregion StreamReadGroup
+    #endregion
     #region Explicit interface implementations
 
     IBatch IBatchStreamCommands.StreamAdd(ValkeyKey key, ValkeyValue streamField, ValkeyValue streamValue) => StreamAdd(key, streamField, streamValue);
@@ -110,5 +110,5 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
     IBatch IBatchStreamCommands.StreamReadGroup(StreamPosition position, ValkeyValue groupName, ValkeyValue consumerName, StreamReadGroupOptions options) => StreamReadGroup(position, groupName, consumerName, options);
     IBatch IBatchStreamCommands.StreamReadGroup(IEnumerable<StreamPosition> positions, ValkeyValue groupName, ValkeyValue consumerName, StreamReadGroupOptions options) => StreamReadGroup(positions, groupName, consumerName, options);
 
-    #endregion Explicit interface implementations
+    #endregion
 }

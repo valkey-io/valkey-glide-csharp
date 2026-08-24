@@ -36,7 +36,7 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// </remarks>
     abstract Task<long> SPublishAsync(ValkeyKey shardedChannel, ValkeyValue message);
 
-    #endregion PublishCommands
+    #endregion
     #region SubscribeCommands
 
     /// <summary>
@@ -115,7 +115,7 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// </remarks>
     abstract Task SSubscribeLazyAsync(IEnumerable<ValkeyKey> shardedChannels);
 
-    #endregion SubscribeCommands
+    #endregion
     #region UnsubscribeCommands
 
     /// <summary>
@@ -236,7 +236,7 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// </remarks>
     abstract Task SUnsubscribeLazyAsync(IEnumerable<ValkeyKey> shardedChannels);
 
-    #endregion UnsubscribeCommands
+    #endregion
     #region IntrospectionCommands
 
     /// <summary>
@@ -292,5 +292,5 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// </remarks>
     abstract Task<Dictionary<ValkeyKey, long>> PubSubShardNumSubAsync(IEnumerable<ValkeyKey> shardedChannels);
 
-    #endregion IntrospectionCommands
+    #endregion
 }

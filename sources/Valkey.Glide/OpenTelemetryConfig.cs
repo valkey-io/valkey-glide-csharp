@@ -26,7 +26,7 @@ public sealed class OpenTelemetryConfig
         ? TimeSpan.FromMilliseconds(FlushIntervalMs.Value)
         : null;
 
-    #endregion Public Properties
+    #endregion
     #region Constructors & Builders
 
     private OpenTelemetryConfig(TracesConfig? traces, MetricsConfig? metrics, uint? flushIntervalMs)
@@ -36,7 +36,7 @@ public sealed class OpenTelemetryConfig
         FlushIntervalMs = flushIntervalMs;
     }
 
-    #endregion Constructors & Builders
+    #endregion
     #region Public Methods
 
     /// <summary>
@@ -44,12 +44,12 @@ public sealed class OpenTelemetryConfig
     /// </summary>
     public static Builder CreateBuilder() => new();
 
-    #endregion Public Methods
+    #endregion
     #region Internal Fields
 
     internal readonly uint? FlushIntervalMs;
 
-    #endregion Internal Fields
+    #endregion
 
     /// <summary>
     /// Builder for OpenTelemetryConfig.

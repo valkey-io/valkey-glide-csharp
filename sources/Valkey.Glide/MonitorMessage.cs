@@ -35,10 +35,10 @@ public sealed record MonitorMessage
     /// </summary>
     public required IReadOnlyList<string> Args { get; init; }
 
-    #endregion Public Properties
+    #endregion
     #region Constructors & Builders
 
     internal MonitorMessage() { }
 
-    #endregion Constructors & Builders
+    #endregion
 }

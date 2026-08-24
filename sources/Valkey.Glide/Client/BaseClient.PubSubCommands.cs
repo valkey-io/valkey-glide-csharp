@@ -22,7 +22,7 @@ public abstract partial class BaseClient
     public async Task<long> PublishAsync(ValkeyKey channel, ValkeyValue message)
         => await Command(Request.Publish(channel, message));
 
-    #endregion PublishCommands
+    #endregion
     #region SubscribeCommands
 
     /// <inheritdoc cref="IBaseClient.SubscribeAsync(ValkeyKey, TimeSpan)"/>
@@ -57,7 +57,7 @@ public abstract partial class BaseClient
     public async Task PSubscribeLazyAsync(IEnumerable<ValkeyKey> patterns)
         => await Command(Request.PSubscribe(patterns.ToGlideStrings()));
 
-    #endregion SubscribeCommands
+    #endregion
     #region UnsubscribeCommands
 
     /// <inheritdoc cref="IBaseClient.UnsubscribeAsync(TimeSpan)"/>
@@ -108,7 +108,7 @@ public abstract partial class BaseClient
     public async Task PUnsubscribeLazyAsync(IEnumerable<ValkeyKey> patterns)
         => await Command(Request.PUnsubscribe(patterns.ToGlideStrings()));
 
-    #endregion UnsubscribeCommands
+    #endregion
     #region IntrospectionCommands
 
     /// <inheritdoc cref="IBaseClient.GetSubscriptionsAsync()"/>
@@ -145,7 +145,7 @@ public abstract partial class BaseClient
     public async Task<Dictionary<ValkeyKey, long>> PubSubNumSubAsync(IEnumerable<ValkeyKey> channels)
         => await Command(Request.PubSubNumSub(channels.ToGlideStrings()));
 
-    #endregion IntrospectionCommands
+    #endregion
 
     /// <summary>
     /// Builds a pub/sub subscriptions map from the given response dictionary returned by GLIDE core.

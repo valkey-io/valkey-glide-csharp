@@ -19,7 +19,7 @@ public struct StreamPosition
     /// </summary>
     public static readonly ValkeyValue UndeliveredMessages = ValkeyLiterals.StreamUndeliveredMessages;
 
-    #endregion Constants
+    #endregion
     #region Constructors
 
     /// <summary>
@@ -33,7 +33,7 @@ public struct StreamPosition
         Position = position;
     }
 
-    #endregion Constructors
+    #endregion
     #region Public Properties
 
     /// <summary>
@@ -46,5 +46,5 @@ public struct StreamPosition
     /// </summary>
     public ValkeyValue Position { get; }
 
-    #endregion Public Properties
+    #endregion
 }

@@ -22,7 +22,7 @@ public abstract class StreamTrimOptions
     /// </summary>
     public long? Limit { get; init; } = null;
 
-    #endregion Public Properties
+    #endregion
     #region Internal Methods
 
     /// <summary>
@@ -63,7 +63,7 @@ public abstract class StreamTrimOptions
         return [.. args];
     }
 
-    #endregion Internal Methods
+    #endregion
 
     /// <summary>
     /// Trim the stream to a maximum number of entries.

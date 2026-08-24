@@ -211,7 +211,7 @@ public class ClientFilterOptions
     /// </remarks>
     public string? NotIpAddress { get; private set; }
 
-    #endregion Public Properties
+    #endregion
     #region Public Methods
 
     /// <inheritdoc cref="Type" />
@@ -527,7 +527,7 @@ public class ClientFilterOptions
         return this;
     }
 
-    #endregion Public Methods
+    #endregion
     #region Internal Methods
 
     /// <summary>
@@ -690,7 +690,7 @@ public class ClientFilterOptions
         return [.. args];
     }
 
-    #endregion Internal Methods
+    #endregion
     #region Private Fields
 
     // Use sorted sets to ensure deterministic behaviour.
@@ -704,5 +704,5 @@ public class ClientFilterOptions
     private ulong? _maxAgeSecs;
     private ulong? _idleSecs;
 
-    #endregion Private Fields
+    #endregion
 }

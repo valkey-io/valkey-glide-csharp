@@ -77,5 +77,5 @@ internal static partial class Request
         return Ok(RequestType.PfMerge, args);
     }
 
-    #endregion Command Builders
+    #endregion
 }

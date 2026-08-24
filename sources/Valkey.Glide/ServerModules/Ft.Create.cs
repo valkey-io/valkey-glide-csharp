@@ -100,7 +100,7 @@ public static partial class Ft
     public static Task CreateAsync(BaseClient client, ValkeyKey index, IEnumerable<CreateField> schema, CreateOptions options)
         => client.Command(Request.FtCreate(index, schema, options));
 
-    #endregion Public Methods
+    #endregion
 
     #region Nested Types
 
@@ -117,7 +117,7 @@ public static partial class Ft
         /// </summary>
         public static readonly IEnumerable<ValkeyValue> NoStopWords = [];
 
-        #endregion Constants
+        #endregion
         #region Properties
 
         /// <summary>
@@ -158,7 +158,7 @@ public static partial class Ft
         /// </summary>
         public ValkeyValue Punctuation { get; init; }
 
-        #endregion Properties
+        #endregion
     }
 
     /// <summary>
@@ -350,7 +350,7 @@ public static partial class Ft
         Json,
     }
 
-    #endregion Nested Types
+    #endregion
 }
 
 /// <summary>

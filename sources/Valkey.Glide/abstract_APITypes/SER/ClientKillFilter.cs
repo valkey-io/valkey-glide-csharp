@@ -51,7 +51,7 @@ public class ClientKillFilter
     /// </summary>
     public long? MaxAgeInSeconds { get; private set; }
 
-    #endregion Public Properties
+    #endregion
     #region Public Methods
 
     /// <summary>
@@ -124,5 +124,5 @@ public class ClientKillFilter
         return this;
     }
 
-    #endregion Public Methods
+    #endregion
 }

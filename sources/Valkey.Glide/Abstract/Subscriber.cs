@@ -134,7 +134,7 @@ internal sealed class Subscriber : ISubscriber
         }
     }
 
-    #endregion AsyncMethods
+    #endregion
     #region HelperMethods
 
     /// <summary>
@@ -245,5 +245,5 @@ internal sealed class Subscriber : ISubscriber
             throw new ArgumentException("Channel cannot be null or empty");
     }
 
-    #endregion HelperMethods
+    #endregion
 }

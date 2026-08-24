@@ -57,7 +57,7 @@ internal static class GuardClauses
         }
     }
 
-    #endregion Public Methods
+    #endregion
     #region Private Methods
 
     internal static void ThrowIfCertificateLengthNotSupported(long length, string paramName)
@@ -66,5 +66,5 @@ internal static class GuardClauses
         ArgumentOutOfRangeException.ThrowIfGreaterThan(length, ConnectionConfiguration.CertificateMaxSize, paramName);
     }
 
-    #endregion Private Methods
+    #endregion
 }

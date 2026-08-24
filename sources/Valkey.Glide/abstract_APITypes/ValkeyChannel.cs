@@ -466,7 +466,7 @@ public readonly struct ValkeyChannel : IEquatable<ValkeyChannel>
         _ => throw new ArgumentOutOfRangeException(nameof(type)),
     };
 
-    #endregion Keyspace
+    #endregion
 
     /// <summary>
     /// The matching pattern for this channel.

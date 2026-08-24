@@ -13,7 +13,7 @@ internal partial class Request
 
     private static readonly IReadOnlySet<string> EmptyStringSet = new HashSet<string>();
 
-    #endregion Constants
+    #endregion
     #region Command Builders
 
     public static Cmd<GlideString, ValkeyValue> ClientGetName()
@@ -43,7 +43,7 @@ internal partial class Request
     public static Cmd<GlideString, ValkeyValue> Reset()
         => ToValkeyValue(RequestType.Reset, []);
 
-    #endregion Command Builders
+    #endregion
     #region Response Converters
 
     private static ClientTrackingInfo ConvertClientTrackingInfoResponse(Dictionary<GlideString, object> map)
@@ -70,5 +70,5 @@ internal partial class Request
         };
     }
 
-    #endregion Response Converters
+    #endregion
 }

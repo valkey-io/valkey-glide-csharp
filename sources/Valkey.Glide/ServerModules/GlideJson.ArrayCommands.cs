@@ -45,7 +45,7 @@ public static partial class GlideJson
         return [.. args];
     }
 
-    #endregion JSON.ARRAPPEND
+    #endregion
 
     #region JSON.ARRINSERT
 
@@ -86,7 +86,7 @@ public static partial class GlideJson
         return [.. args];
     }
 
-    #endregion JSON.ARRINSERT
+    #endregion
 
     #region JSON.ARRINDEX
 
@@ -157,7 +157,7 @@ public static partial class GlideJson
         return [.. args];
     }
 
-    #endregion JSON.ARRINDEX
+    #endregion
 
     #region JSON.ARRLEN
 
@@ -213,7 +213,7 @@ public static partial class GlideJson
         return result is null ? null : (long)result;
     }
 
-    #endregion JSON.ARRLEN
+    #endregion
 
     #region JSON.ARRPOP
 
@@ -275,7 +275,7 @@ public static partial class GlideJson
         return ToValkeyValue(result);
     }
 
-    #endregion JSON.ARRPOP
+    #endregion
 
     #region JSON.ARRTRIM
 
@@ -309,5 +309,5 @@ public static partial class GlideJson
         return ConvertToNullableLongArrayNonNull(result);
     }
 
-    #endregion JSON.ARRTRIM
+    #endregion
 }

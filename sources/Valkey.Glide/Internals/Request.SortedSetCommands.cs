@@ -191,7 +191,7 @@ internal static partial class Request
     public static Cmd<Dictionary<GlideString, object>, SortedSetEntry[]> SortedSetUnionWithScore(IDictionary<ValkeyKey, double> keysAndWeights, Aggregate aggregate = Aggregate.Sum)
         => new(RequestType.ZUnion, [.. GetKeysArgs(keysAndWeights.Keys), .. GetWeightsArgs(keysAndWeights.Values), .. aggregate.ToArgs(), ValkeyLiterals.WITHSCORES], false, ToScoreResults);
 
-    #endregion Command Builders
+    #endregion
     #region Response Converters
 
     private static readonly Func<object[], ValkeyValue[]> ToValkeyValues =
@@ -303,7 +303,7 @@ internal static partial class Request
         return new SortedSetPopResult(key, entries);
     }
 
-    #endregion Response Converters
+    #endregion
     #region Argument Builders
 
     private static IEnumerable<GlideString> GetKeysArgs(IEnumerable<ValkeyKey> keys)
@@ -312,5 +312,5 @@ internal static partial class Request
     private static IEnumerable<GlideString> GetWeightsArgs(IEnumerable<double> weights)
         => [ValkeyLiterals.WEIGHTS, .. weights.ToGlideStrings()];
 
-    #endregion Argument Builders
+    #endregion
 }

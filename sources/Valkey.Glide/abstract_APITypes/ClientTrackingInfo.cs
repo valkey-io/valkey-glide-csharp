@@ -25,10 +25,10 @@ public sealed record ClientTrackingInfo
     /// </summary>
     public required IReadOnlySet<string> Prefixes { get; init; }
 
-    #endregion Public Properties
+    #endregion
     #region Constructors & Builders
 
     internal ClientTrackingInfo() { }
 
-    #endregion Constructors & Builders
+    #endregion
 }

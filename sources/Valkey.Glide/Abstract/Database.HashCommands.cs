@@ -295,5 +295,5 @@ internal partial class Database
         }
     }
 
-    #endregion Private Methods
+    #endregion
 }

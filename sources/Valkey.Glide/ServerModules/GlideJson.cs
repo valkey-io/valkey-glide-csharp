@@ -37,7 +37,7 @@ public static partial class GlideJson
     internal const string JsonDebug = JsonPrefix + "DEBUG";
     internal const string JsonResp = JsonPrefix + "RESP";
 
-    #endregion Command constants
+    #endregion
     #region Helper Methods
 
     /// <summary>
@@ -114,7 +114,7 @@ public static partial class GlideJson
     private static long ToLong(object? result) =>
         result is long l ? l : throw new InvalidOperationException("Unexpected null result from server");
 
-    #endregion Helper Methods
+    #endregion
     #region JSON.SET
 
     /// <summary>
@@ -175,7 +175,7 @@ public static partial class GlideJson
         };
     }
 
-    #endregion JSON.SET
+    #endregion
     #region JSON.GET
 
     /// <summary>
@@ -291,7 +291,7 @@ public static partial class GlideJson
         return [.. args];
     }
 
-    #endregion JSON.GET
+    #endregion
     #region JSON.MGET
 
     /// <summary>
@@ -338,7 +338,7 @@ public static partial class GlideJson
         return [ToValkeyValue(result)];
     }
 
-    #endregion JSON.MGET
+    #endregion
     #region JSON.DEL
 
     /// <summary>
@@ -386,7 +386,7 @@ public static partial class GlideJson
         return ToLong(result);
     }
 
-    #endregion JSON.DEL
+    #endregion
     #region JSON.FORGET
 
     /// <summary>
@@ -412,7 +412,7 @@ public static partial class GlideJson
     public static Task<long> ForgetAsync(BaseClient client, ValkeyKey key)
         => DelAsync(client, key);
 
-    #endregion JSON.FORGET
+    #endregion
     #region JSON.CLEAR
 
     /// <summary>
@@ -460,7 +460,7 @@ public static partial class GlideJson
         return ToLong(result);
     }
 
-    #endregion JSON.CLEAR
+    #endregion
     #region JSON.TYPE
 
     /// <summary>
@@ -521,7 +521,7 @@ public static partial class GlideJson
         return result?.ToString();
     }
 
-    #endregion JSON.TYPE
+    #endregion
     #region JSON.NUMINCRBY
 
     /// <summary>
@@ -551,7 +551,7 @@ public static partial class GlideJson
         return ToValkeyValue(result);
     }
 
-    #endregion JSON.NUMINCRBY
+    #endregion
     #region JSON.NUMMULTBY
 
     /// <summary>
@@ -581,7 +581,7 @@ public static partial class GlideJson
         return ToValkeyValue(result);
     }
 
-    #endregion JSON.NUMMULTBY
+    #endregion
     #region JSON.STRAPPEND
 
     /// <summary>
@@ -662,7 +662,7 @@ public static partial class GlideJson
         return ToLong(result);
     }
 
-    #endregion JSON.STRAPPEND
+    #endregion
     #region JSON.STRLEN
 
     /// <summary>
@@ -717,7 +717,7 @@ public static partial class GlideJson
         return result is null ? null : (long)result;
     }
 
-    #endregion JSON.STRLEN
+    #endregion
     #region JSON.TOGGLE
 
     /// <summary>
@@ -755,5 +755,5 @@ public static partial class GlideJson
         return [Convert.ToBoolean(result)];
     }
 
-    #endregion JSON.TOGGLE
+    #endregion
 }

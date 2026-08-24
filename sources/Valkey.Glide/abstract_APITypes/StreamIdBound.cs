@@ -21,7 +21,7 @@ public sealed class StreamIdBound
     /// </summary>
     public static readonly StreamIdBound Max = new(ValkeyLiterals.StreamMaxId);
 
-    #endregion Constants
+    #endregion
     #region Internal Properties
 
     /// <summary>
@@ -29,7 +29,7 @@ public sealed class StreamIdBound
     /// </summary>
     internal ValkeyValue Value { get; init; }
 
-    #endregion Internal Properties
+    #endregion
     #region Constructors
 
     private StreamIdBound(ValkeyValue id)
@@ -37,7 +37,7 @@ public sealed class StreamIdBound
         Value = id;
     }
 
-    #endregion Constructors
+    #endregion
     #region ValkeyValue Builders
 
     /// <summary>
@@ -54,7 +54,7 @@ public sealed class StreamIdBound
     /// <returns>An exclusive <see cref="StreamIdBound"/>.</returns>
     public static StreamIdBound Exclusive(ValkeyValue id) => new(ValkeyLiterals.RangeExclusive.ToGlideString() + id.ToGlideString());
 
-    #endregion ValkeyValue Builders
+    #endregion
     #region String Builders
 
     /// <inheritdoc cref="Inclusive(ValkeyValue)"/>
@@ -63,7 +63,7 @@ public sealed class StreamIdBound
     /// <inheritdoc cref="Exclusive(ValkeyValue)"/>
     public static StreamIdBound Exclusive(string id) => new(ValkeyLiterals.RangeExclusive.ToGlideString() + ((ValkeyValue)id).ToGlideString());
 
-    #endregion String Builders
+    #endregion
     #region Overloads
 
     /// <summary>
@@ -78,5 +78,5 @@ public sealed class StreamIdBound
     /// <param name="id">The stream entry ID to convert.</param>
     public static implicit operator StreamIdBound(string id) => new(id);
 
-    #endregion Overloads
+    #endregion
 }

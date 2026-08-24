@@ -60,7 +60,7 @@ public class Logger
     #region private fields
 
     private static Level? s_loggerLevel = null;
-    #endregion private fields
+    #endregion
 
     #region public methods
     /// <summary>
@@ -130,7 +130,7 @@ public class Logger
         s_loggerLevel = resolvedLevel;
     }
 
-    #endregion public methods
+    #endregion
 
     #region FFI function declaration
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "log")]
@@ -148,5 +148,5 @@ public class Logger
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "free_string")]
     private static extern void FreeString(IntPtr strPtr);
 
-    #endregion FFI function declaration
+    #endregion
 }

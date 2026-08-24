@@ -96,14 +96,14 @@ public sealed class ConfigurationOptions : ICloneable
     private Proxy? _proxy;
     private RetryStrategy? _reconnectRetryPolicy;
 
-    #endregion Private fields
+    #endregion
     #region Internal fields
 
     internal readonly List<byte[]> _trustedIssuers = [];
     internal byte[]? _clientCertificate;
     internal byte[]? _clientKey;
 
-    #endregion Internal fields
+    #endregion
 
     /// <summary>
     /// Gets or sets whether connect/configuration timeouts should be explicitly notified via a TimeoutException.

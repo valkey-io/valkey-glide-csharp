@@ -50,7 +50,7 @@ public static partial class Ft
     public static Task<InfoLocalResult> InfoLocalAsync(BaseClient client, ValkeyKey index, InfoOptions options)
         => client.Command(Request.FtInfoLocal(index, options));
 
-    #endregion Public Methods
+    #endregion
 
     #region Nested Types
 
@@ -339,5 +339,5 @@ public static partial class Ft
         internal InfoVectorFieldHnsw() { }
     }
 
-    #endregion Nested Types
+    #endregion
 }

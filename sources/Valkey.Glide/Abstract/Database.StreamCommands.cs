@@ -267,7 +267,7 @@ internal partial class Database
         return Command(Request.StreamConsumerInfo(key, groupName));
     }
 
-    #endregion Public Methods
+    #endregion
     #region Private Methods
 
     /// <summary>
@@ -290,5 +290,5 @@ internal partial class Database
                 : null
     };
 
-    #endregion Private Methods
+    #endregion
 }

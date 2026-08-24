@@ -168,7 +168,7 @@ public abstract partial class BaseClient : IBaseClient
             stats.SubscriptionLastSyncTimestamp);
     }
 
-    #endregion public methods
+    #endregion
 
     #region protected methods
 
@@ -387,7 +387,7 @@ public abstract partial class BaseClient : IBaseClient
         return versionMatch.Success ? new(versionMatch.Groups[1].Value) : null;
     }
 
-    #endregion protected methods
+    #endregion
     #region protected fields
 
     /// <summary>
@@ -399,13 +399,13 @@ public abstract partial class BaseClient : IBaseClient
     /// The default server version assumed when the actual version cannot be determined.
     /// </summary>
     protected static readonly Version DefaultServerVersion = new(8, 0, 0);
-    #endregion protected fields
+    #endregion
 
     #region internal fields
     /// Raw pointer to the underlying native client.
     internal IntPtr ClientPointer;
     internal readonly MessageContainer MessageContainer;
-    #endregion internal fields
+    #endregion
 
     #region private methods
     private void SuccessCallback(ulong index, IntPtr ptr) =>
@@ -682,7 +682,7 @@ public abstract partial class BaseClient : IBaseClient
         IntPtr host, UIntPtr hostLen, ushort port,
         IntPtr resolvedHostBuf, UIntPtr resolvedHostBufLen,
         UIntPtr resolvedHostLen);
-    #endregion private methods
+    #endregion
 
     #region private fields
 
@@ -723,5 +723,5 @@ public abstract partial class BaseClient : IBaseClient
     /// Timeout for graceful shutdown of PubSub processing.
     private TimeSpan _shutdownTimeout = TimeSpan.FromSeconds(PubSubPerformanceConfig.DefaultShutdownTimeoutSeconds);
 
-    #endregion private fields
+    #endregion
 }

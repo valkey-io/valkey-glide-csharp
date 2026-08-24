@@ -70,7 +70,7 @@ public partial interface IBaseClient
     /// <returns>An array of <see cref="ValkeyStream"/> values, each containing the stream key and its entries.</returns>
     Task<ValkeyStream[]> StreamReadGroupAsync(IEnumerable<StreamPosition> positions, ValkeyValue groupName, ValkeyValue consumerName, StreamReadGroupOptions options);
 
-    #endregion StreamReadGroupAsync
+    #endregion
     #region StreamAddAsync
 
     /// <summary>
@@ -126,7 +126,7 @@ public partial interface IBaseClient
     /// </returns>
     Task<ValkeyValue> StreamAddAsync(ValkeyKey key, IEnumerable<NameValueEntry> streamPairs, StreamAddOptions options);
 
-    #endregion StreamAddAsync
+    #endregion
     #region StreamReadAsync
 
     /// <summary>
@@ -185,7 +185,7 @@ public partial interface IBaseClient
     /// <returns>An array of <see cref="ValkeyStream"/> values, or an empty array if no entries are available.</returns>
     Task<ValkeyStream[]> StreamReadAsync(IEnumerable<StreamPosition> streamPositions, StreamReadOptions options);
 
-    #endregion StreamReadAsync
+    #endregion
     #region StreamRangeAsync
 
     /// <summary>
@@ -214,7 +214,7 @@ public partial interface IBaseClient
     /// <returns>An array of <see cref="StreamEntry"/> values in the specified range.</returns>
     Task<StreamEntry[]> StreamRangeAsync(ValkeyKey key, StreamRangeOptions options);
 
-    #endregion StreamRangeAsync
+    #endregion
     #region StreamDeleteAsync
 
     /// <summary>
@@ -234,7 +234,7 @@ public partial interface IBaseClient
     /// </remarks>
     Task<bool> StreamDeleteAsync(ValkeyKey key, ValkeyValue messageId);
 
-    #endregion StreamDeleteAsync
+    #endregion
 
     // ──────────────────────────────────────────────────────────────────────
     // GLIDE-only methods below are temporarily commented out pending cleanup.
@@ -260,7 +260,7 @@ public partial interface IBaseClient
     /// <seealso href="https://valkey.io/commands/xtrim/">Valkey commands - XTRIM</seealso>
     Task<long> StreamTrimAsync(ValkeyKey key, StreamTrimOptions options);
 
-    #endregion StreamTrimAsync
+    #endregion
 
     // #region XCLAIM
     // Task<StreamEntry[]> StreamClaimAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, TimeSpan minIdleTime, IEnumerable<ValkeyValue> messageIds, StreamClaimOptions options);

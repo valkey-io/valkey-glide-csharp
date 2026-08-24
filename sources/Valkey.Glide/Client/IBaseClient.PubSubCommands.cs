@@ -35,7 +35,7 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// </remarks>
     abstract Task<long> PublishAsync(ValkeyKey channel, ValkeyValue message);
 
-    #endregion PublishCommands
+    #endregion
     #region SubscribeCommands
 
     /// <summary>
@@ -182,7 +182,7 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// </remarks>
     abstract Task PSubscribeLazyAsync(IEnumerable<ValkeyKey> patterns);
 
-    #endregion SubscribeCommands
+    #endregion
     #region UnsubscribeCommands
 
     /// <summary>
@@ -409,7 +409,7 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// </remarks>
     abstract Task PUnsubscribeLazyAsync(IEnumerable<ValkeyKey> patterns);
 
-    #endregion UnsubscribeCommands
+    #endregion
     #region IntrospectionCommands
 
     /// <summary>
@@ -509,5 +509,5 @@ public partial interface IBaseClient : IPubSubBaseCommands
     /// </remarks>
     Task<PubSubState> GetSubscriptionsAsync();
 
-    #endregion IntrospectionCommands
+    #endregion
 }

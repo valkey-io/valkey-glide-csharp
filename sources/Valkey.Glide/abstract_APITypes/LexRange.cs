@@ -22,13 +22,13 @@ public sealed class LexRange : Range
     /// </summary>
     public static readonly LexRange MaxToMin = new(LexBound.Max, LexBound.Min);
 
-    #endregion Constants
+    #endregion
     #region Fields
 
     private readonly LexBound _start;
     private readonly LexBound _stop;
 
-    #endregion Fields
+    #endregion
     #region Constructors
 
     private LexRange(LexBound start, LexBound stop)
@@ -37,7 +37,7 @@ public sealed class LexRange : Range
         _stop = stop;
     }
 
-    #endregion Constructors
+    #endregion
     #region Public Methods
 
     /// <summary>
@@ -48,11 +48,11 @@ public sealed class LexRange : Range
     /// <returns>A <see cref="LexRange"/> between the two bounds.</returns>
     public static LexRange Between(LexBound start, LexBound stop) => new(start, stop);
 
-    #endregion Public Methods
+    #endregion
     #region Internal Methods
 
     /// <inheritdoc/>
     internal override GlideString[] ToArgs() => [.. _start.ToArgs(), .. _stop.ToArgs()];
 
-    #endregion Internal Methods
+    #endregion
 }

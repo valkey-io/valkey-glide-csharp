@@ -59,5 +59,5 @@ public partial class GlideClient :
         return _serverVersion;
     }
 
-    #endregion Public Methods
+    #endregion
 }

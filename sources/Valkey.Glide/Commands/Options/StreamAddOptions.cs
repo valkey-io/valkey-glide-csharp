@@ -15,7 +15,7 @@ public sealed class StreamAddOptions
     /// </summary>
     public static readonly ValkeyValue AutoGenerateId = ValkeyLiterals.StreamAutoGenerateId;
 
-    #endregion Constants
+    #endregion
     #region Public Properties
 
     /// <summary>
@@ -35,7 +35,7 @@ public sealed class StreamAddOptions
     /// </summary>
     public StreamTrimOptions? Trim { get; init; } = null;
 
-    #endregion Public Properties
+    #endregion
     #region Internal Methods
 
     /// <inheritdoc/>
@@ -58,5 +58,5 @@ public sealed class StreamAddOptions
         return [.. args];
     }
 
-    #endregion Internal Methods
+    #endregion
 }

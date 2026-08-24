@@ -14,7 +14,7 @@ public sealed class MetricsConfig
     /// </summary>
     public string Endpoint { get; }
 
-    #endregion Public Properties
+    #endregion
     #region Constructors & Builders
 
     private MetricsConfig(string endpoint)
@@ -27,7 +27,7 @@ public sealed class MetricsConfig
     /// </summary>
     public static Builder CreateBuilder() => new();
 
-    #endregion Constructors & Builders
+    #endregion
 
     /// <summary>
     /// Builder for MetricsConfig.

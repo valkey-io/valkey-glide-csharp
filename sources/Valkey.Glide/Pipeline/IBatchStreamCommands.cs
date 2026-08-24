@@ -25,7 +25,7 @@ internal interface IBatchStreamCommands
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.StreamAddAsync(ValkeyKey, IEnumerable{NameValueEntry}, Commands.Options.StreamAddOptions)" /></returns>
     IBatch StreamAdd(ValkeyKey key, IEnumerable<NameValueEntry> streamPairs, Commands.Options.StreamAddOptions options);
 
-    #endregion StreamAdd
+    #endregion
     #region StreamRead
 
     /// <inheritdoc cref="IBaseClient.StreamReadAsync(StreamPosition)" path="/*[not(self::remarks) and not(self::returns)]" />
@@ -44,14 +44,14 @@ internal interface IBatchStreamCommands
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.StreamReadAsync(IEnumerable{StreamPosition}, Commands.Options.StreamReadOptions)" /></returns>
     IBatch StreamRead(IEnumerable<StreamPosition> streamPositions, Commands.Options.StreamReadOptions options);
 
-    #endregion StreamRead
+    #endregion
     #region StreamLength
 
     /// <inheritdoc cref="Commands.IStreamBaseCommands.StreamLengthAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="Commands.IStreamBaseCommands.StreamLengthAsync(ValkeyKey)" /></returns>
     IBatch StreamLength(ValkeyKey key);
 
-    #endregion StreamLength
+    #endregion
     #region StreamDelete
 
     /// <inheritdoc cref="Commands.IStreamBaseCommands.StreamDeleteAsync(ValkeyKey, IEnumerable{ValkeyValue})" path="/*[not(self::remarks) and not(self::returns)]" />
@@ -62,7 +62,7 @@ internal interface IBatchStreamCommands
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.StreamDeleteAsync(ValkeyKey, ValkeyValue)" /></returns>
     IBatch StreamDelete(ValkeyKey key, ValkeyValue messageId);
 
-    #endregion StreamDelete
+    #endregion
     #region StreamRange
 
     /// <inheritdoc cref="IBaseClient.StreamRangeAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
@@ -73,7 +73,7 @@ internal interface IBatchStreamCommands
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.StreamRangeAsync(ValkeyKey, Commands.Options.StreamRangeOptions)" /></returns>
     IBatch StreamRange(ValkeyKey key, Commands.Options.StreamRangeOptions options);
 
-    #endregion StreamRange
+    #endregion
     #region StreamReadGroup
 
     /// <inheritdoc cref="IBaseClient.StreamReadGroupAsync(StreamPosition, ValkeyValue, ValkeyValue)" path="/*[not(self::remarks) and not(self::returns)]" />
@@ -92,7 +92,7 @@ internal interface IBatchStreamCommands
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.StreamReadGroupAsync(IEnumerable{StreamPosition}, ValkeyValue, ValkeyValue, Commands.Options.StreamReadGroupOptions)" /></returns>
     IBatch StreamReadGroup(IEnumerable<StreamPosition> positions, ValkeyValue groupName, ValkeyValue consumerName, Commands.Options.StreamReadGroupOptions options);
 
-    #endregion StreamReadGroup
+    #endregion
 
     // ──────────────────────────────────────────────────────────────────────
     // Batch methods below are temporarily commented out pending cleanup.

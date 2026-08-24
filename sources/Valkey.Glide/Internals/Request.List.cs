@@ -137,7 +137,7 @@ internal static partial class Request
     public static Cmd<string, ValkeyValue> ListTrim(ValkeyKey key, long start, long stop)
         => Ok(RequestType.LTrim, [key, start.ToGlideString(), stop.ToGlideString()]);
 
-    #endregion Command Builders
+    #endregion
 
     #region Response Converters
 
@@ -159,5 +159,5 @@ internal static partial class Request
         return new ListPopResult(key, values);
     }
 
-    #endregion Response Converters
+    #endregion
 }

@@ -25,13 +25,13 @@ public sealed class SetCondition
     /// </summary>
     public static readonly SetCondition OnlyIfDoesNotExist = new(SetConditionType.OnlyIfDoesNotExist);
 
-    #endregion Public Properties
+    #endregion
     #region Internal Properties
 
     internal SetConditionType Type { get; }
     internal ValkeyValue? ComparisonValue { get; }
 
-    #endregion Internal Properties
+    #endregion
     #region Constructors
 
     private SetCondition(SetConditionType type, ValkeyValue? comparisonValue = null)
@@ -40,7 +40,7 @@ public sealed class SetCondition
         ComparisonValue = comparisonValue;
     }
 
-    #endregion Constructors
+    #endregion
     #region Public Methods
 
     /// <summary>
@@ -51,7 +51,7 @@ public sealed class SetCondition
     public static SetCondition OnlyIfEqual(ValkeyValue comparisonValue)
         => new(SetConditionType.OnlyIfEqual, comparisonValue);
 
-    #endregion Public Methods
+    #endregion
     #region Internal Methods
 
     /// <summary>
@@ -67,7 +67,7 @@ public sealed class SetCondition
         _ => throw new InvalidOperationException($"Unknown condition type: {Type}"),
     };
 
-    #endregion Internal Methods
+    #endregion
 
     /// <summary>
     /// The set condition options.

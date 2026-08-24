@@ -16,7 +16,7 @@ internal partial class ValkeyServer(Database conn, EndPoint endpoint) : IServer
 
     private readonly Database _conn = conn;
 
-    #endregion Private Fields
+    #endregion
     #region Public Properties
 
     /// <inheritdoc/>
@@ -34,7 +34,7 @@ internal partial class ValkeyServer(Database conn, EndPoint endpoint) : IServer
     /// <inheritdoc/>
     public ServerType ServerType => Enum.Parse<ServerType>(Hello()["mode"].ToString()!, true);
 
-    #endregion Public Properties
+    #endregion
     #region Public Methods
 
     /// <summary>
@@ -392,7 +392,7 @@ internal partial class ValkeyServer(Database conn, EndPoint endpoint) : IServer
         }
     }
 
-    #endregion Public Methods
+    #endregion
     #region Private Methods
 
     private Route MakeRoute()
@@ -415,5 +415,5 @@ internal partial class ValkeyServer(Database conn, EndPoint endpoint) : IServer
         } while (cursor != "0");
     }
 
-    #endregion Private Methods
+    #endregion
 }

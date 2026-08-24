@@ -37,13 +37,13 @@ public sealed class CircuitBreakerConfig
     /// </summary>
     public const uint DefaultConsecutiveSuccesses = 3;
 
-    #endregion Public Constants
+    #endregion
     #region Private Constants
 
     private const uint DefaultWindowSizeMs = 10_000;
     private const uint DefaultOpenTimeoutMs = 5_000;
 
-    #endregion Private Constants
+    #endregion
     #region Public Properties
 
     /// <summary>
@@ -79,13 +79,13 @@ public sealed class CircuitBreakerConfig
     /// </summary>
     public uint ConsecutiveSuccesses { get; private set; } = DefaultConsecutiveSuccesses;
 
-    #endregion Public Properties
+    #endregion
     #region Internal Properties
 
     internal uint WindowSizeMs { get; private set; } = DefaultWindowSizeMs;
     internal uint OpenTimeoutMs { get; private set; } = DefaultOpenTimeoutMs;
 
-    #endregion Internal Properties
+    #endregion
     #region Public Methods
 
     /// <summary>
@@ -172,7 +172,7 @@ public sealed class CircuitBreakerConfig
         return this;
     }
 
-    #endregion Public Methods
+    #endregion
     #region Internal Methods
 
     /// <summary>
@@ -186,5 +186,5 @@ public sealed class CircuitBreakerConfig
         CountTimeouts,
         ConsecutiveSuccesses);
 
-    #endregion Internal Methods
+    #endregion
 }

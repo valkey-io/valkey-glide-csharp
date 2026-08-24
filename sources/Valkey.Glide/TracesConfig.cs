@@ -12,7 +12,7 @@ public sealed class TracesConfig
     internal const uint DefaultSamplePercentage = 1u; // Exposed internally for testing.
     private const uint MaxSamplePercentage = 100u;
 
-    #endregion Constants
+    #endregion
     #region Public Properties
 
     /// <summary>
@@ -37,7 +37,7 @@ public sealed class TracesConfig
         }
     }
 
-    #endregion Public Properties
+    #endregion
     #region Constructors & Builders
 
     private TracesConfig(string endpoint, uint samplePercentage)
@@ -103,7 +103,7 @@ public sealed class TracesConfig
                 : new TracesConfig(_endpoint, _samplePercentage);
     }
 
-    #endregion Constructors & Builders
+    #endregion
     #region Private Methods
 
     /// <summary>
@@ -119,5 +119,5 @@ public sealed class TracesConfig
         }
     }
 
-    #endregion Private Methods
+    #endregion
 }

@@ -13,7 +13,7 @@ internal static partial class Request
 
     private static readonly GlideString InstantExpiry = "-1";
 
-    #endregion Constants
+    #endregion
     #region Command Builders
 
     public static Cmd<bool, bool> Copy(ValkeyKey source, ValkeyKey destination, bool replace = false)
@@ -311,5 +311,5 @@ internal static partial class Request
                 return [local, replicas];
             });
 
-    #endregion Command Builders
+    #endregion
 }

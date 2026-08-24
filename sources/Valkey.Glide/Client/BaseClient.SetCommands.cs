@@ -94,7 +94,7 @@ public abstract partial class BaseClient
     public IAsyncEnumerable<ValkeyValue> SetScanAsync(ValkeyKey key, ScanOptions? options = null)
         => SetScanAsync(key, 0, options);
 
-    #endregion Public Methods
+    #endregion
     #region Internal Methods
 
     /// <inheritdoc cref="IBaseClient.SetScanAsync(ValkeyKey, ScanOptions?)"/>
@@ -114,5 +114,5 @@ public abstract partial class BaseClient
         } while (cursor != 0);
     }
 
-    #endregion Internal Methods
+    #endregion
 }

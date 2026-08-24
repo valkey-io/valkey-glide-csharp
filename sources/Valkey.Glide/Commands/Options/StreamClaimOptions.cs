@@ -30,5 +30,5 @@ public sealed class StreamClaimOptions
     /// </summary>
     public bool Force { get; init; } = false;
 
-    #endregion Public Properties
+    #endregion
 }

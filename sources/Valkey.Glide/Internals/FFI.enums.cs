@@ -73,7 +73,7 @@ internal partial class FFI
         GetBit = 106,
         SetBit = 107,
 
-        #endregion Bitmap commands
+        #endregion
         #region Cluster commands
 
         Asking = 201,
@@ -107,7 +107,7 @@ internal partial class FFI
         ReadOnly = 229,
         ReadWrite = 230,
 
-        #endregion Cluster commands
+        #endregion
         #region Connection Management commands
 
         Auth = 301,
@@ -136,7 +136,7 @@ internal partial class FFI
         Reset = 324,
         Select = 325,
 
-        #endregion Connection Management commands
+        #endregion
         #region Generic commands
 
         Copy = 401,
@@ -172,7 +172,7 @@ internal partial class FFI
         Wait = 431,
         WaitAof = 432,
 
-        #endregion Generic commands
+        #endregion
         #region Geospatial indices commands
 
         GeoAdd = 501,
@@ -186,7 +186,7 @@ internal partial class FFI
         GeoSearch = 509,
         GeoSearchStore = 510,
 
-        #endregion Geospatial indices commands
+        #endregion
         #region Hash commands
 
         HDel = 601,
@@ -217,14 +217,14 @@ internal partial class FFI
         HExpireTime = 626,
         HPExpireTime = 627,
 
-        #endregion Hash commands
+        #endregion
         #region HyperLogLog commands
 
         PfAdd = 701,
         PfCount = 702,
         PfMerge = 703,
 
-        #endregion HyperLogLog commands
+        #endregion
         #region List commands
 
         BLMove = 801,
@@ -250,7 +250,7 @@ internal partial class FFI
         RPush = 821,
         RPushX = 822,
 
-        #endregion List commands
+        #endregion
         #region Pub/Sub commands
 
         PSubscribe = 901,
@@ -274,7 +274,7 @@ internal partial class FFI
         SUnsubscribeBlocking = 919,
         GetSubscriptions = 920,
 
-        #endregion Pub/Sub commands
+        #endregion
         #region Scripting and Functions commands
 
         Eval = 1001,
@@ -298,7 +298,7 @@ internal partial class FFI
         ScriptLoad = 1019,
         ScriptShow = 1020,
 
-        #endregion Scripting and Functions commands
+        #endregion
         #region Server management commands
 
         AclCat = 1101,
@@ -364,7 +364,7 @@ internal partial class FFI
         Sync = 1161,
         Time = 1162,
 
-        #endregion Server management commands
+        #endregion
         #region Set commands
 
         SAdd = 1201,
@@ -385,7 +385,7 @@ internal partial class FFI
         SUnion = 1216,
         SUnionStore = 1217,
 
-        #endregion Set commands
+        #endregion
         #region Sorted set commands
 
         BZMPop = 1301,
@@ -424,7 +424,7 @@ internal partial class FFI
         ZUnion = 1334,
         ZUnionStore = 1335,
 
-        #endregion Sorted set commands
+        #endregion
         #region Stream commands
 
         XAck = 1401,
@@ -449,7 +449,7 @@ internal partial class FFI
         XSetId = 1420,
         XTrim = 1421,
 
-        #endregion Stream commands
+        #endregion
         #region String commands
 
         Append = 1501,
@@ -475,7 +475,7 @@ internal partial class FFI
         Strlen = 1521,
         Substr = 1522,
 
-        #endregion String commands
+        #endregion
         #region Transaction commands
 
         Discard = 1601,
@@ -484,7 +484,7 @@ internal partial class FFI
         UnWatch = 1604,
         Watch = 1605,
 
-        #endregion Transaction commands
+        #endregion
         #region JSON commands
 
         JsonArrAppend = 2001,
@@ -510,7 +510,7 @@ internal partial class FFI
         JsonToggle = 2021,
         JsonType = 2022,
 
-        #endregion JSON commands
+        #endregion
         #region Vector Search commands
 
         FtList = 2101,
@@ -527,7 +527,7 @@ internal partial class FFI
         FtProfile = 2112,
         FtSearch = 2113,
 
-        #endregion Vector Search commands
+        #endregion
     }
 
     /// <summary>
