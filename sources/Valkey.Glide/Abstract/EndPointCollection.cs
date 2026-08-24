@@ -84,10 +84,8 @@ public sealed class EndPointCollection : Collection<EndPoint>, IEnumerable<EndPo
             base.InsertItem(Count, endpoint);
             return true;
         }
-        else
-        {
-            return false;
-        }
+
+        return false;
     }
 
     /// <summary>

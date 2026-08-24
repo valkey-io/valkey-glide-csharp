@@ -229,10 +229,8 @@ public sealed class ChannelMessageQueue : IAsyncEnumerable<ChannelMessage>
                         {
                             return;
                         }
-                        else
-                        {
-                            break;
-                        }
+
+                        break;
                     }
                     previous = current;
                     current = Volatile.Read(ref previous!._next);

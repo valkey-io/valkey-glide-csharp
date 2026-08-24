@@ -1060,17 +1060,17 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
     /// <param name="stream">The <see cref="MemoryStream"/> to create a value from.</param>
     public static ValkeyValue CreateFrom(MemoryStream stream)
     {
-        if (stream == null) return Null;
-        if (stream.Length == 0) return Array.Empty<byte>();
+        if (stream == null)
+            return Null;
+
+        if (stream.Length == 0)
+            return Array.Empty<byte>();
+
         if (stream.TryGetBuffer(out var segment) || ReflectionTryGetBuffer(stream, out segment))
-        {
             return new Memory<byte>(segment.Array, segment.Offset, segment.Count);
-        }
-        else
-        {
-            // nowhere near as efficient, but...
-            return stream.ToArray();
-        }
+
+        // nowhere near as efficient, but...
+        return stream.ToArray();
     }
 
     private static readonly FieldInfo?

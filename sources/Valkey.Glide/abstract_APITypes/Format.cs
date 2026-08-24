@@ -364,11 +364,9 @@ internal static class Format
             endpoint = new IPEndPoint(address, port ?? 0);
             return true;
         }
-        else
-        {
-            endpoint = new DnsEndPoint(addressPart, port ?? 0);
-            return true;
-        }
+
+        endpoint = new DnsEndPoint(addressPart, port ?? 0);
+        return true;
     }
 
     internal static string GetString(ReadOnlySequence<byte> buffer)

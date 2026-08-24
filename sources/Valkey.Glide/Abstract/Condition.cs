@@ -558,8 +558,8 @@ public abstract class Condition
         {
             if (expectedValue.HasValue)
                 return ((ValkeyValue)(GlideString?)result == expectedValue.Value) == expectedResult;
-            else
-                return (result is null) != expectedResult;
+
+            return (result is null) != expectedResult;
         }
     }
 

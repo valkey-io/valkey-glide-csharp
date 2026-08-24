@@ -575,6 +575,8 @@ dotnet_diagnostic.RCS1141.severity = error
 dotnet_diagnostic.RCS1251.severity = error
 # RCS1142: Add 'typeparam' element to documentation comment (library only)
 dotnet_diagnostic.RCS1142.severity = error
+# RCS1211: Remove unnecessary 'else'
+dotnet_diagnostic.RCS1211.severity = error
 dotnet_diagnostic.RCS1213.severity = error
 
 # IDE0130: Namespace does not match folder structure

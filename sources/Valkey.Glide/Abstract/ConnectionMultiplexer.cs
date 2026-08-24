@@ -141,22 +141,21 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
 
             return [.. servers];
         }
-        else
+
+        // glide-core ignores route on standalone and always returns a single node response
+        string info = _db.Command(Request.Info([]), Route.AllNodes).GetAwaiter().GetResult();
+        // and there is no way to get IP address from server, assuming localhost (127.0.0.1)
+        // we can try to get port only (in some deployments, this info is also missing)
+        int port = 6379;
+        foreach (string line in info.Split("\r\n"))
         {
-            // glide-core ignores route on standalone and always returns a single node response
-            string info = _db.Command(Request.Info([]), Route.AllNodes).GetAwaiter().GetResult();
-            // and there is no way to get IP address from server, assuming localhost (127.0.0.1)
-            // we can try to get port only (in some deployments, this info is also missing)
-            int port = 6379;
-            foreach (string line in info.Split("\r\n"))
+            if (line.Contains("tcp_port:"))
             {
-                if (line.Contains("tcp_port:"))
-                {
-                    port = int.Parse(line.Split(':')[1]);
-                }
+                port = int.Parse(line.Split(':')[1]);
             }
-            return [new ValkeyServer(_db, new IPEndPoint(0x100007F, port))];
         }
+
+        return [new ValkeyServer(_db, new IPEndPoint(0x100007F, port))];
     }
 
     /// <inheritdoc/>

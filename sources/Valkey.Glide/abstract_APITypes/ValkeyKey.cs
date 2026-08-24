@@ -170,13 +170,12 @@ public readonly struct ValkeyKey : IEquatable<ValkeyKey>
         {
             return CopyCompare(in this, in other, len, stackalloc byte[len * 2]);
         }
-        else
-        {
-            byte[] arr = ArrayPool<byte>.Shared.Rent(len * 2);
-            var result = CopyCompare(in this, in other, len, arr);
-            ArrayPool<byte>.Shared.Return(arr);
-            return result;
-        }
+
+        byte[] arr = ArrayPool<byte>.Shared.Rent(len * 2);
+        var result = CopyCompare(in this, in other, len, arr);
+        ArrayPool<byte>.Shared.Return(arr);
+
+        return result;
 
         static bool CopyCompare(in ValkeyKey x, in ValkeyKey y, int length, Span<byte> span)
         {
