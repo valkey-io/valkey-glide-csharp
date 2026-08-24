@@ -6,7 +6,7 @@ using static Valkey.Glide.Errors;
 
 namespace Valkey.Glide.Internals;
 
-internal class ResponseHandler
+internal static class ResponseHandler
 {
     [StructLayout(LayoutKind.Sequential)]
     private struct GlideValue

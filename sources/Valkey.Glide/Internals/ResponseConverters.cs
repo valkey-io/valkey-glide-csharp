@@ -5,7 +5,7 @@ using static Valkey.Glide.Route;
 
 namespace Valkey.Glide.Internals;
 
-internal class ResponseConverters
+internal static class ResponseConverters
 {
     public static ClusterValue<object?> HandleCustomCommandClusterValue(object? value, Route? route = null)
         => HandleServerValue<object, ClusterValue<object?>>(value, true, data

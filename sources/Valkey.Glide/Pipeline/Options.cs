@@ -10,7 +10,7 @@ namespace Valkey.Glide.Pipeline;
 /// <summary>
 /// Options classes for configuring batch (pipeline and transaction) requests.
 /// </summary>
-public class Options
+public static class Options
 {
     /// <summary>
     /// Defines a retry strategy for batch requests, allowing control over retries in case of server or connection errors.

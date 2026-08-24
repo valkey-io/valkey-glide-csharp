@@ -5,7 +5,7 @@ using System.Net;
 
 using Valkey.Glide;
 
-internal class Utils
+internal static class Utils
 {
     public static (string host, ushort port) SplitEndpoint(EndPoint ep)
         => ep switch

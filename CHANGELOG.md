@@ -52,6 +52,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Custom socket address resolution support via callback (#392)
 - `NodeDiscoveryMode` configuration option for standalone clients (#131)
 
+### Changed
+
+- `Logger`, `InfoOptions`, and `Options` are now `static` classes.
+
 ## 1.1.0
 
 ### Added
