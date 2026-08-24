@@ -3,15 +3,12 @@
 namespace Valkey.Glide;
 
 /// <summary>
-/// Describes a consumer off a Valkey Stream.
+/// Represents a stream consumer response from the <c>XPENDING</c> command.
 /// </summary>
+/// <seealso href="https://valkey.io/commands/xpending/"/>
 public readonly struct StreamConsumer
 {
-    internal StreamConsumer(ValkeyValue name, int pendingMessageCount)
-    {
-        Name = name;
-        PendingMessageCount = pendingMessageCount;
-    }
+    #region Public Properties
 
     /// <summary>
     /// The name of the consumer.
@@ -22,4 +19,15 @@ public readonly struct StreamConsumer
     /// The number of messages that have been delivered by not yet acknowledged by the consumer.
     /// </summary>
     public int PendingMessageCount { get; }
+
+    #endregion
+    #region Constructors
+
+    internal StreamConsumer(ValkeyValue name, int pendingMessageCount)
+    {
+        Name = name;
+        PendingMessageCount = pendingMessageCount;
+    }
+
+    #endregion
 }
