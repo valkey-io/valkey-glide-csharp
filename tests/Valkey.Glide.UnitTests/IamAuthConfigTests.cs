@@ -8,8 +8,8 @@ public class IamAuthConfigTests
 {
     #region Constants
 
-    private static readonly string ClusterName = "CLUSTER_NAME";
-    private static readonly string Region = "REGION";
+    private const string ClusterName = "CLUSTER_NAME";
+    private const string Region = "REGION";
     private const uint RefreshInterval = 300;
 
     #endregion

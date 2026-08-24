@@ -567,8 +567,10 @@ roslynator_analyzers.enabled_by_default = false
 dotnet_analyzer_diagnostic.category-Roslynator.severity = none
 
 dotnet_diagnostic.RCS1006.severity = error
+dotnet_diagnostic.RCS1037.severity = error
 dotnet_diagnostic.RCS1047.severity = error
 dotnet_diagnostic.RCS1071.severity = error
+dotnet_diagnostic.RCS1085.severity = error
 dotnet_diagnostic.RCS1102.severity = error
 dotnet_diagnostic.RCS1108.severity = error
 dotnet_diagnostic.RCS1139.severity = error
@@ -577,8 +579,11 @@ dotnet_diagnostic.RCS1141.severity = error
 dotnet_diagnostic.RCS1142.severity = error
 dotnet_diagnostic.RCS1160.severity = error
 dotnet_diagnostic.RCS1168.severity = error
+dotnet_diagnostic.RCS1170.severity = error
+dotnet_diagnostic.RCS1187.severity = error
 dotnet_diagnostic.RCS1211.severity = error
 dotnet_diagnostic.RCS1213.severity = error
+dotnet_diagnostic.RCS1228.severity = error
 dotnet_diagnostic.RCS1233.severity = error
 dotnet_diagnostic.RCS1251.severity = error
 

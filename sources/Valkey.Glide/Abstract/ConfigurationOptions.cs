@@ -94,7 +94,6 @@ public sealed class ConfigurationOptions : ICloneable
 
     private bool? _ssl;
     private Proxy? _proxy;
-    private RetryStrategy? _reconnectRetryPolicy;
 
     #endregion
     #region Internal fields
@@ -245,11 +244,7 @@ public sealed class ConfigurationOptions : ICloneable
     /// <summary>
     /// The retry policy to be used for connection reconnects.
     /// </summary>
-    public RetryStrategy? ReconnectRetryPolicy
-    {
-        get => _reconnectRetryPolicy;
-        set => _reconnectRetryPolicy = value;
-    }
+    public RetryStrategy? ReconnectRetryPolicy { get; set; }
 
     /// <summary>
     /// The read from strategy and Availability zone if applicable.
@@ -369,7 +364,7 @@ public sealed class ConfigurationOptions : ICloneable
             _proxy = _proxy,
             ResponseTimeout = ResponseTimeout,
             DefaultDatabase = DefaultDatabase,
-            _reconnectRetryPolicy = _reconnectRetryPolicy,
+            ReconnectRetryPolicy = ReconnectRetryPolicy,
             EndPoints = EndPoints.Clone(),
             Protocol = Protocol,
             ReadFrom = ReadFrom
@@ -481,7 +476,7 @@ public sealed class ConfigurationOptions : ICloneable
         ConnectTimeout = ResponseTimeout = null;
         _ssl = null;
         ReadFrom = null;
-        _reconnectRetryPolicy = null;
+        ReconnectRetryPolicy = null;
         _trustedIssuers.Clear();
         _clientCertificate = null;
         _clientKey = null;

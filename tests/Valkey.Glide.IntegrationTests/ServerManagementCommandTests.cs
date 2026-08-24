@@ -888,8 +888,8 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     #endregion
     #region Failover Tests
 
-    private static readonly string FailoverErrorMessageExpected = "FAILOVER requires connected replicas.";
-    private static readonly string FailoverAbortErrorMessageExpected = "No failover in progress.";
+    private const string FailoverErrorMessageExpected = "FAILOVER requires connected replicas.";
+    private const string FailoverAbortErrorMessageExpected = "No failover in progress.";
 
     [Fact]
     public async Task FailoverAsync_NoReplicas_ThrowsRequestException()

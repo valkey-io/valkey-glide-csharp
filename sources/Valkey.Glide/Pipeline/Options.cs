@@ -157,8 +157,8 @@ public static class Options
         SingleNodeRoute? route = null,
         ClusterBatchRetryStrategy? retryStrategy = null) : BaseBatchOptions(timeout)
     {
-        internal SingleNodeRoute? Route { get; private set; } = route;
-        internal ClusterBatchRetryStrategy? RetryStrategy { get; private set; } = retryStrategy;
+        internal SingleNodeRoute? Route { get; } = route;
+        internal ClusterBatchRetryStrategy? RetryStrategy { get; } = retryStrategy;
 
         internal override FFI.BatchOptions ToFfi() => new(
                 RetryStrategy?.RetryServerError,

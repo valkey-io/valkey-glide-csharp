@@ -25,8 +25,8 @@ public class TestConfiguration : IDisposable
     public static Address CLUSTER_ADDRESS => CLUSTER_ADDRESSES.First();
 
     // Environment variable names for providing server endpoints.
-    private static readonly string StandaloneEndpointsEnvVar = "standalone-endpoints";
-    private static readonly string ClusterEndpointsEnvVar = "cluster-endpoints";
+    private const string StandaloneEndpointsEnvVar = "standalone-endpoints";
+    private const string ClusterEndpointsEnvVar = "cluster-endpoints";
 
     private static readonly object LockObject = new();
     private const string DefaultServerGroupName = "cluster";

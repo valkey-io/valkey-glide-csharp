@@ -8,11 +8,11 @@ public class MonitorConfigTests
 {
     #region Constants
 
-    private static readonly string Host = "HOST";
+    private const string Host = "HOST";
     private const ushort Port = 1234;
-    private static readonly string Username = "USERNAME";
-    private static readonly string Password = "PASSWORD";
-    private static readonly ushort Database = 5;
+    private const string Username = "USERNAME";
+    private const string Password = "PASSWORD";
+    private const ushort Database = 5;
 
     #endregion
     #region Tests

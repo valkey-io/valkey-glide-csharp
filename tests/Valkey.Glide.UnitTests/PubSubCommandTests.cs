@@ -8,14 +8,14 @@ namespace Valkey.Glide.UnitTests;
 public class PubSubCommandTests
 {
     // Test constants
-    private static readonly string Channel1 = "news";
-    private static readonly string Channel2 = "weather";
-    private static readonly string Pattern1 = "news.*";
-    private static readonly string Pattern2 = "weather.*";
-    private static readonly string Message = "message";
+    private const string Channel1 = "news";
+    private const string Channel2 = "weather";
+    private const string Pattern1 = "news.*";
+    private const string Pattern2 = "weather.*";
+    private const string Message = "message";
 
     private static readonly TimeSpan Timeout = TimeSpan.FromMilliseconds(123);
-    private static readonly string TimeoutExpected = "123";
+    private const string TimeoutExpected = "123";
 
     #region PublishCommands
 

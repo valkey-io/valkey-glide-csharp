@@ -272,8 +272,8 @@ public abstract class ConnectionConfiguration
 
     #endregion
 
-    private static readonly string DEFAULT_HOST = "localhost";
-    private static readonly ushort DEFAULT_PORT = 6379;
+    private const string DEFAULT_HOST = "localhost";
+    private const ushort DEFAULT_PORT = 6379;
 
     /// <summary>
     /// Basic class which holds common configuration for all types of clients.<br />

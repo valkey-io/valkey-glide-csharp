@@ -204,7 +204,7 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
     /// <inheritdoc/>
     public override string ToString() => _db!.ToString();
 
-    internal ConfigurationOptions RawConfig { private set; get; }
+    internal ConfigurationOptions RawConfig { get; }
 
     private readonly object _lock = new();
     private Database? _db;

@@ -57,7 +57,7 @@ public static class ServerManager
     /// Gets the path for the server certificate file.
     /// See valkey-glide/utils/cluster_manager.py for details.
     /// </summary>
-    public static string ServerCertificatePath { get; private set; }
+    public static string ServerCertificatePath { get; }
 
     /// <summary>
     /// Starts a Valkey server with the specified name, mode and TLS configuration.

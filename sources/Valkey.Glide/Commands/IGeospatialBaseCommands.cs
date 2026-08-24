@@ -41,7 +41,7 @@ public interface IGeospatialBaseCommands
     /// <code>
     /// await client.GeoAddAsync("mygeo", "Palermo", new GeoPosition(13.361389, 38.115556));
     /// await client.GeoAddAsync("mygeo", "Catania", new GeoPosition(15.087269, 37.502669));
-    /// 
+    ///
     /// var hashes = await client.GeoHashAsync("mygeo", ["Palermo", "Catania"]);
     /// Console.WriteLine($"Geohash for member2: {hashes[1]}");
     /// </code>
@@ -79,7 +79,7 @@ public interface IGeospatialBaseCommands
     /// <code>
     /// await client.GeoAddAsync("mygeo", "Palermo", new GeoPosition(12.3, 45.6));
     /// await client.GeoAddAsync("mygeo", "Catania", new GeoPosition(15.087269, 37.502669));
-    /// 
+    ///
     /// var positions = await client.GeoPositionAsync("mygeo", ["Palermo", "Catania"]);
     /// Console.WriteLine($"Catania is at [{positions[1]!.Value.Latitude}, {positions[1]!.Value.Longitude}]");
     /// </code>

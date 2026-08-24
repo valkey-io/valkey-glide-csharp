@@ -6,7 +6,7 @@ public class OpenTelemetryConfigTests
 {
     #region Constants
 
-    private static readonly string Endpoint = "http://localhost:4321";
+    private const string Endpoint = "http://localhost:4321";
     private static readonly TimeSpan FlushInterval = TimeSpan.FromMinutes(1);
 
     #endregion

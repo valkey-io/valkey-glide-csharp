@@ -1225,8 +1225,8 @@ public class CommandTests
     #region MemoryStats Converter Tests
 
     // Reponse values for testing converters.
-    private static readonly long ConvertLong = 100L;
-    private static readonly double ConvertDouble = 1.5;
+    private const long ConvertLong = 100L;
+    private const double ConvertDouble = 1.5;
 
     [Fact]
     public void MemoryStatsConverter_WithAllFields()

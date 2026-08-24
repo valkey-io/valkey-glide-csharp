@@ -11,8 +11,8 @@ public class ConnectionConfigurationTests
     #region Constants
 
     // Authentication constants
-    private static readonly string Username = "USERNAME";
-    private static readonly string Password = "PASSWORD";
+    private const string Username = "USERNAME";
+    private const string Password = "PASSWORD";
     private const uint RefreshInterval = 300;
 
     // Certificate constants
@@ -22,10 +22,10 @@ public class ConnectionConfigurationTests
     private const string KeyPath = "/path/key.pem";
 
     // Connection retry strategy constants
-    private static readonly uint NumberOfRetries = 3u;
-    private static readonly uint Factor = 50u;
-    private static readonly uint ExponentBase = 2u;
-    private static readonly uint JitterPercent = 10u;
+    private const uint NumberOfRetries = 3u;
+    private const uint Factor = 50u;
+    private const uint ExponentBase = 2u;
+    private const uint JitterPercent = 10u;
 
     // Address resolver constants.
     private static readonly (string, ushort) Resolved = ("resolved-host", 9999);

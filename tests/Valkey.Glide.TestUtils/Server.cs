@@ -68,12 +68,12 @@ public abstract class Server : IDisposable
     /// <summary>
     /// Certificate data path for the server.
     /// </summary>
-    public string? CertificatePath { get; private set; }
+    public string? CertificatePath { get; }
 
     /// <summary>
     /// Certificate data for the server.
     /// </summary>
-    public byte[]? CertificateData { get; private set; }
+    public byte[]? CertificateData { get; }
 
     #endregion
     #region Constructors

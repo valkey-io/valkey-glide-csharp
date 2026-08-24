@@ -4,9 +4,9 @@ namespace Valkey.Glide.UnitTests;
 
 public class PubSubMessageTests
 {
-    private static readonly string Message = "test message";
-    private static readonly string Channel = "test-channel";
-    private static readonly string Pattern = "test-*";
+    private const string Message = "test message";
+    private const string Channel = "test-channel";
+    private const string Pattern = "test-*";
 
     [Fact]
     public void PubSubMessage_FromChannel_SetsPropertiesCorrectly()

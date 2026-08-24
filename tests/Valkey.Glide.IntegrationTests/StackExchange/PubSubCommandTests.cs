@@ -25,7 +25,7 @@ public class PubSubCommandTests(TestConfiguration config)
     #region Constants
 
     private static readonly bool IsSharedPubSubSupported = TestConfiguration.IsVersionAtLeast("7.0.0");
-    private static readonly string SkipSharedPubSubMessage = "Sharded PubSub is supported since 7.0.0";
+    private const string SkipSharedPubSubMessage = "Sharded PubSub is supported since 7.0.0";
 
     private static readonly ValkeyValue Message1 = "message1";
     private static readonly ValkeyValue Message2 = "message2";

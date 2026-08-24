@@ -12,12 +12,12 @@ namespace Valkey.Glide.UnitTests;
 public class PubSubConfigurationTests
 {
     // Test constants.
-    private static readonly string Channel1 = "channel1";
-    private static readonly string Channel2 = "channel2";
-    private static readonly string Pattern1 = "pattern1*";
-    private static readonly string Pattern2 = "pattern2*";
-    private static readonly string ShardedChannel1 = "shard1";
-    private static readonly string ShardedChannel2 = "shard2";
+    private const string Channel1 = "channel1";
+    private const string Channel2 = "channel2";
+    private const string Pattern1 = "pattern1*";
+    private const string Pattern2 = "pattern2*";
+    private const string ShardedChannel1 = "shard1";
+    private const string ShardedChannel2 = "shard2";
     private static readonly object Context = new { TestData = "test" };
     private static readonly MessageCallback Callback = (message, ctx) => { /* test callback */ };
 

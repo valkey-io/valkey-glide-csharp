@@ -534,8 +534,7 @@ public abstract class Condition
         private readonly ValkeyValue? expectedValue;
         private readonly ValkeyKey key;
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1242:Do not pass non-read-only struct by read-only reference.", Justification = "Attribute")]
-        public ListCondition(in ValkeyKey key, long index, bool expectedResult, in ValkeyValue? expectedValue)
+        public ListCondition(in ValkeyKey key, long index, bool expectedResult, ValkeyValue? expectedValue)
         {
             if (key.IsNull) throw new ArgumentNullException(nameof(key));
             this.key = key;

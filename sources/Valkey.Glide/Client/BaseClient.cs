@@ -287,8 +287,8 @@ public abstract partial class BaseClient : IBaseClient
     /// </summary>
     /// <typeparam name="R">Type received from server.</typeparam>
     /// <typeparam name="T">Type we return to the user.</typeparam>
-    /// <param name="command"></param>
-    /// <param name="route"></param>
+    /// <param name="command">The command to execute.</param>
+    /// <param name="route">Optional routing for the command in cluster mode.</param>
     internal virtual async Task<T> Command<R, T>(Cmd<R, T> command, Route? route = null)
     {
         // 1. Create Cmd which wraps CmdInfo and manages all memory allocations
