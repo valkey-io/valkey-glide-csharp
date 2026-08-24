@@ -9,6 +9,21 @@ internal partial class Database
 {
     #region Public Methods
 
+    /// <inheritdoc cref="IDatabaseAsync.StreamAcknowledgeAsync(ValkeyKey, ValkeyValue, ValkeyValue, CommandFlags)"/>
+    public async Task<long> StreamAcknowledgeAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue messageId, CommandFlags flags = CommandFlags.None)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+        var result = await ((IBaseClient)this).StreamAcknowledgeAsync(key, groupName, messageId);
+        return result ? 1L : 0L;
+    }
+
+    /// <inheritdoc cref="IDatabaseAsync.StreamAcknowledgeAsync(ValkeyKey, ValkeyValue, IEnumerable{ValkeyValue}, CommandFlags)"/>
+    public Task<long> StreamAcknowledgeAsync(ValkeyKey key, ValkeyValue groupName, IEnumerable<ValkeyValue> messageIds, CommandFlags flags)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+        return StreamAcknowledgeAsync(key, groupName, messageIds);
+    }
+
     /// <inheritdoc cref="IDatabaseAsync.StreamAddAsync(ValkeyKey, ValkeyValue, ValkeyValue, ValkeyValue?, int?, bool, CommandFlags)"/>
     public Task<ValkeyValue> StreamAddAsync(ValkeyKey key, ValkeyValue streamField, ValkeyValue streamValue, ValkeyValue? messageId = null, int? maxLength = null, bool useApproximateMaxLength = false, CommandFlags flags = CommandFlags.None)
     {
@@ -23,67 +38,121 @@ internal partial class Database
         return StreamAddAsync(key, streamPairs, ToStreamAddOptions(messageId, maxLength, useApproximateMaxLength));
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.StreamReadAsync(ValkeyKey, ValkeyValue, int?, CommandFlags)"/>
-    public Task<StreamEntry[]> StreamReadAsync(ValkeyKey key, ValkeyValue position, int? countPerStream = null, CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return StreamReadAsync(new StreamPosition(key, position), new StreamReadOptions { Count = countPerStream });
-    }
-
-    /// <inheritdoc cref="IDatabaseAsync.StreamReadAsync(IEnumerable{StreamPosition}, int?, CommandFlags)"/>
-    public Task<ValkeyStream[]> StreamReadAsync(IEnumerable<StreamPosition> streamPositions, int? countPerStream = null, CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return StreamReadAsync(streamPositions, new StreamReadOptions { Count = countPerStream });
-    }
-
-    /// <inheritdoc cref="IDatabaseAsync.StreamRangeAsync(ValkeyKey, ValkeyValue?, ValkeyValue?, int?, Order, CommandFlags)"/>
-    public Task<StreamEntry[]> StreamRangeAsync(ValkeyKey key, ValkeyValue? minId = null, ValkeyValue? maxId = null, int? count = null, Order messageOrder = Order.Ascending, CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        var range = StreamIdRange.Between(minId ?? StreamIdBound.Min, maxId ?? StreamIdBound.Max);
-        var options = new StreamRangeOptions { Range = range, Count = count, Order = messageOrder };
-        return StreamRangeAsync(key, options);
-    }
-
-    /// <inheritdoc cref="IDatabaseAsync.StreamReadGroupAsync(ValkeyKey, ValkeyValue, ValkeyValue, ValkeyValue?, int?, bool, CommandFlags)"/>
-    public Task<StreamEntry[]> StreamReadGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, ValkeyValue? position = null, int? count = null, bool noAck = false, CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        var options = new StreamReadGroupOptions { Count = count, NoAck = noAck };
-        var sp = new StreamPosition(key, position ?? StreamPosition.UndeliveredMessages);
-        return StreamReadGroupAsync(sp, groupName, consumerName, options);
-    }
-
-    /// <inheritdoc cref="IDatabaseAsync.StreamReadGroupAsync(ValkeyKey, ValkeyValue, ValkeyValue, ValkeyValue?, int?, bool, TimeSpan?, CommandFlags)"/>
-    public Task<StreamEntry[]> StreamReadGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, ValkeyValue? position, int? count, bool noAck, TimeSpan? claimMinIdleTime, CommandFlags flags)
+    /// <inheritdoc cref="IDatabaseAsync.StreamAutoClaimAsync(ValkeyKey, ValkeyValue, ValkeyValue, long, ValkeyValue, int?, CommandFlags)"/>
+    public Task<StreamAutoClaimResult> StreamAutoClaimAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, ValkeyValue startAtId, int? count = null, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
 
-        // TODO #322: Support claimMinIdleTime (SER-specific XREADGROUP + XAUTOCLAIM combination).
-        if (claimMinIdleTime is not null)
+        var options = StreamAutoClaimOptions.FromId(TimeSpan.FromMilliseconds(minIdleTimeInMs), startAtId);
+        if (count.HasValue)
         {
-            throw new NotImplementedException("claimMinIdleTime is a StackExchange.Redis-specific feature that combines XREADGROUP with auto-claiming. Use StreamAutoClaimAsync separately instead.");
+            _ = options.WithCount(count.Value);
         }
 
-        var options = new StreamReadGroupOptions { Count = count, NoAck = noAck };
-        var sp = new StreamPosition(key, position ?? StreamPosition.UndeliveredMessages);
-        return StreamReadGroupAsync(sp, groupName, consumerName, options);
+        return StreamAutoClaimAsync(key, consumerGroup, claimingConsumer, options);
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.StreamReadGroupAsync(IEnumerable{StreamPosition}, ValkeyValue, ValkeyValue, int?, bool, CommandFlags)"/>
-    public Task<ValkeyStream[]> StreamReadGroupAsync(IEnumerable<StreamPosition> streamPositions, ValkeyValue groupName, ValkeyValue consumerName, int? countPerStream = null, bool noAck = false, CommandFlags flags = CommandFlags.None)
+    /// <inheritdoc cref="IDatabaseAsync.StreamAutoClaimIdsOnlyAsync(ValkeyKey, ValkeyValue, ValkeyValue, long, ValkeyValue, int?, CommandFlags)"/>
+    public async Task<StreamAutoClaimIdsOnlyResult> StreamAutoClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, ValkeyValue startAtId, int? count = null, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        var options = new StreamReadGroupOptions { Count = countPerStream, NoAck = noAck };
-        return StreamReadGroupAsync(streamPositions, groupName, consumerName, options);
+
+        var options = StreamAutoClaimOptions.FromId(TimeSpan.FromMilliseconds(minIdleTimeInMs), startAtId);
+        if (count.HasValue)
+        {
+            _ = options.WithCount(count.Value);
+        }
+
+        var result = await StreamAutoClaimJustIdAsync(key, consumerGroup, claimingConsumer, options);
+        return new StreamAutoClaimIdsOnlyResult(result.NextStartId, result.ClaimedIds, result.DeletedIds);
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.StreamLengthAsync(ValkeyKey, CommandFlags)"/>
-    public Task<long> StreamLengthAsync(ValkeyKey key, CommandFlags flags)
+    /// <inheritdoc cref="IDatabaseAsync.StreamClaimAsync(ValkeyKey, ValkeyValue, ValkeyValue, long, IEnumerable{ValkeyValue}, CommandFlags)"/>
+    public Task<StreamEntry[]> StreamClaimAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, IEnumerable<ValkeyValue> messageIds, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return StreamLengthAsync(key);
+        var options = StreamClaimOptions.From(TimeSpan.FromMilliseconds(minIdleTimeInMs));
+        return StreamClaimAsync(key, consumerGroup, claimingConsumer, messageIds, options);
+    }
+
+    /// <inheritdoc cref="IDatabaseAsync.StreamClaimIdsOnlyAsync(ValkeyKey, ValkeyValue, ValkeyValue, long, IEnumerable{ValkeyValue}, CommandFlags)"/>
+    public Task<ValkeyValue[]> StreamClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, IEnumerable<ValkeyValue> messageIds, CommandFlags flags = CommandFlags.None)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+        var options = StreamClaimOptions.From(TimeSpan.FromMilliseconds(minIdleTimeInMs));
+        return StreamClaimJustIdAsync(key, consumerGroup, claimingConsumer, messageIds, options);
+    }
+
+    /// <inheritdoc cref="IDatabaseAsync.StreamConsumerGroupSetPositionAsync(ValkeyKey, ValkeyValue, ValkeyValue, CommandFlags)"/>
+    public async Task<bool> StreamConsumerGroupSetPositionAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue position, CommandFlags flags = CommandFlags.None)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+        await StreamGroupSetIdAsync(key, groupName, position);
+        return true;
+    }
+
+    /// <inheritdoc cref="IDatabaseAsync.StreamConsumerGroupSetPositionAsync(ValkeyKey, ValkeyValue, ValkeyValue, long?, CommandFlags)"/>
+    public async Task<bool> StreamConsumerGroupSetPositionAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue position, long? entriesRead, CommandFlags flags = CommandFlags.None)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+
+        if (entriesRead.HasValue)
+        {
+            await StreamGroupSetIdAsync(key, groupName, position, entriesRead.Value);
+        }
+        else
+        {
+            await StreamGroupSetIdAsync(key, groupName, position);
+        }
+
+        return true;
+    }
+
+    /// <inheritdoc cref="IDatabaseAsync.StreamConsumerInfoAsync(ValkeyKey, ValkeyValue, CommandFlags)"/>
+    public Task<StreamConsumerInfo[]> StreamConsumerInfoAsync(ValkeyKey key, ValkeyValue groupName, CommandFlags flags = CommandFlags.None)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+        return StreamInfoConsumersAsync(key, groupName);
+    }
+
+    /// <inheritdoc cref="IDatabaseAsync.StreamCreateConsumerAsync(ValkeyKey, ValkeyValue, ValkeyValue, CommandFlags)"/>
+    public Task<bool> StreamCreateConsumerAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, CommandFlags flags = CommandFlags.None)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+        return StreamGroupCreateConsumerAsync(key, groupName, consumerName);
+    }
+
+    /// <inheritdoc cref="IDatabaseAsync.StreamCreateConsumerGroupAsync(ValkeyKey, ValkeyValue, ValkeyValue?, bool, CommandFlags)"/>
+    public async Task<bool> StreamCreateConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue? position = null, bool createStream = true, CommandFlags flags = CommandFlags.None)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+
+        var options = new StreamGroupCreateOptions { MakeStream = createStream };
+        await StreamGroupCreateAsync(key, groupName, position ?? StreamPosition.NewMessages, options);
+
+        return true;
+    }
+
+    /// <inheritdoc cref="IDatabaseAsync.StreamCreateConsumerGroupAsync(ValkeyKey, ValkeyValue, ValkeyValue?, bool, long?, CommandFlags)"/>
+    public async Task<bool> StreamCreateConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue? position, bool createStream, long? entriesRead, CommandFlags flags)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+
+        var options = new StreamGroupCreateOptions { MakeStream = createStream, EntriesRead = entriesRead };
+        await StreamGroupCreateAsync(key, groupName, position ?? StreamPosition.NewMessages, options);
+
+        return true;
+    }
+
+    /// <inheritdoc cref="IDatabaseAsync.StreamCreateConsumerGroupAsync(ValkeyKey, ValkeyValue, ValkeyValue?, CommandFlags)"/>
+    public async Task<bool> StreamCreateConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue? position, CommandFlags flags)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+
+        var options = new StreamGroupCreateOptions { MakeStream = true };
+        await StreamGroupCreateAsync(key, groupName, position ?? StreamPosition.NewMessages, options);
+
+        return true;
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StreamDeleteAsync(ValkeyKey, IEnumerable{ValkeyValue}, CommandFlags)"/>
@@ -93,122 +162,139 @@ internal partial class Database
         return StreamDeleteAsync(key, messageIds);
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.StreamCreateConsumerGroupAsync(ValkeyKey, ValkeyValue, ValkeyValue?, bool, CommandFlags)"/>
-    public async Task<bool> StreamCreateConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue? position = null, bool createStream = true, CommandFlags flags = CommandFlags.None)
+    /// <inheritdoc cref="IDatabaseAsync.StreamDeleteConsumerAsync(ValkeyKey, ValkeyValue, ValkeyValue, CommandFlags)"/>
+    public Task<long> StreamDeleteConsumerAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.StreamCreateConsumerGroup(key, groupName, position ?? default, createStream, null));
-    }
-
-    /// <inheritdoc cref="IDatabaseAsync.StreamCreateConsumerGroupAsync(ValkeyKey, ValkeyValue, ValkeyValue?, bool, long?, CommandFlags)"/>
-    public async Task<bool> StreamCreateConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue? position, bool createStream, long? entriesRead, CommandFlags flags)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.StreamCreateConsumerGroup(key, groupName, position ?? default, createStream, entriesRead));
+        return StreamGroupDeleteConsumerAsync(key, groupName, consumerName);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StreamDeleteConsumerGroupAsync(ValkeyKey, ValkeyValue, CommandFlags)"/>
     public Task<bool> StreamDeleteConsumerGroupAsync(ValkeyKey key, ValkeyValue groupName, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return Command(Request.StreamDeleteConsumerGroup(key, groupName));
+        return StreamGroupDestroyAsync(key, groupName);
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.StreamCreateConsumerAsync(ValkeyKey, ValkeyValue, ValkeyValue, CommandFlags)"/>
-    public Task<bool> StreamCreateConsumerAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, CommandFlags flags = CommandFlags.None)
+    /// <inheritdoc cref="IDatabaseAsync.StreamGroupInfoAsync(ValkeyKey, CommandFlags)"/>
+    public Task<StreamGroupInfo[]> StreamGroupInfoAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return Command(Request.StreamCreateConsumer(key, groupName, consumerName));
+        return StreamInfoGroupsAsync(key);
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.StreamDeleteConsumerAsync(ValkeyKey, ValkeyValue, ValkeyValue, CommandFlags)"/>
-    public Task<long> StreamDeleteConsumerAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, CommandFlags flags = CommandFlags.None)
+    /// <inheritdoc cref="IDatabaseAsync.StreamInfoAsync(ValkeyKey, CommandFlags)"/>
+    public Task<StreamInfo> StreamInfoAsync(ValkeyKey key, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return Command(Request.StreamDeleteConsumer(key, groupName, consumerName));
+        return StreamInfoAsync(key);
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.StreamConsumerGroupSetPositionAsync(ValkeyKey, ValkeyValue, ValkeyValue, CommandFlags)"/>
-    public async Task<bool> StreamConsumerGroupSetPositionAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue position, CommandFlags flags = CommandFlags.None)
+    /// <inheritdoc cref="IDatabaseAsync.StreamLengthAsync(ValkeyKey, CommandFlags)"/>
+    public Task<long> StreamLengthAsync(ValkeyKey key, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.StreamConsumerGroupSetPosition(key, groupName, position, null));
-    }
-
-    /// <inheritdoc cref="IDatabaseAsync.StreamConsumerGroupSetPositionAsync(ValkeyKey, ValkeyValue, ValkeyValue, long?, CommandFlags)"/>
-    public async Task<bool> StreamConsumerGroupSetPositionAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue position, long? entriesRead, CommandFlags flags)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await Command(Request.StreamConsumerGroupSetPosition(key, groupName, position, entriesRead));
-    }
-
-    /// <inheritdoc cref="IDatabaseAsync.StreamAcknowledgeAsync(ValkeyKey, ValkeyValue, ValkeyValue, CommandFlags)"/>
-    public Task<long> StreamAcknowledgeAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue messageId, CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return Command(Request.StreamAcknowledge(key, groupName, messageId));
-    }
-
-    /// <inheritdoc cref="IDatabaseAsync.StreamAcknowledgeAsync(ValkeyKey, ValkeyValue, IEnumerable{ValkeyValue}, CommandFlags)"/>
-    public Task<long> StreamAcknowledgeAsync(ValkeyKey key, ValkeyValue groupName, IEnumerable<ValkeyValue> messageIds, CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return Command(Request.StreamAcknowledge(key, groupName, [.. messageIds]));
+        return StreamLengthAsync(key);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StreamPendingAsync(ValkeyKey, ValkeyValue, CommandFlags)"/>
-    public Task<StreamPendingInfo> StreamPendingAsync(ValkeyKey key, ValkeyValue groupName, CommandFlags flags = CommandFlags.None)
+    public Task<StreamPendingInfo> StreamPendingAsync(ValkeyKey key, ValkeyValue groupName, CommandFlags flags)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return Command(Request.StreamPending(key, groupName));
+        return StreamPendingAsync(key, groupName);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StreamPendingMessagesAsync(ValkeyKey, ValkeyValue, int, ValkeyValue, ValkeyValue?, ValkeyValue?, CommandFlags)"/>
     public Task<StreamPendingMessageInfo[]> StreamPendingMessagesAsync(ValkeyKey key, ValkeyValue groupName, int count, ValkeyValue consumerName, ValkeyValue? minId = null, ValkeyValue? maxId = null, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return Command(Request.StreamPendingMessages(key, groupName, minId ?? "-", maxId ?? "+", count, consumerName, null));
+
+        var options = new StreamPendingOptions
+        {
+            Count = count,
+            Start = minId.HasValue ? StreamIdBound.Inclusive(minId.Value) : StreamIdBound.Min,
+            End = maxId.HasValue ? StreamIdBound.Inclusive(maxId.Value) : StreamIdBound.Max,
+            ConsumerName = consumerName,
+        };
+
+        return StreamPendingAsync(key, groupName, options);
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.StreamClaimAsync(ValkeyKey, ValkeyValue, ValkeyValue, long, IEnumerable{ValkeyValue}, CommandFlags)"/>
-    public Task<StreamEntry[]> StreamClaimAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, IEnumerable<ValkeyValue> messageIds, CommandFlags flags = CommandFlags.None)
+    /// <inheritdoc cref="IDatabaseAsync.StreamRangeAsync(ValkeyKey, ValkeyValue?, ValkeyValue?, int?, Order, CommandFlags)"/>
+    public Task<StreamEntry[]> StreamRangeAsync(ValkeyKey key, ValkeyValue? minId = null, ValkeyValue? maxId = null, int? count = null, Order messageOrder = Order.Ascending, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return Command(Request.StreamClaim(key, consumerGroup, claimingConsumer, TimeSpan.FromMilliseconds(minIdleTimeInMs), [.. messageIds]));
+
+        var range = StreamIdRange.Between(minId ?? StreamIdBound.Min, maxId ?? StreamIdBound.Max);
+        var options = new StreamRangeOptions { Range = range, Count = count, Order = messageOrder };
+
+        return StreamRangeAsync(key, options);
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.StreamClaimIdsOnlyAsync(ValkeyKey, ValkeyValue, ValkeyValue, long, IEnumerable{ValkeyValue}, CommandFlags)"/>
-    public Task<ValkeyValue[]> StreamClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, IEnumerable<ValkeyValue> messageIds, CommandFlags flags = CommandFlags.None)
+    /// <inheritdoc cref="IDatabaseAsync.StreamReadAsync(ValkeyKey, ValkeyValue, int?, CommandFlags)"/>
+    public Task<StreamEntry[]> StreamReadAsync(ValkeyKey key, ValkeyValue position, int? count = null, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return Command(Request.StreamClaimIdsOnly(key, consumerGroup, claimingConsumer, TimeSpan.FromMilliseconds(minIdleTimeInMs), [.. messageIds]));
+        return StreamReadAsync(new StreamPosition(key, position), new StreamReadOptions { Count = count });
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.StreamAutoClaimAsync(ValkeyKey, ValkeyValue, ValkeyValue, long, ValkeyValue, int?, CommandFlags)"/>
-    public Task<StreamAutoClaimResult> StreamAutoClaimAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, ValkeyValue startAtId, int? count = null, CommandFlags flags = CommandFlags.None)
+    /// <inheritdoc cref="IDatabaseAsync.StreamReadAsync(IEnumerable{StreamPosition}, int?, CommandFlags)"/>
+    public Task<ValkeyStream[]> StreamReadAsync(IEnumerable<StreamPosition> streamPositions, int? countPerStream = null, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return Command(Request.StreamAutoClaim(key, consumerGroup, claimingConsumer, TimeSpan.FromMilliseconds(minIdleTimeInMs), startAtId, count));
+        return StreamReadAsync(streamPositions, new StreamReadOptions { Count = countPerStream });
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.StreamAutoClaimIdsOnlyAsync(ValkeyKey, ValkeyValue, ValkeyValue, long, ValkeyValue, int?, CommandFlags)"/>
-    public Task<StreamAutoClaimJustIdResult> StreamAutoClaimIdsOnlyAsync(ValkeyKey key, ValkeyValue consumerGroup, ValkeyValue claimingConsumer, long minIdleTimeInMs, ValkeyValue startAtId, int? count = null, CommandFlags flags = CommandFlags.None)
+    /// <inheritdoc cref="IDatabaseAsync.StreamReadGroupAsync(ValkeyKey, ValkeyValue, ValkeyValue, ValkeyValue?, int?, CommandFlags)"/>
+    public Task<StreamEntry[]> StreamReadGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, ValkeyValue? position, int? count, CommandFlags flags)
+        => StreamReadGroupAsync(key, groupName, consumerName, position, count, noAck: false, claimMinIdleTime: null, flags: flags);
+
+    /// <inheritdoc cref="IDatabaseAsync.StreamReadGroupAsync(ValkeyKey, ValkeyValue, ValkeyValue, ValkeyValue?, int?, bool, CommandFlags)"/>
+    public Task<StreamEntry[]> StreamReadGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, ValkeyValue? position, int? count, bool noAck, CommandFlags flags)
+        => StreamReadGroupAsync(key, groupName, consumerName, position, count, noAck, claimMinIdleTime: null, flags: flags);
+
+    /// <inheritdoc cref="IDatabaseAsync.StreamReadGroupAsync(ValkeyKey, ValkeyValue, ValkeyValue, ValkeyValue?, int?, bool, TimeSpan?, CommandFlags)"/>
+    public Task<StreamEntry[]> StreamReadGroupAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, ValkeyValue? position = null, int? count = null, bool noAck = false, TimeSpan? claimMinIdleTime = null, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        return Command(Request.StreamAutoClaimJustId(key, consumerGroup, claimingConsumer, TimeSpan.FromMilliseconds(minIdleTimeInMs), startAtId, count));
+        ThrowIfClaimMinIdleTime(claimMinIdleTime);
+
+        var options = new StreamReadGroupOptions { Count = count, NoAck = noAck };
+        var sp = new StreamPosition(key, position ?? StreamPosition.UndeliveredMessages);
+
+        return StreamReadGroupAsync(sp, groupName, consumerName, options);
+    }
+
+    /// <inheritdoc cref="IDatabaseAsync.StreamReadGroupAsync(IEnumerable{StreamPosition}, ValkeyValue, ValkeyValue, int?, CommandFlags)"/>
+    public Task<ValkeyStream[]> StreamReadGroupAsync(IEnumerable<StreamPosition> streamPositions, ValkeyValue groupName, ValkeyValue consumerName, int? countPerStream, CommandFlags flags)
+        => StreamReadGroupAsync(streamPositions, groupName, consumerName, countPerStream, noAck: false, claimMinIdleTime: null, flags: flags);
+
+    /// <inheritdoc cref="IDatabaseAsync.StreamReadGroupAsync(IEnumerable{StreamPosition}, ValkeyValue, ValkeyValue, int?, bool, CommandFlags)"/>
+    public Task<ValkeyStream[]> StreamReadGroupAsync(IEnumerable<StreamPosition> streamPositions, ValkeyValue groupName, ValkeyValue consumerName, int? countPerStream, bool noAck, CommandFlags flags)
+        => StreamReadGroupAsync(streamPositions, groupName, consumerName, countPerStream, noAck, claimMinIdleTime: null, flags: flags);
+
+    /// <inheritdoc cref="IDatabaseAsync.StreamReadGroupAsync(IEnumerable{StreamPosition}, ValkeyValue, ValkeyValue, int?, bool, TimeSpan?, CommandFlags)"/>
+    public Task<ValkeyStream[]> StreamReadGroupAsync(IEnumerable<StreamPosition> streamPositions, ValkeyValue groupName, ValkeyValue consumerName, int? countPerStream = null, bool noAck = false, TimeSpan? claimMinIdleTime = null, CommandFlags flags = CommandFlags.None)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+        ThrowIfClaimMinIdleTime(claimMinIdleTime);
+
+        var options = new StreamReadGroupOptions { Count = countPerStream, NoAck = noAck };
+        return StreamReadGroupAsync(streamPositions, groupName, consumerName, options);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StreamTrimAsync(ValkeyKey, int, bool, CommandFlags)"/>
     public Task<long> StreamTrimAsync(ValkeyKey key, int maxLength, bool useApproximateMaxLength = false, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        ArgumentOutOfRangeException.ThrowIfLessThan(maxLength, 0, nameof(maxLength));
 
-        return StreamTrimAsync(key, new StreamTrimOptions.MaxLen
+        var options = new StreamTrimOptions.MaxLen
         {
             MaxLength = maxLength,
             Exact = !useApproximateMaxLength,
-        });
+        };
+
+        return StreamTrimAsync(key, options);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StreamTrimAsync(ValkeyKey, long?, bool, long?, StreamTrimMode, CommandFlags)"/>
@@ -246,37 +332,25 @@ internal partial class Database
         return StreamTrimAsync(key, options);
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.StreamInfoAsync(ValkeyKey, CommandFlags)"/>
-    public Task<StreamInfo> StreamInfoAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return Command(Request.StreamInfo(key));
-    }
-
-    /// <inheritdoc cref="IDatabaseAsync.StreamGroupInfoAsync(ValkeyKey, CommandFlags)"/>
-    public Task<StreamGroupInfo[]> StreamGroupInfoAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return Command(Request.StreamGroupInfo(key));
-    }
-
-    /// <inheritdoc cref="IDatabaseAsync.StreamConsumerInfoAsync(ValkeyKey, ValkeyValue, CommandFlags)"/>
-    public Task<StreamConsumerInfo[]> StreamConsumerInfoAsync(ValkeyKey key, ValkeyValue groupName, CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return Command(Request.StreamConsumerInfo(key, groupName));
-    }
-
     #endregion
     #region Private Methods
+
+    // TODO #322: Support claimMinIdleTime (SER-specific XREADGROUP + XAUTOCLAIM combination).
+    private static void ThrowIfClaimMinIdleTime(TimeSpan? claimMinIdleTime)
+    {
+        if (claimMinIdleTime is not null)
+        {
+            throw new NotImplementedException("claimMinIdleTime is a StackExchange.Redis-specific feature that combines XREADGROUP with auto-claiming. Use StreamAutoClaimAsync separately instead.");
+        }
+    }
 
     /// <summary>
     /// Converts the given arguments to a <see cref="StreamAddOptions"/> instance.
     /// </summary>
-    /// <param name="messageId">The entry ID to assign, or <see langword="null"/> to auto-generate one.</param>
-    /// <param name="maxLength">The maximum length to trim the stream to, or <see langword="null"/> for no trimming.</param>
-    /// <param name="useApproximateMaxLength">Whether to trim to an approximate rather than exact length.</param>
-    /// <param name="limit">The maximum number of entries to trim in a single call.</param>
+    /// <param name="messageId">The message ID to assign, or <see langword="null"/> to auto-generate one.</param>
+    /// <param name="maxLength">The maximum number of entries to keep, or <see langword="null"/> for no trimming.</param>
+    /// <param name="useApproximateMaxLength">Whether to trim approximately for better performance.</param>
+    /// <param name="limit">The maximum number of entries to trim per operation.</param>
     private static StreamAddOptions ToStreamAddOptions(
         ValkeyValue? messageId,
         long? maxLength,

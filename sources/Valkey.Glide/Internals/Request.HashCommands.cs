@@ -92,7 +92,7 @@ internal static partial class Request
         => ToValkeyValue(RequestType.HRandField, [key], isNullable: true);
 
     public static Cmd<object[], ValkeyValue[]> HashRandomFields(ValkeyKey key, long count)
-        => ObjectArrayToValkeyValueArray(RequestType.HRandField, [key, count.ToGlideString()]);
+        => ToValkeyValueArray(RequestType.HRandField, [key, count.ToGlideString()]);
 
     public static Cmd<object[], HashEntry[]> HashRandomFieldsWithValues(ValkeyKey key, long count)
     {
@@ -220,7 +220,7 @@ internal static partial class Request
     /// Adds the given key-value pairs to the arguments list.
     /// </summary>
     /// <param name="args">The arguments list to append to.</param>
-    /// <param name="pairs">The field-value pairs to add.</param>
+    /// <param name="pairs">The key-value pairs to add.</param>
     private static void AddPairs(List<GlideString> args, IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>> pairs)
     {
         foreach (var kvp in pairs)
@@ -235,7 +235,7 @@ internal static partial class Request
     /// </summary>
     /// <param name="args">The arguments list to append to.</param>
     /// <param name="condition">The expire condition to add.</param>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="condition"/> is not a supported <see cref="ExpireCondition"/> value.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="condition"/> is not a recognized <see cref="ExpireCondition"/> value.</exception>
     internal static void AddExpireCondition(List<GlideString> args, ExpireCondition condition)
     {
         switch (condition)

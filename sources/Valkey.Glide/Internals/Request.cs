@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Globalization;
+
 using Valkey.Glide.Commands.Options;
 
 using static Valkey.Glide.Errors;
@@ -30,8 +32,8 @@ internal static partial class Request
     /// Create a Cmd which returns a Boolean value based on the response being 1 or not.
     /// </summary>
     /// <typeparam name="T">Any type that can be implicitly cast to a numeric value for comparison</typeparam>
-    /// <param name="request">The request type.</param>
-    /// <param name="args">The command arguments.</param>
+    /// <param name="request">The request type</param>
+    /// <param name="args">The command arguments</param>
     /// <returns>A command that converts the response to a boolean value (true if response equals 1)</returns>
     private static Cmd<T, bool> Boolean<T>(RequestType request, GlideString[] args)
         => new(request, args, false, response => Convert.ToInt64(response) == 1);
@@ -41,8 +43,8 @@ internal static partial class Request
     /// <summary>
     /// Create a Cmd which returns a Boolean value based on the response being OK or not, allowing null responses.
     /// </summary>
-    /// <param name="request">The request type.</param>
-    /// <param name="args">The command arguments.</param>
+    /// <param name="request">The request type</param>
+    /// <param name="args">The command arguments</param>
     /// <returns>A command that converts the response to a boolean value (true if response equals OK, false if null)</returns>
     private static Cmd<string?, bool> NullableOKToBool(RequestType request, GlideString[] args)
         => new(request, args, true, response => response == "OK", allowConverterToHandleNull: true);
@@ -50,8 +52,8 @@ internal static partial class Request
     /// <summary>
     /// Create a Cmd which returns "OK" when it completes.
     /// </summary>
-    /// <param name="request">The request type.</param>
-    /// <param name="args">The command arguments.</param>
+    /// <param name="request">The request type</param>
+    /// <param name="args">The command arguments</param>
     /// <returns>A command that returns <see cref="ValkeyValue.Ok"/></returns>
     private static Cmd<string, ValkeyValue> Ok(RequestType request, GlideString[]? args = null)
         => new(request, args ?? [], false, ToOkConverter);
@@ -59,9 +61,9 @@ internal static partial class Request
     /// <summary>
     /// Create a Cmd which converts the response to a ValkeyValue.
     /// </summary>
-    /// <param name="request">The request type.</param>
-    /// <param name="args">The command arguments.</param>
-    /// <param name="isNullable">Whether the response can be null.</param>
+    /// <param name="request">The request type</param>
+    /// <param name="args">The command arguments</param>
+    /// <param name="isNullable">Whether the response can be null</param>
     /// <returns>A command that converts the response to a ValkeyValue</returns>
     private static Cmd<GlideString, ValkeyValue> ToValkeyValue(RequestType request, GlideString[] args, bool isNullable = false)
         => new(request, args, isNullable, response => (ValkeyValue)response, allowConverterToHandleNull: true);
@@ -69,17 +71,17 @@ internal static partial class Request
     /// <summary>
     /// Create a Cmd which converts an array of GlideStrings to an array of ValkeyValues.
     /// </summary>
-    /// <param name="request">The request type.</param>
-    /// <param name="args">The command arguments.</param>
+    /// <param name="request">The request type</param>
+    /// <param name="args">The command arguments</param>
     /// <returns>A command that converts an array to a ValkeyValue array</returns>
-    private static Cmd<object[], ValkeyValue[]> ObjectArrayToValkeyValueArray(RequestType request, GlideString[] args)
-        => new(request, args, false, set => [.. set.Cast<GlideString>().Select(gs => gs)]);
+    private static Cmd<object[], ValkeyValue[]> ToValkeyValueArray(RequestType request, GlideString[] args)
+        => new(request, args, false, ToValkeyValueArray);
 
     /// <summary>
     /// Converts a keyword and items into a counted array: <c>keyword count item1 item2 ...</c>.
     /// </summary>
-    /// <param name="keyword">The leading keyword.</param>
-    /// <param name="items">The items to count and append.</param>
+    /// <param name="keyword">The keyword to prepend.</param>
+    /// <param name="items">The objects to convert.</param>
     private static GlideString[] ToArgs(GlideString keyword, IEnumerable<ValkeyValue> items)
         => [keyword, items.Count().ToGlideString(), .. items];
 
@@ -106,8 +108,8 @@ internal static partial class Request
     /// <summary>
     /// Appends SetExpiryOptions arguments (PX/PXAT/KEEPTTL) to the args list.
     /// </summary>
-    /// <param name="args">The argument list to append to.</param>
-    /// <param name="options">The expiry options to apply.</param>
+    /// <param name="args">The command arguments.</param>
+    /// <param name="options">The expiry options to append.</param>
     private static void AddExpiryArgs(List<GlideString> args, SetExpiryOptions options)
     {
         if (options.Duration.HasValue)
@@ -126,28 +128,7 @@ internal static partial class Request
         }
     }
 
-    #region Collection Converters
-
-    /// <summary>
-    /// Converts the given objects to a <see cref="ValkeyKey"/> set.
-    /// </summary>
-    /// <param name="items">The objects to convert.</param>
-    private static ISet<ValkeyKey> ToValkeyKeySet(IEnumerable<object> items)
-        => new HashSet<ValkeyKey>(items.Cast<GlideString>().Select(gs => (ValkeyKey)gs.Bytes));
-
-    /// <summary>
-    /// Converts the given objects to a <see cref="ValkeyValue"/> array.
-    /// </summary>
-    /// <param name="items">The objects to convert.</param>
-    private static ValkeyValue[] ToValkeyValueArray(object[] items)
-        => [.. items.Cast<GlideString>().Select(gs => (ValkeyValue)gs)];
-
-    /// <summary>
-    /// Converts the given objects to a <see cref="ValkeyValue"/> set.
-    /// </summary>
-    /// <param name="items">The objects to convert.</param>
-    private static ISet<ValkeyValue> ToValkeyValueSet(IEnumerable<object> items)
-        => new HashSet<ValkeyValue>(items.Cast<GlideString>().Select(gs => (ValkeyValue)gs));
+    #region String Converters
 
     /// <summary>
     /// Converts the given objects to an <see cref="IReadOnlySet{String}"/>.
@@ -157,6 +138,83 @@ internal static partial class Request
         => new HashSet<string>(items.Cast<GlideString>().Select(gs => gs.ToString()));
 
     #endregion
+    #region ValkeyKey Converters
+
+    /// <summary>
+    /// Converts the given objects to a <see cref="ValkeyKey"/> set.
+    /// </summary>
+    /// <param name="items">The objects to convert.</param>
+    private static ISet<ValkeyKey> ToValkeyKeySet(IEnumerable<object> items)
+        => new HashSet<ValkeyKey>(items.Cast<GlideString>().Select(gs => (ValkeyKey)gs.Bytes));
+
+    #endregion
+    #region ValkeyValue Converters
+
+    /// <summary>
+    /// Converts the given object to a <see cref="ValkeyValue"/>.
+    /// </summary>
+    /// <param name="value">The object to convert.</param>
+    private static ValkeyValue ToValkeyValue(object? value)
+        => (GlideString?)value;
+
+    /// <summary>
+    /// Converts the given object to a <see cref="ValkeyValue"/> array.
+    /// </summary>
+    /// <param name="value">The object to convert.</param>
+    private static ValkeyValue[] ToValkeyValueArray(object value)
+        => ToValkeyValueArray((object[])value);
+
+    /// <summary>
+    /// Converts the given objects to a <see cref="ValkeyValue"/> array.
+    /// </summary>
+    /// <param name="items">The objects to convert.</param>
+    private static ValkeyValue[] ToValkeyValueArray(IEnumerable<object> items)
+        => [.. items.Select(ToValkeyValue)];
+
+    /// <summary>
+    /// Converts the given objects to a <see cref="ValkeyValue"/> set.
+    /// </summary>
+    /// <param name="items">The objects to convert.</param>
+    private static ISet<ValkeyValue> ToValkeyValueSet(IEnumerable<object> items)
+        => new HashSet<ValkeyValue>(items.Select(ToValkeyValue));
+
+    #endregion
+    #region Value Parsers
+
+    /// <summary>
+    /// Parses a response value as a <see langword="int"/>.
+    /// </summary>
+    /// <param name="value">The response value to parse.</param>
+    private static int ToInt(object value)
+        => (int)ToLong(value);
+
+    /// <summary>
+    /// Parses a response value as a <see langword="long"/>.
+    /// </summary>
+    /// <param name="value">The response value to parse.</param>
+    /// <exception cref="Errors.RequestException">Thrown if <paramref name="value"/> is not a long or numeric string.</exception>
+    private static long ToLong(object value) => value switch
+    {
+        long l => l,
+        GlideString gs => long.Parse(gs.ToString(), CultureInfo.InvariantCulture),
+        _ => throw new RequestException($"Expected a long or numeric string, got {value.GetType()}"),
+    };
+
+    /// <summary>
+    /// Parses a response value in Unix milliseconds as a <see cref="DateTimeOffset"/>.
+    /// </summary>
+    /// <param name="value">The response value to parse.</param>
+    private static DateTimeOffset ToDateTimeOffset(object value)
+        => DateTimeOffset.FromUnixTimeMilliseconds(ToLong(value));
+
+    /// <summary>
+    /// Parses a response value in milliseconds as a <see cref="TimeSpan"/>.
+    /// </summary>
+    /// <param name="value">The response value to parse.</param>
+    private static TimeSpan ToTimeSpan(object value)
+        => TimeSpan.FromMilliseconds(ToLong(value));
+
+    #endregion
     #region Response Map Helpers
 
     /// <summary>
@@ -164,7 +222,7 @@ internal static partial class Request
     /// </summary>
     /// <param name="map">The response dictionary.</param>
     /// <param name="key">The field key to read.</param>
-    /// <exception cref="RequestException">Thrown if <paramref name="key"/> is missing from <paramref name="map"/>.</exception>
+    /// <exception cref="Errors.RequestException">Thrown if <paramref name="key"/> is missing from <paramref name="map"/>.</exception>
     private static bool GetBool(Dictionary<GlideString, object> map, string key)
         => TryGetBool(map, key) ?? throw new RequestException($"Response missing required field '{key}'");
 
@@ -181,7 +239,7 @@ internal static partial class Request
     /// </summary>
     /// <param name="map">The response dictionary.</param>
     /// <param name="key">The field key to read.</param>
-    /// <exception cref="RequestException">Thrown if <paramref name="key"/> is missing from <paramref name="map"/> or is not a single character.</exception>
+    /// <exception cref="Errors.RequestException">Thrown if the value for <paramref name="key"/> is not a single character.</exception>
     private static char GetChar(Dictionary<GlideString, object> map, string key)
     {
         var s = GetString(map, key);
@@ -193,7 +251,7 @@ internal static partial class Request
     /// </summary>
     /// <param name="map">The response dictionary.</param>
     /// <param name="key">The field key to read.</param>
-    /// <exception cref="RequestException">Thrown if <paramref name="key"/> is missing from <paramref name="map"/>.</exception>
+    /// <exception cref="Errors.RequestException">Thrown if <paramref name="key"/> is missing from <paramref name="map"/>.</exception>
     private static double GetDouble(Dictionary<GlideString, object> map, string key)
         => TryGetDouble(map, key) ?? throw new RequestException($"Response missing required field '{key}'");
 
@@ -202,7 +260,7 @@ internal static partial class Request
     /// </summary>
     /// <param name="map">The response dictionary.</param>
     /// <param name="key">The field key to read.</param>
-    /// <exception cref="RequestException">Thrown if the value for <paramref name="key"/> is not a supported type.</exception>
+    /// <exception cref="Errors.RequestException">Thrown if the value for <paramref name="key"/> is not a double or string.</exception>
     private static double? TryGetDouble(Dictionary<GlideString, object> map, string key)
         => map.TryGetValue(key, out var value)
             ? value switch
@@ -213,11 +271,27 @@ internal static partial class Request
             } : null;
 
     /// <summary>
+    /// Returns a required <see langword="int"/> value from the given response dictionary.
+    /// </summary>
+    /// <param name="map">The response dictionary.</param>
+    /// <param name="key">The field key to read.</param>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if the value cannot be converted to an integer.</exception>
+    private static int GetInt(Dictionary<GlideString, object> map, string key)
+    {
+        var value = GetLong(map, key);
+
+        ArgumentOutOfRangeException.ThrowIfLessThan(value, int.MinValue);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(value, int.MaxValue);
+
+        return (int)value;
+    }
+
+    /// <summary>
     /// Returns a required <see langword="long"/> value from the given response dictionary.
     /// </summary>
     /// <param name="map">The response dictionary.</param>
     /// <param name="key">The field key to read.</param>
-    /// <exception cref="RequestException">Thrown if <paramref name="key"/> is missing from <paramref name="map"/>.</exception>
+    /// <exception cref="Errors.RequestException">Thrown if <paramref name="key"/> is missing from <paramref name="map"/>.</exception>
     private static long GetLong(Dictionary<GlideString, object> map, string key)
         => TryGetLong(map, key) ?? throw new RequestException($"Response missing required field '{key}'");
 
@@ -226,11 +300,12 @@ internal static partial class Request
     /// </summary>
     /// <param name="map">The response dictionary.</param>
     /// <param name="key">The field key to read.</param>
-    /// <exception cref="RequestException">Thrown if the value for <paramref name="key"/> is not a supported type.</exception>
+    /// <exception cref="Errors.RequestException">Thrown if the value for <paramref name="key"/> is not a long or string.</exception>
     private static long? TryGetLong(Dictionary<GlideString, object> map, string key)
         => map.TryGetValue(key, out var value)
             ? value switch
             {
+                null => null,
                 long l => l,
                 GlideString gs => long.Parse(gs.ToString()),
                 _ => throw new RequestException($"Response field '{key}' expected long or string, got {value.GetType()}"),
@@ -241,7 +316,7 @@ internal static partial class Request
     /// </summary>
     /// <param name="map">The response dictionary.</param>
     /// <param name="key">The field key to read.</param>
-    /// <exception cref="RequestException">Thrown if <paramref name="key"/> is missing from <paramref name="map"/>.</exception>
+    /// <exception cref="Errors.RequestException">Thrown if <paramref name="key"/> is missing from <paramref name="map"/>.</exception>
     private static string GetString(Dictionary<GlideString, object> map, string key)
         => TryGetString(map, key) ?? throw new RequestException($"Response missing required field '{key}'");
 
@@ -252,6 +327,18 @@ internal static partial class Request
     /// <param name="key">The field key to read.</param>
     private static string? TryGetString(Dictionary<GlideString, object> map, string key)
         => map.TryGetValue(key, out var value) ? ((GlideString)value).ToString() : null;
+
+    /// <summary>
+    /// Returns a required <see langword="object"/> array from the given response dictionary.
+    /// </summary>
+    /// <param name="map">The response dictionary.</param>
+    /// <param name="key">The field key to read.</param>
+    /// <exception cref="Errors.RequestException">Thrown if <paramref name="key"/> is missing from <paramref name="map"/>.</exception>
+    private static object[] GetObjects(Dictionary<GlideString, object> map, string key)
+        // An empty array is represented by an explicit null value.
+        => map.TryGetValue(key, out var value)
+            ? (object[]?)value ?? []
+            : throw new RequestException($"Response missing required field '{key}'");
 
     /// <summary>
     /// Returns a required <see cref="TimeSpan"/> value from the given response dictionary.
@@ -267,7 +354,7 @@ internal static partial class Request
     /// </summary>
     /// <param name="map">The response dictionary.</param>
     /// <param name="key">The field key to read.</param>
-    /// <exception cref="RequestException">Thrown if <paramref name="key"/> is missing from <paramref name="map"/>.</exception>
+    /// <exception cref="Errors.RequestException">Thrown if <paramref name="key"/> is missing from <paramref name="map"/>.</exception>
     private static ValkeyValue GetValkeyValue(Dictionary<GlideString, object> map, string key)
     {
         var result = TryGetValkeyValue(map, key);
@@ -280,14 +367,14 @@ internal static partial class Request
     /// <param name="map">The response dictionary.</param>
     /// <param name="key">The field key to read.</param>
     private static ValkeyValue TryGetValkeyValue(Dictionary<GlideString, object> map, string key)
-        => map.TryGetValue(key, out var value) ? (GlideString)value : ValkeyValue.Null;
+        => map.TryGetValue(key, out var value) ? ToValkeyValue(value) : ValkeyValue.Null;
 
     /// <summary>
     /// Returns a required <see cref="ValkeyValue"/> array from the given response dictionary.
     /// </summary>
     /// <param name="map">The response dictionary.</param>
     /// <param name="key">The field key to read.</param>
-    /// <exception cref="RequestException">Thrown if <paramref name="key"/> is missing from <paramref name="map"/>.</exception>
+    /// <exception cref="Errors.RequestException">Thrown if <paramref name="key"/> is missing from <paramref name="map"/>.</exception>
     private static ValkeyValue[] GetValkeyValues(Dictionary<GlideString, object> map, string key)
         => TryGetValkeyValues(map, key) ?? throw new RequestException($"Response missing required field '{key}'");
 
@@ -296,7 +383,7 @@ internal static partial class Request
     /// </summary>
     /// <param name="map">The response dictionary.</param>
     /// <param name="key">The field key to read.</param>
-    /// <exception cref="RequestException">Thrown if the value for <paramref name="key"/> is not an array.</exception>
+    /// <exception cref="Errors.RequestException">Thrown if the value for <paramref name="key"/> is not an array.</exception>
     private static ValkeyValue[]? TryGetValkeyValues(Dictionary<GlideString, object> map, string key)
     {
         if (!map.TryGetValue(key, out var value))
@@ -311,7 +398,7 @@ internal static partial class Request
             _ => throw new RequestException($"Response field '{key}' expected array, got {value.GetType()}"),
         };
 
-        return [.. items.Cast<GlideString>().Select(gs => (ValkeyValue)gs)];
+        return ToValkeyValueArray(items);
     }
 
     #endregion

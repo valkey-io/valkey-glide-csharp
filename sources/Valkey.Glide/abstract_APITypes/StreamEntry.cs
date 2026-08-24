@@ -1,27 +1,24 @@
-﻿using System;
+// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
+
+using System;
 
 namespace Valkey.Glide;
 
 /// <summary>
-/// Describes an entry contained in a Valkey Stream.
+/// Stream entry response from the <c>XRANGE</c> command.
 /// </summary>
+/// <seealso href="https://valkey.io/commands/xrange/"/>
 public readonly struct StreamEntry
 {
-    /// <summary>
-    /// Creates an stream entry.
-    /// </summary>
-    /// <param name="id">The ID assigned to the entry.</param>
-    /// <param name="values">The field name/value pairs contained in the entry.</param>
-    public StreamEntry(ValkeyValue id, NameValueEntry[] values)
-    {
-        Id = id;
-        Values = values;
-    }
+    #region Constants
 
     /// <summary>
     /// A null stream entry.
     /// </summary>
     public static StreamEntry Null { get; } = new StreamEntry(ValkeyValue.Null, Array.Empty<NameValueEntry>());
+
+    #endregion
+    #region Public Properties
 
     /// <summary>
     /// The ID assigned to the message.
@@ -36,7 +33,7 @@ public readonly struct StreamEntry
     /// <summary>
     /// Search for a specific field by name, returning the value.
     /// </summary>
-    /// <param name="fieldName">The field name to look up.</param>
+    /// <param name="fieldName">The name of the field to search for.</param>
     public ValkeyValue this[ValkeyValue fieldName]
     {
         get
@@ -55,7 +52,23 @@ public readonly struct StreamEntry
     }
 
     /// <summary>
-    /// Indicates that the Valkey Stream Entry is null.
+    /// Indicates that the entry is null.
     /// </summary>
     public bool IsNull => Id == ValkeyValue.Null && Values == Array.Empty<NameValueEntry>();
+
+    #endregion
+    #region Constructors
+
+    /// <summary>
+    /// Creates an stream entry.
+    /// </summary>
+    /// <param name="id">The ID assigned to the message.</param>
+    /// <param name="values">The values contained within the message.</param>
+    public StreamEntry(ValkeyValue id, NameValueEntry[] values)
+    {
+        Id = id;
+        Values = values;
+    }
+
+    #endregion
 }

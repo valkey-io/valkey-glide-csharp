@@ -7,19 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 1.2.0
 
-### Fixed
-
-- `GlideString(byte[])` no longer builds the hex-dump representation on construction, eliminating ~3.3 MB of allocations per instance for large binary payloads (#522)
-- Marshalling of non-ASCII characters on Windows (#501)
-- `FailoverOptions` throws `ArgumentOutOfRangeException` for zero timeout (#488)
-- `StreamReadGroupAsync` returning only the first field-value pair per stream entry (#430)
-- Incorrect default routes:
-  - `SELECT` routed to Random instead of AllNodes in cluster mode (#491)
-  - `CONFIG SET` routed to AllPrimaries instead of AllNodes in cluster mode (#492)
-  - `CONFIG REWRITE` routed to Random instead of AllNodes in cluster mode (#493)
-  - `CONFIG RESETSTAT` routed to AllPrimaries instead of AllNodes in cluster mode (#493)
-  - `FUNCTION KILL` routed to AllPrimaries instead of AllNodes in cluster mode (#494)
-
 ### Added
 
 - Support additional configuration options:
@@ -28,6 +15,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Inflight requests limit (#484)
   - Mutual TLS (#488)
   - Periodic topology checks (#485)
+- Support missing stream commands for GLIDE client (#326):
+  - `XAUTOCLAIM`
+  - `XCLAIM`
+  - `XGROUP CREATE`
+  - `XGROUP CREATECONSUMER`
+  - `XGROUP DELCONSUMER`
+  - `XGROUP DESTROY`
+  - `XGROUP SETID`
+  - `XINFO CONSUMERS`
+  - `XINFO GROUPS`
+  - `XINFO STREAM FULL`
+  - `XPENDING`
 - Support additional commands (#435):
   - `BGREWRITEAOF` (#444)
   - `BGSAVE CANCEL` (#436)
@@ -54,7 +53,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- For compatibility with StackExchange.Redis:
+  - `IDatabaseAsync.StreamReadAsync` parameter renamed to `count` (#326)
+  - `IDatabaseAsync.StreamAutoClaimIdsOnlyAsync` returns `StreamAutoClaimIdsOnlyResult` (#326)
+- Updated released but previously unused stream types (#326):
+  - Rename `StreamGroupFullInfo` to `StreamGroupInfoFull`
+  - Rename `StreamConsumerFullInfo` to `StreamConsumerInfoFull`
+  - Rename `StreamPendingEntryInfo` to `StreamPendingEntry`
+  - Update `StreamClaimOptions` to use factory and fluent methods instead of an object initializer
 - `Logger`, `InfoOptions`, and `Options` are now `static` classes.
+
+### Fixed
+
+- Marshalling of non-ASCII characters on Windows (#501)
+- `FailoverOptions` throws `ArgumentOutOfRangeException` for zero timeout (#488)
+- `StreamReadGroupAsync` returning only the first field-value pair per stream entry (#430)
+- Incorrect default routes:
+  - `SELECT` routed to Random instead of AllNodes in cluster mode (#491)
+  - `CONFIG SET` routed to AllPrimaries instead of AllNodes in cluster mode (#492)
+  - `CONFIG REWRITE` routed to Random instead of AllNodes in cluster mode (#493)
+  - `CONFIG RESETSTAT` routed to AllPrimaries instead of AllNodes in cluster mode (#493)
+  - `FUNCTION KILL` routed to AllPrimaries instead of AllNodes in cluster mode (#494)
+- `GlideString(byte[])` no longer builds the hex-dump representation on construction (#522)
 
 ## 1.1.0
 

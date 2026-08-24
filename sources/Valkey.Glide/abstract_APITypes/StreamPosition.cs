@@ -1,23 +1,45 @@
-﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
+// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 namespace Valkey.Glide;
 
 /// <summary>
-/// Describes a pair consisting of the Stream Key and the <see cref="Position"/> from which to begin reading a stream.
+/// A stream key and starting position for the <c>XREAD</c> command.
 /// </summary>
-public struct StreamPosition
+/// <seealso href="https://valkey.io/commands/xread/"/>
+public readonly struct StreamPosition
 {
     #region Constants
 
     /// <summary>
-    /// The beginning of the stream ("0-0"). Valid for XREAD, XREADGROUP, and XAUTOCLAIM.
+    /// The beginning of the stream ("0-0").
+    /// Valid for XREAD, XREADGROUP, and XAUTOCLAIM.
     /// </summary>
     public static readonly ValkeyValue Beginning = ValkeyLiterals.StreamMinimumId;
 
     /// <summary>
-    /// Only messages not yet delivered to any consumer in the group (">"). Valid for XREADGROUP.
+    /// Only messages not yet delivered to any consumer in the group (">").
+    /// Valid for XREADGROUP.
     /// </summary>
     public static readonly ValkeyValue UndeliveredMessages = ValkeyLiterals.StreamUndeliveredMessages;
+
+    /// <summary>
+    /// Only new messages arriving after this point ("$").
+    /// Valid for XREAD, XGROUP CREATE, and XGROUP SETID.
+    /// </summary>
+    public static readonly ValkeyValue NewMessages = ValkeyLiterals.StreamNewMessages;
+
+    #endregion
+    #region Public Properties
+
+    /// <summary>
+    /// The stream key.
+    /// </summary>
+    public ValkeyKey Key { get; }
+
+    /// <summary>
+    /// The offset at which to begin reading the stream.
+    /// </summary>
+    public ValkeyValue Position { get; }
 
     #endregion
     #region Constructors
@@ -32,19 +54,6 @@ public struct StreamPosition
         Key = key;
         Position = position;
     }
-
-    #endregion
-    #region Public Properties
-
-    /// <summary>
-    /// The stream key.
-    /// </summary>
-    public ValkeyKey Key { get; }
-
-    /// <summary>
-    /// The offset at which to begin reading the stream.
-    /// </summary>
-    public ValkeyValue Position { get; }
 
     #endregion
 }
