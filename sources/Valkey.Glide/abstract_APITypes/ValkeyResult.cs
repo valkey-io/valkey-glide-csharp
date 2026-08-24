@@ -17,6 +17,7 @@ public abstract class ValkeyResult
     /// Do not use.
     /// </summary>
     [Obsolete("Please specify a result type", true)] // retained purely for binary compat
+    [SuppressMessage("Roslynator", "RCS1160:Abstract type should not have public constructors", Justification = "Retained as public purely for binary compatibility.")]
     public ValkeyResult() : this(default) { }
 
     internal ValkeyResult(ResultType resultType)

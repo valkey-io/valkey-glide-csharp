@@ -15,13 +15,13 @@ public static class Errors
         /// <summary>
         /// Initializes a new instance of the <see cref="GlideException"/> class.
         /// </summary>
-        public GlideException() { }
+        protected GlideException() { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GlideException"/> class with a specified error message.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
-        public GlideException(string message) : base(message) { }
+        protected GlideException(string message) : base(message) { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GlideException"/> class with a specified
@@ -29,7 +29,7 @@ public static class Errors
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         /// <param name="innerException">The exception that is the cause of the current exception.</param>
-        public GlideException(string message, Exception innerException) : base(message, innerException) { }
+        protected GlideException(string message, Exception innerException) : base(message, innerException) { }
     }
 
     /// <summary>
