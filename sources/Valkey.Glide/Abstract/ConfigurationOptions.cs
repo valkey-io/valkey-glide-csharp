@@ -559,12 +559,10 @@ public sealed class ConfigurationOptions : ICloneable
                         break;
                 }
             }
-            else
+
+            else if (Format.TryParseEndPoint(option, out EndPoint? ep) && !EndPoints.Contains(ep))
             {
-                if (Format.TryParseEndPoint(option, out EndPoint? ep) && !EndPoints.Contains(ep))
-                {
-                    EndPoints.Add(ep);
-                }
+                EndPoints.Add(ep);
             }
         }
 
@@ -655,11 +653,13 @@ public sealed class ConfigurationOptions : ICloneable
                         break;
                 }
             }
-            else
+
+            else if (Enum.TryParse(value, true, out protocol))
             {
-                if (Enum.TryParse(value, true, out protocol)) return true;
+                return true;
             }
         }
+
         protocol = default;
         return false;
     }

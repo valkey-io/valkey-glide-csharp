@@ -77,12 +77,9 @@ public class AzAffinityTests(TestConfiguration config)
                     Assert.Equal(nGetCalls, int.Parse(m.Groups[1].Value));
                 }
             }
-            else
+            else if (m.Success)
             {
-                if (m.Success)
-                {
-                    Assert.Fail($"Non AZ replica got {m.Groups[1].Value} get calls");
-                }
+                Assert.Fail($"Non AZ replica got {m.Groups[1].Value} get calls");
             }
         }
 

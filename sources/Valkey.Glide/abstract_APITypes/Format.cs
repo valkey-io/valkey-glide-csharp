@@ -416,12 +416,15 @@ internal static class Format
             {
                 if (!"+inf"u8.TryCopyTo(destination)) ThrowFormatFailed();
             }
-            else
+
+            else if (!"-inf"u8.TryCopyTo(destination))
             {
-                if (!"-inf"u8.TryCopyTo(destination)) ThrowFormatFailed();
+                ThrowFormatFailed();
             }
+
             return 4;
         }
+
         var s = value.ToString("G17", NumberFormatInfo.InvariantInfo); // this looks inefficient, but is how Utf8Formatter works too, just: more direct
         if (s.Length > destination.Length) ThrowFormatFailed();
 
@@ -430,6 +433,7 @@ internal static class Format
         {
             destination[i] = (byte)chars[i];
         }
+
         return chars.Length;
     }
 
