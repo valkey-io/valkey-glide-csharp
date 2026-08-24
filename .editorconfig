@@ -570,6 +570,8 @@ dotnet_diagnostic.RCS1047.severity = error
 dotnet_diagnostic.RCS1139.severity = error
 dotnet_diagnostic.RCS1140.severity = error
 dotnet_diagnostic.RCS1141.severity = error
+# RCS1108: Add 'static' modifier to all partial class declarations
+dotnet_diagnostic.RCS1108.severity = error
 dotnet_diagnostic.RCS1213.severity = error
 
 # IDE0130: Namespace does not match folder structure

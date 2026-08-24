@@ -8,7 +8,7 @@ using static Valkey.Glide.Internals.TimeUtils;
 
 namespace Valkey.Glide.Internals;
 
-internal partial class Request
+internal static partial class Request
 {
     public static Cmd<object?, object?> CustomCommand(GlideString[] args)
         => new(RequestType.CustomCommand, args, true, o => o);
