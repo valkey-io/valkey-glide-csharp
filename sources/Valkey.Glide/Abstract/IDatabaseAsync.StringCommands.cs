@@ -143,14 +143,12 @@ public partial interface IDatabaseAsync
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>The value of <paramref name="key"/>, or <see cref="ValkeyValue.Null"/> when <paramref name="key"/> does not exist.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await db.StringSetAsync("key", "value");
     /// var value = await db.StringGetSetExpiryAsync("key", TimeSpan.FromSeconds(30));  // "value"
     /// </code>
     /// </example>
-    /// </remarks>
     Task<ValkeyValue> StringGetSetExpiryAsync(ValkeyKey key, TimeSpan? expiry, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
@@ -162,14 +160,12 @@ public partial interface IDatabaseAsync
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>The value of <paramref name="key"/>, or <see cref="ValkeyValue.Null"/> when <paramref name="key"/> does not exist.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await db.StringSetAsync("key", "value");
     /// var value = await db.StringGetSetExpiryAsync("key", DateTime.UtcNow.AddMinutes(5));  // "value"
     /// </code>
     /// </example>
-    /// </remarks>
     Task<ValkeyValue> StringGetSetExpiryAsync(ValkeyKey key, DateTime expiry, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
@@ -182,7 +178,6 @@ public partial interface IDatabaseAsync
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>A string (sequence of characters) of the LCS match.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await db.StringSetAsync("key1", "ohmytext");
@@ -190,6 +185,7 @@ public partial interface IDatabaseAsync
     /// var lcs = await db.StringLongestCommonSubsequenceAsync("key1", "key2");  // "mytext"
     /// </code>
     /// </example>
+    /// <remarks>
     /// <para>Since Valkey 7.0.0.</para>
     /// </remarks>
     Task<string?> StringLongestCommonSubsequenceAsync(ValkeyKey first, ValkeyKey second, CommandFlags flags = CommandFlags.None);
@@ -204,7 +200,6 @@ public partial interface IDatabaseAsync
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>The length of the LCS match.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await db.StringSetAsync("key1", "ohmytext");
@@ -212,6 +207,7 @@ public partial interface IDatabaseAsync
     /// var length = await db.StringLongestCommonSubsequenceLengthAsync("key1", "key2");  // 6
     /// </code>
     /// </example>
+    /// <remarks>
     /// <para>Since Valkey 7.0.0.</para>
     /// </remarks>
     Task<long> StringLongestCommonSubsequenceLengthAsync(ValkeyKey first, ValkeyKey second, CommandFlags flags = CommandFlags.None);
@@ -227,7 +223,6 @@ public partial interface IDatabaseAsync
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>The result of LCS algorithm, containing match positions and lengths based on the given parameters.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await db.StringSetAsync("key1", "ohmytext");
@@ -236,6 +231,7 @@ public partial interface IDatabaseAsync
     /// Console.WriteLine($"LCS length: {matches.LongestMatchLength}");
     /// </code>
     /// </example>
+    /// <remarks>
     /// <para>Since Valkey 7.0.0.</para>
     /// </remarks>
     Task<LCSMatchResult> StringLongestCommonSubsequenceWithMatchesAsync(ValkeyKey first, ValkeyKey second, long minLength = 0, CommandFlags flags = CommandFlags.None);

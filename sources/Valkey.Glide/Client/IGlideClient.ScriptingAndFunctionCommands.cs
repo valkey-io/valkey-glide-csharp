@@ -20,12 +20,12 @@ public partial interface IGlideClient
     /// <param name="options">Optional query parameters to filter results.</param>
     /// <param name="cancellationToken">A token to cancel the async operation.</param>
     /// <returns>An array of <see cref="LibraryInfo"/> describing each loaded library.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var libraries = await client.FunctionListAsync();
     /// </code>
     /// </example>
+    /// <remarks>
     /// <para>Since Valkey 7.0.0.</para>
     /// </remarks>
     Task<LibraryInfo[]> FunctionListAsync(
@@ -38,12 +38,12 @@ public partial interface IGlideClient
     /// <seealso href="https://valkey.io/commands/function-stats/">Valkey commands – FUNCTION STATS</seealso>
     /// <param name="cancellationToken">A token to cancel the async operation.</param>
     /// <returns>A <see cref="FunctionStatsResult"/> with engine statistics and information about any running script.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var stats = await client.FunctionStatsAsync();
     /// </code>
     /// </example>
+    /// <remarks>
     /// <para>Since Valkey 7.0.0.</para>
     /// </remarks>
     Task<FunctionStatsResult> FunctionStatsAsync(

@@ -69,7 +69,6 @@ public partial interface IDatabaseAsync
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>An array of set members resulting from the operation.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await db.SetAddAsync("set1", ["a", "b", "c"]);
@@ -77,6 +76,7 @@ public partial interface IDatabaseAsync
     /// var members = await db.SetCombineAsync(SetOperation.Intersect, "set1", "set2");  // ["b", "c"]
     /// </code>
     /// </example>
+    /// <remarks>
     /// <para>When in cluster mode, <paramref name="first"/> and <paramref name="second"/> must map to the same hash slot.</para>
     /// </remarks>
     Task<ValkeyValue[]> SetCombineAsync(SetOperation operation, ValkeyKey first, ValkeyKey second, CommandFlags flags = CommandFlags.None);
@@ -92,7 +92,6 @@ public partial interface IDatabaseAsync
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>An array of set members resulting from the operation.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await db.SetAddAsync("set1", ["a", "b"]);
@@ -100,6 +99,7 @@ public partial interface IDatabaseAsync
     /// var members = await db.SetCombineAsync(SetOperation.Union, ["set1", "set2"]);  // ["a", "b", "c"]
     /// </code>
     /// </example>
+    /// <remarks>
     /// <para>When in cluster mode, all keys must map to the same hash slot.</para>
     /// </remarks>
     Task<ValkeyValue[]> SetCombineAsync(SetOperation operation, IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None);
@@ -117,7 +117,6 @@ public partial interface IDatabaseAsync
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>The number of elements in the resulting set.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await db.SetAddAsync("set1", ["a", "b", "c"]);
@@ -125,6 +124,7 @@ public partial interface IDatabaseAsync
     /// var count = await db.SetCombineAndStoreAsync(SetOperation.Intersect, "dest", "set1", "set2");  // 2
     /// </code>
     /// </example>
+    /// <remarks>
     /// <para>When in cluster mode, <paramref name="destination"/>, <paramref name="first"/>, and <paramref name="second"/> must map to the same hash slot.</para>
     /// </remarks>
     Task<long> SetCombineAndStoreAsync(SetOperation operation, ValkeyKey destination, ValkeyKey first, ValkeyKey second, CommandFlags flags = CommandFlags.None);
@@ -141,7 +141,6 @@ public partial interface IDatabaseAsync
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>The number of elements in the resulting set.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await db.SetAddAsync("set1", ["a", "b"]);
@@ -149,6 +148,7 @@ public partial interface IDatabaseAsync
     /// var count = await db.SetCombineAndStoreAsync(SetOperation.Union, "dest", ["set1", "set2"]);  // 3
     /// </code>
     /// </example>
+    /// <remarks>
     /// <para>When in cluster mode, <paramref name="destination"/> and all <paramref name="keys"/> must map to the same hash slot.</para>
     /// </remarks>
     Task<long> SetCombineAndStoreAsync(SetOperation operation, ValkeyKey destination, IEnumerable<ValkeyKey> keys, CommandFlags flags = CommandFlags.None);
@@ -190,10 +190,6 @@ public partial interface IDatabaseAsync
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>An <see cref="IAsyncEnumerable{T}"/> that yields all matching elements of the set.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    /// <remarks>
-    /// Unlike StackExchange.Redis, which only skips elements within the first scan batch (making the
-    /// skip non-deterministic since batch sizes are server-controlled), GLIDE skips <paramref name="pageOffset"/>
-    /// elements from the overall result stream regardless of internal batching. This provides deterministic behavior.
     /// <example>
     /// <code>
     /// await db.SetAddAsync("myset", ["apple", "banana", "apricot"]);
@@ -203,6 +199,10 @@ public partial interface IDatabaseAsync
     /// }
     /// </code>
     /// </example>
+    /// <remarks>
+    /// Unlike StackExchange.Redis, which only skips elements within the first scan batch (making the
+    /// skip non-deterministic since batch sizes are server-controlled), GLIDE skips <paramref name="pageOffset"/>
+    /// elements from the overall result stream regardless of internal batching. This provides deterministic behavior.
     /// </remarks>
     IAsyncEnumerable<ValkeyValue> SetScanAsync(ValkeyKey key, ValkeyValue pattern = default, int pageSize = 250, long cursor = 0, int pageOffset = 0, CommandFlags flags = CommandFlags.None);
 }

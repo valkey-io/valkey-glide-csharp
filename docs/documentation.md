@@ -36,13 +36,16 @@ Command method documentation template:
 ```xml
 /// <summary>...</summary>
 /// <seealso href="https://valkey.io/commands/{command}/">Valkey commands – {COMMAND}</seealso>
+/// <typeparam name="...">...</typeparam>
 /// <param name="...">...</param>
 /// <returns>...</returns>
 /// <exception cref="...">...</exception>
+/// <example>
+/// <code>
+/// ...
+/// </code>
+/// </example>
 /// <remarks>
-///   <example>
-///     <code>...</code>
-///   </example>
 ///   <para>...</para>
 /// </remarks>
 ```
@@ -51,54 +54,61 @@ Command method documentation template:
 
 Guidelines for command method documentation content:
 
-1. **`<summary>`** — Required. Single occurrence.
+1. `<summary>` — Required. Single occurrence.
    - Describe what the command does in one or two sentences.
    - Keep it concise — do not duplicate information already covered by other tags or
      the linked Valkey command reference.
    - For commands that map to multiple Valkey commands, describe the unified behavior.
    - Use third-person present tense (e.g. "Returns", "Sets", "Removes").
 
-2. **`<seealso>`** — Required. One or more occurrences.
+2. `<seealso>` — Required. One or more occurrences.
    - Link to the corresponding Valkey command documentation.
    - Format: `<seealso href="https://valkey.io/commands/{command}/">Valkey commands – {COMMAND}</seealso>`
    - If a method maps to multiple Valkey commands, include a `<seealso>` for each.
 
-3. **`<param>`** — Required for each parameter. One occurrence per parameter.
+3. `<typeparam>` — Required for each type parameter. Zero or more occurences.
+   - Document every type parameter of a generic method.
+   - Describe what the type parameter represents.
+
+4. `<param>` — Required for each parameter. One occurrence per parameter.
    - Document every parameter, including those with default values.
    - Do not restate default values already visible in the method signature.
    - Be specific about what the parameter represents in the context of the Valkey command.
 
-4. **`<returns>`** — Required (unless the method returns `void` or `Task`). Single occurrence.
+5. `<returns>` — Required unless the method returns `void` or `Task`. Zero or one occurrences.
    - Clearly describe the return value and its type.
    - Document the behavior when the key does not exist (e.g., returns `ValkeyValue.Null`).
 
-5. **`<exception>`** — Optional. Zero or more occurrences.
+6. `<exception>` — Optional. Zero or more occurrences.
    - Document exceptions that callers should be aware of.
    - Use `<exception cref="...">` with a description of when the exception is thrown.
 
-6. **`<remarks>`** — Required. Single occurence.
-   - **Examples** — Required. One or more `<example>` blocks.
-     - Examples should be **self-contained**: they should include any setup needed to determine the
-       expected return value from the example alone; this should include populating any relevant keys
-       first (e.g., call `SetAsync` before `GetAsync`).
-     - Examples should follow code format and style conventions from this project.
-     - For methods with notable edge cases, include multiple `<example>` blocks.
-     - Use descriptive variable names; avoid generic names like `result`.
-     - **Expected return**: annotate the returned value with an inline comment:
-       - strings: `// "value"`
-       - numbers: `// 0`
-       - lists/arrays: `// ["value1", "value2"]`
-       - dictionaries: `// {key1: "value1", key2: "value2"}`
-       - sets: `// {"value1", "value2"}`
-     - **When the return value cannot be determined** (e.g., latency, server time) or is
-       impractical to set up, use `Console.WriteLine` to show how it would be consumed —
-       for example, `Console.WriteLine($"Received response after {latency.TotalSeconds} seconds")`.
-     - **Be concise**: use `var`, collection expressions (`["a", "b"]`), and other modern
-       C# features to keep examples short without sacrificing clarity.
-   - **Notes** — Optional. Zero or more occurrences inside `<para>` blocks, including:
-     - **Version requirements**: minimum Valkey version (e.g., `Since Valkey 6.2.0.`).
-     - **Cluster mode behavior**: when a multi-key command has non-atomic behavior across hash slots.
-     - **Slot constraints**: when keys must reside in the same hash slot
+7. `<example>` / `<code>` — Required. One or more occurences.
+   - Examples should be **self-contained**: they should include any setup needed to determine the
+     expected return value from the example alone; this should include populating any relevant keys
+     first (e.g., call `SetAsync` before `GetAsync`).
+   - Examples should follow code format and style conventions from this project.
+   - For methods with notable edge cases, include multiple `<example>` blocks.
+   - Use descriptive variable names; avoid generic names like `result`.
+   - **Expected return**: annotate the returned value with an inline comment:
+     - strings: `// "value"`
+     - numbers: `// 0`
+     - lists/arrays: `// ["value1", "value2"]`
+     - dictionaries: `// {key1: "value1", key2: "value2"}`
+     - sets: `// {"value1", "value2"}`
+   - **When the return value cannot be determined** (e.g., latency, server time) or is
+     impractical to set up, use `Console.WriteLine` to show how it would be consumed —
+     for example, `Console.WriteLine($"Received response after {latency.TotalSeconds} seconds")`.
+   - **Be concise**: use `var`, collection expressions (`["a", "b"]`), and other modern
+     C# features to keep examples short without sacrificing clarity.
+
+8. `<remarks>` — Optional. Zero or one occurences.
+   - Use `<para>` blocks to separate remarks.
+   - Common examples:
+     - Version requirements: minimum Valkey version (e.g., `Since Valkey 6.2.0.`).
+     - Cluster mode behavior: when a multi-key command has non-atomic behavior across hash slots.
+     - Slot constraints: when keys must reside in the same hash slot
+       (e.g., `When in cluster mode, both key and newKey must map to the same hash slot.`).
 
 ### Inheritdoc
 
@@ -150,14 +160,12 @@ Basic command method:
 /// <param name="keys">The keys to retrieve.</param>
 /// <returns>An array with the value for each key, or <see cref="ValkeyValue.Null"/> if it does not exist.
 /// </returns>
-/// <remarks>
 /// <example>
 /// <code>
 /// await client.SetAsync("key", "hello");
 /// var values = await client.GetAsync(["key", "nonexistent"]);  // ["hello", ValkeyValue.Null]
 /// </code>
 /// </example>
-/// </remarks>
 Task<ValkeyValue[]> GetAsync(IEnumerable<ValkeyKey> keys);
 ```
 

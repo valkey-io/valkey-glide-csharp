@@ -16,7 +16,6 @@ public interface ITransactionClusterCommands : ITransactionBaseCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/unwatch/">Valkey commands – UNWATCH</seealso>
     /// <exception cref="Errors.RequestException">Thrown if the command fails to execute on the server.</exception>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await clusterClient.WatchAsync(["sampleKey"]);
@@ -24,7 +23,6 @@ public interface ITransactionClusterCommands : ITransactionBaseCommands
     /// // "sampleKey" is no longer watched on all primary nodes
     /// </code>
     /// </example>
-    /// </remarks>
     Task UnwatchAsync();
 
     /// <summary>
@@ -34,7 +32,6 @@ public interface ITransactionClusterCommands : ITransactionBaseCommands
     /// <param name="route">Specifies the routing configuration for the command. The client will route the
     /// command to the nodes defined by <paramref name="route"/>.</param>
     /// <exception cref="Errors.RequestException">Thrown if the command fails to execute on the server.</exception>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await clusterClient.WatchAsync(["sampleKey"]);
@@ -42,6 +39,5 @@ public interface ITransactionClusterCommands : ITransactionBaseCommands
     /// // "sampleKey" is no longer watched on all primary nodes
     /// </code>
     /// </example>
-    /// </remarks>
     Task UnwatchAsync(Route route);
 }

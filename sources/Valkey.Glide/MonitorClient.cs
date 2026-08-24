@@ -119,7 +119,6 @@ public sealed class MonitorClient : IAsyncDisposable, IDisposable
     /// </summary>
     /// <param name="cancellationToken">A token to cancel the enumeration.</param>
     /// <returns>An <see cref="IAsyncEnumerable{MonitorMessage}"/> that yields messages as they arrive.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// using var config = new MonitorConfig("localhost", 6379);
@@ -132,6 +131,7 @@ public sealed class MonitorClient : IAsyncDisposable, IDisposable
     /// }
     /// </code>
     /// </example>
+    /// <remarks>
     /// <para>
     /// The stream will not terminate automatically on connection loss. Users should always
     /// provide a <see cref="CancellationToken"/> to avoid hanging on stale connections.

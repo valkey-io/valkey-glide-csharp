@@ -19,7 +19,6 @@ public interface ITransactionBaseCommands
     /// <seealso href="https://valkey.io/commands/watch/">Valkey commands – WATCH</seealso>
     /// <param name="keys">The keys to watch.</param>
     /// <exception cref="Errors.RequestException">Thrown if the command fails to execute on the server.</exception>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.WatchAsync(["sampleKey"]);
@@ -40,6 +39,7 @@ public interface ITransactionBaseCommands
     /// // transactionResult2 is null because the watched key was modified
     /// </code>
     /// </example>
+    /// <remarks>
     /// <para>In cluster mode, if keys in <paramref name="keys"/> map to different hash slots, the command
     /// will be split across these slots and executed separately for each. This means the command
     /// is atomic only at the slot level. If one or more slot-specific requests fail, the entire

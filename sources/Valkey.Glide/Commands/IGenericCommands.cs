@@ -24,18 +24,18 @@ public interface IGenericCommands
     /// <seealso href="https://valkey.io/commands/">Valkey commands</seealso>
     /// <param name="args">A list includes the command name and arguments for the custom command.</param>
     /// <returns>The returning value depends on the executed command.</returns>
-    /// <remarks>
-    /// This API returns all <see langword="string" /> data as <see cref="GlideString" />.
-    /// <para />
-    /// This function should only be used for single-response commands. Commands that don't return complete response and awaits
-    /// (such as SUBSCRIBE); that return potentially more than a single response (such as XREAD); or that change the client's
-    /// behavior (such as entering pub/sub mode on RESP2 connections) shouldn't be called using this function.
     /// <example>
     /// <code>
     /// var response = await client.CustomCommand(["CLIENT", "LIST", "TYPE", "PUBSUB"]);
     /// Console.WriteLine((response as GlideString)!);
     /// </code>
     /// </example>
+    /// <remarks>
+    /// This API returns all <see langword="string" /> data as <see cref="GlideString" />.
+    /// <para />
+    /// This function should only be used for single-response commands. Commands that don't return complete response and awaits
+    /// (such as SUBSCRIBE); that return potentially more than a single response (such as XREAD); or that change the client's
+    /// behavior (such as entering pub/sub mode on RESP2 connections) shouldn't be called using this function.
     /// </remarks>
     Task<object?> CustomCommand(IEnumerable<GlideString> args);
 
@@ -60,9 +60,6 @@ public interface IGenericCommands
     /// An array of results, where each entry corresponds to a command's execution result
     /// or <see langword="null" /> if a transaction failed due to a <c>WATCH</c> command.
     /// </returns>
-    /// <remarks>
-    /// <b>Atomic Batches (Transactions):</b> If a transaction fails due to a <c>WATCH</c> command,
-    /// <c>Exec</c> will return <see langword="null" />.
     /// <example>
     /// <code>
     /// // Example 1: Atomic Batch (Transaction)
@@ -88,6 +85,9 @@ public interface IGenericCommands
     /// // Expected result: ["OK", "OK", "value1", "value2"]
     /// </code>
     /// </example>
+    /// <remarks>
+    /// <b>Atomic Batches (Transactions):</b> If a transaction fails due to a <c>WATCH</c> command,
+    /// <c>Exec</c> will return <see langword="null" />.
     /// </remarks>
     Task<object?[]?> Exec(Batch batch, bool raiseOnError);
 
@@ -96,9 +96,6 @@ public interface IGenericCommands
     /// </summary>
     /// <inheritdoc cref="Exec(Batch, bool)" path="/*[not(self::summary) and not(self::remarks)]"/>
     /// <param name="options">A <see cref="BatchOptions" /> object containing execution options.</param>
-    /// <remarks>
-    /// <b>Atomic Batches (Transactions):</b> If a transaction fails due to a <c>WATCH</c> command,
-    /// <c>Exec</c> will return <see langword="null" />.
     /// <example>
     /// <code>
     /// // Example 1: Atomic Batch (Transaction)
@@ -128,6 +125,9 @@ public interface IGenericCommands
     /// // Expected result: ["OK", "OK", "value1", "value2"]
     /// </code>
     /// </example>
+    /// <remarks>
+    /// <b>Atomic Batches (Transactions):</b> If a transaction fails due to a <c>WATCH</c> command,
+    /// <c>Exec</c> will return <see langword="null" />.
     /// </remarks>
     Task<object?[]?> Exec(Batch batch, bool raiseOnError, BatchOptions options);
 }

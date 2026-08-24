@@ -31,14 +31,12 @@ public interface IGenericBaseCommands
     /// <param name="by">The pattern to sort by external keys.</param>
     /// <param name="get">The patterns to retrieve external keys' values.</param>
     /// <returns>An array of sorted elements.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.ListLeftPushAsync("mylist", ["3", "1", "2"]);
     /// var sorted = await client.SortAsync("mylist");  // ["1", "2", "3"]
     /// </code>
     /// </example>
-    /// </remarks>
     Task<ValkeyValue[]> SortAsync(ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, IEnumerable<ValkeyValue>? get = null);
 
     /// <summary>
@@ -54,14 +52,12 @@ public interface IGenericBaseCommands
     /// <param name="by">The pattern to sort by external keys.</param>
     /// <param name="get">The patterns to retrieve external keys' values.</param>
     /// <returns>The number of elements stored in <paramref name="destination"/>.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.ListLeftPushAsync("mylist", ["3", "1", "2"]);
     /// var stored = await client.SortAndStoreAsync("sorted", "mylist");  // 3
     /// </code>
     /// </example>
-    /// </remarks>
     Task<long> SortAndStoreAsync(ValkeyKey destination, ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, IEnumerable<ValkeyValue>? get = null);
 
 }

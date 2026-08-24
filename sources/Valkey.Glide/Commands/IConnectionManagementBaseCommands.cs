@@ -16,15 +16,15 @@ public interface IConnectionManagementBaseCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/select/">Valkey commands – SELECT</seealso>
     /// <param name="index">The index of the database to select.</param>
-    /// <remarks>
-    /// Unlike StackExchange.Redis, GLIDE does not support per-database connections. Calling
-    /// <see cref="SelectAsync(long)"/> changes the database for the entire connection and all
-    /// subsequent commands.
     /// <example>
     /// <code>
     /// await client.SelectAsync(1);
     /// </code>
     /// </example>
+    /// <remarks>
+    /// Unlike StackExchange.Redis, GLIDE does not support per-database connections. Calling
+    /// <see cref="SelectAsync(long)"/> changes the database for the entire connection and all
+    /// subsequent commands.
     /// </remarks>
     Task SelectAsync(long index);
 }

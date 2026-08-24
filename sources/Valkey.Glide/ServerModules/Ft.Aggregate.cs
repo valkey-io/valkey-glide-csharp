@@ -18,7 +18,6 @@ public static partial class Ft
     /// <param name="index">The name of the index to aggregate.</param>
     /// <param name="query">The search query expression.</param>
     /// <returns>An array of result row dictionaries</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await Ft.CreateAsync(client, "index",
@@ -34,7 +33,6 @@ public static partial class Ft
     /// Console.WriteLine($"{rows[1]["name"]}: {rows[1]["category"]}");  // "Gadget: electronics"
     /// </code>
     /// </example>
-    /// </remarks>
     public static Task<IDictionary<ValkeyValue, ValkeyValue>[]> AggregateAsync(BaseClient client, ValkeyKey index, ValkeyValue query)
         => client.Command(Request.FtAggregate(index, query));
 

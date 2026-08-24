@@ -21,13 +21,11 @@ public interface IHyperLogLogBaseCommands
     /// <see langword="true"/> if at least one HyperLogLog internal register was altered,
     /// <see langword="false"/> otherwise.
     /// </returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var altered = await client.HyperLogLogAddAsync("myhll", "element1");  // true
     /// </code>
     /// </example>
-    /// </remarks>
     Task<bool> HyperLogLogAddAsync(ValkeyKey key, ValkeyValue element);
 
     /// <summary>
@@ -40,13 +38,11 @@ public interface IHyperLogLogBaseCommands
     /// <see langword="true"/> if at least one HyperLogLog internal register was altered,
     /// <see langword="false"/> otherwise.
     /// </returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var altered = await client.HyperLogLogAddAsync("myhll", ["a", "b", "c"]);  // true
     /// </code>
     /// </example>
-    /// </remarks>
     Task<bool> HyperLogLogAddAsync(ValkeyKey key, IEnumerable<ValkeyValue> elements);
 
     /// <summary>
@@ -57,14 +53,12 @@ public interface IHyperLogLogBaseCommands
     /// <returns>
     /// The approximated number of unique elements observed by the HyperLogLog.
     /// </returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.HyperLogLogAddAsync("myhll", ["a", "b", "c"]);
     /// var count = await client.HyperLogLogLengthAsync("myhll");  // 3
     /// </code>
     /// </example>
-    /// </remarks>
     Task<long> HyperLogLogLengthAsync(ValkeyKey key);
 
     /// <summary>
@@ -75,7 +69,6 @@ public interface IHyperLogLogBaseCommands
     /// <returns>
     /// The approximated number of unique elements observed by the union of the HyperLogLogs.
     /// </returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.HyperLogLogAddAsync("hll1", ["a", "b"]);
@@ -83,7 +76,6 @@ public interface IHyperLogLogBaseCommands
     /// var count = await client.HyperLogLogLengthAsync(["hll1", "hll2"]);  // 3
     /// </code>
     /// </example>
-    /// </remarks>
     Task<long> HyperLogLogLengthAsync(IEnumerable<ValkeyKey> keys);
 
     /// <summary>
@@ -93,13 +85,11 @@ public interface IHyperLogLogBaseCommands
     /// <param name="destination">The destination HyperLogLog key.</param>
     /// <param name="first">The first source HyperLogLog key.</param>
     /// <param name="second">The second source HyperLogLog key.</param>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.HyperLogLogMergeAsync("dest_hll", "hll1", "hll2");
     /// </code>
     /// </example>
-    /// </remarks>
     Task HyperLogLogMergeAsync(ValkeyKey destination, ValkeyKey first, ValkeyKey second);
 
     /// <summary>
@@ -108,12 +98,10 @@ public interface IHyperLogLogBaseCommands
     /// <seealso href="https://valkey.io/commands/pfmerge/">Valkey commands – PFMERGE</seealso>
     /// <param name="destination">The destination HyperLogLog key.</param>
     /// <param name="sourceKeys">The source HyperLogLog keys.</param>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.HyperLogLogMergeAsync("dest_hll", ["hll1", "hll2", "hll3"]);
     /// </code>
     /// </example>
-    /// </remarks>
     Task HyperLogLogMergeAsync(ValkeyKey destination, IEnumerable<ValkeyKey> sourceKeys);
 }

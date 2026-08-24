@@ -24,13 +24,13 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// <param name="shardedChannel">The sharded channel to publish the message to.</param>
     /// <param name="message">The message to publish.</param>
     /// <returns>The number of clients that received the message.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var subscriberCount = await clusterClient.SPublishAsync("shard-news", "Shard-specific news!");
     /// Console.WriteLine($"Delivered message to {subscriberCount} subscriber(s)");
     /// </code>
     /// </example>
+    /// <remarks>
     /// <para>Since Valkey 7.0.0.</para>
     /// <para>Sharded channels are specific to cluster mode and route messages to specific shards based on the channel name.</para>
     /// </remarks>
@@ -47,13 +47,13 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if <paramref name="timeout"/> is negative.</exception>
     /// <exception cref="Errors.TimeoutException">Thrown if server confirmation is not received within the specified <paramref name="timeout"/>.</exception>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await clusterClient.SSubscribeAsync("shard-news", TimeSpan.FromSeconds(5));
     /// Console.WriteLine("Subscribed to 'shard-news' sharded channel");
     /// </code>
     /// </example>
+    /// <remarks>
     /// <para>Since Valkey 7.0.0.</para>
     /// </remarks>
     abstract Task SSubscribeAsync(ValkeyKey shardedChannel, TimeSpan timeout);
@@ -66,13 +66,13 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if <paramref name="timeout"/> is negative.</exception>
     /// <exception cref="Errors.TimeoutException">Thrown if server confirmation is not received within the specified <paramref name="timeout"/>.</exception>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await clusterClient.SSubscribeAsync(["shard-news", "shard-updates"], TimeSpan.FromSeconds(5));
     /// Console.WriteLine("Subscribed to 'shard-news' and 'shard-updates' sharded channels");
     /// </code>
     /// </example>
+    /// <remarks>
     /// <para>Since Valkey 7.0.0.</para>
     /// </remarks>
     abstract Task SSubscribeAsync(IEnumerable<ValkeyKey> shardedChannels, TimeSpan timeout);
@@ -82,13 +82,13 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ssubscribe/">Valkey commands – SSUBSCRIBE</seealso>
     /// <param name="shardedChannel">The sharded channel to subscribe to.</param>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await clusterClient.SSubscribeLazyAsync("shard-news");
     /// Console.WriteLine("Subscribed to 'shard-news' sharded channel");
     /// </code>
     /// </example>
+    /// <remarks>
     /// <para>Since Valkey 7.0.0.</para>
     /// <para>The client subscribes asynchronously in the background.
     /// Use <see cref="IBaseClient.GetSubscriptionsAsync"/> to verify the actual server subscription state.
@@ -101,13 +101,13 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ssubscribe/">Valkey commands – SSUBSCRIBE</seealso>
     /// <param name="shardedChannels">A collection of sharded channels to subscribe to.</param>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await clusterClient.SSubscribeLazyAsync(["shard-news", "shard-updates"]);
     /// Console.WriteLine("Subscribed to 'shard-news' and 'shard-updates' sharded channels");
     /// </code>
     /// </example>
+    /// <remarks>
     /// <para>Since Valkey 7.0.0.</para>
     /// <para>The client subscribes asynchronously in the background.
     /// Use <see cref="IBaseClient.GetSubscriptionsAsync"/> to verify the actual server subscription state.
@@ -125,13 +125,13 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if <paramref name="timeout"/> is negative.</exception>
     /// <exception cref="Errors.TimeoutException">Thrown if server confirmation is not received within the specified <paramref name="timeout"/>.</exception>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await clusterClient.SUnsubscribeAsync(TimeSpan.FromSeconds(5));
     /// Console.WriteLine("Unsubscribed from all sharded channels");
     /// </code>
     /// </example>
+    /// <remarks>
     /// <para>Since Valkey 7.0.0.</para>
     /// </remarks>
     abstract Task SUnsubscribeAsync(TimeSpan timeout);
@@ -144,13 +144,13 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if <paramref name="timeout"/> is negative.</exception>
     /// <exception cref="Errors.TimeoutException">Thrown if server confirmation is not received within the specified <paramref name="timeout"/>.</exception>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await clusterClient.SUnsubscribeAsync("shard-news", TimeSpan.FromSeconds(5));
     /// Console.WriteLine("Unsubscribed from 'shard-news' sharded channel");
     /// </code>
     /// </example>
+    /// <remarks>
     /// <para>Since Valkey 7.0.0.</para>
     /// </remarks>
     abstract Task SUnsubscribeAsync(ValkeyKey shardedChannel, TimeSpan timeout);
@@ -163,13 +163,13 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// <param name="timeout">Maximum time to wait for server confirmation. Waits indefinitely if not specified or <see cref="TimeSpan.Zero"/>.</param>
     /// <exception cref="ArgumentException">Thrown if <paramref name="timeout"/> is negative.</exception>
     /// <exception cref="Errors.TimeoutException">Thrown if server confirmation is not received within the specified <paramref name="timeout"/>.</exception>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await clusterClient.SUnsubscribeAsync(["shard-news", "shard-updates"], TimeSpan.FromSeconds(5));
     /// Console.WriteLine("Unsubscribed from 'shard-news' and 'shard-updates' sharded channels");
     /// </code>
     /// </example>
+    /// <remarks>
     /// <para>Since Valkey 7.0.0.</para>
     /// </remarks>
     abstract Task SUnsubscribeAsync(IEnumerable<ValkeyKey> shardedChannels, TimeSpan timeout);
@@ -178,13 +178,13 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// Unsubscribes the client from all sharded channels and returns without waiting for server confirmation.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/sunsubscribe/">Valkey commands – SUNSUBSCRIBE</seealso>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await clusterClient.SUnsubscribeLazyAsync();
     /// Console.WriteLine("Unsubscribed from all sharded channels");
     /// </code>
     /// </example>
+    /// <remarks>
     /// <para>Since Valkey 7.0.0.</para>
     /// <para>The client unsubscribes asynchronously in the background.
     /// Use <see cref="IBaseClient.GetSubscriptionsAsync"/> to verify the actual server subscription state.
@@ -197,13 +197,13 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/sunsubscribe/">Valkey commands – SUNSUBSCRIBE</seealso>
     /// <param name="shardedChannel">The sharded channel to unsubscribe from.</param>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await clusterClient.SUnsubscribeLazyAsync("shard-news");
     /// Console.WriteLine("Unsubscribed from 'shard-news' sharded channel");
     /// </code>
     /// </example>
+    /// <remarks>
     /// <para>Since Valkey 7.0.0.</para>
     /// <para>The client unsubscribes asynchronously in the background.
     /// Use <see cref="IBaseClient.GetSubscriptionsAsync"/> to verify the actual server subscription state.
@@ -216,7 +216,6 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/sunsubscribe/">Valkey commands – SUNSUBSCRIBE</seealso>
     /// <param name="shardedChannels">A collection of sharded channels to unsubscribe from. If empty or <see cref="PubSub.AllShardedChannels"/>, unsubscribes from all sharded channels.</param>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await clusterClient.SUnsubscribeLazyAsync(["shard-news", "shard-updates"]);
@@ -229,6 +228,7 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// Console.WriteLine("Unsubscribed from all sharded channels");
     /// </code>
     /// </example>
+    /// <remarks>
     /// <para>Since Valkey 7.0.0.</para>
     /// <para>The client unsubscribes asynchronously in the background.
     /// Use <see cref="IBaseClient.GetSubscriptionsAsync"/> to verify the actual server subscription state.
@@ -244,13 +244,13 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/pubsub-shardchannels/">Valkey commands – PUBSUB SHARDCHANNELS</seealso>
     /// <returns>A set of active sharded channel names.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var shardedChannels = await clusterClient.PubSubShardChannelsAsync();
     /// Console.WriteLine($"Active sharded channels: {string.Join(", ", shardedChannels)}");
     /// </code>
     /// </example>
+    /// <remarks>
     /// <para>Since Valkey 7.0.0.</para>
     /// </remarks>
     abstract Task<ISet<ValkeyKey>> PubSubShardChannelsAsync();
@@ -261,13 +261,13 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// <seealso href="https://valkey.io/commands/pubsub-shardchannels/">Valkey commands – PUBSUB SHARDCHANNELS</seealso>
     /// <param name="pattern">A glob-style pattern to filter sharded channel names.</param>
     /// <returns>A set of active sharded channel names matching <paramref name="pattern"/>.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var shardedChannels = await clusterClient.PubSubShardChannelsAsync("shard.*");
     /// Console.WriteLine($"Matching sharded channels: {string.Join(", ", shardedChannels)}");
     /// </code>
     /// </example>
+    /// <remarks>
     /// <para>Since Valkey 7.0.0.</para>
     /// </remarks>
     abstract Task<ISet<ValkeyKey>> PubSubShardChannelsAsync(ValkeyKey pattern);
@@ -278,7 +278,6 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// <seealso href="https://valkey.io/commands/pubsub-shardnumsub/">Valkey commands – PUBSUB SHARDNUMSUB</seealso>
     /// <param name="shardedChannels">A collection of sharded channel names to query.</param>
     /// <returns>A dictionary mapping sharded channel names to their subscriber counts.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var subscriberCounts = await clusterClient.PubSubShardNumSubAsync(["shard-news", "shard-updates"]);
@@ -288,6 +287,7 @@ public partial interface IGlideClusterClient : IPubSubClusterCommands
     /// }
     /// </code>
     /// </example>
+    /// <remarks>
     /// <para>Since Valkey 7.0.0.</para>
     /// </remarks>
     abstract Task<Dictionary<ValkeyKey, long>> PubSubShardNumSubAsync(IEnumerable<ValkeyKey> shardedChannels);
