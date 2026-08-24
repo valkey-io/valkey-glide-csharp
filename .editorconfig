@@ -566,6 +566,15 @@ dotnet_diagnostic.xUnit3002.severity = error
 roslynator_analyzers.enabled_by_default = false
 dotnet_analyzer_diagnostic.category-Roslynator.severity = none
 
+# RCS1047: Non-asynchronous method name should not end with 'Async'
+dotnet_diagnostic.RCS1047.severity = error
+
+# RCS1140: Add 'exception' element(s) to documentation
+dotnet_diagnostic.RCS1140.severity = error
+
+# RCS1141: Add 'param' element(s) to documentation
+dotnet_diagnostic.RCS1141.severity = error
+
 # RCS1213: Remove unused member declaration
 dotnet_diagnostic.RCS1213.severity = error
 
@@ -573,3 +582,8 @@ dotnet_diagnostic.RCS1213.severity = error
 [sources/Valkey.Glide/{Abstract,Client}/*.cs]
 dotnet_style_namespace_match_folder = false
 dotnet_diagnostic.IDE0130.severity = none
+
+# Disable documentation rules for tests
+[tests/**.cs]
+dotnet_diagnostic.RCS1140.severity = none
+dotnet_diagnostic.RCS1141.severity = none
