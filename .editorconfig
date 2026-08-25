@@ -595,6 +595,7 @@ dotnet_diagnostic.RCS1206.severity = error
 dotnet_diagnostic.RCS1211.severity = error
 dotnet_diagnostic.RCS1213.severity = error
 dotnet_diagnostic.RCS1214.severity = error
+dotnet_diagnostic.RCS1225.severity = error
 dotnet_diagnostic.RCS1228.severity = error
 dotnet_diagnostic.RCS1233.severity = error
 dotnet_diagnostic.RCS1243.severity = error
