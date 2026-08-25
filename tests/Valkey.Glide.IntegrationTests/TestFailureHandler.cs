@@ -36,7 +36,7 @@ public static class TestFailureHandler
                     if (s_firstFailure)
                     {
                         s_firstFailure = false;
-                        File.AppendAllText(output, $"## Failed tests in CI pipeline:\n");
+                        File.AppendAllText(output, "## Failed tests in CI pipeline:\n");
                     }
                     string permalink = BuildPermalink(ex.StackTrace ?? "");
                     File.AppendAllText(output, $"### {permalink}\n```\n{ex.Message}\n```\n\n");

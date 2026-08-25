@@ -283,7 +283,7 @@ internal static partial class Request
 
         if (response is not object[] responseArray || responseArray.Length != 2)
         {
-            throw new InvalidOperationException($"Unexpected response format for sorted set pop operation");
+            throw new InvalidOperationException("Unexpected response format for sorted set pop operation");
         }
 
         ValkeyKey key = ((GlideString)responseArray[0]).ToString();

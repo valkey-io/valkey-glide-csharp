@@ -221,7 +221,7 @@ public class PubSubFFIMemoryLeakTests
         long finalMemory = GetMemoryAfterFullGC();
         long totalGrowth = finalMemory - initialMemory;
 
-        Console.WriteLine($"Extended test completed:");
+        Console.WriteLine("Extended test completed:");
         Console.WriteLine($"Duration: {stopwatch.Elapsed.TotalSeconds:F1} seconds");
         Console.WriteLine($"Messages processed: {messageCount:N0}");
         Console.WriteLine($"Final memory: {finalMemory:N0} bytes");

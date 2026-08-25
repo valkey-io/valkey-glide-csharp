@@ -232,7 +232,7 @@ public class AzAffinityTests(TestConfiguration config)
                     }
                     else
                     {
-                        Assert.Fail($"Primary node didn't get GET calls");
+                        Assert.Fail("Primary node didn't get GET calls");
                     }
                 }
             }
