@@ -356,56 +356,48 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
 
     private static int CompareTo(ValkeyValue x, ValkeyValue y)
     {
-        try
+        x = x.Simplify();
+        y = y.Simplify();
+        StorageType xType = x.Type, yType = y.Type;
+
+        if (xType == StorageType.Null) return yType == StorageType.Null ? 0 : -1;
+        if (yType == StorageType.Null) return 1;
+
+        if (xType == yType)
         {
-            x = x.Simplify();
-            y = y.Simplify();
-            StorageType xType = x.Type, yType = y.Type;
-
-            if (xType == StorageType.Null) return yType == StorageType.Null ? 0 : -1;
-            if (yType == StorageType.Null) return 1;
-
-            if (xType == yType)
-            {
-                switch (xType)
-                {
-                    case StorageType.Double:
-                        return x.OverlappedValueDouble.CompareTo(y.OverlappedValueDouble);
-                    case StorageType.Int64:
-                        return x._overlappedBits64.CompareTo(y._overlappedBits64);
-                    case StorageType.UInt64:
-                        return x.OverlappedValueUInt64.CompareTo(y.OverlappedValueUInt64);
-                    case StorageType.String:
-                        return string.CompareOrdinal((string)x._objectOrSentinel!, (string)y._objectOrSentinel!);
-                    case StorageType.Raw:
-                        return x._memory.Span.SequenceCompareTo(y._memory.Span);
-                }
-            }
-
             switch (xType)
-            { // numbers can be still be compared between types
+            {
                 case StorageType.Double:
-                    if (yType == StorageType.Int64) return x.OverlappedValueDouble.CompareTo((double)y._overlappedBits64);
-                    if (yType == StorageType.UInt64) return x.OverlappedValueDouble.CompareTo((double)y.OverlappedValueUInt64);
-                    break;
+                    return x.OverlappedValueDouble.CompareTo(y.OverlappedValueDouble);
                 case StorageType.Int64:
-                    if (yType == StorageType.Double) return ((double)x._overlappedBits64).CompareTo(y.OverlappedValueDouble);
-                    if (yType == StorageType.UInt64) return 1; // we only use unsigned if > int64, so: y is bigger
-                    break;
+                    return x._overlappedBits64.CompareTo(y._overlappedBits64);
                 case StorageType.UInt64:
-                    if (yType == StorageType.Double) return ((double)x.OverlappedValueUInt64).CompareTo(y.OverlappedValueDouble);
-                    if (yType == StorageType.Int64) return -1; // we only use unsigned if > int64, so: x is bigger
-                    break;
+                    return x.OverlappedValueUInt64.CompareTo(y.OverlappedValueUInt64);
+                case StorageType.String:
+                    return string.CompareOrdinal((string)x._objectOrSentinel!, (string)y._objectOrSentinel!);
+                case StorageType.Raw:
+                    return x._memory.Span.SequenceCompareTo(y._memory.Span);
             }
+        }
 
-            // otherwise, compare as strings
-            return string.CompareOrdinal((string?)x, (string?)y);
+        switch (xType)
+        { // numbers can be still be compared between types
+            case StorageType.Double:
+                if (yType == StorageType.Int64) return x.OverlappedValueDouble.CompareTo((double)y._overlappedBits64);
+                if (yType == StorageType.UInt64) return x.OverlappedValueDouble.CompareTo((double)y.OverlappedValueUInt64);
+                break;
+            case StorageType.Int64:
+                if (yType == StorageType.Double) return ((double)x._overlappedBits64).CompareTo(y.OverlappedValueDouble);
+                if (yType == StorageType.UInt64) return 1; // we only use unsigned if > int64, so: y is bigger
+                break;
+            case StorageType.UInt64:
+                if (yType == StorageType.Double) return ((double)x.OverlappedValueUInt64).CompareTo(y.OverlappedValueDouble);
+                if (yType == StorageType.Int64) return -1; // we only use unsigned if > int64, so: x is bigger
+                break;
         }
-        catch (Exception ex)
-        {
-            //ConnectionMultiplexer.TraceWithoutContext(ex.Message);
-            throw ex;
-        }
+
+        // otherwise, compare as strings
+        return string.CompareOrdinal((string?)x, (string?)y);
     }
 
     int IComparable.CompareTo(object? obj)
