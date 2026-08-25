@@ -370,11 +370,7 @@ public sealed class ConfigurationOptions : ICloneable
             ReadFrom = ReadFrom
         };
 
-        foreach (var cert in _trustedIssuers)
-        {
-            clone._trustedIssuers.Add(cert);
-        }
-
+        clone._trustedIssuers.AddRange(_trustedIssuers);
         clone._clientCertificate = _clientCertificate;
         clone._clientKey = _clientKey;
 
