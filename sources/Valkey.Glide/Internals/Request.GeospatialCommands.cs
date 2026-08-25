@@ -162,15 +162,13 @@ internal static partial class Request
                 index++;
             }
 
-            if (options.WithPosition && index < itemArray.Length)
+            if (options.WithPosition && index < itemArray.Length
+                && itemArray[index] is object[] coordOuterArray && coordOuterArray.Length > 0
+                && coordOuterArray[0] is object[] coordMiddleArray && coordMiddleArray.Length >= 2
+                && double.TryParse(coordMiddleArray[0]?.ToString(), out var lon)
+                && double.TryParse(coordMiddleArray[1]?.ToString(), out var lat))
             {
-                if (itemArray[index] is object[] coordOuterArray && coordOuterArray.Length > 0
-                    && coordOuterArray[0] is object[] coordMiddleArray && coordMiddleArray.Length >= 2
-                    && double.TryParse(coordMiddleArray[0]?.ToString(), out var lon)
-                    && double.TryParse(coordMiddleArray[1]?.ToString(), out var lat))
-                {
-                    position = new GeoPosition(lon, lat);
-                }
+                position = new GeoPosition(lon, lat);
             }
 
             return new GeoSearchResult(member, position, distance, hash);
