@@ -3,8 +3,9 @@
 """Runs tests.
 
 Assembles and executes `dotnet test` commands for unit tests, integration tests,
-or both. When coverage is enabled, cleans stale results first and configures
-Coverlet to produce Cobertura XML output.
+or both. Tests run on Microsoft.Testing.Platform (see the `test.runner` opt-in in
+global.json). When coverage is enabled, cleans stale results first and configures
+the built-in coverage collector to produce Cobertura XML output.
 
 Usage:
     python dev/scripts/test.py
@@ -18,7 +19,7 @@ Usage:
 Options:
     --unit                  Run unit tests.
     --integration           Run integration tests.
-    --coverage              Enable Coverlet code coverage collection.
+    --coverage              Enable code coverage collection.
     --filter NAME           Filter tests by class or method name (FullyQualifiedName~ match).
     --verbosity LEVEL       Set dotnet test verbosity (quiet|minimal|normal|detailed|diagnostic).
     --configuration CFG     Build configuration (e.g. Debug, Release). Default: Release.
@@ -34,7 +35,6 @@ import sys
 from _constants import (
     COVERAGE_BASELINE_PATH,
     COVERAGE_RESULTS_DIR_FOR_TEST_SUITE,
-    COVERAGE_RUNSETTINGS_PATH,
     PROJECT_ROOT,
     TEST_PROJECT_FOR_TEST_SUITE,
     TestSuite,
@@ -97,11 +97,13 @@ def _build_command(
     if coverage:
         cmd.extend(
             [
-                "--collect:XPlat Code Coverage",
                 "--results-directory",
                 COVERAGE_RESULTS_DIR_FOR_TEST_SUITE[test_suite],
-                "--settings",
-                COVERAGE_RUNSETTINGS_PATH,
+                "--coverage",
+                "--coverage-output-format",
+                "cobertura",
+                "--coverage-output",
+                "coverage.cobertura.xml",
             ]
         )
 

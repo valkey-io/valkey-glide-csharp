@@ -54,8 +54,7 @@ The coverage check passes only when measured coverage **exactly matches** the ba
 
 ```text
 dev/conf/
-├── coverage-baseline.json     # Coverage baseline
-└── coverage-runsettings.xml   # Coverlet configuration
+└── coverage-baseline.json     # Coverage baseline
 
 dev/coverage/
 ├── results/                   # Raw .cobertura.xml coverage results (gitignored)
