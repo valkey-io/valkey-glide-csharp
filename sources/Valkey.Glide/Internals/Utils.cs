@@ -3,7 +3,7 @@
 using System.Diagnostics;
 using System.Net;
 
-using Valkey.Glide;
+namespace Valkey.Glide.Internals;
 
 internal static class Utils
 {
