@@ -14,7 +14,7 @@ namespace Valkey.Glide;
 /// Connection methods common to both standalone and cluster clients.<br />
 /// See also <see cref="GlideClient" /> and <see cref="GlideClusterClient" />.
 /// </summary>
-public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable, IAsyncDisposable
+public sealed class ConnectionMultiplexer : IConnectionMultiplexer
 {
     /// <inheritdoc cref="ConnectAsync(string, TextWriter?)" />
     public static ConnectionMultiplexer Connect(string configuration, TextWriter? log = null)
