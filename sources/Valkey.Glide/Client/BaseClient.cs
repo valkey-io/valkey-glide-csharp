@@ -1,6 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using System.Threading.Channels;
 
 using Valkey.Glide.Internals;
@@ -20,6 +21,12 @@ namespace Valkey.Glide;
 /// </summary>
 public abstract partial class BaseClient : IBaseClient
 {
+    #region Constants
+
+    [GeneratedRegex(@"(?:valkey_version|redis_version):([\d\.]+)")]
+    private static partial Regex ServerVersionRegex();
+
+    #endregion
     #region Public Methods
 
     /// <inheritdoc/>
@@ -385,7 +392,7 @@ public abstract partial class BaseClient : IBaseClient
     /// <returns>The parsed server version, or <c>null</c> if the version could not be extracted.</returns>
     protected Version? ParseServerVersion(string response)
     {
-        var versionMatch = System.Text.RegularExpressions.Regex.Match(response, @"(?:valkey_version|redis_version):([\d\.]+)");
+        var versionMatch = ServerVersionRegex().Match(response);
         return versionMatch.Success ? new(versionMatch.Groups[1].Value) : null;
     }
 
