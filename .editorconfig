@@ -584,6 +584,7 @@ dotnet_diagnostic.RCS1139.severity = error
 dotnet_diagnostic.RCS1140.severity = error
 dotnet_diagnostic.RCS1141.severity = error
 dotnet_diagnostic.RCS1142.severity = error
+dotnet_diagnostic.RCS1151.severity = error
 dotnet_diagnostic.RCS1160.severity = error
 dotnet_diagnostic.RCS1168.severity = error
 dotnet_diagnostic.RCS1170.severity = error

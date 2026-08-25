@@ -13,8 +13,12 @@ internal partial class Database
     public async Task<long> StreamAcknowledgeAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue messageId, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        var result = await ((IBaseClient)this).StreamAcknowledgeAsync(key, groupName, messageId);
-        return result ? 1L : 0L;
+
+        // Cast to IBaseClient to force dispatch to
+        // IBaseClient.StreamAcknowledgeAsync(ValkeyKey, ValkeyValue, ValkeyValue)
+        IBaseClient self = this;
+
+        return await self.StreamAcknowledgeAsync(key, groupName, messageId) ? 1L : 0L;
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StreamAcknowledgeAsync(ValkeyKey, ValkeyValue, IEnumerable{ValkeyValue}, CommandFlags)"/>
