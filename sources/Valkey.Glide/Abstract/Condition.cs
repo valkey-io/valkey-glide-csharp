@@ -550,15 +550,19 @@ public abstract class Condition
         internal sealed override List<ICmd> CreateCommands()
             => [
                 Request.Watch([key]),
-                Request.CustomCommand([ValkeyCommand.LINDEX.ToString(), key, index.ToString()]),
+                Request.ListGetByIndex(key, index),
             ];
 
         protected override bool ValidateImpl(object? result)
         {
-            if (expectedValue.HasValue)
-                return ((ValkeyValue)(GlideString?)result == expectedValue.Value) == expectedResult;
+            var value = (ValkeyValue)result!;
 
-            return (result is null) != expectedResult;
+            if (expectedValue.HasValue)
+            {
+                return (value == expectedValue.Value) == expectedResult;
+            }
+
+            return value.IsNull != expectedResult;
         }
     }
 
