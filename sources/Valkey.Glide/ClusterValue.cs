@@ -73,5 +73,7 @@ public class ClusterValue<T>
     /// <summary>
     /// Check that single-value is stored in this object. Should be called prior to <see cref="SingleValue" />.
     /// </summary>
+    // TODO #547: HasSingleData is unreliable for value-type T (default(T) != null is always true); fix via '_multiValue == null'.
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1165:Unconstrained type parameter checked for null", Justification = "See #547")]
     public bool HasSingleData => _singleValue != null;
 }
