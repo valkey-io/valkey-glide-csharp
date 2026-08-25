@@ -390,7 +390,7 @@ public readonly struct ValkeyKey : IEquatable<ValkeyKey>
     }
 
     internal int TotalLength() =>
-        (KeyPrefix is null ? 0 : KeyPrefix.Length) + KeyValue switch
+        (KeyPrefix?.Length ?? 0) + KeyValue switch
         {
             null => 0,
             string s => Encoding.UTF8.GetByteCount(s),
