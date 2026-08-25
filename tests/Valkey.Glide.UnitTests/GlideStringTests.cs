@@ -9,7 +9,7 @@ public class GlideStringTests
     {
         gs[] arr = ["abc", "abcd", "abcde", "abd", "abb", "ab1"];
         Assert.Equal(new gs[] { "ab1", "abb", "abc", "abd", "abcd", "abcde" }, [.. arr.Order()]);
-        Assert.Equal(new gs[] { "ab1", "abb", "abc", "abd", "abcd", "abcde" }, [.. arr.OrderBy(s => s)]);
+        Assert.Equal(new gs[] { "abc", "abd", "abb", "ab1", "abcd", "abcde" }, [.. arr.OrderBy(s => s.Length)]);
     }
 
     [Fact]

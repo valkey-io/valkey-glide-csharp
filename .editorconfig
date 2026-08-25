@@ -575,6 +575,7 @@ dotnet_diagnostic.RCS1047.severity = error
 dotnet_diagnostic.RCS1061.severity = error
 dotnet_diagnostic.RCS1071.severity = error
 dotnet_diagnostic.RCS1075.severity = error
+dotnet_diagnostic.RCS1077.severity = error
 dotnet_diagnostic.RCS1085.severity = error
 dotnet_diagnostic.RCS1102.severity = error
 dotnet_diagnostic.RCS1108.severity = error

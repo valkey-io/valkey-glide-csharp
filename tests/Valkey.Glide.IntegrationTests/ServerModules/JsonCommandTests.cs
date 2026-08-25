@@ -1999,15 +1999,9 @@ public class JsonCommandTests(TestConfiguration config)
         string jsonValue = "{\"a\":\"foo\",\"nested\":{\"a\":\"hello\"}}";
 
         await GlideJson.SetAsync(client, key, "$", jsonValue);
-        long?[]? result = await GlideJson.StrLenAsync(client, key, "$..a");
+        var result = await GlideJson.StrLenAsync(client, key, "$..a");
 
-        Assert.NotNull(result);
-        // JSONPath returns an array of lengths for all matching paths
-        Assert.Equal(2, result.Length);
-        // "foo" has 3 characters, "hello" has 5 characters
-        long?[] lengths = [.. result.OrderBy(x => x)];
-        Assert.Contains(3L, lengths);
-        Assert.Contains(5L, lengths);
+        Assert.Equivalent(new long?[] { 3L, 5L }, result!.Order(), strict: true);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]

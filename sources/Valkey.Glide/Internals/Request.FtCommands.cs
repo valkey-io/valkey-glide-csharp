@@ -49,7 +49,7 @@ internal static partial class Request
             options.DataType.ToLiteral()];
 
         var prefixes = options.Prefixes;
-        if (prefixes.Count() > 0)
+        if (prefixes.Any())
         {
             args.AddRange(ToArgs(ValkeyLiterals.PREFIX, prefixes));
         }
