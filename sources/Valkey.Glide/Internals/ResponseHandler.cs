@@ -16,7 +16,7 @@ internal static class ResponseHandler
         public uint Size;
     }
 
-    public enum ValueType : uint
+    public enum ValueType : int
     {
         Null = 0,
         Int = 1,

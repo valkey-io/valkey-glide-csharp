@@ -12,7 +12,7 @@ internal partial class FFI
     /// The cache metric to retrieve from the client-side cache.<p/>
     /// Must match the glide-core cache metric methods.
     /// </summary>
-    internal enum CacheMetricsType : uint
+    internal enum CacheMetricsType : int
     {
         HitRate = 0,
         MissRate = 1,
@@ -26,7 +26,7 @@ internal partial class FFI
     /// The periodic topology checks mode for cluster clients.<p/>
     /// Must match <c>glide_core::client::PeriodicCheck</c> in glide-core.
     /// </summary>
-    internal enum PeriodicChecksMode : uint
+    internal enum PeriodicChecksMode : int
     {
         Enabled = 0,
         Disabled = 1,
@@ -534,7 +534,7 @@ internal partial class FFI
     /// The command routing type for cluster clients.<p/>
     /// Must match <c>redis::cluster_routing::RoutingInfo</c> in glide-core.
     /// </summary>
-    internal enum RouteType : uint
+    internal enum RouteType : int
     {
         Random = 0,
         AllNodes = 1,
@@ -548,7 +548,7 @@ internal partial class FFI
     /// The AWS service type for IAM authentication.<p/>
     /// Must match <c>glide_core::iam::ServiceType</c> in glide-core.
     /// </summary>
-    internal enum ServiceType : uint
+    internal enum ServiceType : int
     {
         ElastiCache = 0,
         MemoryDB = 1,
@@ -558,7 +558,7 @@ internal partial class FFI
     /// The TLS mode for server connections.<p/>
     /// Must match <c>glide_core::client::TlsMode</c> in glide-core.
     /// </summary>
-    internal enum TlsMode : uint
+    internal enum TlsMode : int
     {
         NoTls = 0,
         InsecureTls = 1,
