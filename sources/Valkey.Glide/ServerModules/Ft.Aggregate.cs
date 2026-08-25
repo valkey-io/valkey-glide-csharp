@@ -367,12 +367,12 @@ public static partial class Ft
         #region Constants
 
         /// <summary>
-        /// Indicates that that no fields should be loaded (<c>LOAD 0</c>).
+        /// Indicates that no fields should be loaded (<c>LOAD 0</c>).
         /// </summary>
         public static readonly IEnumerable<ValkeyValue> LoadNone = [];
 
         /// <summary>
-        /// Indicates that that all fields should be loaded (<c>LOAD *</c>).
+        /// Indicates that all fields should be loaded (<c>LOAD *</c>).
         /// </summary>
         public static readonly IEnumerable<ValkeyValue>? LoadAll = null;
 
