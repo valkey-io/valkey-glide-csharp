@@ -672,7 +672,6 @@ dotnet_diagnostic.RCS1268.severity = error
 # Roslynator rules NOT enabled (available to opt in). Sorted by id.
 # Excludes deprecated (Obsolete) and internal (Disabled) Roslynator rules.
 # ---------------------------------------------------------------------------
-# RCS0007: Add blank line between accessors
 # RCS0008: Add blank line between closing brace and next statement
 # RCS0009: Add blank line between declaration and documentation comment
 # RCS0010: Add blank line between declarations
