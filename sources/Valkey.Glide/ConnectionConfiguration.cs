@@ -126,8 +126,8 @@ public abstract class ConnectionConfiguration
 
     /// <summary>
     /// Represents the strategy used to determine how and when to reconnect, in case of connection
-    /// failures. The time between attempts grows exponentially, to the formula <c>rand(0 ... factor *
-    /// (exponentBase ^ N))</c>, where <c>N</c> is the number of failed attempts.
+    /// failures. The time between attempts grows exponentially, to the formula
+    /// <c>rand(0 ... factor * (exponentBase ^ N))</c>, where <c>N</c> is the number of failed attempts.
     /// <para />
     /// Once the maximum value is reached, that will remain the time between retry attempts until a
     /// reconnect attempt is successful. The client will attempt to reconnect indefinitely.
