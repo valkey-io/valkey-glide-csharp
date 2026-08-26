@@ -63,6 +63,7 @@ public static class Logger
     #endregion
 
     #region public methods
+
     /// <summary>
     /// Initialize a logger if it wasn't initialized before - this method is meant to be used when there is no intention to
     /// replace an existing logger.<br />
@@ -133,6 +134,7 @@ public static class Logger
     #endregion
 
     #region FFI function declaration
+
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "log")]
     private static extern void log(
         int logLevel,

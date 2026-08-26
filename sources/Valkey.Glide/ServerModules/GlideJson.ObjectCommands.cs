@@ -99,14 +99,17 @@ public static partial class GlideJson
     {
         if (result is null)
             return null;
+
         if (result is object?[] arr)
         {
             return [.. arr.Select<object?, ValkeyValue[]>(o =>
             {
                 if (o is null)
                     return []; // Non-object values return empty array per Valkey docs
+
                 if (o is object?[] innerArr)
                     return [.. innerArr.Select(ToValkeyValue)];
+
                 // Single value - wrap in array
                 return [ToValkeyValue(o)];
             })];
@@ -136,8 +139,10 @@ public static partial class GlideJson
         object? result = await ExecuteCommandAsync(client, args);
         if (result is null)
             return null;
+
         if (result is object?[] arr)
             return [.. arr.Select(o => o?.ToString() ?? string.Empty)];
+
         return [];
     }
 

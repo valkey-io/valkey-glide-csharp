@@ -447,6 +447,7 @@ internal static class Format
     {
         if (!Utf8Formatter.TryFormat(value, destination, out var len))
             ThrowFormatFailed();
+
         return len;
     }
 
@@ -460,6 +461,7 @@ internal static class Format
     {
         if (!Utf8Formatter.TryFormat(value, destination, out var len))
             ThrowFormatFailed();
+
         return len;
     }
 
@@ -467,6 +469,7 @@ internal static class Format
     {
         if (!Utf8Formatter.TryFormat(value, destination, out var len))
             ThrowFormatFailed();
+
         return len;
     }
 

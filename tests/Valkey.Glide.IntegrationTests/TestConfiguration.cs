@@ -183,6 +183,7 @@ public class TestConfiguration : IDisposable
     }
 
     #region SER COMPAT
+
     public static ConfigurationOptions DefaultCompatibleConfig()
     {
         ConfigurationOptions config = new();

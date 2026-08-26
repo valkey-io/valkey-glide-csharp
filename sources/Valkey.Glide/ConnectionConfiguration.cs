@@ -1089,6 +1089,7 @@ public abstract class ConnectionConfiguration
         public new StandaloneClientConfiguration Build() => new() { Request = base.Build() };
 
         #region Node Discovery Mode
+
         /// <summary>
         /// Controls how the client discovers node roles and topology during connection
         /// initialization. If not set, defaults to <see cref="NodeDiscoveryMode.Standard" />.
@@ -1144,6 +1145,7 @@ public abstract class ConnectionConfiguration
         public new ClusterClientConfiguration Build() => new() { Request = base.Build() };
 
         #region Refresh Topology
+
         /// <summary>
         /// Enables refreshing the cluster topology using only the initial nodes.
         /// <para />

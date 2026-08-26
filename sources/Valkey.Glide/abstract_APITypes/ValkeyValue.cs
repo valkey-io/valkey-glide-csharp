@@ -1145,6 +1145,7 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
                                                                               // value is huge, jump direct to Utf8Formatter
                 if (!Utf8Formatter.TryFormat(OverlappedValueUInt64, leased, out len))
                     throw new InvalidOperationException("TryFormat failed");
+
                 return new ReadOnlyMemory<byte>(leased, 0, len);
         }
         leased = null;
