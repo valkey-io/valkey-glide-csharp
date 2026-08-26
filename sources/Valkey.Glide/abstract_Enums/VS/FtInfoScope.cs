@@ -10,8 +10,10 @@ public enum FtInfoScope
 {
     /// <summary>Returns per-node (local shard) index information.</summary>
     Local,
+
     /// <summary>Returns aggregated information from the primary coordinator.</summary>
     Primary,
+
     /// <summary>Returns cluster-wide aggregated index information.</summary>
     Cluster,
 }

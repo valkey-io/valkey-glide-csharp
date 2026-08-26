@@ -10,10 +10,13 @@ public enum FieldType
 {
     /// <summary>Full-text search field.</summary>
     Text,
+
     /// <summary>Tag field (delimited list of tags).</summary>
     Tag,
+
     /// <summary>Numeric field.</summary>
     Numeric,
+
     /// <summary>Vector field for similarity search.</summary>
     Vector,
 }

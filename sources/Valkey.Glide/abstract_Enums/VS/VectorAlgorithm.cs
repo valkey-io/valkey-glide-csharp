@@ -10,6 +10,7 @@ internal enum VectorAlgorithm
 {
     /// <summary>Brute force (flat) algorithm.</summary>
     Flat,
+
     /// <summary>Hierarchical Navigable Small World algorithm.</summary>
     Hnsw,
 }

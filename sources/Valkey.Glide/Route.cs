@@ -74,6 +74,7 @@ public abstract class Route
         /// Address a primary node.
         /// </summary>
         Primary,
+
         /// <summary>
         /// Address a replica node.
         /// </summary>

@@ -10,8 +10,10 @@ public enum DistanceMetric
 {
     /// <summary>Euclidean distance.</summary>
     Euclidean,
+
     /// <summary>Inner product.</summary>
     InnerProduct,
+
     /// <summary>Cosine distance.</summary>
     Cosine,
 }
