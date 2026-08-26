@@ -48,6 +48,7 @@ public readonly struct ValkeyChannel : IEquatable<ValkeyChannel>
         get => s_DefaultPatternMode == PatternMode.Auto;
         set => s_DefaultPatternMode = value ? PatternMode.Auto : PatternMode.Literal;
     }
+
     private static PatternMode s_DefaultPatternMode = PatternMode.Auto;
 
     /// <summary>

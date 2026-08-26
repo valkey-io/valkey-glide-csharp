@@ -576,6 +576,7 @@ dotnet_diagnostic.RCS0005.severity = error
 dotnet_diagnostic.RCS0006.severity = error
 dotnet_diagnostic.RCS0008.severity = error
 dotnet_diagnostic.RCS0009.severity = error
+dotnet_diagnostic.RCS0010.severity = error
 
 # RCS1 Common Analyzers
 dotnet_diagnostic.RCS1006.severity = error
@@ -674,7 +675,6 @@ dotnet_diagnostic.RCS1268.severity = error
 # Roslynator rules NOT enabled (available to opt in). Sorted by id.
 # Excludes deprecated (Obsolete) and internal (Disabled) Roslynator rules.
 # ---------------------------------------------------------------------------
-# RCS0010: Add blank line between declarations
 # RCS0011: Add/remove blank line between single-line accessors
 # RCS0012: Add blank line between single-line declarations
 # RCS0013: Add blank line between single-line declarations of different kind

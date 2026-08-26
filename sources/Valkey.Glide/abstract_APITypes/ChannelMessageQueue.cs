@@ -138,6 +138,7 @@ public sealed class ChannelMessageQueue : IAsyncEnumerable<ChannelMessage>
     }
 
     private Delegate? _onMessageHandler;
+
     private void AssertOnMessage(Delegate handler)
     {
         if (handler == null) throw new ArgumentNullException(nameof(handler));

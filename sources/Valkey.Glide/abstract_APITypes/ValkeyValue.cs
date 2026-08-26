@@ -103,6 +103,7 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
     // note: it is *really important* that this s_EmptyString assignment happens *after* the EmptyString initializer above!
     private static readonly object s_DoubleNAN = double.NaN, s_DoublePosInf = double.PositiveInfinity, s_DoubleNegInf = double.NegativeInfinity,
         s_EmptyString = EmptyString;
+
     private static readonly object[] s_CommonInt32 = [.. Enumerable.Range(-1, 22).Select(i => (object)i)]; // [-1,20] = 22 values
 
     /// <summary>
@@ -239,6 +240,7 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
 
     /// <inheritdoc/>
     public override int GetHashCode() => GetHashCode(this);
+
     private static int GetHashCode(ValkeyValue x)
     {
         x = x.Simplify();
@@ -795,6 +797,7 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
                 throw new InvalidOperationException();
         }
     }
+
     private static string ToHex(ReadOnlySpan<byte> src)
     {
         const string HexValues = "0123456789ABCDEF";

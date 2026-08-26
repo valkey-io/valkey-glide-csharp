@@ -6,6 +6,10 @@ using System.Runtime.InteropServices;
 using static Valkey.Glide.ConnectionConfiguration;
 using static Valkey.Glide.Route;
 
+// Disable RCS0010 (Add blank line between declarations) to allow boolean properties
+// to be grouped with its paired value field (e.g. `HasField` and `Field`).
+#pragma warning disable RCS0010
+
 namespace Valkey.Glide.Internals;
 
 // FFI-ready structs, helper methods and wrappers
