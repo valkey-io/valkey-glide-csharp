@@ -23,7 +23,7 @@ public class ClusterValue<T>
     #region Private Fields
 
     private T? _singleValue = default;
-    private Dictionary<string, T>? _multiValue = default;
+    private Dictionary<string, T>? _multiValue = null;
 
     #endregion
     #region Constructors & Builders
