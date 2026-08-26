@@ -658,6 +658,146 @@ dotnet_diagnostic.RCS1263.severity = error
 dotnet_diagnostic.RCS1265.severity = error
 dotnet_diagnostic.RCS1268.severity = error
 
+# ---------------------------------------------------------------------------
+# Roslynator rules NOT enabled (available to opt in). Sorted by id.
+# Excludes deprecated (Obsolete) and internal (Disabled) Roslynator rules.
+# ---------------------------------------------------------------------------
+# RCS0001: Add blank line after embedded statement
+# RCS0002: Add blank line after #region
+# RCS0003: Add blank line after using directive list
+# RCS0005: Add blank line before #endregion
+# RCS0006: Add blank line before using directive list
+# RCS0007: Add blank line between accessors
+# RCS0008: Add blank line between closing brace and next statement
+# RCS0009: Add blank line between declaration and documentation comment
+# RCS0010: Add blank line between declarations
+# RCS0011: Add/remove blank line between single-line accessors
+# RCS0012: Add blank line between single-line declarations
+# RCS0013: Add blank line between single-line declarations of different kind
+# RCS0016: Put attribute list on its own line
+# RCS0024: Add new line after switch label
+# RCS0029: Put constructor initializer on its own line
+# RCS0031: Put enum member on its own line
+# RCS0034: Put type parameter constraint on its own line
+# RCS0036: Remove blank line between single-line declarations of same kind
+# RCS0039: Remove new line before base list
+# RCS0048: Put initializer on a single line
+# RCS0049: Add blank line after top comment
+# RCS0050: Add blank line before top declaration
+# RCS0051: Add/remove new line before 'while' in 'do' statement
+# RCS0053: Fix formatting of a list
+# RCS0054: Fix formatting of a call chain
+# RCS0055: Fix formatting of a binary expression chain
+# RCS0056: A line is too long
+# RCS0060: Add/remove line after file scoped namespace declaration
+# RCS0061: Add/remove blank line between switch sections
+# RCS0063: Remove unnecessary blank line
+# RCS1001: Add braces (when expression spans over multiple lines)
+# RCS1002: Remove braces
+# RCS1003: Add braces to if-else (when expression spans over multiple lines)
+# RCS1004: Remove braces from if-else
+# RCS1005: Simplify nested using statement
+# RCS1007: Add braces
+# RCS1013: Use predefined type
+# RCS1014: Use explicitly/implicitly typed array
+# RCS1016: Use block body or expression body
+# RCS1018: Add/remove accessibility modifiers
+# RCS1019: Order modifiers
+# RCS1020: Simplify Nullable<T> to T?
+# RCS1031: Remove unnecessary braces in switch section
+# RCS1032: Remove redundant parentheses
+# RCS1033: Remove redundant boolean literal
+# RCS1034: Remove redundant 'sealed' modifier
+# RCS1039: Remove argument list from attribute
+# RCS1042: Remove enum default underlying type
+# RCS1046: Asynchronous method name should end with 'Async'
+# RCS1050: Include/omit parentheses when creating new object
+# RCS1051: Add/remove parentheses from condition in conditional operator
+# RCS1052: Declare each attribute separately
+# RCS1055: Unnecessary semicolon at the end of declaration
+# RCS1056: Avoid usage of using alias directive
+# RCS1060: Declare each type in separate file
+# RCS1069: Remove unnecessary case label
+# RCS1070: Remove redundant default switch section
+# RCS1073: Convert 'if' to 'return' statement
+# RCS1074: Remove redundant constructor
+# RCS1078: Use "" or 'string.Empty'
+# RCS1079: Throwing of new NotImplementedException
+# RCS1080: Use 'Count/Length' property instead of 'Any' method
+# RCS1081: Split variable declaration
+# RCS1090: Add/remove 'ConfigureAwait(false)' call
+# RCS1094: Declare using directive on top level
+# RCS1096: Use 'HasFlag' method or bitwise operator
+# RCS1098: Constant values should be placed on right side of comparisons
+# RCS1099: Default label should be the last label in a switch section
+# RCS1103: Convert 'if' to assignment
+# RCS1111: Add braces to switch section with multiple statements
+# RCS1112: Combine 'Enumerable.Where' method chain
+# RCS1118: Mark local variable as const
+# RCS1123: Add parentheses when necessary
+# RCS1124: Inline local variable
+# RCS1126: Add braces to if-else
+# RCS1129: Remove redundant field initialization
+# RCS1130: Bitwise operation on enum without Flags attribute
+# RCS1135: Declare enum member with zero value (when enum has FlagsAttribute)
+# RCS1136: Merge switch sections with equivalent content
+# RCS1138: Add summary to documentation comment
+# RCS1143: Simplify coalesce expression
+# RCS1146: Use conditional access
+# RCS1154: Sort enum members
+# RCS1157: Composite enum value contains undefined flag
+# RCS1158: Static member in generic type should use a type parameter
+# RCS1159: Use EventHandler<T>
+# RCS1161: Enum should declare explicit values
+# RCS1162: Avoid chain of assignments
+# RCS1163: Unused parameter
+# RCS1169: Make field read-only
+# RCS1171: Simplify lazy initialization
+# RCS1173: Use coalesce expression instead of 'if'
+# RCS1174: Remove redundant async/await
+# RCS1180: Inline lazy initialization
+# RCS1181: Convert comment to documentation comment
+# RCS1186: Use Regex instance instead of static method
+# RCS1188: Remove redundant auto-property initialization
+# RCS1189: Add or remove region name
+# RCS1190: Join string expressions
+# RCS1191: Declare enum value as combination of names
+# RCS1192: Unnecessary usage of verbatim string literal
+# RCS1194: Implement exception constructors
+# RCS1195: Use ^ operator
+# RCS1201: Use method chaining
+# RCS1204: Use EventArgs.Empty
+# RCS1205: Order named arguments according to the order of parameters
+# RCS1207: Use anonymous function or method group
+# RCS1208: Reduce 'if' nesting
+# RCS1209: Order type parameter constraints
+# RCS1217: Convert interpolated string to concatenation
+# RCS1218: Simplify code branching
+# RCS1222: Merge preprocessor directives
+# RCS1223: Mark publicly visible type with DebuggerDisplay attribute
+# RCS1224: Make method an extension method
+# RCS1226: Add paragraph to documentation comment
+# RCS1229: Use async/await when necessary
+# RCS1231: Make parameter ref read-only
+# RCS1232: Order elements in documentation comment
+# RCS1236: Use exception filter
+# RCS1238: Avoid nested ?: operators
+# RCS1239: Use 'for' statement instead of 'while' statement
+# RCS1244: Simplify 'default' expression
+# RCS1246: Use element access
+# RCS1248: Normalize null check
+# RCS1250: Use implicit/explicit object creation
+# RCS1252: Normalize usage of infinite loop
+# RCS1253: Format documentation comment summary
+# RCS1254: Normalize format of enum flag value
+# RCS1255: Simplify argument null check
+# RCS1257: Use enum field explicitly
+# RCS1258: Unnecessary enum flag
+# RCS1260: Add/remove trailing comma
+# RCS1264: Use 'var' or explicit type
+# RCS1266: Use raw string literal
+# RCS1267: Use string interpolation instead of 'string.Concat'
+
 # IDE0130: Namespace does not match folder structure
 [sources/Valkey.Glide/{Abstract,Client}/*.cs]
 dotnet_style_namespace_match_folder = false
