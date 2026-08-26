@@ -440,7 +440,7 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer
     {
         // Create standalone client.
         StandaloneClientConfiguration standaloneConfig = CreateClientConfigBuilder<StandaloneClientConfigurationBuilder>(configuration).Build();
-        using GlideClient standalone = await GlideClient.CreateClient(standaloneConfig);
+        await using GlideClient standalone = await GlideClient.CreateClient(standaloneConfig);
 
         // Query server info to determine if it's a cluster.
         string info = await standalone.InfoAsync([Section.CLUSTER]);

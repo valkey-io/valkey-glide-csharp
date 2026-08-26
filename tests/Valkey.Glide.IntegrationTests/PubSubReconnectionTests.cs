@@ -19,8 +19,8 @@ public class PubSubReconnectionTests
     {
         var message = BuildMessage(channelMode);
 
-        using var subscriber = await BuildSubscriber(isCluster, message);
-        using var publisher = BuildPublisher(isCluster);
+        await using var subscriber = await BuildSubscriber(isCluster, message);
+        await using var publisher = BuildPublisher(isCluster);
 
         // Kill connections and wait for reconnection.
         _ = await publisher.ClientKillAsync(new ClientFilterOptions().WithSkipMe(true));

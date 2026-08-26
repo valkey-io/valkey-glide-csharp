@@ -23,7 +23,7 @@ public class PubSubUnsubscribeTests
             .ToArray();
 
         // Build subscriber and verify it's active.
-        using var subscriber = await BuildSubscriber(isCluster, messages);
+        await using var subscriber = await BuildSubscriber(isCluster, messages);
         await AssertSubscribedAsync(subscriber, messages);
 
         // Unsubscribe from all channels/pattern except one and verify subscriptions.
@@ -35,7 +35,7 @@ public class PubSubUnsubscribeTests
         await AssertSubscribedAsync(subscriber, subscribedMessage);
 
         // Publish messages and verify only the subscribed message is received.
-        using var publisher = BuildPublisher(isCluster);
+        await using var publisher = BuildPublisher(isCluster);
         await PublishAsync(publisher, messages);
         await AssertNotReceivedAsync(subscriber, unsubscribeMessages);
         await AssertReceivedAsync(subscriber, subscribedMessage);
@@ -52,7 +52,7 @@ public class PubSubUnsubscribeTests
             .ToArray();
 
         // Build subscriber and verify it's active.
-        using var subscriber = await BuildSubscriber(isCluster, messages);
+        await using var subscriber = await BuildSubscriber(isCluster, messages);
         await AssertSubscribedAsync(subscriber, messages);
 
         // Unsubscribe from all and verify subscriptions.
@@ -84,7 +84,7 @@ public class PubSubUnsubscribeTests
         await AssertNotSubscribedAsync(subscriber, messages, unsubscribeMode);
 
         // Publish messages and verify they are not received.
-        using var publisher = BuildPublisher(isCluster);
+        await using var publisher = BuildPublisher(isCluster);
         await PublishAsync(publisher, messages);
         await AssertNotReceivedAsync(subscriber, messages);
     }
@@ -100,7 +100,7 @@ public class PubSubUnsubscribeTests
             .ToArray();
 
         // Build subscriber and verify it's active.
-        using var subscriber = await BuildSubscriber(isCluster, messages);
+        await using var subscriber = await BuildSubscriber(isCluster, messages);
         await AssertSubscribedAsync(subscriber, messages);
 
         // Unsubscribe from all and verify subscriptions.
@@ -132,7 +132,7 @@ public class PubSubUnsubscribeTests
         await AssertNotSubscribedAsync(subscriber, messages, unsubscribeMode);
 
         // Publish messages and verify they are not received.
-        using var publisher = BuildPublisher(isCluster);
+        await using var publisher = BuildPublisher(isCluster);
         await PublishAsync(publisher, messages);
         await AssertNotReceivedAsync(subscriber, messages);
     }
@@ -152,7 +152,7 @@ public class PubSubUnsubscribeTests
         if (isSharded) messages.Add(shardedChannelMessage!);
 
         // Build subscriber and verify it's active.
-        using var subscriber = await BuildSubscriber(isCluster, messages);
+        await using var subscriber = await BuildSubscriber(isCluster, messages);
         await AssertSubscribedAsync(subscriber, messages);
 
         // Unsubscribe from each channel/pattern and verify subscriptions.
@@ -160,7 +160,7 @@ public class PubSubUnsubscribeTests
         await AssertNotSubscribedAsync(subscriber, messages, unsubscribeMode);
 
         // Publish messages and verify they are not received.
-        using var publisher = BuildPublisher(isCluster);
+        await using var publisher = BuildPublisher(isCluster);
         await PublishAsync(publisher, messages);
         await AssertNotReceivedAsync(subscriber, messages);
     }
@@ -183,7 +183,7 @@ public class PubSubUnsubscribeTests
         if (isSharded) messages.AddRange(shardedChannelMessages!);
 
         // Build subscriber and verify it's active.
-        using var subscriber = await BuildSubscriber(isCluster, messages);
+        await using var subscriber = await BuildSubscriber(isCluster, messages);
         await AssertSubscribedAsync(subscriber, messages);
 
         // Unsubscribe from each channel/pattern and verify subscriptions.
@@ -191,7 +191,7 @@ public class PubSubUnsubscribeTests
         await AssertNotSubscribedAsync(subscriber, messages, unsubscribeMode);
 
         // Publish messages and verify they are not received.
-        using var publisher = BuildPublisher(isCluster);
+        await using var publisher = BuildPublisher(isCluster);
         await PublishAsync(publisher, messages);
         await AssertNotReceivedAsync(subscriber, messages);
     }
@@ -206,7 +206,7 @@ public class PubSubUnsubscribeTests
         var messages = new List<PubSubMessage> { lazyMessage, blockingMessage };
 
         // Build subscriber and verify it's active.
-        using var subscriber = await BuildSubscriber(isCluster, messages);
+        await using var subscriber = await BuildSubscriber(isCluster, messages);
         await AssertSubscribedAsync(subscriber, messages);
 
         // Unsubscribe from each channel/pattern using the corresponding unsubscribe mode and verify subscriptions.
@@ -217,7 +217,7 @@ public class PubSubUnsubscribeTests
         await AssertNotSubscribedAsync(subscriber, blockingMessage, UnsubscribeMode.Blocking);
 
         // Publish messages and verify they are not received.
-        using var publisher = BuildPublisher(isCluster);
+        await using var publisher = BuildPublisher(isCluster);
         await PublishAsync(publisher, messages);
         await AssertNotReceivedAsync(subscriber, messages);
     }
@@ -236,7 +236,7 @@ public class PubSubUnsubscribeTests
         messages.AddRange(blockingMessages);
 
         // Build subscriber and verify it's active.
-        using var subscriber = await BuildSubscriber(isCluster, messages);
+        await using var subscriber = await BuildSubscriber(isCluster, messages);
         await AssertSubscribedAsync(subscriber, messages);
 
         // Unsubscribe from all channel/pattern using the corresponding unsubscribe mode and verify subscriptions.
@@ -247,7 +247,7 @@ public class PubSubUnsubscribeTests
         await AssertNotSubscribedAsync(subscriber, blockingMessages, UnsubscribeMode.Blocking);
 
         // Publish messages and verify they are not received.
-        using var publisher = BuildPublisher(isCluster);
+        await using var publisher = BuildPublisher(isCluster);
         await PublishAsync(publisher, messages);
         await AssertNotReceivedAsync(subscriber, messages);
     }

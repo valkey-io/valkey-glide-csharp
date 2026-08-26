@@ -98,7 +98,7 @@ public class TlsTests(ServerFixture serverFixture, TlsServerFixture tlsServerFix
             .WithTrustedCertificate(server.CertificateData!)
             .Build();
 
-        using var client = await GlideClusterClient.CreateClient(config);
+        await using var client = await GlideClusterClient.CreateClient(config);
         await AssertConnected(client);
     }
 
@@ -114,7 +114,7 @@ public class TlsTests(ServerFixture serverFixture, TlsServerFixture tlsServerFix
             .WithTrustedCertificate(server.CertificatePath!)
             .Build();
 
-        using var client = await GlideClusterClient.CreateClient(config);
+        await using var client = await GlideClusterClient.CreateClient(config);
         await AssertConnected(client);
     }
 
@@ -130,7 +130,7 @@ public class TlsTests(ServerFixture serverFixture, TlsServerFixture tlsServerFix
             .WithInsecureTls()
             .Build();
 
-        using var client = await GlideClusterClient.CreateClient(config);
+        await using var client = await GlideClusterClient.CreateClient(config);
         await AssertConnected(client);
     }
 
@@ -162,7 +162,7 @@ public class TlsTests(ServerFixture serverFixture, TlsServerFixture tlsServerFix
             .WithTrustedCertificate(server.CertificateData!)
             .Build();
 
-        using var client = await GlideClusterClient.CreateClient(config);
+        await using var client = await GlideClusterClient.CreateClient(config);
         await AssertConnected(client);
     }
 
@@ -249,7 +249,7 @@ public class TlsTests(ServerFixture serverFixture, TlsServerFixture tlsServerFix
             .WithTrustedCertificate(server.CertificateData!)
             .Build();
 
-        using var client = await GlideClient.CreateClient(config);
+        await using var client = await GlideClient.CreateClient(config);
         await AssertConnected(client);
     }
 
@@ -265,7 +265,7 @@ public class TlsTests(ServerFixture serverFixture, TlsServerFixture tlsServerFix
             .WithTrustedCertificate(server.CertificatePath!)
             .Build();
 
-        using var client = await GlideClient.CreateClient(config);
+        await using var client = await GlideClient.CreateClient(config);
         await AssertConnected(client);
     }
 
@@ -281,7 +281,7 @@ public class TlsTests(ServerFixture serverFixture, TlsServerFixture tlsServerFix
             .WithInsecureTls()
             .Build();
 
-        using var client = await GlideClient.CreateClient(config);
+        await using var client = await GlideClient.CreateClient(config);
         await AssertConnected(client);
     }
 
@@ -313,7 +313,7 @@ public class TlsTests(ServerFixture serverFixture, TlsServerFixture tlsServerFix
             .WithTrustedCertificate(server.CertificateData!)
             .Build();
 
-        using var client = await GlideClient.CreateClient(config);
+        await using var client = await GlideClient.CreateClient(config);
         await AssertConnected(client);
     }
 

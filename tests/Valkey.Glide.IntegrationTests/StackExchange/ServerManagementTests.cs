@@ -123,7 +123,7 @@ public class ServerManagementTests(ServerManagementFixture fixture) : IClassFixt
         var config = new ConfigurationOptions();
         config.EndPoints.Add(secondary.Address.Host, secondary.Address.Port);
 
-        using var conn = await ConnectionMultiplexer.ConnectAsync(config);
+        await using var conn = await ConnectionMultiplexer.ConnectAsync(config);
         var server = conn.GetServers().First();
         await WaitForRoleAsync(server, "master");
 

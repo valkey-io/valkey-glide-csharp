@@ -29,8 +29,8 @@ public class PubSubEdgeCaseTests
             _ => throw new ArgumentOutOfRangeException(nameof(channelMode))
         };
 
-        using var subscriber = await BuildSubscriber(isCluster, message);
-        using var publisher = BuildPublisher(isCluster);
+        await using var subscriber = await BuildSubscriber(isCluster, message);
+        await using var publisher = BuildPublisher(isCluster);
 
         // Publish large message and verify receipt.
         await PublishAsync(publisher, message);
@@ -51,8 +51,8 @@ public class PubSubEdgeCaseTests
             PubSubMessage.FromChannel("Mixed: Hello世界!🌟", channel)
         };
 
-        using var subscriber = await BuildSubscriber(isCluster, messages);
-        using var publisher = BuildPublisher(isCluster);
+        await using var subscriber = await BuildSubscriber(isCluster, messages);
+        await using var publisher = BuildPublisher(isCluster);
 
         // Publish messages and verify receipt.
         await PublishAsync(publisher, messages);

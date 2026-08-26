@@ -27,15 +27,14 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
         configOptions.Ssl = TestConfiguration.TLS;
 
         // Act
-        using (ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(configOptions))
-        {
-            // Assert
-            Assert.NotNull(connectionMultiplexer);
-            Assert.NotNull(connectionMultiplexer.RawConfig);
-            Assert.True(connectionMultiplexer.RawConfig.ReadFrom.HasValue);
-            Assert.Equal(ReadFromStrategy.Primary, connectionMultiplexer.RawConfig.ReadFrom.Value.Strategy);
-            Assert.Null(connectionMultiplexer.RawConfig.ReadFrom.Value.Az);
-        }
+        await using ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(configOptions);
+
+        // Assert
+        Assert.NotNull(connectionMultiplexer);
+        Assert.NotNull(connectionMultiplexer.RawConfig);
+        Assert.True(connectionMultiplexer.RawConfig.ReadFrom.HasValue);
+        Assert.Equal(ReadFromStrategy.Primary, connectionMultiplexer.RawConfig.ReadFrom.Value.Strategy);
+        Assert.Null(connectionMultiplexer.RawConfig.ReadFrom.Value.Az);
     }
 
     [Fact]
@@ -50,15 +49,14 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
         configOptions.Ssl = TestConfiguration.TLS;
 
         // Act
-        using (ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(configOptions))
-        {
-            // Assert
-            Assert.NotNull(connectionMultiplexer);
-            Assert.NotNull(connectionMultiplexer.RawConfig);
-            Assert.True(connectionMultiplexer.RawConfig.ReadFrom.HasValue);
-            Assert.Equal(ReadFromStrategy.PreferReplica, connectionMultiplexer.RawConfig.ReadFrom.Value.Strategy);
-            Assert.Null(connectionMultiplexer.RawConfig.ReadFrom.Value.Az);
-        }
+        await using ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(configOptions);
+
+        // Assert
+        Assert.NotNull(connectionMultiplexer);
+        Assert.NotNull(connectionMultiplexer.RawConfig);
+        Assert.True(connectionMultiplexer.RawConfig.ReadFrom.HasValue);
+        Assert.Equal(ReadFromStrategy.PreferReplica, connectionMultiplexer.RawConfig.ReadFrom.Value.Strategy);
+        Assert.Null(connectionMultiplexer.RawConfig.ReadFrom.Value.Az);
     }
 
     [Fact]
@@ -74,15 +72,14 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
         configOptions.Ssl = TestConfiguration.TLS;
 
         // Act
-        using (ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(configOptions))
-        {
-            // Assert
-            Assert.NotNull(connectionMultiplexer);
-            Assert.NotNull(connectionMultiplexer.RawConfig);
-            Assert.True(connectionMultiplexer.RawConfig.ReadFrom.HasValue);
-            Assert.Equal(ReadFromStrategy.AzAffinity, connectionMultiplexer.RawConfig.ReadFrom.Value.Strategy);
-            Assert.Equal(testAz, connectionMultiplexer.RawConfig.ReadFrom.Value.Az);
-        }
+        await using ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(configOptions);
+
+        // Assert
+        Assert.NotNull(connectionMultiplexer);
+        Assert.NotNull(connectionMultiplexer.RawConfig);
+        Assert.True(connectionMultiplexer.RawConfig.ReadFrom.HasValue);
+        Assert.Equal(ReadFromStrategy.AzAffinity, connectionMultiplexer.RawConfig.ReadFrom.Value.Strategy);
+        Assert.Equal(testAz, connectionMultiplexer.RawConfig.ReadFrom.Value.Az);
     }
 
     [Fact]
@@ -98,15 +95,14 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
         configOptions.Ssl = TestConfiguration.TLS;
 
         // Act
-        using (ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(configOptions))
-        {
-            // Assert
-            Assert.NotNull(connectionMultiplexer);
-            Assert.NotNull(connectionMultiplexer.RawConfig);
-            Assert.True(connectionMultiplexer.RawConfig.ReadFrom.HasValue);
-            Assert.Equal(ReadFromStrategy.AzAffinityReplicasAndPrimary, connectionMultiplexer.RawConfig.ReadFrom.Value.Strategy);
-            Assert.Equal(testAz, connectionMultiplexer.RawConfig.ReadFrom.Value.Az);
-        }
+        await using ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(configOptions);
+
+        // Assert
+        Assert.NotNull(connectionMultiplexer);
+        Assert.NotNull(connectionMultiplexer.RawConfig);
+        Assert.True(connectionMultiplexer.RawConfig.ReadFrom.HasValue);
+        Assert.Equal(ReadFromStrategy.AzAffinityReplicasAndPrimary, connectionMultiplexer.RawConfig.ReadFrom.Value.Strategy);
+        Assert.Equal(testAz, connectionMultiplexer.RawConfig.ReadFrom.Value.Az);
     }
 
     [Fact]
@@ -121,15 +117,14 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
         configOptions.Ssl = TestConfiguration.TLS;
 
         // Act
-        using (ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(configOptions))
-        {
-            // Assert
-            Assert.NotNull(connectionMultiplexer);
-            Assert.NotNull(connectionMultiplexer.RawConfig);
-            Assert.True(connectionMultiplexer.RawConfig.ReadFrom.HasValue);
-            Assert.Equal(ReadFromStrategy.Primary, connectionMultiplexer.RawConfig.ReadFrom.Value.Strategy);
-            Assert.Null(connectionMultiplexer.RawConfig.ReadFrom.Value.Az);
-        }
+        await using ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(configOptions);
+
+        // Assert
+        Assert.NotNull(connectionMultiplexer);
+        Assert.NotNull(connectionMultiplexer.RawConfig);
+        Assert.True(connectionMultiplexer.RawConfig.ReadFrom.HasValue);
+        Assert.Equal(ReadFromStrategy.Primary, connectionMultiplexer.RawConfig.ReadFrom.Value.Strategy);
+        Assert.Null(connectionMultiplexer.RawConfig.ReadFrom.Value.Az);
     }
 
     [Fact]
@@ -144,15 +139,14 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
         configOptions.Ssl = TestConfiguration.TLS;
 
         // Act
-        using (ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(configOptions))
-        {
-            // Assert
-            Assert.NotNull(connectionMultiplexer);
-            Assert.NotNull(connectionMultiplexer.RawConfig);
-            Assert.True(connectionMultiplexer.RawConfig.ReadFrom.HasValue);
-            Assert.Equal(ReadFromStrategy.PreferReplica, connectionMultiplexer.RawConfig.ReadFrom.Value.Strategy);
-            Assert.Null(connectionMultiplexer.RawConfig.ReadFrom.Value.Az);
-        }
+        await using ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(configOptions);
+
+        // Assert
+        Assert.NotNull(connectionMultiplexer);
+        Assert.NotNull(connectionMultiplexer.RawConfig);
+        Assert.True(connectionMultiplexer.RawConfig.ReadFrom.HasValue);
+        Assert.Equal(ReadFromStrategy.PreferReplica, connectionMultiplexer.RawConfig.ReadFrom.Value.Strategy);
+        Assert.Null(connectionMultiplexer.RawConfig.ReadFrom.Value.Az);
     }
 
     [Fact]
@@ -168,15 +162,14 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
         configOptions.Ssl = TestConfiguration.TLS;
 
         // Act
-        using (ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(configOptions))
-        {
-            // Assert
-            Assert.NotNull(connectionMultiplexer);
-            Assert.NotNull(connectionMultiplexer.RawConfig);
-            Assert.True(connectionMultiplexer.RawConfig.ReadFrom.HasValue);
-            Assert.Equal(ReadFromStrategy.AzAffinity, connectionMultiplexer.RawConfig.ReadFrom.Value.Strategy);
-            Assert.Equal(testAz, connectionMultiplexer.RawConfig.ReadFrom.Value.Az);
-        }
+        await using ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(configOptions);
+
+        // Assert
+        Assert.NotNull(connectionMultiplexer);
+        Assert.NotNull(connectionMultiplexer.RawConfig);
+        Assert.True(connectionMultiplexer.RawConfig.ReadFrom.HasValue);
+        Assert.Equal(ReadFromStrategy.AzAffinity, connectionMultiplexer.RawConfig.ReadFrom.Value.Strategy);
+        Assert.Equal(testAz, connectionMultiplexer.RawConfig.ReadFrom.Value.Az);
     }
 
     [Fact]
@@ -192,15 +185,14 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
         configOptions.Ssl = TestConfiguration.TLS;
 
         // Act
-        using (ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(configOptions))
-        {
-            // Assert
-            Assert.NotNull(connectionMultiplexer);
-            Assert.NotNull(connectionMultiplexer.RawConfig);
-            Assert.True(connectionMultiplexer.RawConfig.ReadFrom.HasValue);
-            Assert.Equal(ReadFromStrategy.AzAffinityReplicasAndPrimary, connectionMultiplexer.RawConfig.ReadFrom.Value.Strategy);
-            Assert.Equal(testAz, connectionMultiplexer.RawConfig.ReadFrom.Value.Az);
-        }
+        await using ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(configOptions);
+
+        // Assert
+        Assert.NotNull(connectionMultiplexer);
+        Assert.NotNull(connectionMultiplexer.RawConfig);
+        Assert.True(connectionMultiplexer.RawConfig.ReadFrom.HasValue);
+        Assert.Equal(ReadFromStrategy.AzAffinityReplicasAndPrimary, connectionMultiplexer.RawConfig.ReadFrom.Value.Strategy);
+        Assert.Equal(testAz, connectionMultiplexer.RawConfig.ReadFrom.Value.Az);
     }
 
     [Fact]
@@ -215,13 +207,12 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
         configOptions.Ssl = TestConfiguration.TLS;
 
         // Act
-        using (ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(configOptions))
-        {
-            // Assert
-            Assert.NotNull(connectionMultiplexer);
-            Assert.NotNull(connectionMultiplexer.RawConfig);
-            Assert.False(connectionMultiplexer.RawConfig.ReadFrom.HasValue);
-        }
+        await using ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(configOptions);
+
+        // Assert
+        Assert.NotNull(connectionMultiplexer);
+        Assert.NotNull(connectionMultiplexer.RawConfig);
+        Assert.False(connectionMultiplexer.RawConfig.ReadFrom.HasValue);
     }
 
     [Fact]
@@ -236,13 +227,12 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
         configOptions.Ssl = TestConfiguration.TLS;
 
         // Act
-        using (ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(configOptions))
-        {
-            // Assert
-            Assert.NotNull(connectionMultiplexer);
-            Assert.NotNull(connectionMultiplexer.RawConfig);
-            Assert.False(connectionMultiplexer.RawConfig.ReadFrom.HasValue);
-        }
+        await using ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(configOptions);
+
+        // Assert
+        Assert.NotNull(connectionMultiplexer);
+        Assert.NotNull(connectionMultiplexer.RawConfig);
+        Assert.False(connectionMultiplexer.RawConfig.ReadFrom.HasValue);
     }
 
     [Fact]
@@ -252,15 +242,14 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
         string connectionString = $"{TestConfiguration.STANDALONE_ADDRESS},readFrom=Primary,ssl={TestConfiguration.TLS}";
 
         // Act
-        using (ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(connectionString))
-        {
-            // Assert
-            Assert.NotNull(connectionMultiplexer);
-            Assert.NotNull(connectionMultiplexer.RawConfig);
-            Assert.True(connectionMultiplexer.RawConfig.ReadFrom.HasValue);
-            Assert.Equal(ReadFromStrategy.Primary, connectionMultiplexer.RawConfig.ReadFrom.Value.Strategy);
-            Assert.Null(connectionMultiplexer.RawConfig.ReadFrom.Value.Az);
-        }
+        await using ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(connectionString);
+
+        // Assert
+        Assert.NotNull(connectionMultiplexer);
+        Assert.NotNull(connectionMultiplexer.RawConfig);
+        Assert.True(connectionMultiplexer.RawConfig.ReadFrom.HasValue);
+        Assert.Equal(ReadFromStrategy.Primary, connectionMultiplexer.RawConfig.ReadFrom.Value.Strategy);
+        Assert.Null(connectionMultiplexer.RawConfig.ReadFrom.Value.Az);
     }
 
     [Fact]
@@ -271,15 +260,14 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
         string connectionString = $"{TestConfiguration.STANDALONE_ADDRESS},readFrom=AzAffinity,az={testAz},ssl={TestConfiguration.TLS}";
 
         // Act
-        using (ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(connectionString))
-        {
-            // Assert
-            Assert.NotNull(connectionMultiplexer);
-            Assert.NotNull(connectionMultiplexer.RawConfig);
-            Assert.True(connectionMultiplexer.RawConfig.ReadFrom.HasValue);
-            Assert.Equal(ReadFromStrategy.AzAffinity, connectionMultiplexer.RawConfig.ReadFrom.Value.Strategy);
-            Assert.Equal(testAz, connectionMultiplexer.RawConfig.ReadFrom.Value.Az);
-        }
+        await using ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(connectionString);
+
+        // Assert
+        Assert.NotNull(connectionMultiplexer);
+        Assert.NotNull(connectionMultiplexer.RawConfig);
+        Assert.True(connectionMultiplexer.RawConfig.ReadFrom.HasValue);
+        Assert.Equal(ReadFromStrategy.AzAffinity, connectionMultiplexer.RawConfig.ReadFrom.Value.Strategy);
+        Assert.Equal(testAz, connectionMultiplexer.RawConfig.ReadFrom.Value.Az);
     }
 
     [Fact]
@@ -290,15 +278,14 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
         string connectionString = $"{TestConfiguration.CLUSTER_ADDRESS},readFrom=AzAffinity,az={testAz},ssl={TestConfiguration.TLS}";
 
         // Act
-        using (ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(connectionString))
-        {
-            // Assert
-            Assert.NotNull(connectionMultiplexer);
-            Assert.NotNull(connectionMultiplexer.RawConfig);
-            Assert.True(connectionMultiplexer.RawConfig.ReadFrom.HasValue);
-            Assert.Equal(ReadFromStrategy.AzAffinity, connectionMultiplexer.RawConfig.ReadFrom.Value.Strategy);
-            Assert.Equal(testAz, connectionMultiplexer.RawConfig.ReadFrom.Value.Az);
-        }
+        await using ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(connectionString);
+
+        // Assert
+        Assert.NotNull(connectionMultiplexer);
+        Assert.NotNull(connectionMultiplexer.RawConfig);
+        Assert.True(connectionMultiplexer.RawConfig.ReadFrom.HasValue);
+        Assert.Equal(ReadFromStrategy.AzAffinity, connectionMultiplexer.RawConfig.ReadFrom.Value.Strategy);
+        Assert.Equal(testAz, connectionMultiplexer.RawConfig.ReadFrom.Value.Az);
     }
 
     [Theory]
@@ -323,7 +310,7 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
         };
 
         // Act
-        using var connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(connectionString);
+        await using var connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(connectionString);
 
         // Assert
         Assert.NotNull(connectionMultiplexer);
@@ -340,12 +327,11 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
         string connectionString = $"{TestConfiguration.STANDALONE_ADDRESS},ssl={TestConfiguration.TLS}";
 
         // Act
-        using (ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(connectionString))
-        {
-            // Assert
-            Assert.NotNull(connectionMultiplexer);
-            Assert.NotNull(connectionMultiplexer.RawConfig);
-            Assert.False(connectionMultiplexer.RawConfig.ReadFrom.HasValue);
-        }
+        await using ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(connectionString);
+
+        // Assert
+        Assert.NotNull(connectionMultiplexer);
+        Assert.NotNull(connectionMultiplexer.RawConfig);
+        Assert.False(connectionMultiplexer.RawConfig.ReadFrom.HasValue);
     }
 }
