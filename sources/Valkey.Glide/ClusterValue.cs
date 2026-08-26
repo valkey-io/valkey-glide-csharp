@@ -20,13 +20,18 @@ namespace Valkey.Glide;
 /// <typeparam name="T">The wrapped response type</typeparam>
 public class ClusterValue<T>
 {
-    private Dictionary<string, T>? _multiValue = default;
+    #region Private Fields
+
     private T? _singleValue = default;
+    private Dictionary<string, T>? _multiValue = default;
+
+    #endregion
+    #region Constructors & Builders
 
     private ClusterValue() { }
 
     /// <summary>
-    /// A constructor for the value with type auto-detection.
+    /// Builds a cluster value from the given object.
     /// </summary>
     internal static ClusterValue<T> Of(object obj)
     {
@@ -41,36 +46,54 @@ public class ClusterValue<T>
         return OfSingleValue((T)obj);
     }
 
+    /// <summary>
+    /// Builds a cluster value from the given value.
+    /// </summary>
     internal static ClusterValue<T> OfSingleValue(T obj)
         => new() { _singleValue = obj };
 
+    /// <summary>
+    /// Builds a cluster value from the given values, indexed by node address.
+    /// </summary>
     internal static ClusterValue<T> OfMultiValue(Dictionary<string, T> obj)
         => new() { _multiValue = obj };
 
+    /// <summary>
+    /// Builds a cluster value from the given values, indexed by node address.
+    /// </summary>
     internal static ClusterValue<T> OfMultiValue(Dictionary<GlideString, T> obj)
         => new() { _multiValue = obj.DownCastKeys() };
 
-    /// <summary>
-    /// Get per-node value.<br />
-    /// Asserts if <see cref="HasMultiData" /> is <see langword="false" />.
-    /// </summary>
-    public Dictionary<string, T> MultiValue
-        => _multiValue ?? throw new Exception("No multi value stored");
+    #endregion
+    #region Public Methods
 
     /// <summary>
-    /// Get the single value.<br />
-    /// Asserts if <see cref="HasSingleData" /> is <see langword="false" />.
-    /// </summary>
-    public T SingleValue
-        => HasSingleData ? _singleValue! : throw new Exception("No single value stored");
-
-    /// <summary>
-    /// Check that multi-value is stored in this object. Should be called prior to <see cref="MultiValue" />.
+    /// Returns whether multiple values are stored in this object.
+    /// Should be called prior to <see cref="MultiValue" />.
     /// </summary>
     public bool HasMultiData => _multiValue != null;
 
     /// <summary>
-    /// Check that single-value is stored in this object. Should be called prior to <see cref="SingleValue" />.
+    /// Returns multiple value if they are stored in this object.
+    /// Values are indexed by node address.
+    /// </summary>
+    /// <exception cref="Exception">Thrown when <see cref="HasMultiData" /> is <see langword="false" />.</exception>
+    public Dictionary<string, T> MultiValue
+        => HasMultiData ? _multiValue! : throw new Exception("No multi value stored");
+
+    /// <summary>
+    /// Returns whether a single value is stored in this object.
+    /// Should be called prior to <see cref="SingleValue" />.
     /// </summary>
     public bool HasSingleData => _multiValue == null;
+
+    /// <summary>
+    /// Returns a single value if one is stored in this object.
+    /// </summary>
+    /// <returns>The single value response</returns>
+    /// <exception cref="Exception">Thrown when <see cref="HasSingleData" /> is <see langword="false" />.</exception>
+    public T SingleValue
+        => HasSingleData ? _singleValue! : throw new Exception("No single value stored");
+
+    #endregion
 }
