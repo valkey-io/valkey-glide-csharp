@@ -37,11 +37,13 @@ internal class ValkeyBatch(BaseClient client) : Database(false), IBatch
             // a batch is already executed
             return;
         }
+
         if (_commands.Count == 0)
         {
             _tcs.SetResult([]);
             return;
         }
+
         Batch b = new(_isAtomic);
         b.Commands.AddRange(_commands);
 

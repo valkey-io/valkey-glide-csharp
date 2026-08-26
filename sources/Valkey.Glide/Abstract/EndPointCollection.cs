@@ -52,6 +52,7 @@ public sealed class EndPointCollection : Collection<EndPoint>, IEnumerable<EndPo
         {
             throw new ArgumentException($"Could not parse host and port from '{hostAndPort}'", nameof(hostAndPort));
         }
+
         Add(endpoint);
     }
 
@@ -128,10 +129,12 @@ public sealed class EndPointCollection : Collection<EndPoint>, IEnumerable<EndPo
             // mono has a nasty bug in DnsEndPoint.Equals; if they do bad things here: sorry, I can't help
             existingIndex = -1;
         }
+
         if (existingIndex >= 0 && existingIndex != index)
         {
             throw new ArgumentException("EndPoints must be unique", nameof(item));
         }
+
         base.SetItem(index, item);
     }
 
@@ -180,6 +183,7 @@ public sealed class EndPointCollection : Collection<EndPoint>, IEnumerable<EndPo
                 return true;
             }
         }
+
         return false;
     }
 

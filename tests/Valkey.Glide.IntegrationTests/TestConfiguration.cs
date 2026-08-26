@@ -92,6 +92,7 @@ public class TestConfiguration : IDisposable
                     field = [.. TestStandaloneClients.Select(d => (BaseClient)d.Data), .. TestClusterClients.Select(d => (BaseClient)d.Data)];
                 }
             }
+
             return field;
         }
 
@@ -129,6 +130,7 @@ public class TestConfiguration : IDisposable
                     field = [resp2client, resp3client];
                 }
             }
+
             return field;
         }
 
@@ -165,6 +167,7 @@ public class TestConfiguration : IDisposable
                     field = [resp2client, resp3client];
                 }
             }
+
             return field;
         }
 
@@ -177,6 +180,7 @@ public class TestConfiguration : IDisposable
         {
             data.Data.Dispose();
         }
+
         TestClients = [];
         TestClusterClients = [];
         TestStandaloneClients = [];
@@ -234,6 +238,7 @@ public class TestConfiguration : IDisposable
                     field = [resp2Conn, resp3Conn];
                 }
             }
+
             return field;
         }
 
@@ -266,6 +271,7 @@ public class TestConfiguration : IDisposable
                     field = [resp2Conn, resp3Conn];
                 }
             }
+
             return field;
         }
 
@@ -288,6 +294,7 @@ public class TestConfiguration : IDisposable
 #pragma warning restore xUnit1046 // Avoid using TheoryDataRow arguments that are not serializable
                 }
             }
+
             return field;
         }
 
@@ -317,6 +324,7 @@ public class TestConfiguration : IDisposable
 #pragma warning restore xUnit1047 // Avoid using TheoryDataRow arguments that might not be serializable
                 }
             }
+
             return field;
         }
 
@@ -336,6 +344,7 @@ public class TestConfiguration : IDisposable
 #pragma warning restore xUnit1047 // Avoid using TheoryDataRow arguments that might not be serializable
                 }
             }
+
             return field;
         }
 
@@ -418,6 +427,7 @@ public class TestConfiguration : IDisposable
                 err = e;
             }
         }
+
         if (CLUSTER_ADDRESSES.Count > 0)
         {
             GlideClusterClient client = DefaultClusterClient();
@@ -431,10 +441,12 @@ public class TestConfiguration : IDisposable
                 {
                     TestConsoleWriteLine(err.ToString());
                 }
+
                 TestConsoleWriteLine(e.ToString());
                 throw;
             }
         }
+
         throw new Exception("No servers are given");
     }
 }

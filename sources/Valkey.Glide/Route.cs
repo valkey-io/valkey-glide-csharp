@@ -163,6 +163,7 @@ public abstract class Route
             {
                 throw new ArgumentException("No port provided, and host is not in the expected format 'hostname:port'. Received: " + host);
             }
+
             Host = parts[0];
             Port = int.Parse(parts[1]);
         }

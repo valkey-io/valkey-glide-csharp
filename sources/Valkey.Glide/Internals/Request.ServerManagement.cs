@@ -50,6 +50,7 @@ internal static partial class Request
             args.Add(kvp.Key);
             args.Add(kvp.Value);
         }
+
         return Ok(RequestType.ConfigSet, [.. args]);
     }
 
@@ -162,6 +163,7 @@ internal static partial class Request
                     string value = kvp.Value is GlideString gs ? gs.ToString() : kvp.Value?.ToString() ?? string.Empty;
                     result.Add(new KeyValuePair<string, string>(key, value));
                 }
+
                 return [.. result];
             }
 
@@ -183,6 +185,7 @@ internal static partial class Request
                         result.Add(new KeyValuePair<string, string>(key, value));
                     }
                 }
+
                 return [.. result];
             }
 
@@ -205,6 +208,7 @@ internal static partial class Request
                 Duration = TimeSpan.FromMilliseconds(Convert.ToInt64(entry[1])),
             };
         }
+
         return entries;
     }
 
@@ -226,6 +230,7 @@ internal static partial class Request
                 Count = entry.Length > 5 ? Convert.ToInt64(entry[5]) : null,
             };
         }
+
         return entries;
     }
 

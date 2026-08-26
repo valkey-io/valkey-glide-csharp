@@ -258,6 +258,7 @@ public readonly struct ValkeyChannel : IEquatable<ValkeyChannel>
         {
             return this;
         }
+
         var copy = (byte[])Value.Clone();
         return new ValkeyChannel(copy, Options);
     }
@@ -368,6 +369,7 @@ public readonly struct ValkeyChannel : IEquatable<ValkeyChannel>
         dbBytes.CopyTo(span); span = span.Slice(dbBytes.Length);
         "__:"u8.CopyTo(span); span = span.Slice(3);
         if (keyLen > 0) { key.CopyTo(span); span = span.Slice(keyLen); }
+
         if (appendStar) span[0] = (byte)'*';
 
         return new ValkeyChannel(arr, isPattern ? ValkeyChannelOptions.Pattern : ValkeyChannelOptions.None);
@@ -506,6 +508,7 @@ public readonly struct ValkeyChannel : IEquatable<ValkeyChannel>
         {
             return null;
         }
+
         try
         {
             return Encoding.UTF8.GetString(arr);

@@ -48,6 +48,7 @@ public abstract partial class BaseBatch<T>(bool isAtomic) : IBatch where T : Bas
         {
             response[i] = Commands[i].GetConverter()(response[i]);
         }
+
         return response;
     }
 

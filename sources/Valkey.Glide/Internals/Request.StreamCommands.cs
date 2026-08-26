@@ -345,6 +345,7 @@ internal static partial class Request
                 deliveryCount: ToInt(msgData[3])
             );
         }
+
         return result;
     }
 
@@ -388,6 +389,7 @@ internal static partial class Request
         {
             args.Add(sp.Key);
         }
+
         foreach (var sp in array)
         {
             args.Add(sp.Position);

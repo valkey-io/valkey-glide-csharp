@@ -302,6 +302,7 @@ public class SetCommandTests(TestConfiguration config)
         {
             emptyResults.Add(value);
         }
+
         Assert.Empty(emptyResults);
 
         // Add members to set
@@ -313,6 +314,7 @@ public class SetCommandTests(TestConfiguration config)
         {
             allResults.Add(value);
         }
+
         Assert.Equal(6, allResults.Count);
         Assert.True(members.All(m => allResults.Any(r => r.ToString() == m.ToString())));
 
@@ -322,6 +324,7 @@ public class SetCommandTests(TestConfiguration config)
         {
             patternResults.Add(value);
         }
+
         Assert.Equal(2, patternResults.Count);
         Assert.All(patternResults, r => Assert.StartsWith("test", r.ToString()));
 
@@ -331,6 +334,7 @@ public class SetCommandTests(TestConfiguration config)
         {
             smallPageResults.Add(value);
         }
+
         Assert.Equal(6, smallPageResults.Count); // Should still get all results
     }
 
@@ -350,6 +354,7 @@ public class SetCommandTests(TestConfiguration config)
         {
             allScanned.Add(member);
         }
+
         Assert.Equal(25000, allScanned.Count);
 
         // Test 2: Scan with pattern matching (should find members 1000-1999)
@@ -359,6 +364,7 @@ public class SetCommandTests(TestConfiguration config)
             Assert.StartsWith("member1", member);
             patternScanned.Add(member);
         }
+
         Assert.Equal(11111, patternScanned.Count);  // At least member1, member10-19, member100-199, etc.
 
         // Test 3: Scan with small page size to test pagination
@@ -367,6 +373,7 @@ public class SetCommandTests(TestConfiguration config)
         {
             smallPageScanned.Add(member);
         }
+
         Assert.Equal(25000, smallPageScanned.Count);
 
         Assert.Equal(25000, await client.SetCardAsync(key));

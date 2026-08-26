@@ -96,14 +96,17 @@ public static class Logger
         {
             SetLoggerConfig(logLevel);
         }
+
         if (!(logLevel <= s_loggerLevel))
         {
             return;
         }
+
         if (error is not null)
         {
             message += $": {error}";
         }
+
         log(Convert.ToInt32(logLevel), logIdentifier, message);
     }
 
@@ -129,6 +132,7 @@ public static class Logger
             FreeString(errorPtr);
             throw new InvalidOperationException($"Failed to initialize logger: {errorMessage}");
         }
+
         s_loggerLevel = resolvedLevel;
     }
 

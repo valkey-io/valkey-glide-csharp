@@ -45,14 +45,17 @@ internal static class ResponseConverters
                 // Let the converter handle the null value by passing default(R)
                 return converter(default!);
             }
+
             if (isNullable)
             {
 #pragma warning disable CS8603 // Possible null reference return.
                 return default; // will return a null
 #pragma warning restore CS8603 // Possible null reference return.
             }
+
             throw new RequestException($"Unexpected return type from Glide: got null expected {typeof(T).GetRealTypeName()}");
         }
+
         return value is R val
             ? converter(val)
             : throw new RequestException($"Unexpected return type from Glide: got {value?.GetType().GetRealTypeName()} expected {typeof(R).GetRealTypeName()}");

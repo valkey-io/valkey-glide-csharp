@@ -542,6 +542,7 @@ public class ClientFilterOptions
             args.Add(ValkeyLiterals.TYPE);
             args.Add(ValkeyLiterals.Get(Type.Value));
         }
+
         if (NotType is not null)
         {
             args.Add(ValkeyLiterals.NOT_TYPE);
@@ -553,6 +554,7 @@ public class ClientFilterOptions
             args.Add(ValkeyLiterals.ID);
             args.AddRange(_ids.Select(id => id.ToGlideString()));
         }
+
         if (_notIds.Count > 0)
         {
             args.Add(ValkeyLiterals.NOT_ID);
@@ -564,6 +566,7 @@ public class ClientFilterOptions
             args.Add(ValkeyLiterals.USER);
             args.Add(User);
         }
+
         if (NotUser is not null)
         {
             args.Add(ValkeyLiterals.NOT_USER);
@@ -575,6 +578,7 @@ public class ClientFilterOptions
             args.Add(ValkeyLiterals.ADDR);
             args.Add(Utils.FormatAddress(Address.Value.Host, Address.Value.Port));
         }
+
         if (NotAddress is not null)
         {
             args.Add(ValkeyLiterals.NOT_ADDR);
@@ -586,6 +590,7 @@ public class ClientFilterOptions
             args.Add(ValkeyLiterals.LADDR);
             args.Add(Utils.FormatAddress(LocalAddress.Value.Host, LocalAddress.Value.Port));
         }
+
         if (NotLocalAddress is not null)
         {
             args.Add(ValkeyLiterals.NOT_LADDR);
@@ -609,6 +614,7 @@ public class ClientFilterOptions
             args.Add(ValkeyLiterals.NAME);
             args.Add(Name);
         }
+
         if (NotName is not null)
         {
             args.Add(ValkeyLiterals.NOT_NAME);
@@ -626,6 +632,7 @@ public class ClientFilterOptions
             args.Add(ValkeyLiterals.FLAGS);
             args.Add(new string([.. _flags.Select(f => (char)f)]));
         }
+
         if (_notFlags.Count > 0)
         {
             args.Add(ValkeyLiterals.NOT_FLAGS);
@@ -637,6 +644,7 @@ public class ClientFilterOptions
             args.Add(ValkeyLiterals.LIB_NAME);
             args.Add(LibraryName);
         }
+
         if (NotLibraryName is not null)
         {
             args.Add(ValkeyLiterals.NOT_LIB_NAME);
@@ -648,6 +656,7 @@ public class ClientFilterOptions
             args.Add(ValkeyLiterals.LIB_VER);
             args.Add(LibraryVersion);
         }
+
         if (NotLibraryVersion is not null)
         {
             args.Add(ValkeyLiterals.NOT_LIB_VER);
@@ -659,6 +668,7 @@ public class ClientFilterOptions
             args.Add(ValkeyLiterals.DB);
             args.Add(DatabaseId.Value.ToGlideString());
         }
+
         if (NotDatabaseId is not null)
         {
             args.Add(ValkeyLiterals.NOT_DB);
@@ -670,6 +680,7 @@ public class ClientFilterOptions
             args.Add(ValkeyLiterals.CAPA);
             args.Add(new string([.. _capabilities.Select(c => (char)c)]));
         }
+
         if (_notCapabilities.Count > 0)
         {
             args.Add(ValkeyLiterals.NOT_CAPA);
@@ -681,6 +692,7 @@ public class ClientFilterOptions
             args.Add(ValkeyLiterals.IP);
             args.Add(IpAddress);
         }
+
         if (NotIpAddress is not null)
         {
             args.Add(ValkeyLiterals.NOT_IP);

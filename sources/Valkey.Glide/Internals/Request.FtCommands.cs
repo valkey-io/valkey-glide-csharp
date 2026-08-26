@@ -95,6 +95,7 @@ internal static partial class Request
         {
             args.AddRange(ToArgs(field));
         }
+
         return [.. args];
     }
 
@@ -333,10 +334,12 @@ internal static partial class Request
                 {
                     args.Add(ValkeyLiterals.NOSTEM);
                 }
+
                 if (!text.WithSuffixTrie)
                 {
                     args.Add(ValkeyLiterals.NOSUFFIXTRIE);
                 }
+
                 break;
 
             case Ft.CreateTagField tag:
@@ -346,6 +349,7 @@ internal static partial class Request
                     args.Add(ValkeyLiterals.SEPARATOR);
                     args.Add(tag.Separator.Value.ToString());
                 }
+
                 if (tag.CaseSensitive)
                 {
                     args.Add(ValkeyLiterals.CASESENSITIVE);
@@ -371,6 +375,7 @@ internal static partial class Request
                     flatAttrs.Add(ValkeyLiterals.INITIAL_CAP);
                     flatAttrs.Add(flat.InitialCap.Value.ToGlideString());
                 }
+
                 args.Add(flatAttrs.Count.ToGlideString());
                 args.AddRange(flatAttrs);
                 break;
@@ -389,21 +394,25 @@ internal static partial class Request
                     hnswAttrs.Add(ValkeyLiterals.INITIAL_CAP);
                     hnswAttrs.Add(hnsw.InitialCap.Value.ToGlideString());
                 }
+
                 if (hnsw.NumberOfEdges.HasValue)
                 {
                     hnswAttrs.Add(ValkeyLiterals.M);
                     hnswAttrs.Add(hnsw.NumberOfEdges.Value.ToGlideString());
                 }
+
                 if (hnsw.VectorsExaminedOnConstruction.HasValue)
                 {
                     hnswAttrs.Add(ValkeyLiterals.EF_CONSTRUCTION);
                     hnswAttrs.Add(hnsw.VectorsExaminedOnConstruction.Value.ToGlideString());
                 }
+
                 if (hnsw.VectorsExaminedOnRuntime.HasValue)
                 {
                     hnswAttrs.Add(ValkeyLiterals.EF_RUNTIME);
                     hnswAttrs.Add(hnsw.VectorsExaminedOnRuntime.Value.ToGlideString());
                 }
+
                 args.Add(hnswAttrs.Count.ToGlideString());
                 args.AddRange(hnswAttrs);
                 break;
@@ -490,6 +499,7 @@ internal static partial class Request
                     }));
             }
         }
+
         return [.. results];
     }
 

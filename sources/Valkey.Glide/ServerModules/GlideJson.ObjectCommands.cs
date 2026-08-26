@@ -114,6 +114,7 @@ public static partial class GlideJson
                 return [ToValkeyValue(o)];
             })];
         }
+
         // Single value (legacy path) - wrap in nested array
         return [[ToValkeyValue(result)]];
     }

@@ -31,6 +31,7 @@ internal static partial class Request
         {
             args[i + 1] = elements[i];
         }
+
         return Simple<bool>(RequestType.PfAdd, args);
     }
 
@@ -74,6 +75,7 @@ internal static partial class Request
         {
             args[i + 1] = sourceKeys[i];
         }
+
         return Ok(RequestType.PfMerge, args);
     }
 

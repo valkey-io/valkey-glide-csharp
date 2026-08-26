@@ -47,21 +47,25 @@ internal static class Utils
             {
                 continue;
             }
+
             if (line.StartsWith("# "))
             {
                 category = line[2..].Trim();
                 continue;
             }
+
             int idx = line.IndexOf(':');
             if (idx < 0)
             {
                 continue;
             }
+
             KeyValuePair<string, string> pair = new(
                 line[..idx].Trim(),
                 line[(idx + 1)..].Trim());
             list.Add(Tuple.Create(category, pair));
         }
+
         return list;
     }
 }

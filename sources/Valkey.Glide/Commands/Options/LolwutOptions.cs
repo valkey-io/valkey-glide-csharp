@@ -38,6 +38,7 @@ public class LolwutOptions
             args.Add(ValkeyLiterals.VERSION.ToString());
             args.Add(Version.Value.ToString());
         }
+
         if (Parameters is not null)
         {
             foreach (int param in Parameters)
@@ -45,6 +46,7 @@ public class LolwutOptions
                 args.Add(param.ToString());
             }
         }
+
         return [.. args];
     }
 }

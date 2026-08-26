@@ -143,6 +143,7 @@ internal static partial class Request
         {
             AddExpiryArgs(args, options.Expiry);
         }
+
         return [.. args];
     }
 

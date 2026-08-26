@@ -22,12 +22,14 @@ public static class TestFailureHandler
             {
                 return;
             }
+
             s_initialized = true;
             string? output = Environment.GetEnvironmentVariable("GITHUB_STEP_SUMMARY");
             if (output is null)
             {
                 return;
             }
+
             AppDomain.CurrentDomain.FirstChanceException += (sender, e) =>
             {
                 Exception? ex = e.Exception.InnerException;
@@ -38,6 +40,7 @@ public static class TestFailureHandler
                         s_firstFailure = false;
                         File.AppendAllText(output, "## Failed tests in CI pipeline:\n");
                     }
+
                     string permalink = BuildPermalink(ex.StackTrace ?? "");
                     File.AppendAllText(output, $"### {permalink}\n```\n{ex.Message}\n```\n\n");
                 }

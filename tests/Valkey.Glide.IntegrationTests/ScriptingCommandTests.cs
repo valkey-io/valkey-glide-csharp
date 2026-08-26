@@ -412,6 +412,7 @@ redis.register_function('{funcName}', function(keys, args) return 'version 2' en
         {
             result = await client.FCallAsync(funcName, CancellationToken);
         }
+
         Assert.Equal("version 2", result.ToString());
     }
 
@@ -646,6 +647,7 @@ redis.register_function('{funcName}', function(keys, args) return 'test' end)";
         {
             resultBefore = await client.FCallAsync(funcName, CancellationToken);
         }
+
         Assert.Equal("test", resultBefore.ToString());
 
         // Flush all functions (use routing for cluster clients)

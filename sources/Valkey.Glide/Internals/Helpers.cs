@@ -37,9 +37,11 @@ internal static class Helpers
             {
                 _ = sb.Append(", ");
             }
+
             _ = sb.Append(GetRealTypeName(arg));
             appendComma = true;
         }
+
         return sb.Append('>').ToString();
     }
 

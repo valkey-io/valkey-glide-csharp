@@ -47,6 +47,7 @@ public readonly struct StreamEntry
                         return values[i].value;
                 }
             }
+
             return ValkeyValue.Null;
         }
     }

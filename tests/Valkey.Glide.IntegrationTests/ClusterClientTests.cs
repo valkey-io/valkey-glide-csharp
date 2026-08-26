@@ -35,6 +35,7 @@ public class ClusterClientTests(TestConfiguration config)
         {
             Assert.Contains("# Server", nodeInfo as gs);
         }
+
         // command which returns a map even on a single node route
         ClusterValue<object?> config = await client.CustomCommand(["config", "get", "*file"], Route.Random);
         Assert.True((config.SingleValue as Dictionary<gs, object?>)!.Count > 0);
@@ -58,10 +59,12 @@ public class ClusterClientTests(TestConfiguration config)
                     {
                         return;
                     }
+
                     break;
                 }
             }
         }
+
         Assert.Fail($"All 100 commands were sent to: {ports.First()}");
     }
 

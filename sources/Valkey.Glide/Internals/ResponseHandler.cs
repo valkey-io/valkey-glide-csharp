@@ -65,6 +65,7 @@ internal static class ResponseHandler
         {
             res[(GlideString)values[i]!] = values[i + 1];
         }
+
         return res;
     }
 

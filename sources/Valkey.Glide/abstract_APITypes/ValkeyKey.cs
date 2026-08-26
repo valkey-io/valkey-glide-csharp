@@ -162,10 +162,12 @@ public readonly struct ValkeyKey : IEquatable<ValkeyKey>
         {
             return false; // different length; can't be equal
         }
+
         if (len == 0)
         {
             return true; // both empty
         }
+
         if (len <= 128)
         {
             return CopyCompare(in this, in other, len, stackalloc byte[len * 2]);
@@ -361,6 +363,7 @@ public readonly struct ValkeyKey : IEquatable<ValkeyKey>
                 Buffer.BlockCopy((byte[])b!, 0, result, aLen, bLen);
             }
         }
+
         if (cLen != 0) Buffer.BlockCopy(c!, 0, result, aLen + bLen, cLen);
         return result;
     }
@@ -406,6 +409,7 @@ public readonly struct ValkeyKey : IEquatable<ValkeyKey>
             written += KeyPrefix.Length;
             destination = destination.Slice(KeyPrefix.Length);
         }
+
         switch (KeyValue)
         {
             case null:
@@ -428,6 +432,7 @@ public readonly struct ValkeyKey : IEquatable<ValkeyKey>
                     }
 #endif
                 }
+
                 break;
             default:
                 var arr = (byte[])KeyValue;
@@ -435,6 +440,7 @@ public readonly struct ValkeyKey : IEquatable<ValkeyKey>
                 written += arr.Length;
                 break;
         }
+
         return written;
     }
 }

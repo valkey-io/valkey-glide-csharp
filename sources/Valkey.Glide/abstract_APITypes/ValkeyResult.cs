@@ -287,12 +287,14 @@ public abstract class ValkeyResult
         {
             return [];
         }
+
         int len = arr.Length / 2;
         var result = new Dictionary<string, ValkeyResult>(len, comparer ?? StringComparer.InvariantCultureIgnoreCase);
         for (int i = 0; i < arr.Length; i += 2)
         {
             result.Add(arr[i].AsString()!, arr[i + 1]);
         }
+
         return result;
     }
 
@@ -507,6 +509,7 @@ public abstract class ValkeyResult
                 type = s.Substring(0, 3);
                 s = s.Substring(4);
             }
+
             return s;
         }
 

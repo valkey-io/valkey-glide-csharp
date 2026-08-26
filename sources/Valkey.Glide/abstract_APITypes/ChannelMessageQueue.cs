@@ -232,6 +232,7 @@ public sealed class ChannelMessageQueue : IAsyncEnumerable<ChannelMessage>
 
                         break;
                     }
+
                     previous = current;
                     current = Volatile.Read(ref previous!._next);
                 }
@@ -250,6 +251,7 @@ public sealed class ChannelMessageQueue : IAsyncEnumerable<ChannelMessage>
             count++;
             current = Volatile.Read(ref current._next);
         }
+
         return count;
     }
 

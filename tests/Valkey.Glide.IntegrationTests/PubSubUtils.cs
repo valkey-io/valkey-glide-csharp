@@ -298,6 +298,7 @@ public static class PubSubUtils
 
             _ = targets[message.ChannelMode].Add(target);
         }
+
         return targets;
     }
 

@@ -192,6 +192,7 @@ public abstract partial class BaseClient
         {
             Marshal.FreeHGlobal(keysPtr);
         }
+
         if (keysLenPtr != IntPtr.Zero)
         {
             Marshal.FreeHGlobal(keysLenPtr);
@@ -214,6 +215,7 @@ public abstract partial class BaseClient
         {
             Marshal.FreeHGlobal(argsPtr);
         }
+
         if (argsLenPtr != IntPtr.Zero)
         {
             Marshal.FreeHGlobal(argsLenPtr);

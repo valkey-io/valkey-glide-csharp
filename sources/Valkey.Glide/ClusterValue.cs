@@ -39,6 +39,7 @@ public sealed class ClusterValue<T>
         {
             return OfMultiValue(dictGs);
         }
+
         return OfSingleValue((T)obj);
     }
 

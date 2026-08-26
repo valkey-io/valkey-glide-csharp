@@ -174,6 +174,7 @@ public sealed class LuaScript
                     $"Parameter object is missing required property or field: {missingMember}",
                     nameof(parameters));
             }
+
             if (badTypeMember != null)
             {
                 throw new ArgumentException(

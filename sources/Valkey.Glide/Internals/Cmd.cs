@@ -42,12 +42,15 @@ internal class Cmd<R, T> : ICmd
             {
                 return null;
             }
+
             throw new RequestException($"Unexpected return type from Glide: got null expected {typeof(T).GetRealTypeName()}");
         }
+
         if (value is RequestException)
         {
             return value;
         }
+
         Debug.Assert(value!.GetType() == typeof(R) || typeof(R).IsAssignableFrom(value!.GetType()),
             $"Unexpected return type from Glide: got {value?.GetType().GetRealTypeName()} expected {typeof(R).GetRealTypeName()}");
 

@@ -64,10 +64,12 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
             if (l >= -1 && l <= 20) return s_CommonInt32[((int)l) + 1];
             return l;
         }
+
         if (obj == Sentinel_UnsignedInteger)
         {
             return OverlappedValueUInt64;
         }
+
         if (obj == Sentinel_Double)
         {
             var d = OverlappedValueDouble;
@@ -76,6 +78,7 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
             if (double.IsNaN(d)) return s_DoubleNAN;
             return d;
         }
+
         if (obj == Sentinel_Raw && _memory.IsEmpty) return s_EmptyString;
         return this;
     }
@@ -203,6 +206,7 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
             case StorageType.Double:
                 return false;
         }
+
         switch (yType)
         {
             case StorageType.UInt64:
@@ -268,12 +272,14 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
             {
                 if (x64[i] != y64[i]) return false;
             }
+
             int offset = len - spare;
             while (spare-- != 0)
             {
                 if (x8[offset] != y8[offset++]) return false;
             }
         }
+
         return true;
     }
 
@@ -293,11 +299,13 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
                 int valHash = ((int)val) ^ ((int)(val >> 32));
                 acc = ((acc << 5) + acc) ^ valHash;
             }
+
             int spare = len % 8, offset = len - spare;
             while (spare-- != 0)
             {
                 acc = ((acc << 5) + acc) ^ span[offset++];
             }
+
             return acc;
         }
     }
@@ -502,6 +510,7 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
             if (value == i64) return new ValkeyValue(i64, default, Sentinel_SignedInteger);
         }
         catch { }
+
         return new ValkeyValue(BitConverter.DoubleToInt64Bits(value), default, Sentinel_Double);
     }
 
@@ -808,6 +817,7 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
             dst[j++] = HexValues[b >> 4];
             dst[j++] = HexValues[b & 0xF];
         }
+
         return s;
     }
 
@@ -845,6 +855,7 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
                 span.Slice(0, len).CopyTo(arr);
                 return arr;
         }
+
         // fallback: stringify and encode
         return Encoding.UTF8.GetBytes((string)value!);
     }
@@ -924,6 +935,7 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
                     if (Format.TryParseInt64(s, out i64)) return i64;
                     if (Format.TryParseUInt64(s, out u64)) return u64;
                 }
+
                 if (Format.TryParseDouble(s, out var f64)) return f64;
                 break;
             case StorageType.Raw:
@@ -933,6 +945,7 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
                     if (Format.TryParseInt64(b, out i64)) return i64;
                     if (Format.TryParseUInt64(b, out u64)) return u64;
                 }
+
                 if (TryParseDouble(b, out f64)) return f64;
                 break;
             case StorageType.Double:
@@ -941,6 +954,7 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
                 if (f64 >= long.MinValue && f64 <= long.MaxValue && (i64 = (long)f64) == f64) return i64;
                 break;
         }
+
         return this;
     }
 
@@ -975,12 +989,14 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
                     val = default;
                     return false;
                 }
+
                 return val == d;
             case StorageType.Null:
                 // 0 approx. equal null; so roll with it
                 val = 0;
                 return true;
         }
+
         val = default;
         return false;
     }
@@ -1029,6 +1045,7 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
                 val = 0;
                 return true;
         }
+
         val = default;
         return false;
     }
@@ -1070,6 +1087,7 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
             }
             catch { }
         }
+
         buffer = default;
         return false;
     }
@@ -1100,6 +1118,7 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
                     return rawThis.Span.StartsWith(rawOther.Span);
             }
         }
+
         byte[]? arr0 = null, arr1 = null;
         try
         {
@@ -1148,6 +1167,7 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
 
                 return new ReadOnlyMemory<byte>(leased, 0, len);
         }
+
         leased = null;
         return default;
     }

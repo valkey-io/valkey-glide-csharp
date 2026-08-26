@@ -21,6 +21,7 @@ internal static partial class Request
         {
             args.Add(indexType.ToLiteral().ToGlideString());
         }
+
         return Simple<long>(RequestType.BitCount, [.. args]);
     }
 
@@ -31,6 +32,7 @@ internal static partial class Request
         {
             args.Add(indexType.ToLiteral().ToGlideString());
         }
+
         return Simple<long>(RequestType.BitPos, [.. args]);
     }
 
@@ -48,6 +50,7 @@ internal static partial class Request
         {
             args.AddRange(subCommand.ToArgs().ToGlideStrings());
         }
+
         // Preserve null values to indicate overflow with OVERFLOW FAIL
         return new(RequestType.BitField, [.. args], false, response =>
             [.. response.Select(item => item is null ? (long?)null : Convert.ToInt64(item))]);
@@ -60,6 +63,7 @@ internal static partial class Request
         {
             args.AddRange(subCommand.ToArgs().ToGlideStrings());
         }
+
         return new(RequestType.BitFieldReadOnly, [.. args], false, response =>
             [.. response.Select(Convert.ToInt64)]);
     }

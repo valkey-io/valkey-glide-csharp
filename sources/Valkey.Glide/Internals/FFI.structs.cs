@@ -21,6 +21,7 @@ internal partial class FFI
             {
                 _ptr = AllocateAndCopy();
             }
+
             return _ptr;
         }
 
@@ -62,6 +63,7 @@ internal partial class FFI
             {
                 Marshal.FreeHGlobal(_argPtrs[i]);
             }
+
             _pinnedArgs.Free();
             PoolReturn(_argPtrs);
             _pinnedLengths.Free();
@@ -115,6 +117,7 @@ internal partial class FFI
             {
                 _cmds[i].Dispose();
             }
+
             _pinnedCmds.Free();
             ArrayPool<IntPtr>.Shared.Return(_cmdPtrs);
         }

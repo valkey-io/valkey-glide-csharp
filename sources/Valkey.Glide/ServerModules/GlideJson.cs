@@ -62,14 +62,17 @@ public static partial class GlideJson
             {
                 return null;
             }
+
             if (result.HasMultiData)
             {
                 // Multi-node response - this shouldn't happen for JSON commands but handle it gracefully
                 throw new InvalidOperationException("Unexpected multi-node response for JSON command");
             }
+
             // For single-node responses, return the value (which may be null)
             return result.HasSingleData ? result.SingleValue : null;
         }
+
         throw new ArgumentException("Unsupported client type. Expected GlideClient or GlideClusterClient.", nameof(client));
     }
 
@@ -326,6 +329,7 @@ public static partial class GlideJson
         {
             args.Add(ToGlideString(key));
         }
+
         args.Add(path);
         return [.. args];
     }

@@ -71,6 +71,7 @@ internal class MessageContainer(BaseClient client) : IDisposable
                 _messages.Add(message);
             }
         }
+
         return message;
     }
 

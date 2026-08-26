@@ -203,6 +203,7 @@ public class SharedBatchTests
         {
             await ((GlideClient)client).WatchAsync(keys);
         }
+
         await client.SetAsync(key2, helloString);
         if (isCluster)
         {

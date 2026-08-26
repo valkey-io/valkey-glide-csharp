@@ -210,6 +210,7 @@ internal static partial class Request
         {
             scores[i] = response[i] == null ? null : (double)response[i];
         }
+
         return scores;
     }
 
@@ -232,6 +233,7 @@ internal static partial class Request
             object[] pair = (object[])response[i];
             entries[i] = new SortedSetEntry((ValkeyValue)(GlideString)pair[0], (double)pair[1]);
         }
+
         return entries;
     }
 

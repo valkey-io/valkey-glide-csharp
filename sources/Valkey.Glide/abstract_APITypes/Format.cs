@@ -34,11 +34,13 @@ internal static class Format
             value = true;
             return true;
         }
+
         if (s == "0" || string.Equals(s, "no", StringComparison.OrdinalIgnoreCase) || string.Equals(s, "off", StringComparison.OrdinalIgnoreCase))
         {
             value = false;
             return true;
         }
+
         value = false;
         return false;
     }
@@ -59,6 +61,7 @@ internal static class Format
             endpoint = ParseEndPoint(host, i);
             return true;
         }
+
         endpoint = null;
         return false;
     }
@@ -74,6 +77,7 @@ internal static class Format
             if (double.IsPositiveInfinity(value)) return "+inf";
             if (double.IsNegativeInfinity(value)) return "-inf";
         }
+
         return value.ToString("G17", NumberFormatInfo.InvariantInfo);
     }
 
@@ -110,6 +114,7 @@ internal static class Format
                     // ipv6 with port; use "[IP]:port" notation
                     return "[" + addr + "]:" + Format.ToString(ip.Port);
                 }
+
                 // ipv4 with port; use "IP:port" notation
                 return ip.Address + ":" + Format.ToString(ip.Port);
 #if UNIX_SOCKET
@@ -139,6 +144,7 @@ internal static class Format
                 port = ip.Port;
                 return true;
             }
+
             if (endpoint is DnsEndPoint dns)
             {
                 host = dns.Host;
@@ -146,6 +152,7 @@ internal static class Format
                 return true;
             }
         }
+
         host = null;
         port = null;
         return false;
@@ -158,6 +165,7 @@ internal static class Format
             value = 0;
             return false;
         }
+
         switch (s.Length)
         {
             case 0:
@@ -185,6 +193,7 @@ internal static class Format
                 value = double.NaN;
                 return true;
         }
+
         return double.TryParse(s, NumberStyles.Any, NumberFormatInfo.InvariantInfo, out value);
     }
 
@@ -206,6 +215,7 @@ internal static class Format
             char c = s[i];
             if (c < '0' || c > '9') return false;
         }
+
         return true;
     }
     internal static bool CouldBeInteger(ReadOnlySpan<byte> s)
@@ -217,6 +227,7 @@ internal static class Format
             byte c = s[i];
             if (c < (byte)'0' || c > (byte)'9') return false;
         }
+
         return true;
     }
 
@@ -252,6 +263,7 @@ internal static class Format
                 value = double.NaN;
                 return true;
         }
+
         return Utf8Parser.TryParse(s, out value, out int bytes) && bytes == s.Length;
     }
 
@@ -265,6 +277,7 @@ internal static class Format
         {
             if (char.ToLower((char)y[i]) != xLowerCase[i]) return false;
         }
+
         return true;
     }
 
@@ -306,6 +319,7 @@ internal static class Format
             throw new PlatformNotSupportedException("Unix domain sockets require .NET Core 3 or above");
 #endif
         }
+
         var lastColonIndex = addressWithPort.LastIndexOf(':');
         if (lastColonIndex > 0)
         {
@@ -483,6 +497,7 @@ internal static class Format
             version = new(i32, 0);
             return true;
         }
+
         version = null;
         return false;
 #else
@@ -514,6 +529,7 @@ internal static class Format
                 return true;
             }
         }
+
         version = null;
         return false;
     }

@@ -1036,6 +1036,7 @@ public abstract class ConnectionConfiguration
                 {
                     ArgumentOutOfRangeException.ThrowIfZero(value.Value, nameof(value));
                 }
+
                 Config.InflightRequestsLimit = value;
             }
         }

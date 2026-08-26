@@ -86,6 +86,7 @@ public sealed class ConfigurationOptions : ICloneable
             {
                 return tmp ?? "";
             }
+
             return value ?? "";
         }
     }
@@ -413,6 +414,7 @@ public sealed class ConfigurationOptions : ICloneable
         {
             Append(sb, Format.ToString(endpoint));
         }
+
         Append(sb, OptionKeys.ClientName, ClientName);
         Append(sb, OptionKeys.ConnectTimeout, ConnectTimeout);
         Append(sb, OptionKeys.User, User);
@@ -462,6 +464,7 @@ public sealed class ConfigurationOptions : ICloneable
             {
                 _ = sb.Append(prefix).Append('=');
             }
+
             _ = sb.Append(s);
         }
     }
@@ -572,6 +575,7 @@ public sealed class ConfigurationOptions : ICloneable
         {
             throw new ArgumentException("Availability zone cannot be empty or whitespace");
         }
+
         return az;
     }
 
@@ -584,6 +588,7 @@ public sealed class ConfigurationOptions : ICloneable
                 ? new ReadFrom(strategy.Value, az!)
                 : new ReadFrom(strategy.Value);
         }
+
         return null;
     }
 

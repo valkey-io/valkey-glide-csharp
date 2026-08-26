@@ -76,10 +76,12 @@ internal static partial class Request
         {
             args.AddRange([ValkeyLiterals.RANK, rank.ToGlideString()]);
         }
+
         if (maxLength != 0)
         {
             args.AddRange([ValkeyLiterals.MAXLEN, maxLength.ToGlideString()]);
         }
+
         // Convert null to -1L, similar to how other commands handle their null cases
         return new(RequestType.LPos, [.. args], true, response => response is null ? -1L : (long)response, allowConverterToHandleNull: true);
     }
@@ -91,10 +93,12 @@ internal static partial class Request
         {
             args.AddRange([ValkeyLiterals.RANK, rank.ToGlideString()]);
         }
+
         if (maxLength != 0)
         {
             args.AddRange([ValkeyLiterals.MAXLEN, maxLength.ToGlideString()]);
         }
+
         return new(RequestType.LPos, [.. args], false, array => [.. array.Cast<long>()]);
     }
 

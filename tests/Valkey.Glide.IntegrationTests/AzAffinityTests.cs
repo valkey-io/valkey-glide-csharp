@@ -35,6 +35,7 @@ public class AzAffinityTests(TestConfiguration config)
                 return int.Parse(parts[1].Trim());
             }
         }
+
         throw new Exception("Can't get replica count");
     }
 
@@ -224,6 +225,7 @@ public class AzAffinityTests(TestConfiguration config)
                 {
                     Assert.Fail($"Replica node got GET {m.Groups[1].Value} calls when shouldn't be");
                 }
+
                 if (value.Contains("role:master"))
                 {
                     if (m.Success)

@@ -101,6 +101,7 @@ internal static partial class Request
         {
             cmdArgs.Add(ValkeyLiterals.REPLACE);
         }
+
         cmdArgs.Add(libraryCode);
 
         return new(RequestType.FunctionLoad, [.. cmdArgs], false, gs => gs.ToString());
@@ -430,6 +431,7 @@ internal static partial class Request
                 {
                     funcFlags.AddRange(flagsArray.Select(f => ((GlideString)f).ToString()));
                 }
+
                 break;
             default:
                 // Ignore unknown function properties
@@ -489,6 +491,7 @@ internal static partial class Request
                 {
                     runningScript = ParseRunningScript(value);
                 }
+
                 break;
             case "engines":
                 ParseEngines(value, engines);

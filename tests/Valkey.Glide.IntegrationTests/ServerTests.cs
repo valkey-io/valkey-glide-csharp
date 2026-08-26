@@ -197,6 +197,7 @@ public class ServerTests(TestConfiguration config)
                             break;
                         }
                     }
+
                     Assert.True(portFound);
                     break;
                 }

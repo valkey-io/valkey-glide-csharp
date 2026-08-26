@@ -38,6 +38,7 @@ internal sealed class PhysicalConnection
                 span[offset++] = (byte)'1';
                 offset = WriteCrlf(span, offset);
             }
+
             span[offset++] = (byte)((int)'0' + (int)value);
         }
         else if (value >= 10 && value < 100)
@@ -47,6 +48,7 @@ internal sealed class PhysicalConnection
                 span[offset++] = (byte)'2';
                 offset = WriteCrlf(span, offset);
             }
+
             span[offset++] = (byte)((int)'0' + ((int)value / 10));
             span[offset++] = (byte)((int)'0' + ((int)value % 10));
         }
@@ -61,6 +63,7 @@ internal sealed class PhysicalConnection
                 span[offset++] = (byte)'3';
                 offset = WriteCrlf(span, offset);
             }
+
             span[offset++] = (byte)((int)'0' + hundreds);
             span[offset++] = (byte)((int)'0' + tens);
             span[offset++] = (byte)((int)'0' + units);
@@ -72,6 +75,7 @@ internal sealed class PhysicalConnection
                 span[offset++] = (byte)'2';
                 offset = WriteCrlf(span, offset);
             }
+
             span[offset++] = (byte)'-';
             span[offset++] = (byte)((int)'0' - (int)value);
         }
@@ -82,6 +86,7 @@ internal sealed class PhysicalConnection
                 span[offset++] = (byte)'3';
                 offset = WriteCrlf(span, offset);
             }
+
             value = -value;
             span[offset++] = (byte)'-';
             span[offset++] = (byte)((int)'0' + ((int)value / 10));

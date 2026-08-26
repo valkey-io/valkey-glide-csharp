@@ -33,6 +33,7 @@ internal static partial class Request
         {
             args.AddRange([ValkeyLiterals.LIMIT, limit.ToGlideString()]);
         }
+
         return Simple<long>(RequestType.SInterCard, [.. args]);
     }
 
