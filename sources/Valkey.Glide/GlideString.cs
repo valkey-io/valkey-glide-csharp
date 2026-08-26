@@ -197,7 +197,7 @@ public static class GlideStringExtensions
 /// </remarks>
 /// <seealso href="https://glide.valkey.io/commands/valkey-string/">Valkey GLIDE – Working with Strings and Binary Data</seealso>
 [ImmutableObject(true)]
-public sealed class GlideString : IComparable<GlideString>
+public sealed class GlideString : IComparable, IComparable<GlideString>
 {
     /// <summary>
     /// Create a <see cref="GlideString" /> initiated by a <see langword="byte[]" />.<br />
@@ -339,6 +339,14 @@ public sealed class GlideString : IComparable<GlideString>
         byte[]? keyBytes = key;
         return keyBytes == null ? new GlideString([]) : new GlideString(keyBytes);
     }
+
+    /// <inheritdoc/>
+    int IComparable.CompareTo(object? obj) => obj switch
+    {
+        null => CompareTo(null),
+        GlideString other => CompareTo(other),
+        _ => throw new ArgumentException($"Object must be of type {nameof(GlideString)}.", nameof(obj)),
+    };
 
     /// <inheritdoc/>
     public int CompareTo(GlideString? other)
