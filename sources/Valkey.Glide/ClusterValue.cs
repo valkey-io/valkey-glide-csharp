@@ -33,18 +33,18 @@ public class ClusterValue<T>
     /// <summary>
     /// Builds a cluster value from the given object.
     /// </summary>
+    /// <param name="obj">The response to wrap.</param>
+    /// <exception cref="ArgumentException">Thrown if type is not supported.</exception>
     internal static ClusterValue<T> Of(object obj)
-    {
-        if (obj is Dictionary<string, T> dict)
+        => obj switch
         {
-            return OfMultiValue(dict);
-        }
-        else if (obj is Dictionary<GlideString, T> dictGs)
-        {
-            return OfMultiValue(dictGs);
-        }
-        return OfSingleValue((T)obj);
-    }
+            Dictionary<string, T> dict => OfMultiValue(dict),
+            Dictionary<GlideString, T> dictGs => OfMultiValue(dictGs),
+            T value => OfSingleValue(value),
+            _ => throw new ArgumentException(
+                $"Cannot build {nameof(ClusterValue<>)}<{typeof(T).Name}> from a value of type '{obj?.GetType().Name ?? "null"}'.",
+                nameof(obj)),
+        };
 
     /// <summary>
     /// Builds a cluster value from the given value.

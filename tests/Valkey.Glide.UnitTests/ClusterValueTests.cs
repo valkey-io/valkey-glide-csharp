@@ -75,6 +75,8 @@ public class ClusterValueTests
         AssertSingleValue(ClusterValue<int>.Of(SingleValue), SingleValue);
         AssertMultiValue(ClusterValue<int>.Of(ValueStrings), ValueStrings);
         AssertMultiValue(ClusterValue<int>.Of(ValueGlideStrings), ValueStrings);
+
+        _ = Assert.Throws<ArgumentException>(() => ClusterValue<int>.Of(SingleReference));
     }
 
     #endregion
