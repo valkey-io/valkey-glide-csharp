@@ -568,7 +568,7 @@ dotnet_diagnostic.xUnit3002.severity = error
 roslynator_analyzers.enabled_by_default = false
 dotnet_analyzer_diagnostic.category-Roslynator.severity = none
 
-# RCS0 Formatting Analyzers
+# Formatting Analyzers (RCS0)
 dotnet_diagnostic.RCS0001.severity = error
 dotnet_diagnostic.RCS0002.severity = error
 dotnet_diagnostic.RCS0003.severity = error
@@ -577,8 +577,11 @@ dotnet_diagnostic.RCS0006.severity = error
 dotnet_diagnostic.RCS0008.severity = error
 dotnet_diagnostic.RCS0009.severity = error
 dotnet_diagnostic.RCS0010.severity = error
+dotnet_diagnostic.RCS0011.severity = error
 
-# RCS1 Common Analyzers
+roslynator_blank_line_between_single_line_accessors = false
+
+# Common Analyzers (RCS1)
 dotnet_diagnostic.RCS1006.severity = error
 dotnet_diagnostic.RCS1015.severity = error
 dotnet_diagnostic.RCS1021.severity = error
@@ -675,7 +678,6 @@ dotnet_diagnostic.RCS1268.severity = error
 # Roslynator rules NOT enabled (available to opt in). Sorted by id.
 # Excludes deprecated (Obsolete) and internal (Disabled) Roslynator rules.
 # ---------------------------------------------------------------------------
-# RCS0011: Add/remove blank line between single-line accessors
 # RCS0012: Add blank line between single-line declarations
 # RCS0013: Add blank line between single-line declarations of different kind
 # RCS0016: Put attribute list on its own line
