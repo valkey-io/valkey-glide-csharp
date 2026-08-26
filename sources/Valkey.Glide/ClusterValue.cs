@@ -85,7 +85,7 @@ public class ClusterValue<T>
     /// Returns whether a single value is stored in this object.
     /// Should be called prior to <see cref="SingleValue" />.
     /// </summary>
-    public bool HasSingleData => _multiValue == null;
+    public bool HasSingleData => !HasMultiData;
 
     /// <summary>
     /// Returns a single value if one is stored in this object.
