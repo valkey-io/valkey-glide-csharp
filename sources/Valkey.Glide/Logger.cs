@@ -60,6 +60,7 @@ public static class Logger
     #region private fields
 
     private static Level? s_loggerLevel = null;
+
     #endregion
 
     #region public methods

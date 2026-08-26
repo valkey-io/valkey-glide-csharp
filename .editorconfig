@@ -572,6 +572,7 @@ dotnet_analyzer_diagnostic.category-Roslynator.severity = none
 dotnet_diagnostic.RCS0001.severity = error
 dotnet_diagnostic.RCS0002.severity = error
 dotnet_diagnostic.RCS0003.severity = error
+dotnet_diagnostic.RCS0005.severity = error
 
 # RCS1 Common Analyzers
 dotnet_diagnostic.RCS1006.severity = error
@@ -670,7 +671,6 @@ dotnet_diagnostic.RCS1268.severity = error
 # Roslynator rules NOT enabled (available to opt in). Sorted by id.
 # Excludes deprecated (Obsolete) and internal (Disabled) Roslynator rules.
 # ---------------------------------------------------------------------------
-# RCS0005: Add blank line before #endregion
 # RCS0006: Add blank line before using directive list
 # RCS0007: Add blank line between accessors
 # RCS0008: Add blank line between closing brace and next statement

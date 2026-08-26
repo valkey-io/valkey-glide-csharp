@@ -341,6 +341,7 @@ public class TestConfiguration : IDisposable
 
         private set;
     } = [];
+
     #endregion
 
     public TestConfiguration()

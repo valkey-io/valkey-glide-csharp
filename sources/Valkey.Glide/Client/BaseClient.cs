@@ -695,6 +695,7 @@ public abstract partial class BaseClient : IBaseClient
         IntPtr host, UIntPtr hostLen, ushort port,
         IntPtr resolvedHostBuf, UIntPtr resolvedHostBufLen,
         UIntPtr resolvedHostLen);
+
     #endregion
 
     #region private fields
