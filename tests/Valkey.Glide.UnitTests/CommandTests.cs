@@ -506,7 +506,7 @@ public class CommandTests
             () => Assert.Equal(ValkeyValue.Ok, Request.Save().Converter("OK")),
             () => Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(1609459200).AddTicks(123456 * 10), Request.Time().Converter(["1609459200", "123456"])),
 
-            () => Assert.Equal("common", Request.LongestCommonSubsequence("key1", "key2").Converter(new GlideString("common"))!.ToString()),
+            () => Assert.Equal("common", Request.LongestCommonSubsequence("key1", "key2").Converter(new GlideString("common"))),
             () => Assert.Equal(5L, Request.LongestCommonSubsequenceLength("key1", "key2").Converter(5L)),
 
             // Info Command Converters

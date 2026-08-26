@@ -14,10 +14,10 @@ public static class ServerManager
     private static readonly string ScriptFilePath;
     private static readonly string ServerDirectoryPath;
 
-    private static readonly string WslFileName = "wsl";
-    private static readonly string PythonFileName = "python3";
+    private const string WslFileName = "wsl";
+    private const string PythonFileName = "python3";
 
-    private static readonly int DefaultReplicaCount = 3;
+    private const int DefaultReplicaCount = 3;
 
     static ServerManager()
     {

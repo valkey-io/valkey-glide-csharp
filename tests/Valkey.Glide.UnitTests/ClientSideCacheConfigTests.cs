@@ -55,9 +55,7 @@ public class ClientSideCacheConfigTests
     [Fact]
     public void ClientSideCacheConfig_WithServerAssisted()
     {
-        ClientSideCacheConfig config;
-
-        config = BuildConfig().WithServerAssisted();
+        var config = BuildConfig().WithServerAssisted();
         Assert.True(config.ServerAssisted);
 
         config = BuildConfig().WithServerAssisted(true);

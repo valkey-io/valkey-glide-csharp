@@ -522,10 +522,8 @@ public class ReadFromTests
         var options = new ConfigurationOptions();
 
         // Act & Assert
-        ArgumentException exception = Assert.Throws<ArgumentException>(() =>
-        {
-            options.ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinity, azValue);
-        });
+        var exception = Assert.Throws<ArgumentException>(()
+            => options.ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinity, azValue));
         Assert.Contains("Availability zone cannot be empty or whitespace", exception.Message);
     }
 
@@ -540,10 +538,8 @@ public class ReadFromTests
         var options = new ConfigurationOptions();
 
         // Act & Assert
-        ArgumentException exception = Assert.Throws<ArgumentException>(() =>
-        {
-            options.ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinityReplicasAndPrimary, azValue);
-        });
+        var exception = Assert.Throws<ArgumentException>(()
+            => options.ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinityReplicasAndPrimary, azValue));
         Assert.Contains("Availability zone cannot be empty or whitespace", exception.Message);
     }
 

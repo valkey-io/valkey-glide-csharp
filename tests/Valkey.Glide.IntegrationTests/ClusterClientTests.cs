@@ -33,7 +33,7 @@ public class ClusterClientTests(TestConfiguration config)
         Dictionary<string, object?> info = (await client.CustomCommand(["info"])).MultiValue;
         foreach (object? nodeInfo in info.Values)
         {
-            Assert.Contains("# Server", (nodeInfo as gs)!);
+            Assert.Contains("# Server", nodeInfo as gs);
         }
         // command which returns a map even on a single node route
         ClusterValue<object?> config = await client.CustomCommand(["config", "get", "*file"], Route.Random);

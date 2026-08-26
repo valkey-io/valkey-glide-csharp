@@ -82,10 +82,10 @@ public class StandaloneClientTests(TestConfiguration config)
         );
 
         string key2 = Guid.NewGuid().ToString();
-        Assert.Equal(3L, (await client.CustomCommand(["sadd", key2, "a", "b", "c"]))!);
+        Assert.Equal(3L, await client.CustomCommand(["sadd", key2, "a", "b", "c"]));
         Assert.Equal(
             [new gs("a"), new gs("b"), new gs("c")],
-            (await client.CustomCommand(["smembers", key2]) as HashSet<object>)!
+            await client.CustomCommand(["smembers", key2]) as HashSet<object>
         );
         Assert.Equal(
             new bool[] { true, true, false },
@@ -95,8 +95,8 @@ public class StandaloneClientTests(TestConfiguration config)
         string key3 = Guid.NewGuid().ToString();
         _ = await client.CustomCommand(["xadd", key3, "0-1", "str-1-id-1-field-1", "str-1-id-1-value-1", "str-1-id-1-field-2", "str-1-id-1-value-2"]);
         _ = await client.CustomCommand(["xadd", key3, "0-2", "str-1-id-2-field-1", "str-1-id-2-value-1", "str-1-id-2-field-2", "str-1-id-2-value-2"]);
-        _ = Assert.IsType<Dictionary<gs, object?>>((await client.CustomCommand(["xread", "streams", key3, "stream", "0-1", "0-2"]))!);
-        _ = Assert.IsType<Dictionary<gs, object?>>((await client.CustomCommand(["xinfo", "stream", key3, "full"]))!);
+        _ = Assert.IsType<Dictionary<gs, object?>>(await client.CustomCommand(["xread", "streams", key3, "stream", "0-1", "0-2"]));
+        _ = Assert.IsType<Dictionary<gs, object?>>(await client.CustomCommand(["xinfo", "stream", key3, "full"]));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -112,7 +112,7 @@ public class StandaloneClientTests(TestConfiguration config)
         );
         Assert.Equal(
             new string?[] { "v1", "v2", null },
-            (await db.ExecuteAsync("hmget", [key1, "f1", "f2", "f3"])).AsStringArray()!
+            (await db.ExecuteAsync("hmget", [key1, "f1", "f2", "f3"])).AsStringArray()
         );
 
         string key2 = Guid.NewGuid().ToString();
@@ -308,7 +308,7 @@ public class StandaloneClientTests(TestConfiguration config)
         // Test getting multiple parameters individually (since StackExchange.Redis doesn't support multiple params in one call)
         var timeoutConfig = await client.ConfigGetAsync("timeout");
         var maxMemoryPolicyConfig = await client.ConfigGetAsync("maxmemory-policy");
-        Assert.True(timeoutConfig.Length >= 0); // timeout might not be set
+        Assert.True(timeoutConfig.Length <= 1); // timeout is a single param: 0 (unset) or 1 entry
         Assert.True(maxMemoryPolicyConfig.Length >= 1); // maxmemory-policy should exist
         Assert.Contains(maxMemoryPolicyConfig, kvp => kvp.Key == "maxmemory-policy");
 

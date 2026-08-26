@@ -68,7 +68,7 @@ public class ConnectionManagementCommandTests(ServerFixture fixture) : IClassFix
             ? (await clusterClient.CustomCommand(InfoCommand, Route.Random)).SingleValue
             : await ((GlideClient)client).CustomCommand(InfoCommand);
 
-        Assert.Contains($"name={clientName} ", result!.ToString()!);
+        Assert.Contains($"name={clientName} ", result!.ToString());
     }
 
     #endregion
