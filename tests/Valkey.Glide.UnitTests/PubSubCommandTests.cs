@@ -15,6 +15,7 @@ public class PubSubCommandTests
     private const string Message = "message";
 
     private static readonly TimeSpan Timeout = TimeSpan.FromMilliseconds(123);
+
     private const string TimeoutExpected = "123";
 
     #region PublishCommands

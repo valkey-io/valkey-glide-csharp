@@ -18,6 +18,7 @@ public class PubSubConfigurationTests
     private const string Pattern2 = "pattern2*";
     private const string ShardedChannel1 = "shard1";
     private const string ShardedChannel2 = "shard2";
+
     private static readonly object Context = new { TestData = "test" };
     private static readonly MessageCallback Callback = (message, ctx) => { /* test callback */ };
 

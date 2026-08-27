@@ -20,10 +20,13 @@ internal class Message(int index, MessageContainer container) : INotifyCompletio
     /// </summary>
     public int Index { get; } = index;
     private MessageContainer Container { get; } = container;
+
     private Action? _continuation = () => { };
+
     private const int COMPLETION_STAGE_STARTED = 0;
     private const int COMPLETION_STAGE_NEXT_SHOULD_EXECUTE_CONTINUATION = 1;
     private const int COMPLETION_STAGE_CONTINUATION_EXECUTED = 2;
+
     private int _completionState;
     private IntPtr _result = default;
     private Exception? _exception;

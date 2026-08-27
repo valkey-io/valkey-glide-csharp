@@ -77,6 +77,7 @@ public sealed class ChannelMessageQueue : IAsyncEnumerable<ChannelMessage>
     /// The Channel that was subscribed for this queue.
     /// </summary>
     public ValkeyChannel Channel { get; }
+
     private Subscriber? _parent;
 
     /// <inheritdoc/>

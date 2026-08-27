@@ -333,6 +333,7 @@ public abstract class ValkeyResult
     private sealed class ArrayResult : ValkeyResult
     {
         public override bool IsNull => _value is null;
+
         private readonly ValkeyResult[]? _value;
 
         internal override ResultType Resp2NullType => ResultType.Array;

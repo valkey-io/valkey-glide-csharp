@@ -13,6 +13,7 @@ public class OpenTelemetryTests : IDisposable
 {
     private const uint SamplePercentageNone = 0u;
     private const uint SamplePercentageAll = 100u;
+
     private static readonly TimeSpan FlushInterval = TimeSpan.FromMilliseconds(100);
     private static readonly TimeSpan WaitInterval = TimeSpan.FromMilliseconds(1000);
 

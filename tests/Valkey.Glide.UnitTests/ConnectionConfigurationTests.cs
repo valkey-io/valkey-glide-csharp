@@ -18,6 +18,7 @@ public class ConnectionConfigurationTests
     // Certificate constants
     private static readonly byte[] CertData1 = [0x30, 0x82, 0x01, 0x00];
     private static readonly byte[] CertData2 = [0x30, 0x82, 0x02, 0x00];
+
     private const string CertPath = "/path/cert.pem";
     private const string KeyPath = "/path/key.pem";
 

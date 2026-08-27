@@ -578,6 +578,7 @@ dotnet_diagnostic.RCS0008.severity = error
 dotnet_diagnostic.RCS0009.severity = error
 dotnet_diagnostic.RCS0010.severity = error
 dotnet_diagnostic.RCS0011.severity = error
+dotnet_diagnostic.RCS0013.severity = error
 
 roslynator_blank_line_between_single_line_accessors = false
 
@@ -678,7 +679,6 @@ dotnet_diagnostic.RCS1268.severity = error
 # Roslynator rules NOT enabled (available to opt in). Sorted by id.
 # Excludes deprecated (Obsolete) and internal (Disabled) Roslynator rules.
 # ---------------------------------------------------------------------------
-# RCS0013: Add blank line between single-line declarations of different kind
 # RCS0016: Put attribute list on its own line
 # RCS0024: Add new line after switch label
 # RCS0029: Put constructor initializer on its own line

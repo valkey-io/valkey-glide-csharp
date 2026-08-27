@@ -29,7 +29,9 @@ public class TestConfiguration : IDisposable
     private const string ClusterEndpointsEnvVar = "cluster-endpoints";
 
     private static readonly object LockObject = new();
+
     private const string DefaultServerGroupName = "cluster";
+
     public static Version SERVER_VERSION { get; internal set; } = new();
     public static bool TLS { get; internal set; } = false;
 
