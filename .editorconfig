@@ -581,6 +581,7 @@ dotnet_diagnostic.RCS0011.severity = error
 dotnet_diagnostic.RCS0013.severity = error
 dotnet_diagnostic.RCS0016.severity = error
 dotnet_diagnostic.RCS0031.severity = error
+dotnet_diagnostic.RCS0049.severity = error
 
 roslynator_blank_line_between_single_line_accessors = false
 
@@ -681,7 +682,6 @@ dotnet_diagnostic.RCS1268.severity = error
 # Roslynator rules NOT enabled (available to opt in). Sorted by id.
 # Excludes deprecated (Obsolete) and internal (Disabled) Roslynator rules.
 # ---------------------------------------------------------------------------
-# RCS0049: Add blank line after top comment
 # RCS0050: Add blank line before top declaration
 # RCS0051: Add/remove new line before 'while' in 'do' statement
 # RCS0053: Fix formatting of a list
