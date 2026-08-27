@@ -683,7 +683,6 @@ dotnet_diagnostic.RCS1268.severity = error
 # Roslynator rules NOT enabled (available to opt in). Sorted by id.
 # Excludes deprecated (Obsolete) and internal (Disabled) Roslynator rules.
 # ---------------------------------------------------------------------------
-# RCS0051: Add/remove new line before 'while' in 'do' statement
 # RCS0053: Fix formatting of a list
 # RCS0054: Fix formatting of a call chain
 # RCS0055: Fix formatting of a binary expression chain
