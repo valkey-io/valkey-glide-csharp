@@ -18,14 +18,12 @@ public static partial class Ft
     /// <seealso href="https://valkey.io/commands/ft.dropindex/">Valkey commands – FT.DROPINDEX</seealso>
     /// <param name="client">The client to execute the command.</param>
     /// <param name="index">The index to drop.</param>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await Ft.CreateAsync(client, "my-index", new Ft.CreateTextField("title"));
     /// await Ft.DropIndexAsync(client, "my-index");
     /// </code>
     /// </example>
-    /// </remarks>
     public static Task DropIndexAsync(BaseClient client, ValkeyKey index)
         => client.Command(Request.FtDropIndex(index));
 
@@ -35,14 +33,12 @@ public static partial class Ft
     /// <seealso href="https://valkey.io/commands/ft._list/">Valkey commands – FT._LIST</seealso>
     /// <param name="client">The client to execute the command.</param>
     /// <returns>The set of index names.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await Ft.CreateAsync(client, "my-index", new Ft.CreateTextField("title"));
     /// var indexes = await Ft.ListAsync(client);  // {"my-index"}
     /// </code>
     /// </example>
-    /// </remarks>
     public static Task<ISet<ValkeyValue>> ListAsync(BaseClient client)
         => client.Command(Request.FtList());
 

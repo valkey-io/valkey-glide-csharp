@@ -81,9 +81,7 @@ public sealed class ClientSideCacheConfig
     /// When enabled, GLIDE sends <c>CLIENT TRACKING ON BCAST</c> during connection setup
     /// and the server sends invalidation messages when tracked keys are modified.
     /// </summary>
-    /// <note>
-    /// RESP3 protocol only.
-    /// </note>
+    /// <remarks>RESP3 protocol only.</remarks>
     public bool ServerAssisted { get; private set; }
 
     #endregion

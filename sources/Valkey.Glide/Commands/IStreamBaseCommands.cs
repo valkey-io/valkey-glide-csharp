@@ -19,14 +19,12 @@ public interface IStreamBaseCommands
     /// <param name="groupName">The consumer group name.</param>
     /// <param name="messageIds">The message IDs to acknowledge.</param>
     /// <returns>The number of messages acknowledged.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var acked = await client.StreamAcknowledgeAsync("mystream", "mygroup", ["1526569495631-0", "1526569495632-0"]);
     /// Console.WriteLine($"Acknowledged {acked} message(s)");
     /// </code>
     /// </example>
-    /// </remarks>
     Task<long> StreamAcknowledgeAsync(ValkeyKey key, ValkeyValue groupName, IEnumerable<ValkeyValue> messageIds);
 
     /// <summary>
@@ -38,14 +36,12 @@ public interface IStreamBaseCommands
     /// <returns>
     /// <see langword="true"/> if the message was deleted
     /// or <see langword="false"/> if it does not exist.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var deleted = await client.StreamDeleteAsync("mystream", "1526569495631-0");
     /// Console.WriteLine($"Deleted: {deleted}");
     /// </code>
     /// </example>
-    /// </remarks>
     Task<bool> StreamDeleteAsync(ValkeyKey key, ValkeyValue messageId);
 
     /// <summary>
@@ -55,14 +51,12 @@ public interface IStreamBaseCommands
     /// <param name="key">The stream key.</param>
     /// <param name="messageIds">The message IDs to delete.</param>
     /// <returns>The number of messages deleted.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var deleted = await client.StreamDeleteAsync("mystream", ["1526569495631-0", "1526569495632-0"]);
     /// Console.WriteLine($"Deleted {deleted} message(s)");
     /// </code>
     /// </example>
-    /// </remarks>
     Task<long> StreamDeleteAsync(ValkeyKey key, IEnumerable<ValkeyValue> messageIds);
 
     /// <summary>
@@ -71,14 +65,12 @@ public interface IStreamBaseCommands
     /// <seealso href="https://valkey.io/commands/xinfo-stream/">Valkey commands – XINFO STREAM</seealso>
     /// <param name="key">The stream key.</param>
     /// <returns>Information about the stream.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var info = await client.StreamInfoAsync("mystream");
     /// Console.WriteLine($"Stream length: {info.Length}");
     /// </code>
     /// </example>
-    /// </remarks>
     Task<StreamInfo> StreamInfoAsync(ValkeyKey key);
 
     /// <summary>
@@ -87,14 +79,12 @@ public interface IStreamBaseCommands
     /// <seealso href="https://valkey.io/commands/xlen/">Valkey commands – XLEN</seealso>
     /// <param name="key">The stream key.</param>
     /// <returns>The number of entries in the stream.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var length = await client.StreamLengthAsync("mystream");
     /// Console.WriteLine($"Stream length: {length}");
     /// </code>
     /// </example>
-    /// </remarks>
     Task<long> StreamLengthAsync(ValkeyKey key);
 
     /// <summary>
@@ -104,13 +94,11 @@ public interface IStreamBaseCommands
     /// <param name="key">The stream key.</param>
     /// <param name="groupName">The consumer group name.</param>
     /// <returns>Information about the pending messages.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var pending = await client.StreamPendingAsync("mystream", "mygroup");
     /// Console.WriteLine($"Pending: {pending.PendingMessageCount}");
     /// </code>
     /// </example>
-    /// </remarks>
     Task<StreamPendingInfo> StreamPendingAsync(ValkeyKey key, ValkeyValue groupName);
 }

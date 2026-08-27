@@ -16,7 +16,6 @@ public static partial class Ft
     /// <param name="index">The name of the index to search.</param>
     /// <param name="query">The search query expression.</param>
     /// <returns>A <see cref="SearchResult"/> for the query.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await Ft.CreateAsync(client, "index",
@@ -29,7 +28,6 @@ public static partial class Ft
     /// Console.WriteLine($"Total: {result.TotalResults}");  // 2
     /// </code>
     /// </example>
-    /// </remarks>
     public static Task<SearchResult> SearchAsync(BaseClient client, ValkeyKey index, ValkeyValue query)
         => client.Command(Request.FtSearch(index, query));
 
@@ -42,7 +40,6 @@ public static partial class Ft
     /// <param name="query">The search query expression.</param>
     /// <param name="options">Additional options for the search command.</param>
     /// <returns>A <see cref="SearchResult"/> for the query.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await Ft.CreateAsync(client, "index",
@@ -61,7 +58,6 @@ public static partial class Ft
     /// Console.WriteLine($"Total: {result.TotalResults}");  // 2
     /// </code>
     /// </example>
-    /// </remarks>
     public static Task<SearchResult> SearchAsync(BaseClient client, ValkeyKey index, ValkeyValue query, SearchOptions options)
         => client.Command(Request.FtSearch(index, query, options));
 

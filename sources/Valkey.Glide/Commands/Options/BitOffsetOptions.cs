@@ -5,7 +5,6 @@ namespace Valkey.Glide.Commands.Options;
 /// <summary>
 /// Options for specifying bit/byte offset ranges in bitmap commands like BITCOUNT and BITPOS.
 /// </summary>
-/// <remarks>
 /// <example>
 /// <code>
 /// // Using factory methods (recommended)
@@ -16,7 +15,6 @@ namespace Valkey.Glide.Commands.Options;
 /// var options = new BitOffsetOptions { Start = 0, End = 7, IndexType = BitmapIndexType.Bit };
 /// </code>
 /// </example>
-/// </remarks>
 public class BitOffsetOptions
 {
     /// <summary>

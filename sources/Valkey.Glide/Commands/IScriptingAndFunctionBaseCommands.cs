@@ -21,15 +21,15 @@ public interface IScriptingAndFunctionBaseCommands
     /// <param name="keys">The keys to pass to the script.</param>
     /// <param name="values">The values to pass to the script.</param>
     /// <returns>The result of the script execution.</returns>
-    /// <remarks>
-    /// For better performance with repeated executions, consider using
-    /// <see cref="LuaScript.Prepare(string)"/> or pre-loading scripts with
-    /// <see cref="IServer.ScriptLoadAsync(string, CommandFlags)"/>.
     /// <example>
     /// <code>
     /// var scriptResult = await client.ScriptEvaluateAsync("return 'hello'");  // "hello"
     /// </code>
     /// </example>
+    /// <remarks>
+    /// For better performance with repeated executions, consider using
+    /// <see cref="LuaScript.Prepare(string)"/> or pre-loading scripts with
+    /// <see cref="IServer.ScriptLoadAsync(string, CommandFlags)"/>.
     /// </remarks>
     Task<ValkeyResult> ScriptEvaluateAsync(
         string script,
@@ -44,15 +44,15 @@ public interface IScriptingAndFunctionBaseCommands
     /// <param name="keys">The keys to pass to the script.</param>
     /// <param name="values">The values to pass to the script.</param>
     /// <returns>The result of the script execution.</returns>
-    /// <remarks>
-    /// If the script is not cached on the server, a <c>NOSCRIPT</c> error will be thrown.
-    /// Use <see cref="IServer.ScriptLoadAsync(string, CommandFlags)"/> to pre-load scripts.
     /// <example>
     /// <code>
     /// byte[] scriptHash = await server.ScriptLoadAsync("return 'hello'");
     /// var scriptResult = await client.ScriptEvaluateAsync(scriptHash);  // "hello"
     /// </code>
     /// </example>
+    /// <remarks>
+    /// If the script is not cached on the server, a <c>NOSCRIPT</c> error will be thrown.
+    /// Use <see cref="IServer.ScriptLoadAsync(string, CommandFlags)"/> to pre-load scripts.
     /// </remarks>
     Task<ValkeyResult> ScriptEvaluateAsync(
         byte[] hash,
@@ -69,14 +69,14 @@ public interface IScriptingAndFunctionBaseCommands
     /// <paramref name="script"/>.
     /// </param>
     /// <returns>The result of the script execution.</returns>
-    /// <remarks>
-    /// Parameters of type <see cref="ValkeyKey"/> are treated as keys, while other types are treated as arguments.
     /// <example>
     /// <code>
     /// var luaScript = LuaScript.Prepare("return @value");
     /// var scriptResult = await client.ScriptEvaluateAsync(luaScript, new { value = "hello" });  // "hello"
     /// </code>
     /// </example>
+    /// <remarks>
+    /// Parameters of type <see cref="ValkeyKey"/> are treated as keys, while other types are treated as arguments.
     /// </remarks>
     Task<ValkeyResult> ScriptEvaluateAsync(LuaScript script, object? parameters = null);
 
@@ -90,9 +90,6 @@ public interface IScriptingAndFunctionBaseCommands
     /// <paramref name="script"/>.
     /// </param>
     /// <returns>The result of the script execution.</returns>
-    /// <remarks>
-    /// If the script is not cached on the server, a <c>NOSCRIPT</c> error will be thrown.
-    /// Obtain a <see cref="LoadedLuaScript"/> via <see cref="LuaScript.LoadAsync(IServer, CommandFlags)"/>.
     /// <example>
     /// <code>
     /// var luaScript = LuaScript.Prepare("return 'hello'");
@@ -100,6 +97,9 @@ public interface IScriptingAndFunctionBaseCommands
     /// var scriptResult = await client.ScriptEvaluateAsync(loaded);  // "hello"
     /// </code>
     /// </example>
+    /// <remarks>
+    /// If the script is not cached on the server, a <c>NOSCRIPT</c> error will be thrown.
+    /// Obtain a <see cref="LoadedLuaScript"/> via <see cref="LuaScript.LoadAsync(IServer, CommandFlags)"/>.
     /// </remarks>
     Task<ValkeyResult> ScriptEvaluateAsync(LoadedLuaScript script, object? parameters = null);
 

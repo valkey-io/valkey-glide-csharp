@@ -18,7 +18,6 @@ public interface IGeospatialBaseCommands
     /// <param name="key">The sorted set key.</param>
     /// <param name="member">The member to get the geohash for.</param>
     /// <returns>The geohash string, or <see langword="null"/> if the member does not exist.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.GeoAddAsync("mygeo", "Palermo", new GeoPosition(13.361389, 38.115556));
@@ -26,7 +25,6 @@ public interface IGeospatialBaseCommands
     /// Console.WriteLine($"Geohash for member1: {hash}");
     /// </code>
     /// </example>
-    /// </remarks>
     Task<string?> GeoHashAsync(ValkeyKey key, ValkeyValue member);
 
     /// <summary>
@@ -36,7 +34,6 @@ public interface IGeospatialBaseCommands
     /// <param name="key">The sorted set key.</param>
     /// <param name="members">The members to get the geohashes for.</param>
     /// <returns>An array with one geohash string per member, or <see langword="null"/> for members that do not exist.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.GeoAddAsync("mygeo", "Palermo", new GeoPosition(13.361389, 38.115556));
@@ -46,7 +43,6 @@ public interface IGeospatialBaseCommands
     /// Console.WriteLine($"Geohash for member2: {hashes[1]}");
     /// </code>
     /// </example>
-    /// </remarks>
     Task<string?[]> GeoHashAsync(ValkeyKey key, IEnumerable<ValkeyValue> members);
 
     /// <summary>
@@ -56,7 +52,6 @@ public interface IGeospatialBaseCommands
     /// <param name="key">The sorted set key.</param>
     /// <param name="member">The member to get the position for.</param>
     /// <returns>The position, or <see langword="null"/> if the member does not exist.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.GeoAddAsync("mygeo", "Palermo", new GeoPosition(13.361389, 38.115556));
@@ -64,7 +59,6 @@ public interface IGeospatialBaseCommands
     /// Console.WriteLine($"Palermo is at [{position!.Value.Latitude}, {position!.Value.Longitude}]");
     /// </code>
     /// </example>
-    /// </remarks>
     Task<GeoPosition?> GeoPositionAsync(ValkeyKey key, ValkeyValue member);
 
     /// <summary>
@@ -74,7 +68,6 @@ public interface IGeospatialBaseCommands
     /// <param name="key">The sorted set key.</param>
     /// <param name="members">The members to get the positions for.</param>
     /// <returns>An array with one position per member, or <see langword="null"/> for members that do not exist.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.GeoAddAsync("mygeo", "Palermo", new GeoPosition(12.3, 45.6));
@@ -84,6 +77,5 @@ public interface IGeospatialBaseCommands
     /// Console.WriteLine($"Catania is at [{positions[1]!.Value.Latitude}, {positions[1]!.Value.Longitude}]");
     /// </code>
     /// </example>
-    /// </remarks>
     Task<GeoPosition?[]> GeoPositionAsync(ValkeyKey key, IEnumerable<ValkeyValue> members);
 }

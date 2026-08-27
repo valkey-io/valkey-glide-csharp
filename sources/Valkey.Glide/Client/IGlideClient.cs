@@ -24,7 +24,6 @@ public partial interface IGlideClient :
     /// <param name="keys">The keys to migrate. Must not be empty.</param>
     /// <param name="options">The migrate options.</param>
     /// <returns><see langword="true"/> if at least one key was migrated successfully, <see langword="false"/> if no keys were found.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.SetAsync("key1", "value1");
@@ -33,7 +32,6 @@ public partial interface IGlideClient :
     /// var migrated = await client.MigrateAsync(["key1", "key2"], options);
     /// </code>
     /// </example>
-    /// </remarks>
     Task<bool> MigrateAsync(IEnumerable<ValkeyKey> keys, MigrateOptions options);
 
     /// <summary>

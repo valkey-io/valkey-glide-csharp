@@ -31,12 +31,12 @@ public readonly record struct LatencyEventInfo
     /// <summary>
     /// The sum of all latency spike durations in the event's time series, in milliseconds.
     /// </summary>
-    /// <note>Since Valkey 8.1.0.</note>
+    /// <remarks>Since Valkey 8.1.0.</remarks>
     public TimeSpan? Sum { get; init; }
 
     /// <summary>
     /// The number of latency spikes recorded in the event's time series.
     /// </summary>
-    /// <note>Since Valkey 8.1.0.</note>
+    /// <remarks>Since Valkey 8.1.0.</remarks>
     public long? Count { get; init; }
 }

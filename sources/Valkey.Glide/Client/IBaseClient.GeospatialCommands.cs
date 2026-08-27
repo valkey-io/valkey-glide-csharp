@@ -13,14 +13,12 @@ public partial interface IBaseClient
     /// <param name="position">The geographic position of the member.</param>
     /// <param name="condition">The condition under which to add or update the member.</param>
     /// <returns><see langword="true"/> if the member was added, <see langword="false"/> otherwise.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var position = new GeoPosition(13.361389, 38.115556);
     /// var added = await client.GeoAddAsync("locations", "Palermo", position);  // true
     /// </code>
     /// </example>
-    /// </remarks>
     Task<bool> GeoAddAsync(
         ValkeyKey key,
         ValkeyValue member,
@@ -37,7 +35,6 @@ public partial interface IBaseClient
     /// <param name="options">The options for adding or updating the member.</param>
     /// <returns><see langword="true"/> if the member was added (or changed, if
     /// <see cref="GeoAddOptions.Changed"/> is set), <see langword="false"/> otherwise.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var position = new GeoPosition(13.361389, 38.115556);
@@ -45,7 +42,6 @@ public partial interface IBaseClient
     /// var added = await client.GeoAddAsync("locations", "Palermo", position, options);  // true
     /// </code>
     /// </example>
-    /// </remarks>
     Task<bool> GeoAddAsync(
         ValkeyKey key,
         ValkeyValue member,
@@ -60,7 +56,6 @@ public partial interface IBaseClient
     /// <param name="members">A dictionary of member names and their geographic positions.</param>
     /// <param name="condition">The condition under which to add or update members.</param>
     /// <returns>The number of members added.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var members = new Dictionary&lt;ValkeyValue, GeoPosition&gt;
@@ -71,7 +66,6 @@ public partial interface IBaseClient
     /// var count = await client.GeoAddAsync("locations", members);  // 2
     /// </code>
     /// </example>
-    /// </remarks>
     Task<long> GeoAddAsync(
         ValkeyKey key,
         IDictionary<ValkeyValue, GeoPosition> members,
@@ -86,7 +80,6 @@ public partial interface IBaseClient
     /// <param name="options">The options for adding or updating the members.</param>
     /// <returns>The number of members added (or changed, if
     /// <see cref="GeoAddOptions.Changed"/> is set).</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var members = new Dictionary&lt;ValkeyValue, GeoPosition&gt;
@@ -98,7 +91,6 @@ public partial interface IBaseClient
     /// var count = await client.GeoAddAsync("locations", members, options);  // 2
     /// </code>
     /// </example>
-    /// </remarks>
     Task<long> GeoAddAsync(
         ValkeyKey key,
         IDictionary<ValkeyValue, GeoPosition> members,
@@ -114,7 +106,6 @@ public partial interface IBaseClient
     /// <param name="unit">The unit of distance measurement.</param>
     /// <returns>The distance between the two members in the specified unit,
     /// or <see langword="null"/> if one or both members do not exist.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.GeoAddAsync("locations", "Palermo", new GeoPosition(13.361389, 38.115556));
@@ -122,7 +113,6 @@ public partial interface IBaseClient
     /// var distance = await client.GeoDistanceAsync("locations", "Palermo", "Catania", GeoUnit.Kilometers);  // ~166.27 km
     /// </code>
     /// </example>
-    /// </remarks>
     Task<double?> GeoDistanceAsync(
         ValkeyKey key,
         ValkeyValue member1,
@@ -138,7 +128,6 @@ public partial interface IBaseClient
     /// <param name="shape">The search area shape.</param>
     /// <param name="options">Optional search parameters.</param>
     /// <returns>An array of <see cref="GeoSearchResult"/> for matching members.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.GeoAddAsync("locations", "Palermo", new GeoPosition(13.361389, 38.115556));
@@ -146,7 +135,6 @@ public partial interface IBaseClient
     /// var results = await client.GeoSearchAsync("locations", "Palermo", new GeoSearchCircle(200, GeoUnit.Kilometers));  // 2 results
     /// </code>
     /// </example>
-    /// </remarks>
     Task<GeoSearchResult[]> GeoSearchAsync(
         ValkeyKey key,
         ValkeyValue from,
@@ -162,7 +150,6 @@ public partial interface IBaseClient
     /// <param name="shape">The search area shape.</param>
     /// <param name="options">Optional search parameters.</param>
     /// <returns>An array of <see cref="GeoSearchResult"/> for matching members.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.GeoAddAsync("locations", "Palermo", new GeoPosition(13.361389, 38.115556));
@@ -173,7 +160,6 @@ public partial interface IBaseClient
     /// var results = await client.GeoSearchAsync("locations", origin, circle);  // 2 results
     /// </code>
     /// </example>
-    /// </remarks>
     Task<GeoSearchResult[]> GeoSearchAsync(
         ValkeyKey key,
         GeoPosition from,
@@ -191,7 +177,6 @@ public partial interface IBaseClient
     /// <param name="shape">The search area shape.</param>
     /// <param name="options">Optional search and store parameters.</param>
     /// <returns>The number of elements stored in <paramref name="destination"/>.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.GeoAddAsync("locations", "Palermo", new GeoPosition(13.361389, 38.115556));
@@ -201,7 +186,6 @@ public partial interface IBaseClient
     /// var stored = await client.GeoSearchAndStoreAsync("locations", "nearby", "Palermo", circle);  // 2
     /// </code>
     /// </example>
-    /// </remarks>
     Task<long> GeoSearchAndStoreAsync(
         ValkeyKey source,
         ValkeyKey destination,
@@ -220,7 +204,6 @@ public partial interface IBaseClient
     /// <param name="shape">The search area shape.</param>
     /// <param name="options">Optional search and store parameters.</param>
     /// <returns>The number of elements stored in <paramref name="destination"/>.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.GeoAddAsync("locations", "Palermo", new GeoPosition(13.361389, 38.115556));
@@ -231,7 +214,6 @@ public partial interface IBaseClient
     /// var stored = await client.GeoSearchAndStoreAsync("locations", "nearby", origin, circle);  // 2
     /// </code>
     /// </example>
-    /// </remarks>
     Task<long> GeoSearchAndStoreAsync(
         ValkeyKey source,
         ValkeyKey destination,

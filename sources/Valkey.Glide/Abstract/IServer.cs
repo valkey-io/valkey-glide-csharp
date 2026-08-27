@@ -89,14 +89,12 @@ public partial interface IServer : IRedisAsync
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <returns>The observed latency.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var latency = await server.PingAsync("ping!");
     /// Console.WriteLine($"Received response after {latency.TotalSeconds} seconds");
     /// </code>
     /// </example>
-    /// </remarks>
     Task<TimeSpan> PingAsync(ValkeyValue message, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
@@ -107,13 +105,11 @@ public partial interface IServer : IRedisAsync
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <returns>The provided message.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var echo = await server.EchoAsync("hello");  // "hello"
     /// </code>
     /// </example>
-    /// </remarks>
     Task<ValkeyValue> EchoAsync(ValkeyValue message, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
@@ -201,13 +197,11 @@ public partial interface IServer : IRedisAsync
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <exception cref="NotSupportedException">Thrown for unsupported save types.</exception>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await server.SaveAsync(SaveType.BackgroundSave);
     /// </code>
     /// </example>
-    /// </remarks>
     Task SaveAsync(SaveType type, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
@@ -238,7 +232,6 @@ public partial interface IServer : IRedisAsync
     /// The name of the client connection as a <see cref="string"/>.
     /// If no name is assigned, <see langword="ValkeyValue.Null"/> will be returned.
     /// </returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// ValkeyValue result = await server.ClientGetNameAsync();
@@ -252,7 +245,6 @@ public partial interface IServer : IRedisAsync
     /// }
     /// </code>
     /// </example>
-    /// </remarks>
     Task<ValkeyValue> ClientGetNameAsync(CommandFlags flags = CommandFlags.None);
 
     /// <summary>
@@ -262,14 +254,12 @@ public partial interface IServer : IRedisAsync
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <returns>The ID of the client connection.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// long connectionId = await server.ClientIdAsync();
     /// Console.WriteLine($"Connection ID: {connectionId}");
     /// </code>
     /// </example>
-    /// </remarks>
     Task<long> ClientIdAsync(CommandFlags flags = CommandFlags.None);
 
     /// <summary>

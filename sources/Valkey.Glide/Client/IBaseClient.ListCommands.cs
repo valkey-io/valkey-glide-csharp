@@ -17,21 +17,21 @@ public partial interface IBaseClient
     /// blocking the connection when there are no elements to pop.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/blpop/">Valkey commands – BLPOP</seealso>
-    /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
     /// <param name="keys">The list keys, checked in order.</param>
     /// <param name="timeout">The maximum time to wait. <see cref="TimeSpan.Zero"/> blocks indefinitely.</param>
     /// <returns>
     /// A two-element array <c>[key, value]</c> containing the source key and the popped element,
     /// or <see langword="null"/> if the <paramref name="timeout"/> expired.
     /// </returns>
-    /// <remarks>
-    /// Blocking variant of <see cref="Commands.IListBaseCommands.ListLeftPopAsync(ValkeyKey)"/>.
     /// <example>
     /// <code>
     /// await client.ListRightPushAsync("list1", ["a", "b"]);
     /// var popped = await client.ListBlockingLeftPopAsync(["list1", "list2"], TimeSpan.FromSeconds(5));  // ["list1", "a"]
     /// </code>
     /// </example>
+    /// <remarks>
+    /// <para>Blocking variant of <see cref="Commands.IListBaseCommands.ListLeftPopAsync(ValkeyKey)"/>.</para>
+    /// <para>When in cluster mode, all keys must map to the same hash slot.</para>
     /// </remarks>
     Task<ValkeyValue[]?> ListBlockingLeftPopAsync(IEnumerable<ValkeyKey> keys, TimeSpan timeout);
 
@@ -46,14 +46,14 @@ public partial interface IBaseClient
     /// A two-element array <c>[key, value]</c> containing the source key and the popped element,
     /// or <see langword="null"/> if the <paramref name="timeout"/> expired.
     /// </returns>
-    /// <remarks>
-    /// Blocking variant of <see cref="Commands.IListBaseCommands.ListLeftPopAsync(ValkeyKey)"/>.
     /// <example>
     /// <code>
     /// await client.ListRightPushAsync("mylist", ["a", "b"]);
     /// var popped = await client.ListBlockingLeftPopAsync("mylist", TimeSpan.FromSeconds(5));  // ["mylist", "a"]
     /// </code>
     /// </example>
+    /// <remarks>
+    /// Blocking variant of <see cref="Commands.IListBaseCommands.ListLeftPopAsync(ValkeyKey)"/>.
     /// </remarks>
     Task<ValkeyValue[]?> ListBlockingLeftPopAsync(ValkeyKey key, TimeSpan timeout);
 
@@ -62,21 +62,21 @@ public partial interface IBaseClient
     /// blocking the connection when there are no elements to pop.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/brpop/">Valkey commands – BRPOP</seealso>
-    /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
     /// <param name="keys">The list keys, checked in order.</param>
     /// <param name="timeout">The maximum time to wait. <see cref="TimeSpan.Zero"/> blocks indefinitely.</param>
     /// <returns>
     /// A two-element array <c>[key, value]</c> containing the source key and the popped element,
     /// or <see langword="null"/> if the <paramref name="timeout"/> expired.
     /// </returns>
-    /// <remarks>
-    /// Blocking variant of <see cref="Commands.IListBaseCommands.ListRightPopAsync(ValkeyKey)"/>.
     /// <example>
     /// <code>
     /// await client.ListRightPushAsync("list1", ["a", "b"]);
     /// var popped = await client.ListBlockingRightPopAsync(["list1", "list2"], TimeSpan.FromSeconds(5));  // ["list1", "b"]
     /// </code>
     /// </example>
+    /// <remarks>
+    /// <para>Blocking variant of <see cref="Commands.IListBaseCommands.ListRightPopAsync(ValkeyKey)"/>.</para>
+    /// <para>When in cluster mode, all keys must map to the same hash slot.</para>
     /// </remarks>
     Task<ValkeyValue[]?> ListBlockingRightPopAsync(IEnumerable<ValkeyKey> keys, TimeSpan timeout);
 
@@ -91,14 +91,14 @@ public partial interface IBaseClient
     /// A two-element array <c>[key, value]</c> containing the source key and the popped element,
     /// or <see langword="null"/> if the <paramref name="timeout"/> expired.
     /// </returns>
-    /// <remarks>
-    /// Blocking variant of <see cref="Commands.IListBaseCommands.ListRightPopAsync(ValkeyKey)"/>.
     /// <example>
     /// <code>
     /// await client.ListRightPushAsync("mylist", ["a", "b"]);
     /// var popped = await client.ListBlockingRightPopAsync("mylist", TimeSpan.FromSeconds(5));  // popped == ["mylist", "b"]
     /// </code>
     /// </example>
+    /// <remarks>
+    /// Blocking variant of <see cref="Commands.IListBaseCommands.ListRightPopAsync(ValkeyKey)"/>.
     /// </remarks>
     Task<ValkeyValue[]?> ListBlockingRightPopAsync(ValkeyKey key, TimeSpan timeout);
 
@@ -107,7 +107,6 @@ public partial interface IBaseClient
     /// <paramref name="destination"/> list, blocking until an element is available.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/blmove/">Valkey commands – BLMOVE</seealso>
-    /// <note>When in cluster mode, <paramref name="source"/> and <paramref name="destination"/> must map to the same hash slot.</note>
     /// <param name="source">The source list key.</param>
     /// <param name="destination">The destination list key.</param>
     /// <param name="sourceSide">The side to pop from (<see cref="ListSide.Left"/> = head, <see cref="ListSide.Right"/> = tail).</param>
@@ -117,8 +116,6 @@ public partial interface IBaseClient
     /// The moved element, or <see cref="ValkeyValue.Null"/> if <paramref name="source"/> does not exist
     /// or the <paramref name="timeout"/> expired.
     /// </returns>
-    /// <remarks>
-    /// Blocking variant of <see cref="Commands.IListBaseCommands.ListMoveAsync"/>.
     /// <example>
     /// <code>
     /// await client.ListRightPushAsync("src", ["a", "b", "c"]);
@@ -126,6 +123,9 @@ public partial interface IBaseClient
     /// // moved == "a"
     /// </code>
     /// </example>
+    /// <remarks>
+    /// <para>Blocking variant of <see cref="Commands.IListBaseCommands.ListMoveAsync"/>.</para>
+    /// <para>When in cluster mode, <paramref name="source"/> and <paramref name="destination"/> must map to the same hash slot.</para>
     /// </remarks>
     Task<ValkeyValue> ListBlockingMoveAsync(ValkeyKey source, ValkeyKey destination, ListSide sourceSide, ListSide destinationSide, TimeSpan timeout);
 
@@ -134,8 +134,6 @@ public partial interface IBaseClient
     /// blocking until an element is available.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/blmpop/">Valkey commands – BLMPOP</seealso>
-    /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="keys">The list keys, checked in order.</param>
     /// <param name="side">The side to pop from (<see cref="ListSide.Left"/> = head, <see cref="ListSide.Right"/> = tail).</param>
     /// <param name="timeout">The maximum time to wait. <see cref="TimeSpan.Zero"/> blocks indefinitely.</param>
@@ -143,8 +141,6 @@ public partial interface IBaseClient
     /// A <see cref="ListPopResult"/> with the source key and popped elements,
     /// or <see cref="ListPopResult.Null"/> if the <paramref name="timeout"/> expired.
     /// </returns>
-    /// <remarks>
-    /// Blocking variant of <see cref="Commands.IListBaseCommands.ListLeftPopAsync(IEnumerable{ValkeyKey}, long)"/>.
     /// <example>
     /// <code>
     /// await client.ListRightPushAsync("list1", ["a", "b"]);
@@ -152,6 +148,10 @@ public partial interface IBaseClient
     /// // popResult.Key == "list1", popResult.Values[0] == "a"
     /// </code>
     /// </example>
+    /// <remarks>
+    /// <para>Since Valkey 7.0.0.</para>
+    /// <para>Blocking variant of <see cref="Commands.IListBaseCommands.ListLeftPopAsync(IEnumerable{ValkeyKey}, long)"/>.</para>
+    /// <para>When in cluster mode, all keys must map to the same hash slot.</para>
     /// </remarks>
     Task<ListPopResult> ListBlockingPopAsync(IEnumerable<ValkeyKey> keys, ListSide side, TimeSpan timeout);
 
@@ -160,7 +160,6 @@ public partial interface IBaseClient
     /// blocking until an element is available.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/blmpop/">Valkey commands – BLMPOP</seealso>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="key">The list key.</param>
     /// <param name="side">The side to pop from (<see cref="ListSide.Left"/> = head, <see cref="ListSide.Right"/> = tail).</param>
     /// <param name="timeout">The maximum time to wait. <see cref="TimeSpan.Zero"/> blocks indefinitely.</param>
@@ -168,8 +167,6 @@ public partial interface IBaseClient
     /// A <see cref="ListPopResult"/> with the source key and popped elements,
     /// or <see cref="ListPopResult.Null"/> if the <paramref name="timeout"/> expired.
     /// </returns>
-    /// <remarks>
-    /// Blocking variant of <see cref="Commands.IListBaseCommands.ListLeftPopAsync(ValkeyKey)"/>.
     /// <example>
     /// <code>
     /// await client.ListRightPushAsync("mylist", ["a", "b"]);
@@ -177,6 +174,9 @@ public partial interface IBaseClient
     /// // popResult.Key == "mylist", popResult.Values[0] == "a"
     /// </code>
     /// </example>
+    /// <remarks>
+    /// <para>Since Valkey 7.0.0.</para>
+    /// <para>Blocking variant of <see cref="Commands.IListBaseCommands.ListLeftPopAsync(ValkeyKey)"/>.</para>
     /// </remarks>
     Task<ListPopResult> ListBlockingPopAsync(ValkeyKey key, ListSide side, TimeSpan timeout);
 
@@ -185,8 +185,6 @@ public partial interface IBaseClient
     /// <paramref name="keys"/>, blocking until an element is available.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/blmpop/">Valkey commands – BLMPOP</seealso>
-    /// <note>When in cluster mode, all keys must map to the same hash slot.</note>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="keys">The list keys, checked in order.</param>
     /// <param name="side">The side to pop from (<see cref="ListSide.Left"/> = head, <see cref="ListSide.Right"/> = tail).</param>
     /// <param name="count">The maximum number of elements to pop.</param>
@@ -195,8 +193,6 @@ public partial interface IBaseClient
     /// A <see cref="ListPopResult"/> with the source key and popped elements,
     /// or <see cref="ListPopResult.Null"/> if the <paramref name="timeout"/> expired.
     /// </returns>
-    /// <remarks>
-    /// Blocking variant of <see cref="Commands.IListBaseCommands.ListLeftPopAsync(IEnumerable{ValkeyKey}, long)"/>.
     /// <example>
     /// <code>
     /// await client.ListRightPushAsync("list1", ["a", "b", "c"]);
@@ -204,6 +200,10 @@ public partial interface IBaseClient
     /// // popResult.Key == "list1", popResult.Values[0] == "a"
     /// </code>
     /// </example>
+    /// <remarks>
+    /// <para>Since Valkey 7.0.0.</para>
+    /// <para>Blocking variant of <see cref="Commands.IListBaseCommands.ListLeftPopAsync(IEnumerable{ValkeyKey}, long)"/>.</para>
+    /// <para>When in cluster mode, all keys must map to the same hash slot.</para>
     /// </remarks>
     Task<ListPopResult> ListBlockingPopAsync(IEnumerable<ValkeyKey> keys, ListSide side, long count, TimeSpan timeout);
 
@@ -212,7 +212,6 @@ public partial interface IBaseClient
     /// blocking until an element is available.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/blmpop/">Valkey commands – BLMPOP</seealso>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="key">The list key.</param>
     /// <param name="side">The side to pop from (<see cref="ListSide.Left"/> = head, <see cref="ListSide.Right"/> = tail).</param>
     /// <param name="count">The maximum number of elements to pop.</param>
@@ -221,8 +220,6 @@ public partial interface IBaseClient
     /// A <see cref="ListPopResult"/> with the source key and popped elements,
     /// or <see cref="ListPopResult.Null"/> if the <paramref name="timeout"/> expired.
     /// </returns>
-    /// <remarks>
-    /// Blocking variant of <see cref="Commands.IListBaseCommands.ListLeftPopAsync(ValkeyKey, long)"/>.
     /// <example>
     /// <code>
     /// await client.ListRightPushAsync("mylist", ["a", "b", "c"]);
@@ -230,6 +227,9 @@ public partial interface IBaseClient
     /// // popResult.Key == "mylist", popResult.Values[0] == "a"
     /// </code>
     /// </example>
+    /// <remarks>
+    /// <para>Since Valkey 7.0.0.</para>
+    /// <para>Blocking variant of <see cref="Commands.IListBaseCommands.ListLeftPopAsync(ValkeyKey, long)"/>.</para>
     /// </remarks>
     Task<ListPopResult> ListBlockingPopAsync(ValkeyKey key, ListSide side, long count, TimeSpan timeout);
 
@@ -243,9 +243,6 @@ public partial interface IBaseClient
     /// <param name="key">The list key.</param>
     /// <param name="value">The value to prepend.</param>
     /// <returns>The length of the list after the push, or <c>0</c> if <paramref name="key"/> does not exist.</returns>
-    /// <remarks>
-    /// For the SER-compatible API, use
-    /// <see cref="IDatabaseAsync.ListLeftPushAsync(ValkeyKey, ValkeyValue, When)"/> with <c>When.Exists</c>.
     /// <example>
     /// <code>
     /// await client.ListRightPushAsync("key", ["x"]);
@@ -253,6 +250,9 @@ public partial interface IBaseClient
     /// // length == 2
     /// </code>
     /// </example>
+    /// <remarks>
+    /// For the SER-compatible API, use
+    /// <see cref="IDatabaseAsync.ListLeftPushAsync(ValkeyKey, ValkeyValue, When)"/> with <c>When.Exists</c>.
     /// </remarks>
     Task<long> ListLeftPushIfExistsAsync(ValkeyKey key, ValkeyValue value);
 
@@ -264,9 +264,6 @@ public partial interface IBaseClient
     /// <param name="key">The list key.</param>
     /// <param name="values">The values to prepend.</param>
     /// <returns>The length of the list after the push, or <c>0</c> if <paramref name="key"/> does not exist.</returns>
-    /// <remarks>
-    /// For the SER-compatible API, use
-    /// <see cref="IDatabaseAsync.ListLeftPushAsync(ValkeyKey, IEnumerable{ValkeyValue}, When)"/> with <c>When.Exists</c>.
     /// <example>
     /// <code>
     /// await client.ListRightPushAsync("key", ["x"]);
@@ -274,6 +271,9 @@ public partial interface IBaseClient
     /// // length == 4
     /// </code>
     /// </example>
+    /// <remarks>
+    /// For the SER-compatible API, use
+    /// <see cref="IDatabaseAsync.ListLeftPushAsync(ValkeyKey, IEnumerable{ValkeyValue}, When)"/> with <c>When.Exists</c>.
     /// </remarks>
     Task<long> ListLeftPushIfExistsAsync(ValkeyKey key, IEnumerable<ValkeyValue> values);
 
@@ -285,9 +285,6 @@ public partial interface IBaseClient
     /// <param name="key">The list key.</param>
     /// <param name="value">The value to append.</param>
     /// <returns>The length of the list after the push, or <c>0</c> if <paramref name="key"/> does not exist.</returns>
-    /// <remarks>
-    /// For the SER-compatible API, use
-    /// <see cref="IDatabaseAsync.ListRightPushAsync(ValkeyKey, ValkeyValue, When)"/> with <c>When.Exists</c>.
     /// <example>
     /// <code>
     /// await client.ListRightPushAsync("key", ["x"]);
@@ -295,6 +292,9 @@ public partial interface IBaseClient
     /// // length == 2
     /// </code>
     /// </example>
+    /// <remarks>
+    /// For the SER-compatible API, use
+    /// <see cref="IDatabaseAsync.ListRightPushAsync(ValkeyKey, ValkeyValue, When)"/> with <c>When.Exists</c>.
     /// </remarks>
     Task<long> ListRightPushIfExistsAsync(ValkeyKey key, ValkeyValue value);
 
@@ -306,9 +306,6 @@ public partial interface IBaseClient
     /// <param name="key">The list key.</param>
     /// <param name="values">The values to append.</param>
     /// <returns>The length of the list after the push, or <c>0</c> if <paramref name="key"/> does not exist.</returns>
-    /// <remarks>
-    /// For the SER-compatible API, use
-    /// <see cref="IDatabaseAsync.ListRightPushAsync(ValkeyKey, IEnumerable{ValkeyValue}, When)"/> with <c>When.Exists</c>.
     /// <example>
     /// <code>
     /// await client.ListRightPushAsync("key", ["x"]);
@@ -316,6 +313,9 @@ public partial interface IBaseClient
     /// // length == 4
     /// </code>
     /// </example>
+    /// <remarks>
+    /// For the SER-compatible API, use
+    /// <see cref="IDatabaseAsync.ListRightPushAsync(ValkeyKey, IEnumerable{ValkeyValue}, When)"/> with <c>When.Exists</c>.
     /// </remarks>
     Task<long> ListRightPushIfExistsAsync(ValkeyKey key, IEnumerable<ValkeyValue> values);
 
@@ -332,9 +332,6 @@ public partial interface IBaseClient
     /// The element at <paramref name="index"/>, or <see cref="ValkeyValue.Null"/> if
     /// <paramref name="index"/> is out of range or <paramref name="key"/> does not exist.
     /// </returns>
-    /// <remarks>
-    /// For the SER-compatible API, use
-    /// <see cref="IDatabaseAsync.ListGetByIndexAsync(ValkeyKey, long, CommandFlags)"/>.
     /// <example>
     /// <code>
     /// await client.ListRightPushAsync("key", ["a", "b", "c"]);
@@ -342,6 +339,9 @@ public partial interface IBaseClient
     /// // element == "a"
     /// </code>
     /// </example>
+    /// <remarks>
+    /// For the SER-compatible API, use
+    /// <see cref="IDatabaseAsync.ListGetByIndexAsync(ValkeyKey, long, CommandFlags)"/>.
     /// </remarks>
     Task<ValkeyValue> ListIndexAsync(ValkeyKey key, long index);
 
@@ -353,9 +353,6 @@ public partial interface IBaseClient
     /// <param name="key">The list key.</param>
     /// <param name="index">The zero-based index of the element to set.</param>
     /// <param name="value">The new value.</param>
-    /// <remarks>
-    /// An error is returned for out-of-range indexes. For the SER-compatible API, use
-    /// <see cref="IDatabaseAsync.ListSetByIndexAsync(ValkeyKey, long, ValkeyValue, CommandFlags)"/>.
     /// <example>
     /// <code>
     /// await client.ListRightPushAsync("key", ["a", "b", "c"]);
@@ -364,6 +361,9 @@ public partial interface IBaseClient
     /// // element == "new_value"
     /// </code>
     /// </example>
+    /// <remarks>
+    /// An error is returned for out-of-range indexes. For the SER-compatible API, use
+    /// <see cref="IDatabaseAsync.ListSetByIndexAsync(ValkeyKey, long, ValkeyValue, CommandFlags)"/>.
     /// </remarks>
     Task ListSetAsync(ValkeyKey key, long index, ValkeyValue value);
 }

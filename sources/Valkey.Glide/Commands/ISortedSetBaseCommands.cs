@@ -19,13 +19,11 @@ public interface ISortedSetBaseCommands
     /// <param name="member">The member to add or update.</param>
     /// <param name="score">The score for the member.</param>
     /// <returns><see langword="true"/> if the member was added, <see langword="false"/> if the member was updated.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var added = await client.SortedSetAddAsync("myzset", "member1", 1.0);  // true
     /// </code>
     /// </example>
-    /// </remarks>
     Task<bool> SortedSetAddAsync(ValkeyKey key, ValkeyValue member, double score);
 
     /// <summary>
@@ -35,14 +33,12 @@ public interface ISortedSetBaseCommands
     /// <param name="key">The sorted set key.</param>
     /// <param name="members">The members and their scores to add or update.</param>
     /// <returns>The number of members added to the sorted set.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// SortedSetEntry[] entries = [new("a", 1.0), new("b", 2.0)];
     /// var addedCount = await client.SortedSetAddAsync("myzset", entries);  // 2
     /// </code>
     /// </example>
-    /// </remarks>
     Task<long> SortedSetAddAsync(ValkeyKey key, IEnumerable<SortedSetEntry> members);
 
     /// <summary>
@@ -52,14 +48,12 @@ public interface ISortedSetBaseCommands
     /// <param name="key">The sorted set key.</param>
     /// <param name="member">The member to remove.</param>
     /// <returns><see langword="true"/> if the member was removed, <see langword="false"/> if the member does not exist.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.SortedSetAddAsync("myzset", "member1", 1.0);
     /// var removed = await client.SortedSetRemoveAsync("myzset", "member1");  // true
     /// </code>
     /// </example>
-    /// </remarks>
     Task<bool> SortedSetRemoveAsync(ValkeyKey key, ValkeyValue member);
 
     /// <summary>
@@ -69,7 +63,6 @@ public interface ISortedSetBaseCommands
     /// <param name="key">The sorted set key.</param>
     /// <param name="members">A collection of members to remove.</param>
     /// <returns>The number of members that were removed from the sorted set.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// SortedSetEntry[] entries = [new("a", 1.0), new("b", 2.0), new("c", 3.0)];
@@ -77,7 +70,6 @@ public interface ISortedSetBaseCommands
     /// var removedCount = await client.SortedSetRemoveAsync("myzset", ["a", "b"]);  // 2
     /// </code>
     /// </example>
-    /// </remarks>
     Task<long> SortedSetRemoveAsync(ValkeyKey key, IEnumerable<ValkeyValue> members);
 
     /// <summary>
@@ -86,7 +78,6 @@ public interface ISortedSetBaseCommands
     /// <seealso href="https://valkey.io/commands/zrandmember/">Valkey commands – ZRANDMEMBER</seealso>
     /// <param name="key">The sorted set key.</param>
     /// <returns>The randomly selected element, or <see langword="null"/> when the key does not exist.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// SortedSetEntry[] entries = [new("a", 1.0), new("b", 2.0)];
@@ -94,7 +85,6 @@ public interface ISortedSetBaseCommands
     /// var member = await client.SortedSetRandomMemberAsync("myzset");  // "a" or "b"
     /// </code>
     /// </example>
-    /// </remarks>
     Task<ValkeyValue> SortedSetRandomMemberAsync(ValkeyKey key);
 
     /// <summary>
@@ -104,7 +94,6 @@ public interface ISortedSetBaseCommands
     /// <param name="key">The sorted set key.</param>
     /// <param name="count">The number of members to return.</param>
     /// <returns>An array of randomly selected elements.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// SortedSetEntry[] entries = [new("a", 1.0), new("b", 2.0)];
@@ -112,7 +101,6 @@ public interface ISortedSetBaseCommands
     /// var members = await client.SortedSetRandomMembersAsync("myzset", 2);  // ["a", "b"]
     /// </code>
     /// </example>
-    /// </remarks>
     Task<ValkeyValue[]> SortedSetRandomMembersAsync(ValkeyKey key, long count);
 
     /// <summary>
@@ -122,14 +110,12 @@ public interface ISortedSetBaseCommands
     /// <param name="key">The sorted set key.</param>
     /// <param name="member">The member whose score is to be retrieved.</param>
     /// <returns>The score of the member, or <see langword="null"/> if the member or key does not exist.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.SortedSetAddAsync("myzset", "member1", 1.5);
     /// var score = await client.SortedSetScoreAsync("myzset", "member1");  // 1.5
     /// </code>
     /// </example>
-    /// </remarks>
     Task<double?> SortedSetScoreAsync(ValkeyKey key, ValkeyValue member);
 
     /// <summary>
@@ -142,7 +128,6 @@ public interface ISortedSetBaseCommands
     /// An array of scores corresponding to members.
     /// If a member does not exist in the sorted set, the corresponding value is <see langword="null"/>.
     /// </returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// SortedSetEntry[] entries = [new("a", 1.0), new("b", 2.0)];
@@ -150,6 +135,5 @@ public interface ISortedSetBaseCommands
     /// var scores = await client.SortedSetScoresAsync("myzset", ["a", "b", "nonexistent"]);  // [1.0, 2.0, null]
     /// </code>
     /// </example>
-    /// </remarks>
     Task<double?[]> SortedSetScoresAsync(ValkeyKey key, IEnumerable<ValkeyValue> members);
 }

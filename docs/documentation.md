@@ -36,56 +36,55 @@ Command method documentation template:
 ```xml
 /// <summary>...</summary>
 /// <seealso href="https://valkey.io/commands/{command}/">Valkey commands – {COMMAND}</seealso>
-/// <note>...</note>
+/// <typeparam name="...">...</typeparam>
 /// <param name="...">...</param>
 /// <returns>...</returns>
 /// <exception cref="...">...</exception>
-/// <remarks>
-///   <example>
-///     <code>...</code>
-///   </example>
-/// </remarks>
+/// <example>
+/// <code>
+/// ...
+/// </code>
+/// </example>
+/// <remarks>...</remarks>
 ```
 
 ### Content
 
 Guidelines for command method documentation content:
 
-1. **`<summary>`** — Required. Single occurrence.
+1. `<summary>` — Required. Single occurrence.
    - Describe what the command does in one or two sentences.
    - Keep it concise — do not duplicate information already covered by other tags or
      the linked Valkey command reference.
    - For commands that map to multiple Valkey commands, describe the unified behavior.
    - Use third-person present tense (e.g. "Returns", "Sets", "Removes").
 
-2. **`<seealso>`** — Required. One or more occurrences.
+2. `<seealso>` — Required. One or more occurrences.
    - Link to the corresponding Valkey command documentation.
    - Format: `<seealso href="https://valkey.io/commands/{command}/">Valkey commands – {COMMAND}</seealso>`
    - If a method maps to multiple Valkey commands, include a `<seealso>` for each.
 
-3. **`<note>`** — Optional. Zero or more occurrences.
-   - **Version requirements**: When a command requires a minimum Valkey version
-     (e.g., `Since Valkey 6.2.0.`).
-   - **Cluster mode behavior**: When a multi-key command has non-atomic behavior across hash slots.
-   - **Slot constraints**: When keys must reside in the same hash slot
-     (e.g., `When in cluster mode, both key and newKey must map to the same hash slot.`).
+3. `<typeparam>` — Required for each type parameter. Zero or more occurrences.
+   - Document every type parameter of a generic method.
+   - Describe what the type parameter represents.
 
-4. **`<param>`** — Required for each parameter. One occurrence per parameter.
+4. `<param>` — Required for each parameter. One occurrence per parameter.
    - Document every parameter, including those with default values.
    - Do not restate default values already visible in the method signature.
    - Be specific about what the parameter represents in the context of the Valkey command.
 
-5. **`<returns>`** — Required (unless the method returns `void` or `Task`). Single occurrence.
+5. `<returns>` — Required unless the method returns `void` or `Task`. Zero or one occurrences.
    - Clearly describe the return value and its type.
    - Document the behavior when the key does not exist (e.g., returns `ValkeyValue.Null`).
 
-6. **`<exception>`** — Optional. Zero or more occurrences.
+6. `<exception>` — Optional. Zero or more occurrences.
    - Document exceptions that callers should be aware of.
    - Use `<exception cref="...">` with a description of when the exception is thrown.
 
-7. **`<remarks>` / `<example>` / `<code>`** — Required. One or more `<example>` blocks inside a single `<remarks>`.
-   - Examples should be **self-contained**: they should include any setup needed to determine the expected return
-   value from the example alone; this should include populating any relevant keys first (e.g., call `SetAsync` before `GetAsync`).
+7. `<example>` / `<code>` — Required. One or more occurrences.
+   - Examples should be **self-contained**: they should include any setup needed to determine the
+     expected return value from the example alone; this should include populating any relevant keys
+     first (e.g., call `SetAsync` before `GetAsync`).
    - Examples should follow code format and style conventions from this project.
    - For methods with notable edge cases, include multiple `<example>` blocks.
    - Use descriptive variable names; avoid generic names like `result`.
@@ -100,6 +99,14 @@ Guidelines for command method documentation content:
      for example, `Console.WriteLine($"Received response after {latency.TotalSeconds} seconds")`.
    - **Be concise**: use `var`, collection expressions (`["a", "b"]`), and other modern
      C# features to keep examples short without sacrificing clarity.
+
+8. `<remarks>` — Optional. Zero or one occurrences.
+   - Use `<para>` blocks to separate remarks.
+   - Common examples:
+     - Version requirements: minimum Valkey version (e.g., `Since Valkey 6.2.0.`).
+     - Cluster mode behavior: when a multi-key command has non-atomic behavior across hash slots.
+     - Slot constraints: when keys must reside in the same hash slot
+       (e.g., `When in cluster mode, both key and newKey must map to the same hash slot.`).
 
 ### Inheritdoc
 
@@ -127,7 +134,7 @@ tends to use the following two patterns:
   redocumented inline.
 - **Inherit everything except one or more tags**: `path="/*[not(self::returns)]"` inherits
   every top-level tag except `<returns>`. Extend the predicate with `and` to exclude more
-  tags, e.g. `path="/*[not(self::returns) and not(self::note)]"`.
+  tags, e.g. `path="/*[not(self::returns) and not(self::remarks)]"`.
 
 ### StackExchange.Redis Compatibility
 
@@ -151,14 +158,13 @@ Basic command method:
 /// <param name="keys">The keys to retrieve.</param>
 /// <returns>An array with the value for each key, or <see cref="ValkeyValue.Null"/> if it does not exist.
 /// </returns>
-/// <remarks>
 /// <example>
 /// <code>
 /// await client.SetAsync("key", "hello");
 /// var values = await client.GetAsync(["key", "nonexistent"]);  // ["hello", ValkeyValue.Null]
 /// </code>
 /// </example>
-/// </remarks>
+/// <remarks>Since Valkey 6.2.0.</remarks>
 Task<ValkeyValue[]> GetAsync(IEnumerable<ValkeyKey> keys);
 ```
 
@@ -173,7 +179,7 @@ Task<StreamEntry[]> StreamReadGroupAsync(StreamPosition position, ValkeyValue gr
 
 ### StackExchange.Redis Command Methods
 
-When the StackExchange.Redis method simply wraps a corresponding shared or Valkey GLIDE method, use `<inheritdoc>` to avoid duplication:
+Where possible, use `<inheritdoc>` to avoid duplication:
 
 ```csharp
 /// <inheritdoc cref="IBaseClient.GetAsync(ValkeyKey)"/>
@@ -182,8 +188,7 @@ When the StackExchange.Redis method simply wraps a corresponding shared or Valke
 Task<ValkeyValue> StringGetAsync(ValkeyKey key, CommandFlags flags = CommandFlags.None);
 ```
 
-When the StackExchange.Redis method has some elements that differ from the shared method, use `path` filtering
-to exclude inherited params and redocument them:
+When the StackExchange.Redis method has some elements that differ from the shared method, use `path` filtering to exclude inherited params and redocument them:
 
 ```csharp
 /// <inheritdoc cref="IBaseClient.SetAsync(ValkeyKey, ValkeyValue, SetOptions)" path="/summary"/>

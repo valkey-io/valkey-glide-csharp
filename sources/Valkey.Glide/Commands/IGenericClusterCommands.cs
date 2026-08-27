@@ -24,18 +24,18 @@ public interface IGenericClusterCommands
     /// <seealso href="https://valkey.io/commands/">Valkey commands</seealso>
     /// <param name="args">A list includes the command name and arguments for the custom command.</param>
     /// <returns>The returning value depends on the executed command.</returns>
-    /// <remarks>
-    /// This API returns all <see langword="string" /> data as <see cref="GlideString" />.
-    /// <para />
-    /// This function should only be used for single-response commands. Commands that don't return complete response and awaits
-    /// (such as SUBSCRIBE); that return potentially more than a single response (such as XREAD); or that change the client's
-    /// behavior (such as entering pub/sub mode on RESP2 connections) shouldn't be called using this function.
     /// <example>
     /// <code>
     /// var result = await clusterClient.CustomCommand(["CLIENT", "LIST", "TYPE", "PUBSUB"]);
     /// var response = (result.SingleValue as GlideString)!;
     /// </code>
     /// </example>
+    /// <remarks>
+    /// This API returns all <see langword="string" /> data as <see cref="GlideString" />.
+    /// <para />
+    /// This function should only be used for single-response commands. Commands that don't return complete response and awaits
+    /// (such as SUBSCRIBE); that return potentially more than a single response (such as XREAD); or that change the client's
+    /// behavior (such as entering pub/sub mode on RESP2 connections) shouldn't be called using this function.
     /// </remarks>
     Task<ClusterValue<object?>> CustomCommand(IEnumerable<GlideString> args);
 
@@ -48,12 +48,6 @@ public interface IGenericClusterCommands
     /// <param name="args">A list including the command name and arguments for the custom command.</param>
     /// <param name="route">Specifies the routing configuration for the command. The client will route the command to the nodes defined by <c>route</c>.</param>
     /// <returns>The returning value depends on the executed command.</returns>
-    /// <remarks>
-    /// This API returns all <see langword="string" /> data as <see cref="GlideString" />.
-    /// <para />
-    /// This function should only be used for single-response commands. Commands that don't return complete response and awaits
-    /// (such as SUBSCRIBE); that return potentially more than a single response (such as XREAD); or that change the client's
-    /// behavior (such as entering pub/sub mode on RESP2 connections) shouldn't be called using this function.
     /// <example>
     /// <code>
     /// var result = await clusterClient.CustomCommand(["CLIENT", "LIST", "TYPE", "PUBSUB"], Route.AllNodes);
@@ -63,6 +57,12 @@ public interface IGenericClusterCommands
     /// }
     /// </code>
     /// </example>
+    /// <remarks>
+    /// This API returns all <see langword="string" /> data as <see cref="GlideString" />.
+    /// <para />
+    /// This function should only be used for single-response commands. Commands that don't return complete response and awaits
+    /// (such as SUBSCRIBE); that return potentially more than a single response (such as XREAD); or that change the client's
+    /// behavior (such as entering pub/sub mode on RESP2 connections) shouldn't be called using this function.
     /// </remarks>
     Task<ClusterValue<object?>> CustomCommand(IEnumerable<GlideString> args, Route route);
 
@@ -87,21 +87,6 @@ public interface IGenericClusterCommands
     /// An array of results, where each entry corresponds to a command's execution result
     /// or <see langword="null" /> if a transaction failed due to a <c>WATCH</c> command.
     /// </returns>
-    /// <remarks>
-    /// <b>Routing Behavior:</b>
-    /// <list type="bullet">
-    ///   <item>
-    ///     <b>For atomic batches (Transactions):</b> The transaction is routed to the slot owner of the first key found in the batch.
-    ///     If no key is found, the request is sent to a random node.
-    ///   </item>
-    ///   <item>
-    ///     <b>For non-atomic batches (Pipelines):</b> Each command is routed to the node that owns the corresponding key's slot.
-    ///     If no key is present, routing follows the default policy for the command. Multi-node commands are automatically split.
-    ///   </item>
-    /// </list>
-    /// <b>Atomic Batches (Transactions):</b> All key-based commands must map to the
-    /// same hash slot. If keys span different slots, the transaction will fail.
-    /// If a transaction fails due to a <c>WATCH</c> command, <c>Exec</c> will return <see langword="null" />.
     /// <example>
     /// <code>
     /// // Example 1: Atomic Batch (Transaction)
@@ -127,6 +112,21 @@ public interface IGenericClusterCommands
     /// // Expected result: ["OK", "OK", "value1", "value2"]
     /// </code>
     /// </example>
+    /// <remarks>
+    /// <b>Routing Behavior:</b>
+    /// <list type="bullet">
+    ///   <item>
+    ///     <b>For atomic batches (Transactions):</b> The transaction is routed to the slot owner of the first key found in the batch.
+    ///     If no key is found, the request is sent to a random node.
+    ///   </item>
+    ///   <item>
+    ///     <b>For non-atomic batches (Pipelines):</b> Each command is routed to the node that owns the corresponding key's slot.
+    ///     If no key is present, routing follows the default policy for the command. Multi-node commands are automatically split.
+    ///   </item>
+    /// </list>
+    /// <b>Atomic Batches (Transactions):</b> All key-based commands must map to the
+    /// same hash slot. If keys span different slots, the transaction will fail.
+    /// If a transaction fails due to a <c>WATCH</c> command, <c>Exec</c> will return <see langword="null" />.
     /// </remarks>
     Task<object?[]?> Exec(ClusterBatch batch, bool raiseOnError);
 
@@ -135,6 +135,36 @@ public interface IGenericClusterCommands
     /// </summary>
     /// <inheritdoc cref="Exec(ClusterBatch, bool)" path="/*[not(self::summary) and not(self::remarks)]"/>
     /// <param name="options">A <see cref="ClusterBatchOptions" /> object containing execution options.</param>
+    /// <example>
+    /// <code>
+    /// // Example 1: Atomic Batch (Transaction) all keys must share the same hash slot
+    /// var options = new ClusterBatchOptions(timeout: 1000); // Set a timeout of 1000 milliseconds
+    ///
+    /// var batch = new ClusterBatch(true) // Atomic (Transaction)
+    ///     .SetAsync("key", "1")
+    ///     .IncrementAsync("key")
+    ///     .GetAsync("key");
+    ///
+    /// var result = await clusterClient.Exec(batch, false, options);
+    /// // Expected result: ["OK", 2, 2]
+    /// </code>
+    /// </example>
+    /// <example>
+    /// <code>
+    /// // Example 2: Non-Atomic Batch (Pipeline)
+    /// var retryStrategy = new ClusterBatchRetryStrategy(retryServerError: true, retryConnectionError: false);
+    /// var options = new ClusterBatchOptions(retryStrategy: retryStrategy);
+    ///
+    /// var batch = new ClusterBatch(false) // Non-Atomic (Pipeline) keys may span different hash slots
+    ///     .SetAsync("key1", "value1")
+    ///     .SetAsync("key2", "value2")
+    ///     .GetAsync("key1")
+    ///     .GetAsync("key2");
+    ///
+    /// var result = await clusterClient.Exec(batch, false, options);
+    /// // Expected result: ["OK", "OK", "value1", "value2"]
+    /// </code>
+    /// </example>
     /// <remarks>
     /// <b>Routing Behavior:</b>
     /// <list type="bullet">
@@ -173,36 +203,6 @@ public interface IGenericClusterCommands
     ///     Retries for failures will be handled according to the configured <see cref="ClusterBatchRetryStrategy" />.
     ///   </item>
     /// </list>
-    /// <example>
-    /// <code>
-    /// // Example 1: Atomic Batch (Transaction) all keys must share the same hash slot
-    /// var options = new ClusterBatchOptions(timeout: 1000); // Set a timeout of 1000 milliseconds
-    ///
-    /// var batch = new ClusterBatch(true) // Atomic (Transaction)
-    ///     .SetAsync("key", "1")
-    ///     .IncrementAsync("key")
-    ///     .GetAsync("key");
-    ///
-    /// var result = await clusterClient.Exec(batch, false, options);
-    /// // Expected result: ["OK", 2, 2]
-    /// </code>
-    /// </example>
-    /// <example>
-    /// <code>
-    /// // Example 2: Non-Atomic Batch (Pipeline)
-    /// var retryStrategy = new ClusterBatchRetryStrategy(retryServerError: true, retryConnectionError: false);
-    /// var options = new ClusterBatchOptions(retryStrategy: retryStrategy);
-    ///
-    /// var batch = new ClusterBatch(false) // Non-Atomic (Pipeline) keys may span different hash slots
-    ///     .SetAsync("key1", "value1")
-    ///     .SetAsync("key2", "value2")
-    ///     .GetAsync("key1")
-    ///     .GetAsync("key2");
-    ///
-    /// var result = await clusterClient.Exec(batch, false, options);
-    /// // Expected result: ["OK", "OK", "value1", "value2"]
-    /// </code>
-    /// </example>
     /// </remarks>
     Task<object?[]?> Exec(ClusterBatch batch, bool raiseOnError, ClusterBatchOptions options);
 }
