@@ -13,6 +13,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Valkey.Glide;
+
 /// <summary>
 /// Represents values that can be stored.
 /// </summary>
