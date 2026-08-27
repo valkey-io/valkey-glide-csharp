@@ -29,10 +29,7 @@ public class CommandTests
             () => Assert.Equal(["SET", "key", "value", "PX", "10000", "GET"], Request.GetSet("key", "value", new SetOptions { Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(10)) }).GetArgs()),
             () => Assert.Equal(["GET", "key"], Request.Get("key").GetArgs()),
             () => Assert.Equal(["MGET", "key1", "key2", "key3"], Request.Get(["key1", "key2", "key3"]).GetArgs()),
-            () => Assert.Equal(["MSET", "key1", "value1", "key2", "value2"], Request.Set([
-                new KeyValuePair<ValkeyKey, ValkeyValue>("key1", "value1"),
-                new KeyValuePair<ValkeyKey, ValkeyValue>("key2", "value2")
-            ]).GetArgs()),
+            () => Assert.Equal(["MSET", "key1", "value1", "key2", "value2"], Request.Set([new KeyValuePair<ValkeyKey, ValkeyValue>("key1", "value1"), new KeyValuePair<ValkeyKey, ValkeyValue>("key2", "value2")]).GetArgs()),
             () => Assert.Equal(["STRLEN", "key"], Request.Length("key").GetArgs()),
             () => Assert.Equal(["GETRANGE", "key", "0", "5"], Request.GetRange("key", 0, 5).GetArgs()),
             () => Assert.Equal(["SETRANGE", "key", "10", "value"], Request.SetRange("key", 10, "value").GetArgs()),
@@ -43,10 +40,7 @@ public class CommandTests
             () => Assert.Equal(["INCR", "key"], Request.Increment("key").GetArgs()),
             () => Assert.Equal(["INCRBY", "key", "5"], Request.IncrementBy("key", 5).GetArgs()),
             () => Assert.Equal(["INCRBYFLOAT", "key", "0.5"], Request.IncrementByFloat("key", 0.5).GetArgs()),
-            () => Assert.Equal(["MSETNX", "key1", "value1", "key2", "value2"], Request.SetIfNotExists([
-                new KeyValuePair<ValkeyKey, ValkeyValue>("key1", "value1"),
-                new KeyValuePair<ValkeyKey, ValkeyValue>("key2", "value2")
-            ]).GetArgs()),
+            () => Assert.Equal(["MSETNX", "key1", "value1", "key2", "value2"], Request.SetIfNotExists([new KeyValuePair<ValkeyKey, ValkeyValue>("key1", "value1"), new KeyValuePair<ValkeyKey, ValkeyValue>("key2", "value2")]).GetArgs()),
             () => Assert.Equal(["MSETNX"], Request.SetIfNotExists([]).GetArgs()),
             () => Assert.Equal(["GETDEL", "key"], Request.GetDelete("key").GetArgs()),
             () => Assert.Equal(["GETDEL", "test_key"], Request.GetDelete("test_key").GetArgs()),
@@ -455,10 +449,7 @@ public class CommandTests
             () => Assert.Equal(15L, Request.IncrementBy("key", 5).Converter(15L)),
             () => Assert.Equal(10.5, Request.IncrementByFloat("key", 0.5).Converter(10.5)),
             // TODO #454: Set should return ValkeyValue.Ok instead of bool.
-            () => Assert.True(Request.Set([
-                new KeyValuePair<ValkeyKey, ValkeyValue>("key1", "value1"),
-                new KeyValuePair<ValkeyKey, ValkeyValue>("key2", "value2")
-            ]).Converter("OK")),
+            () => Assert.True(Request.Set([new KeyValuePair<ValkeyKey, ValkeyValue>("key1", "value1"), new KeyValuePair<ValkeyKey, ValkeyValue>("key2", "value2")]).Converter("OK")),
             () => Assert.True(Request.SetIfNotExists([new KeyValuePair<ValkeyKey, ValkeyValue>("key1", "value1")]).Converter(true)),
             () => Assert.False(Request.SetIfNotExists([new KeyValuePair<ValkeyKey, ValkeyValue>("key1", "value1")]).Converter(false)),
             () => Assert.Equal("test_value", Request.GetDelete("test_key").Converter(new GlideString("test_value")).ToString()),

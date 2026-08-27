@@ -97,7 +97,8 @@ public abstract class Server : IDisposable
             useClusterMode: useClusterMode,
             useTls: UseTls,
             replicaCount: replicaCount,
-            host: host).First();
+            host: host)
+            .First();
 
         if (UseTls)
         {

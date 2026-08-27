@@ -583,6 +583,7 @@ dotnet_diagnostic.RCS0016.severity = error
 dotnet_diagnostic.RCS0031.severity = error
 dotnet_diagnostic.RCS0049.severity = error
 dotnet_diagnostic.RCS0050.severity = error
+dotnet_diagnostic.RCS0054.severity = error
 
 roslynator_blank_line_between_single_line_accessors = false
 
@@ -680,7 +681,7 @@ dotnet_diagnostic.RCS1265.severity = error
 dotnet_diagnostic.RCS1268.severity = error
 
 # ---------------------------------------------------------------------------
-# Future PRs (desirable, deferred to their own PR due to size)
+# Future PRs
 # ---------------------------------------------------------------------------
 # TODO(RCS0053): Fix formatting of a list
 #   auto-fixable via: Configuration=Lint dotnet format Valkey.Glide.sln analyzers
@@ -690,7 +691,6 @@ dotnet_diagnostic.RCS1268.severity = error
 # Roslynator rules NOT enabled (available to opt in). Sorted by id.
 # Excludes deprecated (Obsolete) and internal (Disabled) Roslynator rules.
 # ---------------------------------------------------------------------------
-# RCS0054: Fix formatting of a call chain
 # RCS0055: Fix formatting of a binary expression chain
 # RCS0056: A line is too long
 # RCS0060: Add/remove line after file scoped namespace declaration

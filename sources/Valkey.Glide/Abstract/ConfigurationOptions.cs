@@ -78,7 +78,8 @@ public sealed class ConfigurationOptions : ICloneable
             Protocol,
             ReadFrom,
             Az
-        }.ToDictionary(x => x, StringComparer.OrdinalIgnoreCase);
+        }
+            .ToDictionary(x => x, StringComparer.OrdinalIgnoreCase);
 
         public static string TryNormalize(string value)
         {
