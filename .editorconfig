@@ -681,7 +681,6 @@ dotnet_diagnostic.RCS1268.severity = error
 # Roslynator rules NOT enabled (available to opt in). Sorted by id.
 # Excludes deprecated (Obsolete) and internal (Disabled) Roslynator rules.
 # ---------------------------------------------------------------------------
-# RCS0034: Put type parameter constraint on its own line
 # RCS0036: Remove blank line between single-line declarations of same kind
 # RCS0039: Remove new line before base list
 # RCS0048: Put initializer on a single line
