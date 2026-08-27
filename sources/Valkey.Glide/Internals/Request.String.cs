@@ -147,6 +147,5 @@ internal static partial class Request
         return [.. args];
     }
 
-
     #endregion
 }

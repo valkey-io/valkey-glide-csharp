@@ -270,7 +270,6 @@ public abstract partial class BaseClient
             {
                 yield return element;
             }
-
         } while (cursor != 0);
     }
 

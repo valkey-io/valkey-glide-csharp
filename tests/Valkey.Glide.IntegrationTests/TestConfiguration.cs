@@ -421,7 +421,6 @@ public class TestConfiguration : IDisposable
     private static void TestConsoleWriteLine(string message) =>
         TestContext.Current.SendDiagnosticMessage(message);
 
-
     private static Version GetServerVersion()
     {
         Exception? err = null;

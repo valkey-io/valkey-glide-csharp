@@ -52,7 +52,6 @@ public class OpenTelemetryTests : IDisposable
         AssertSpanNames([]);
     }
 
-
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task Commands_WhenSamplingAll_CreateSpans(BaseClient client)

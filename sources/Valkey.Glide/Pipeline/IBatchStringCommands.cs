@@ -96,5 +96,4 @@ internal interface IBatchStringCommands
     /// <inheritdoc cref="IBaseClient.GetExpiryAsync(ValkeyKey, GetExpiryOptions)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.GetExpiryAsync(ValkeyKey, GetExpiryOptions)" /></returns>
     IBatch GetExpiry(ValkeyKey key, GetExpiryOptions options);
-
 }

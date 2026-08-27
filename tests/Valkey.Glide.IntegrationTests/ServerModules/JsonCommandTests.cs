@@ -356,7 +356,6 @@ public class JsonCommandTests(TestConfiguration config)
         Assert.Contains("true", getResult);
         Assert.Contains("\"scores\"", getResult);
         Assert.Contains("[1,2,3]", getResult);
-
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -476,7 +475,6 @@ public class JsonCommandTests(TestConfiguration config)
         await GlideJson.SetAsync(client, keyNull, "$", "null");
         string? resultNull = await GlideJson.GetAsync(client, keyNull);
         Assert.Equal("null", resultNull);
-
     }
 
     #endregion
@@ -505,7 +503,6 @@ public class JsonCommandTests(TestConfiguration config)
         Assert.Equal("[\"John\"]", results[0]);
         Assert.Equal("[\"Jane\"]", results[1]);
         Assert.Equal("[\"Bob\"]", results[2]);
-
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -529,7 +526,6 @@ public class JsonCommandTests(TestConfiguration config)
         Assert.Equal("[\"John\"]", results[0]);
         Assert.True(results[1].IsNull); // Non-existent key returns null
         Assert.Equal("[\"Jane\"]", results[2]);
-
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -554,7 +550,6 @@ public class JsonCommandTests(TestConfiguration config)
         // JSONPath returns arrays of matching values
         Assert.Contains("[1,2,3]", results[0].ToString());
         Assert.Contains("[4,5,6]", results[1].ToString());
-
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -576,7 +571,6 @@ public class JsonCommandTests(TestConfiguration config)
         Assert.Equal(2, results.Length);
         Assert.Equal("\"John\"", results[0]);
         Assert.Equal("\"Jane\"", results[1]);
-
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -601,7 +595,6 @@ public class JsonCommandTests(TestConfiguration config)
         Assert.False(results[1].IsNull);
         Assert.Equal("[\"John\"]", results[0].ToString());
         Assert.Equal("[\"Jane\"]", results[1].ToString());
-
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -623,7 +616,6 @@ public class JsonCommandTests(TestConfiguration config)
         Assert.Equal(2, results.Length);
         Assert.Equal("\"John\"", results[0]);
         Assert.True(results[1].IsNull); // Path doesn't exist in key2
-
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -649,7 +641,6 @@ public class JsonCommandTests(TestConfiguration config)
         Assert.Contains("1", results[0].ToString());
         Assert.Contains("\"b\"", results[1].ToString());
         Assert.Contains("2", results[1].ToString());
-
     }
 
     #endregion
@@ -671,7 +662,6 @@ public class JsonCommandTests(TestConfiguration config)
 
         // Delete entire document
         deleted = await GlideJson.DelAsync(client, key);
-
 
         Assert.Equal(1, deleted);
 
@@ -695,7 +685,6 @@ public class JsonCommandTests(TestConfiguration config)
 
         // Delete specific path
         deleted = await GlideJson.DelAsync(client, key, "$.age");
-
 
         Assert.Equal(1, deleted);
 
@@ -736,7 +725,6 @@ public class JsonCommandTests(TestConfiguration config)
         // Try to delete non-existent path
         deleted = await GlideJson.DelAsync(client, key, "$.nonexistent");
 
-
         Assert.Equal(0, deleted);
     }
 
@@ -756,7 +744,6 @@ public class JsonCommandTests(TestConfiguration config)
 
         // Delete entire document using GlideString overload
         deleted = await GlideJson.DelAsync(client, key);
-
 
         Assert.Equal(1, deleted);
     }
@@ -779,7 +766,6 @@ public class JsonCommandTests(TestConfiguration config)
         // Delete specific path using GlideString overload
         deleted = await GlideJson.DelAsync(client, key, deletePath);
 
-
         Assert.Equal(1, deleted);
     }
 
@@ -798,7 +784,6 @@ public class JsonCommandTests(TestConfiguration config)
 
         // Delete all "name" fields using wildcard path
         deleted = await GlideJson.DelAsync(client, key, "$.items[*].name");
-
 
         // Should delete 3 "name" fields
         Assert.Equal(3, deleted);
@@ -824,7 +809,6 @@ public class JsonCommandTests(TestConfiguration config)
         // Forget (delete) entire document
         deleted = await GlideJson.ForgetAsync(client, key);
 
-
         Assert.Equal(1, deleted);
 
         // Verify the key no longer exists
@@ -847,7 +831,6 @@ public class JsonCommandTests(TestConfiguration config)
 
         // Forget specific path
         deleted = await GlideJson.ForgetAsync(client, key, "$.city");
-
 
         Assert.Equal(1, deleted);
 
@@ -900,7 +883,6 @@ public class JsonCommandTests(TestConfiguration config)
         Assert.NotNull(resultDel);
         Assert.NotNull(resultForget);
         Assert.Equal(resultDel, resultForget);
-
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -919,7 +901,6 @@ public class JsonCommandTests(TestConfiguration config)
 
         // Forget entire document using GlideString overload
         deleted = await GlideJson.ForgetAsync(client, key);
-
 
         Assert.Equal(1, deleted);
     }
@@ -941,7 +922,6 @@ public class JsonCommandTests(TestConfiguration config)
 
         // Forget specific path using GlideString overload
         deleted = await GlideJson.ForgetAsync(client, key, deletePath);
-
 
         Assert.Equal(1, deleted);
     }
@@ -969,7 +949,6 @@ public class JsonCommandTests(TestConfiguration config)
         // Get the result
         ValkeyValue result = await GlideJson.GetAsync(client, key, ["$.items"]);
 
-
         Assert.Equal(1, cleared);
         Assert.False(result.IsNull);
         // Array should be empty
@@ -994,7 +973,6 @@ public class JsonCommandTests(TestConfiguration config)
 
         // Get the result
         ValkeyValue result = await GlideJson.GetAsync(client, key, ["$.data"]);
-
 
         Assert.Equal(1, cleared);
         Assert.False(result.IsNull);
@@ -1021,7 +999,6 @@ public class JsonCommandTests(TestConfiguration config)
         // Get the result
         ValkeyValue result = await GlideJson.GetAsync(client, key, ["$.count"]);
 
-
         Assert.Equal(1, cleared);
         Assert.False(result.IsNull);
         // Number should be 0
@@ -1046,7 +1023,6 @@ public class JsonCommandTests(TestConfiguration config)
 
         // Get the result
         ValkeyValue result = await GlideJson.GetAsync(client, key, ["$.active"]);
-
 
         // Valkey JSON clears booleans to false and returns 1
         Assert.Equal(1, cleared);
@@ -1074,7 +1050,6 @@ public class JsonCommandTests(TestConfiguration config)
         // Get the result
         ValkeyValue result = await GlideJson.GetAsync(client, key, ["$.name"]);
 
-
         // Valkey JSON clears strings to empty string and returns 1
         Assert.Equal(1, cleared);
         Assert.False(result.IsNull);
@@ -1094,7 +1069,6 @@ public class JsonCommandTests(TestConfiguration config)
         var ex = await Assert.ThrowsAsync<Errors.RequestException>(
             () => GlideJson.ClearAsync(client, key));
         Assert.Contains("NONEXISTENT", ex.Message);
-
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1117,7 +1091,6 @@ public class JsonCommandTests(TestConfiguration config)
 
         // Get the result
         ValkeyValue result = await GlideJson.GetAsync(client, key, [clearPath]);
-
 
         Assert.Equal(1, cleared);
         Assert.False(result.IsNull);
@@ -1143,7 +1116,6 @@ public class JsonCommandTests(TestConfiguration config)
         // Get the result
         ValkeyValue result = await GlideJson.GetAsync(client, key);
 
-
         Assert.Equal(1, cleared);
         Assert.False(result.IsNull);
         // Root object should be empty
@@ -1168,7 +1140,6 @@ public class JsonCommandTests(TestConfiguration config)
 
         // Get the result
         ValkeyValue result = await GlideJson.GetAsync(client, key, ["$.items[*].data"]);
-
 
         // Should clear 3 arrays
         Assert.Equal(3, cleared);
@@ -1196,7 +1167,6 @@ public class JsonCommandTests(TestConfiguration config)
         // Get the result
         ValkeyValue result = await GlideJson.GetAsync(client, key);
 
-
         Assert.Equal(1, cleared);
         Assert.False(result.IsNull);
         // Root object should be empty
@@ -1218,7 +1188,6 @@ public class JsonCommandTests(TestConfiguration config)
 
         // Try to clear non-existent path
         cleared = await GlideJson.ClearAsync(client, key, "$.nonexistent");
-
 
         Assert.Equal(0, cleared);
     }
@@ -1289,7 +1258,6 @@ public class JsonCommandTests(TestConfiguration config)
         string? intResult = await GlideJson.TypeAsync(client, keyInteger);
         string? floatResult = await GlideJson.TypeAsync(client, keyFloat);
 
-
         Assert.NotNull(intResult);
         Assert.NotNull(floatResult);
         // Integer values may return "integer" or "number" depending on the JSON module version
@@ -1311,7 +1279,6 @@ public class JsonCommandTests(TestConfiguration config)
         await GlideJson.SetAsync(client, keyFalse, "$", "false");
         string? trueResult = await GlideJson.TypeAsync(client, keyTrue);
         string? falseResult = await GlideJson.TypeAsync(client, keyFalse);
-
 
         Assert.NotNull(trueResult);
         Assert.NotNull(falseResult);
@@ -1531,7 +1498,6 @@ public class JsonCommandTests(TestConfiguration config)
         // Increment all numeric values at root level
         ValkeyValue result = await GlideJson.NumIncrByAsync(client, key, "$.a", 10);
 
-
         Assert.False(result.IsNull);
         // JSONPath returns array of results
         Assert.Equal("[11]", result);
@@ -1550,7 +1516,6 @@ public class JsonCommandTests(TestConfiguration config)
         // Legacy path (no $ prefix)
         ValkeyValue result = await GlideJson.NumIncrByAsync(client, key, ".count", 25);
 
-
         Assert.False(result.IsNull);
         // Legacy path returns single value (not array)
         Assert.Equal("125", result);
@@ -1568,7 +1533,6 @@ public class JsonCommandTests(TestConfiguration config)
         // Trying to increment a string value with legacy path should throw
         _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
             await GlideJson.NumIncrByAsync(client, key, ".name", 5));
-
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1602,7 +1566,6 @@ public class JsonCommandTests(TestConfiguration config)
         // Increment all count values using wildcard
         ValkeyValue result = await GlideJson.NumIncrByAsync(client, key, "$.items[*].count", 10);
 
-
         Assert.False(result.IsNull);
         // Should return array with all incremented values
         Assert.Contains("11", result.ToString());
@@ -1622,7 +1585,6 @@ public class JsonCommandTests(TestConfiguration config)
         // Trying to increment non-existent path with legacy path should throw
         _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
             await GlideJson.NumIncrByAsync(client, key, ".nonexistent", 5));
-
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1758,7 +1720,6 @@ public class JsonCommandTests(TestConfiguration config)
         // Legacy path (no $ prefix)
         ValkeyValue result = await GlideJson.NumMultByAsync(client, key, ".count", 4);
 
-
         Assert.False(result.IsNull);
         // Legacy path returns single value (not array)
         Assert.Equal("20", result);
@@ -1776,7 +1737,6 @@ public class JsonCommandTests(TestConfiguration config)
         // Trying to multiply a string value with legacy path should throw
         _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
             await GlideJson.NumMultByAsync(client, key, ".name", 5));
-
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1870,7 +1830,6 @@ public class JsonCommandTests(TestConfiguration config)
         // Trying to append to a number value with legacy path should throw
         _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
             await GlideJson.StrAppendAsync(client, key, ".count", "\"test\""));
-
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1926,7 +1885,6 @@ public class JsonCommandTests(TestConfiguration config)
         // Append to root string (no path specified)
         long result = await GlideJson.StrAppendAsync(client, key, "\" World\"");
 
-
         // "Hello" (5) + " World" (6) = 11
         Assert.Equal(11L, result);
     }
@@ -1964,7 +1922,6 @@ public class JsonCommandTests(TestConfiguration config)
         // Trying to append to non-existent path with legacy path should throw
         _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
             await GlideJson.StrAppendAsync(client, key, ".nonexistent", "\"test\""));
-
     }
 
     #endregion
@@ -2087,7 +2044,6 @@ public class JsonCommandTests(TestConfiguration config)
         // Get length of root string (no path specified)
         long? result = await GlideJson.StrLenAsync(client, key);
 
-
         _ = Assert.NotNull(result);
         Assert.Equal(11L, result); // "Hello World" has 11 characters
     }
@@ -2134,4 +2090,3 @@ public class JsonCommandTests(TestConfiguration config)
 
     #endregion
 }
-

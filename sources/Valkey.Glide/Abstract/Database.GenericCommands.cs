@@ -51,7 +51,6 @@ internal partial class Database
         return ExistsAsync(keys);
     }
 
-
     /// <inheritdoc cref="IDatabaseAsync.KeyExpireAsync(ValkeyKey, TimeSpan?, CommandFlags)"/>
     public Task<bool> KeyExpireAsync(ValkeyKey key, TimeSpan? expiry, CommandFlags flags = CommandFlags.None)
     {

@@ -511,7 +511,6 @@ public abstract partial class BaseClient : IBaseClient
     /// <param name="config">The PubSub subscription configuration.</param>
     private void InitializePubSubHandler(BasePubSubSubscriptionConfig? config)
     {
-
         lock (_pubSubLock)
         {
             // Get performance configuration or use defaults

@@ -70,7 +70,6 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer
 
             config = configBuilder.Build();
         }
-
         else
         {
             var configBuilder = CreateClientConfigBuilder<StandaloneClientConfigurationBuilder>(configuration);

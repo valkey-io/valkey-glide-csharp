@@ -1503,7 +1503,6 @@ public class SortedSetCommandTests(TestConfiguration config)
         Assert.All(patternItems, item => Assert.Contains(item.Element.ToString(), new[] { "member1", "member2", "member3" }));
     }
 
-
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestSortedSetScanAsync_LargeDataset(BaseClient client)

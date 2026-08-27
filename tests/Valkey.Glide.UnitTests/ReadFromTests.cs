@@ -1,7 +1,5 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-
-
 using static Valkey.Glide.ConnectionConfiguration;
 
 namespace Valkey.Glide.UnitTests;
@@ -487,8 +485,6 @@ public class ReadFromTests
         Assert.Equal(ReadFromStrategy.AzAffinityReplicasAndPrimary, options.ReadFrom.Value.Strategy);
         Assert.Equal("eu-west-1", options.ReadFrom.Value.Az);
     }
-
-
 
     [Fact]
     public void ReadFromProperty_SetMultipleTimes_UpdatesCorrectly()

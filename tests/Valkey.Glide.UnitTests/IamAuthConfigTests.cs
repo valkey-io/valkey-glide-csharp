@@ -70,7 +70,6 @@ public class IamAuthConfigTests
         _ = Assert.Throws<ObjectDisposedException>(() => config.ClusterName);
         _ = Assert.Throws<ObjectDisposedException>(() => config.Region);
         _ = Assert.Throws<ObjectDisposedException>(() => config.RefreshIntervalSeconds);
-
     }
 
     [Fact]

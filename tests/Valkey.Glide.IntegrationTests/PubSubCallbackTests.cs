@@ -53,7 +53,6 @@ public class PubSubCallbackTests
         Assert.Equal(message, await received.Task.WaitAsync(MaxDuration, TestContext.Current.CancellationToken));
     }
 
-
     [Theory]
     [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
     public static async Task Callback_WithException_ContinuesProcessing(bool isCluster)
@@ -132,4 +131,3 @@ public class PubSubCallbackTests
         Assert.Equivalent(messages, receivedMessages);
     }
 }
-

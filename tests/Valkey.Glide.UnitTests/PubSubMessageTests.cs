@@ -33,7 +33,6 @@ public class PubSubMessageTests
     [Fact]
     public void PubSubMessage_FromShardedChannel_SetsPropertiesCorrectly()
     {
-
         var pubSubMessage = PubSubMessage.FromShardedChannel(Message, Channel);
 
         Assert.Equal(PubSubChannelMode.Sharded, pubSubMessage.ChannelMode);

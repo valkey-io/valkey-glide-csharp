@@ -430,7 +430,6 @@ internal static class Format
             {
                 if (!"+inf"u8.TryCopyTo(destination)) ThrowFormatFailed();
             }
-
             else if (!"-inf"u8.TryCopyTo(destination))
             {
                 ThrowFormatFailed();

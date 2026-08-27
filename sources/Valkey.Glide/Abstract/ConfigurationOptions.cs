@@ -554,7 +554,6 @@ public sealed class ConfigurationOptions : ICloneable
                         break;
                 }
             }
-
             else if (Format.TryParseEndPoint(option, out EndPoint? ep) && !EndPoints.Contains(ep))
             {
                 EndPoints.Add(ep);
@@ -650,7 +649,6 @@ public sealed class ConfigurationOptions : ICloneable
                         break;
                 }
             }
-
             else if (Enum.TryParse(value, true, out protocol))
             {
                 return true;

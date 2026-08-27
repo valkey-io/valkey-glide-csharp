@@ -88,7 +88,6 @@ public sealed class LexBound
         {
             return [ValkeyLiterals.LexRangeMin];
         }
-
         else if (_value == ValkeyLiterals.LexRangeMax)
         {
             return [ValkeyLiterals.LexRangeMax];

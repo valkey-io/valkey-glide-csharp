@@ -98,5 +98,4 @@ public abstract partial class BaseClient
     /// <inheritdoc cref="IBaseClient.GetExpiryAsync(ValkeyKey, GetExpiryOptions)"/>
     public Task<ValkeyValue> GetExpiryAsync(ValkeyKey key, GetExpiryOptions options) =>
         Command(Request.GetExpiry(key, options));
-
 }

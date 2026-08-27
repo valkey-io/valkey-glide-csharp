@@ -687,8 +687,6 @@ internal partial class FFI
         public IntPtr Route;
     }
 
-
-
     [StructLayout(LayoutKind.Sequential)]
     private struct RouteInfo
     {
@@ -843,7 +841,6 @@ internal partial class FFI
         public readonly string Host = host;
         public readonly ushort Port = port;
     }
-
 
     [StructLayout(LayoutKind.Sequential)]
     private readonly struct ScriptHashBuffer
@@ -1132,7 +1129,6 @@ internal partial class FFI
         }
     }
 
-
     // ========================================================================================
     // OpenTelemetry
     // ========================================================================================
@@ -1242,7 +1238,6 @@ internal partial class FFI
         public readonly bool HasRefreshIntervalSeconds = refreshIntervalSeconds.HasValue;
         public readonly uint? RefreshIntervalSeconds = refreshIntervalSeconds ?? default;
     }
-
 
     #region Monitor
 

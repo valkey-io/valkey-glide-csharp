@@ -519,5 +519,4 @@ public readonly struct ValkeyChannel : IEquatable<ValkeyChannel>
             return BitConverter.ToString(arr);
         }
     }
-
 }

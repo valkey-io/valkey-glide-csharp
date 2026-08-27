@@ -15,7 +15,6 @@ internal class ValkeyTransaction : ValkeyBatch, ITransaction
 
     public ConditionResult AddCondition(Condition condition)
     {
-
         ConditionResult res = new(condition);
         _conditions.Add(res);
         return res;

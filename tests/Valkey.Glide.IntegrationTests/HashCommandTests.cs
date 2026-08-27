@@ -461,7 +461,6 @@ public class HashCommandTests(TestConfiguration config)
         Assert.Equal(ValkeyValue.Null, value);
     }
 
-
     #endregion
     #region HashSetExpiryAsync
 
@@ -555,7 +554,6 @@ public class HashCommandTests(TestConfiguration config)
         Assert.False(await client.HashSetAsync(key, "nonexistent_field", "value", new HashSetOptions { Condition = HashSetCondition.OnlyIfAllExist, Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60)) }));
         Assert.False(await client.HashExistsAsync(key, "nonexistent_field"));
     }
-
 
     #endregion
     #region HashPersistAsync
@@ -651,7 +649,6 @@ public class HashCommandTests(TestConfiguration config)
         _ = Assert.Single(results);
         Assert.Equal(HashExpireResult.NoField, results[0]);
     }
-
 
     #endregion
     #region HashExpireAtAsync

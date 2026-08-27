@@ -102,7 +102,6 @@ public class ReadFromTests(TestConfiguration config)
             // Cleanup
             _ = await database.KeyDeleteAsync(testKey);
         }
-
         else
         {
             ConfigurationOptions configOptions = new()
@@ -236,7 +235,6 @@ public class ReadFromTests(TestConfiguration config)
             // Cleanup
             _ = await database.KeyDeleteAsync(testKey);
         }
-
         else
         {
             // Arrange: Create a legacy-style connection string without ReadFrom

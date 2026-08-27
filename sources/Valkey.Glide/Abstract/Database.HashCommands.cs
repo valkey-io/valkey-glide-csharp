@@ -283,12 +283,10 @@ internal partial class Database
         {
             throw new ArgumentException("Cannot specify both expiry and persist=true.");
         }
-
         else if (expiry.HasValue)
         {
             return GetExpiryOptions.ExpireIn(expiry.Value);
         }
-
         else
         {
             return GetExpiryOptions.Persist();

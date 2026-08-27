@@ -371,7 +371,6 @@ internal partial class Database
             {
                 throw new ArgumentException("The number of weights must match the number of keys.", nameof(weights));
             }
-
             else if (!hasKey)
             {
                 return result;

@@ -380,5 +380,4 @@ public class PubSubMessageQueueTests
         Assert.Equal(messageCount, consumedMessages.Count);
         Assert.Equal(0, queue.Count);
     }
-
 }

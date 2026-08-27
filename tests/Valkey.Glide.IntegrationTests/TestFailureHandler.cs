@@ -45,7 +45,6 @@ public static class TestFailureHandler
                     File.AppendAllText(output, $"### {permalink}\n```\n{ex.Message}\n```\n\n");
                 }
             };
-
         }
     }
 

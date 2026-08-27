@@ -20,7 +20,6 @@ namespace Valkey.Glide;
 
 internal sealed class PhysicalConnection
 {
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static int WriteCrlf(Span<byte> span, int offset)
     {

@@ -123,5 +123,4 @@ internal partial class Database
             Any = count > 0 && !demandClosest,
             StoreDistances = storeDistances,
         };
-
 }

@@ -85,7 +85,6 @@ internal static partial class Request
     private static GlideString[] ToArgs(GlideString keyword, IEnumerable<ValkeyValue> items)
         => [keyword, items.Count().ToGlideString(), .. items];
 
-
     /// <summary>
     /// Converts a <see cref="GlideString"/>-keyed dictionary to a <see cref="ValkeyKey"/>-keyed dictionary with <see langword="long"/> values.
     /// </summary>

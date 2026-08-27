@@ -12,7 +12,6 @@ namespace Valkey.Glide.UnitTests;
 /// </summary>
 public class PubSubPerformanceTests
 {
-
     [Fact]
     public void ChannelBasedProcessing_HighThroughput_HandlesMessagesEfficiently()
     {

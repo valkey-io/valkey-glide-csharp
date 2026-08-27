@@ -367,7 +367,6 @@ public sealed class StandaloneServer(
         _password = null;
     }
 
-
     /// <summary>
     /// Creates a <see cref="ConnectionMultiplexer"/> connected to this server.
     /// The caller is responsible for disposing the returned connection.

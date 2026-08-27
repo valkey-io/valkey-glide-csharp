@@ -85,7 +85,6 @@ public class SharedBatchTests
             : (await ((GlideClient)client).Exec((Batch)batch2, false))!;
 
         Assert.Equivalent(new object[] { 1L, ValkeyValue.Ok, ValkeyValue.Ok }, res);
-
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
