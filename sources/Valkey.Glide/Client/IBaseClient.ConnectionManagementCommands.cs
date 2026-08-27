@@ -23,14 +23,12 @@ public partial interface IBaseClient : IConnectionManagementBaseCommands
     /// The name of the client connection as a <see cref="ValkeyValue"/>,
     /// or <see cref="ValkeyValue.Null"/> if no name is assigned.
     /// </returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var name = await client.ClientGetNameAsync();
     /// Console.WriteLine($"Connection name: {name}");
     /// </code>
     /// </example>
-    /// </remarks>
     Task<ValkeyValue> ClientGetNameAsync();
 
     /// <summary>
@@ -38,14 +36,12 @@ public partial interface IBaseClient : IConnectionManagementBaseCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/client-id/">Valkey commands – CLIENT ID</seealso>
     /// <returns>The ID of the client connection.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var id = await client.ClientIdAsync();
     /// Console.WriteLine($"Connection ID: {id}");
     /// </code>
     /// </example>
-    /// </remarks>
     // TODO #519: Remove from IBaseClient. Move to IGlideClient (standalone only).
     [Obsolete("For cluster clients, use ClientIdAsync(Route) instead. See #519.")]
     Task<long> ClientIdAsync();
@@ -56,7 +52,6 @@ public partial interface IBaseClient : IConnectionManagementBaseCommands
     /// <seealso href="https://valkey.io/commands/client-kill/">Valkey commands – CLIENT KILL</seealso>
     /// <param name="options">The options specifying which clients to kill.</param>
     /// <returns>The number of clients killed.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var options = new ClientFilterOptions().WithMaxAge(TimeSpan.FromHours(1));
@@ -64,7 +59,6 @@ public partial interface IBaseClient : IConnectionManagementBaseCommands
     /// Console.WriteLine($"Killed {killed} client(s)");
     /// </code>
     /// </example>
-    /// </remarks>
     Task<long> ClientKillAsync(ClientFilterOptions options);
 
     /// <summary>
@@ -72,13 +66,11 @@ public partial interface IBaseClient : IConnectionManagementBaseCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/client-pause/">Valkey commands - CLIENT PAUSE</seealso>
     /// <param name="timeout">The time to pause clients.</param>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.ClientPauseAsync(TimeSpan.FromSeconds(1));
     /// </code>
     /// </example>
-    /// </remarks>
     Task ClientPauseAsync(TimeSpan timeout);
 
     /// <summary>
@@ -86,13 +78,11 @@ public partial interface IBaseClient : IConnectionManagementBaseCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/client-pause/">Valkey commands - CLIENT PAUSE</seealso>
     /// <param name="timeout">The time to pause clients.</param>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.ClientPauseWriteAsync(TimeSpan.FromSeconds(1));
     /// </code>
     /// </example>
-    /// </remarks>
     Task ClientPauseWriteAsync(TimeSpan timeout);
 
     /// <summary>
@@ -101,27 +91,23 @@ public partial interface IBaseClient : IConnectionManagementBaseCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/client-trackinginfo/">Valkey commands – CLIENT TRACKINGINFO</seealso>
     /// <returns>The tracking state for this connection.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var info = await client.ClientTrackingInfoAsync();
     /// Console.WriteLine($"Flags: {string.Join(", ", info.Flags)}");  // "Flags: off"
     /// </code>
     /// </example>
-    /// </remarks>
     Task<ClientTrackingInfo> ClientTrackingInfoAsync();
 
     /// <summary>
     /// Resumes processing commands on all clients.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/client-unpause/">Valkey commands - CLIENT UNPAUSE</seealso>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.ClientUnpauseAsync();
     /// </code>
     /// </example>
-    /// </remarks>
     Task ClientUnpauseAsync();
 
     /// <summary>
@@ -130,13 +116,11 @@ public partial interface IBaseClient : IConnectionManagementBaseCommands
     /// <seealso href="https://valkey.io/commands/echo/">Valkey commands – ECHO</seealso>
     /// <param name="message">The message to echo.</param>
     /// <returns>The echoed message as a <see cref="ValkeyValue"/>.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var echoed = await client.EchoAsync("Hello World");  // "Hello World"
     /// </code>
     /// </example>
-    /// </remarks>
     Task<ValkeyValue> EchoAsync(ValkeyValue message);
 
     /// <summary>
@@ -144,13 +128,11 @@ public partial interface IBaseClient : IConnectionManagementBaseCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ping/">Valkey commands – PING</seealso>
     /// <returns>The server's response as a <see cref="ValkeyValue"/> containing <c>"PONG"</c>.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var response = await client.PingAsync();  // "PONG"
     /// </code>
     /// </example>
-    /// </remarks>
     Task<ValkeyValue> PingAsync();
 
     /// <summary>
@@ -159,25 +141,21 @@ public partial interface IBaseClient : IConnectionManagementBaseCommands
     /// <seealso href="https://valkey.io/commands/ping/">Valkey commands – PING</seealso>
     /// <param name="message">The message to send with the ping.</param>
     /// <returns>The echoed message as a <see cref="ValkeyValue"/>.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var response = await client.PingAsync("Hello World");  // "Hello World"
     /// </code>
     /// </example>
-    /// </remarks>
     Task<ValkeyValue> PingAsync(ValkeyValue message);
 
     /// <summary>
     /// Resets the connection state.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/reset/">Valkey commands – RESET</seealso>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.ResetAsync();
     /// </code>
     /// </example>
-    /// </remarks>
     Task ResetAsync();
 }

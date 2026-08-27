@@ -26,12 +26,14 @@ public sealed class SetCondition
     public static readonly SetCondition OnlyIfDoesNotExist = new(SetConditionType.OnlyIfDoesNotExist);
 
     #endregion
+
     #region Internal Properties
 
     internal SetConditionType Type { get; }
     internal ValkeyValue? ComparisonValue { get; }
 
     #endregion
+
     #region Constructors
 
     private SetCondition(SetConditionType type, ValkeyValue? comparisonValue = null)
@@ -41,23 +43,23 @@ public sealed class SetCondition
     }
 
     #endregion
+
     #region Public Methods
 
     /// <summary>
-    /// Only set the value if the current value equals the comparison value (<c>IFEQ</c>).
+    /// Only set the value if the current value equals <paramref name="comparisonValue"/> (IFEQ).
     /// </summary>
-    /// <note>Since Valkey 8.1.0.</note>
-    /// <param name="comparisonValue">The comparison value.</param>
+    /// <remarks>Since Valkey 8.1.0.</remarks>
     public static SetCondition OnlyIfEqual(ValkeyValue comparisonValue)
         => new(SetConditionType.OnlyIfEqual, comparisonValue);
 
     #endregion
+
     #region Internal Methods
 
     /// <summary>
     /// Converts to command arguments.
     /// </summary>
-    /// <exception cref="InvalidOperationException">Thrown if the condition type is not a supported <see cref="SetConditionType"/> value.</exception>
     internal GlideString[] ToArgs() => Type switch
     {
         SetConditionType.Always => [],
@@ -72,11 +74,5 @@ public sealed class SetCondition
     /// <summary>
     /// The set condition options.
     /// </summary>
-    internal enum SetConditionType
-    {
-        Always,
-        OnlyIfExists,
-        OnlyIfDoesNotExist,
-        OnlyIfEqual,
-    }
+    internal enum SetConditionType { Always, OnlyIfExists, OnlyIfDoesNotExist, OnlyIfEqual }
 }

@@ -17,14 +17,12 @@ public static partial class Ft
     /// <param name="client">The client to execute the command.</param>
     /// <param name="index">The name of the new index.</param>
     /// <param name="field">The field definition for the index schema.</param>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var field = new Ft.CreateTextField("title");
     /// await Ft.CreateAsync(client, "index", field);
     /// </code>
     /// </example>
-    /// </remarks>
     public static Task CreateAsync(BaseClient client, ValkeyKey index, CreateField field)
         => client.Command(Request.FtCreate(index, [field]));
 
@@ -36,7 +34,6 @@ public static partial class Ft
     /// <param name="index">The name of the new index.</param>
     /// <param name="field">The field definition for the index schema.</param>
     /// <param name="options">Options for index creation.</param>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var field = new Ft.CreateTextField("title");
@@ -44,7 +41,6 @@ public static partial class Ft
     /// await Ft.CreateAsync(client, "index", field, options);
     /// </code>
     /// </example>
-    /// </remarks>
     public static Task CreateAsync(BaseClient client, ValkeyKey index, CreateField field, CreateOptions options)
         => client.Command(Request.FtCreate(index, [field], options));
 
@@ -55,7 +51,6 @@ public static partial class Ft
     /// <param name="client">The client to execute the command.</param>
     /// <param name="index">The name of the new index.</param>
     /// <param name="schema">The field definitions for the index schema.</param>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var fields = new Ft.CreateField[]
@@ -67,7 +62,6 @@ public static partial class Ft
     /// await Ft.CreateAsync(client, "index", fields);
     /// </code>
     /// </example>
-    /// </remarks>
     public static Task CreateAsync(BaseClient client, ValkeyKey index, IEnumerable<CreateField> schema)
         => client.Command(Request.FtCreate(index, schema));
 
@@ -79,7 +73,6 @@ public static partial class Ft
     /// <param name="index">The name of the new index.</param>
     /// <param name="schema">The field definitions for the index schema.</param>
     /// <param name="options">Additional options for index creation.</param>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var fields = new Ft.CreateField[]
@@ -96,7 +89,6 @@ public static partial class Ft
     /// await Ft.CreateAsync(client, "index", fields, options);
     /// </code>
     /// </example>
-    /// </remarks>
     public static Task CreateAsync(BaseClient client, ValkeyKey index, IEnumerable<CreateField> schema, CreateOptions options)
         => client.Command(Request.FtCreate(index, schema, options));
 

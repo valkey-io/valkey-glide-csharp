@@ -158,37 +158,37 @@ public sealed record MemoryStats
     /// <summary>
     /// Memory used by cluster links in bytes.
     /// </summary>
-    /// <note>Since Valkey 7.0.0.</note>
+    /// <remarks>Since Valkey 7.0.0.</remarks>
     public long? ClusterLinks { get; init; }
 
     /// <summary>
     /// Memory used by functions caches in bytes.
     /// </summary>
-    /// <note>Since Valkey 7.0.0.</note>
+    /// <remarks>Since Valkey 7.0.0.</remarks>
     public long? FunctionsCaches { get; init; }
 
     /// <summary>
     /// Memory used by allocator muzzy pages in bytes.
     /// </summary>
-    /// <note>Since Valkey 8.0.0.</note>
+    /// <remarks>Since Valkey 8.0.0.</remarks>
     public long? AllocatorMuzzy { get; init; }
 
     /// <summary>
     /// Count of db dictionaries currently rehashing.
     /// </summary>
-    /// <note>Since Valkey 8.0.0.</note>
+    /// <remarks>Since Valkey 8.0.0.</remarks>
     public long? DbDictRehashingCount { get; init; }
 
     /// <summary>
     /// Overhead of db hashtable LUT in bytes.
     /// </summary>
-    /// <note>Since Valkey 8.0.0.</note>
+    /// <remarks>Since Valkey 8.0.0.</remarks>
     public long? OverheadDbHashtableLut { get; init; }
 
     /// <summary>
     /// Overhead of db hashtable rehashing in bytes.
     /// </summary>
-    /// <note>Since Valkey 8.0.0.</note>
+    /// <remarks>Since Valkey 8.0.0.</remarks>
     public long? OverheadDbHashtableRehashing { get; init; }
 
     #endregion

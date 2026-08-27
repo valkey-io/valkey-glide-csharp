@@ -22,7 +22,6 @@ public partial interface IGlideClusterClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/bgsave/">Valkey commands – BGSAVE</seealso>
     /// <returns>A <see cref="ClusterValue{T}" /> containing status strings.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var response = await clusterClient.BackgroundSaveAsync();
@@ -32,7 +31,6 @@ public partial interface IGlideClusterClient
     /// }
     /// </code>
     /// </example>
-    /// </remarks>
     Task<ClusterValue<string>> BackgroundSaveAsync();
 
     /// <summary>
@@ -42,7 +40,6 @@ public partial interface IGlideClusterClient
     /// <seealso href="https://valkey.io/commands/bgsave/">Valkey commands – BGSAVE</seealso>
     /// <param name="route">Specifies the routing configuration for the command.</param>
     /// <returns>A <see cref="ClusterValue{T}" /> containing status strings.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var response = await clusterClient.BackgroundSaveAsync(Route.AllPrimaries);
@@ -52,7 +49,6 @@ public partial interface IGlideClusterClient
     /// }
     /// </code>
     /// </example>
-    /// </remarks>
     Task<ClusterValue<string>> BackgroundSaveAsync(Route route);
 
     /// <summary>
@@ -60,10 +56,8 @@ public partial interface IGlideClusterClient
     /// The command will be routed to all primary nodes.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/bgsave/">Valkey commands – BGSAVE</seealso>
-    /// <note>Since Valkey 8.1.</note>
     /// <returns>A <see cref="ClusterValue{T}" /> containing status strings.</returns>
     /// <exception cref="Errors.RequestException">Thrown if no background save is currently in progress or scheduled.</exception>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var response = await clusterClient.BackgroundSaveCancelAsync();
@@ -73,6 +67,8 @@ public partial interface IGlideClusterClient
     /// }
     /// </code>
     /// </example>
+    /// <remarks>
+    /// <para>Since Valkey 8.1.</para>
     /// </remarks>
     Task<ClusterValue<string>> BackgroundSaveCancelAsync();
 
@@ -81,11 +77,9 @@ public partial interface IGlideClusterClient
     /// The command will be routed to the nodes defined by <paramref name="route" />.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/bgsave/">Valkey commands – BGSAVE</seealso>
-    /// <note>Since Valkey 8.1.</note>
     /// <param name="route">Specifies the routing configuration for the command.</param>
     /// <returns>A <see cref="ClusterValue{T}" /> containing status strings.</returns>
     /// <exception cref="Errors.RequestException">Thrown if no background save is currently in progress or scheduled.</exception>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var response = await clusterClient.BackgroundSaveCancelAsync(Route.AllPrimaries);
@@ -95,6 +89,8 @@ public partial interface IGlideClusterClient
     /// }
     /// </code>
     /// </example>
+    /// <remarks>
+    /// <para>Since Valkey 8.1.</para>
     /// </remarks>
     Task<ClusterValue<string>> BackgroundSaveCancelAsync(Route route);
 
@@ -104,7 +100,6 @@ public partial interface IGlideClusterClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/bgsave/">Valkey commands – BGSAVE</seealso>
     /// <returns>A <see cref="ClusterValue{T}" /> containing status strings.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var response = await clusterClient.BackgroundSaveScheduleAsync();
@@ -114,7 +109,6 @@ public partial interface IGlideClusterClient
     /// }
     /// </code>
     /// </example>
-    /// </remarks>
     Task<ClusterValue<string>> BackgroundSaveScheduleAsync();
 
     /// <summary>
@@ -124,7 +118,6 @@ public partial interface IGlideClusterClient
     /// <seealso href="https://valkey.io/commands/bgsave/">Valkey commands – BGSAVE</seealso>
     /// <param name="route">Specifies the routing configuration for the command.</param>
     /// <returns>A <see cref="ClusterValue{T}" /> containing status strings.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var response = await clusterClient.BackgroundSaveScheduleAsync(Route.AllPrimaries);
@@ -134,7 +127,6 @@ public partial interface IGlideClusterClient
     /// }
     /// </code>
     /// </example>
-    /// </remarks>
     Task<ClusterValue<string>> BackgroundSaveScheduleAsync(Route route);
 
     /// <summary>
@@ -143,7 +135,6 @@ public partial interface IGlideClusterClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/bgrewriteaof/">Valkey commands – BGREWRITEAOF</seealso>
     /// <returns>A <see cref="ClusterValue{T}" /> containing status strings.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var response = await clusterClient.BgRewriteAofAsync();
@@ -153,7 +144,6 @@ public partial interface IGlideClusterClient
     /// }
     /// </code>
     /// </example>
-    /// </remarks>
     Task<ClusterValue<string>> BgRewriteAofAsync();
 
     /// <summary>
@@ -163,7 +153,6 @@ public partial interface IGlideClusterClient
     /// <seealso href="https://valkey.io/commands/bgrewriteaof/">Valkey commands – BGREWRITEAOF</seealso>
     /// <param name="route">Specifies the routing configuration for the command.</param>
     /// <returns>A <see cref="ClusterValue{T}" /> containing status strings.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var response = await clusterClient.BgRewriteAofAsync(Route.AllPrimaries);
@@ -173,7 +162,6 @@ public partial interface IGlideClusterClient
     /// }
     /// </code>
     /// </example>
-    /// </remarks>
     Task<ClusterValue<string>> BgRewriteAofAsync(Route route);
 
     /// <summary>
@@ -183,13 +171,11 @@ public partial interface IGlideClusterClient
     /// <seealso href="https://valkey.io/commands/config-get/">Valkey commands – CONFIG GET</seealso>
     /// <param name="pattern">The pattern of config values to get.</param>
     /// <returns>All matching configuration parameters per cluster node.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var config = await clusterClient.ConfigGetAsync("max*");
     /// </code>
     /// </example>
-    /// </remarks>
     // TODO #495: Remove method; consolidate single-value version into BaseClient.
     [Obsolete("Use ConfigGetAsync(ValkeyValue, Route) instead. See #495.")]
     Task<ClusterValue<KeyValuePair<string, string>[]>> ConfigGetAsync(ValkeyValue pattern = default);
@@ -207,13 +193,11 @@ public partial interface IGlideClusterClient
     /// with a <c>Dictionary&lt;string, KeyValuePair&lt;string, string&gt;[]&gt;</c> with each address as the key and its corresponding
     /// configuration parameters. For a single node route it returns a <see cref="ClusterValue{T}" /> with a single value.
     /// </returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var config = await clusterClient.ConfigGetAsync("max*", Route.AllPrimaries);
     /// </code>
     /// </example>
-    /// </remarks>
     Task<ClusterValue<KeyValuePair<string, string>[]>> ConfigGetAsync(ValkeyValue pattern, Route route);
 
     /// <summary>
@@ -223,13 +207,11 @@ public partial interface IGlideClusterClient
     /// <param name="patterns">The patterns of config values to get.</param>
     /// <param name="route">Specifies the routing configuration for the command.</param>
     /// <returns>All matching configuration parameters.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var config = await clusterClient.ConfigGetAsync(["max*", "bind*"], Route.AllPrimaries);
     /// </code>
     /// </example>
-    /// </remarks>
     Task<ClusterValue<KeyValuePair<string, string>[]>> ConfigGetAsync(IEnumerable<ValkeyValue> patterns, Route route);
 
     /// <summary>
@@ -237,13 +219,11 @@ public partial interface IGlideClusterClient
     /// The command is routed to all primary nodes.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/config-resetstat/">Valkey commands – CONFIG RESETSTAT</seealso>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await clusterClient.ConfigResetStatisticsAsync();
     /// </code>
     /// </example>
-    /// </remarks>
     Task ConfigResetStatisticsAsync();
 
     /// <summary>
@@ -252,13 +232,11 @@ public partial interface IGlideClusterClient
     /// <seealso href="https://valkey.io/commands/config-resetstat/">Valkey commands – CONFIG RESETSTAT</seealso>
     /// <param name="route">Specifies the routing configuration for the command. The client will route the
     /// command to the nodes defined by <paramref name="route" />.</param>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await clusterClient.ConfigResetStatisticsAsync(Route.AllPrimaries);
     /// </code>
     /// </example>
-    /// </remarks>
     Task ConfigResetStatisticsAsync(Route route);
 
     /// <summary>
@@ -268,13 +246,11 @@ public partial interface IGlideClusterClient
     /// The command is routed to a random node.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/config-rewrite/">Valkey commands – CONFIG REWRITE</seealso>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await clusterClient.ConfigRewriteAsync();
     /// </code>
     /// </example>
-    /// </remarks>
     Task ConfigRewriteAsync();
 
     /// <summary>
@@ -285,13 +261,11 @@ public partial interface IGlideClusterClient
     /// <seealso href="https://valkey.io/commands/config-rewrite/">Valkey commands – CONFIG REWRITE</seealso>
     /// <param name="route">Specifies the routing configuration for the command. The client will route the
     /// command to the nodes defined by <paramref name="route" />.</param>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await clusterClient.ConfigRewriteAsync(Route.AllPrimaries);
     /// </code>
     /// </example>
-    /// </remarks>
     Task ConfigRewriteAsync(Route route);
 
     /// <summary>
@@ -302,13 +276,11 @@ public partial interface IGlideClusterClient
     /// <seealso href="https://valkey.io/commands/config-set/">Valkey commands – CONFIG SET</seealso>
     /// <param name="setting">The setting name.</param>
     /// <param name="value">The new setting value.</param>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await clusterClient.ConfigSetAsync("maxmemory", "100mb");
     /// </code>
     /// </example>
-    /// </remarks>
     Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value);
 
     /// <summary>
@@ -320,13 +292,11 @@ public partial interface IGlideClusterClient
     /// <param name="value">The new setting value.</param>
     /// <param name="route">Specifies the routing configuration for the command. The client will route the
     /// command to the nodes defined by <paramref name="route" />.</param>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await clusterClient.ConfigSetAsync("maxmemory", "100mb", Route.AllPrimaries);
     /// </code>
     /// </example>
-    /// </remarks>
     Task ConfigSetAsync(ValkeyValue setting, ValkeyValue value, Route route);
 
     /// <summary>
@@ -337,7 +307,6 @@ public partial interface IGlideClusterClient
     /// <param name="parameters">A dictionary of configuration parameter names and their new values.</param>
     /// <param name="route">Specifies the routing configuration for the command. The client will route the
     /// command to the nodes defined by <paramref name="route" />.</param>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await clusterClient.ConfigSetAsync(new Dictionary&lt;ValkeyValue, ValkeyValue&gt;
@@ -347,7 +316,6 @@ public partial interface IGlideClusterClient
     /// }, Route.AllPrimaries);
     /// </code>
     /// </example>
-    /// </remarks>
     Task ConfigSetAsync(IDictionary<ValkeyValue, ValkeyValue> parameters, Route route);
 
     /// <summary>
@@ -355,13 +323,11 @@ public partial interface IGlideClusterClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/dbsize/">Valkey commands – DBSIZE</seealso>
     /// <returns>The number of keys in the database across all primary nodes.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// long totalKeys = await clusterClient.DatabaseSizeAsync();
     /// </code>
     /// </example>
-    /// </remarks>
     Task<long> DatabaseSizeAsync();
 
     /// <summary>
@@ -370,26 +336,22 @@ public partial interface IGlideClusterClient
     /// <seealso href="https://valkey.io/commands/dbsize/">Valkey commands – DBSIZE</seealso>
     /// <param name="route">Specifies the routing configuration for the command.</param>
     /// <returns>The number of keys in the database across all routed nodes.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// long totalKeys = await clusterClient.DatabaseSizeAsync(Route.AllPrimaries);
     /// </code>
     /// </example>
-    /// </remarks>
     Task<long> DatabaseSizeAsync(Route route);
 
     /// <summary>
     /// Deletes all the keys of all the existing databases on all primary nodes.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/flushall/">Valkey commands – FLUSHALL</seealso>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await clusterClient.FlushAllDatabasesAsync();
     /// </code>
     /// </example>
-    /// </remarks>
     Task FlushAllDatabasesAsync();
 
     /// <summary>
@@ -397,13 +359,11 @@ public partial interface IGlideClusterClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/flushall/">Valkey commands – FLUSHALL</seealso>
     /// <param name="route">Specifies the routing configuration for the command.</param>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await clusterClient.FlushAllDatabasesAsync(Route.AllPrimaries);
     /// </code>
     /// </example>
-    /// </remarks>
     Task FlushAllDatabasesAsync(Route route);
 
     /// <summary>
@@ -413,26 +373,22 @@ public partial interface IGlideClusterClient
     /// <param name="mode">The flush mode. <see cref="FlushMode.Sync"/> waits for completion,
     /// <see cref="FlushMode.Async"/> returns immediately while the flush continues in the background.</param>
     /// <param name="route">Specifies the routing configuration for the command.</param>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await clusterClient.FlushAllDatabasesAsync(FlushMode.Async, Route.AllPrimaries);
     /// </code>
     /// </example>
-    /// </remarks>
     Task FlushAllDatabasesAsync(FlushMode mode, Route route);
 
     /// <summary>
     /// Deletes all the keys in the database on all primary nodes.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/flushdb/">Valkey commands – FLUSHDB</seealso>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await clusterClient.FlushDatabaseAsync();
     /// </code>
     /// </example>
-    /// </remarks>
     Task FlushDatabaseAsync();
 
     /// <summary>
@@ -440,13 +396,11 @@ public partial interface IGlideClusterClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/flushdb/">Valkey commands – FLUSHDB</seealso>
     /// <param name="route">Specifies the routing configuration for the command.</param>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await clusterClient.FlushDatabaseAsync(Route.AllPrimaries);
     /// </code>
     /// </example>
-    /// </remarks>
     Task FlushDatabaseAsync(Route route);
 
     /// <summary>
@@ -456,13 +410,11 @@ public partial interface IGlideClusterClient
     /// <param name="mode">The flush mode. <see cref="FlushMode.Sync"/> waits for completion,
     /// <see cref="FlushMode.Async"/> returns immediately while the flush continues in the background.</param>
     /// <param name="route">Specifies the routing configuration for the command.</param>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await clusterClient.FlushDatabaseAsync(FlushMode.Async, Route.AllPrimaries);
     /// </code>
     /// </example>
-    /// </remarks>
     Task FlushDatabaseAsync(FlushMode mode, Route route);
 
     /// <summary>
@@ -471,14 +423,12 @@ public partial interface IGlideClusterClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/info/">Valkey commands – INFO</seealso>
     /// <returns>A dictionary mapping each node address to the information returned by that node.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var response = await clusterClient.InfoAsync();
     /// var firstNodeInfo = response.Values.First();
     /// </code>
     /// </example>
-    /// </remarks>
     Task<Dictionary<string, string>> InfoAsync();
 
     /// <summary>
@@ -489,14 +439,12 @@ public partial interface IGlideClusterClient
     /// <seealso href="https://valkey.io/commands/info/">Valkey commands – INFO</seealso>
     /// <inheritdoc cref="InfoAsync(IEnumerable{Section}, Route)" path="/param[@name='sections']" />
     /// <returns>A dictionary mapping each node address to the information returned by that node.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var response = await clusterClient.InfoAsync([Section.STATS]);
     /// var firstNodeInfo = response.Values.First();
     /// </code>
     /// </example>
-    /// </remarks>
     Task<Dictionary<string, string>> InfoAsync(IEnumerable<Section> sections);
 
     /// <summary>
@@ -507,7 +455,6 @@ public partial interface IGlideClusterClient
     /// <returns>
     /// <inheritdoc cref="InfoAsync(IEnumerable{Section}, Route)" path="/returns" />
     /// </returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var response = (await clusterClient.InfoAsync(Route.AllNodes)).MultiValue;
@@ -516,7 +463,6 @@ public partial interface IGlideClusterClient
     ///     ).ToDictionary(p => p.Node, p => p.Value);
     /// </code>
     /// </example>
-    /// </remarks>
     Task<ClusterValue<string>> InfoAsync(Route route);
 
     /// <summary>
@@ -534,7 +480,6 @@ public partial interface IGlideClusterClient
     /// with a <c>Dictionary&lt;string, string&gt;</c> with each address as the key and its corresponding
     /// value is the information for the node. For a single node route it returns a <see cref="ClusterValue{T}" /> with a single value.
     /// </returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var response = (await clusterClient.InfoAsync([Section.STATS], Route.AllNodes));
@@ -543,7 +488,6 @@ public partial interface IGlideClusterClient
     ///     ).ToDictionary(p => p.Node, p => p.Value);
     /// </code>
     /// </example>
-    /// </remarks>
     Task<ClusterValue<string>> InfoAsync(IEnumerable<Section> sections, Route route);
 
     /// <summary>
@@ -554,13 +498,11 @@ public partial interface IGlideClusterClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/lastsave/">Valkey commands – LASTSAVE</seealso>
     /// <returns>UNIX time of the last DB save executed with success per cluster node.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var lastSaves = await clusterClient.LastSaveAsync();
     /// </code>
     /// </example>
-    /// </remarks>
     Task<Dictionary<string, DateTimeOffset>> LastSaveAsync();
 
     /// <summary>
@@ -577,13 +519,11 @@ public partial interface IGlideClusterClient
     /// with a <c>Dictionary&lt;string, DateTimeOffset&gt;</c> with each address as the key and its corresponding
     /// last save time. For a single node route it returns a <see cref="ClusterValue{T}" /> with a single value.
     /// </returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var lastSave = await clusterClient.LastSaveAsync(Route.AllPrimaries);
     /// </code>
     /// </example>
-    /// </remarks>
     Task<ClusterValue<DateTimeOffset>> LastSaveAsync(Route route);
 
     /// <summary>
@@ -595,13 +535,11 @@ public partial interface IGlideClusterClient
     /// <returns>
     /// A <see cref="ClusterValue{T}"/> containing an array of <see cref="LatencyEntry"/> per node.
     /// </returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var history = await clusterClient.LatencyHistoryAsync("command");
     /// </code>
     /// </example>
-    /// </remarks>
     Task<ClusterValue<LatencyEntry[]>> LatencyHistoryAsync(ValkeyValue @event);
 
     /// <summary>
@@ -613,13 +551,11 @@ public partial interface IGlideClusterClient
     /// <returns>
     /// A <see cref="ClusterValue{T}"/> containing an array of <see cref="LatencyEntry"/>.
     /// </returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var history = await clusterClient.LatencyHistoryAsync("command", Route.AllPrimaries);
     /// </code>
     /// </example>
-    /// </remarks>
     Task<ClusterValue<LatencyEntry[]>> LatencyHistoryAsync(ValkeyValue @event, Route route);
 
     /// <summary>
@@ -630,13 +566,11 @@ public partial interface IGlideClusterClient
     /// <returns>
     /// A <see cref="ClusterValue{T}"/> containing an array of <see cref="LatencyEventInfo"/> per node.
     /// </returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var latest = await clusterClient.LatencyLatestAsync();
     /// </code>
     /// </example>
-    /// </remarks>
     Task<ClusterValue<LatencyEventInfo[]>> LatencyLatestAsync();
 
     /// <summary>
@@ -647,13 +581,11 @@ public partial interface IGlideClusterClient
     /// <returns>
     /// A <see cref="ClusterValue{T}"/> containing an array of <see cref="LatencyEventInfo"/>.
     /// </returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var latest = await clusterClient.LatencyLatestAsync(Route.AllPrimaries);
     /// </code>
     /// </example>
-    /// </remarks>
     Task<ClusterValue<LatencyEventInfo[]>> LatencyLatestAsync(Route route);
 
     /// <summary>
@@ -663,13 +595,11 @@ public partial interface IGlideClusterClient
     /// <param name="route">Specifies the routing configuration for the command. The client will route the
     /// command to the nodes defined by <paramref name="route"/>.</param>
     /// <returns>The number of event time series that were reset.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await clusterClient.LatencyResetAsync(Route.AllNodes);
     /// </code>
     /// </example>
-    /// </remarks>
     Task<long> LatencyResetAsync(Route route);
 
     /// <summary>
@@ -680,13 +610,11 @@ public partial interface IGlideClusterClient
     /// <param name="route">Specifies the routing configuration for the command. The client will route the
     /// command to the nodes defined by <paramref name="route"/>.</param>
     /// <returns>The number of event time series that were reset.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await clusterClient.LatencyResetAsync("command", Route.AllPrimaries);
     /// </code>
     /// </example>
-    /// </remarks>
     Task<long> LatencyResetAsync(ValkeyValue @event, Route route);
 
     /// <summary>
@@ -697,13 +625,11 @@ public partial interface IGlideClusterClient
     /// <param name="route">Specifies the routing configuration for the command. The client will route the
     /// command to the nodes defined by <paramref name="route"/>.</param>
     /// <returns>The number of event time series that were reset.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await clusterClient.LatencyResetAsync(["command", "fast"], Route.AllPrimaries);
     /// </code>
     /// </example>
-    /// </remarks>
     Task<long> LatencyResetAsync(IEnumerable<ValkeyValue> events, Route route);
 
     /// <summary>
@@ -712,13 +638,11 @@ public partial interface IGlideClusterClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/lolwut/">Valkey commands – LOLWUT</seealso>
     /// <returns>A dictionary of node address to LOLWUT output.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var art = await clusterClient.LolwutAsync();
     /// </code>
     /// </example>
-    /// </remarks>
     // TODO #475: Move to IBaseClient, return Task<string>.
     [Obsolete("Use LolwutAsync(LolwutOptions) or LolwutAsync(Route) instead. This overload will be replaced in a future release.")]
     Task<Dictionary<string, string>> LolwutAsync();
@@ -735,13 +659,11 @@ public partial interface IGlideClusterClient
     /// with a <c>Dictionary&lt;string, string&gt;</c> with each address as the key and its corresponding
     /// lolwut output. For a single node route it returns a <see cref="ClusterValue{T}" /> with a single value.
     /// </returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var art = await clusterClient.LolwutAsync(Route.AllPrimaries);
     /// </code>
     /// </example>
-    /// </remarks>
     Task<ClusterValue<string>> LolwutAsync(Route route);
 
     /// <summary>
@@ -754,13 +676,11 @@ public partial interface IGlideClusterClient
     /// <returns>
     /// A <see cref="ClusterValue{T}" /> containing the Valkey version and generative art.
     /// </returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var art = await clusterClient.LolwutAsync(new LolwutOptions { Version = 6, Parameters = [40, 20] }, Route.AllNodes);
     /// </code>
     /// </example>
-    /// </remarks>
     Task<ClusterValue<string>> LolwutAsync(LolwutOptions options, Route route);
 
     /// <summary>
@@ -769,7 +689,6 @@ public partial interface IGlideClusterClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/memory-doctor/">Valkey commands – MEMORY DOCTOR</seealso>
     /// <returns>A <see cref="ClusterValue{T}" /> containing the memory diagnostic report(s).</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var reports = await clusterClient.MemoryDoctorAsync();
@@ -777,7 +696,6 @@ public partial interface IGlideClusterClient
     ///     Console.WriteLine($"Node [{node}]: {report}");
     /// </code>
     /// </example>
-    /// </remarks>
     Task<ClusterValue<string>> MemoryDoctorAsync();
 
     /// <summary>
@@ -786,14 +704,12 @@ public partial interface IGlideClusterClient
     /// <seealso href="https://valkey.io/commands/memory-doctor/">Valkey commands – MEMORY DOCTOR</seealso>
     /// <param name="route">Specifies the routing configuration for the command.</param>
     /// <returns>A <see cref="ClusterValue{T}" /> containing the memory diagnostic report(s).</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var report = (await clusterClient.MemoryDoctorAsync(Route.Random)).SingleValue;
     /// Console.WriteLine("Memory report: " + report);
     /// </code>
     /// </example>
-    /// </remarks>
     Task<ClusterValue<string>> MemoryDoctorAsync(Route route);
 
     /// <summary>
@@ -802,7 +718,6 @@ public partial interface IGlideClusterClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/memory-malloc-stats/">Valkey commands – MEMORY MALLOC-STATS</seealso>
     /// <returns>A <see cref="ClusterValue{T}" /> containing the memory allocator statistics.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var statsAll = await clusterClient.MemoryMallocStatsAsync();
@@ -810,7 +725,6 @@ public partial interface IGlideClusterClient
     ///     Console.WriteLine($"Node [{node}]: {stats}");
     /// </code>
     /// </example>
-    /// </remarks>
     Task<ClusterValue<string>> MemoryMallocStatsAsync();
 
     /// <summary>
@@ -819,14 +733,12 @@ public partial interface IGlideClusterClient
     /// <seealso href="https://valkey.io/commands/memory-malloc-stats/">Valkey commands – MEMORY MALLOC-STATS</seealso>
     /// <param name="route">Specifies the routing configuration for the command.</param>
     /// <returns>A <see cref="ClusterValue{T}" /> containing the memory allocator statistics.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var stats = (await clusterClient.MemoryMallocStatsAsync(Route.Random)).SingleValue;
     /// Console.WriteLine("Allocator stats: " + stats);
     /// </code>
     /// </example>
-    /// </remarks>
     Task<ClusterValue<string>> MemoryMallocStatsAsync(Route route);
 
     /// <summary>
@@ -834,13 +746,11 @@ public partial interface IGlideClusterClient
     /// The command is routed to all primary nodes.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/memory-purge/">Valkey commands – MEMORY PURGE</seealso>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await clusterClient.MemoryPurgeAsync();
     /// </code>
     /// </example>
-    /// </remarks>
     Task MemoryPurgeAsync();
 
     /// <summary>
@@ -848,13 +758,11 @@ public partial interface IGlideClusterClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/memory-purge/">Valkey commands – MEMORY PURGE</seealso>
     /// <param name="route">Specifies the routing configuration for the command.</param>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await clusterClient.MemoryPurgeAsync(Route.AllPrimaries);
     /// </code>
     /// </example>
-    /// </remarks>
     Task MemoryPurgeAsync(Route route);
 
     /// <summary>
@@ -863,7 +771,6 @@ public partial interface IGlideClusterClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/memory-stats/">Valkey commands – MEMORY STATS</seealso>
     /// <returns>A <see cref="ClusterValue{T}" /> containing detailed memory usage statistics.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var statsAll = await clusterClient.MemoryStatsAsync();
@@ -871,7 +778,6 @@ public partial interface IGlideClusterClient
     ///     Console.WriteLine($"Node [{node}]: peak={nodeStats.PeakAllocated}");
     /// </code>
     /// </example>
-    /// </remarks>
     Task<ClusterValue<MemoryStats>> MemoryStatsAsync();
 
     /// <summary>
@@ -880,14 +786,12 @@ public partial interface IGlideClusterClient
     /// <seealso href="https://valkey.io/commands/memory-stats/">Valkey commands – MEMORY STATS</seealso>
     /// <param name="route">Specifies the routing configuration for the command.</param>
     /// <returns>A <see cref="ClusterValue{T}" /> containing detailed memory usage statistics.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var stats = (await clusterClient.MemoryStatsAsync(Route.Random)).SingleValue;
     /// Console.WriteLine($"Peak allocated: {stats.PeakAllocated}");
     /// </code>
     /// </example>
-    /// </remarks>
     Task<ClusterValue<MemoryStats>> MemoryStatsAsync(Route route);
 
     /// <summary>
@@ -895,13 +799,11 @@ public partial interface IGlideClusterClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/save/">Valkey commands – SAVE</seealso>
     /// <param name="route">Specifies the routing configuration for the command.</param>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await clusterClient.SaveAsync(Route.AllPrimaries);
     /// </code>
     /// </example>
-    /// </remarks>
     Task SaveAsync(Route route);
 
     /// <summary>
@@ -911,13 +813,11 @@ public partial interface IGlideClusterClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/time/">Valkey commands – TIME</seealso>
     /// <returns>The server's current time per cluster node.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var times = await clusterClient.TimeAsync();
     /// </code>
     /// </example>
-    /// </remarks>
     Task<Dictionary<string, DateTimeOffset>> TimeAsync();
 
     /// <summary>
@@ -933,13 +833,11 @@ public partial interface IGlideClusterClient
     /// with a <c>Dictionary&lt;string, DateTimeOffset&gt;</c> with each address as the key and its corresponding
     /// server time. For a single node route it returns a <see cref="ClusterValue{T}" /> with a single value.
     /// </returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var time = await clusterClient.TimeAsync(Route.AllPrimaries);
     /// </code>
     /// </example>
-    /// </remarks>
     Task<ClusterValue<DateTimeOffset>> TimeAsync(Route route);
 
     /// <summary>
@@ -948,20 +846,20 @@ public partial interface IGlideClusterClient
     /// If the timeout is reached, the command returns even if the specified number of acknowledgments were not yet reached.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/waitaof/">Valkey commands – WAITAOF</seealso>
-    /// <note>Since Valkey 7.2.0.</note>
     /// <param name="localAof">Whether to wait for the local node to acknowledge AOF sync.</param>
     /// <param name="numreplicas">The number of replica nodes to wait for AOF sync.</param>
     /// <param name="timeout">The timeout to wait.</param>
     /// <param name="route">Specifies the routing configuration for the command. Typically, you should route
     /// to the primary that handled the write operation you want to wait for.</param>
     /// <returns>An array of two longs: the number of local and replica nodes that acknowledged the write commands.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var result = await clusterClient.WaitAofAsync(true, 1, TimeSpan.FromSeconds(1), Route.AllPrimaries);
     /// // result[0] = number of local nodes, result[1] = number of replica nodes
     /// </code>
     /// </example>
+    /// <remarks>
+    /// <para>Since Valkey 7.2.0.</para>
     /// </remarks>
     Task<long[]> WaitAofAsync(bool localAof, long numreplicas, TimeSpan timeout, Route route);
 }

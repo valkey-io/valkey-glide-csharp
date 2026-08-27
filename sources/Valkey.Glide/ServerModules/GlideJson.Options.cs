@@ -32,8 +32,6 @@ public static partial class GlideJson
     /// <summary>
     /// Options for formatting JSON.GET command output.
     /// </summary>
-    /// <remarks>
-    /// These options control the formatting of the JSON output returned by the JSON.GET command.
     /// <example>
     /// <code>
     /// // Using object initializer
@@ -48,6 +46,8 @@ public static partial class GlideJson
     /// var tabOptions = new GlideJson.GetOptions { Indent = "\t", Newline = "\n" };
     /// </code>
     /// </example>
+    /// <remarks>
+    /// These options control the formatting of the JSON output returned by the JSON.GET command.
     /// </remarks>
     /// <seealso href="https://valkey.io/commands/json.get/">Valkey commands – JSON.GET</seealso>
     public sealed class GetOptions
@@ -112,9 +112,6 @@ public static partial class GlideJson
     /// <summary>
     /// Options for JSON.ARRINDEX command specifying search range.
     /// </summary>
-    /// <remarks>
-    /// These options control the search range for the JSON.ARRINDEX command.
-    /// The start index is inclusive and the end index is exclusive.
     /// <example>
     /// <code>
     /// // Using factory methods (recommended)
@@ -126,6 +123,9 @@ public static partial class GlideJson
     /// var options = new GlideJson.ArrIndexRange { Start = 1, End = 10 };
     /// </code>
     /// </example>
+    /// <remarks>
+    /// These options control the search range for the JSON.ARRINDEX command.
+    /// The start index is inclusive and the end index is exclusive.
     /// </remarks>
     /// <seealso href="https://valkey.io/commands/json.arrindex/">Valkey commands – JSON.ARRINDEX</seealso>
     public sealed class ArrIndexRange

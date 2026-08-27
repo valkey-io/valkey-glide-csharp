@@ -20,29 +20,20 @@ public partial interface IBaseClient
     /// <seealso href="https://valkey.io/commands/del/">Valkey commands – DEL</seealso>
     /// <param name="key">The key to delete.</param>
     /// <returns><see langword="true"/> if the key was removed.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.SetAsync("key", "value");
     /// var deleted = await client.DeleteAsync("key");  // true
     /// </code>
     /// </example>
-    /// </remarks>
     Task<bool> DeleteAsync(ValkeyKey key);
 
     /// <summary>
     /// Removes the specified keys from the database. A key is ignored if it does not exist.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/del/">Valkey commands – DEL</seealso>
-    /// <note>In cluster mode, if keys in <paramref name="keys"/> map to different hash slots, the command
-    /// will be split across these slots and executed separately for each. This means the command
-    /// is atomic only at the slot level. If one or more slot-specific requests fail, the entire
-    /// call will return the first encountered error, even though some requests may have succeeded
-    /// while others did not. If this behavior impacts your application logic, consider splitting
-    /// the request into sub-requests per slot to ensure atomicity.</note>
     /// <param name="keys">The keys to delete.</param>
     /// <returns>The number of keys that were removed.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.SetAsync("{tag}key1", "value1");
@@ -50,6 +41,13 @@ public partial interface IBaseClient
     /// var deleted = await client.DeleteAsync(["{tag}key1", "{tag}key2"]);  // 2
     /// </code>
     /// </example>
+    /// <remarks>
+    /// <para>In cluster mode, if keys in <paramref name="keys"/> map to different hash slots, the command
+    /// will be split across these slots and executed separately for each. This means the command
+    /// is atomic only at the slot level. If one or more slot-specific requests fail, the entire
+    /// call will return the first encountered error, even though some requests may have succeeded
+    /// while others did not. If this behavior impacts your application logic, consider splitting
+    /// the request into sub-requests per slot to ensure atomicity.</para>
     /// </remarks>
     Task<long> DeleteAsync(IEnumerable<ValkeyKey> keys);
 
@@ -61,14 +59,12 @@ public partial interface IBaseClient
     /// <seealso href="https://valkey.io/commands/unlink/">Valkey commands – UNLINK</seealso>
     /// <param name="key">The key to unlink.</param>
     /// <returns><see langword="true"/> if the key was unlinked.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.SetAsync("key", "value");
     /// var unlinked = await client.UnlinkAsync("key");  // true
     /// </code>
     /// </example>
-    /// </remarks>
     Task<bool> UnlinkAsync(ValkeyKey key);
 
     /// <summary>
@@ -77,15 +73,8 @@ public partial interface IBaseClient
     /// Similar to <see cref="DeleteAsync(IEnumerable{ValkeyKey})"/>, but non-blocking.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/unlink/">Valkey commands – UNLINK</seealso>
-    /// <note>In cluster mode, if keys in <paramref name="keys"/> map to different hash slots, the command
-    /// will be split across these slots and executed separately for each. This means the command
-    /// is atomic only at the slot level. If one or more slot-specific requests fail, the entire
-    /// call will return the first encountered error, even though some requests may have succeeded
-    /// while others did not. If this behavior impacts your application logic, consider splitting
-    /// the request into sub-requests per slot to ensure atomicity.</note>
     /// <param name="keys">The keys to unlink.</param>
     /// <returns>The number of keys that were unlinked.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.SetAsync("{tag}key1", "value1");
@@ -93,6 +82,13 @@ public partial interface IBaseClient
     /// var unlinked = await client.UnlinkAsync(["{tag}key1", "{tag}key2"]);  // 2
     /// </code>
     /// </example>
+    /// <remarks>
+    /// <para>In cluster mode, if keys in <paramref name="keys"/> map to different hash slots, the command
+    /// will be split across these slots and executed separately for each. This means the command
+    /// is atomic only at the slot level. If one or more slot-specific requests fail, the entire
+    /// call will return the first encountered error, even though some requests may have succeeded
+    /// while others did not. If this behavior impacts your application logic, consider splitting
+    /// the request into sub-requests per slot to ensure atomicity.</para>
     /// </remarks>
     Task<long> UnlinkAsync(IEnumerable<ValkeyKey> keys);
 
@@ -102,29 +98,20 @@ public partial interface IBaseClient
     /// <seealso href="https://valkey.io/commands/exists/">Valkey commands – EXISTS</seealso>
     /// <param name="key">The key to check.</param>
     /// <returns><see langword="true"/> if <paramref name="key"/> exists, <see langword="false"/> otherwise.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.SetAsync("key", "value");
     /// var exists = await client.ExistsAsync("key");  // true
     /// </code>
     /// </example>
-    /// </remarks>
     Task<bool> ExistsAsync(ValkeyKey key);
 
     /// <summary>
     /// Returns the number of keys that exist in the database.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/exists/">Valkey commands – EXISTS</seealso>
-    /// <note>In cluster mode, if keys in <paramref name="keys"/> map to different hash slots, the command
-    /// will be split across these slots and executed separately for each. This means the command
-    /// is atomic only at the slot level. If one or more slot-specific requests fail, the entire
-    /// call will return the first encountered error, even though some requests may have succeeded
-    /// while others did not. If this behavior impacts your application logic, consider splitting
-    /// the request into sub-requests per slot to ensure atomicity.</note>
     /// <param name="keys">The keys to check.</param>
     /// <returns>The number of existing keys.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.SetAsync("{tag}key1", "value1");
@@ -132,6 +119,13 @@ public partial interface IBaseClient
     /// var existing = await client.ExistsAsync(["{tag}key1", "{tag}key2", "{tag}missing"]);  // 2
     /// </code>
     /// </example>
+    /// <remarks>
+    /// <para>In cluster mode, if keys in <paramref name="keys"/> map to different hash slots, the command
+    /// will be split across these slots and executed separately for each. This means the command
+    /// is atomic only at the slot level. If one or more slot-specific requests fail, the entire
+    /// call will return the first encountered error, even though some requests may have succeeded
+    /// while others did not. If this behavior impacts your application logic, consider splitting
+    /// the request into sub-requests per slot to ensure atomicity.</para>
     /// </remarks>
     Task<long> ExistsAsync(IEnumerable<ValkeyKey> keys);
 
@@ -146,14 +140,12 @@ public partial interface IBaseClient
     /// <param name="expiry">Duration for the key to expire.</param>
     /// <param name="condition">The condition for setting the expiry.</param>
     /// <returns><see langword="true"/> if the timeout was set. <see langword="false"/> if <paramref name="key"/> does not exist or the timeout could not be set.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.SetAsync("key", "value");
     /// var set = await client.ExpireAsync("key", TimeSpan.FromSeconds(10));  // true
     /// </code>
     /// </example>
-    /// </remarks>
     Task<bool> ExpireAsync(ValkeyKey key, TimeSpan? expiry, ExpireCondition condition = ExpireCondition.Always);
 
     /// <summary>
@@ -168,14 +160,12 @@ public partial interface IBaseClient
     /// <param name="expiry">The timestamp for expiry.</param>
     /// <param name="condition">The condition for setting the expiry.</param>
     /// <returns><see langword="true"/> if the timeout was set. <see langword="false"/> if <paramref name="key"/> does not exist or the timeout could not be set.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.SetAsync("key", "value");
     /// var set = await client.ExpireAsync("key", DateTimeOffset.UtcNow.AddMinutes(5));  // true
     /// </code>
     /// </example>
-    /// </remarks>
     Task<bool> ExpireAsync(ValkeyKey key, DateTimeOffset? expiry, ExpireCondition condition = ExpireCondition.Always);
 
     /// <summary>
@@ -189,7 +179,6 @@ public partial interface IBaseClient
     /// <see cref="TimeToLiveResult.HasTimeToLive"/> to check if it has an expiry,
     /// and <see cref="TimeToLiveResult.TimeToLive"/> to get the remaining time.
     /// </returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var ttlResult = await client.TimeToLiveAsync("key");
@@ -208,7 +197,6 @@ public partial interface IBaseClient
     /// }
     /// </code>
     /// </example>
-    /// </remarks>
     Task<TimeToLiveResult> TimeToLiveAsync(ValkeyKey key);
 
     /// <summary>
@@ -217,14 +205,12 @@ public partial interface IBaseClient
     /// <seealso href="https://valkey.io/commands/type/">Valkey commands – TYPE</seealso>
     /// <param name="key">The key to check the data type of.</param>
     /// <returns>The <see cref="ValkeyType"/> of <paramref name="key"/>, or none when <paramref name="key"/> does not exist.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.SetAsync("key", "value");
     /// var type = await client.TypeAsync("key");  // ValkeyType.String
     /// </code>
     /// </example>
-    /// </remarks>
     Task<ValkeyType> TypeAsync(ValkeyKey key);
 
     /// <summary>
@@ -232,16 +218,16 @@ public partial interface IBaseClient
     /// If <paramref name="newKey"/> already exists it is overwritten.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/rename/">Valkey commands – RENAME</seealso>
-    /// <note>When in cluster mode, both <paramref name="key"/> and <paramref name="newKey"/> must map to the same hash slot.</note>
     /// <param name="key">The key to rename.</param>
     /// <param name="newKey">The new name of the key.</param>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.SetAsync("oldkey", "value");
     /// await client.RenameAsync("oldkey", "newkey");
     /// </code>
     /// </example>
+    /// <remarks>
+    /// <para>When in cluster mode, both <paramref name="key"/> and <paramref name="newKey"/> must map to the same hash slot.</para>
     /// </remarks>
     Task RenameAsync(ValkeyKey key, ValkeyKey newKey);
 
@@ -249,17 +235,17 @@ public partial interface IBaseClient
     /// Renames a key only if the new key does not yet exist.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/renamenx/">Valkey commands – RENAMENX</seealso>
-    /// <note>When in cluster mode, both <paramref name="key"/> and <paramref name="newKey"/> must map to the same hash slot.</note>
     /// <param name="key">The key to rename.</param>
     /// <param name="newKey">The new name of the key.</param>
     /// <returns><see langword="true"/> if the key was renamed, <see langword="false"/> if <paramref name="newKey"/> already exists.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.SetAsync("oldkey", "value");
     /// var renamed = await client.RenameIfNotExistsAsync("oldkey", "newkey");  // true
     /// </code>
     /// </example>
+    /// <remarks>
+    /// <para>When in cluster mode, both <paramref name="key"/> and <paramref name="newKey"/> must map to the same hash slot.</para>
     /// </remarks>
     Task<bool> RenameIfNotExistsAsync(ValkeyKey key, ValkeyKey newKey);
 
@@ -270,7 +256,6 @@ public partial interface IBaseClient
     /// <seealso href="https://valkey.io/commands/persist/">Valkey commands – PERSIST</seealso>
     /// <param name="key">The key to remove the existing timeout on.</param>
     /// <returns><see langword="true"/> if the timeout was removed. <see langword="false"/> if <paramref name="key"/> does not exist or does not have an associated timeout.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.SetAsync("key", "value");
@@ -278,7 +263,6 @@ public partial interface IBaseClient
     /// var removed = await client.PersistAsync("key");  // true
     /// </code>
     /// </example>
-    /// </remarks>
     Task<bool> PersistAsync(ValkeyKey key);
 
     /// <summary>
@@ -290,14 +274,12 @@ public partial interface IBaseClient
     /// The serialized value of the data stored at <paramref name="key"/>,
     /// or <see langword="null"/> if <paramref name="key"/> does not exist.
     /// </returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.SetAsync("key", "value");
     /// var serialized = await client.DumpAsync("key");  // byte[] representation of the value
     /// </code>
     /// </example>
-    /// </remarks>
     Task<byte[]?> DumpAsync(ValkeyKey key);
 
     /// <summary>
@@ -305,11 +287,9 @@ public partial interface IBaseClient
     /// <paramref name="value"/> (obtained via <see cref="DumpAsync"/>).
     /// </summary>
     /// <seealso href="https://valkey.io/commands/restore/">Valkey commands – RESTORE</seealso>
-    /// <note>When in cluster mode, both source and destination must map to the same hash slot.</note>
     /// <param name="key">The key to create.</param>
     /// <param name="value">The serialized value to deserialize and assign to <paramref name="key"/>.</param>
     /// <param name="options">Optional restore options including TTL, replace, idle time, and frequency.</param>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.SetAsync("{tag}source", "value");
@@ -341,6 +321,8 @@ public partial interface IBaseClient
     /// await client.RestoreAsync("{tag}existing", serialized, options);
     /// </code>
     /// </example>
+    /// <remarks>
+    /// <para>When in cluster mode, both source and destination must map to the same hash slot.</para>
     /// </remarks>
     Task RestoreAsync(ValkeyKey key, byte[] value, RestoreOptions? options = null);
 
@@ -350,29 +332,20 @@ public partial interface IBaseClient
     /// <seealso href="https://valkey.io/commands/touch/">Valkey commands – TOUCH</seealso>
     /// <param name="key">The key to update the last access time of.</param>
     /// <returns><see langword="true"/> if the key was touched, <see langword="false"/> otherwise.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.SetAsync("key", "value");
     /// var touched = await client.TouchAsync("key");  // true
     /// </code>
     /// </example>
-    /// </remarks>
     Task<bool> TouchAsync(ValkeyKey key);
 
     /// <summary>
     /// Alters the last access time of the specified keys. A key is ignored if it does not exist.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/touch/">Valkey commands – TOUCH</seealso>
-    /// <note>In cluster mode, if keys in <paramref name="keys"/> map to different hash slots, the command
-    /// will be split across these slots and executed separately for each. This means the command
-    /// is atomic only at the slot level. If one or more slot-specific requests fail, the entire
-    /// call will return the first encountered error, even though some requests may have succeeded
-    /// while others did not. If this behavior impacts your application logic, consider splitting
-    /// the request into sub-requests per slot to ensure atomicity.</note>
     /// <param name="keys">The keys to update the last access time of.</param>
     /// <returns>The number of keys that were updated.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.SetAsync("{tag}key1", "value1");
@@ -380,6 +353,13 @@ public partial interface IBaseClient
     /// var touched = await client.TouchAsync(["{tag}key1", "{tag}key2"]);  // 2
     /// </code>
     /// </example>
+    /// <remarks>
+    /// <para>In cluster mode, if keys in <paramref name="keys"/> map to different hash slots, the command
+    /// will be split across these slots and executed separately for each. This means the command
+    /// is atomic only at the slot level. If one or more slot-specific requests fail, the entire
+    /// call will return the first encountered error, even though some requests may have succeeded
+    /// while others did not. If this behavior impacts your application logic, consider splitting
+    /// the request into sub-requests per slot to ensure atomicity.</para>
     /// </remarks>
     Task<long> TouchAsync(IEnumerable<ValkeyKey> keys);
 
@@ -387,13 +367,11 @@ public partial interface IBaseClient
     /// Returns the absolute time at which a key will expire.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/pexpiretime/">Valkey commands – PEXPIRETIME</seealso>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="key">The key to determine the expiration value of.</param>
     /// <returns>
     /// The expiration time as a <see cref="DateTimeOffset"/>, or <see langword="null"/> if <paramref name="key"/>
     /// does not exist or has no associated expiration.
     /// </returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var expiration = await client.ExpireTimeAsync("key");
@@ -408,6 +386,8 @@ public partial interface IBaseClient
     /// }
     /// </code>
     /// </example>
+    /// <remarks>
+    /// <para>Since Valkey 7.0.0.</para>
     /// </remarks>
     Task<DateTimeOffset?> ExpireTimeAsync(ValkeyKey key);
 
@@ -417,14 +397,12 @@ public partial interface IBaseClient
     /// <seealso href="https://valkey.io/commands/object-encoding/">Valkey commands – OBJECT ENCODING</seealso>
     /// <param name="key">The key to determine the encoding of.</param>
     /// <returns>The encoding of the object, or <see langword="null"/> when <paramref name="key"/> does not exist.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.SetAsync("key", "hello");
     /// var encoding = await client.ObjectEncodingAsync("key");  // "embstr"
     /// </code>
     /// </example>
-    /// </remarks>
     Task<string?> ObjectEncodingAsync(ValkeyKey key);
 
     /// <summary>
@@ -433,7 +411,6 @@ public partial interface IBaseClient
     /// <seealso href="https://valkey.io/commands/object-freq/">Valkey commands – OBJECT FREQ</seealso>
     /// <param name="key">The key to determine the frequency of.</param>
     /// <returns>The frequency counter, or <see langword="null"/> when <paramref name="key"/> does not exist.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.SetAsync("key", "value");
@@ -441,7 +418,6 @@ public partial interface IBaseClient
     /// Console.WriteLine($"Access frequency: {frequency}");
     /// </code>
     /// </example>
-    /// </remarks>
     Task<long?> ObjectFrequencyAsync(ValkeyKey key);
 
     /// <summary>
@@ -450,7 +426,6 @@ public partial interface IBaseClient
     /// <seealso href="https://valkey.io/commands/object-idletime/">Valkey commands – OBJECT IDLETIME</seealso>
     /// <param name="key">The key to determine the idle time of.</param>
     /// <returns>The idle time, or <see langword="null"/> when <paramref name="key"/> does not exist.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.SetAsync("key", "value");
@@ -458,7 +433,6 @@ public partial interface IBaseClient
     /// Console.WriteLine($"Idle time: {idleTime}");
     /// </code>
     /// </example>
-    /// </remarks>
     Task<TimeSpan?> ObjectIdleTimeAsync(ValkeyKey key);
 
     /// <summary>
@@ -467,14 +441,12 @@ public partial interface IBaseClient
     /// <seealso href="https://valkey.io/commands/object-refcount/">Valkey commands – OBJECT REFCOUNT</seealso>
     /// <param name="key">The key to determine the reference count of.</param>
     /// <returns>The reference count, or <see langword="null"/> when <paramref name="key"/> does not exist.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.SetAsync("key", "value");
     /// var refCount = await client.ObjectRefCountAsync("key");  // 1
     /// </code>
     /// </example>
-    /// </remarks>
     Task<long?> ObjectRefCountAsync(ValkeyKey key);
 
     /// <summary>
@@ -483,18 +455,18 @@ public partial interface IBaseClient
     /// if it already exists, otherwise performs no action.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/copy/">Valkey commands – COPY</seealso>
-    /// <note>When in cluster mode, both <paramref name="source"/> and <paramref name="destination"/> must map to the same hash slot.</note>
     /// <param name="source">The key to the source value.</param>
     /// <param name="destination">The key where the value should be copied to.</param>
     /// <param name="replace">Whether to overwrite an existing value at <paramref name="destination"/>.</param>
     /// <returns><see langword="true"/> if <paramref name="source"/> was copied, <see langword="false"/> otherwise.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.SetAsync("{tag}source", "value");
     /// var copied = await client.CopyAsync("{tag}source", "{tag}destination", replace: true);  // true
     /// </code>
     /// </example>
+    /// <remarks>
+    /// <para>When in cluster mode, both <paramref name="source"/> and <paramref name="destination"/> must map to the same hash slot.</para>
     /// </remarks>
     Task<bool> CopyAsync(ValkeyKey source, ValkeyKey destination, bool replace = false);
 
@@ -508,14 +480,14 @@ public partial interface IBaseClient
     /// <param name="destinationDatabase">The database ID to store destination in.</param>
     /// <param name="replace">Whether to overwrite an existing value at <paramref name="destination"/>.</param>
     /// <returns><see langword="true"/> if <paramref name="source"/> was copied, <see langword="false"/> otherwise.</returns>
-    /// <note>Since Valkey 9.0.0 for cluster mode.</note>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.SetAsync("source", "value");
     /// var copied = await client.CopyAsync("source", "dest", 1, replace: true);
     /// </code>
     /// </example>
+    /// <remarks>
+    /// <para>Since Valkey 9.0.0 for cluster mode.</para>
     /// </remarks>
     Task<bool> CopyAsync(ValkeyKey source, ValkeyKey destination, int destinationDatabase, bool replace = false);
 
@@ -524,7 +496,6 @@ public partial interface IBaseClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/randomkey/">Valkey commands – RANDOMKEY</seealso>
     /// <returns>A random key, or <see langword="null"/> when the database is empty.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.SetAsync("key", "value");
@@ -532,7 +503,6 @@ public partial interface IBaseClient
     /// Console.WriteLine($"Random key: {randomKey}");
     /// </code>
     /// </example>
-    /// </remarks>
     Task<ValkeyKey?> RandomKeyAsync();
 
     /// <summary>
@@ -544,7 +514,6 @@ public partial interface IBaseClient
     /// <param name="numreplicas">The number of replicas to wait for.</param>
     /// <param name="timeout">The timeout to wait.</param>
     /// <returns>The number of replicas that acknowledged the write commands.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.SetAsync("key", "value");
@@ -552,7 +521,6 @@ public partial interface IBaseClient
     /// Console.WriteLine($"Replicas acknowledged: {acknowledged}");
     /// </code>
     /// </example>
-    /// </remarks>
     Task<long> WaitAsync(long numreplicas, TimeSpan timeout);
 
     /// <summary>
@@ -561,12 +529,10 @@ public partial interface IBaseClient
     /// If the timeout is reached, the command returns even if the specified number of acknowledgments were not yet reached.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/waitaof/">Valkey commands – WAITAOF</seealso>
-    /// <note>Since Valkey 7.2.0.</note>
     /// <param name="localAof">Whether to wait for the local node to acknowledge AOF sync.</param>
     /// <param name="numreplicas">The number of replica nodes to wait for AOF sync.</param>
     /// <param name="timeout">The timeout to wait.</param>
     /// <returns>An array of two longs: the number of local and replica nodes that acknowledged the write commands.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.SetAsync("key", "value");
@@ -574,6 +540,8 @@ public partial interface IBaseClient
     /// Console.WriteLine($"Local: {acknowledged[0]}, Replicas: {acknowledged[1]}");
     /// </code>
     /// </example>
+    /// <remarks>
+    /// <para>Since Valkey 7.2.0.</para>
     /// </remarks>
     Task<long[]> WaitAofAsync(bool localAof, long numreplicas, TimeSpan timeout);
 
@@ -584,7 +552,6 @@ public partial interface IBaseClient
     /// <param name="key">The key to migrate.</param>
     /// <param name="options">The migrate options.</param>
     /// <returns><see langword="true"/> if the key was migrated successfully, <see langword="false"/> if the key was not found.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.SetAsync("key", "value");
@@ -592,7 +559,6 @@ public partial interface IBaseClient
     /// var migrated = await client.MigrateAsync("key", options);
     /// </code>
     /// </example>
-    /// </remarks>
     Task<bool> MigrateAsync(ValkeyKey key, MigrateOptions options);
 
     /// <summary>
@@ -603,14 +569,14 @@ public partial interface IBaseClient
     /// <param name="key">The key to move.</param>
     /// <param name="database">The database to move the key to.</param>
     /// <returns><see langword="true"/> if the key was moved, <see langword="false"/> otherwise.</returns>
-    /// <note>Since Valkey 9.0.0 for cluster mode.</note>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.SetAsync("mykey", "value");
     /// var moved = await client.MoveAsync("mykey", 2);
     /// </code>
     /// </example>
+    /// <remarks>
+    /// <para>Since Valkey 9.0.0 for cluster mode.</para>
     /// </remarks>
     Task<bool> MoveAsync(ValkeyKey key, int database);
 
@@ -621,7 +587,6 @@ public partial interface IBaseClient
     /// <param name="key">The key of the list, set, or sorted set to be sorted.</param>
     /// <param name="options">The options for the SORT command.</param>
     /// <returns>An array of sorted elements.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.ListLeftPushAsync("mylist", ["3", "1", "2"]);
@@ -629,7 +594,6 @@ public partial interface IBaseClient
     /// var sorted = await client.SortAsync("mylist", options);  // ["3", "2", "1"]
     /// </code>
     /// </example>
-    /// </remarks>
     Task<ValkeyValue[]> SortAsync(ValkeyKey key, SortOptions? options);
 
     /// <summary>
@@ -641,7 +605,6 @@ public partial interface IBaseClient
     /// <param name="key">The key of the list, set, or sorted set to be sorted.</param>
     /// <param name="options">The options for the SORT command.</param>
     /// <returns>The number of elements stored in <paramref name="destination"/>.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.ListLeftPushAsync("{tag}mylist", ["3", "1", "2"]);
@@ -649,7 +612,6 @@ public partial interface IBaseClient
     /// var stored = await client.SortAndStoreAsync("{tag}sorted", "{tag}mylist", options);  // 3
     /// </code>
     /// </example>
-    /// </remarks>
     Task<long> SortAndStoreAsync(ValkeyKey destination, ValkeyKey key, SortOptions? options);
 
     /// <summary>
@@ -657,7 +619,6 @@ public partial interface IBaseClient
     /// Read-only variant of SORT that is guaranteed not to modify the database.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/sort_ro/">Valkey commands – SORT_RO</seealso>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="key">The key of the list, set, or sorted set to be sorted.</param>
     /// <param name="skip">The number of elements to skip.</param>
     /// <param name="take">The number of elements to take. -1 means take all.</param>
@@ -666,13 +627,14 @@ public partial interface IBaseClient
     /// <param name="by">The pattern to sort by external keys.</param>
     /// <param name="get">The patterns to retrieve external keys' values.</param>
     /// <returns>An array of sorted elements.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.ListLeftPushAsync("mylist", ["3", "1", "2"]);
     /// var sorted = await client.SortReadOnlyAsync("mylist");  // ["1", "2", "3"]
     /// </code>
     /// </example>
+    /// <remarks>
+    /// <para>Since Valkey 7.0.0.</para>
     /// </remarks>
     Task<ValkeyValue[]> SortReadOnlyAsync(ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, IEnumerable<ValkeyValue>? get = null);
 
@@ -681,11 +643,9 @@ public partial interface IBaseClient
     /// Read-only variant of SORT that is guaranteed not to modify the database.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/sort_ro/">Valkey commands – SORT_RO</seealso>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="key">The key of the list, set, or sorted set to be sorted.</param>
     /// <param name="options">The options for the SORT_RO command.</param>
     /// <returns>An array of sorted elements.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.ListLeftPushAsync("mylist", ["3", "1", "2"]);
@@ -693,6 +653,8 @@ public partial interface IBaseClient
     /// var sorted = await client.SortReadOnlyAsync("mylist", options);  // ["3", "2", "1"]
     /// </code>
     /// </example>
+    /// <remarks>
+    /// <para>Since Valkey 7.0.0.</para>
     /// </remarks>
     Task<ValkeyValue[]> SortReadOnlyAsync(ValkeyKey key, SortOptions? options);
 }

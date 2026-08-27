@@ -16,7 +16,6 @@ public interface ITransactionCommands : ITransactionBaseCommands
     /// </summary>
     /// <seealso href="https://valkey.io/commands/unwatch/">Valkey commands – UNWATCH</seealso>
     /// <exception cref="Errors.RequestException">Thrown if the command fails to execute on the server.</exception>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.WatchAsync(["sampleKey"]);
@@ -24,6 +23,5 @@ public interface ITransactionCommands : ITransactionBaseCommands
     /// // "sampleKey" is no longer watched
     /// </code>
     /// </example>
-    /// </remarks>
     Task UnwatchAsync();
 }

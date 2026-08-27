@@ -24,7 +24,6 @@ public partial interface IDatabaseAsync
     /// <param name="value">The value to add to the head of the list.</param>
     /// <param name="when">Use <see cref="When.Exists"/> for LPUSHX behavior (only push if key exists).</param>
     /// <returns>The length of the list after the push operation.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// // Always push (LPUSH).
@@ -38,7 +37,6 @@ public partial interface IDatabaseAsync
     /// // 0 if "mylist" did not exist; otherwise the new length of the list.
     /// </code>
     /// </example>
-    /// </remarks>
     Task<long> ListLeftPushAsync(ValkeyKey key, ValkeyValue value, When when);
 
     /// <summary>
@@ -52,7 +50,6 @@ public partial interface IDatabaseAsync
     /// <param name="values">The elements to insert at the head of the list.</param>
     /// <param name="when">Use <see cref="When.Exists"/> for LPUSHX behavior (only push if key exists).</param>
     /// <returns>The length of the list after the push operation.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// // Always push (LPUSH).
@@ -67,7 +64,6 @@ public partial interface IDatabaseAsync
     /// // 0 if "mylist" did not exist; otherwise the new length of the list.
     /// </code>
     /// </example>
-    /// </remarks>
     Task<long> ListLeftPushAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, When when);
 
     /// <summary>
@@ -80,7 +76,6 @@ public partial interface IDatabaseAsync
     /// <param name="value">The value to add to the tail of the list.</param>
     /// <param name="when">Use <see cref="When.Exists"/> for RPUSHX behavior (only push if key exists).</param>
     /// <returns>The length of the list after the push operation.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// // Always push (RPUSH).
@@ -95,7 +90,6 @@ public partial interface IDatabaseAsync
     /// // 0 if "mylist" did not exist; otherwise the new length of the list.
     /// </code>
     /// </example>
-    /// </remarks>
     Task<long> ListRightPushAsync(ValkeyKey key, ValkeyValue value, When when);
 
     /// <summary>
@@ -109,7 +103,6 @@ public partial interface IDatabaseAsync
     /// <param name="values">The elements to insert at the tail of the list.</param>
     /// <param name="when">Use <see cref="When.Exists"/> for RPUSHX behavior (only push if key exists).</param>
     /// <returns>The length of the list after the push operation.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// // Always push (RPUSH).
@@ -124,7 +117,6 @@ public partial interface IDatabaseAsync
     /// // 0 if "mylist" did not exist; otherwise the new length of the list.
     /// </code>
     /// </example>
-    /// </remarks>
     Task<long> ListRightPushAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, When when);
 
     /// <inheritdoc cref="IListBaseCommands.ListLeftPopAsync(ValkeyKey)"/>
@@ -241,14 +233,12 @@ public partial interface IDatabaseAsync
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>The element being popped and pushed, or <see cref="ValkeyValue.Null"/> if the source list is empty.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await db.ListRightPushAsync("source", ["a", "b", "c"]);
     /// var moved = await db.ListRightPopLeftPushAsync("source", "destination");  // "c"
     /// </code>
     /// </example>
-    /// </remarks>
     Task<ValkeyValue> ListRightPopLeftPushAsync(ValkeyKey source, ValkeyKey destination, CommandFlags flags = CommandFlags.None);
 
     /// <inheritdoc cref="IListBaseCommands.ListPositionAsync(ValkeyKey, ValkeyValue, long, long)"/>
@@ -274,14 +264,12 @@ public partial interface IDatabaseAsync
     /// The element at the given index.
     /// If the index is out of range or if the key does not exist, <see cref="ValkeyValue.Null"/> will be returned.
     /// </returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await db.ListRightPushAsync("mylist", ["a", "b", "c"]);
     /// var element = await db.ListGetByIndexAsync("mylist", 0);  // "a"
     /// </code>
     /// </example>
-    /// </remarks>
     Task<ValkeyValue> ListGetByIndexAsync(ValkeyKey key, long index);
 
     /// <inheritdoc cref="ListGetByIndexAsync(ValkeyKey, long)"/>
@@ -299,7 +287,6 @@ public partial interface IDatabaseAsync
     /// <param name="key">The key of the list.</param>
     /// <param name="index">The index of the element in the list to set.</param>
     /// <param name="value">The new value.</param>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await db.ListRightPushAsync("mylist", ["a", "b", "c"]);
@@ -307,7 +294,6 @@ public partial interface IDatabaseAsync
     /// var element = await db.ListGetByIndexAsync("mylist", 0);  // "x"
     /// </code>
     /// </example>
-    /// </remarks>
     Task ListSetByIndexAsync(ValkeyKey key, long index, ValkeyValue value);
 
     /// <inheritdoc cref="ListSetByIndexAsync(ValkeyKey, long, ValkeyValue)"/>

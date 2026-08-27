@@ -15,7 +15,6 @@ public static partial class Ft
     /// <param name="client">The client to execute the command.</param>
     /// <param name="index">The name of the index.</param>
     /// <returns>An <see cref="InfoLocalResult"/> for the local node.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await Ft.CreateAsync(client, "index", new Ft.CreateTextField("title"));
@@ -24,7 +23,6 @@ public static partial class Ft
     /// Console.WriteLine($"Index name: {info.IndexName}");  // "index"
     /// </code>
     /// </example>
-    /// </remarks>
     public static Task<InfoLocalResult> InfoLocalAsync(BaseClient client, ValkeyKey index)
         => client.Command(Request.FtInfoLocal(index));
 
@@ -36,7 +34,6 @@ public static partial class Ft
     /// <param name="index">The name of the index.</param>
     /// <param name="options">Additional options for the info command.</param>
     /// <returns>An <see cref="InfoLocalResult"/> for the local node.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await Ft.CreateAsync(client, "index", new Ft.CreateTextField("title"));
@@ -46,7 +43,6 @@ public static partial class Ft
     /// Console.WriteLine($"Index name: {info.IndexName}");  // "index"
     /// </code>
     /// </example>
-    /// </remarks>
     public static Task<InfoLocalResult> InfoLocalAsync(BaseClient client, ValkeyKey index, InfoOptions options)
         => client.Command(Request.FtInfoLocal(index, options));
 

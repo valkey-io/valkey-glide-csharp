@@ -20,14 +20,12 @@ public partial interface IBaseClient
     /// <seealso href="https://valkey.io/commands/config-get/">Valkey commands – CONFIG GET</seealso>
     /// <param name="patterns">The patterns to match against configuration parameter names.</param>
     /// <returns>An array of key-value pairs for all matching configuration parameters.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// ValkeyValue[] patterns = ["max*", "bind*"];
     /// var config = await client.ConfigGetAsync(patterns);  // Patterns matching max* or bind*
     /// </code>
     /// </example>
-    /// </remarks>
     Task<KeyValuePair<string, string>[]> ConfigGetAsync(IEnumerable<ValkeyValue> patterns);
 
     /// <summary>
@@ -35,7 +33,6 @@ public partial interface IBaseClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/config-set/">Valkey commands – CONFIG SET</seealso>
     /// <param name="parameters">A dictionary of configuration parameter names and their new values.</param>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var parameters = new Dictionary&lt;ValkeyValue, ValkeyValue&gt;
@@ -46,7 +43,6 @@ public partial interface IBaseClient
     /// await client.ConfigSetAsync(parameters);
     /// </code>
     /// </example>
-    /// </remarks>
     Task ConfigSetAsync(IDictionary<ValkeyValue, ValkeyValue> parameters);
 
     /// <summary>
@@ -55,13 +51,11 @@ public partial interface IBaseClient
     /// <seealso href="https://valkey.io/commands/flushall/">Valkey commands – FLUSHALL</seealso>
     /// <param name="mode">The flush mode. <see cref="FlushMode.Sync"/> waits for completion,
     /// <see cref="FlushMode.Async"/> returns immediately while the flush continues in the background.</param>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.FlushAllDatabasesAsync(FlushMode.Async);
     /// </code>
     /// </example>
-    /// </remarks>
     Task FlushAllDatabasesAsync(FlushMode mode);
 
     /// <summary>
@@ -70,13 +64,11 @@ public partial interface IBaseClient
     /// <seealso href="https://valkey.io/commands/flushdb/">Valkey commands – FLUSHDB</seealso>
     /// <param name="mode">The flush mode. <see cref="FlushMode.Sync"/> waits for completion,
     /// <see cref="FlushMode.Async"/> returns immediately while the flush continues in the background.</param>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.FlushDatabaseAsync(FlushMode.Async);
     /// </code>
     /// </example>
-    /// </remarks>
     Task FlushDatabaseAsync(FlushMode mode);
 
     /// <summary>
@@ -84,13 +76,11 @@ public partial interface IBaseClient
     /// </summary>
     /// <seealso href="https://valkey.io/commands/latency-reset/">Valkey commands – LATENCY RESET</seealso>
     /// <returns>The number of event time series that were reset.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var resetCount = await client.LatencyResetAsync();
     /// </code>
     /// </example>
-    /// </remarks>
     Task<long> LatencyResetAsync();
 
     /// <summary>
@@ -99,13 +89,11 @@ public partial interface IBaseClient
     /// <seealso href="https://valkey.io/commands/latency-reset/">Valkey commands – LATENCY RESET</seealso>
     /// <param name="event">The event name to reset.</param>
     /// <returns>The number of event time series that were reset.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.LatencyResetAsync("command");
     /// </code>
     /// </example>
-    /// </remarks>
     Task<long> LatencyResetAsync(ValkeyValue @event);
 
     /// <summary>
@@ -114,13 +102,11 @@ public partial interface IBaseClient
     /// <seealso href="https://valkey.io/commands/latency-reset/">Valkey commands – LATENCY RESET</seealso>
     /// <param name="events">The event names to reset. If empty, resets all events.</param>
     /// <returns>The number of event time series that were reset.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.LatencyResetAsync(["command", "fast"]);
     /// </code>
     /// </example>
-    /// </remarks>
     Task<long> LatencyResetAsync(IEnumerable<ValkeyValue> events);
 
     /// <summary>
@@ -129,7 +115,6 @@ public partial interface IBaseClient
     /// <seealso href="https://valkey.io/commands/lolwut/">Valkey commands – LOLWUT</seealso>
     /// <param name="options">The LOLWUT options specifying version and/or parameters.</param>
     /// <returns>A string containing the Valkey version and generative art.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var options = new LolwutOptions { Version = 6, Parameters = [40, 20] };
@@ -137,7 +122,6 @@ public partial interface IBaseClient
     /// Console.WriteLine(art);  // Print art to console
     /// </code>
     /// </example>
-    /// </remarks>
     Task<string> LolwutAsync(LolwutOptions options);
 
     // TODO #475: Add parameterless LolwutAsync() here
@@ -146,12 +130,10 @@ public partial interface IBaseClient
     /// Synchronously saves the dataset to disk.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/save/">Valkey commands – SAVE</seealso>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.SaveAsync();
     /// </code>
     /// </example>
-    /// </remarks>
     Task SaveAsync();
 }

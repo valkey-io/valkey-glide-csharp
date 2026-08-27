@@ -17,14 +17,12 @@ public interface IListBaseCommands
     /// <seealso href="https://valkey.io/commands/lpop/">Valkey commands – LPOP</seealso>
     /// <param name="key">The list key.</param>
     /// <returns>The value of the first element, or <see cref="ValkeyValue.Null"/> if the key does not exist.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.ListRightPushAsync("mylist", ["a", "b", "c"]);
     /// var value = await client.ListLeftPopAsync("mylist");  // "a"
     /// </code>
     /// </example>
-    /// </remarks>
     Task<ValkeyValue> ListLeftPopAsync(ValkeyKey key);
 
     /// <summary>
@@ -34,14 +32,12 @@ public interface IListBaseCommands
     /// <param name="key">The list key.</param>
     /// <param name="count">The count of the elements to pop from the list.</param>
     /// <returns>An array of the popped elements, or <see langword="null"/> if the key does not exist.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.ListRightPushAsync("mylist", ["a", "b", "c"]);
     /// var values = await client.ListLeftPopAsync("mylist", 2);  // ["a", "b"]
     /// </code>
     /// </example>
-    /// </remarks>
     Task<ValkeyValue[]?> ListLeftPopAsync(ValkeyKey key, long count);
 
     /// <summary>
@@ -49,14 +45,12 @@ public interface IListBaseCommands
     /// among the provided keys.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/lmpop/">Valkey commands – LMPOP</seealso>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="keys">A collection of list keys.</param>
     /// <param name="count">The maximum number of elements to pop.</param>
     /// <returns>
     /// A <see cref="ListPopResult"/> containing the key of the list that was popped from and the popped elements.
     /// If no list contains elements, <see cref="ListPopResult.Null"/> is returned.
     /// </returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.ListRightPushAsync("list1", ["a", "b"]);
@@ -64,6 +58,8 @@ public interface IListBaseCommands
     /// // popResult.Key == "list1", popResult.Values == ["a", "b"]
     /// </code>
     /// </example>
+    /// <remarks>
+    /// <para>Since Valkey 7.0.0.</para>
     /// </remarks>
     Task<ListPopResult> ListLeftPopAsync(IEnumerable<ValkeyKey> keys, long count);
 
@@ -74,13 +70,11 @@ public interface IListBaseCommands
     /// <param name="key">The list key.</param>
     /// <param name="value">The value to add to the head of the list.</param>
     /// <returns>The length of the list after the push operation.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var length = await client.ListLeftPushAsync("mylist", "value");  // 1
     /// </code>
     /// </example>
-    /// </remarks>
     Task<long> ListLeftPushAsync(ValkeyKey key, ValkeyValue value);
 
     /// <summary>
@@ -91,13 +85,11 @@ public interface IListBaseCommands
     /// <param name="key">The list key.</param>
     /// <param name="values">The elements to insert at the head of the list.</param>
     /// <returns>The length of the list after the push operation.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var length = await client.ListLeftPushAsync("mylist", ["a", "b", "c"]);  // 3
     /// </code>
     /// </example>
-    /// </remarks>
     Task<long> ListLeftPushAsync(ValkeyKey key, IEnumerable<ValkeyValue> values);
 
     /// <summary>
@@ -107,13 +99,11 @@ public interface IListBaseCommands
     /// <param name="key">The list key.</param>
     /// <param name="value">The value to add to the tail of the list.</param>
     /// <returns>The length of the list after the push operation.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var length = await client.ListRightPushAsync("mylist", "value");  // 1
     /// </code>
     /// </example>
-    /// </remarks>
     Task<long> ListRightPushAsync(ValkeyKey key, ValkeyValue value);
 
     /// <summary>
@@ -124,13 +114,11 @@ public interface IListBaseCommands
     /// <param name="key">The list key.</param>
     /// <param name="values">The elements to insert at the tail of the list.</param>
     /// <returns>The length of the list after the push operation.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var length = await client.ListRightPushAsync("mylist", ["a", "b", "c"]);  // 3
     /// </code>
     /// </example>
-    /// </remarks>
     Task<long> ListRightPushAsync(ValkeyKey key, IEnumerable<ValkeyValue> values);
 
     /// <summary>
@@ -139,14 +127,12 @@ public interface IListBaseCommands
     /// <seealso href="https://valkey.io/commands/rpop/">Valkey commands – RPOP</seealso>
     /// <param name="key">The list key.</param>
     /// <returns>The value of the last element, or <see cref="ValkeyValue.Null"/> if the key does not exist.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.ListRightPushAsync("mylist", ["a", "b", "c"]);
     /// var value = await client.ListRightPopAsync("mylist");  // "c"
     /// </code>
     /// </example>
-    /// </remarks>
     Task<ValkeyValue> ListRightPopAsync(ValkeyKey key);
 
     /// <summary>
@@ -156,14 +142,12 @@ public interface IListBaseCommands
     /// <param name="key">The list key.</param>
     /// <param name="count">The count of the elements to pop from the list.</param>
     /// <returns>An array of the popped elements, or <see langword="null"/> if the key does not exist.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.ListRightPushAsync("mylist", ["a", "b", "c"]);
     /// var values = await client.ListRightPopAsync("mylist", 2);  // ["c", "b"]
     /// </code>
     /// </example>
-    /// </remarks>
     Task<ValkeyValue[]?> ListRightPopAsync(ValkeyKey key, long count);
 
     /// <summary>
@@ -171,14 +155,12 @@ public interface IListBaseCommands
     /// among the provided keys.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/lmpop/">Valkey commands – LMPOP</seealso>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="keys">A collection of list keys.</param>
     /// <param name="count">The maximum number of elements to pop.</param>
     /// <returns>
     /// A <see cref="ListPopResult"/> containing the key of the list that was popped from and the popped elements.
     /// If no list contains elements, <see cref="ListPopResult.Null"/> is returned.
     /// </returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.ListRightPushAsync("list1", ["a", "b"]);
@@ -186,6 +168,8 @@ public interface IListBaseCommands
     /// // popResult.Key == "list1", popResult.Values == ["b", "a"]
     /// </code>
     /// </example>
+    /// <remarks>
+    /// <para>Since Valkey 7.0.0.</para>
     /// </remarks>
     Task<ListPopResult> ListRightPopAsync(IEnumerable<ValkeyKey> keys, long count);
 
@@ -198,14 +182,12 @@ public interface IListBaseCommands
     /// The length of the list.
     /// If the key does not exist, it is interpreted as an empty list and <c>0</c> is returned.
     /// </returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.ListRightPushAsync("mylist", ["a", "b", "c"]);
     /// var length = await client.ListLengthAsync("mylist");  // 3
     /// </code>
     /// </example>
-    /// </remarks>
     Task<long> ListLengthAsync(ValkeyKey key);
 
     /// <summary>
@@ -225,14 +207,12 @@ public interface IListBaseCommands
     /// The number of removed elements.
     /// If the key does not exist, <c>0</c> is returned.
     /// </returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.ListRightPushAsync("mylist", ["a", "b", "a", "c", "a"]);
     /// var removedCount = await client.ListRemoveAsync("mylist", "a", 2);  // 2
     /// </code>
     /// </example>
-    /// </remarks>
     Task<long> ListRemoveAsync(ValkeyKey key, ValkeyValue value, long count = 0);
 
     /// <summary>
@@ -242,10 +222,6 @@ public interface IListBaseCommands
     /// <param name="key">The list key.</param>
     /// <param name="start">The starting point of the range (zero-based, inclusive).</param>
     /// <param name="stop">The end of the range (zero-based, inclusive). Negative values indicate offsets from the end.</param>
-    /// <remarks>
-    /// If <paramref name="start"/> exceeds the end of the list, or if <paramref name="start"/> is greater than <paramref name="stop"/>, the list is emptied.
-    /// If <paramref name="stop"/> exceeds the actual end of the list, it is treated as the last element.
-    /// If the key does not exist, the command returns without changes.
     /// <example>
     /// <code>
     /// await client.ListRightPushAsync("mylist", ["a", "b", "c", "d"]);
@@ -253,6 +229,10 @@ public interface IListBaseCommands
     /// var remaining = await client.ListRangeAsync("mylist");  // ["a", "b"]
     /// </code>
     /// </example>
+    /// <remarks>
+    /// If <paramref name="start"/> exceeds the end of the list, or if <paramref name="start"/> is greater than <paramref name="stop"/>, the list is emptied.
+    /// If <paramref name="stop"/> exceeds the actual end of the list, it is treated as the last element.
+    /// If the key does not exist, the command returns without changes.
     /// </remarks>
     Task ListTrimAsync(ValkeyKey key, long start, long stop);
 
@@ -267,14 +247,12 @@ public interface IListBaseCommands
     /// An array of elements in the specified range.
     /// If the key does not exist, an empty array is returned.
     /// </returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.ListRightPushAsync("mylist", ["a", "b", "c"]);
     /// var elements = await client.ListRangeAsync("mylist", 0, -1);  // ["a", "b", "c"]
     /// </code>
     /// </example>
-    /// </remarks>
     Task<ValkeyValue[]> ListRangeAsync(ValkeyKey key, long start = 0, long stop = -1);
 
     /// <summary>
@@ -289,14 +267,12 @@ public interface IListBaseCommands
     /// If the <paramref name="pivot"/> is not found, <c>-1</c> is returned.
     /// If the key does not exist, <c>0</c> is returned.
     /// </returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.ListRightPushAsync("mylist", ["a", "b", "c"]);
     /// var length = await client.ListInsertAfterAsync("mylist", "b", "x");  // 4
     /// </code>
     /// </example>
-    /// </remarks>
     Task<long> ListInsertAfterAsync(ValkeyKey key, ValkeyValue pivot, ValkeyValue value);
 
     /// <summary>
@@ -311,14 +287,12 @@ public interface IListBaseCommands
     /// If the <paramref name="pivot"/> is not found, <c>-1</c> is returned.
     /// If the key does not exist, <c>0</c> is returned.
     /// </returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.ListRightPushAsync("mylist", ["a", "b", "c"]);
     /// var length = await client.ListInsertBeforeAsync("mylist", "b", "x");  // 4
     /// </code>
     /// </example>
-    /// </remarks>
     Task<long> ListInsertBeforeAsync(ValkeyKey key, ValkeyValue pivot, ValkeyValue value);
 
     /// <summary>
@@ -332,14 +306,12 @@ public interface IListBaseCommands
     /// <returns>
     /// The element being popped and pushed, or <see cref="ValkeyValue.Null"/> if the source list does not exist.
     /// </returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.ListRightPushAsync("source", ["a", "b", "c"]);
     /// var moved = await client.ListMoveAsync("source", "dest", ListSide.Left, ListSide.Right);  // "a"
     /// </code>
     /// </example>
-    /// </remarks>
     Task<ValkeyValue> ListMoveAsync(ValkeyKey sourceKey, ValkeyKey destinationKey, ListSide sourceSide, ListSide destinationSide);
 
     /// <summary>
@@ -353,14 +325,12 @@ public interface IListBaseCommands
     /// <returns>
     /// The index of the first occurrence of <paramref name="element"/>, or <c>-1</c> if not found.
     /// </returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.ListRightPushAsync("mylist", ["a", "b", "c", "b"]);
     /// var index = await client.ListPositionAsync("mylist", "b");  // 1
     /// </code>
     /// </example>
-    /// </remarks>
     Task<long> ListPositionAsync(ValkeyKey key, ValkeyValue element, long rank = 1, long maxLength = 0);
 
     /// <summary>
@@ -375,13 +345,11 @@ public interface IListBaseCommands
     /// <returns>
     /// An array of indices of matching elements, or an empty array if no matches are found.
     /// </returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await client.ListRightPushAsync("mylist", ["a", "b", "c", "b"]);
     /// var indices = await client.ListPositionsAsync("mylist", "b", 10);  // [1, 3]
     /// </code>
     /// </example>
-    /// </remarks>
     Task<long[]> ListPositionsAsync(ValkeyKey key, ValkeyValue element, long count, long rank = 1, long maxLength = 0);
 }

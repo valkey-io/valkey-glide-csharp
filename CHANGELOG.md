@@ -76,6 +76,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `FUNCTION KILL` routed to AllPrimaries instead of AllNodes in cluster mode (#494)
 - `GlideString(byte[])` no longer builds the hex-dump representation on construction (#522)
 - `ScoreBound.CompareTo(null)` now returns a positive value per the `IComparable` contract (TODO)
+- `ClusterValue<T>.HasSingleData` returns expected result for value-type `T` (#547)
 
 ## 1.1.0
 

@@ -10,9 +10,6 @@ namespace Valkey.Glide.ServerModules;
 /// Batch implementation for JSON module. Batches allow the execution of a group of commands in a
 /// single step. See <see cref="Batch"/>.
 /// </summary>
-/// <remarks>
-/// This class provides static methods for adding JSON commands to batches, following the same
-/// pattern as the Java client's JsonBatch class.
 /// <example>
 /// <code>
 /// var batch = new Batch(true);
@@ -23,6 +20,9 @@ namespace Valkey.Glide.ServerModules;
 /// // result[1] == "{\"a\": 1.0, \"b\": 2}" (result of Get)
 /// </code>
 /// </example>
+/// <remarks>
+/// This class provides static methods for adding JSON commands to batches, following the same
+/// pattern as the Java client's JsonBatch class.
 /// </remarks>
 /// <seealso href="https://valkey.io/commands/?group=json">Valkey commands – JSON</seealso>
 public static class GlideJsonBatch

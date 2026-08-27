@@ -23,7 +23,6 @@ public sealed class StreamAddOptions
     /// </summary>
     public ValkeyValue Id { get; init; } = AutoGenerateId;
 
-    // TODO #536: Rename to `NoMakeStream` with a `false` default.
     /// <summary>
     /// Whether to create the stream if it does not already exist (NOMKSTREAM).
     /// </summary>
@@ -44,7 +43,6 @@ public sealed class StreamAddOptions
     {
         List<GlideString> args = [];
 
-        // TODO #536: Invert to `if (NoMakeStream)` when the property is renamed.
         if (!MakeStream)
         {
             args.Add(ValkeyLiterals.NOMKSTREAM.ToGlideString());

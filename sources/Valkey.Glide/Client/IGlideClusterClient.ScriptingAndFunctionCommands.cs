@@ -22,7 +22,6 @@ public partial interface IGlideClusterClient
     /// <param name="options">The options containing arguments and routing configuration.</param>
     /// <param name="cancellationToken">A token to cancel the async operation.</param>
     /// <returns>A <see cref="ClusterValue{T}"/> containing single- or multi-node results depending on routing.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// using var script = new Script("return 'Hello'");
@@ -37,7 +36,6 @@ public partial interface IGlideClusterClient
     /// }
     /// </code>
     /// </example>
-    /// </remarks>
     // TODO #496: Change return type to Task<ValkeyResult>; remove AllPrimaries default.
     [Obsolete("Return type will change to Task<ValkeyResult>. See #496.")]
     Task<ClusterValue<ValkeyResult>> ScriptInvokeAsync(
@@ -55,7 +53,6 @@ public partial interface IGlideClusterClient
     /// <param name="route">The routing configuration specifying which nodes to query.</param>
     /// <param name="cancellationToken">A token to cancel the async operation.</param>
     /// <returns>A <see cref="ClusterValue{T}"/> containing single- or multi-node results.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// using var script = new Script("return 1");
@@ -64,7 +61,6 @@ public partial interface IGlideClusterClient
     ///     Route.AllPrimaries);
     /// </code>
     /// </example>
-    /// </remarks>
     Task<ClusterValue<bool[]>> ScriptExistsAsync(
         IEnumerable<string> sha1Hashes,
         Route route,
@@ -76,14 +72,14 @@ public partial interface IGlideClusterClient
     /// <seealso href="https://valkey.io/commands/script-flush/">Valkey commands – SCRIPT FLUSH</seealso>
     /// <param name="route">The routing configuration specifying which nodes to flush.</param>
     /// <param name="cancellationToken">A token to cancel the async operation.</param>
-    /// <remarks>
-    /// The flush behavior (sync or async) is determined by the server's <c>lazyfree-lazy-user-flush</c> configuration.
-    /// Use the overload with <see cref="FlushMode"/> to explicitly specify the behavior.
     /// <example>
     /// <code>
     /// await clusterClient.ScriptFlushAsync(Route.AllNodes);
     /// </code>
     /// </example>
+    /// <remarks>
+    /// The flush behavior (sync or async) is determined by the server's <c>lazyfree-lazy-user-flush</c> configuration.
+    /// Use the overload with <see cref="FlushMode"/> to explicitly specify the behavior.
     /// </remarks>
     Task ScriptFlushAsync(
         Route route,
@@ -96,13 +92,11 @@ public partial interface IGlideClusterClient
     /// <param name="mode">The flush mode.</param>
     /// <param name="route">The routing configuration specifying which nodes to flush.</param>
     /// <param name="cancellationToken">A token to cancel the async operation.</param>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await clusterClient.ScriptFlushAsync(FlushMode.Async, Route.AllPrimaries);
     /// </code>
     /// </example>
-    /// </remarks>
     Task ScriptFlushAsync(
         FlushMode mode,
         Route route,
@@ -115,13 +109,11 @@ public partial interface IGlideClusterClient
     /// <param name="route">The routing configuration specifying which nodes to target.</param>
     /// <param name="cancellationToken">A token to cancel the async operation.</param>
     /// <exception cref="Errors.ValkeyServerException">Thrown if no script is running or if the script has written data on the targeted nodes.</exception>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await clusterClient.ScriptKillAsync(Route.AllPrimaries);
     /// </code>
     /// </example>
-    /// </remarks>
     Task ScriptKillAsync(
         Route route,
         CancellationToken cancellationToken = default);
@@ -132,12 +124,10 @@ public partial interface IGlideClusterClient
     /// Executes a loaded function on specified nodes.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/fcall/">Valkey commands – FCALL</seealso>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="function">The name of the function to execute.</param>
     /// <param name="route">The routing configuration specifying which nodes to execute on.</param>
     /// <param name="cancellationToken">A token to cancel the async operation.</param>
     /// <returns>A <see cref="ClusterValue{T}"/> containing single- or multi-node results.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var result = await clusterClient.FCallAsync(
@@ -145,6 +135,8 @@ public partial interface IGlideClusterClient
     ///     Route.AllPrimaries);
     /// </code>
     /// </example>
+    /// <remarks>
+    /// <para>Since Valkey 7.0.0.</para>
     /// </remarks>
     Task<ClusterValue<ValkeyResult>> FCallAsync(
         string function,
@@ -155,13 +147,11 @@ public partial interface IGlideClusterClient
     /// Executes a loaded function with arguments on specified nodes.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/fcall/">Valkey commands – FCALL</seealso>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="function">The name of the function to execute.</param>
     /// <param name="args">The arguments to pass to the function.</param>
     /// <param name="route">The routing configuration specifying which nodes to execute on.</param>
     /// <param name="cancellationToken">A token to cancel the async operation.</param>
     /// <returns>A <see cref="ClusterValue{T}"/> containing single- or multi-node results.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var result = await clusterClient.FCallAsync(
@@ -170,6 +160,8 @@ public partial interface IGlideClusterClient
     ///     Route.Random);
     /// </code>
     /// </example>
+    /// <remarks>
+    /// <para>Since Valkey 7.0.0.</para>
     /// </remarks>
     Task<ClusterValue<ValkeyResult>> FCallAsync(
         string function,
@@ -181,13 +173,11 @@ public partial interface IGlideClusterClient
     /// Executes a loaded function in read-only mode on specified nodes.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/fcall_ro/">Valkey commands – FCALL_RO</seealso>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="function">The name of the function to execute.</param>
     /// <param name="route">The routing configuration specifying which nodes to execute on.</param>
     /// <param name="cancellationToken">A token to cancel the async operation.</param>
     /// <returns>A <see cref="ClusterValue{T}"/> containing single- or multi-node results.</returns>
     /// <exception cref="Errors.ValkeyServerException">Thrown if the function attempts to write data.</exception>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var result = await clusterClient.FCallReadOnlyAsync(
@@ -195,6 +185,8 @@ public partial interface IGlideClusterClient
     ///     Route.AllNodes);
     /// </code>
     /// </example>
+    /// <remarks>
+    /// <para>Since Valkey 7.0.0.</para>
     /// </remarks>
     Task<ClusterValue<ValkeyResult>> FCallReadOnlyAsync(
         string function,
@@ -205,14 +197,12 @@ public partial interface IGlideClusterClient
     /// Executes a loaded function in read-only mode with arguments on specified nodes.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/fcall_ro/">Valkey commands – FCALL_RO</seealso>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="function">The name of the function to execute.</param>
     /// <param name="args">The arguments to pass to the function.</param>
     /// <param name="route">The routing configuration specifying which nodes to execute on.</param>
     /// <param name="cancellationToken">A token to cancel the async operation.</param>
     /// <returns>A <see cref="ClusterValue{T}"/> containing single- or multi-node results.</returns>
     /// <exception cref="Errors.ValkeyServerException">Thrown if the function attempts to write data.</exception>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var result = await clusterClient.FCallReadOnlyAsync(
@@ -221,6 +211,8 @@ public partial interface IGlideClusterClient
     ///     Route.AllNodes);
     /// </code>
     /// </example>
+    /// <remarks>
+    /// <para>Since Valkey 7.0.0.</para>
     /// </remarks>
     Task<ClusterValue<ValkeyResult>> FCallReadOnlyAsync(
         string function,
@@ -234,13 +226,10 @@ public partial interface IGlideClusterClient
     /// Loads a function library on specified nodes without replacing an existing library.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/function-load/">Valkey commands – FUNCTION LOAD</seealso>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="libraryCode">The Lua code defining the function library.</param>
     /// <param name="route">The routing configuration specifying which nodes to load on.</param>
     /// <param name="cancellationToken">A token to cancel the async operation.</param>
     /// <returns>A <see cref="ClusterValue{T}"/> containing library names from the targeted nodes.</returns>
-    /// <remarks>
-    /// Use the overload with a <c>replace</c> parameter to overwrite existing libraries.
     /// <example>
     /// <code>
     /// string libraryCode = "#!lua name=mylib\nvalkey.register_function('myfunc', function(keys, args) return args[1] end)";
@@ -249,6 +238,9 @@ public partial interface IGlideClusterClient
     ///     Route.AllPrimaries);
     /// </code>
     /// </example>
+    /// <remarks>
+    /// <para>Since Valkey 7.0.0.</para>
+    /// <para>Use the overload with a <c>replace</c> parameter to overwrite existing libraries.</para>
     /// </remarks>
     Task<ClusterValue<string>> FunctionLoadAsync(
         string libraryCode,
@@ -259,13 +251,11 @@ public partial interface IGlideClusterClient
     /// Loads a function library on specified nodes.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/function-load/">Valkey commands – FUNCTION LOAD</seealso>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="libraryCode">The Lua code defining the function library.</param>
     /// <param name="replace">Whether to replace an existing library with the same name.</param>
     /// <param name="route">The routing configuration specifying which nodes to load on.</param>
     /// <param name="cancellationToken">A token to cancel the async operation.</param>
     /// <returns>A <see cref="ClusterValue{T}"/> containing library names from the targeted nodes.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// string libraryCode = "#!lua name=mylib\nvalkey.register_function('myfunc', function(keys, args) return args[1] end)";
@@ -275,6 +265,8 @@ public partial interface IGlideClusterClient
     ///     Route.AllPrimaries);
     /// </code>
     /// </example>
+    /// <remarks>
+    /// <para>Since Valkey 7.0.0.</para>
     /// </remarks>
     Task<ClusterValue<string>> FunctionLoadAsync(
         string libraryCode,
@@ -286,17 +278,17 @@ public partial interface IGlideClusterClient
     /// Deletes a function library from specified nodes.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/function-delete/">Valkey commands – FUNCTION DELETE</seealso>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="libraryName">The name of the library to delete.</param>
     /// <param name="route">The routing configuration specifying which nodes to delete from.</param>
     /// <param name="cancellationToken">A token to cancel the async operation.</param>
     /// <exception cref="Errors.ValkeyServerException">Thrown if the library does not exist on a targeted node.</exception>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await clusterClient.FunctionDeleteAsync("mylib", Route.AllPrimaries);
     /// </code>
     /// </example>
+    /// <remarks>
+    /// <para>Since Valkey 7.0.0.</para>
     /// </remarks>
     Task FunctionDeleteAsync(
         string libraryName,
@@ -307,17 +299,17 @@ public partial interface IGlideClusterClient
     /// Flushes all loaded functions from specified nodes using the server's default flush mode.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/function-flush/">Valkey commands – FUNCTION FLUSH</seealso>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="route">The routing configuration specifying which nodes to flush.</param>
     /// <param name="cancellationToken">A token to cancel the async operation.</param>
-    /// <remarks>
-    /// The flush behavior (sync or async) is determined by the server's <c>lazyfree-lazy-user-flush</c> configuration.
-    /// Use the overload with <see cref="FlushMode"/> to explicitly specify the behavior.
     /// <example>
     /// <code>
     /// await clusterClient.FunctionFlushAsync(Route.AllPrimaries);
     /// </code>
     /// </example>
+    /// <remarks>
+    /// <para>Since Valkey 7.0.0.</para>
+    /// <para>The flush behavior (sync or async) is determined by the server's <c>lazyfree-lazy-user-flush</c> configuration.
+    /// Use the overload with <see cref="FlushMode"/> to explicitly specify the behavior.</para>
     /// </remarks>
     Task FunctionFlushAsync(
         Route route,
@@ -327,16 +319,16 @@ public partial interface IGlideClusterClient
     /// Flushes all loaded functions from specified nodes with the specified flush mode.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/function-flush/">Valkey commands – FUNCTION FLUSH</seealso>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="mode">The flush mode.</param>
     /// <param name="route">The routing configuration specifying which nodes to flush.</param>
     /// <param name="cancellationToken">A token to cancel the async operation.</param>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await clusterClient.FunctionFlushAsync(FlushMode.Async, Route.AllPrimaries);
     /// </code>
     /// </example>
+    /// <remarks>
+    /// <para>Since Valkey 7.0.0.</para>
     /// </remarks>
     Task FunctionFlushAsync(
         FlushMode mode,
@@ -347,16 +339,16 @@ public partial interface IGlideClusterClient
     /// Terminates currently executing functions on specified nodes.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/function-kill/">Valkey commands – FUNCTION KILL</seealso>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="route">The routing configuration specifying which nodes to target.</param>
     /// <param name="cancellationToken">A token to cancel the async operation.</param>
     /// <exception cref="Errors.ValkeyServerException">Thrown if no function is running or if the function has written data on the targeted nodes.</exception>
-    /// <remarks>
     /// <example>
     /// <code>
     /// await clusterClient.FunctionKillAsync(Route.AllPrimaries);
     /// </code>
     /// </example>
+    /// <remarks>
+    /// <para>Since Valkey 7.0.0.</para>
     /// </remarks>
     Task FunctionKillAsync(
         Route route,
@@ -368,18 +360,18 @@ public partial interface IGlideClusterClient
     /// Lists loaded function libraries from all primary nodes.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/function-list/">Valkey commands – FUNCTION LIST</seealso>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="options">Optional query parameters to filter results.</param>
     /// <param name="cancellationToken">A token to cancel the async operation.</param>
     /// <returns>A <see cref="ClusterValue{T}"/> containing library information from the targeted nodes.</returns>
-    /// <remarks>
-    /// Uses <see cref="Route.AllPrimaries"/> as the route. Use the overload with an explicit <c>route</c> parameter
-    /// to target specific nodes.
     /// <example>
     /// <code>
     /// var result = await clusterClient.FunctionListAsync();
     /// </code>
     /// </example>
+    /// <remarks>
+    /// <para>Since Valkey 7.0.0.</para>
+    /// <para>Uses <see cref="Route.AllPrimaries"/> as the route. Use the overload with an explicit <c>route</c> parameter
+    /// to target specific nodes.</para>
     /// </remarks>
     // TODO #495: Remove method; consolidate single-value version into BaseClient.
     [Obsolete("Use FunctionListAsync(FunctionListOptions?, Route) instead. See #495.")]
@@ -391,17 +383,17 @@ public partial interface IGlideClusterClient
     /// Lists loaded function libraries from specified nodes.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/function-list/">Valkey commands – FUNCTION LIST</seealso>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="options">Optional query parameters to filter results.</param>
     /// <param name="route">The routing configuration specifying which nodes to query.</param>
     /// <param name="cancellationToken">A token to cancel the async operation.</param>
     /// <returns>A <see cref="ClusterValue{T}"/> containing library information from the targeted nodes.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var result = await clusterClient.FunctionListAsync(null, Route.AllPrimaries);
     /// </code>
     /// </example>
+    /// <remarks>
+    /// <para>Since Valkey 7.0.0.</para>
     /// </remarks>
     Task<ClusterValue<LibraryInfo[]>> FunctionListAsync(
         FunctionListOptions? options,
@@ -412,11 +404,9 @@ public partial interface IGlideClusterClient
     /// Returns function statistics from specified nodes.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/function-stats/">Valkey commands – FUNCTION STATS</seealso>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="route">The routing configuration specifying which nodes to query.</param>
     /// <param name="cancellationToken">A token to cancel the async operation.</param>
     /// <returns>A <see cref="ClusterValue{T}"/> containing per-node function statistics.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var result = await clusterClient.FunctionStatsAsync(Route.AllPrimaries);
@@ -426,6 +416,8 @@ public partial interface IGlideClusterClient
     /// }
     /// </code>
     /// </example>
+    /// <remarks>
+    /// <para>Since Valkey 7.0.0.</para>
     /// </remarks>
     Task<ClusterValue<FunctionStatsResult>> FunctionStatsAsync(
         Route route,
@@ -437,16 +429,16 @@ public partial interface IGlideClusterClient
     /// Creates a binary backup of loaded functions from specified nodes.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/function-dump/">Valkey commands – FUNCTION DUMP</seealso>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="route">The routing configuration specifying which nodes to back up from.</param>
     /// <param name="cancellationToken">A token to cancel the async operation.</param>
     /// <returns>A <see cref="ClusterValue{T}"/> containing binary payloads from the targeted nodes.</returns>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var result = await clusterClient.FunctionDumpAsync(Route.Random);
     /// </code>
     /// </example>
+    /// <remarks>
+    /// <para>Since Valkey 7.0.0.</para>
     /// </remarks>
     Task<ClusterValue<byte[]>> FunctionDumpAsync(
         Route route,
@@ -456,20 +448,20 @@ public partial interface IGlideClusterClient
     /// Restores functions from a binary backup on specified nodes.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/function-restore/">Valkey commands – FUNCTION RESTORE</seealso>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="payload">The binary payload from <see cref="FunctionDumpAsync(Route, CancellationToken)"/>.</param>
     /// <param name="route">The routing configuration specifying which nodes to restore to.</param>
     /// <param name="cancellationToken">A token to cancel the async operation.</param>
     /// <exception cref="Errors.ValkeyServerException">Thrown if restoration fails (e.g., library conflict with the default <see cref="FunctionRestorePolicy.Append"/> policy).</exception>
-    /// <remarks>
-    /// Uses the default <see cref="FunctionRestorePolicy.Append"/> policy. Use the overload with
-    /// <see cref="FunctionRestorePolicy"/> to specify a different policy.
     /// <example>
     /// <code>
     /// var backup = new byte[] { 0x01, 0x02 };
     /// await clusterClient.FunctionRestoreAsync(backup, Route.AllPrimaries);
     /// </code>
     /// </example>
+    /// <remarks>
+    /// <para>Since Valkey 7.0.0.</para>
+    /// <para>Uses the default <see cref="FunctionRestorePolicy.Append"/> policy. Use the overload with
+    /// <see cref="FunctionRestorePolicy"/> to specify a different policy.</para>
     /// </remarks>
     Task FunctionRestoreAsync(
         byte[] payload,
@@ -480,19 +472,19 @@ public partial interface IGlideClusterClient
     /// Restores functions from a binary backup on specified nodes with the specified policy.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/function-restore/">Valkey commands – FUNCTION RESTORE</seealso>
-    /// <note>Since Valkey 7.0.0.</note>
     /// <param name="payload">The binary payload from <see cref="FunctionDumpAsync(Route, CancellationToken)"/>.</param>
     /// <param name="policy">The restore policy.</param>
     /// <param name="route">The routing configuration specifying which nodes to restore to.</param>
     /// <param name="cancellationToken">A token to cancel the async operation.</param>
     /// <exception cref="Errors.ValkeyServerException">Thrown if restoration fails.</exception>
-    /// <remarks>
     /// <example>
     /// <code>
     /// var payload = new byte[] { 0x01, 0x02 };
     /// await clusterClient.FunctionRestoreAsync(payload, FunctionRestorePolicy.Replace, Route.AllPrimaries);
     /// </code>
     /// </example>
+    /// <remarks>
+    /// <para>Since Valkey 7.0.0.</para>
     /// </remarks>
     Task FunctionRestoreAsync(
         byte[] payload,

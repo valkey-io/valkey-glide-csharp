@@ -180,7 +180,6 @@ public static class GlideStringExtensions
 /// as a <see langword="string" /> if conversion is possible.<br />
 /// A <see cref="GlideString" /> could be implicitly instatiated from a <see langword="string" />.
 /// </summary>
-/// <remarks>
 /// <example>
 /// <code>
 /// GlideString gs1 = "123";
@@ -194,7 +193,6 @@ public static class GlideStringExtensions
 /// }
 /// </code>
 /// </example>
-/// </remarks>
 /// <seealso href="https://glide.valkey.io/commands/valkey-string/">Valkey GLIDE – Working with Strings and Binary Data</seealso>
 [ImmutableObject(true)]
 public sealed class GlideString : IComparable, IComparable<GlideString>
@@ -246,7 +244,6 @@ public sealed class GlideString : IComparable, IComparable<GlideString>
     /// stores a non-UTF8 compatible sequence of bytes. It is <b>highly recommended</b> to call to
     /// <see cref="CanConvertToString()" /> prior to do a conversion.
     /// </summary>
-    /// <remarks>
     /// <example>
     /// <code>
     /// GlideString gs = new byte[] { 0, 42, 255, 243, 0, 253, 15 };
@@ -256,7 +253,6 @@ public sealed class GlideString : IComparable, IComparable<GlideString>
     /// }
     /// </code>
     /// </example>
-    /// </remarks>
     /// <returns>A <see langword="string" /> representation of this <see cref="GlideString" />.</returns>
     public string GetString()
     {
