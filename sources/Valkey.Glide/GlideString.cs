@@ -452,8 +452,10 @@ public sealed class GlideString : IComparable, IComparable<GlideString>
     {
         // Store strings if they're both defined
 #pragma warning disable IDE0046 // Convert to conditional expression
-        if (left._canConvertToString is not null && (bool)left._canConvertToString &&
-            right._canConvertToString is not null && (bool)right._canConvertToString)
+        if (left._canConvertToString is not null
+            && (bool)left._canConvertToString &&
+            right._canConvertToString is not null
+            && (bool)right._canConvertToString)
         {
             return new(left.Str + right.Str);
         }

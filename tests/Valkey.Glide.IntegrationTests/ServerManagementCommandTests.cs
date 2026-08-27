@@ -882,7 +882,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
 
             return infoValues.All(info =>
                 !info.Contains("rdb_bgsave_in_progress:1")
-                && !info.Contains("aof_rewrite_in_progress:1"));
+                    && !info.Contains("aof_rewrite_in_progress:1"));
         }, "Timed out waiting for save to complete");
 
     #endregion

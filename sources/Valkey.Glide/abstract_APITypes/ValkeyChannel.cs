@@ -185,7 +185,7 @@ public readonly struct ValkeyChannel : IEquatable<ValkeyChannel>
     /// <param name="y">The second channel name.</param>
     public static bool operator ==(ValkeyChannel x, ValkeyChannel y) =>
         (x.Options == y.Options)
-        && ValkeyValue.Equals(x.Value, y.Value);
+            && ValkeyValue.Equals(x.Value, y.Value);
 
     /// <summary>
     /// Indicate whether two channel names are equal.
@@ -232,7 +232,7 @@ public readonly struct ValkeyChannel : IEquatable<ValkeyChannel>
     /// <param name="other">The channel name to compare.</param>
     public bool Equals(ValkeyChannel other) =>
         (Options == other.Options)
-        && ValkeyValue.Equals(Value, other.Value);
+            && ValkeyValue.Equals(Value, other.Value);
 
     /// <inheritdoc/>
     public override int GetHashCode() => ValkeyValue.GetHashCode(Value) ^ (int)Options;

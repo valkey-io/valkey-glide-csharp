@@ -501,7 +501,8 @@ public abstract class Condition
 
         public override string ToString()
             => (memberName.IsNull ? key.ToString() : ((string?)key) + " " + type + " > " + memberName)
-                + (expectedEqual ? " == " : " != ") + expectedValue;
+                + (expectedEqual ? " == " : " != ")
+                + expectedValue;
 
         internal sealed override List<ICmd> CreateCommands()
             => [
@@ -544,8 +545,12 @@ public abstract class Condition
         }
 
         public override string ToString()
-            => ((string?)key) + "[" + index.ToString() + "]" + (expectedValue.HasValue ? (expectedResult ? " == " : " != ")
-                + expectedValue.Value : (expectedResult ? " exists" : " does not exist"));
+            => ((string?)key)
+                + "["
+                + index.ToString()
+                + "]"
+                + (expectedValue.HasValue ? (expectedResult ? " == " : " != ")
+                    + expectedValue.Value : (expectedResult ? " exists" : " does not exist"));
 
         internal sealed override List<ICmd> CreateCommands()
             => [

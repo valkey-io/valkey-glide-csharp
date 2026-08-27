@@ -142,7 +142,8 @@ internal static partial class Request
 
             if (options.WithDistance && index < itemArray.Length)
             {
-                if (itemArray[index] is object[] distArray && distArray.Length > 0
+                if (itemArray[index] is object[] distArray
+                    && distArray.Length > 0
                     && double.TryParse(distArray[0]?.ToString(), out var dist))
                 {
                     distance = dist;
@@ -153,7 +154,8 @@ internal static partial class Request
 
             if (options.WithHash && index < itemArray.Length)
             {
-                if (itemArray[index] is object[] hashArray && hashArray.Length > 0
+                if (itemArray[index] is object[] hashArray
+                    && hashArray.Length > 0
                     && long.TryParse(hashArray[0]?.ToString(), out var h))
                 {
                     hash = h;
@@ -162,9 +164,12 @@ internal static partial class Request
                 index++;
             }
 
-            if (options.WithPosition && index < itemArray.Length
-                && itemArray[index] is object[] coordOuterArray && coordOuterArray.Length > 0
-                && coordOuterArray[0] is object[] coordMiddleArray && coordMiddleArray.Length >= 2
+            if (options.WithPosition
+                && index < itemArray.Length
+                && itemArray[index] is object[] coordOuterArray
+                && coordOuterArray.Length > 0
+                && coordOuterArray[0] is object[] coordMiddleArray
+                && coordMiddleArray.Length >= 2
                 && double.TryParse(coordMiddleArray[0]?.ToString(), out var lon)
                 && double.TryParse(coordMiddleArray[1]?.ToString(), out var lat))
             {

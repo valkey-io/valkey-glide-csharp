@@ -65,8 +65,8 @@ public sealed class ScoreBound
     /// <inheritdoc/>
     public bool Equals(ScoreBound? other)
         => other is not null
-        && _score == other._score
-        && _isExclusive == other._isExclusive;
+            && _score == other._score
+            && _isExclusive == other._isExclusive;
 
     /// <inheritdoc/>
     public override bool Equals(object? obj) => Equals(obj as ScoreBound);

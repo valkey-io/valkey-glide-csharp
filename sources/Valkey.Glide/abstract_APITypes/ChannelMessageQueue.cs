@@ -26,7 +26,8 @@ public readonly struct ChannelMessage
 
     /// <inheritdoc/>
     public override bool Equals(object? obj) => obj is ChannelMessage cm
-        && cm.Channel == Channel && cm.Message == Message;
+        && cm.Channel == Channel
+        && cm.Message == Message;
 
     internal ChannelMessage(ChannelMessageQueue queue, in ValkeyChannel channel, in ValkeyValue value)
     {

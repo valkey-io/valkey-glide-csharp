@@ -393,12 +393,13 @@ public readonly struct ValkeyKey : IEquatable<ValkeyKey>
     }
 
     internal int TotalLength() =>
-        (KeyPrefix?.Length ?? 0) + KeyValue switch
-        {
-            null => 0,
-            string s => Encoding.UTF8.GetByteCount(s),
-            _ => ((byte[])KeyValue).Length,
-        };
+        (KeyPrefix?.Length ?? 0)
+            + KeyValue switch
+            {
+                null => 0,
+                string s => Encoding.UTF8.GetByteCount(s),
+                _ => ((byte[])KeyValue).Length,
+            };
 
     internal int CopyTo(Span<byte> destination)
     {

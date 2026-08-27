@@ -466,7 +466,7 @@ public class StandaloneClientTests(TestConfiguration config)
 
         // Should contain version information (could be Redis or Valkey)
         Assert.True(result.Contains("Redis", StringComparison.OrdinalIgnoreCase) ||
-                   result.Contains("Valkey", StringComparison.OrdinalIgnoreCase));
+            result.Contains("Valkey", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]

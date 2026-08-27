@@ -491,7 +491,7 @@ public class ClusterClientTests(TestConfiguration config)
             Assert.NotEmpty(lolwut);
             // Accept both "Valkey" and "Redis" in the output since the server might be either
             Assert.True(lolwut.Contains("Valkey", StringComparison.OrdinalIgnoreCase) ||
-                       lolwut.Contains("Redis", StringComparison.OrdinalIgnoreCase));
+                lolwut.Contains("Redis", StringComparison.OrdinalIgnoreCase));
         }
 
         // Test with specific route
@@ -499,7 +499,7 @@ public class ClusterClientTests(TestConfiguration config)
         Assert.NotEmpty(singleNodeLolwut.SingleValue);
         // Accept both "Valkey" and "Redis" in the output since the server might be either
         Assert.True(singleNodeLolwut.SingleValue.Contains("Valkey", StringComparison.OrdinalIgnoreCase) ||
-                   singleNodeLolwut.SingleValue.Contains("Redis", StringComparison.OrdinalIgnoreCase));
+            singleNodeLolwut.SingleValue.Contains("Redis", StringComparison.OrdinalIgnoreCase));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]

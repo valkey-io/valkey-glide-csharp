@@ -84,10 +84,10 @@ public sealed class PubSubMessage
     /// <returns>True if the specified object is equal to the current PubSubMessage; otherwise, false.</returns>
     public override bool Equals(object? obj) =>
         obj is PubSubMessage other &&
-        ChannelMode == other.ChannelMode &&
-        Message.Equals(other.Message) &&
-        Channel.Equals(other.Channel) &&
-        Equals(Pattern, other.Pattern);
+            ChannelMode == other.ChannelMode &&
+            Message.Equals(other.Message) &&
+            Channel.Equals(other.Channel) &&
+            Equals(Pattern, other.Pattern);
 
     /// <summary>
     /// Returns the hash code for this PubSubMessage.

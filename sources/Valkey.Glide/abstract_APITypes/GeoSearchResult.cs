@@ -54,9 +54,9 @@ public readonly struct GeoSearchResult : IEquatable<GeoSearchResult>
     /// <inheritdoc/>
     public bool Equals(GeoSearchResult other)
         => Member == other.Member
-        && Position.Equals(other.Position)
-        && Distance.Equals(other.Distance)
-        && Hash.Equals(other.Hash);
+            && Position.Equals(other.Position)
+            && Distance.Equals(other.Distance)
+            && Hash.Equals(other.Hash);
 
     /// <inheritdoc/>
     public override bool Equals(object? obj)

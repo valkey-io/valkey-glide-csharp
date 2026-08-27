@@ -193,9 +193,9 @@ public static class ServerManager
         {
             throw new ApplicationException(
                 $"Process failed: exit code {exitCode}.\n" +
-                $"Command: {info.FileName} {info.Arguments}\n" +
-                $"Error: {error}\n" +
-                $"Output: {output}");
+                    $"Command: {info.FileName} {info.Arguments}\n" +
+                    $"Error: {error}\n" +
+                    $"Output: {output}");
         }
 
         return output ?? "";
