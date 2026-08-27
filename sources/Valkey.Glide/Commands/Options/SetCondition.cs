@@ -72,5 +72,11 @@ public sealed class SetCondition
     /// <summary>
     /// The set condition options.
     /// </summary>
-    internal enum SetConditionType { Always, OnlyIfExists, OnlyIfDoesNotExist, OnlyIfEqual }
+    internal enum SetConditionType
+    {
+        Always,
+        OnlyIfExists,
+        OnlyIfDoesNotExist,
+        OnlyIfEqual,
+    }
 }
