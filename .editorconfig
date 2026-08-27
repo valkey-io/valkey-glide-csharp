@@ -678,7 +678,6 @@ dotnet_diagnostic.RCS1268.severity = error
 # Roslynator rules NOT enabled (available to opt in). Sorted by id.
 # Excludes deprecated (Obsolete) and internal (Disabled) Roslynator rules.
 # ---------------------------------------------------------------------------
-# RCS0012: Add blank line between single-line declarations
 # RCS0013: Add blank line between single-line declarations of different kind
 # RCS0016: Put attribute list on its own line
 # RCS0024: Add new line after switch label
