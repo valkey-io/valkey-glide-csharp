@@ -681,7 +681,6 @@ dotnet_diagnostic.RCS1268.severity = error
 # Roslynator rules NOT enabled (available to opt in). Sorted by id.
 # Excludes deprecated (Obsolete) and internal (Disabled) Roslynator rules.
 # ---------------------------------------------------------------------------
-# RCS0039: Remove new line before base list
 # RCS0048: Put initializer on a single line
 # RCS0049: Add blank line after top comment
 # RCS0050: Add blank line before top declaration
