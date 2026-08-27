@@ -204,7 +204,6 @@ public class JsonCommandTests(TestConfiguration config)
     }
 
     #endregion
-
     #region JSON.GET Tests
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -478,7 +477,6 @@ public class JsonCommandTests(TestConfiguration config)
     }
 
     #endregion
-
     #region JSON.MGET Tests
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -644,7 +642,6 @@ public class JsonCommandTests(TestConfiguration config)
     }
 
     #endregion
-
     #region JSON.DEL Tests
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -790,7 +787,6 @@ public class JsonCommandTests(TestConfiguration config)
     }
 
     #endregion
-
     #region JSON.FORGET Tests
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -927,7 +923,6 @@ public class JsonCommandTests(TestConfiguration config)
     }
 
     #endregion
-
     #region JSON.CLEAR Tests
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1193,7 +1188,6 @@ public class JsonCommandTests(TestConfiguration config)
     }
 
     #endregion
-
     #region JSON.TYPE Tests
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1431,7 +1425,6 @@ public class JsonCommandTests(TestConfiguration config)
     }
 
     #endregion
-
     #region JSON.NUMINCRBY Tests
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1620,7 +1613,6 @@ public class JsonCommandTests(TestConfiguration config)
     }
 
     #endregion
-
     #region JSON.NUMMULTBY Tests
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1758,7 +1750,6 @@ public class JsonCommandTests(TestConfiguration config)
     }
 
     #endregion
-
     #region JSON.STRAPPEND Tests
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1925,7 +1916,6 @@ public class JsonCommandTests(TestConfiguration config)
     }
 
     #endregion
-
     #region JSON.STRLEN Tests
 
     [Theory(DisableDiscoveryEnumeration = true)]

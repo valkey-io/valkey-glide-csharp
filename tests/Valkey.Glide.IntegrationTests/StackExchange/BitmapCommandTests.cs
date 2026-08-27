@@ -99,7 +99,6 @@ public class BitmapCommandTests(TestConfiguration config)
     }
 
     #endregion
-
     #region StringBitPositionAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]

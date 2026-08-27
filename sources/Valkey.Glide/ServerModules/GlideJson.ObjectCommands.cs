@@ -58,7 +58,6 @@ public static partial class GlideJson
     }
 
     #endregion
-
     #region JSON.OBJKEYS
 
     /// <summary>
@@ -92,7 +91,9 @@ public static partial class GlideJson
     private static ValkeyValue[][]? ConvertToNestedValkeyValueArray(object? result)
     {
         if (result is null)
+        {
             return null;
+        }
 
         if (result is object?[] arr)
         {
@@ -140,7 +141,6 @@ public static partial class GlideJson
     }
 
     #endregion
-
     #region JSON.DEBUG MEMORY
 
     /// <summary>
@@ -193,7 +193,6 @@ public static partial class GlideJson
     }
 
     #endregion
-
     #region JSON.DEBUG FIELDS
 
     /// <summary>
@@ -245,7 +244,6 @@ public static partial class GlideJson
     }
 
     #endregion
-
     #region JSON.RESP
 
     /// <summary>

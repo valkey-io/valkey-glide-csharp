@@ -93,7 +93,6 @@ public static partial class Ft
         => client.Command(Request.FtCreate(index, schema, options));
 
     #endregion
-
     #region Nested Types
 
     /// <summary>

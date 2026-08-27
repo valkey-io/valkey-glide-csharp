@@ -26,14 +26,12 @@ public sealed class SetCondition
     public static readonly SetCondition OnlyIfDoesNotExist = new(SetConditionType.OnlyIfDoesNotExist);
 
     #endregion
-
     #region Internal Properties
 
     internal SetConditionType Type { get; }
     internal ValkeyValue? ComparisonValue { get; }
 
     #endregion
-
     #region Constructors
 
     private SetCondition(SetConditionType type, ValkeyValue? comparisonValue = null)
@@ -43,7 +41,6 @@ public sealed class SetCondition
     }
 
     #endregion
-
     #region Public Methods
 
     /// <summary>
@@ -55,7 +52,6 @@ public sealed class SetCondition
         => new(SetConditionType.OnlyIfEqual, comparisonValue);
 
     #endregion
-
     #region Internal Methods
 
     /// <summary>

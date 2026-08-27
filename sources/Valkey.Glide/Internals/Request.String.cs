@@ -85,7 +85,6 @@ internal static partial class Request
         => new(RequestType.SetRange, [key, offset.ToGlideString(), value], false, response => (ValkeyValue)response);
 
     #endregion
-
     #region Response Converters
 
     private static LCSMatchResult ConvertLCSMatchResult(object response) =>
@@ -132,7 +131,6 @@ internal static partial class Request
     }
 
     #endregion
-
     #region Argument Builders
 
     private static GlideString[] ToSetOptionsArgs(SetOptions options)

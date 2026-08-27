@@ -696,7 +696,6 @@ public abstract partial class BaseClient : IBaseClient
         UIntPtr resolvedHostLen);
 
     #endregion
-
     #region private fields
 
     /// <summary>

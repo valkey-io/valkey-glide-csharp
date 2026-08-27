@@ -213,7 +213,6 @@ internal static partial class Request
             [.. response.Cast<GlideString>().Select(gs => (ValkeyValue)gs)]);
 
     #endregion
-
     #region Argument Builders
 
     /// <summary>

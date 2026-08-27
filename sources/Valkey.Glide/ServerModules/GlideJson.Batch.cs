@@ -72,7 +72,6 @@ public static class GlideJsonBatch
     }
 
     #endregion
-
     #region JSON.GET
 
     /// <summary>
@@ -133,7 +132,6 @@ public static class GlideJsonBatch
     }
 
     #endregion
-
     #region JSON.MGET
 
     /// <summary>
@@ -155,7 +153,6 @@ public static class GlideJsonBatch
     }
 
     #endregion
-
     #region JSON.DEL
 
     /// <summary>
@@ -184,7 +181,6 @@ public static class GlideJsonBatch
         => batch.CustomCommand([GlideJson.JsonDel, key, path]);
 
     #endregion
-
     #region JSON.FORGET
 
     /// <summary>
@@ -215,7 +211,6 @@ public static class GlideJsonBatch
         => Del(batch, key, path);
 
     #endregion
-
     #region JSON.CLEAR
 
     /// <summary>
@@ -243,7 +238,6 @@ public static class GlideJsonBatch
         => batch.CustomCommand([GlideJson.JsonClear, key, path]);
 
     #endregion
-
     #region JSON.TYPE
 
     /// <summary>
@@ -271,7 +265,6 @@ public static class GlideJsonBatch
         => batch.CustomCommand([GlideJson.JsonType, key, path]);
 
     #endregion
-
     #region JSON.NUMINCRBY
 
     /// <summary>
@@ -289,7 +282,6 @@ public static class GlideJsonBatch
         => batch.CustomCommand([GlideJson.JsonNumIncrBy, key, path, increment.ToString(CultureInfo.InvariantCulture)]);
 
     #endregion
-
     #region JSON.NUMMULTBY
 
     /// <summary>
@@ -307,7 +299,6 @@ public static class GlideJsonBatch
         => batch.CustomCommand([GlideJson.JsonNumMultBy, key, path, multiplier.ToString(CultureInfo.InvariantCulture)]);
 
     #endregion
-
     #region JSON.STRAPPEND
 
     /// <summary>
@@ -325,7 +316,6 @@ public static class GlideJsonBatch
         => batch.CustomCommand([GlideJson.JsonStrAppend, key, path, value]);
 
     #endregion
-
     #region JSON.STRLEN
 
     /// <summary>
@@ -342,7 +332,6 @@ public static class GlideJsonBatch
         => batch.CustomCommand([GlideJson.JsonStrLen, key, path]);
 
     #endregion
-
     #region JSON.ARRAPPEND
 
     /// <summary>
@@ -364,7 +353,6 @@ public static class GlideJsonBatch
     }
 
     #endregion
-
     #region JSON.ARRINSERT
 
     /// <summary>
@@ -387,7 +375,6 @@ public static class GlideJsonBatch
     }
 
     #endregion
-
     #region JSON.ARRINDEX
 
     /// <summary>
@@ -405,7 +392,6 @@ public static class GlideJsonBatch
         => batch.CustomCommand([GlideJson.JsonArrIndex, key, path, value]);
 
     #endregion
-
     #region JSON.ARRLEN
 
     /// <summary>
@@ -422,7 +408,6 @@ public static class GlideJsonBatch
         => batch.CustomCommand([GlideJson.JsonArrLen, key, path]);
 
     #endregion
-
     #region JSON.ARRPOP
 
     /// <summary>
@@ -453,7 +438,6 @@ public static class GlideJsonBatch
         => batch.CustomCommand([GlideJson.JsonArrPop, key, path, index.ToString()]);
 
     #endregion
-
     #region JSON.ARRTRIM
 
     /// <summary>
@@ -472,7 +456,6 @@ public static class GlideJsonBatch
         => batch.CustomCommand([GlideJson.JsonArrTrim, key, path, start.ToString(), stop.ToString()]);
 
     #endregion
-
     #region JSON.OBJLEN
 
     /// <summary>
@@ -500,7 +483,6 @@ public static class GlideJsonBatch
         => batch.CustomCommand([GlideJson.JsonObjLen, key, path]);
 
     #endregion
-
     #region JSON.OBJKEYS
 
     /// <summary>
@@ -528,7 +510,6 @@ public static class GlideJsonBatch
         => batch.CustomCommand([GlideJson.JsonObjKeys, key, path]);
 
     #endregion
-
     #region JSON.TOGGLE
 
     /// <summary>
@@ -545,7 +526,6 @@ public static class GlideJsonBatch
         => batch.CustomCommand([GlideJson.JsonToggle, key, path]);
 
     #endregion
-
     #region JSON.DEBUG
 
     /// <summary>
@@ -597,7 +577,6 @@ public static class GlideJsonBatch
         => batch.CustomCommand([GlideJson.JsonDebug, ValkeyLiterals.FIELDS, key, path]);
 
     #endregion
-
     #region JSON.RESP
 
     /// <summary>

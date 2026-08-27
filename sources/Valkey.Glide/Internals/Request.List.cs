@@ -142,7 +142,6 @@ internal static partial class Request
         => Ok(RequestType.LTrim, [key, start.ToGlideString(), stop.ToGlideString()]);
 
     #endregion
-
     #region Response Converters
 
     private static ListPopResult ConvertDictToListPopResult(Dictionary<GlideString, object> dict)

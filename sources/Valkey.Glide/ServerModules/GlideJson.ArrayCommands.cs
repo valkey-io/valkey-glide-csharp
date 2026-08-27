@@ -44,7 +44,6 @@ public static partial class GlideJson
     }
 
     #endregion
-
     #region JSON.ARRINSERT
 
     /// <summary>
@@ -83,7 +82,6 @@ public static partial class GlideJson
     }
 
     #endregion
-
     #region JSON.ARRINDEX
 
     /// <summary>
@@ -150,7 +148,6 @@ public static partial class GlideJson
     }
 
     #endregion
-
     #region JSON.ARRLEN
 
     /// <summary>
@@ -202,7 +199,6 @@ public static partial class GlideJson
     }
 
     #endregion
-
     #region JSON.ARRPOP
 
     /// <summary>
@@ -262,7 +258,6 @@ public static partial class GlideJson
     }
 
     #endregion
-
     #region JSON.ARRTRIM
 
     /// <summary>

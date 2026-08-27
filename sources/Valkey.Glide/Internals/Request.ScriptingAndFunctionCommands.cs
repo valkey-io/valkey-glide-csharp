@@ -174,7 +174,6 @@ internal static partial class Request
         => new(RequestType.ScriptShow, [sha1Hash], true, gs => gs?.ToString());
 
     #endregion
-
     #region Response Converters
 
     private static void ParseEngineData(string engineName, object value, Dictionary<string, EngineStats> engines)
@@ -503,7 +502,6 @@ internal static partial class Request
     }
 
     #endregion
-
     #region Argument Builders
 
     /// <summary>

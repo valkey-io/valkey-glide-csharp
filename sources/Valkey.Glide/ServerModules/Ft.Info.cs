@@ -47,7 +47,6 @@ public static partial class Ft
         => client.Command(Request.FtInfoLocal(index, options));
 
     #endregion
-
     #region Nested Types
 
     /// <summary>

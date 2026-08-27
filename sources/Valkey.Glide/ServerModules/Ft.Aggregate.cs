@@ -78,7 +78,6 @@ public static partial class Ft
         => client.Command(Request.FtAggregate(index, query, options));
 
     #endregion
-
     #region Nested Types
 
     /// <summary>
@@ -418,7 +417,6 @@ public static partial class Ft
     }
 
     #endregion
-
     #region Private Methods
 
     private static GlideString ToLiteral(ReducerFunction function)

@@ -13,6 +13,15 @@ namespace Valkey.Glide;
 /// </summary>
 public abstract class ValkeyResult
 {
+    // Public parameterless constructor retained purely for binary compatibility.
+#pragma warning disable RCS1160
+    /// <summary>
+    /// Do not use.
+    /// </summary>
+    [Obsolete("Please specify a result type", true)]
+    public ValkeyResult() : this(default) { }
+#pragma warning restore RCS1160
+
     internal ValkeyResult(ResultType resultType)
     {
         Resp3Type = resultType;

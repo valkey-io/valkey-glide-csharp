@@ -18,7 +18,6 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
     private const CommandFlags UnsupportedCommandFlag = CommandFlags.DemandMaster;
 
     #endregion
-
     #region KeyDeleteAsync Tests
 
     [Fact]
@@ -86,7 +85,6 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
     }
 
     #endregion
-
     #region KeyExistsAsync Tests
 
     [Fact]
@@ -154,7 +152,6 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
     }
 
     #endregion
-
     #region KeyExpireAsync Tests
 
     [Fact]
@@ -168,7 +165,7 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
 
         TimeSpan? ttl = await db.KeyTimeToLiveAsync(key);
         _ = Assert.NotNull(ttl);
-        Assert.True(ttl.Value.TotalSeconds > 0 && ttl.Value.TotalSeconds <= 10);
+        Assert.True(ttl.Value.TotalSeconds is > 0 and <= 10);
     }
 
     [Fact]
@@ -220,7 +217,6 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
             () => fixture.Database.KeyExpireAsync("key", DateTime.UtcNow.AddSeconds(10), UnsupportedCommandFlag));
 
     #endregion
-
     #region KeyTimeToLiveAsync Tests
 
     [Fact]
@@ -235,7 +231,7 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         _ = await db.KeyExpireAsync(key, TimeSpan.FromSeconds(10));
         TimeSpan? ttl = await db.KeyTimeToLiveAsync(key);
         _ = Assert.NotNull(ttl);
-        Assert.True(ttl.Value.TotalSeconds > 0 && ttl.Value.TotalSeconds <= 10);
+        Assert.True(ttl.Value.TotalSeconds is > 0 and <= 10);
     }
 
     [Fact]
@@ -278,7 +274,6 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
             () => fixture.Database.KeyTimeToLiveAsync("key", UnsupportedCommandFlag));
 
     #endregion
-
     #region KeyTypeAsync Tests
 
     [Fact]
@@ -312,7 +307,6 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
             () => fixture.Database.KeyTypeAsync("key", UnsupportedCommandFlag));
 
     #endregion
-
     #region KeyRenameAsync Tests
 
     [Fact]
@@ -396,7 +390,6 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
             () => fixture.Database.KeyRenameAsync("oldKey", "newKey", When.Always, UnsupportedCommandFlag));
 
     #endregion
-
     #region KeyPersistAsync Tests
 
     [Fact]
@@ -431,7 +424,6 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
             () => fixture.Database.KeyPersistAsync("key", UnsupportedCommandFlag));
 
     #endregion
-
     #region KeyDumpAsync Tests
 
     [Fact]
@@ -463,7 +455,6 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
             () => fixture.Database.KeyDumpAsync("key", UnsupportedCommandFlag));
 
     #endregion
-
     #region KeyRestoreAsync Tests
 
     [Fact]
@@ -544,7 +535,6 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
     }
 
     #endregion
-
     #region KeyTouchAsync Tests
 
     [Fact]
@@ -609,7 +599,6 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
     }
 
     #endregion
-
     #region KeyCopyAsync Tests
 
     [Fact]
@@ -645,7 +634,6 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
             () => fixture.Database.KeyCopyAsync("src", "dst", -1, false, UnsupportedCommandFlag));
 
     #endregion
-
     #region KeyIdleTimeAsync Tests
 
     [Fact]
@@ -687,7 +675,6 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
             () => fixture.Database.KeyIdleTimeAsync("key", UnsupportedCommandFlag));
 
     #endregion
-
     #region KeyRandomAsync Tests
 
     [Fact]
@@ -718,7 +705,6 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
             () => fixture.Database.KeyRandomAsync(UnsupportedCommandFlag));
 
     #endregion
-
     #region SortAsync Tests
 
     [Fact]
@@ -749,7 +735,6 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
             () => fixture.Database.SortAsync("key", 0, -1, Order.Ascending, SortType.Numeric, default, null, UnsupportedCommandFlag));
 
     #endregion
-
     #region SortAndStoreAsync Tests
 
     [Fact]
