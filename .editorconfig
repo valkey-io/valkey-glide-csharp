@@ -586,9 +586,11 @@ dotnet_diagnostic.RCS0050.severity = error
 dotnet_diagnostic.RCS0054.severity = error
 dotnet_diagnostic.RCS0055.severity = error
 dotnet_diagnostic.RCS0060.severity = error
+dotnet_diagnostic.RCS0061.severity = error
 
 roslynator_blank_line_between_single_line_accessors = false
 roslynator_blank_line_after_file_scoped_namespace_declaration = true
+roslynator_blank_line_between_switch_sections = true
 
 # Common Analyzers (RCS1)
 dotnet_diagnostic.RCS1006.severity = error
@@ -695,7 +697,6 @@ dotnet_diagnostic.RCS1268.severity = error
 # Excludes deprecated (Obsolete) and internal (Disabled) Roslynator rules.
 # ---------------------------------------------------------------------------
 # RCS0056: A line is too long
-# RCS0061: Add/remove blank line between switch sections
 # RCS0063: Remove unnecessary blank line
 # RCS1001: Add braces (when expression spans over multiple lines)
 # RCS1002: Remove braces
