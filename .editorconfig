@@ -686,17 +686,17 @@ dotnet_diagnostic.RCS1263.severity = error
 dotnet_diagnostic.RCS1265.severity = error
 dotnet_diagnostic.RCS1268.severity = error
 
-# ---------------------------------------------------------------------------
-# Future PRs
-# ---------------------------------------------------------------------------
-# TODO(RCS0053): Fix formatting of a list
-#   auto-fixable via: Configuration=Lint dotnet format Valkey.Glide.sln analyzers
-#   --diagnostics RCS0053 --severity info
+# ----------------------------------------
 
-# ---------------------------------------------------------------------------
-# Roslynator rules NOT enabled (available to opt in). Sorted by id.
-# Excludes deprecated (Obsolete) and internal (Disabled) Roslynator rules.
-# ---------------------------------------------------------------------------
+# TODO #549: Enable these analyzers
+# Configuration=Lint dotnet format Valkey.Glide.sln analyzers --diagnostics <ID> --severity info
+
+# RCS0053: Fix formatting of a list
+
+# ----------------------------------------
+
+# TODO #549: Evaluate these analyzers
+
 # RCS0056: A line is too long
 # RCS1001: Add braces (when expression spans over multiple lines)
 # RCS1002: Remove braces
