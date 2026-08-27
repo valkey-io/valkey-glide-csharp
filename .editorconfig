@@ -680,7 +680,6 @@ dotnet_diagnostic.RCS1268.severity = error
 # Roslynator rules NOT enabled (available to opt in). Sorted by id.
 # Excludes deprecated (Obsolete) and internal (Disabled) Roslynator rules.
 # ---------------------------------------------------------------------------
-# RCS0024: Add new line after switch label
 # RCS0029: Put constructor initializer on its own line
 # RCS0031: Put enum member on its own line
 # RCS0034: Put type parameter constraint on its own line
