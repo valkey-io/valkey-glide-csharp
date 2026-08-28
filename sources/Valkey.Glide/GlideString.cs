@@ -351,7 +351,7 @@ public sealed class GlideString : IComparable, IComparable<GlideString>
     {
         if (other is null)
         {
-            return -1;
+            return 1;
         }
 
         if (other == this)

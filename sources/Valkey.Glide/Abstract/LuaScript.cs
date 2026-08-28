@@ -69,7 +69,7 @@ public sealed class LuaScript
     /// </example>
     public static LuaScript Prepare(string script)
     {
-        ArgumentNullException.ThrowIfNullOrEmpty(script, nameof(script));
+        ArgumentException.ThrowIfNullOrEmpty(script, nameof(script));
 
         // Check cache first
         if (Cache.TryGetValue(script, out WeakReference<LuaScript>? weakRef) && weakRef.TryGetTarget(out LuaScript? cachedScript))
