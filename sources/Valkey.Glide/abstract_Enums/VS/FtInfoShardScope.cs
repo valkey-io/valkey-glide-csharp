@@ -10,6 +10,7 @@ public enum FtInfoShardScope
 {
     /// <summary>Queries all shards (default).</summary>
     AllShards,
+
     /// <summary>Queries only a subset of shards.</summary>
     SomeShards,
 }

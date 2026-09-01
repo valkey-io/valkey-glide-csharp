@@ -23,8 +23,8 @@ public class PubSubCoexistenceTests
             .Select(_ => BuildMessage(channelMode))
             .ToArray();
 
-        using var subscriber = await BuildSubscriber(isCluster, messages);
-        using var publisher = BuildPublisher(isCluster);
+        await using var subscriber = await BuildSubscriber(isCluster, messages);
+        await using var publisher = BuildPublisher(isCluster);
 
         // Publish messages and verify receipt.
         await PublishAsync(publisher, messages);
@@ -37,8 +37,8 @@ public class PubSubCoexistenceTests
     {
         var message = BuildMessage();
 
-        using var subscriber = await BuildSubscriber(isCluster, message);
-        using var publisher = BuildPublisher(isCluster);
+        await using var subscriber = await BuildSubscriber(isCluster, message);
+        await using var publisher = BuildPublisher(isCluster);
 
         // Publish to channel with custom command and verify receipt.
         var args = new GlideString[] { "PUBLISH", message.Channel, message.Message };
@@ -58,8 +58,8 @@ public class PubSubCoexistenceTests
 
         var message = BuildMessage(PubSubChannelMode.Sharded);
 
-        using var subscriber = await BuildClusterSubscriber(message);
-        using var publisher = BuildPublisher(isCluster: true);
+        await using var subscriber = await BuildClusterSubscriber(message);
+        await using var publisher = BuildPublisher(isCluster: true);
 
         // Publish to sharded channel with custom command and verify receipt.
         _ = await ((GlideClusterClient)publisher).CustomCommand(["SPUBLISH", message.Channel, message.Message]);

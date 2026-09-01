@@ -35,6 +35,7 @@ public class AzAffinityTests(TestConfiguration config)
                 return int.Parse(parts[1].Trim());
             }
         }
+
         throw new Exception("Can't get replica count");
     }
 
@@ -77,12 +78,9 @@ public class AzAffinityTests(TestConfiguration config)
                     Assert.Equal(nGetCalls, int.Parse(m.Groups[1].Value));
                 }
             }
-            else
+            else if (m.Success)
             {
-                if (m.Success)
-                {
-                    Assert.Fail($"Non AZ replica got {m.Groups[1].Value} get calls");
-                }
+                Assert.Fail($"Non AZ replica got {m.Groups[1].Value} get calls");
             }
         }
 
@@ -227,6 +225,7 @@ public class AzAffinityTests(TestConfiguration config)
                 {
                     Assert.Fail($"Replica node got GET {m.Groups[1].Value} calls when shouldn't be");
                 }
+
                 if (value.Contains("role:master"))
                 {
                     if (m.Success)
@@ -235,7 +234,7 @@ public class AzAffinityTests(TestConfiguration config)
                     }
                     else
                     {
-                        Assert.Fail($"Primary node didn't get GET calls");
+                        Assert.Fail("Primary node didn't get GET calls");
                     }
                 }
             }

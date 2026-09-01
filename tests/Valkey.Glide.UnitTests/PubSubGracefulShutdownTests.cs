@@ -78,6 +78,7 @@ public class PubSubGracefulShutdownTests
             {
                 _ = Interlocked.Increment(ref messagesProcessed);
             }
+
             processingCompleted = true;
         }, TestContext.Current.CancellationToken);
 

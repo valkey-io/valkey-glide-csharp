@@ -79,7 +79,6 @@ public class ScriptingCommandTests(TestConfiguration config)
             () => db.ScriptEvaluateAsync("return 1", null, null, CommandFlags.DemandMaster));
 
     #endregion
-
     #region ScriptEvaluateAsync (byte[] hash)
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -89,7 +88,6 @@ public class ScriptingCommandTests(TestConfiguration config)
             () => db.ScriptEvaluateAsync(new byte[20], null, null, CommandFlags.DemandMaster));
 
     #endregion
-
     #region ScriptEvaluateAsync (LuaScript)
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -126,7 +124,6 @@ public class ScriptingCommandTests(TestConfiguration config)
     }
 
     #endregion
-
     #region ScriptEvaluateAsync (LoadedLuaScript)
 
     [Theory(DisableDiscoveryEnumeration = true)]

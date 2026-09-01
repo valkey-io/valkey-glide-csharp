@@ -61,16 +61,19 @@ public sealed class LexBound
     /// <summary>
     /// Converts a string to an inclusive lexicographic bound.
     /// </summary>
+    /// <param name="value">The value to convert.</param>
     public static implicit operator LexBound(string value) => Inclusive(value);
 
     /// <summary>
     /// Converts a byte array to an inclusive lexicographic bound.
     /// </summary>
+    /// <param name="value">The value to convert.</param>
     public static implicit operator LexBound(byte[] value) => Inclusive(value);
 
     /// <summary>
     /// Converts a <see cref="ValkeyValue"/> to an inclusive lexicographic bound.
     /// </summary>
+    /// <param name="value">The value to convert.</param>
     public static implicit operator LexBound(ValkeyValue value) => Inclusive((ValkeyValue)value);
 
     #endregion
@@ -85,7 +88,6 @@ public sealed class LexBound
         {
             return [ValkeyLiterals.LexRangeMin];
         }
-
         else if (_value == ValkeyLiterals.LexRangeMax)
         {
             return [ValkeyLiterals.LexRangeMax];

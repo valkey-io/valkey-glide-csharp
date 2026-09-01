@@ -10,7 +10,7 @@ namespace Valkey.Glide;
 internal sealed class Subscriber : ISubscriber
 {
     // Default async timeout for StackExchange.Redis compabitility.
-    private static readonly int DefaultTimeoutMs = 5000;
+    private const int DefaultTimeoutMs = 5000;
 
     private readonly ConnectionMultiplexer _multiplexer;
     private readonly Database _client;
@@ -97,7 +97,6 @@ internal sealed class Subscriber : ISubscriber
     /// Unsubscribes from the specified channel queue.
     /// </summary>
     /// <param name="queue">The channel message queue to unsubscribe.</param>
-    /// <returns></returns>
     internal async Task UnsubscribeAsync(ChannelMessageQueue queue)
     {
         // Validate arguments.
@@ -225,7 +224,7 @@ internal sealed class Subscriber : ISubscriber
     /// <summary>
     /// Throws if the client is not in cluster mode.
     /// </summary>
-    /// <exception cref="InvalidOperationException">Thrown when sharded pub/sub is used in standalone mode.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if sharded pub/sub is used in standalone mode.</exception>
     private void ThrowIfNotClusterMode()
     {
         if (!_client.IsCluster)

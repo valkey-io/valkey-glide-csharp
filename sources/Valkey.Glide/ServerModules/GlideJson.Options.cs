@@ -179,6 +179,7 @@ public static partial class GlideJson
             {
                 return [Start.ToString(), End.Value.ToString()];
             }
+
             return [Start.ToString()];
         }
     }

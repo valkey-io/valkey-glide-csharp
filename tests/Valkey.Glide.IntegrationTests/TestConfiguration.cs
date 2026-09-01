@@ -25,11 +25,13 @@ public class TestConfiguration : IDisposable
     public static Address CLUSTER_ADDRESS => CLUSTER_ADDRESSES.First();
 
     // Environment variable names for providing server endpoints.
-    private static readonly string StandaloneEndpointsEnvVar = "standalone-endpoints";
-    private static readonly string ClusterEndpointsEnvVar = "cluster-endpoints";
+    private const string StandaloneEndpointsEnvVar = "standalone-endpoints";
+    private const string ClusterEndpointsEnvVar = "cluster-endpoints";
 
     private static readonly object LockObject = new();
+
     private const string DefaultServerGroupName = "cluster";
+
     public static Version SERVER_VERSION { get; internal set; } = new();
     public static bool TLS { get; internal set; } = false;
 
@@ -92,6 +94,7 @@ public class TestConfiguration : IDisposable
                     field = [.. TestStandaloneClients.Select(d => (BaseClient)d.Data), .. TestClusterClients.Select(d => (BaseClient)d.Data)];
                 }
             }
+
             return field;
         }
 
@@ -114,21 +117,26 @@ public class TestConfiguration : IDisposable
                 {
                     GlideClient resp2client = GlideClient.CreateClient(
                         DefaultClientConfig()
-                        .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP2)
-                        .WithRequestTimeout(DEFAULT_TIMEOUT)
-                        .Build()
-                    ).GetAwaiter().GetResult();
+                            .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP2)
+                            .WithRequestTimeout(DEFAULT_TIMEOUT)
+                            .Build()
+                    )
+                        .GetAwaiter()
+                        .GetResult();
                     resp2client.SetInfo("RESP2");
                     GlideClient resp3client = GlideClient.CreateClient(
                         DefaultClientConfig()
-                        .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
-                        .WithRequestTimeout(DEFAULT_TIMEOUT)
-                        .Build()
-                    ).GetAwaiter().GetResult();
+                            .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
+                            .WithRequestTimeout(DEFAULT_TIMEOUT)
+                            .Build()
+                    )
+                        .GetAwaiter()
+                        .GetResult();
                     resp3client.SetInfo("RESP3");
                     field = [resp2client, resp3client];
                 }
             }
+
             return field;
         }
 
@@ -150,21 +158,26 @@ public class TestConfiguration : IDisposable
                 {
                     GlideClusterClient resp2client = GlideClusterClient.CreateClient(
                         DefaultClusterClientConfig()
-                        .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP2)
-                        .WithRequestTimeout(DEFAULT_TIMEOUT)
-                        .Build()
-                    ).GetAwaiter().GetResult();
+                            .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP2)
+                            .WithRequestTimeout(DEFAULT_TIMEOUT)
+                            .Build()
+                    )
+                        .GetAwaiter()
+                        .GetResult();
                     resp2client.SetInfo("RESP2");
                     GlideClusterClient resp3client = GlideClusterClient.CreateClient(
                         DefaultClusterClientConfig()
-                        .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
-                        .WithRequestTimeout(DEFAULT_TIMEOUT)
-                        .Build()
-                    ).GetAwaiter().GetResult();
+                            .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
+                            .WithRequestTimeout(DEFAULT_TIMEOUT)
+                            .Build()
+                    )
+                        .GetAwaiter()
+                        .GetResult();
                     resp3client.SetInfo("RESP3");
                     field = [resp2client, resp3client];
                 }
             }
+
             return field;
         }
 
@@ -177,12 +190,14 @@ public class TestConfiguration : IDisposable
         {
             data.Data.Dispose();
         }
+
         TestClients = [];
         TestClusterClients = [];
         TestStandaloneClients = [];
     }
 
     #region SER COMPAT
+
     public static ConfigurationOptions DefaultCompatibleConfig()
     {
         ConfigurationOptions config = new();
@@ -233,6 +248,7 @@ public class TestConfiguration : IDisposable
                     field = [resp2Conn, resp3Conn];
                 }
             }
+
             return field;
         }
 
@@ -265,6 +281,7 @@ public class TestConfiguration : IDisposable
                     field = [resp2Conn, resp3Conn];
                 }
             }
+
             return field;
         }
 
@@ -287,6 +304,7 @@ public class TestConfiguration : IDisposable
 #pragma warning restore xUnit1046 // Avoid using TheoryDataRow arguments that are not serializable
                 }
             }
+
             return field;
         }
 
@@ -316,6 +334,7 @@ public class TestConfiguration : IDisposable
 #pragma warning restore xUnit1047 // Avoid using TheoryDataRow arguments that might not be serializable
                 }
             }
+
             return field;
         }
 
@@ -335,11 +354,13 @@ public class TestConfiguration : IDisposable
 #pragma warning restore xUnit1047 // Avoid using TheoryDataRow arguments that might not be serializable
                 }
             }
+
             return field;
         }
 
         private set;
     } = [];
+
     #endregion
 
     public TestConfiguration()
@@ -400,7 +421,6 @@ public class TestConfiguration : IDisposable
     private static void TestConsoleWriteLine(string message) =>
         TestContext.Current.SendDiagnosticMessage(message);
 
-
     private static Version GetServerVersion()
     {
         Exception? err = null;
@@ -416,6 +436,7 @@ public class TestConfiguration : IDisposable
                 err = e;
             }
         }
+
         if (CLUSTER_ADDRESSES.Count > 0)
         {
             GlideClusterClient client = DefaultClusterClient();
@@ -429,10 +450,12 @@ public class TestConfiguration : IDisposable
                 {
                     TestConsoleWriteLine(err.ToString());
                 }
+
                 TestConsoleWriteLine(e.ToString());
                 throw;
             }
         }
+
         throw new Exception("No servers are given");
     }
 }

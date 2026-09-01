@@ -9,6 +9,4 @@ namespace Valkey.Glide.Commands;
 /// Server management commands for standalone clients.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/#server">Valkey – Server Management Commands</seealso>
-public interface IServerManagementStandaloneCommands
-{
-}
+public interface IServerManagementStandaloneCommands;

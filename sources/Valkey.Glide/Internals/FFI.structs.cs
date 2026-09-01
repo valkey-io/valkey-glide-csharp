@@ -6,6 +6,10 @@ using System.Runtime.InteropServices;
 using static Valkey.Glide.ConnectionConfiguration;
 using static Valkey.Glide.Route;
 
+// Disable RCS0010 (Add blank line between declarations) to allow boolean properties
+// to be grouped with its paired value field (e.g. `HasField` and `Field`).
+#pragma warning disable RCS0010
+
 namespace Valkey.Glide.Internals;
 
 // FFI-ready structs, helper methods and wrappers
@@ -21,6 +25,7 @@ internal partial class FFI
             {
                 _ptr = AllocateAndCopy();
             }
+
             return _ptr;
         }
 
@@ -62,6 +67,7 @@ internal partial class FFI
             {
                 Marshal.FreeHGlobal(_argPtrs[i]);
             }
+
             _pinnedArgs.Free();
             PoolReturn(_argPtrs);
             _pinnedLengths.Free();
@@ -115,6 +121,7 @@ internal partial class FFI
             {
                 _cmds[i].Dispose();
             }
+
             _pinnedCmds.Free();
             ArrayPool<IntPtr>.Shared.Return(_cmdPtrs);
         }
@@ -450,6 +457,7 @@ internal partial class FFI
         /// Copies a byte array into unmanaged memory for FFI.
         /// Returns <see cref="IntPtr.Zero"/> if null.
         /// </summary>
+        /// <param name="data">The byte array to copy.</param>
         private static IntPtr MarshalBytes(byte[]? data)
         {
             if (data is null)
@@ -505,6 +513,7 @@ internal partial class FFI
         /// <summary>
         /// Marshals an array of <see cref="GlideString"/> values.
         /// </summary>
+        /// <param name="strings">The strings to marshal.</param>
         private static IntPtr MarshalStrings(GlideString[] strings)
         {
             if (strings.Length == 0)
@@ -527,6 +536,7 @@ internal partial class FFI
         /// <summary>
         /// Marshals a <see cref="GlideString"/> into unmanaged memory.
         /// </summary>
+        /// <param name="str">The string to marshal.</param>
         private static IntPtr MarshalString(GlideString str)
         {
             byte[] bytes = str.Bytes;
@@ -564,7 +574,8 @@ internal partial class FFI
     /// <param name="patternPtr">Pointer to the raw pattern bytes (null if no pattern).</param>
     /// <param name="patternLen">The length of the pattern in bytes (unsigned, 0 if no pattern).</param>
     /// <returns>A managed PubSubMessage object.</returns>
-    /// <exception cref="ArgumentException">Thrown when the parameters are invalid or marshaling fails.</exception>
+    /// <exception cref="ArgumentException">Thrown if the parameters are invalid or marshaling fails.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if <paramref name="pushKind"/> is not a supported <see cref="PushKind"/> value.</exception>
     internal static PubSubMessage MarshalPubSubMessage(
         PushKind pushKind,
         IntPtr messagePtr,
@@ -675,8 +686,6 @@ internal partial class FFI
         public uint Timeout;
         public IntPtr Route;
     }
-
-
 
     [StructLayout(LayoutKind.Sequential)]
     private struct RouteInfo
@@ -832,7 +841,6 @@ internal partial class FFI
         public readonly string Host = host;
         public readonly ushort Port = port;
     }
-
 
     [StructLayout(LayoutKind.Sequential)]
     private readonly struct ScriptHashBuffer
@@ -1031,8 +1039,8 @@ internal partial class FFI
     /// </summary>
     /// <param name="script">The Lua script code.</param>
     /// <returns>The SHA1 hash of the script.</returns>
-    /// <exception cref="ArgumentException">Thrown when script is null or empty.</exception>
-    /// <exception cref="InvalidOperationException">Thrown when script storage fails.</exception>
+    /// <exception cref="ArgumentException">Thrown if script is null or empty.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if script storage fails.</exception>
     internal static string StoreScript(string script)
     {
         if (string.IsNullOrEmpty(script))
@@ -1083,8 +1091,8 @@ internal partial class FFI
     /// Removes a script from Rust core storage.
     /// </summary>
     /// <param name="hash">The SHA1 hash of the script to remove.</param>
-    /// <exception cref="ArgumentException">Thrown when hash is null or empty.</exception>
-    /// <exception cref="InvalidOperationException">Thrown when script removal fails.</exception>
+    /// <exception cref="ArgumentException">Thrown if hash is null or empty.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if script removal fails.</exception>
     internal static void DropScript(string hash)
     {
         if (string.IsNullOrEmpty(hash))
@@ -1120,7 +1128,6 @@ internal partial class FFI
             }
         }
     }
-
 
     // ========================================================================================
     // OpenTelemetry
@@ -1231,7 +1238,6 @@ internal partial class FFI
         public readonly bool HasRefreshIntervalSeconds = refreshIntervalSeconds.HasValue;
         public readonly uint? RefreshIntervalSeconds = refreshIntervalSeconds ?? default;
     }
-
 
     #region Monitor
 

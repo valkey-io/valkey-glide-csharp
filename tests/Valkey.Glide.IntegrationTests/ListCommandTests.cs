@@ -7,6 +7,7 @@ namespace Valkey.Glide.IntegrationTests;
 public class ListCommandTests(TestConfiguration config)
 {
     public TestConfiguration Config { get; } = config;
+
     private static readonly TimeSpan BlockingTimeout = TimeSpan.FromSeconds(2);
 
     [Theory(DisableDiscoveryEnumeration = true)]

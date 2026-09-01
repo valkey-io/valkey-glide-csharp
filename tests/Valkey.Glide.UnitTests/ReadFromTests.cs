@@ -1,7 +1,5 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-
-
 using static Valkey.Glide.ConnectionConfiguration;
 
 namespace Valkey.Glide.UnitTests;
@@ -488,8 +486,6 @@ public class ReadFromTests
         Assert.Equal("eu-west-1", options.ReadFrom.Value.Az);
     }
 
-
-
     [Fact]
     public void ReadFromProperty_SetMultipleTimes_UpdatesCorrectly()
     {
@@ -522,10 +518,8 @@ public class ReadFromTests
         var options = new ConfigurationOptions();
 
         // Act & Assert
-        ArgumentException exception = Assert.Throws<ArgumentException>(() =>
-        {
-            options.ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinity, azValue);
-        });
+        var exception = Assert.Throws<ArgumentException>(()
+            => options.ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinity, azValue));
         Assert.Contains("Availability zone cannot be empty or whitespace", exception.Message);
     }
 
@@ -540,10 +534,8 @@ public class ReadFromTests
         var options = new ConfigurationOptions();
 
         // Act & Assert
-        ArgumentException exception = Assert.Throws<ArgumentException>(() =>
-        {
-            options.ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinityReplicasAndPrimary, azValue);
-        });
+        var exception = Assert.Throws<ArgumentException>(()
+            => options.ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinityReplicasAndPrimary, azValue));
         Assert.Contains("Availability zone cannot be empty or whitespace", exception.Message);
     }
 

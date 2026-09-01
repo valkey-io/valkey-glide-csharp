@@ -13,8 +13,12 @@ internal partial class Database
     public async Task<long> StreamAcknowledgeAsync(ValkeyKey key, ValkeyValue groupName, ValkeyValue messageId, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        var result = await ((IBaseClient)this).StreamAcknowledgeAsync(key, groupName, messageId);
-        return result ? 1L : 0L;
+
+        // Cast to IBaseClient to force dispatch to
+        // IBaseClient.StreamAcknowledgeAsync(ValkeyKey, ValkeyValue, ValkeyValue)
+        IBaseClient self = this;
+
+        return await self.StreamAcknowledgeAsync(key, groupName, messageId) ? 1L : 0L;
     }
 
     /// <inheritdoc cref="IDatabaseAsync.StreamAcknowledgeAsync(ValkeyKey, ValkeyValue, IEnumerable{ValkeyValue}, CommandFlags)"/>
@@ -347,6 +351,10 @@ internal partial class Database
     /// <summary>
     /// Converts the given arguments to a <see cref="StreamAddOptions"/> instance.
     /// </summary>
+    /// <param name="messageId">The message ID to assign, or <see langword="null"/> to auto-generate one.</param>
+    /// <param name="maxLength">The maximum number of entries to keep, or <see langword="null"/> for no trimming.</param>
+    /// <param name="useApproximateMaxLength">Whether to trim approximately for better performance.</param>
+    /// <param name="limit">The maximum number of entries to trim per operation.</param>
     private static StreamAddOptions ToStreamAddOptions(
         ValkeyValue? messageId,
         long? maxLength,

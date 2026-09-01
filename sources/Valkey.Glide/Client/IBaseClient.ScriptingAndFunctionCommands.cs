@@ -2,13 +2,13 @@
 
 namespace Valkey.Glide;
 
+// ATTENTION: Methods should only be added to this interface if they are implemented
+// by Valkey GLIDE clients but NOT by StackExchange.Redis databases. Methods implemented
+// by both should be added to IScriptingAndFunctionBaseCommands instead.
+
 /// <summary>
 /// Scripting and function commands for Valkey GLIDE clients.
 /// </summary>
-/// <remarks>
-/// These methods are GLIDE-specific and not available in StackExchange.Redis.
-/// For StackExchange.Redis-compatible scripting methods, use <see cref="IDatabaseAsync"/>.
-/// </remarks>
 /// <seealso href="https://valkey.io/commands/#scripting">Valkey – Scripting and Function Commands</seealso>
 public partial interface IBaseClient
 {

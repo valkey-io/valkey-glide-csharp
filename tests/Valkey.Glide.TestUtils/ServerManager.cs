@@ -14,10 +14,10 @@ public static class ServerManager
     private static readonly string ScriptFilePath;
     private static readonly string ServerDirectoryPath;
 
-    private static readonly string WslFileName = "wsl";
-    private static readonly string PythonFileName = "python3";
+    private const string WslFileName = "wsl";
+    private const string PythonFileName = "python3";
 
-    private static readonly int DefaultReplicaCount = 3;
+    private const int DefaultReplicaCount = 3;
 
     static ServerManager()
     {
@@ -57,7 +57,7 @@ public static class ServerManager
     /// Gets the path for the server certificate file.
     /// See valkey-glide/utils/cluster_manager.py for details.
     /// </summary>
-    public static string ServerCertificatePath { get; private set; }
+    public static string ServerCertificatePath { get; }
 
     /// <summary>
     /// Starts a Valkey server with the specified name, mode and TLS configuration.
@@ -193,9 +193,9 @@ public static class ServerManager
         {
             throw new ApplicationException(
                 $"Process failed: exit code {exitCode}.\n" +
-                $"Command: {info.FileName} {info.Arguments}\n" +
-                $"Error: {error}\n" +
-                $"Output: {output}");
+                    $"Command: {info.FileName} {info.Arguments}\n" +
+                    $"Error: {error}\n" +
+                    $"Output: {output}");
         }
 
         return output ?? "";

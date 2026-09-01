@@ -59,5 +59,4 @@ public interface IGenericBaseCommands
     /// </code>
     /// </example>
     Task<long> SortAndStoreAsync(ValkeyKey destination, ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, IEnumerable<ValkeyValue>? get = null);
-
 }

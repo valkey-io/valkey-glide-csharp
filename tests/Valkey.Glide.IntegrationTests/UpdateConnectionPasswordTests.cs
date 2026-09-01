@@ -14,7 +14,7 @@ public class UpdateConnectionPasswordTests(ServerFixture fixture) : IClassFixtur
 {
     #region Constants
 
-    private static readonly string Password = "PASSWORD";
+    private const string Password = "PASSWORD";
 
     #endregion
     #region Tests

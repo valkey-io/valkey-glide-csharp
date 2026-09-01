@@ -62,6 +62,7 @@ public sealed class TracesConfig
         /// <summary>
         /// Sets the endpoint for traces export.
         /// </summary>
+        /// <param name="endpoint">The endpoint to export traces to.</param>
         /// <exception cref="ArgumentException">Thrown if <paramref name="endpoint"/> is <c>null</c>, empty, or not a well-formed URI.</exception>
         public Builder WithEndpoint(string endpoint)
         {
@@ -82,6 +83,7 @@ public sealed class TracesConfig
         /// <summary>
         /// Sets the sample percentage.
         /// </summary>
+        /// <param name="samplePercentage">The percentage of requests to sample.</param>
         /// <exception cref="ArgumentException">Thrown if <paramref name="samplePercentage"/> is greater than 100.</exception>
         public Builder WithSamplePercentage(uint samplePercentage)
         {

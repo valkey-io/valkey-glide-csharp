@@ -6,7 +6,7 @@ using static Valkey.Glide.Internals.FFI;
 
 namespace Valkey.Glide.Internals;
 
-internal partial class Request
+internal static partial class Request
 {
     #region Command Builders
 
@@ -345,6 +345,7 @@ internal partial class Request
                 deliveryCount: ToInt(msgData[3])
             );
         }
+
         return result;
     }
 
@@ -388,6 +389,7 @@ internal partial class Request
         {
             args.Add(sp.Key);
         }
+
         foreach (var sp in array)
         {
             args.Add(sp.Position);

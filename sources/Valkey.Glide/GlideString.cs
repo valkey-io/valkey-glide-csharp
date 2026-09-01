@@ -195,7 +195,7 @@ public static class GlideStringExtensions
 /// </example>
 /// <seealso href="https://glide.valkey.io/commands/valkey-string/">Valkey GLIDE – Working with Strings and Binary Data</seealso>
 [ImmutableObject(true)]
-public sealed class GlideString : IComparable<GlideString>
+public sealed class GlideString : IComparable, IComparable<GlideString>
 {
     /// <summary>
     /// Create a <see cref="GlideString" /> initiated by a <see langword="byte[]" />.<br />
@@ -260,6 +260,7 @@ public sealed class GlideString : IComparable<GlideString>
         {
             return Str;
         }
+
         _ = CanConvertToString();
         return Str;
     }
@@ -293,6 +294,7 @@ public sealed class GlideString : IComparable<GlideString>
                 _canConvertToString = true;
                 return true;
             }
+
             _canConvertToString = false;
             Str = $"Value isn't convertible to string: [{string.Join(' ', [.. Bytes.Select(b => $"{b:X2}")])}]";
             return false;
@@ -337,12 +339,21 @@ public sealed class GlideString : IComparable<GlideString>
     }
 
     /// <inheritdoc/>
+    int IComparable.CompareTo(object? obj) => obj switch
+    {
+        null => CompareTo(null),
+        GlideString other => CompareTo(other),
+        _ => throw new ArgumentException($"Object must be of type {nameof(GlideString)}.", nameof(obj)),
+    };
+
+    /// <inheritdoc/>
     public int CompareTo(GlideString? other)
     {
         if (other is null)
         {
-            return -1;
+            return 1;
         }
+
         if (other == this)
         {
             return 0;
@@ -360,6 +371,7 @@ public sealed class GlideString : IComparable<GlideString>
                 return Bytes[i] - other.Bytes[i];
             }
         }
+
         return 0;
     }
 
@@ -440,8 +452,10 @@ public sealed class GlideString : IComparable<GlideString>
     {
         // Store strings if they're both defined
 #pragma warning disable IDE0046 // Convert to conditional expression
-        if (left._canConvertToString is not null && (bool)left._canConvertToString &&
-            right._canConvertToString is not null && (bool)right._canConvertToString)
+        if (left._canConvertToString is not null
+            && (bool)left._canConvertToString &&
+            right._canConvertToString is not null
+            && (bool)right._canConvertToString)
         {
             return new(left.Str + right.Str);
         }

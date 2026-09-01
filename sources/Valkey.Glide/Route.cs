@@ -23,12 +23,12 @@ public abstract class Route
     /// <summary>
     /// Base class for routes that target a single node.
     /// </summary>
-    public abstract class SingleNodeRoute : Route { }
+    public abstract class SingleNodeRoute : Route;
 
     /// <summary>
     /// Base class for routes that target multiple nodes.
     /// </summary>
-    public abstract class MultiNodeRoute : Route { }
+    public abstract class MultiNodeRoute : Route;
 
     /// <summary>
     /// Route request to a random node.<br />
@@ -74,6 +74,7 @@ public abstract class Route
         /// Address a primary node.
         /// </summary>
         Primary,
+
         /// <summary>
         /// Address a replica node.
         /// </summary>
@@ -163,6 +164,7 @@ public abstract class Route
             {
                 throw new ArgumentException("No port provided, and host is not in the expected format 'hostname:port'. Received: " + host);
             }
+
             Host = parts[0];
             Port = int.Parse(parts[1]);
         }

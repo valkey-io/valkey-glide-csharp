@@ -47,6 +47,7 @@ public class SharedCommandTests(TestConfiguration config)
                 failedChecks.Add($"{expectedInfo[i].TestName} failed: {e.Message}");
             }
         }
+
         Assert.Empty(failedChecks);
     }
 }

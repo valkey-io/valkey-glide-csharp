@@ -20,6 +20,7 @@ internal static class ScriptParameterMapper
     /// </summary>
     /// <param name="script">The script with @parameter syntax.</param>
     /// <returns>A tuple containing the original script, executable script, and parameter names.</returns>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="script"/> is null or empty.</exception>
     internal static (string OriginalScript, string ExecutableScript, string[] Parameters) PrepareScript(string script)
     {
         if (string.IsNullOrEmpty(script))
@@ -185,6 +186,7 @@ internal static class ScriptParameterMapper
     /// <param name="type">The type of the parameter object.</param>
     /// <param name="parameterNames">The parameter names to extract.</param>
     /// <returns>A function that extracts parameters from an object and returns keys and arguments.</returns>
+    /// <exception cref="ArgumentException">Thrown if a parameter in <paramref name="parameterNames"/> is not found on <paramref name="type"/>.</exception>
     internal static Func<object, ValkeyKey?, (ValkeyKey[] Keys, ValkeyValue[] Args)> GetParameterExtractor(
         Type type, string[] parameterNames)
     {

@@ -1,6 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using System.Threading.Channels;
 
 using Valkey.Glide.Internals;
@@ -20,7 +21,13 @@ namespace Valkey.Glide;
 /// </summary>
 public abstract partial class BaseClient : IBaseClient
 {
-    #region public methods
+    #region Constants
+
+    [GeneratedRegex(@"(?:valkey_version|redis_version):([\d\.]+)")]
+    private static partial Regex ServerVersionRegex();
+
+    #endregion
+    #region Public Methods
 
     /// <inheritdoc/>
     public void Dispose()
@@ -168,9 +175,8 @@ public abstract partial class BaseClient : IBaseClient
             stats.SubscriptionLastSyncTimestamp);
     }
 
-    #endregion public methods
-
-    #region protected methods
+    #endregion
+    #region Protected Methods
 
     /// <summary>
     /// Creates and initializes a new client instance with the specified configuration.
@@ -179,7 +185,7 @@ public abstract partial class BaseClient : IBaseClient
     /// <param name="config">The client configuration settings.</param>
     /// <param name="ctor">A factory function that creates a new instance of the client.</param>
     /// <returns>The initialized client instance.</returns>
-    /// <exception cref="ConnectionException">Thrown when the client fails to connect to the server.</exception>
+    /// <exception cref="ConnectionException">Thrown if the client fails to connect to the server.</exception>
     protected static async Task<T> CreateClient<T>(BaseClientConfiguration config, Func<T> ctor) where T : BaseClient
     {
         T client = ctor();
@@ -283,10 +289,13 @@ public abstract partial class BaseClient : IBaseClient
     /// <returns>The converted response value.</returns>
     protected internal delegate T ResponseHandler<T>(IntPtr response);
 
+    /// <summary>
+    /// Executes a command against the server and converts the response.
+    /// </summary>
     /// <typeparam name="R">Type received from server.</typeparam>
     /// <typeparam name="T">Type we return to the user.</typeparam>
-    /// <param name="command"></param>
-    /// <param name="route"></param>
+    /// <param name="command">The command to execute.</param>
+    /// <param name="route">Optional routing for the command in cluster mode.</param>
     internal virtual async Task<T> Command<R, T>(Cmd<R, T> command, Route? route = null)
     {
         // 1. Create Cmd which wraps CmdInfo and manages all memory allocations
@@ -383,12 +392,12 @@ public abstract partial class BaseClient : IBaseClient
     /// <returns>The parsed server version, or <c>null</c> if the version could not be extracted.</returns>
     protected Version? ParseServerVersion(string response)
     {
-        var versionMatch = System.Text.RegularExpressions.Regex.Match(response, @"(?:valkey_version|redis_version):([\d\.]+)");
+        var versionMatch = ServerVersionRegex().Match(response);
         return versionMatch.Success ? new(versionMatch.Groups[1].Value) : null;
     }
 
-    #endregion protected methods
-    #region protected fields
+    #endregion
+    #region Protected Fields
 
     /// <summary>
     /// Cached server version retrieved from the connected server.
@@ -399,15 +408,19 @@ public abstract partial class BaseClient : IBaseClient
     /// The default server version assumed when the actual version cannot be determined.
     /// </summary>
     protected static readonly Version DefaultServerVersion = new(8, 0, 0);
-    #endregion protected fields
 
-    #region internal fields
+    #endregion
+    #region Internal Fields
+
+    /// <summary>
     /// Raw pointer to the underlying native client.
+    /// </summary>
     internal IntPtr ClientPointer;
     internal readonly MessageContainer MessageContainer;
-    #endregion internal fields
 
-    #region private methods
+    #endregion
+    #region Private Methods
+
     private void SuccessCallback(ulong index, IntPtr ptr) =>
         ThreadPool.UnsafeQueueUserWorkItem(_ => MessageContainer.GetMessage((int)index).SetResult(ptr), null);
 
@@ -498,7 +511,6 @@ public abstract partial class BaseClient : IBaseClient
     /// <param name="config">The PubSub subscription configuration.</param>
     private void InitializePubSubHandler(BasePubSubSubscriptionConfig? config)
     {
-
         lock (_pubSubLock)
         {
             // Get performance configuration or use defaults
@@ -682,46 +694,66 @@ public abstract partial class BaseClient : IBaseClient
         IntPtr host, UIntPtr hostLen, ushort port,
         IntPtr resolvedHostBuf, UIntPtr resolvedHostBufLen,
         UIntPtr resolvedHostLen);
-    #endregion private methods
 
+    #endregion
     #region private fields
 
+    /// <summary>
     /// Held as a measure to prevent the delegate being garbage collected. These are delegated once
     /// and held in order to prevent the cost of marshalling on each function call.
+    /// </summary>
     private readonly FailureAction _failureCallbackDelegate;
 
+    /// <summary>
     /// Held as a measure to prevent the delegate being garbage collected. These are delegated once
     /// and held in order to prevent the cost of marshalling on each function call.
+    /// </summary>
     private readonly SuccessAction _successCallbackDelegate;
 
+    /// <summary>
     /// Held as a measure to prevent the delegate being garbage collected. These are delegated once
     /// and held in order to prevent the cost of marshalling on each function call.
+    /// </summary>
     private readonly PubSubAction _pubsubCallbackDelegate;
 
+    /// <summary>
     /// Held to prevent the delegate being garbage collected.
+    /// </summary>
     private AddressResolverAction? _addressResolverDelegate;
 
     private readonly object _lock = new();
     private string _clientInfo = ""; // used to distinguish and identify clients during tests
 
+    /// <summary>
     /// PubSub message handler for routing messages to callbacks or queues.
     /// Uses volatile to ensure visibility across threads without locking on every read.
+    /// </summary>
     private volatile PubSubMessageHandler? _pubSubHandler;
 
+    /// <summary>
     /// Lock object for coordinating PubSub handler access and disposal.
+    /// </summary>
     private readonly object _pubSubLock = new();
 
+    /// <summary>
     /// Channel for bounded message queuing with backpressure support.
+    /// </summary>
     private Channel<PubSubMessage>? _messageChannel;
 
+    /// <summary>
     /// Dedicated background task for processing PubSub messages.
+    /// </summary>
     private Task? _messageProcessingTask;
 
+    /// <summary>
     /// Cancellation token source for graceful shutdown of message processing.
+    /// </summary>
     private CancellationTokenSource? _processingCancellation;
 
+    /// <summary>
     /// Timeout for graceful shutdown of PubSub processing.
+    /// </summary>
     private TimeSpan _shutdownTimeout = TimeSpan.FromSeconds(PubSubPerformanceConfig.DefaultShutdownTimeoutSeconds);
 
-    #endregion private fields
+    #endregion
 }

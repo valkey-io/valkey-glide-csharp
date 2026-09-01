@@ -5,19 +5,28 @@ using System.Runtime.CompilerServices;
 
 namespace Valkey.Glide.Internals;
 
+/// <summary>
 /// Reusable source of ValueTask. This object can be allocated once and then reused
 /// to create multiple asynchronous operations, as long as each call to CreateTask
 /// is awaited to completion before the next call begins.
+/// </summary>
+/// <param name="index">The index of the message in the external message array.</param>
+/// <param name="container">The container that owns this message.</param>
 internal class Message(int index, MessageContainer container) : INotifyCompletion
 {
+    /// <summary>
     /// This is the index of the message in an external array, that allows the user to
     /// know how to find the message and set its result.
+    /// </summary>
     public int Index { get; } = index;
     private MessageContainer Container { get; } = container;
+
     private Action? _continuation = () => { };
+
     private const int COMPLETION_STAGE_STARTED = 0;
     private const int COMPLETION_STAGE_NEXT_SHOULD_EXECUTE_CONTINUATION = 1;
     private const int COMPLETION_STAGE_CONTINUATION_EXECUTED = 2;
+
     private int _completionState;
     private IntPtr _result = default;
     private Exception? _exception;
@@ -26,16 +35,22 @@ internal class Message(int index, MessageContainer container) : INotifyCompletio
     private object? _client;
 #pragma warning restore IDE0052 // Remove unread private members
 
+    /// <summary>
     /// Triggers a succesful completion of the task returned from the latest call
     /// to CreateTask.
+    /// </summary>
+    /// <param name="result">The result value to complete the task with.</param>
     public void SetResult(IntPtr result)
     {
         _result = result;
         FinishSet();
     }
 
+    /// <summary>
     /// Triggers a failure completion of the task returned from the latest call to
     /// CreateTask.
+    /// </summary>
+    /// <param name="exc">The exception to fail the task with.</param>
     public void SetException(Exception exc)
     {
         _exception = exc;
@@ -68,9 +83,12 @@ internal class Message(int index, MessageContainer container) : INotifyCompletio
 
     public Message GetAwaiter() => this;
 
+    /// <summary>
     /// This returns a task that will complete once SetException / SetResult are called,
     /// and ensures that the internal state of the message is set-up before the task is created,
     /// and cleaned once it is complete.
+    /// </summary>
+    /// <param name="client">The client to associate with the operation; held to prevent it being garbage collected.</param>
     public void SetupTask(object client)
     {
         _continuation = null;

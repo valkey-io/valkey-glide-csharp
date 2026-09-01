@@ -19,9 +19,9 @@ public class PubSubQueueTests
     public static async Task Queue_Channel_ReceivesMessage(bool isCluster, PubSubChannelMode channelMode)
     {
         var message = BuildMessage(channelMode);
-        using var subscriber = await BuildSubscriber(isCluster, message);
+        await using var subscriber = await BuildSubscriber(isCluster, message);
 
-        using var publisher = BuildPublisher(isCluster);
+        await using var publisher = BuildPublisher(isCluster);
         await PublishAsync(publisher, message);
 
         // Verify that message is received.
@@ -46,10 +46,10 @@ public class PubSubQueueTests
         var messageCount = 100;
         var messages = Enumerable.Range(0, messageCount).Select(i => PubSubMessage.FromChannel($"Message-{i:D3}", channel)).ToArray();
 
-        using var subscriber = await BuildSubscriber(isCluster, messages);
+        await using var subscriber = await BuildSubscriber(isCluster, messages);
 
         // Publish many messages rapidly.
-        using var publisher = BuildPublisher(isCluster);
+        await using var publisher = BuildPublisher(isCluster);
         await PublishAsync(publisher, messages);
 
         // Verify that all messages are received.

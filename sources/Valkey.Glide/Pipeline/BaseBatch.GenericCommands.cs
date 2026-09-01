@@ -1,77 +1,73 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using Valkey.Glide.Commands.Options;
-
-using static Valkey.Glide.Internals.Request;
+using Valkey.Glide.Internals;
 
 namespace Valkey.Glide.Pipeline;
 
-/// <summary>
-/// Generic commands for BaseBatch.
-/// </summary>
 public abstract partial class BaseBatch<T>
 {
     /// <inheritdoc cref="IBatchGenericCommands.Copy(ValkeyKey, ValkeyKey, bool)" />
     public T Copy(ValkeyKey source, ValkeyKey destination, bool replace = false)
-        => AddCmd(CopyAsync(source, destination, replace));
+        => AddCmd(Request.Copy(source, destination, replace));
 
     /// <inheritdoc cref="IBatchGenericCommands.Delete(ValkeyKey)" />
-    public T Delete(ValkeyKey key) => AddCmd(DeleteAsync(key));
+    public T Delete(ValkeyKey key) => AddCmd(Request.Delete(key));
 
     /// <inheritdoc cref="IBatchGenericCommands.Delete(IEnumerable{ValkeyKey})" />
-    public T Delete(IEnumerable<ValkeyKey> keys) => AddCmd(DeleteAsync([.. keys]));
+    public T Delete(IEnumerable<ValkeyKey> keys) => AddCmd(Request.Delete([.. keys]));
 
     /// <inheritdoc cref="IBatchGenericCommands.Dump(ValkeyKey)" />
-    public T Dump(ValkeyKey key) => AddCmd(DumpAsync(key));
+    public T Dump(ValkeyKey key) => AddCmd(Request.Dump(key));
 
     /// <inheritdoc cref="IBatchGenericCommands.Exists(ValkeyKey)" />
-    public T Exists(ValkeyKey key) => AddCmd(ExistsAsync(key));
+    public T Exists(ValkeyKey key) => AddCmd(Request.Exists(key));
 
     /// <inheritdoc cref="IBatchGenericCommands.Exists(IEnumerable{ValkeyKey})" />
-    public T Exists(IEnumerable<ValkeyKey> keys) => AddCmd(ExistsAsync([.. keys]));
+    public T Exists(IEnumerable<ValkeyKey> keys) => AddCmd(Request.Exists([.. keys]));
 
     /// <inheritdoc cref="IBatchGenericCommands.Expire(ValkeyKey, TimeSpan?, ExpireCondition)" />
-    public T Expire(ValkeyKey key, TimeSpan? expiry, ExpireCondition condition = ExpireCondition.Always) => AddCmd(ExpireAsync(key, expiry, condition));
+    public T Expire(ValkeyKey key, TimeSpan? expiry, ExpireCondition condition = ExpireCondition.Always) => AddCmd(Request.Expire(key, expiry, condition));
 
     /// <inheritdoc cref="IBatchGenericCommands.Expire(ValkeyKey, DateTimeOffset?, ExpireCondition)" />
-    public T Expire(ValkeyKey key, DateTimeOffset? expiry, ExpireCondition condition = ExpireCondition.Always) => AddCmd(ExpireAsync(key, expiry, condition));
+    public T Expire(ValkeyKey key, DateTimeOffset? expiry, ExpireCondition condition = ExpireCondition.Always) => AddCmd(Request.Expire(key, expiry, condition));
 
     /// <inheritdoc cref="IBatchGenericCommands.ExpireTime(ValkeyKey)" />
-    public T ExpireTime(ValkeyKey key) => AddCmd(ExpireTimeAsync(key));
+    public T ExpireTime(ValkeyKey key) => AddCmd(Request.ExpireTime(key));
 
     /// <inheritdoc cref="IBatchGenericCommands.Migrate(ValkeyKey, MigrateOptions)" />
     public T Migrate(ValkeyKey key, MigrateOptions options)
-        => AddCmd(MigrateAsync([key], options));
+        => AddCmd(Request.Migrate([key], options));
 
     /// <inheritdoc cref="IBatchGenericCommands.ObjectEncoding(ValkeyKey)" />
-    public T ObjectEncoding(ValkeyKey key) => AddCmd(ObjectEncodingAsync(key));
+    public T ObjectEncoding(ValkeyKey key) => AddCmd(Request.ObjectEncoding(key));
 
     /// <inheritdoc cref="IBatchGenericCommands.ObjectFrequency(ValkeyKey)" />
-    public T ObjectFrequency(ValkeyKey key) => AddCmd(ObjectFrequencyAsync(key));
+    public T ObjectFrequency(ValkeyKey key) => AddCmd(Request.ObjectFrequency(key));
 
     /// <inheritdoc cref="IBatchGenericCommands.ObjectIdleTime(ValkeyKey)" />
-    public T ObjectIdleTime(ValkeyKey key) => AddCmd(ObjectIdleTimeAsync(key));
+    public T ObjectIdleTime(ValkeyKey key) => AddCmd(Request.ObjectIdleTime(key));
 
     /// <inheritdoc cref="IBatchGenericCommands.ObjectRefCount(ValkeyKey)" />
-    public T ObjectRefCount(ValkeyKey key) => AddCmd(ObjectRefCountAsync(key));
+    public T ObjectRefCount(ValkeyKey key) => AddCmd(Request.ObjectRefCount(key));
 
     /// <inheritdoc cref="IBatchGenericCommands.Persist(ValkeyKey)" />
-    public T Persist(ValkeyKey key) => AddCmd(PersistAsync(key));
+    public T Persist(ValkeyKey key) => AddCmd(Request.Persist(key));
 
     /// <inheritdoc cref="IBatchGenericCommands.RandomKey()" />
-    public T RandomKey() => AddCmd(RandomKeyAsync());
+    public T RandomKey() => AddCmd(Request.RandomKey());
 
     /// <inheritdoc cref="IBatchGenericCommands.Rename(ValkeyKey, ValkeyKey)" />
-    public T Rename(ValkeyKey key, ValkeyKey newKey) => AddCmd(RenameAsync(key, newKey));
+    public T Rename(ValkeyKey key, ValkeyKey newKey) => AddCmd(Request.Rename(key, newKey));
 
     /// <inheritdoc cref="IBatchGenericCommands.RenameIfNotExists(ValkeyKey, ValkeyKey)" />
-    public T RenameIfNotExists(ValkeyKey key, ValkeyKey newKey) => AddCmd(RenameIfNotExistsAsync(key, newKey));
+    public T RenameIfNotExists(ValkeyKey key, ValkeyKey newKey) => AddCmd(Request.RenameIfNotExists(key, newKey));
 
     /// <inheritdoc cref="IBatchGenericCommands.Restore(ValkeyKey, byte[], RestoreOptions?)" />
-    public T Restore(ValkeyKey key, byte[] value, RestoreOptions? options = null) => AddCmd(RestoreAsync(key, value, options));
+    public T Restore(ValkeyKey key, byte[] value, RestoreOptions? options = null) => AddCmd(Request.Restore(key, value, options));
 
     /// <inheritdoc cref="IBatchGenericCommands.Sort(ValkeyKey, long, long, Order, SortType, ValkeyValue, IEnumerable{ValkeyValue})" />
-    public T Sort(ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, IEnumerable<ValkeyValue>? get = null) => AddCmd(SortAsync(key, skip, take, order, sortType, by, get is null ? null : [.. get], null));
+    public T Sort(ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, IEnumerable<ValkeyValue>? get = null) => AddCmd(Request.Sort(key, skip, take, order, sortType, by, get is null ? null : [.. get], null));
 
     /// <inheritdoc cref="IBatchGenericCommands.Sort(ValkeyKey, SortOptions?)" />
     public T Sort(ValkeyKey key, SortOptions? options)
@@ -84,11 +80,11 @@ public abstract partial class BaseBatch<T>
     public T SortAndStore(ValkeyKey destination, ValkeyKey key, SortOptions? options)
     {
         var opts = options ?? new SortOptions();
-        return AddCmd(SortAndStoreAsync(destination, key, opts.Skip, opts.Take, opts.Order.ToOrder(), opts.SortType, opts.By, opts.Get is null ? null : [.. opts.Get]));
+        return AddCmd(Request.SortAndStore(destination, key, opts.Skip, opts.Take, opts.Order.ToOrder(), opts.SortType, opts.By, opts.Get is null ? null : [.. opts.Get]));
     }
 
     /// <inheritdoc cref="IBatchGenericCommands.SortReadOnly(ValkeyKey, long, long, Order, SortType, ValkeyValue, IEnumerable{ValkeyValue})" />
-    public T SortReadOnly(ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, IEnumerable<ValkeyValue>? get = null) => AddCmd(SortReadOnlyAsync(key, skip, take, order, sortType, by, get is null ? null : [.. get]));
+    public T SortReadOnly(ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, IEnumerable<ValkeyValue>? get = null) => AddCmd(Request.SortReadOnly(key, skip, take, order, sortType, by, get is null ? null : [.. get]));
 
     /// <inheritdoc cref="IBatchGenericCommands.SortReadOnly(ValkeyKey, SortOptions?)" />
     public T SortReadOnly(ValkeyKey key, SortOptions? options)
@@ -98,27 +94,26 @@ public abstract partial class BaseBatch<T>
     }
 
     /// <inheritdoc cref="IBatchGenericCommands.TimeToLive(ValkeyKey)" />
-    public T TimeToLive(ValkeyKey key) => AddCmd(TimeToLiveAsync(key));
+    public T TimeToLive(ValkeyKey key) => AddCmd(Request.TimeToLive(key));
 
     /// <inheritdoc cref="IBatchGenericCommands.Touch(ValkeyKey)" />
-    public T Touch(ValkeyKey key) => AddCmd(TouchAsync(key));
+    public T Touch(ValkeyKey key) => AddCmd(Request.Touch(key));
 
     /// <inheritdoc cref="IBatchGenericCommands.Touch(IEnumerable{ValkeyKey})" />
-    public T Touch(IEnumerable<ValkeyKey> keys) => AddCmd(TouchAsync([.. keys]));
+    public T Touch(IEnumerable<ValkeyKey> keys) => AddCmd(Request.Touch([.. keys]));
 
     /// <inheritdoc cref="IBatchGenericCommands.Type(ValkeyKey)" />
-    public T Type(ValkeyKey key) => AddCmd(TypeAsync(key));
+    public T Type(ValkeyKey key) => AddCmd(Request.Type(key));
 
     /// <inheritdoc cref="IBatchGenericCommands.Unlink(ValkeyKey)" />
-    public T Unlink(ValkeyKey key) => AddCmd(UnlinkAsync(key));
+    public T Unlink(ValkeyKey key) => AddCmd(Request.Unlink(key));
 
     /// <inheritdoc cref="IBatchGenericCommands.Unlink(IEnumerable{ValkeyKey})" />
-    public T Unlink(IEnumerable<ValkeyKey> keys) => AddCmd(UnlinkAsync([.. keys]));
+    public T Unlink(IEnumerable<ValkeyKey> keys) => AddCmd(Request.Unlink([.. keys]));
 
     /// <inheritdoc cref="IBatchGenericCommands.Wait(long, TimeSpan)" />
-    public T Wait(long numreplicas, TimeSpan timeout) => AddCmd(WaitAsync(numreplicas, timeout));
+    public T Wait(long numreplicas, TimeSpan timeout) => AddCmd(Request.Wait(numreplicas, timeout));
 
-    // Explicit interface implementations for IBatchGenericCommands
     IBatch IBatchGenericCommands.Copy(ValkeyKey source, ValkeyKey destination, bool replace) => Copy(source, destination, replace);
     IBatch IBatchGenericCommands.Delete(IEnumerable<ValkeyKey> keys) => Delete(keys);
     IBatch IBatchGenericCommands.Delete(ValkeyKey key) => Delete(key);

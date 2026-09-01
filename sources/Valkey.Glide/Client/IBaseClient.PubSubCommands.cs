@@ -4,14 +4,13 @@ using Valkey.Glide.Commands;
 
 namespace Valkey.Glide;
 
+// ATTENTION: Methods should only be added to this interface if they are implemented
+// by Valkey GLIDE clients but NOT by StackExchange.Redis databases. Methods implemented
+// by both should be added to IPubSubBaseCommands instead.
+
 /// <summary>
 /// Pub/sub commands for Valkey GLIDE clients.
 /// </summary>
-/// <remarks>
-/// Methods should only be added to this interface if they are implemented by
-/// <see cref="IBaseClient"/> but NOT by <see cref="IDatabaseAsync"/>. Methods implemented
-/// by both should be added to <see cref="IPubSubBaseCommands"/> instead.
-/// </remarks>
 /// <seealso href="https://valkey.io/commands/#pubsub">Valkey – Pub/Sub Commands</seealso>
 /// <seealso href="https://glide.valkey.io/how-to/publish-and-subscribe-messages/">Valkey GLIDE – Pub/Sub Messaging</seealso>
 public partial interface IBaseClient : IPubSubBaseCommands

@@ -37,15 +37,20 @@ internal static class Helpers
             {
                 _ = sb.Append(", ");
             }
+
             _ = sb.Append(GetRealTypeName(arg));
             appendComma = true;
         }
+
         return sb.Append('>').ToString();
     }
 
     /// <summary>
     /// Skips the first <paramref name="skip"/> elements from an async sequence.
     /// </summary>
+    /// <typeparam name="T">The element type of the sequence.</typeparam>
+    /// <param name="source">The async sequence to skip elements from.</param>
+    /// <param name="skip">The number of elements to skip.</param>
     public static async IAsyncEnumerable<T> SkipAsync<T>(this IAsyncEnumerable<T> source, int skip)
     {
         int skipped = 0;

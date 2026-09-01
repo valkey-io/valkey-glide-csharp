@@ -36,8 +36,8 @@ internal sealed class PubSubMessageHandler : IDisposable
     /// Process an incoming PubSub message by routing it to callback or queue.
     /// </summary>
     /// <param name="message">The message to process.</param>
-    /// <exception cref="ArgumentNullException">Thrown when message is null.</exception>
-    /// <exception cref="ObjectDisposedException">Thrown when the handler has been disposed.</exception>
+    /// <exception cref="ArgumentNullException">Thrown if message is null.</exception>
+    /// <exception cref="ObjectDisposedException">Thrown if the handler has been disposed.</exception>
     internal void HandleMessage(PubSubMessage message)
     {
         ArgumentNullException.ThrowIfNull(message);
@@ -68,8 +68,8 @@ internal sealed class PubSubMessageHandler : IDisposable
     /// Get the message queue for manual message retrieval.
     /// </summary>
     /// <returns>The message queue instance.</returns>
-    /// <exception cref="ObjectDisposedException">Thrown when the handler has been disposed.</exception>
-    /// <exception cref="InvalidOperationException">Thrown when a callback is configured.</exception>
+    /// <exception cref="ObjectDisposedException">Thrown if the handler has been disposed.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if a callback is configured.</exception>
     internal PubSubMessageQueue GetQueue()
     {
         ThrowIfDisposed();
@@ -86,7 +86,7 @@ internal sealed class PubSubMessageHandler : IDisposable
     /// Gets or creates the message queue instance. Used internally for lazy initialization.
     /// </summary>
     /// <returns>The message queue instance.</returns>
-    /// <exception cref="ObjectDisposedException">Thrown when the handler has been disposed.</exception>
+    /// <exception cref="ObjectDisposedException">Thrown if the handler has been disposed.</exception>
     private PubSubMessageQueue GetOrCreateQueue()
     {
         ThrowIfDisposed();
@@ -147,6 +147,7 @@ internal sealed class PubSubMessageHandler : IDisposable
     /// <summary>
     /// Throws an ObjectDisposedException if the handler has been disposed.
     /// </summary>
+    /// <exception cref="ObjectDisposedException">Thrown if the handler has been disposed.</exception>
     private void ThrowIfDisposed()
     {
         if (_disposed)

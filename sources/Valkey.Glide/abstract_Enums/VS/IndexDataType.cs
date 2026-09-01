@@ -10,6 +10,7 @@ public enum IndexDataType
 {
     /// <summary>Data stored in hashes; field identifiers are field names within the hashes.</summary>
     Hash,
+
     /// <summary>Data stored as JSON documents; field identifiers are JSON Path expressions.</summary>
     Json,
 }

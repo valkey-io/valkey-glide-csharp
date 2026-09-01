@@ -38,6 +38,7 @@ public abstract class StreamTrimOptions
     /// <summary>
     /// Builds the command arguments for these options.
     /// </summary>
+    /// <exception cref="ArgumentException">Thrown when <see cref="Limit"/> is set but <see cref="Exact"/> is not <see langword="false"/>.</exception>
     internal GlideString[] ToArgs()
     {
         if (Limit.HasValue && Exact != false)

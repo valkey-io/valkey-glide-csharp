@@ -78,7 +78,6 @@ public static partial class Ft
         => client.Command(Request.FtAggregate(index, query, options));
 
     #endregion
-
     #region Nested Types
 
     /// <summary>
@@ -321,6 +320,7 @@ public static partial class Ft
     /// A filter expression for an aggregate command.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ft.aggregate/">Valkey commands – FT.AGGREGATE</seealso>
+    /// <param name="expression">The filter expression.</param>
     [method: SetsRequiredMembers]
     public sealed class AggregateFilter(ValkeyValue expression) : IAggregateClause
     {
@@ -364,12 +364,12 @@ public static partial class Ft
         #region Constants
 
         /// <summary>
-        /// Indicates that that no fields should be loaded (<c>LOAD 0</c>).
+        /// Indicates that no fields should be loaded (<c>LOAD 0</c>).
         /// </summary>
         public static readonly IEnumerable<ValkeyValue> LoadNone = [];
 
         /// <summary>
-        /// Indicates that that all fields should be loaded (<c>LOAD *</c>).
+        /// Indicates that all fields should be loaded (<c>LOAD *</c>).
         /// </summary>
         public static readonly IEnumerable<ValkeyValue>? LoadAll = null;
 
@@ -417,7 +417,6 @@ public static partial class Ft
     }
 
     #endregion
-
     #region Private Methods
 
     private static GlideString ToLiteral(ReducerFunction function)

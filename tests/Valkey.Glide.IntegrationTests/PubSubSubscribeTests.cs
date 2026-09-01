@@ -23,11 +23,11 @@ public class PubSubSubscribeTests
             .ToArray();
 
         // Build subscriber using the specified subscribe mode.
-        using var subscriber = await BuildSubscriber(isCluster, messages, subscribeMode);
+        await using var subscriber = await BuildSubscriber(isCluster, messages, subscribeMode);
         await AssertSubscribedAsync(subscriber, messages, subscribeMode);
 
         // Publish messages and verify receipt.
-        using var publisher = BuildPublisher(isCluster);
+        await using var publisher = BuildPublisher(isCluster);
         await PublishAsync(publisher, messages);
         await AssertReceivedAsync(subscriber, messages);
     }
@@ -47,11 +47,11 @@ public class PubSubSubscribeTests
         if (isSharded) expectedMessages.Add(shardedChannelMessage!);
 
         // Build subscriber using the specified subscribe mode.
-        using var subscriber = await BuildSubscriber(isCluster, expectedMessages, subscribeMode);
+        await using var subscriber = await BuildSubscriber(isCluster, expectedMessages, subscribeMode);
         await AssertSubscribedAsync(subscriber, expectedMessages, subscribeMode);
 
         // Publish messages and verify receipt.
-        using var publisher = BuildPublisher(isCluster);
+        await using var publisher = BuildPublisher(isCluster);
         await PublishAsync(publisher, expectedMessages);
         await AssertReceivedAsync(subscriber, expectedMessages);
     }
@@ -74,11 +74,11 @@ public class PubSubSubscribeTests
         if (isSharded) messages.AddRange(shardedChannelMessages!);
 
         // Build subscriber using the specified subscribe mode.
-        using var subscriber = await BuildSubscriber(isCluster, messages, subscribeMode);
+        await using var subscriber = await BuildSubscriber(isCluster, messages, subscribeMode);
         await AssertSubscribedAsync(subscriber, messages, subscribeMode);
 
         // Publish messages and verify receipt.
-        using var publisher = BuildPublisher(isCluster);
+        await using var publisher = BuildPublisher(isCluster);
         await PublishAsync(publisher, messages);
         await AssertReceivedAsync(subscriber, messages);
     }
@@ -94,7 +94,7 @@ public class PubSubSubscribeTests
         var messages = new[] { configMessage, lazyMessage, blockingMessage };
 
         // Subscribe to each message using the corresponding subscribe mode.
-        using var subscriber = await BuildSubscriber(isCluster, [configMessage], SubscribeMode.Config);
+        await using var subscriber = await BuildSubscriber(isCluster, [configMessage], SubscribeMode.Config);
         await AssertSubscribedAsync(subscriber, [configMessage], SubscribeMode.Config);
 
         await SubscribeAsync(subscriber, blockingMessage);
@@ -104,7 +104,7 @@ public class PubSubSubscribeTests
         await AssertSubscribedAsync(subscriber, [lazyMessage], SubscribeMode.Lazy);
 
         // Publish messages and verify receipt.
-        using var publisher = BuildPublisher(isCluster);
+        await using var publisher = BuildPublisher(isCluster);
         await PublishAsync(publisher, messages);
         await AssertReceivedAsync(subscriber, messages);
     }
@@ -125,7 +125,7 @@ public class PubSubSubscribeTests
         messages.AddRange(blockingMessages);
 
         // Subscribe to all messages using the corresponding subscribe mode.
-        using var subscriber = await BuildSubscriber(isCluster, configMessages, SubscribeMode.Config);
+        await using var subscriber = await BuildSubscriber(isCluster, configMessages, SubscribeMode.Config);
         await AssertSubscribedAsync(subscriber, configMessages, SubscribeMode.Config);
 
         await SubscribeAsync(subscriber, blockingMessages);
@@ -135,7 +135,7 @@ public class PubSubSubscribeTests
         await AssertSubscribedAsync(subscriber, lazyMessages, SubscribeMode.Lazy);
 
         // Publish messages and verify receipt.
-        using var publisher = BuildPublisher(isCluster);
+        await using var publisher = BuildPublisher(isCluster);
         await PublishAsync(publisher, messages);
         await AssertReceivedAsync(subscriber, messages);
     }

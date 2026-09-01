@@ -10,6 +10,7 @@ public enum FtSearchSortOrder
 {
     /// <summary>Ascending order.</summary>
     Ascending,
+
     /// <summary>Descending order.</summary>
     Descending,
 }

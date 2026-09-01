@@ -43,10 +43,12 @@ internal static class GeoRadiusOptionsExtensions
         {
             values.Add(ValkeyLiterals.WITHCOORD);
         }
+
         if ((options & GeoRadiusOptions.WithDistance) != 0)
         {
             values.Add(ValkeyLiterals.WITHDIST);
         }
+
         if ((options & GeoRadiusOptions.WithGeoHash) != 0)
         {
             values.Add(ValkeyLiterals.WITHHASH);

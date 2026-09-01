@@ -26,7 +26,8 @@ public readonly struct ChannelMessage
 
     /// <inheritdoc/>
     public override bool Equals(object? obj) => obj is ChannelMessage cm
-        && cm.Channel == Channel && cm.Message == Message;
+        && cm.Channel == Channel
+        && cm.Message == Message;
 
     internal ChannelMessage(ChannelMessageQueue queue, in ValkeyChannel channel, in ValkeyValue value)
     {
@@ -51,13 +52,17 @@ public readonly struct ChannelMessage
     public ValkeyValue Message { get; }
 
     /// <summary>
-    /// Checks if 2 messages are .Equal().
+    /// Returns whether the given messages are equal.
     /// </summary>
+    /// <param name="left">The first message to compare.</param>
+    /// <param name="right">The second message to compare.</param>
     public static bool operator ==(ChannelMessage left, ChannelMessage right) => left.Equals(right);
 
     /// <summary>
-    /// Checks if 2 messages are not .Equal().
+    /// Returns whether the given messages are not equal.
     /// </summary>
+    /// <param name="left">The first message to compare.</param>
+    /// <param name="right">The second message to compare.</param>
     public static bool operator !=(ChannelMessage left, ChannelMessage right) => !left.Equals(right);
 }
 
@@ -73,6 +78,7 @@ public sealed class ChannelMessageQueue : IAsyncEnumerable<ChannelMessage>
     /// The Channel that was subscribed for this queue.
     /// </summary>
     public ValkeyChannel Channel { get; }
+
     private Subscriber? _parent;
 
     /// <inheritdoc/>
@@ -106,17 +112,20 @@ public sealed class ChannelMessageQueue : IAsyncEnumerable<ChannelMessage>
     /// <summary>
     /// Consume a message from the channel.
     /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the read operation.</param>
     public ValueTask<ChannelMessage> ReadAsync(CancellationToken cancellationToken = default)
         => _queue.Reader.ReadAsync(cancellationToken);
 
     /// <summary>
     /// Attempt to synchronously consume a message from the channel.
     /// </summary>
+    /// <param name="item">When successful, the message that was consumed.</param>
     public bool TryRead(out ChannelMessage item) => _queue.Reader.TryRead(out item);
 
     /// <summary>
     /// Attempt to query the backlog length of the queue.
     /// </summary>
+    /// <param name="count">When successful, the number of pending messages in the queue.</param>
     public bool TryGetCount(out int count)
     {
         var reader = _queue.Reader;
@@ -131,6 +140,7 @@ public sealed class ChannelMessageQueue : IAsyncEnumerable<ChannelMessage>
     }
 
     private Delegate? _onMessageHandler;
+
     private void AssertOnMessage(Delegate handler)
     {
         if (handler == null) throw new ArgumentNullException(nameof(handler));
@@ -141,6 +151,7 @@ public sealed class ChannelMessageQueue : IAsyncEnumerable<ChannelMessage>
     /// <summary>
     /// Create a message loop that processes messages sequentially.
     /// </summary>
+    /// <param name="handler">The synchronous handler invoked for each message.</param>
     public void OnMessage(Action<ChannelMessage> handler)
     {
         AssertOnMessage(handler);
@@ -183,6 +194,7 @@ public sealed class ChannelMessageQueue : IAsyncEnumerable<ChannelMessage>
     /// <summary>
     /// Create a message loop that processes messages sequentially.
     /// </summary>
+    /// <param name="handler">The asynchronous handler invoked for each message.</param>
     public void OnMessage(Func<ChannelMessage, Task> handler)
     {
         AssertOnMessage(handler);
@@ -220,11 +232,10 @@ public sealed class ChannelMessageQueue : IAsyncEnumerable<ChannelMessage>
                         {
                             return;
                         }
-                        else
-                        {
-                            break;
-                        }
+
+                        break;
                     }
+
                     previous = current;
                     current = Volatile.Read(ref previous!._next);
                 }
@@ -243,6 +254,7 @@ public sealed class ChannelMessageQueue : IAsyncEnumerable<ChannelMessage>
             count++;
             current = Volatile.Read(ref current._next);
         }
+
         return count;
     }
 
@@ -296,12 +308,16 @@ public sealed class ChannelMessageQueue : IAsyncEnumerable<ChannelMessage>
     /// <summary>
     /// Stop receiving messages on this channel.
     /// </summary>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     public void Unsubscribe(CommandFlags flags = CommandFlags.None)
         => UnsubscribeAsync(flags).GetAwaiter().GetResult();
 
     /// <summary>
     /// Stop receiving messages on this channel.
     /// </summary>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     public async Task UnsubscribeAsync(CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);

@@ -264,6 +264,7 @@ internal static class ValkeyCommandExtensions
     /// </summary>
     /// <param name="command">The <see cref="ValkeyCommand"/> to check.</param>
     /// <returns><see langword="true"/> if the command is primary-only, <see langword="false"/> otherwise.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="command"/> is not a supported <see cref="ValkeyCommand"/> value.</exception>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0066:Convert switch statement to expression", Justification = "No, it'd be ridiculous.")]
     internal static bool IsPrimaryOnly(this ValkeyCommand command)
     {

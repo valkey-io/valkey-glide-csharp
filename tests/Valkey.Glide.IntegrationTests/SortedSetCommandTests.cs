@@ -9,6 +9,7 @@ namespace Valkey.Glide.IntegrationTests;
 public class SortedSetCommandTests(TestConfiguration config)
 {
     public TestConfiguration Config { get; } = config;
+
     private static readonly TimeSpan BlockingTimeout = TimeSpan.FromSeconds(2);
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1470,6 +1471,7 @@ public class SortedSetCommandTests(TestConfiguration config)
         {
             items.Add(item);
         }
+
         Assert.Empty(items);
 
         // Add test data
@@ -1486,6 +1488,7 @@ public class SortedSetCommandTests(TestConfiguration config)
         {
             scanItems.Add(item);
         }
+
         Assert.Equal(3, scanItems.Count);
         Assert.All(scanItems, item => Assert.Contains(item.Element.ToString(), new[] { "member1", "member2", "member3" }));
 
@@ -1495,10 +1498,10 @@ public class SortedSetCommandTests(TestConfiguration config)
         {
             patternItems.Add(item);
         }
+
         Assert.Equal(3, patternItems.Count);
         Assert.All(patternItems, item => Assert.Contains(item.Element.ToString(), new[] { "member1", "member2", "member3" }));
     }
-
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
@@ -1516,6 +1519,7 @@ public class SortedSetCommandTests(TestConfiguration config)
         {
             allScanned.Add(entry);
         }
+
         Assert.Equal(25000, allScanned.Count);
 
         // Test 2: Scan with pattern matching using ScanOptions
@@ -1525,6 +1529,7 @@ public class SortedSetCommandTests(TestConfiguration config)
             Assert.StartsWith("member1", entry.Element);
             patternScanned.Add(entry);
         }
+
         Assert.Equal(11111, patternScanned.Count);  // At least member1, member10-19, member100-199, etc.
 
         // Test 3: Scan with small page size to test pagination

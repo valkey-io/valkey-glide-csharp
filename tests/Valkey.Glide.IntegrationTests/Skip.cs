@@ -70,8 +70,8 @@ internal static class Skip
         }
         catch (Exception ex) when (
             ex.Message.Contains("unknown command", StringComparison.OrdinalIgnoreCase) ||
-            ex.Message.Contains("ERR unknown", StringComparison.OrdinalIgnoreCase) ||
-            ex.Message.Contains("not loaded", StringComparison.OrdinalIgnoreCase))
+                ex.Message.Contains("ERR unknown", StringComparison.OrdinalIgnoreCase) ||
+                ex.Message.Contains("not loaded", StringComparison.OrdinalIgnoreCase))
         {
             Assert.Skip("Valkey Search module is not loaded on the server");
         }
@@ -92,7 +92,7 @@ internal static class Skip
         }
         catch (Exception ex) when (
             ex.Message.Contains("JSON", StringComparison.OrdinalIgnoreCase) ||
-            ex.Message.Contains("module", StringComparison.OrdinalIgnoreCase))
+                ex.Message.Contains("module", StringComparison.OrdinalIgnoreCase))
         {
             Assert.Skip("Valkey JSON module is not loaded on the server");
         }

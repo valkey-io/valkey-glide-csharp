@@ -1,14 +1,17 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using Valkey.Glide.Commands;
 using Valkey.Glide.Commands.Options;
 
 namespace Valkey.Glide;
 
-/// ATTENTION: Methods should only be added to this interface if they are implemented
-/// by StackExchange.Redis databases but NOT by Valkey GLIDE clients. Methods implemented
-/// by both should be added to <see cref="IStringBaseCommands"/> instead.
+// ATTENTION: Methods should only be added to this interface if they are implemented
+// by StackExchange.Redis databases but NOT by Valkey GLIDE clients. Methods implemented
+// by both should be added to IStringBaseCommands instead.
 
+/// <summary>
+/// String commands for StackExchange.Redis databases.
+/// </summary>
+/// <seealso href="https://valkey.io/commands/#string">Valkey – String Commands</seealso>
 public partial interface IDatabaseAsync
 {
     /// <inheritdoc cref="IBaseClient.SetAsync(ValkeyKey, ValkeyValue)" path="/*[not(self::returns)]"/>

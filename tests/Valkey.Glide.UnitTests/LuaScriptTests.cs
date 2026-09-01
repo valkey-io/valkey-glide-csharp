@@ -21,19 +21,13 @@ public class LuaScriptTests
 
     [Fact]
     public void Prepare_WithNullScript_ThrowsArgumentException()
-    {
-        // Act & Assert
-        ArgumentException ex = Assert.Throws<ArgumentException>(() => LuaScript.Prepare(null!));
-        Assert.Contains("Script cannot be null or empty", ex.Message);
-    }
+        => Assert.Equal("script", Assert.Throws<ArgumentNullException>(()
+            => LuaScript.Prepare(null!)).ParamName);
 
     [Fact]
     public void Prepare_WithEmptyScript_ThrowsArgumentException()
-    {
-        // Act & Assert
-        ArgumentException ex = Assert.Throws<ArgumentException>(() => LuaScript.Prepare(""));
-        Assert.Contains("Script cannot be null or empty", ex.Message);
-    }
+        => Assert.Equal("script", Assert.Throws<ArgumentException>(()
+            => LuaScript.Prepare("")).ParamName);
 
     [Fact]
     public void Prepare_ExtractsParametersCorrectly()

@@ -10,6 +10,7 @@ public enum FtSearchShardScope
 {
     /// <summary>Queries all shards (default). Terminates with timeout error if not all shards respond.</summary>
     AllShards,
+
     /// <summary>Queries only a subset of shards. Generates a best-effort reply if not all shards respond.</summary>
     SomeShards,
 }

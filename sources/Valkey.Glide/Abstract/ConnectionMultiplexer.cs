@@ -14,7 +14,7 @@ namespace Valkey.Glide;
 /// Connection methods common to both standalone and cluster clients.<br />
 /// See also <see cref="GlideClient" /> and <see cref="GlideClusterClient" />.
 /// </summary>
-public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable, IAsyncDisposable
+public sealed class ConnectionMultiplexer : IConnectionMultiplexer
 {
     /// <inheritdoc cref="ConnectAsync(string, TextWriter?)" />
     public static ConnectionMultiplexer Connect(string configuration, TextWriter? log = null)
@@ -70,7 +70,6 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
 
             config = configBuilder.Build();
         }
-
         else
         {
             var configBuilder = CreateClientConfigBuilder<StandaloneClientConfigurationBuilder>(configuration);
@@ -141,22 +140,21 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
 
             return [.. servers];
         }
-        else
+
+        // glide-core ignores route on standalone and always returns a single node response
+        string info = _db.Command(Request.Info([]), Route.AllNodes).GetAwaiter().GetResult();
+        // and there is no way to get IP address from server, assuming localhost (127.0.0.1)
+        // we can try to get port only (in some deployments, this info is also missing)
+        int port = 6379;
+        foreach (string line in info.Split("\r\n"))
         {
-            // glide-core ignores route on standalone and always returns a single node response
-            string info = _db.Command(Request.Info([]), Route.AllNodes).GetAwaiter().GetResult();
-            // and there is no way to get IP address from server, assuming localhost (127.0.0.1)
-            // we can try to get port only (in some deployments, this info is also missing)
-            int port = 6379;
-            foreach (string line in info.Split("\r\n"))
+            if (line.Contains("tcp_port:"))
             {
-                if (line.Contains("tcp_port:"))
-                {
-                    port = int.Parse(line.Split(':')[1]);
-                }
+                port = int.Parse(line.Split(':')[1]);
             }
-            return [new ValkeyServer(_db, new IPEndPoint(0x100007F, port))];
         }
+
+        return [new ValkeyServer(_db, new IPEndPoint(0x100007F, port))];
     }
 
     /// <inheritdoc/>
@@ -194,6 +192,7 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
             {
                 return;
             }
+
             _db.Dispose();
             _db = null;
         }
@@ -205,7 +204,7 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
     /// <inheritdoc/>
     public override string ToString() => _db!.ToString();
 
-    internal ConfigurationOptions RawConfig { private set; get; }
+    internal ConfigurationOptions RawConfig { get; }
 
     private readonly object _lock = new();
     private Database? _db;
@@ -243,10 +242,12 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
                 _ => throw new ArgumentException($"Unknown value of Protocol: {configuration.Protocol}"),
             };
         }
+
         if (config is StandaloneClientConfigurationBuilder standalone)
         {
             _ = configuration.DefaultDatabase.HasValue ? standalone.DatabaseId = (uint)configuration.DefaultDatabase.Value : 0;
         }
+
         _ = configuration.ReconnectRetryPolicy.HasValue ? config.ConnectionRetryStrategy = configuration.ReconnectRetryPolicy.Value : new();
         _ = configuration.ReadFrom.HasValue ? config.ReadFrom = configuration.ReadFrom.Value : new();
 
@@ -297,6 +298,7 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
     /// Adds a subscription queue for the specified channel.
     /// </summary>
     /// <param name="channel">The channel to subscribe to.</param>
+    /// <param name="queue">The queue to receive messages published to the channel.</param>
     /// <returns>True if a new subscription was added, false if an existing subscription was updated.</returns>
     internal bool AddSubscriptionQueue(ValkeyChannel channel, ChannelMessageQueue queue)
     {
@@ -416,6 +418,7 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
     /// </summary>
     /// <param name="message">The <see cref="PubSubMessage"/> to convert.</param>
     /// <returns>A ValkeyChannel representing the message's channel.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if <see cref="PubSubMessage.ChannelMode"/> is not a supported <see cref="PubSubChannelMode"/> value.</exception>
     private static ValkeyChannel ToValkeyChannel(PubSubMessage message)
     {
         var channelMode = message.ChannelMode;
@@ -439,7 +442,7 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer, IDisposable,
     {
         // Create standalone client.
         StandaloneClientConfiguration standaloneConfig = CreateClientConfigBuilder<StandaloneClientConfigurationBuilder>(configuration).Build();
-        using GlideClient standalone = await GlideClient.CreateClient(standaloneConfig);
+        await using GlideClient standalone = await GlideClient.CreateClient(standaloneConfig);
 
         // Query server info to determine if it's a cluster.
         string info = await standalone.InfoAsync([Section.CLUSTER]);

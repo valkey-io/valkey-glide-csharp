@@ -4,11 +4,11 @@ using static Valkey.Glide.Internals.FFI;
 
 namespace Valkey.Glide.Internals;
 
-internal partial class Request
+internal static partial class Request
 {
     #region Command Builders
 
-    public static Cmd<object?, ValkeyResult> EvalAsync(string script, string[]? keys = null, string[]? args = null)
+    public static Cmd<object?, ValkeyResult> Eval(string script, string[]? keys = null, string[]? args = null)
     {
         List<GlideString> cmdArgs = [script];
 
@@ -20,7 +20,7 @@ internal partial class Request
         return new(RequestType.Eval, [.. cmdArgs], true, ValkeyResult.Create, allowConverterToHandleNull: true);
     }
 
-    public static Cmd<object?, ValkeyResult> EvalShaAsync(string hash, string[]? keys = null, string[]? args = null)
+    public static Cmd<object?, ValkeyResult> EvalSha(string hash, string[]? keys = null, string[]? args = null)
     {
         List<GlideString> cmdArgs = [hash];
 
@@ -32,7 +32,7 @@ internal partial class Request
         return new(RequestType.EvalSha, [.. cmdArgs], true, ValkeyResult.Create, allowConverterToHandleNull: true);
     }
 
-    public static Cmd<object?, ValkeyResult> FCallAsync(string function, string[]? keys = null, string[]? args = null)
+    public static Cmd<object?, ValkeyResult> FCall(string function, string[]? keys = null, string[]? args = null)
     {
         List<GlideString> cmdArgs = [function];
 
@@ -44,7 +44,7 @@ internal partial class Request
         return new(RequestType.FCall, [.. cmdArgs], true, ValkeyResult.Create, allowConverterToHandleNull: true);
     }
 
-    public static Cmd<object?, ValkeyResult> FCallReadOnlyAsync(string function, string[]? keys = null, string[]? args = null)
+    public static Cmd<object?, ValkeyResult> FCallReadOnly(string function, string[]? keys = null, string[]? args = null)
     {
         List<GlideString> cmdArgs = [function];
 
@@ -56,22 +56,22 @@ internal partial class Request
         return new(RequestType.FCallReadOnly, [.. cmdArgs], true, ValkeyResult.Create, allowConverterToHandleNull: true);
     }
 
-    public static Cmd<string, ValkeyValue> FunctionDeleteAsync(string libraryName)
+    public static Cmd<string, ValkeyValue> FunctionDelete(string libraryName)
         => Ok(RequestType.FunctionDelete, [libraryName]);
 
-    public static Cmd<GlideString, byte[]> FunctionDumpAsync()
+    public static Cmd<GlideString, byte[]> FunctionDump()
         => new(RequestType.FunctionDump, [], false, gs => gs.Bytes);
 
-    public static Cmd<string, ValkeyValue> FunctionFlushAsync()
+    public static Cmd<string, ValkeyValue> FunctionFlush()
         => Ok(RequestType.FunctionFlush);
 
-    public static Cmd<string, ValkeyValue> FunctionFlushAsync(FlushMode mode)
+    public static Cmd<string, ValkeyValue> FunctionFlush(FlushMode mode)
         => Ok(RequestType.FunctionFlush, [mode == FlushMode.Sync ? ValkeyLiterals.SYNC : ValkeyLiterals.ASYNC]);
 
-    public static Cmd<string, ValkeyValue> FunctionKillAsync()
+    public static Cmd<string, ValkeyValue> FunctionKill()
         => Ok(RequestType.FunctionKill);
 
-    public static Cmd<object[], LibraryInfo[]> FunctionListAsync(FunctionListOptions? options = null)
+    public static Cmd<object[], LibraryInfo[]> FunctionList(FunctionListOptions? options = null)
     {
         List<GlideString> cmdArgs = [];
 
@@ -92,13 +92,16 @@ internal partial class Request
     /// <summary>
     /// Creates a command to load a function library.
     /// </summary>
-    public static Cmd<GlideString, string> FunctionLoadAsync(string libraryCode, bool replace)
+    /// <param name="libraryCode">The source code of the library to load.</param>
+    /// <param name="replace">Whether to replace an existing library with the same name.</param>
+    public static Cmd<GlideString, string> FunctionLoad(string libraryCode, bool replace)
     {
         List<GlideString> cmdArgs = [];
         if (replace)
         {
             cmdArgs.Add(ValkeyLiterals.REPLACE);
         }
+
         cmdArgs.Add(libraryCode);
 
         return new(RequestType.FunctionLoad, [.. cmdArgs], false, gs => gs.ToString());
@@ -107,7 +110,10 @@ internal partial class Request
     /// <summary>
     /// Creates a command to restore functions from a binary payload.
     /// </summary>
-    public static Cmd<string, ValkeyValue> FunctionRestoreAsync(byte[] payload, FunctionRestorePolicy? policy = null)
+    /// <param name="payload">The serialized function library payload to restore.</param>
+    /// <param name="policy">The policy controlling how existing libraries are handled.</param>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="policy"/> is not a supported <see cref="FunctionRestorePolicy"/> value.</exception>
+    public static Cmd<string, ValkeyValue> FunctionRestore(byte[] payload, FunctionRestorePolicy? policy = null)
     {
         List<GlideString> cmdArgs = [payload];
 
@@ -128,13 +134,14 @@ internal partial class Request
     /// <summary>
     /// Creates a command to get function statistics.
     /// </summary>
-    public static Cmd<object, FunctionStatsResult> FunctionStatsAsync()
+    public static Cmd<object, FunctionStatsResult> FunctionStats()
         => new(RequestType.FunctionStats, [], false, ParseFunctionStatsResponse);
 
     /// <summary>
     /// Creates a command to check if scripts exist in the cache.
     /// </summary>
-    public static Cmd<object[], bool[]> ScriptExistsAsync(string[] sha1Hashes)
+    /// <param name="sha1Hashes">The SHA1 hashes of the scripts to check.</param>
+    public static Cmd<object[], bool[]> ScriptExists(string[] sha1Hashes)
     {
         var cmdArgs = sha1Hashes.Select(h => (GlideString)h).ToArray();
         return new(RequestType.ScriptExists, cmdArgs, false, arr => [.. arr.Select(o => Convert.ToInt64(o) == 1)]);
@@ -143,29 +150,30 @@ internal partial class Request
     /// <summary>
     /// Creates a command to flush all scripts from the cache.
     /// </summary>
-    public static Cmd<string, ValkeyValue> ScriptFlushAsync()
+    public static Cmd<string, ValkeyValue> ScriptFlush()
         => Ok(RequestType.ScriptFlush);
 
     /// <summary>
     /// Creates a command to flush all scripts from the cache with specified mode.
     /// </summary>
-    public static Cmd<string, ValkeyValue> ScriptFlushAsync(FlushMode mode)
+    /// <param name="mode">The flush mode.</param>
+    public static Cmd<string, ValkeyValue> ScriptFlush(FlushMode mode)
         => Ok(RequestType.ScriptFlush, [mode == FlushMode.Sync ? ValkeyLiterals.SYNC : ValkeyLiterals.ASYNC]);
 
     /// <summary>
     /// Creates a command to kill a currently executing script.
     /// </summary>
-    public static Cmd<string, ValkeyValue> ScriptKillAsync()
+    public static Cmd<string, ValkeyValue> ScriptKill()
         => Ok(RequestType.ScriptKill);
 
     /// <summary>
     /// Creates a command to get the source code of a cached script.
     /// </summary>
-    public static Cmd<GlideString?, string?> ScriptShowAsync(string sha1Hash)
+    /// <param name="sha1Hash">The SHA1 hash of the script to retrieve.</param>
+    public static Cmd<GlideString?, string?> ScriptShow(string sha1Hash)
         => new(RequestType.ScriptShow, [sha1Hash], true, gs => gs?.ToString());
 
     #endregion
-
     #region Response Converters
 
     private static void ParseEngineData(string engineName, object value, Dictionary<string, EngineStats> engines)
@@ -422,6 +430,7 @@ internal partial class Request
                 {
                     funcFlags.AddRange(flagsArray.Select(f => ((GlideString)f).ToString()));
                 }
+
                 break;
             default:
                 // Ignore unknown function properties
@@ -481,6 +490,7 @@ internal partial class Request
                 {
                     runningScript = ParseRunningScript(value);
                 }
+
                 break;
             case "engines":
                 ParseEngines(value, engines);
@@ -492,12 +502,14 @@ internal partial class Request
     }
 
     #endregion
-
     #region Argument Builders
 
     /// <summary>
     /// Adds keys and args to the command arguments list for script/function execution.
     /// </summary>
+    /// <param name="cmdArgs">The command arguments list to append to.</param>
+    /// <param name="keys">The keys to add, or <see langword="null"/> if none.</param>
+    /// <param name="args">The additional arguments to add, or <see langword="null"/> if none.</param>
     private static void AddKeysAndArgs(List<GlideString> cmdArgs, string[]? keys, string[]? args)
     {
         if (keys != null)

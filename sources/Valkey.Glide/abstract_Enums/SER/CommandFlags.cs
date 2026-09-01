@@ -32,7 +32,7 @@ public enum CommandFlags
     /// This operation should be performed on the primary if it is available, but read operations may
     /// be performed on a replica if no primary is available. This is the default option.
     /// </summary>
-    PreferMaster = 0,
+    PreferMaster = None,
 
     /// <summary>
     /// This operation should be performed on the replica if it is available, but will be performed on

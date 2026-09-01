@@ -10,7 +10,7 @@ namespace Valkey.Glide.Pipeline;
 /// <summary>
 /// Options classes for configuring batch (pipeline and transaction) requests.
 /// </summary>
-public class Options
+public static class Options
 {
     /// <summary>
     /// Defines a retry strategy for batch requests, allowing control over retries in case of server or connection errors.
@@ -157,8 +157,8 @@ public class Options
         SingleNodeRoute? route = null,
         ClusterBatchRetryStrategy? retryStrategy = null) : BaseBatchOptions(timeout)
     {
-        internal SingleNodeRoute? Route { get; private set; } = route;
-        internal ClusterBatchRetryStrategy? RetryStrategy { get; private set; } = retryStrategy;
+        internal SingleNodeRoute? Route { get; } = route;
+        internal ClusterBatchRetryStrategy? RetryStrategy { get; } = retryStrategy;
 
         internal override FFI.BatchOptions ToFfi() => new(
                 RetryStrategy?.RetryServerError,

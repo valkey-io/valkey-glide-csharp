@@ -2,12 +2,12 @@
 
 namespace Valkey.Glide;
 
-/// ATTENTION: Methods should only be added to this interface if they are implemented
-/// by Valkey GLIDE clients but NOT by StackExchange.Redis databases.
+// ATTENTION: Methods should only be added to this interface if they are implemented
+// by Valkey GLIDE clients but NOT by StackExchange.Redis databases. Methods implemented
+// by both should be added to the corresponding Commands interface instead.
 
 /// <summary>
 /// Client-side cache commands for Valkey GLIDE clients.
-/// These methods provide access to cache metrics when client-side caching is enabled.
 /// </summary>
 /// <seealso cref="ClientSideCacheConfig"/>
 public partial interface IBaseClient

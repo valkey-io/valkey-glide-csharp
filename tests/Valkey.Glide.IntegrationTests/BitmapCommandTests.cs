@@ -205,7 +205,6 @@ public class BitmapCommandTests(TestConfiguration config)
         Assert.Equal(2, firstByteCount);
     }
 
-
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task BitPosition_FindsFirstSetBit(BaseClient client)
@@ -372,7 +371,6 @@ public class BitmapCommandTests(TestConfiguration config)
         byte[] resultBytes = resultValue!;
         Assert.Equal(190, resultBytes[0]); // NOT of 65 (A) is 190
     }
-
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]

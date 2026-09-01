@@ -11,4 +11,4 @@ namespace Valkey.Glide.Commands;
 /// StackExchange.Redis-style methods are on <see cref="IDatabaseAsync"/>.
 /// </remarks>
 /// <seealso href="https://valkey.io/commands/#string">Valkey – String Commands</seealso>
-public interface IStringBaseCommands { }
+public interface IStringBaseCommands;

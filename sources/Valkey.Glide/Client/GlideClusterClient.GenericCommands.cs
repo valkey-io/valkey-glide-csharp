@@ -36,7 +36,7 @@ public partial class GlideClusterClient
 
     /// <inheritdoc cref="IGlideClusterClient.WaitAofAsync(bool, long, TimeSpan, Route)"/>
     public async Task<long[]> WaitAofAsync(bool localAof, long numreplicas, TimeSpan timeout, Route route)
-        => await Command(Request.WaitAofAsync(localAof, numreplicas, timeout), route);
+        => await Command(Request.WaitAof(localAof, numreplicas, timeout), route);
 
     /// <inheritdoc cref="ITransactionBaseCommands.WatchAsync(IEnumerable{ValkeyKey})"/>
     public async Task WatchAsync(IEnumerable<ValkeyKey> keys)

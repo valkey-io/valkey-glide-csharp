@@ -31,6 +31,10 @@ public readonly struct GeoSearchResult : IEquatable<GeoSearchResult>
     /// <summary>
     /// Initializes a new <see cref="GeoSearchResult"/>.
     /// </summary>
+    /// <param name="member">The matched member name.</param>
+    /// <param name="position">The coordinates of the member, or <see langword="null"/> if not requested.</param>
+    /// <param name="distance">The distance from the search origin, or <see langword="null"/> if not requested.</param>
+    /// <param name="hash">The geohash integer of the member, or <see langword="null"/> if not requested.</param>
     internal GeoSearchResult(
         ValkeyValue member,
         GeoPosition? position = null,
@@ -50,9 +54,9 @@ public readonly struct GeoSearchResult : IEquatable<GeoSearchResult>
     /// <inheritdoc/>
     public bool Equals(GeoSearchResult other)
         => Member == other.Member
-        && Position.Equals(other.Position)
-        && Distance.Equals(other.Distance)
-        && Hash.Equals(other.Hash);
+            && Position.Equals(other.Position)
+            && Distance.Equals(other.Distance)
+            && Hash.Equals(other.Hash);
 
     /// <inheritdoc/>
     public override bool Equals(object? obj)
@@ -62,11 +66,19 @@ public readonly struct GeoSearchResult : IEquatable<GeoSearchResult>
     public override int GetHashCode()
         => HashCode.Combine(Member, Position, Distance, Hash);
 
-    /// <summary>Equality operator.</summary>
+    /// <summary>
+    /// Equality operator.
+    /// </summary>
+    /// <param name="left">The first result to compare.</param>
+    /// <param name="right">The second result to compare.</param>
     public static bool operator ==(GeoSearchResult left, GeoSearchResult right)
         => left.Equals(right);
 
-    /// <summary>Inequality operator.</summary>
+    /// <summary>
+    /// Inequality operator.
+    /// </summary>
+    /// <param name="left">The first result to compare.</param>
+    /// <param name="right">The second result to compare.</param>
     public static bool operator !=(GeoSearchResult left, GeoSearchResult right)
         => !left.Equals(right);
 }

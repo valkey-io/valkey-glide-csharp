@@ -12,7 +12,6 @@ namespace Valkey.Glide.UnitTests;
 /// </summary>
 public class PubSubPerformanceTests
 {
-
     [Fact]
     public void ChannelBasedProcessing_HighThroughput_HandlesMessagesEfficiently()
     {
@@ -22,10 +21,7 @@ public class PubSubPerformanceTests
 
         var config = new StandalonePubSubSubscriptionConfig()
             .WithChannel("perf-test")
-            .WithCallback((msg, ctx) =>
-            {
-                _ = Interlocked.Increment(ref messagesReceived);
-            }, null);
+            .WithCallback((msg, ctx) => _ = Interlocked.Increment(ref messagesReceived), null);
 
         // Act - Simulate high-volume message processing
         var stopwatch = Stopwatch.StartNew();
@@ -58,10 +54,7 @@ public class PubSubPerformanceTests
 
         var config = new StandalonePubSubSubscriptionConfig()
             .WithChannel("gc-test")
-            .WithCallback((msg, ctx) =>
-            {
-                _ = Interlocked.Increment(ref messagesReceived);
-            }, null);
+            .WithCallback((msg, ctx) => _ = Interlocked.Increment(ref messagesReceived), null);
 
         // Force GC before test
         GC.Collect();
@@ -165,10 +158,7 @@ public class PubSubPerformanceTests
 
         var config = new StandalonePubSubSubscriptionConfig()
             .WithChannel("burst-test")
-            .WithCallback((msg, ctx) =>
-            {
-                _ = Interlocked.Increment(ref messagesReceived);
-            }, null);
+            .WithCallback((msg, ctx) => _ = Interlocked.Increment(ref messagesReceived), null);
 
         // Act - Simulate burst traffic patterns
         var totalStopwatch = Stopwatch.StartNew();
@@ -217,10 +207,7 @@ public class PubSubPerformanceTests
 
         var config = new StandalonePubSubSubscriptionConfig()
             .WithChannel("long-running-test")
-            .WithCallback((msg, ctx) =>
-            {
-                _ = Interlocked.Increment(ref messagesReceived);
-            }, null);
+            .WithCallback((msg, ctx) => _ = Interlocked.Increment(ref messagesReceived), null);
 
         // Warm-up phase (1 second)
         var warmUpStopwatch = Stopwatch.StartNew();

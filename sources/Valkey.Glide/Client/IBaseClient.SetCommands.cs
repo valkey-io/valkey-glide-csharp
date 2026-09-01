@@ -4,9 +4,14 @@ using Valkey.Glide.Commands.Options;
 
 namespace Valkey.Glide;
 
+// ATTENTION: Methods should only be added to this interface if they are implemented
+// by Valkey GLIDE clients but NOT by StackExchange.Redis databases. Methods implemented
+// by both should be added to ISetBaseCommands instead.
+
 /// <summary>
 /// GLIDE-specific set commands that are not part of the shared interface.
 /// </summary>
+/// <seealso href="https://valkey.io/commands/#set">Valkey – Set Commands</seealso>
 public partial interface IBaseClient
 {
     /// <summary>

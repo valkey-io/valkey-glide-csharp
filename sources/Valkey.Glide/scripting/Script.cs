@@ -24,9 +24,9 @@ public sealed class Script : IDisposable
     /// Creates a new Script instance and stores it in Rust core.
     /// </summary>
     /// <param name="code">The Lua script code.</param>
-    /// <exception cref="ArgumentNullException">Thrown when code is null.</exception>
-    /// <exception cref="ArgumentException">Thrown when code is empty.</exception>
-    /// <exception cref="InvalidOperationException">Thrown when script storage in Rust core fails.</exception>
+    /// <exception cref="ArgumentNullException">Thrown if code is null.</exception>
+    /// <exception cref="ArgumentException">Thrown if code is empty.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if script storage in Rust core fails.</exception>
     public Script(string code)
     {
         if (code == null)
@@ -46,7 +46,7 @@ public sealed class Script : IDisposable
     /// <summary>
     /// Gets the SHA1 hash of the script.
     /// </summary>
-    /// <exception cref="ObjectDisposedException">Thrown when accessing the hash after the script has been disposed.</exception>
+    /// <exception cref="ObjectDisposedException">Thrown if accessing the hash after the script has been disposed.</exception>
     public string Hash
     {
         get
@@ -59,7 +59,7 @@ public sealed class Script : IDisposable
     /// <summary>
     /// Gets the original Lua script code.
     /// </summary>
-    /// <exception cref="ObjectDisposedException">Thrown when accessing the code after the script has been disposed.</exception>
+    /// <exception cref="ObjectDisposedException">Thrown if accessing the code after the script has been disposed.</exception>
     internal string Code
     {
         get
@@ -110,6 +110,7 @@ public sealed class Script : IDisposable
     /// <summary>
     /// Throws ObjectDisposedException if the script has been disposed.
     /// </summary>
+    /// <exception cref="ObjectDisposedException">Thrown if the script has been disposed.</exception>
     private void ThrowIfDisposed()
     {
         if (_disposed)

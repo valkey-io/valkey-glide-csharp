@@ -93,7 +93,6 @@ public static partial class Ft
         => client.Command(Request.FtCreate(index, schema, options));
 
     #endregion
-
     #region Nested Types
 
     /// <summary>
@@ -274,9 +273,7 @@ public static partial class Ft
     /// A new vector search index field using the brute-force algorithm (<c>VECTOR FLAT</c>).
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ft.create/">Valkey commands – FT.CREATE</seealso>
-    public sealed class CreateVectorFieldFlat : CreateVectorField
-    {
-    }
+    public sealed class CreateVectorFieldFlat : CreateVectorField;
 
     /// <summary>
     /// A new vector search index field using the Hierarchical Navigable Small World algorithm (<c>VECTOR HNSW</c>).
@@ -343,4 +340,22 @@ public static partial class Ft
     }
 
     #endregion
+}
+
+/// <summary>
+/// Extension methods for <see cref="Ft.DataType"/>.
+/// </summary>
+internal static class FtDataTypeExtensions
+{
+    /// <summary>
+    /// Converts the <see cref="Ft.DataType"/> to its literal value.
+    /// </summary>
+    /// <param name="dataType">The data type to convert.</param>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="dataType"/> is not a supported <see cref="Ft.DataType"/> value.</exception>
+    internal static ValkeyValue ToLiteral(this Ft.DataType dataType) => dataType switch
+    {
+        Ft.DataType.Hash => ValkeyLiterals.HASH,
+        Ft.DataType.Json => ValkeyLiterals.JSON,
+        _ => throw new ArgumentOutOfRangeException(nameof(dataType)),
+    };
 }

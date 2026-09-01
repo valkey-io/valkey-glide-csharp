@@ -11,8 +11,9 @@ namespace Valkey.Glide.IntegrationTests;
 [CollectionDefinition(DisableParallelization = true)]
 public class OpenTelemetryTests : IDisposable
 {
-    private static readonly uint SamplePercentageNone = 0u;
-    private static readonly uint SamplePercentageAll = 100u;
+    private const uint SamplePercentageNone = 0u;
+    private const uint SamplePercentageAll = 100u;
+
     private static readonly TimeSpan FlushInterval = TimeSpan.FromMilliseconds(100);
     private static readonly TimeSpan WaitInterval = TimeSpan.FromMilliseconds(1000);
 
@@ -50,7 +51,6 @@ public class OpenTelemetryTests : IDisposable
         await ExecuteSetGetDelete(client);
         AssertSpanNames([]);
     }
-
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]

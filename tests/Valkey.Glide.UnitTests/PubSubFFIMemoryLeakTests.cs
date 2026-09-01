@@ -45,7 +45,7 @@ public class PubSubFFIMemoryLeakTests
                 {
                     Assert.Fail(
                         $"Memory leak detected after {i:N0} messages. " +
-                        $"Memory grew by {memoryGrowth:N0} bytes, exceeding limit of {maxMemoryGrowthBytes:N0} bytes.");
+                            $"Memory grew by {memoryGrowth:N0} bytes, exceeding limit of {maxMemoryGrowthBytes:N0} bytes.");
                 }
             }
         }
@@ -61,7 +61,7 @@ public class PubSubFFIMemoryLeakTests
         // Assert: Memory growth should be bounded
         Assert.True(totalMemoryGrowth < maxMemoryGrowthBytes,
             $"Memory leak detected. Total memory growth: {totalMemoryGrowth:N0} bytes, " +
-            $"limit: {maxMemoryGrowthBytes:N0} bytes");
+                $"limit: {maxMemoryGrowthBytes:N0} bytes");
     }
 
     [Fact]
@@ -208,8 +208,8 @@ public class PubSubFFIMemoryLeakTests
                 memorySnapshots.Add((stopwatch.Elapsed, currentMemory));
 
                 Console.WriteLine($"Time: {stopwatch.Elapsed.TotalSeconds:F1}s, " +
-                                $"Messages: {messageCount:N0}, " +
-                                $"Memory: {currentMemory:N0} bytes");
+                    $"Messages: {messageCount:N0}, " +
+                    $"Memory: {currentMemory:N0} bytes");
             }
 
             Thread.Sleep(1); // Small delay to prevent tight loop
@@ -221,7 +221,7 @@ public class PubSubFFIMemoryLeakTests
         long finalMemory = GetMemoryAfterFullGC();
         long totalGrowth = finalMemory - initialMemory;
 
-        Console.WriteLine($"Extended test completed:");
+        Console.WriteLine("Extended test completed:");
         Console.WriteLine($"Duration: {stopwatch.Elapsed.TotalSeconds:F1} seconds");
         Console.WriteLine($"Messages processed: {messageCount:N0}");
         Console.WriteLine($"Final memory: {finalMemory:N0} bytes");

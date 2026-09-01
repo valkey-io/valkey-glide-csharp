@@ -6,8 +6,8 @@ public class StreamIdRangeTests
 {
     #region Constants
 
-    private static readonly string StartId = "1000-0";
-    private static readonly string EndId = "2000-0";
+    private const string StartId = "1000-0";
+    private const string EndId = "2000-0";
 
     #endregion
     #region Tests

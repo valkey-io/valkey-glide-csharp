@@ -29,7 +29,7 @@ public sealed class ScoreBound
     private readonly bool _isExclusive;
 
     #endregion
-    #region Constructors
+    #region Constructors & Builders
 
     private ScoreBound(double score, bool isExclusive)
     {
@@ -38,9 +38,6 @@ public sealed class ScoreBound
         // Infinity values are not inclusive.
         _isExclusive = isExclusive && !double.IsInfinity(_score);
     }
-
-    #endregion
-    #region Public Methods
 
     /// <summary>
     /// Creates an inclusive score bound.
@@ -59,13 +56,17 @@ public sealed class ScoreBound
     /// <summary>
     /// Implicitly converts a <see langword="double"/> to an inclusive <see cref="ScoreBound"/>.
     /// </summary>
+    /// <param name="value">The value to convert.</param>
     public static implicit operator ScoreBound(double value) => new(value, isExclusive: false);
+
+    #endregion
+    #region Public Methods
 
     /// <inheritdoc/>
     public bool Equals(ScoreBound? other)
         => other is not null
-        && _score == other._score
-        && _isExclusive == other._isExclusive;
+            && _score == other._score
+            && _isExclusive == other._isExclusive;
 
     /// <inheritdoc/>
     public override bool Equals(object? obj) => Equals(obj as ScoreBound);
@@ -74,11 +75,7 @@ public sealed class ScoreBound
     public override int GetHashCode() => HashCode.Combine(_score, _isExclusive);
 
     /// <inheritdoc/>
-    public int CompareTo(ScoreBound? other)
-    {
-        ArgumentNullException.ThrowIfNull(other);
-        return _score.CompareTo(other._score);
-    }
+    public int CompareTo(ScoreBound? other) => other is null ? 1 : _score.CompareTo(other._score);
 
     /// <inheritdoc/>
     public static bool operator <(ScoreBound left, ScoreBound right) => left.CompareTo(right) < 0;

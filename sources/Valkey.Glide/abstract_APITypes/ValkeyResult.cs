@@ -13,11 +13,14 @@ namespace Valkey.Glide;
 /// </summary>
 public abstract class ValkeyResult
 {
+    // Public parameterless constructor retained purely for binary compatibility.
+#pragma warning disable RCS1160
     /// <summary>
     /// Do not use.
     /// </summary>
-    [Obsolete("Please specify a result type", true)] // retained purely for binary compat
+    [Obsolete("Please specify a result type", true)]
     public ValkeyResult() : this(default) { }
+#pragma warning restore RCS1160
 
     internal ValkeyResult(ResultType resultType)
     {
@@ -78,6 +81,7 @@ public abstract class ValkeyResult
     /// <summary>
     /// An empty array result.
     /// </summary>
+    /// <param name="type">The result type of the empty array.</param>
     internal static ValkeyResult EmptyArray(ResultType type) => type switch
     {
         ResultType.Array => s_EmptyArray ??= new ArrayResult(Array.Empty<ValkeyResult>(), type),
@@ -292,18 +296,22 @@ public abstract class ValkeyResult
         {
             return [];
         }
+
         int len = arr.Length / 2;
         var result = new Dictionary<string, ValkeyResult>(len, comparer ?? StringComparer.InvariantCultureIgnoreCase);
         for (int i = 0; i < arr.Length; i += 2)
         {
             result.Add(arr[i].AsString()!, arr[i + 1]);
         }
+
         return result;
     }
 
     /// <summary>
     /// Get a sub-item by index.
     /// </summary>
+    /// <param name="index">The zero-based index of the sub-item to retrieve.</param>
+    /// <exception cref="InvalidOperationException">Thrown if the result is not an array.</exception>
     public virtual ValkeyResult this[int index] => throw new InvalidOperationException("Indexers can only be used on array results");
 
     internal abstract bool AsBoolean();
@@ -334,6 +342,7 @@ public abstract class ValkeyResult
     private sealed class ArrayResult : ValkeyResult
     {
         public override bool IsNull => _value is null;
+
         private readonly ValkeyResult[]? _value;
 
         internal override ResultType Resp2NullType => ResultType.Array;
@@ -375,6 +384,7 @@ public abstract class ValkeyResult
 
         private bool IsSingleton => _value?.Length == 1;
         private bool IsEmpty => _value?.Length == 0;
+
         internal override double AsDouble()
         {
             if (IsSingleton) return _value![0].AsDouble();
@@ -402,6 +412,7 @@ public abstract class ValkeyResult
             if (IsSingleton) return _value![0].AsInt64();
             throw new InvalidCastException();
         }
+
         internal override ulong AsUInt64()
         {
             if (IsSingleton) return _value![0].AsUInt64();
@@ -441,6 +452,7 @@ public abstract class ValkeyResult
             if (IsSingleton) return _value![0].AsNullableInt64();
             throw new InvalidCastException();
         }
+
         internal override ulong? AsNullableUInt64()
         {
             if (IsSingleton) return _value![0].AsNullableUInt64();
@@ -510,6 +522,7 @@ public abstract class ValkeyResult
                 type = s.Substring(0, 3);
                 s = s.Substring(4);
             }
+
             return s;
         }
 
@@ -539,38 +552,49 @@ public abstract class ValkeyResult
         internal override string?[]? AsStringArray() => [AsString()];
         TypeCode IConvertible.GetTypeCode() => TypeCode.Object;
         bool IConvertible.ToBoolean(IFormatProvider? provider) => AsBoolean();
+
         char IConvertible.ToChar(IFormatProvider? provider)
         {
             checked { return (char)AsInt32(); }
         }
+
         sbyte IConvertible.ToSByte(IFormatProvider? provider)
         {
             checked { return (sbyte)AsInt32(); }
         }
+
         byte IConvertible.ToByte(IFormatProvider? provider)
         {
             checked { return (byte)AsInt32(); }
         }
+
         short IConvertible.ToInt16(IFormatProvider? provider)
         {
             checked { return (short)AsInt32(); }
         }
+
         ushort IConvertible.ToUInt16(IFormatProvider? provider)
         {
             checked { return (ushort)AsInt32(); }
         }
+
         int IConvertible.ToInt32(IFormatProvider? provider) => AsInt32();
+
         uint IConvertible.ToUInt32(IFormatProvider? provider)
         {
             checked { return (uint)AsInt64(); }
         }
+
         long IConvertible.ToInt64(IFormatProvider? provider) => AsInt64();
+
         ulong IConvertible.ToUInt64(IFormatProvider? provider)
         {
             checked { return (ulong)AsInt64(); }
         }
+
         float IConvertible.ToSingle(IFormatProvider? provider) => (float)AsDouble();
         double IConvertible.ToDouble(IFormatProvider? provider) => AsDouble();
+
         decimal IConvertible.ToDecimal(IFormatProvider? provider)
         {
             // we can do this safely *sometimes*
@@ -579,12 +603,15 @@ public abstract class ValkeyResult
             ThrowNotSupported();
             return default;
         }
+
         DateTime IConvertible.ToDateTime(IFormatProvider? provider)
         {
             ThrowNotSupported();
             return default;
         }
+
         string IConvertible.ToString(IFormatProvider? provider) => AsString()!;
+
         object IConvertible.ToType(Type conversionType, IFormatProvider? provider)
         {
             switch (System.Type.GetTypeCode(conversionType))

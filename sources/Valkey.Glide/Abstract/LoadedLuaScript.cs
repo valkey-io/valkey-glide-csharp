@@ -68,8 +68,8 @@ public sealed class LoadedLuaScript
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <returns>A task representing the asynchronous operation, containing the result of the script execution.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when db is null.</exception>
-    /// <exception cref="ArgumentException">Thrown when parameters object is missing required properties or has invalid types.</exception>
+    /// <exception cref="ArgumentNullException">Thrown if db is null.</exception>
+    /// <exception cref="ArgumentException">Thrown if parameters object is missing required properties or has invalid types.</exception>
     /// <remarks>
     /// This method uses EVALSHA to execute the script by its hash, which is more efficient than
     /// transmitting the full script source. If the script is not cached on the server, a NOSCRIPT

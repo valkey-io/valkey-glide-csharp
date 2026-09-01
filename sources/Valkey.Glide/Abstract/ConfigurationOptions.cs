@@ -78,7 +78,8 @@ public sealed class ConfigurationOptions : ICloneable
             Protocol,
             ReadFrom,
             Az
-        }.ToDictionary(x => x, StringComparer.OrdinalIgnoreCase);
+        }
+            .ToDictionary(x => x, StringComparer.OrdinalIgnoreCase);
 
         public static string TryNormalize(string value)
         {
@@ -86,6 +87,7 @@ public sealed class ConfigurationOptions : ICloneable
             {
                 return tmp ?? "";
             }
+
             return value ?? "";
         }
     }
@@ -94,7 +96,6 @@ public sealed class ConfigurationOptions : ICloneable
 
     private bool? _ssl;
     private Proxy? _proxy;
-    private RetryStrategy? _reconnectRetryPolicy;
 
     #endregion
     #region Internal fields
@@ -245,11 +246,7 @@ public sealed class ConfigurationOptions : ICloneable
     /// <summary>
     /// The retry policy to be used for connection reconnects.
     /// </summary>
-    public RetryStrategy? ReconnectRetryPolicy
-    {
-        get => _reconnectRetryPolicy;
-        set => _reconnectRetryPolicy = value;
-    }
+    public RetryStrategy? ReconnectRetryPolicy { get; set; }
 
     /// <summary>
     /// The read from strategy and Availability zone if applicable.
@@ -369,17 +366,13 @@ public sealed class ConfigurationOptions : ICloneable
             _proxy = _proxy,
             ResponseTimeout = ResponseTimeout,
             DefaultDatabase = DefaultDatabase,
-            _reconnectRetryPolicy = _reconnectRetryPolicy,
+            ReconnectRetryPolicy = ReconnectRetryPolicy,
             EndPoints = EndPoints.Clone(),
             Protocol = Protocol,
             ReadFrom = ReadFrom
         };
 
-        foreach (var cert in _trustedIssuers)
-        {
-            clone._trustedIssuers.Add(cert);
-        }
-
+        clone._trustedIssuers.AddRange(_trustedIssuers);
         clone._clientCertificate = _clientCertificate;
         clone._clientKey = _clientKey;
 
@@ -422,6 +415,7 @@ public sealed class ConfigurationOptions : ICloneable
         {
             Append(sb, Format.ToString(endpoint));
         }
+
         Append(sb, OptionKeys.ClientName, ClientName);
         Append(sb, OptionKeys.ConnectTimeout, ConnectTimeout);
         Append(sb, OptionKeys.User, User);
@@ -471,6 +465,7 @@ public sealed class ConfigurationOptions : ICloneable
             {
                 _ = sb.Append(prefix).Append('=');
             }
+
             _ = sb.Append(s);
         }
     }
@@ -481,7 +476,7 @@ public sealed class ConfigurationOptions : ICloneable
         ConnectTimeout = ResponseTimeout = null;
         _ssl = null;
         ReadFrom = null;
-        _reconnectRetryPolicy = null;
+        ReconnectRetryPolicy = null;
         _trustedIssuers.Clear();
         _clientCertificate = null;
         _clientKey = null;
@@ -559,12 +554,9 @@ public sealed class ConfigurationOptions : ICloneable
                         break;
                 }
             }
-            else
+            else if (Format.TryParseEndPoint(option, out EndPoint? ep) && !EndPoints.Contains(ep))
             {
-                if (Format.TryParseEndPoint(option, out EndPoint? ep) && !EndPoints.Contains(ep))
-                {
-                    EndPoints.Add(ep);
-                }
+                EndPoints.Add(ep);
             }
         }
 
@@ -583,6 +575,7 @@ public sealed class ConfigurationOptions : ICloneable
         {
             throw new ArgumentException("Availability zone cannot be empty or whitespace");
         }
+
         return az;
     }
 
@@ -595,6 +588,7 @@ public sealed class ConfigurationOptions : ICloneable
                 ? new ReadFrom(strategy.Value, az!)
                 : new ReadFrom(strategy.Value);
         }
+
         return null;
     }
 
@@ -655,11 +649,12 @@ public sealed class ConfigurationOptions : ICloneable
                         break;
                 }
             }
-            else
+            else if (Enum.TryParse(value, true, out protocol))
             {
-                if (Enum.TryParse(value, true, out protocol)) return true;
+                return true;
             }
         }
+
         protocol = default;
         return false;
     }

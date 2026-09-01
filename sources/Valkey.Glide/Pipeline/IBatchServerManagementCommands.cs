@@ -6,6 +6,9 @@ namespace Valkey.Glide.Pipeline;
 
 internal interface IBatchServerManagementCommands
 {
+    // TODO #538: Rename '*Async' methods
+#pragma warning disable RCS1047 // Non-asynchronous method name should not end with 'Async'
+
     /// <inheritdoc cref="IGlideClient.ConfigGetAsync(ValkeyValue)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IGlideClient.ConfigGetAsync(ValkeyValue)" /></returns>
     IBatch ConfigGetAsync(ValkeyValue pattern = default);
@@ -65,4 +68,6 @@ internal interface IBatchServerManagementCommands
     /// <inheritdoc cref="IGlideClient.TimeAsync()" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IGlideClient.TimeAsync()" /></returns>
     IBatch TimeAsync();
+
+#pragma warning restore RCS1047
 }

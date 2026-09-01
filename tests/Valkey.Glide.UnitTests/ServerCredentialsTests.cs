@@ -8,8 +8,8 @@ public class ServerCredentialsTests
 {
     #region Constants
 
-    private static readonly string Username = "USERNAME";
-    private static readonly string Password = "PASSWORD";
+    private const string Username = "USERNAME";
+    private const string Password = "PASSWORD";
 
     #endregion
     #region Tests

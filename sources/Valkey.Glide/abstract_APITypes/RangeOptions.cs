@@ -53,6 +53,7 @@ public sealed class RangeOptions
     /// <summary>
     /// Converts to command arguments.
     /// </summary>
+    /// <exception cref="ArgumentException">Thrown if an offset or count is used with a rank-based range.</exception>
     internal GlideString[] ToArgs()
     {
         List<GlideString> args = [];

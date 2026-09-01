@@ -882,14 +882,14 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
 
             return infoValues.All(info =>
                 !info.Contains("rdb_bgsave_in_progress:1")
-                && !info.Contains("aof_rewrite_in_progress:1"));
+                    && !info.Contains("aof_rewrite_in_progress:1"));
         }, "Timed out waiting for save to complete");
 
     #endregion
     #region Failover Tests
 
-    private static readonly string FailoverErrorMessageExpected = "FAILOVER requires connected replicas.";
-    private static readonly string FailoverAbortErrorMessageExpected = "No failover in progress.";
+    private const string FailoverErrorMessageExpected = "FAILOVER requires connected replicas.";
+    private const string FailoverAbortErrorMessageExpected = "No failover in progress.";
 
     [Fact]
     public async Task FailoverAsync_NoReplicas_ThrowsRequestException()

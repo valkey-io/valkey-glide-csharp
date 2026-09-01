@@ -22,13 +22,13 @@ public class PubSubCallbackTests
 
         // Build subscriber with callback that captures received message.
         var received = new TaskCompletionSource<PubSubMessage>();
-        using var subscriber = await BuildSubscriber(
+        await using var subscriber = await BuildSubscriber(
             isCluster,
             message: message,
             callback: (msg, ctx) => received.SetResult(msg));
 
         // Publish message and verify receipt via callback.
-        using var publisher = BuildPublisher(isCluster);
+        await using var publisher = BuildPublisher(isCluster);
         await PublishAsync(publisher, message);
         Assert.Equal(message, await received.Task.WaitAsync(MaxDuration, TestContext.Current.CancellationToken));
     }
@@ -41,18 +41,17 @@ public class PubSubCallbackTests
 
         // Build subscriber with callback that captures received message.
         var received = new TaskCompletionSource<PubSubMessage>();
-        using var subscriber = await BuildSubscriber(
+        await using var subscriber = await BuildSubscriber(
             isCluster,
             message,
             subscribeMode: subscribeMode,
             callback: (msg, ctx) => received.SetResult(msg));
 
         // Publish message and verify receipt via callback.
-        using var publisher = BuildPublisher(isCluster);
+        await using var publisher = BuildPublisher(isCluster);
         await PublishAsync(publisher, message);
         Assert.Equal(message, await received.Task.WaitAsync(MaxDuration, TestContext.Current.CancellationToken));
     }
-
 
     [Theory]
     [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
@@ -66,7 +65,7 @@ public class PubSubCallbackTests
         var succeededCount = 0;
         using var completed = new ManualResetEventSlim(false);
 
-        using var subscriber = await BuildSubscriber(
+        await using var subscriber = await BuildSubscriber(
                 isCluster,
                 message,
                 callback: (msg, context) =>
@@ -87,7 +86,7 @@ public class PubSubCallbackTests
                     }
                 });
 
-        using var publisher = BuildPublisher(isCluster);
+        await using var publisher = BuildPublisher(isCluster);
 
         // Publish multiple messages.
         await PublishAsync(publisher, message);
@@ -111,7 +110,7 @@ public class PubSubCallbackTests
         List<PubSubMessage> receivedMessages = [];
         using var completed = new ManualResetEventSlim(false);
 
-        using var subscriber = await BuildSubscriber(
+        await using var subscriber = await BuildSubscriber(
             isCluster,
             messages,
             callback: (msg, context) =>
@@ -124,7 +123,7 @@ public class PubSubCallbackTests
                 }
             });
 
-        using var publisher = BuildPublisher(isCluster);
+        await using var publisher = BuildPublisher(isCluster);
 
         // Publish all messages and verify they are received in order.
         await PublishAsync(publisher, messages);
@@ -132,4 +131,3 @@ public class PubSubCallbackTests
         Assert.Equivalent(messages, receivedMessages);
     }
 }
-

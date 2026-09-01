@@ -68,12 +68,12 @@ public abstract class Server : IDisposable
     /// <summary>
     /// Certificate data path for the server.
     /// </summary>
-    public string? CertificatePath { get; private set; }
+    public string? CertificatePath { get; }
 
     /// <summary>
     /// Certificate data for the server.
     /// </summary>
-    public byte[]? CertificateData { get; private set; }
+    public byte[]? CertificateData { get; }
 
     #endregion
     #region Constructors
@@ -97,7 +97,8 @@ public abstract class Server : IDisposable
             useClusterMode: useClusterMode,
             useTls: UseTls,
             replicaCount: replicaCount,
-            host: host).First();
+            host: host)
+            .First();
 
         if (UseTls)
         {
@@ -158,7 +159,7 @@ public abstract class Server : IDisposable
     /// </summary>
     public async Task KillClientsAsync()
     {
-        using var client = await CreateClientAsync();
+        await using var client = await CreateClientAsync();
         var options = new ClientFilterOptions().WithType(ClientType.Normal);
         _ = await client.ClientKillAsync(options);
     }
@@ -248,7 +249,7 @@ public sealed class ClusterServer(bool useTls = false, string? host = null) : Se
 
     public override async Task SetAuthenticationAsync(string password)
     {
-        using var client = await CreateClusterClientAsync();
+        await using var client = await CreateClusterClientAsync();
         await client.ConfigSetAsync("requirepass", password, Route.AllNodes);
 
         _username = null;
@@ -257,7 +258,7 @@ public sealed class ClusterServer(bool useTls = false, string? host = null) : Se
 
     public override async Task SetAuthenticationAsync(string username, string password)
     {
-        using GlideClusterClient client = await CreateClusterClientAsync();
+        await using GlideClusterClient client = await CreateClusterClientAsync();
         _ = await client.CustomCommand(["ACL", "SETUSER", username, "on", $">{password}", "~*", "+@all"], Route.AllNodes);
 
         _username = username;
@@ -266,7 +267,7 @@ public sealed class ClusterServer(bool useTls = false, string? host = null) : Se
 
     public override async Task ClearAuthenticationAsync()
     {
-        using var client = await CreateClusterClientAsync();
+        await using var client = await CreateClusterClientAsync();
         if (_username is not null)
         {
             _ = await client.CustomCommand(["ACL", "DELUSER", _username], Route.AllNodes);
@@ -334,7 +335,7 @@ public sealed class StandaloneServer(
 
     public override async Task SetAuthenticationAsync(string password)
     {
-        using GlideClient client = await CreateStandaloneClientAsync();
+        await using GlideClient client = await CreateStandaloneClientAsync();
         await client.ConfigSetAsync("requirepass", password);
 
         _username = null;
@@ -343,7 +344,7 @@ public sealed class StandaloneServer(
 
     public override async Task SetAuthenticationAsync(string username, string password)
     {
-        using var client = await CreateStandaloneClientAsync();
+        await using var client = await CreateStandaloneClientAsync();
         _ = await client.CustomCommand(["ACL", "SETUSER", username, "on", $">{password}", "~*", "+@all"]);
 
         _username = username;
@@ -352,7 +353,7 @@ public sealed class StandaloneServer(
 
     public override async Task ClearAuthenticationAsync()
     {
-        using GlideClient client = await CreateStandaloneClientAsync();
+        await using GlideClient client = await CreateStandaloneClientAsync();
         if (_username is not null)
         {
             _ = await client.CustomCommand(["ACL", "DELUSER", _username]);
@@ -365,7 +366,6 @@ public sealed class StandaloneServer(
         _username = null;
         _password = null;
     }
-
 
     /// <summary>
     /// Creates a <see cref="ConnectionMultiplexer"/> connected to this server.

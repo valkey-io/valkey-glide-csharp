@@ -12,7 +12,7 @@ public class FlushDatabaseTests(ServerFixture fixture) : IClassFixture<ServerFix
     [Fact]
     public async Task FlushDatabaseAsync_Standalone_ClearsDatabase()
     {
-        using GlideClient client = await fixture.StandaloneServer.CreateStandaloneClientAsync();
+        await using GlideClient client = await fixture.StandaloneServer.CreateStandaloneClientAsync();
 
         string key = $"flush-test-{Guid.NewGuid()}";
         await client.SetAsync(key, "test-value");
@@ -29,7 +29,7 @@ public class FlushDatabaseTests(ServerFixture fixture) : IClassFixture<ServerFix
     [Fact]
     public async Task FlushAllDatabasesAsync_Standalone_ClearsAllDatabases()
     {
-        using GlideClient client = await fixture.StandaloneServer.CreateStandaloneClientAsync();
+        await using GlideClient client = await fixture.StandaloneServer.CreateStandaloneClientAsync();
 
         string key = $"flushall-test-{Guid.NewGuid()}";
         await client.SetAsync(key, "test-value");
@@ -46,7 +46,7 @@ public class FlushDatabaseTests(ServerFixture fixture) : IClassFixture<ServerFix
     [Fact]
     public async Task FlushDatabaseAsync_Cluster_ClearsDatabase()
     {
-        using GlideClusterClient client = await fixture.ClusterServer.CreateClusterClientAsync();
+        await using GlideClusterClient client = await fixture.ClusterServer.CreateClusterClientAsync();
 
         string key = $"flush-cluster-test-{Guid.NewGuid()}";
         await client.SetAsync(key, "test-value");
@@ -63,7 +63,7 @@ public class FlushDatabaseTests(ServerFixture fixture) : IClassFixture<ServerFix
     [Fact]
     public async Task FlushDatabaseAsync_Cluster_WithRoute_ClearsDatabase()
     {
-        using GlideClusterClient client = await fixture.ClusterServer.CreateClusterClientAsync();
+        await using GlideClusterClient client = await fixture.ClusterServer.CreateClusterClientAsync();
 
         string key = $"flush-cluster-test-{Guid.NewGuid()}";
         await client.SetAsync(key, "test-value");

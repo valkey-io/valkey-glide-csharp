@@ -25,49 +25,17 @@ public class ScriptStorageTests
 
     [Fact]
     public void StoreScript_WithNullScript_ThrowsArgumentException()
-    {
-        // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() =>
-        {
-            _ = FFI.StoreScript(null!);
-        });
-
-        Assert.Equal("script", exception.ParamName);
-    }
+        => Assert.Equal("script", Assert.Throws<ArgumentException>(() => _ = FFI.StoreScript(null!)).ParamName);
 
     [Fact]
     public void StoreScript_WithEmptyScript_ThrowsArgumentException()
-    {
-        // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() =>
-        {
-            _ = FFI.StoreScript(string.Empty);
-        });
-
-        Assert.Equal("script", exception.ParamName);
-    }
+        => Assert.Equal("script", Assert.Throws<ArgumentException>(() => _ = FFI.StoreScript(string.Empty)).ParamName);
 
     [Fact]
     public void DropScript_WithNullHash_ThrowsArgumentException()
-    {
-        // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() =>
-        {
-            FFI.DropScript(null!);
-        });
-
-        Assert.Equal("hash", exception.ParamName);
-    }
+        => Assert.Equal("hash", Assert.Throws<ArgumentException>(() => FFI.DropScript(null!)).ParamName);
 
     [Fact]
     public void DropScript_WithEmptyHash_ThrowsArgumentException()
-    {
-        // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() =>
-        {
-            FFI.DropScript(string.Empty);
-        });
-
-        Assert.Equal("hash", exception.ParamName);
-    }
+        => Assert.Equal("hash", Assert.Throws<ArgumentException>(() => FFI.DropScript(string.Empty)).ParamName);
 }

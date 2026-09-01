@@ -52,7 +52,6 @@ public class JsonObjectCommandTests(TestConfiguration config)
     }
 
     #endregion
-
     #region JSON.OBJKEYS Tests
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -74,7 +73,6 @@ public class JsonObjectCommandTests(TestConfiguration config)
     }
 
     #endregion
-
     #region JSON.TOGGLE Tests
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -112,7 +110,6 @@ public class JsonObjectCommandTests(TestConfiguration config)
     }
 
     #endregion
-
     #region JSON.DEBUG MEMORY Tests
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -132,7 +129,6 @@ public class JsonObjectCommandTests(TestConfiguration config)
     }
 
     #endregion
-
     #region JSON.DEBUG FIELDS Tests
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -152,7 +148,6 @@ public class JsonObjectCommandTests(TestConfiguration config)
     }
 
     #endregion
-
     #region JSON.RESP Tests
 
     [Theory(DisableDiscoveryEnumeration = true)]

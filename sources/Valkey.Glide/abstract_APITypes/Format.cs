@@ -34,11 +34,13 @@ internal static class Format
             value = true;
             return true;
         }
+
         if (s == "0" || string.Equals(s, "no", StringComparison.OrdinalIgnoreCase) || string.Equals(s, "off", StringComparison.OrdinalIgnoreCase))
         {
             value = false;
             return true;
         }
+
         value = false;
         return false;
     }
@@ -59,6 +61,7 @@ internal static class Format
             endpoint = ParseEndPoint(host, i);
             return true;
         }
+
         endpoint = null;
         return false;
     }
@@ -74,6 +77,7 @@ internal static class Format
             if (double.IsPositiveInfinity(value)) return "+inf";
             if (double.IsNegativeInfinity(value)) return "-inf";
         }
+
         return value.ToString("G17", NumberFormatInfo.InvariantInfo);
     }
 
@@ -110,6 +114,7 @@ internal static class Format
                     // ipv6 with port; use "[IP]:port" notation
                     return "[" + addr + "]:" + Format.ToString(ip.Port);
                 }
+
                 // ipv4 with port; use "IP:port" notation
                 return ip.Address + ":" + Format.ToString(ip.Port);
 #if UNIX_SOCKET
@@ -139,6 +144,7 @@ internal static class Format
                 port = ip.Port;
                 return true;
             }
+
             if (endpoint is DnsEndPoint dns)
             {
                 host = dns.Host;
@@ -146,6 +152,7 @@ internal static class Format
                 return true;
             }
         }
+
         host = null;
         port = null;
         return false;
@@ -158,6 +165,7 @@ internal static class Format
             value = 0;
             return false;
         }
+
         switch (s.Length)
         {
             case 0:
@@ -185,6 +193,7 @@ internal static class Format
                 value = double.NaN;
                 return true;
         }
+
         return double.TryParse(s, NumberStyles.Any, NumberFormatInfo.InvariantInfo, out value);
     }
 
@@ -192,10 +201,10 @@ internal static class Format
         ulong.TryParse(s, NumberStyles.Integer, NumberFormatInfo.InvariantInfo, out value);
 
     internal static bool TryParseUInt64(ReadOnlySpan<byte> s, out ulong value) =>
-        Utf8Parser.TryParse(s, out value, out int bytes, standardFormat: 'D') & bytes == s.Length;
+        Utf8Parser.TryParse(s, out value, out int bytes, standardFormat: 'D') && bytes == s.Length;
 
     internal static bool TryParseInt64(ReadOnlySpan<byte> s, out long value) =>
-        Utf8Parser.TryParse(s, out value, out int bytes, standardFormat: 'D') & bytes == s.Length;
+        Utf8Parser.TryParse(s, out value, out int bytes, standardFormat: 'D') && bytes == s.Length;
 
     internal static bool CouldBeInteger(string s)
     {
@@ -204,19 +213,21 @@ internal static class Format
         for (int i = isSigned ? 1 : 0; i < s.Length; i++)
         {
             char c = s[i];
-            if (c < '0' | c > '9') return false;
+            if (c < '0' || c > '9') return false;
         }
+
         return true;
     }
     internal static bool CouldBeInteger(ReadOnlySpan<byte> s)
     {
-        if (s.IsEmpty | s.Length > Format.MaxInt64TextLen) return false;
+        if (s.IsEmpty || s.Length > Format.MaxInt64TextLen) return false;
         bool isSigned = s[0] == '-';
         for (int i = isSigned ? 1 : 0; i < s.Length; i++)
         {
             byte c = s[i];
-            if (c < (byte)'0' | c > (byte)'9') return false;
+            if (c < (byte)'0' || c > (byte)'9') return false;
         }
+
         return true;
     }
 
@@ -252,7 +263,8 @@ internal static class Format
                 value = double.NaN;
                 return true;
         }
-        return Utf8Parser.TryParse(s, out value, out int bytes) & bytes == s.Length;
+
+        return Utf8Parser.TryParse(s, out value, out int bytes) && bytes == s.Length;
     }
 
     private static bool CaseInsensitiveASCIIEqual(string xLowerCase, string y)
@@ -265,6 +277,7 @@ internal static class Format
         {
             if (char.ToLower((char)y[i]) != xLowerCase[i]) return false;
         }
+
         return true;
     }
 
@@ -278,6 +291,8 @@ internal static class Format
     /// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
     /// </para>
     /// </summary>
+    /// <param name="addressWithPort">The address, optionally including a port, to parse.</param>
+    /// <param name="endpoint">The parsed endpoint, if parsing succeeded.</param>
     /// <exception cref="PlatformNotSupportedException">If Unix sockets are attempted but not supported.</exception>
     internal static bool TryParseEndPoint(string? addressWithPort, [NotNullWhen(true)] out EndPoint? endpoint)
     {
@@ -304,6 +319,7 @@ internal static class Format
             throw new PlatformNotSupportedException("Unix domain sockets require .NET Core 3 or above");
 #endif
         }
+
         var lastColonIndex = addressWithPort.LastIndexOf(':');
         if (lastColonIndex > 0)
         {
@@ -362,11 +378,9 @@ internal static class Format
             endpoint = new IPEndPoint(address, port ?? 0);
             return true;
         }
-        else
-        {
-            endpoint = new DnsEndPoint(addressPart, port ?? 0);
-            return true;
-        }
+
+        endpoint = new DnsEndPoint(addressPart, port ?? 0);
+        return true;
     }
 
     internal static string GetString(ReadOnlySequence<byte> buffer)
@@ -416,12 +430,14 @@ internal static class Format
             {
                 if (!"+inf"u8.TryCopyTo(destination)) ThrowFormatFailed();
             }
-            else
+            else if (!"-inf"u8.TryCopyTo(destination))
             {
-                if (!"-inf"u8.TryCopyTo(destination)) ThrowFormatFailed();
+                ThrowFormatFailed();
             }
+
             return 4;
         }
+
         var s = value.ToString("G17", NumberFormatInfo.InvariantInfo); // this looks inefficient, but is how Utf8Formatter works too, just: more direct
         if (s.Length > destination.Length) ThrowFormatFailed();
 
@@ -430,6 +446,7 @@ internal static class Format
         {
             destination[i] = (byte)chars[i];
         }
+
         return chars.Length;
     }
 
@@ -443,6 +460,7 @@ internal static class Format
     {
         if (!Utf8Formatter.TryFormat(value, destination, out var len))
             ThrowFormatFailed();
+
         return len;
     }
 
@@ -456,6 +474,7 @@ internal static class Format
     {
         if (!Utf8Formatter.TryFormat(value, destination, out var len))
             ThrowFormatFailed();
+
         return len;
     }
 
@@ -463,6 +482,7 @@ internal static class Format
     {
         if (!Utf8Formatter.TryFormat(value, destination, out var len))
             ThrowFormatFailed();
+
         return len;
     }
 
@@ -476,6 +496,7 @@ internal static class Format
             version = new(i32, 0);
             return true;
         }
+
         version = null;
         return false;
 #else
@@ -507,6 +528,7 @@ internal static class Format
                 return true;
             }
         }
+
         version = null;
         return false;
     }

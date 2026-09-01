@@ -7,6 +7,9 @@ namespace Valkey.Glide.Pipeline;
 
 public abstract partial class BaseBatch<T> where T : BaseBatch<T>
 {
+    // TODO #538: Rename '*Async' methods
+#pragma warning disable RCS1047 // Non-asynchronous method name should not end with 'Async'
+
     /// <inheritdoc cref="IBatchStringCommands.Get(ValkeyKey)" />
     public T GetAsync(ValkeyKey key) => AddCmd(Request.Get(key));
 
@@ -78,6 +81,8 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
 
     /// <inheritdoc cref="IBatchStringCommands.GetExpiry(ValkeyKey, GetExpiryOptions)" />
     public T GetExpiryAsync(ValkeyKey key, GetExpiryOptions option) => AddCmd(Request.GetExpiry(key, option));
+
+#pragma warning restore RCS1047
 
     IBatch IBatchStringCommands.Get(ValkeyKey key) => GetAsync(key);
     IBatch IBatchStringCommands.Get(IEnumerable<ValkeyKey> keys) => GetAsync(keys);

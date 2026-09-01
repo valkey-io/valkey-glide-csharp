@@ -12,8 +12,8 @@ namespace Valkey.Glide.ServerModules;
 public static partial class GlideJson
 {
     private const string JsonPrefix = "JSON.";
+    #region Command constants
 
-    // Command constants - internal so GlideJsonBatch can reuse them
     internal const string JsonSet = JsonPrefix + "SET";
     internal const string JsonGet = JsonPrefix + "GET";
     internal const string JsonMGet = JsonPrefix + "MGET";
@@ -37,6 +37,7 @@ public static partial class GlideJson
     internal const string JsonDebug = JsonPrefix + "DEBUG";
     internal const string JsonResp = JsonPrefix + "RESP";
 
+    #endregion
     #region Helper Methods
 
     /// <summary>
@@ -45,6 +46,8 @@ public static partial class GlideJson
     /// <param name="client">The client to execute the command on.</param>
     /// <param name="args">The command arguments.</param>
     /// <returns>The command result.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the command returns an unexpected multi-node response.</exception>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="client"/> is not a <see cref="GlideClient"/> or <see cref="GlideClusterClient"/>.</exception>
     private static async Task<object?> ExecuteCommandAsync(BaseClient client, GlideString[] args)
     {
         if (client is GlideClient gc)
@@ -59,21 +62,25 @@ public static partial class GlideJson
             {
                 return null;
             }
+
             if (result.HasMultiData)
             {
                 // Multi-node response - this shouldn't happen for JSON commands but handle it gracefully
                 throw new InvalidOperationException("Unexpected multi-node response for JSON command");
             }
+
             // For single-node responses, return the value (which may be null)
             return result.HasSingleData ? result.SingleValue : null;
         }
+
         throw new ArgumentException("Unsupported client type. Expected GlideClient or GlideClusterClient.", nameof(client));
     }
 
     /// <summary>
     /// Converts an object result to ValkeyValue.
     /// </summary>
-    /// <exception cref="InvalidOperationException">Thrown when the result type is unexpected.</exception>
+    /// <param name="result">The command result to convert.</param>
+    /// <exception cref="InvalidOperationException">Thrown if the result type is unexpected.</exception>
     private static ValkeyValue ToValkeyValue(object? result) => result switch
     {
         null => ValkeyValue.Null,
@@ -87,28 +94,31 @@ public static partial class GlideJson
     /// <summary>
     /// Converts a ValkeyKey to GlideString for command arguments.
     /// </summary>
+    /// <param name="key">The key to convert.</param>
     private static GlideString ToGlideString(ValkeyKey key) => (GlideString)key;
 
     /// <summary>
     /// Converts a ValkeyValue to GlideString for command arguments.
     /// </summary>
-    /// <exception cref="ArgumentException">Thrown when value is null.</exception>
+    /// <param name="value">The value to convert.</param>
+    /// <exception cref="ArgumentException">Thrown if value is null.</exception>
     private static GlideString ToGlideString(ValkeyValue value)
     {
         if (value.IsNull)
             throw new ArgumentException("Null ValkeyValue is not valid for command arguments", nameof(value));
+
         return new GlideString(value.ToString());
     }
 
     /// <summary>
     /// Converts an object result to long, throwing if the result is unexpectedly null.
     /// </summary>
-    /// <exception cref="InvalidOperationException">Thrown when the result is null.</exception>
+    /// <param name="result">The command result to convert.</param>
+    /// <exception cref="InvalidOperationException">Thrown if the result is null.</exception>
     private static long ToLong(object? result) =>
         result is long l ? l : throw new InvalidOperationException("Unexpected null result from server");
 
     #endregion
-
     #region JSON.SET
 
     /// <summary>
@@ -166,7 +176,6 @@ public static partial class GlideJson
     }
 
     #endregion
-
     #region JSON.GET
 
     /// <summary>
@@ -275,7 +284,6 @@ public static partial class GlideJson
     }
 
     #endregion
-
     #region JSON.MGET
 
     /// <summary>
@@ -307,6 +315,7 @@ public static partial class GlideJson
         {
             args.Add(ToGlideString(key));
         }
+
         args.Add(path);
         return [.. args];
     }
@@ -315,13 +324,14 @@ public static partial class GlideJson
     {
         if (result is null)
             return [];
+
         if (result is object?[] arr)
             return [.. arr.Select(ToValkeyValue)];
+
         return [ToValkeyValue(result)];
     }
 
     #endregion
-
     #region JSON.DEL
 
     /// <summary>
@@ -366,7 +376,6 @@ public static partial class GlideJson
     }
 
     #endregion
-
     #region JSON.FORGET
 
     /// <summary>
@@ -393,7 +402,6 @@ public static partial class GlideJson
         => DelAsync(client, key);
 
     #endregion
-
     #region JSON.CLEAR
 
     /// <summary>
@@ -438,7 +446,6 @@ public static partial class GlideJson
     }
 
     #endregion
-
     #region JSON.TYPE
 
     /// <summary>
@@ -469,8 +476,10 @@ public static partial class GlideJson
     {
         if (result is null)
             return [];
+
         if (result is object?[] arr)
             return [.. arr.Select(ToValkeyValue)];
+
         // Single value (legacy path) - wrap in array for consistent return type
         return [ToValkeyValue(result)];
     }
@@ -496,7 +505,6 @@ public static partial class GlideJson
     }
 
     #endregion
-
     #region JSON.NUMINCRBY
 
     /// <summary>
@@ -525,7 +533,6 @@ public static partial class GlideJson
     }
 
     #endregion
-
     #region JSON.NUMMULTBY
 
     /// <summary>
@@ -554,7 +561,6 @@ public static partial class GlideJson
     }
 
     #endregion
-
     #region JSON.STRAPPEND
 
     /// <summary>
@@ -588,8 +594,10 @@ public static partial class GlideJson
     {
         if (result is null)
             return null;
+
         if (result is object?[] arr)
             return [.. arr.Select(o => o is null ? (long?)null : (long)o)];
+
         // Single value (legacy path) - wrap in array for consistent return type
         return [(long)result];
     }
@@ -598,12 +606,16 @@ public static partial class GlideJson
     /// Converts result to non-nullable array with nullable elements.
     /// Used for write commands that throw when key doesn't exist.
     /// </summary>
+    /// <param name="result">The command result to convert.</param>
+    /// <exception cref="InvalidOperationException">Thrown if <paramref name="result"/> is null.</exception>
     private static long?[] ConvertToNullableLongArrayNonNull(object? result)
     {
         if (result is null)
             throw new InvalidOperationException("Unexpected null result from server");
+
         if (result is object?[] arr)
             return [.. arr.Select(o => o is null ? (long?)null : (long)o)];
+
         // Single value (legacy path) - wrap in array for consistent return type
         return [(long)result];
     }
@@ -630,7 +642,6 @@ public static partial class GlideJson
     }
 
     #endregion
-
     #region JSON.STRLEN
 
     /// <summary>
@@ -682,7 +693,6 @@ public static partial class GlideJson
     }
 
     #endregion
-
     #region JSON.TOGGLE
 
     /// <summary>
@@ -712,8 +722,10 @@ public static partial class GlideJson
     {
         if (result is null)
             return null;
+
         if (result is object?[] arr)
             return [.. arr.Select(o => o is null ? (bool?)null : Convert.ToBoolean(o))];
+
         // Single value (legacy path) - wrap in array for consistent return type
         return [Convert.ToBoolean(result)];
     }

@@ -33,8 +33,9 @@ public class ClusterClientTests(TestConfiguration config)
         Dictionary<string, object?> info = (await client.CustomCommand(["info"])).MultiValue;
         foreach (object? nodeInfo in info.Values)
         {
-            Assert.Contains("# Server", (nodeInfo as gs)!);
+            Assert.Contains("# Server", nodeInfo as gs);
         }
+
         // command which returns a map even on a single node route
         ClusterValue<object?> config = await client.CustomCommand(["config", "get", "*file"], Route.Random);
         Assert.True((config.SingleValue as Dictionary<gs, object?>)!.Count > 0);
@@ -58,10 +59,12 @@ public class ClusterClientTests(TestConfiguration config)
                     {
                         return;
                     }
+
                     break;
                 }
             }
         }
+
         Assert.Fail($"All 100 commands were sent to: {ports.First()}");
     }
 
@@ -488,7 +491,7 @@ public class ClusterClientTests(TestConfiguration config)
             Assert.NotEmpty(lolwut);
             // Accept both "Valkey" and "Redis" in the output since the server might be either
             Assert.True(lolwut.Contains("Valkey", StringComparison.OrdinalIgnoreCase) ||
-                       lolwut.Contains("Redis", StringComparison.OrdinalIgnoreCase));
+                lolwut.Contains("Redis", StringComparison.OrdinalIgnoreCase));
         }
 
         // Test with specific route
@@ -496,7 +499,7 @@ public class ClusterClientTests(TestConfiguration config)
         Assert.NotEmpty(singleNodeLolwut.SingleValue);
         // Accept both "Valkey" and "Redis" in the output since the server might be either
         Assert.True(singleNodeLolwut.SingleValue.Contains("Valkey", StringComparison.OrdinalIgnoreCase) ||
-                   singleNodeLolwut.SingleValue.Contains("Redis", StringComparison.OrdinalIgnoreCase));
+            singleNodeLolwut.SingleValue.Contains("Redis", StringComparison.OrdinalIgnoreCase));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]

@@ -61,6 +61,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Rename `StreamConsumerFullInfo` to `StreamConsumerInfoFull`
   - Rename `StreamPendingEntryInfo` to `StreamPendingEntry`
   - Update `StreamClaimOptions` to use factory and fluent methods instead of an object initializer
+- `Logger`, `InfoOptions`, and `Options` are now `static` classes.
 
 ### Fixed
 
@@ -74,6 +75,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `CONFIG RESETSTAT` routed to AllPrimaries instead of AllNodes in cluster mode (#493)
   - `FUNCTION KILL` routed to AllPrimaries instead of AllNodes in cluster mode (#494)
 - `GlideString(byte[])` no longer builds the hex-dump representation on construction (#522)
+- `CompareTo(null)` returns a positive value for `ScoreBound` and `GlideString` (#550)
 - `ClusterValue<T>.HasSingleData` returns expected result for value-type `T` (#547)
 
 ## 1.1.0

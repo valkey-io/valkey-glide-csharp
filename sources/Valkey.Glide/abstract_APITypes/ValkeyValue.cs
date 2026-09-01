@@ -13,6 +13,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Valkey.Glide;
+
 /// <summary>
 /// Represents values that can be stored.
 /// </summary>
@@ -43,13 +44,8 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
     /// <summary>
     /// Creates a <see cref="ValkeyValue"/> from a string.
     /// </summary>
+    /// <param name="value">The string to create the value from.</param>
     public ValkeyValue(string value) : this(0, default, value) { }
-
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1085:Use auto-implemented property.", Justification = "Intentional field ref")]
-    internal object? DirectObject => _objectOrSentinel;
-
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1085:Use auto-implemented property.", Justification = "Intentional field ref")]
-    internal long DirectOverlappedBits64 => _overlappedBits64;
 
     private static readonly object Sentinel_SignedInteger = new();
     private static readonly object Sentinel_UnsignedInteger = new();
@@ -65,14 +61,16 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
         if (obj is null || obj is string || obj is byte[]) return obj;
         if (obj == Sentinel_SignedInteger)
         {
-            var l = OverlappedValueInt64;
+            var l = _overlappedBits64;
             if (l >= -1 && l <= 20) return s_CommonInt32[((int)l) + 1];
             return l;
         }
+
         if (obj == Sentinel_UnsignedInteger)
         {
             return OverlappedValueUInt64;
         }
+
         if (obj == Sentinel_Double)
         {
             var d = OverlappedValueDouble;
@@ -81,6 +79,7 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
             if (double.IsNaN(d)) return s_DoubleNAN;
             return d;
         }
+
         if (obj == Sentinel_Raw && _memory.IsEmpty) return s_EmptyString;
         return this;
     }
@@ -89,6 +88,7 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
     /// Parse this object as a value - to be used alongside Box.
     /// </summary>
     /// <param name="value">The value to unbox.</param>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="value"/> cannot be converted into a <see cref="ValkeyValue"/>.</exception>
     public static ValkeyValue Unbox(object? value)
     {
         var val = TryParse(value, out var valid);
@@ -104,6 +104,7 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
     // note: it is *really important* that this s_EmptyString assignment happens *after* the EmptyString initializer above!
     private static readonly object s_DoubleNAN = double.NaN, s_DoublePosInf = double.PositiveInfinity, s_DoubleNegInf = double.NegativeInfinity,
         s_EmptyString = EmptyString;
+
     private static readonly object[] s_CommonInt32 = [.. Enumerable.Range(-1, 22).Select(i => (object)i)]; // [-1,20] = 22 values
 
     /// <summary>
@@ -162,12 +163,6 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
         get => BitConverter.Int64BitsToDouble(_overlappedBits64);
     }
 
-    internal long OverlappedValueInt64
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => _overlappedBits64;
-    }
-
     internal ulong OverlappedValueUInt64
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -213,6 +208,7 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
             case StorageType.Double:
                 return false;
         }
+
         switch (yType)
         {
             case StorageType.UInt64:
@@ -245,6 +241,7 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
 
     /// <inheritdoc/>
     public override int GetHashCode() => GetHashCode(this);
+
     private static int GetHashCode(ValkeyValue x)
     {
         x = x.Simplify();
@@ -278,12 +275,14 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
             {
                 if (x64[i] != y64[i]) return false;
             }
+
             int offset = len - spare;
             while (spare-- != 0)
             {
                 if (x8[offset] != y8[offset++]) return false;
             }
         }
+
         return true;
     }
 
@@ -303,11 +302,13 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
                 int valHash = ((int)val) ^ ((int)(val >> 32));
                 acc = ((acc << 5) + acc) ^ valHash;
             }
+
             int spare = len % 8, offset = len - spare;
             while (spare-- != 0)
             {
                 acc = ((acc << 5) + acc) ^ span[offset++];
             }
+
             return acc;
         }
     }
@@ -346,12 +347,13 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
     /// <summary>
     /// Get the size of this value in bytes.
     /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown if the storage type is not a supported <see cref="StorageType"/> value.</exception>
     public long Length() => Type switch
     {
         StorageType.Null => 0,
         StorageType.Raw => _memory.Length,
         StorageType.String => Encoding.UTF8.GetByteCount((string)_objectOrSentinel!),
-        StorageType.Int64 => Format.MeasureInt64(OverlappedValueInt64),
+        StorageType.Int64 => Format.MeasureInt64(_overlappedBits64),
         StorageType.UInt64 => Format.MeasureUInt64(OverlappedValueUInt64),
         StorageType.Double => Format.MeasureDouble(OverlappedValueDouble),
         _ => throw new InvalidOperationException("Unable to compute length of type: " + Type),
@@ -365,56 +367,48 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
 
     private static int CompareTo(ValkeyValue x, ValkeyValue y)
     {
-        try
+        x = x.Simplify();
+        y = y.Simplify();
+        StorageType xType = x.Type, yType = y.Type;
+
+        if (xType == StorageType.Null) return yType == StorageType.Null ? 0 : -1;
+        if (yType == StorageType.Null) return 1;
+
+        if (xType == yType)
         {
-            x = x.Simplify();
-            y = y.Simplify();
-            StorageType xType = x.Type, yType = y.Type;
-
-            if (xType == StorageType.Null) return yType == StorageType.Null ? 0 : -1;
-            if (yType == StorageType.Null) return 1;
-
-            if (xType == yType)
-            {
-                switch (xType)
-                {
-                    case StorageType.Double:
-                        return x.OverlappedValueDouble.CompareTo(y.OverlappedValueDouble);
-                    case StorageType.Int64:
-                        return x.OverlappedValueInt64.CompareTo(y.OverlappedValueInt64);
-                    case StorageType.UInt64:
-                        return x.OverlappedValueUInt64.CompareTo(y.OverlappedValueUInt64);
-                    case StorageType.String:
-                        return string.CompareOrdinal((string)x._objectOrSentinel!, (string)y._objectOrSentinel!);
-                    case StorageType.Raw:
-                        return x._memory.Span.SequenceCompareTo(y._memory.Span);
-                }
-            }
-
             switch (xType)
-            { // numbers can be still be compared between types
+            {
                 case StorageType.Double:
-                    if (yType == StorageType.Int64) return x.OverlappedValueDouble.CompareTo((double)y.OverlappedValueInt64);
-                    if (yType == StorageType.UInt64) return x.OverlappedValueDouble.CompareTo((double)y.OverlappedValueUInt64);
-                    break;
+                    return x.OverlappedValueDouble.CompareTo(y.OverlappedValueDouble);
                 case StorageType.Int64:
-                    if (yType == StorageType.Double) return ((double)x.OverlappedValueInt64).CompareTo(y.OverlappedValueDouble);
-                    if (yType == StorageType.UInt64) return 1; // we only use unsigned if > int64, so: y is bigger
-                    break;
+                    return x._overlappedBits64.CompareTo(y._overlappedBits64);
                 case StorageType.UInt64:
-                    if (yType == StorageType.Double) return ((double)x.OverlappedValueUInt64).CompareTo(y.OverlappedValueDouble);
-                    if (yType == StorageType.Int64) return -1; // we only use unsigned if > int64, so: x is bigger
-                    break;
+                    return x.OverlappedValueUInt64.CompareTo(y.OverlappedValueUInt64);
+                case StorageType.String:
+                    return string.CompareOrdinal((string)x._objectOrSentinel!, (string)y._objectOrSentinel!);
+                case StorageType.Raw:
+                    return x._memory.Span.SequenceCompareTo(y._memory.Span);
             }
+        }
 
-            // otherwise, compare as strings
-            return string.CompareOrdinal((string?)x, (string?)y);
+        switch (xType)
+        { // numbers can be still be compared between types
+            case StorageType.Double:
+                if (yType == StorageType.Int64) return x.OverlappedValueDouble.CompareTo((double)y._overlappedBits64);
+                if (yType == StorageType.UInt64) return x.OverlappedValueDouble.CompareTo((double)y.OverlappedValueUInt64);
+                break;
+            case StorageType.Int64:
+                if (yType == StorageType.Double) return ((double)x._overlappedBits64).CompareTo(y.OverlappedValueDouble);
+                if (yType == StorageType.UInt64) return 1; // we only use unsigned if > int64, so: y is bigger
+                break;
+            case StorageType.UInt64:
+                if (yType == StorageType.Double) return ((double)x.OverlappedValueUInt64).CompareTo(y.OverlappedValueDouble);
+                if (yType == StorageType.Int64) return -1; // we only use unsigned if > int64, so: x is bigger
+                break;
         }
-        catch (Exception ex)
-        {
-            //ConnectionMultiplexer.TraceWithoutContext(ex.Message);
-            throw ex;
-        }
+
+        // otherwise, compare as strings
+        return string.CompareOrdinal((string?)x, (string?)y);
     }
 
     int IComparable.CompareTo(object? obj)
@@ -519,6 +513,7 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
             if (value == i64) return new ValkeyValue(i64, default, Sentinel_SignedInteger);
         }
         catch { }
+
         return new ValkeyValue(BitConverter.DoubleToInt64Bits(value), default, Sentinel_Double);
     }
 
@@ -617,7 +612,7 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
         return value.Type switch
         {
             StorageType.Null => 0, // an arithmetic zero is kinda the same thing as not-exists (think "incr")
-            StorageType.Int64 => value.OverlappedValueInt64,
+            StorageType.Int64 => value._overlappedBits64,
             StorageType.UInt64 => checked((long)value.OverlappedValueUInt64), // this will throw since unsigned is always 64-bit
             _ => throw new InvalidCastException($"Unable to cast from {value.Type} to long: '{value}'"),
         };
@@ -633,7 +628,7 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
         return value.Type switch
         {
             StorageType.Null => 0, // an arithmetic zero is kinda the same thing as not-exists (think "incr")
-            StorageType.Int64 => checked((uint)value.OverlappedValueInt64),
+            StorageType.Int64 => checked((uint)value._overlappedBits64),
             StorageType.UInt64 => checked((uint)value.OverlappedValueUInt64),
             _ => throw new InvalidCastException($"Unable to cast from {value.Type} to uint: '{value}'"),
         };
@@ -649,7 +644,7 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
         return value.Type switch
         {
             StorageType.Null => 0, // an arithmetic zero is kinda the same thing as not-exists (think "incr")
-            StorageType.Int64 => checked((ulong)value.OverlappedValueInt64), // throw if negative
+            StorageType.Int64 => checked((ulong)value._overlappedBits64), // throw if negative
             StorageType.UInt64 => value.OverlappedValueUInt64,
             _ => throw new InvalidCastException($"Unable to cast from {value.Type} to ulong: '{value}'"),
         };
@@ -665,7 +660,7 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
         return value.Type switch
         {
             StorageType.Null => 0, // an arithmetic zero is kinda the same thing as not-exists (think "incr")
-            StorageType.Int64 => value.OverlappedValueInt64,
+            StorageType.Int64 => value._overlappedBits64,
             StorageType.UInt64 => value.OverlappedValueUInt64,
             StorageType.Double => value.OverlappedValueDouble,
             _ => throw new InvalidCastException($"Unable to cast from {value.Type} to double: '{value}'"),
@@ -682,7 +677,7 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
         return value.Type switch
         {
             StorageType.Null => 0, // an arithmetic zero is kinda the same thing as not-exists (think "incr")
-            StorageType.Int64 => value.OverlappedValueInt64,
+            StorageType.Int64 => value._overlappedBits64,
             StorageType.UInt64 => value.OverlappedValueUInt64,
             StorageType.Double => (decimal)value.OverlappedValueDouble,
             _ => throw new InvalidCastException($"Unable to cast from {value.Type} to decimal: '{value}'"),
@@ -699,7 +694,7 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
         return value.Type switch
         {
             StorageType.Null => 0, // an arithmetic zero is kinda the same thing as not-exists (think "incr")
-            StorageType.Int64 => value.OverlappedValueInt64,
+            StorageType.Int64 => value._overlappedBits64,
             StorageType.UInt64 => value.OverlappedValueUInt64,
             StorageType.Double => (float)value.OverlappedValueDouble,
             _ => throw new InvalidCastException($"Unable to cast from {value.Type} to double: '{value}'"),
@@ -784,7 +779,7 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
         {
             case StorageType.Null: return null;
             case StorageType.Double: return Format.ToString(value.OverlappedValueDouble);
-            case StorageType.Int64: return Format.ToString(value.OverlappedValueInt64);
+            case StorageType.Int64: return Format.ToString(value._overlappedBits64);
             case StorageType.UInt64: return Format.ToString(value.OverlappedValueUInt64);
             case StorageType.String: return (string)value._objectOrSentinel!;
             case StorageType.Raw:
@@ -803,6 +798,7 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
                 throw new InvalidOperationException();
         }
     }
+
     private static string ToHex(ReadOnlySpan<byte> src)
     {
         const string HexValues = "0123456789ABCDEF";
@@ -825,6 +821,7 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
             dst[j++] = HexValues[b >> 4];
             dst[j++] = HexValues[b & 0xF];
         }
+
         return s;
     }
 
@@ -850,7 +847,7 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
                 return value._memory.ToArray();
             case StorageType.Int64:
                 Span<byte> span = stackalloc byte[Format.MaxInt64TextLen + 2];
-                int len = PhysicalConnection.WriteRaw(span, value.OverlappedValueInt64, false, 0);
+                int len = PhysicalConnection.WriteRaw(span, value._overlappedBits64, false, 0);
                 arr = new byte[len - 2]; // don't need the CRLF
                 span.Slice(0, arr.Length).CopyTo(arr);
                 return arr;
@@ -862,6 +859,7 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
                 span.Slice(0, len).CopyTo(arr);
                 return arr;
         }
+
         // fallback: stringify and encode
         return Encoding.UTF8.GetBytes((string)value!);
     }
@@ -941,6 +939,7 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
                     if (Format.TryParseInt64(s, out i64)) return i64;
                     if (Format.TryParseUInt64(s, out u64)) return u64;
                 }
+
                 if (Format.TryParseDouble(s, out var f64)) return f64;
                 break;
             case StorageType.Raw:
@@ -950,6 +949,7 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
                     if (Format.TryParseInt64(b, out i64)) return i64;
                     if (Format.TryParseUInt64(b, out u64)) return u64;
                 }
+
                 if (TryParseDouble(b, out f64)) return f64;
                 break;
             case StorageType.Double:
@@ -958,6 +958,7 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
                 if (f64 >= long.MinValue && f64 <= long.MaxValue && (i64 = (long)f64) == f64) return i64;
                 break;
         }
+
         return this;
     }
 
@@ -971,7 +972,7 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
         switch (Type)
         {
             case StorageType.Int64:
-                val = OverlappedValueInt64;
+                val = _overlappedBits64;
                 return true;
             case StorageType.UInt64:
                 // we only use unsigned for oversize, so no: it doesn't fit
@@ -992,12 +993,14 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
                     val = default;
                     return false;
                 }
+
                 return val == d;
             case StorageType.Null:
                 // 0 approx. equal null; so roll with it
                 val = 0;
                 return true;
         }
+
         val = default;
         return false;
     }
@@ -1029,7 +1032,7 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
         switch (Type)
         {
             case StorageType.Int64:
-                val = OverlappedValueInt64;
+                val = _overlappedBits64;
                 return true;
             case StorageType.UInt64:
                 val = OverlappedValueUInt64;
@@ -1046,6 +1049,7 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
                 val = 0;
                 return true;
         }
+
         val = default;
         return false;
     }
@@ -1057,17 +1061,17 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
     /// <param name="stream">The <see cref="MemoryStream"/> to create a value from.</param>
     public static ValkeyValue CreateFrom(MemoryStream stream)
     {
-        if (stream == null) return Null;
-        if (stream.Length == 0) return Array.Empty<byte>();
+        if (stream == null)
+            return Null;
+
+        if (stream.Length == 0)
+            return Array.Empty<byte>();
+
         if (stream.TryGetBuffer(out var segment) || ReflectionTryGetBuffer(stream, out segment))
-        {
             return new Memory<byte>(segment.Array, segment.Offset, segment.Count);
-        }
-        else
-        {
-            // nowhere near as efficient, but...
-            return stream.ToArray();
-        }
+
+        // nowhere near as efficient, but...
+        return stream.ToArray();
     }
 
     private static readonly FieldInfo?
@@ -1087,6 +1091,7 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
             }
             catch { }
         }
+
         buffer = default;
         return false;
     }
@@ -1117,6 +1122,7 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
                     return rawThis.Span.StartsWith(rawOther.Span);
             }
         }
+
         byte[]? arr0 = null, arr1 = null;
         try
         {
@@ -1155,15 +1161,17 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
                 goto HaveString;
             case StorageType.Int64:
                 leased = ArrayPool<byte>.Shared.Rent(Format.MaxInt64TextLen + 2); // reused code has CRLF terminator
-                len = PhysicalConnection.WriteRaw(leased, OverlappedValueInt64) - 2; // drop the CRLF
+                len = PhysicalConnection.WriteRaw(leased, _overlappedBits64) - 2; // drop the CRLF
                 return new ReadOnlyMemory<byte>(leased, 0, len);
             case StorageType.UInt64:
                 leased = ArrayPool<byte>.Shared.Rent(Format.MaxInt64TextLen); // reused code has CRLF terminator
                                                                               // value is huge, jump direct to Utf8Formatter
                 if (!Utf8Formatter.TryFormat(OverlappedValueUInt64, leased, out len))
                     throw new InvalidOperationException("TryFormat failed");
+
                 return new ReadOnlyMemory<byte>(leased, 0, len);
         }
+
         leased = null;
         return default;
     }

@@ -5,10 +5,13 @@ using Valkey.Glide.Commands.Options;
 
 namespace Valkey.Glide;
 
-/// ATTENTION: Methods should only be added to this interface if they are implemented
-/// by Valkey GLIDE clients but NOT by StackExchange.Redis databases. Methods implemented
-/// by both should be added to <see cref="IConnectionManagementBaseCommands"/> instead.
+// ATTENTION: Methods should only be added to this interface if they are implemented
+// by Valkey GLIDE clients but NOT by StackExchange.Redis databases. Methods implemented
+// by both should be added to IConnectionManagementBaseCommands instead.
 
+/// <summary>
+/// Connection management commands for Valkey GLIDE clients.
+/// </summary>
 /// <seealso href="https://valkey.io/commands/#connection">Valkey – Connection Management Commands</seealso>
 public partial interface IBaseClient : IConnectionManagementBaseCommands
 {

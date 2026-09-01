@@ -55,14 +55,15 @@ public enum Level
 /// If none of these functions are called, the first log attempt will initialize a new logger with default configuration.
 /// </summary>
 /// <seealso href="https://glide.valkey.io/how-to/monitoring/logging/">Valkey GLIDE – Logging</seealso>
-public class Logger
+public static class Logger
 {
     #region private fields
 
     private static Level? s_loggerLevel = null;
-    #endregion private fields
 
+    #endregion
     #region public methods
+
     /// <summary>
     /// Initialize a logger if it wasn't initialized before - this method is meant to be used when there is no intention to
     /// replace an existing logger.<br />
@@ -94,14 +95,17 @@ public class Logger
         {
             SetLoggerConfig(logLevel);
         }
+
         if (!(logLevel <= s_loggerLevel))
         {
             return;
         }
+
         if (error is not null)
         {
             message += $": {error}";
         }
+
         log(Convert.ToInt32(logLevel), logIdentifier, message);
     }
 
@@ -117,7 +121,7 @@ public class Logger
     /// If provided the target of the logs will be the file mentioned.<br />
     /// Otherwise, logs will be printed to the console.
     /// </param>
-    /// <exception cref="InvalidOperationException">Thrown when the native logger fails to initialize.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if the native logger fails to initialize.</exception>
     public static void SetLoggerConfig(Level level, string? filename = null)
     {
         IntPtr errorPtr = InitInternalLogger(Convert.ToInt32(level), filename, out Level resolvedLevel);
@@ -127,12 +131,13 @@ public class Logger
             FreeString(errorPtr);
             throw new InvalidOperationException($"Failed to initialize logger: {errorMessage}");
         }
+
         s_loggerLevel = resolvedLevel;
     }
 
-    #endregion public methods
-
+    #endregion
     #region FFI function declaration
+
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "log")]
     private static extern void log(
         int logLevel,

@@ -1,6 +1,5 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-
 using Valkey.Glide.Commands.Options;
 using Valkey.Glide.TestUtils;
 
@@ -534,7 +533,6 @@ public class GenericCommandTests(TestConfiguration config)
         // We should have seen at least one key
         Assert.NotEmpty(seenKeys);
     }
-
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]

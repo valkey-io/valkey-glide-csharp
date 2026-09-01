@@ -4,12 +4,12 @@ using Valkey.Glide.Commands.Options;
 
 namespace Valkey.Glide;
 
-/// ATTENTION: Methods should only be added to this interface if they are implemented
-/// by Valkey GLIDE clients but NOT by StackExchange.Redis databases. Methods implemented
-/// by both should be added to the corresponding Commands interface instead.
+// ATTENTION: Methods should only be added to this interface if they are implemented
+// by Valkey GLIDE clients but NOT by StackExchange.Redis databases. Methods implemented
+// by both should be added to the corresponding Commands interface instead.
 
 /// <summary>
-/// Server management commands for Valkey GLIDE clients that have no StackExchange.Redis equivalent.
+/// Server management commands for Valkey GLIDE clients.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/#server">Valkey – Server Management Commands</seealso>
 public partial interface IBaseClient

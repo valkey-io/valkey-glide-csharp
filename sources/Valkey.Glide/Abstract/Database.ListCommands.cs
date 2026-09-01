@@ -10,19 +10,19 @@ internal partial class Database
 
     /// <inheritdoc cref="IDatabaseAsync.ListLeftPushAsync(ValkeyKey, ValkeyValue, When)"/>
     public Task<long> ListLeftPushAsync(ValkeyKey key, ValkeyValue value, When when)
-        => Command(Request.ListLeftPushAsync(key, value, when));
+        => Command(Request.ListLeftPush(key, value, when));
 
     /// <inheritdoc cref="IDatabaseAsync.ListLeftPushAsync(ValkeyKey, IEnumerable{ValkeyValue}, When)"/>
     public Task<long> ListLeftPushAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, When when)
-        => Command(Request.ListLeftPushAsync(key, [.. values], when));
+        => Command(Request.ListLeftPush(key, [.. values], when));
 
     /// <inheritdoc cref="IDatabaseAsync.ListRightPushAsync(ValkeyKey, ValkeyValue, When)"/>
     public Task<long> ListRightPushAsync(ValkeyKey key, ValkeyValue value, When when)
-        => Command(Request.ListRightPushAsync(key, value, when));
+        => Command(Request.ListRightPush(key, value, when));
 
     /// <inheritdoc cref="IDatabaseAsync.ListRightPushAsync(ValkeyKey, IEnumerable{ValkeyValue}, When)"/>
     public Task<long> ListRightPushAsync(ValkeyKey key, IEnumerable<ValkeyValue> values, When when)
-        => Command(Request.ListRightPushAsync(key, [.. values], when));
+        => Command(Request.ListRightPush(key, [.. values], when));
 
     /// <inheritdoc cref="IDatabaseAsync.ListLeftPopAsync(ValkeyKey, CommandFlags)"/>
     public Task<ValkeyValue> ListLeftPopAsync(ValkeyKey key, CommandFlags flags)

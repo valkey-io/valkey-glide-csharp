@@ -18,7 +18,7 @@ namespace Valkey.Glide;
 /// <c>nodeResponse</c> is of type <typeparamref name="T" />.
 /// </remarks>
 /// <typeparam name="T">The wrapped response type</typeparam>
-public class ClusterValue<T>
+public sealed class ClusterValue<T>
 {
     #region Private Fields
 
@@ -49,18 +49,21 @@ public class ClusterValue<T>
     /// <summary>
     /// Builds a cluster value from the given value.
     /// </summary>
+    /// <param name="obj">The value to wrap.</param>
     internal static ClusterValue<T> OfSingleValue(T obj)
         => new() { _singleValue = obj };
 
     /// <summary>
-    /// Builds a cluster value from the given values, indexed by node address.
+    /// Builds a cluster value from the given values.
     /// </summary>
+    /// <param name="obj">The values to wrap, indexed by node address.</param>
     internal static ClusterValue<T> OfMultiValue(Dictionary<string, T> obj)
         => new() { _multiValue = obj };
 
     /// <summary>
-    /// Builds a cluster value from the given values, indexed by node address.
+    /// Builds a cluster value from the given values.
     /// </summary>
+    /// <param name="obj">The values to wrap, indexed by node address.</param>
     internal static ClusterValue<T> OfMultiValue(Dictionary<GlideString, T> obj)
         => new() { _multiValue = obj.DownCastKeys() };
 

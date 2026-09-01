@@ -150,6 +150,8 @@ public abstract partial class BaseClient
     /// <summary>
     /// Builds a pub/sub subscriptions map from the given response dictionary returned by GLIDE core.
     /// </summary>
+    /// <param name="response">The response dictionary, keyed by channel mode.</param>
+    /// <exception cref="ArgumentException">Thrown if the response contains an unexpected channel mode.</exception>
     private static Dictionary<PubSubChannelMode, IReadOnlySet<ValkeyKey>> BuildPubSubSubscriptionsMap(
         Dictionary<string, IReadOnlySet<ValkeyKey>> response)
     {

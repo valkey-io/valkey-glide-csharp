@@ -58,7 +58,6 @@ public static partial class GlideJson
     }
 
     #endregion
-
     #region JSON.OBJKEYS
 
     /// <summary>
@@ -92,19 +91,25 @@ public static partial class GlideJson
     private static ValkeyValue[][]? ConvertToNestedValkeyValueArray(object? result)
     {
         if (result is null)
+        {
             return null;
+        }
+
         if (result is object?[] arr)
         {
             return [.. arr.Select<object?, ValkeyValue[]>(o =>
             {
                 if (o is null)
                     return []; // Non-object values return empty array per Valkey docs
+
                 if (o is object?[] innerArr)
                     return [.. innerArr.Select(ToValkeyValue)];
+
                 // Single value - wrap in array
                 return [ToValkeyValue(o)];
             })];
         }
+
         // Single value (legacy path) - wrap in nested array
         return [[ToValkeyValue(result)]];
     }
@@ -128,13 +133,14 @@ public static partial class GlideJson
         object? result = await ExecuteCommandAsync(client, args);
         if (result is null)
             return null;
+
         if (result is object?[] arr)
             return [.. arr.Select(o => o?.ToString() ?? string.Empty)];
+
         return [];
     }
 
     #endregion
-
     #region JSON.DEBUG MEMORY
 
     /// <summary>
@@ -187,7 +193,6 @@ public static partial class GlideJson
     }
 
     #endregion
-
     #region JSON.DEBUG FIELDS
 
     /// <summary>
@@ -239,7 +244,6 @@ public static partial class GlideJson
     }
 
     #endregion
-
     #region JSON.RESP
 
     /// <summary>

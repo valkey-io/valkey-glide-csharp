@@ -50,7 +50,7 @@ public sealed class MonitorClient : IAsyncDisposable, IDisposable
     /// </summary>
     /// <param name="config">The configuration for the monitor client.</param>
     /// <returns>A connected <see cref="MonitorClient"/> instance.</returns>
-    /// <exception cref="ConnectionException">Thrown when the client fails to connect to the server.</exception>
+    /// <exception cref="ConnectionException">Thrown if the client fails to connect to the server.</exception>
     public static Task<MonitorClient> CreateClient(MonitorConfig config)
     {
         var client = new MonitorClient(IntPtr.Zero);

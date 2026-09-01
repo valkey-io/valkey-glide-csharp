@@ -25,6 +25,7 @@ public readonly struct ValkeyKey : IEquatable<ValkeyKey>
     /// <summary>
     /// Creates a <see cref="ValkeyKey"/> from a string.
     /// </summary>
+    /// <param name="key">The string to create the key from.</param>
     public ValkeyKey(string? key) : this(null, key) { }
 
     internal ValkeyKey AsPrefix() => new ValkeyKey((byte[]?)this, null);
@@ -161,21 +162,22 @@ public readonly struct ValkeyKey : IEquatable<ValkeyKey>
         {
             return false; // different length; can't be equal
         }
+
         if (len == 0)
         {
             return true; // both empty
         }
+
         if (len <= 128)
         {
             return CopyCompare(in this, in other, len, stackalloc byte[len * 2]);
         }
-        else
-        {
-            byte[] arr = ArrayPool<byte>.Shared.Rent(len * 2);
-            var result = CopyCompare(in this, in other, len, arr);
-            ArrayPool<byte>.Shared.Return(arr);
-            return result;
-        }
+
+        byte[] arr = ArrayPool<byte>.Shared.Rent(len * 2);
+        var result = CopyCompare(in this, in other, len, arr);
+        ArrayPool<byte>.Shared.Return(arr);
+
+        return result;
 
         static bool CopyCompare(in ValkeyKey x, in ValkeyKey y, int length, Span<byte> span)
         {
@@ -361,6 +363,7 @@ public readonly struct ValkeyKey : IEquatable<ValkeyKey>
                 Buffer.BlockCopy((byte[])b!, 0, result, aLen, bLen);
             }
         }
+
         if (cLen != 0) Buffer.BlockCopy(c!, 0, result, aLen + bLen, cLen);
         return result;
     }
@@ -390,12 +393,13 @@ public readonly struct ValkeyKey : IEquatable<ValkeyKey>
     }
 
     internal int TotalLength() =>
-        (KeyPrefix is null ? 0 : KeyPrefix.Length) + KeyValue switch
-        {
-            null => 0,
-            string s => Encoding.UTF8.GetByteCount(s),
-            _ => ((byte[])KeyValue).Length,
-        };
+        (KeyPrefix?.Length ?? 0)
+            + KeyValue switch
+            {
+                null => 0,
+                string s => Encoding.UTF8.GetByteCount(s),
+                _ => ((byte[])KeyValue).Length,
+            };
 
     internal int CopyTo(Span<byte> destination)
     {
@@ -406,6 +410,7 @@ public readonly struct ValkeyKey : IEquatable<ValkeyKey>
             written += KeyPrefix.Length;
             destination = destination.Slice(KeyPrefix.Length);
         }
+
         switch (KeyValue)
         {
             case null:
@@ -428,6 +433,7 @@ public readonly struct ValkeyKey : IEquatable<ValkeyKey>
                     }
 #endif
                 }
+
                 break;
             default:
                 var arr = (byte[])KeyValue;
@@ -435,6 +441,7 @@ public readonly struct ValkeyKey : IEquatable<ValkeyKey>
                 written += arr.Length;
                 break;
         }
+
         return written;
     }
 }

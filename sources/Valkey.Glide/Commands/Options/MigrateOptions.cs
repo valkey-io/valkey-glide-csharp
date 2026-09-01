@@ -168,6 +168,9 @@ public sealed class MigrateOptions(string host, ushort port, ushort destinationD
     /// <summary>
     /// Converts the options to command arguments.
     /// </summary>
+    /// <param name="keys">The keys to migrate.</param>
+    /// <exception cref="ObjectDisposedException">Thrown if the options have been disposed.</exception>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="keys"/> is empty.</exception>
     internal GlideString[] ToArgs(GlideString[] keys)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);

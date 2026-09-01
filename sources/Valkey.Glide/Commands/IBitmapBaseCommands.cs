@@ -11,4 +11,4 @@ namespace Valkey.Glide.Commands;
 /// StackExchange.Redis-style methods are on <see cref="IDatabaseAsync"/>.
 /// </remarks>
 /// <seealso href="https://valkey.io/commands/#bitmap">Valkey – Bitmap Commands</seealso>
-public interface IBitmapBaseCommands { }
+public interface IBitmapBaseCommands;

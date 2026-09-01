@@ -42,12 +42,15 @@ internal class Cmd<R, T> : ICmd
             {
                 return null;
             }
+
             throw new RequestException($"Unexpected return type from Glide: got null expected {typeof(T).GetRealTypeName()}");
         }
+
         if (value is RequestException)
         {
             return value;
         }
+
         Debug.Assert(value!.GetType() == typeof(R) || typeof(R).IsAssignableFrom(value!.GetType()),
             $"Unexpected return type from Glide: got {value?.GetType().GetRealTypeName()} expected {typeof(R).GetRealTypeName()}");
 
@@ -87,6 +90,7 @@ internal class Cmd<R, T> : ICmd
     /// <summary>
     /// Convert a command to one which handles a <see cref="ClusterValue{T}" /> for the given route.
     /// </summary>
+    /// <param name="route">The route for the command.</param>
     public Cmd<object, ClusterValue<T>> ToClusterValue(Route route)
         => route is Route.SingleNodeRoute
             ? new(Request, ArgsArray.Args, IsNullable, value => ClusterValue<T>.OfSingleValue(Converter((R)value)), AllowConverterToHandleNull)

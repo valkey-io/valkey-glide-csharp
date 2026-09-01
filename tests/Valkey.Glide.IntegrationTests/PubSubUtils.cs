@@ -298,6 +298,7 @@ public static class PubSubUtils
 
             _ = targets[message.ChannelMode].Add(target);
         }
+
         return targets;
     }
 
@@ -386,7 +387,6 @@ public static class PubSubUtils
 
             _ = configBuilder.WithPubSubSubscriptions(pubSubConfig);
         }
-
         else if (callback != null)
         {
             ClusterPubSubSubscriptionConfig pubSubConfig = new();
@@ -482,7 +482,6 @@ public static class PubSubUtils
 
             _ = configBuilder.WithPubSubSubscriptions(pubSubConfig);
         }
-
         else if (callback != null)
         {
             StandalonePubSubSubscriptionConfig pubSubConfig = new StandalonePubSubSubscriptionConfig().WithCallback(callback);

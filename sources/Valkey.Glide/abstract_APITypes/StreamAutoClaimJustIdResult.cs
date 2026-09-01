@@ -21,7 +21,6 @@ public readonly struct StreamAutoClaimJustIdResult
     #endregion
     #region Public Properties
 
-
     /// <summary>
     /// Whether this object is null/empty.
     /// </summary>

@@ -45,12 +45,14 @@ public sealed class EndPointCollection : Collection<EndPoint>, IEnumerable<EndPo
     /// Adds a new endpoint to the list.
     /// </summary>
     /// <param name="hostAndPort">The host:port string to add an endpoint for to the collection.</param>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="hostAndPort"/> cannot be parsed.</exception>
     public void Add(string hostAndPort)
     {
         if (!Format.TryParseEndPoint(hostAndPort, out EndPoint? endpoint))
         {
             throw new ArgumentException($"Could not parse host and port from '{hostAndPort}'", nameof(hostAndPort));
         }
+
         Add(endpoint);
     }
 
@@ -73,22 +75,18 @@ public sealed class EndPointCollection : Collection<EndPoint>, IEnumerable<EndPo
     /// </summary>
     /// <param name="endpoint">The endpoint to add.</param>
     /// <returns><see langword="true" /> if the endpoint was added, <see langword="false" /> if not.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="endpoint"/> is <see langword="null"/>.</exception>
     public bool TryAdd(EndPoint endpoint)
     {
-        if (endpoint == null)
-        {
-            throw new ArgumentNullException(nameof(endpoint));
-        }
+        ArgumentNullException.ThrowIfNull(endpoint, nameof(endpoint));
 
         if (!Contains(endpoint))
         {
             base.InsertItem(Count, endpoint);
             return true;
         }
-        else
-        {
-            return false;
-        }
+
+        return false;
     }
 
     /// <summary>
@@ -96,12 +94,12 @@ public sealed class EndPointCollection : Collection<EndPoint>, IEnumerable<EndPo
     /// </summary>
     /// <param name="index">The index to add <paramref name="item" /> into the collection at.</param>
     /// <param name="item">The item to insert at <paramref name="index" />.</param>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="item"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="item"/> already exists in the collection.</exception>
     protected override void InsertItem(int index, EndPoint item)
     {
-        if (item == null)
-        {
-            throw new ArgumentNullException(nameof(item));
-        }
+        ArgumentNullException.ThrowIfNull(item, nameof(item));
+
         if (Contains(item))
         {
             throw new ArgumentException("EndPoints must be unique", nameof(item));
@@ -115,12 +113,12 @@ public sealed class EndPointCollection : Collection<EndPoint>, IEnumerable<EndPo
     /// </summary>
     /// <param name="index">The index to replace an endpoint at.</param>
     /// <param name="item">The item to replace the existing endpoint at <paramref name="index" />.</param>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="item"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="item"/> already exists at a different index in the collection.</exception>
     protected override void SetItem(int index, EndPoint item)
     {
-        if (item == null)
-        {
-            throw new ArgumentNullException(nameof(item));
-        }
+        ArgumentNullException.ThrowIfNull(item, nameof(item));
+
         int existingIndex;
         try
         {
@@ -131,10 +129,12 @@ public sealed class EndPointCollection : Collection<EndPoint>, IEnumerable<EndPo
             // mono has a nasty bug in DnsEndPoint.Equals; if they do bad things here: sorry, I can't help
             existingIndex = -1;
         }
+
         if (existingIndex >= 0 && existingIndex != index)
         {
             throw new ArgumentException("EndPoints must be unique", nameof(item));
         }
+
         base.SetItem(index, item);
     }
 
@@ -183,6 +183,7 @@ public sealed class EndPointCollection : Collection<EndPoint>, IEnumerable<EndPo
                 return true;
             }
         }
+
         return false;
     }
 

@@ -246,6 +246,8 @@ internal partial class Database
     /// <summary>
     /// Converts the given <see cref="ExpireWhen"/> to <see cref="ExpireCondition"/>.
     /// </summary>
+    /// <param name="when">The expire condition to convert.</param>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="when"/> is not a supported <see cref="ExpireWhen"/> value.</exception>
     private static ExpireCondition ToExpireCondition(ExpireWhen when) => when switch
     {
         ExpireWhen.Always => ExpireCondition.Always,
@@ -259,6 +261,8 @@ internal partial class Database
     /// <summary>
     /// Converts the given <see cref="When"/> argument to <see cref="HashSetCondition"/>.
     /// </summary>
+    /// <param name="when">The condition to convert.</param>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="when"/> is not a supported <see cref="When"/> value.</exception>
     private static HashSetCondition ToHashSetCondition(When when) => when switch
     {
         When.Always => HashSetCondition.Always,
@@ -270,18 +274,19 @@ internal partial class Database
     /// <summary>
     /// Converts the given <see cref="TimeSpan"/> expiry and <see langword="bool"/> persist arguments to <see cref="GetExpiryOptions"/>.
     /// </summary>
+    /// <param name="expiry">The expiry to set, or <see langword="null"/> if no expiry.</param>
+    /// <param name="persist">Whether to remove the existing expiry.</param>
+    /// <exception cref="ArgumentException">Thrown if both <paramref name="expiry"/> and <paramref name="persist"/> are both specified.</exception>
     private static GetExpiryOptions ToGetExpiryOptions(TimeSpan? expiry, bool persist)
     {
         if (expiry.HasValue && persist)
         {
             throw new ArgumentException("Cannot specify both expiry and persist=true.");
         }
-
         else if (expiry.HasValue)
         {
             return GetExpiryOptions.ExpireIn(expiry.Value);
         }
-
         else
         {
             return GetExpiryOptions.Persist();

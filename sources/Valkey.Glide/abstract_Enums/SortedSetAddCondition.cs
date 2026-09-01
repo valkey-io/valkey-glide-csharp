@@ -49,6 +49,8 @@ internal static class SortedSetAddConditionExtensions
     /// <summary>
     /// Converts to command arguments.
     /// </summary>
+    /// <param name="condition">The condition to convert.</param>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="condition"/> is not a supported <see cref="SortedSetAddCondition"/> value.</exception>
     internal static GlideString[] ToArgs(this SortedSetAddCondition condition)
         => condition switch
         {

@@ -51,7 +51,6 @@ public class JsonArrayCommandTests(TestConfiguration config)
     }
 
     #endregion
-
     #region JSON.ARRINSERT Tests
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -89,7 +88,6 @@ public class JsonArrayCommandTests(TestConfiguration config)
     }
 
     #endregion
-
     #region JSON.ARRINDEX Tests
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -145,7 +143,6 @@ public class JsonArrayCommandTests(TestConfiguration config)
     }
 
     #endregion
-
     #region JSON.ARRLEN Tests
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -183,7 +180,6 @@ public class JsonArrayCommandTests(TestConfiguration config)
     }
 
     #endregion
-
     #region JSON.ARRPOP Tests
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -221,7 +217,6 @@ public class JsonArrayCommandTests(TestConfiguration config)
     }
 
     #endregion
-
     #region JSON.ARRTRIM Tests
 
     [Theory(DisableDiscoveryEnumeration = true)]

@@ -64,7 +64,6 @@ public class ListCommandTests(TestConfiguration config)
     }
 
     #endregion
-
     #region ListRightPushAsync/ListLeftPushAsync CommandFlags-only overloads
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -104,7 +103,6 @@ public class ListCommandTests(TestConfiguration config)
     }
 
     #endregion
-
     #region ListLeftPushAsync/ListRightPushAsync with When parameter (SER-specific)
 
     [Theory(DisableDiscoveryEnumeration = true)]

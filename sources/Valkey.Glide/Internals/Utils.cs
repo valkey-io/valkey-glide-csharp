@@ -3,9 +3,9 @@
 using System.Diagnostics;
 using System.Net;
 
-using Valkey.Glide;
+namespace Valkey.Glide.Internals;
 
-internal class Utils
+internal static class Utils
 {
     public static (string host, ushort port) SplitEndpoint(EndPoint ep)
         => ep switch
@@ -47,21 +47,25 @@ internal class Utils
             {
                 continue;
             }
+
             if (line.StartsWith("# "))
             {
                 category = line[2..].Trim();
                 continue;
             }
+
             int idx = line.IndexOf(':');
             if (idx < 0)
             {
                 continue;
             }
+
             KeyValuePair<string, string> pair = new(
                 line[..idx].Trim(),
                 line[(idx + 1)..].Trim());
             list.Add(Tuple.Create(category, pair));
         }
+
         return list;
     }
 }

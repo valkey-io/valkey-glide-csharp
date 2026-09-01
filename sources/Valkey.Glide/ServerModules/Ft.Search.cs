@@ -62,7 +62,6 @@ public static partial class Ft
         => client.Command(Request.FtSearch(index, query, options));
 
     #endregion
-
     #region Nested Types
 
     /// <summary>

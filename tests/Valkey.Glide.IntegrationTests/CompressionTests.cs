@@ -62,6 +62,7 @@ public class CompressionTests(CompressionFixture fixture)
     private const int MultiOpCount = 10;
     private const int MultiOpBaseSize = 500;
     private const int MultiOpSizeIncrement = 100;
+
     private static readonly string LargeValue = new('y', LargeValueSize);
 
     private GlideClient ZstdClient => fixture.ZstdClient!;

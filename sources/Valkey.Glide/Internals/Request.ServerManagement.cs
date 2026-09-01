@@ -6,7 +6,7 @@ using static Valkey.Glide.Internals.FFI;
 
 namespace Valkey.Glide.Internals;
 
-internal partial class Request
+internal static partial class Request
 {
     #region Constants
 
@@ -15,34 +15,34 @@ internal partial class Request
     #endregion
     #region Command Builders
 
-    public static Cmd<GlideString, string> BackgroundSaveAsync()
+    public static Cmd<GlideString, string> BackgroundSave()
         => new(RequestType.BgSave, [], false, gs => gs.ToString());
 
-    public static Cmd<GlideString, string> BackgroundSaveCancelAsync()
+    public static Cmd<GlideString, string> BackgroundSaveCancel()
         => new(RequestType.BgSave, [ValkeyLiterals.CANCEL], false, gs => gs.ToString());
 
-    public static Cmd<GlideString, string> BackgroundSaveScheduleAsync()
+    public static Cmd<GlideString, string> BackgroundSaveSchedule()
         => new(RequestType.BgSave, [ValkeyLiterals.SCHEDULE], false, gs => gs.ToString());
 
-    public static Cmd<GlideString, string> BgRewriteAofAsync()
+    public static Cmd<GlideString, string> BgRewriteAof()
         => new(RequestType.BgRewriteAof, [], false, gs => gs.ToString());
 
-    public static Cmd<object, KeyValuePair<string, string>[]> ConfigGetAsync(ValkeyValue pattern = default)
+    public static Cmd<object, KeyValuePair<string, string>[]> ConfigGet(ValkeyValue pattern = default)
         => ConfigGetAsyncInternal(pattern.IsNull ? ["*"] : [pattern]);
 
-    public static Cmd<object, KeyValuePair<string, string>[]> ConfigGetAsync(IEnumerable<ValkeyValue> patterns)
+    public static Cmd<object, KeyValuePair<string, string>[]> ConfigGet(IEnumerable<ValkeyValue> patterns)
         => ConfigGetAsyncInternal([.. patterns.Select(static p => (GlideString)p)]);
 
-    public static Cmd<string, ValkeyValue> ConfigResetStatisticsAsync()
+    public static Cmd<string, ValkeyValue> ConfigResetStatistics()
         => Ok(RequestType.ConfigResetStat);
 
-    public static Cmd<string, ValkeyValue> ConfigRewriteAsync()
+    public static Cmd<string, ValkeyValue> ConfigRewrite()
         => Ok(RequestType.ConfigRewrite);
 
-    public static Cmd<string, ValkeyValue> ConfigSetAsync(ValkeyValue setting, ValkeyValue value)
+    public static Cmd<string, ValkeyValue> ConfigSet(ValkeyValue setting, ValkeyValue value)
         => Ok(RequestType.ConfigSet, [setting, value]);
 
-    public static Cmd<string, ValkeyValue> ConfigSetAsync(IDictionary<ValkeyValue, ValkeyValue> parameters)
+    public static Cmd<string, ValkeyValue> ConfigSet(IDictionary<ValkeyValue, ValkeyValue> parameters)
     {
         List<GlideString> args = [];
         foreach (KeyValuePair<ValkeyValue, ValkeyValue> kvp in parameters)
@@ -50,61 +50,62 @@ internal partial class Request
             args.Add(kvp.Key);
             args.Add(kvp.Value);
         }
+
         return Ok(RequestType.ConfigSet, [.. args]);
     }
 
-    public static Cmd<long, long> DatabaseSizeAsync()
+    public static Cmd<long, long> DatabaseSize()
         => new(RequestType.DBSize, [], false, l => l);
 
     public static Cmd<GlideString, ValkeyValue> Echo(ValkeyValue message)
         => new(RequestType.Echo, [message], false, gs => (ValkeyValue)gs);
 
-    public static Cmd<string, ValkeyValue> FailoverAsync()
+    public static Cmd<string, ValkeyValue> Failover()
         => Ok(RequestType.FailOver, []);
 
-    public static Cmd<string, ValkeyValue> FailoverAsync(FailoverOptions options)
+    public static Cmd<string, ValkeyValue> Failover(FailoverOptions options)
         => Ok(RequestType.FailOver, options.ToArgs());
 
-    public static Cmd<string, ValkeyValue> FlushAllDatabasesAsync()
+    public static Cmd<string, ValkeyValue> FlushAllDatabases()
         => Ok(RequestType.FlushAll);
 
-    public static Cmd<string, ValkeyValue> FlushAllDatabasesAsync(FlushMode mode)
+    public static Cmd<string, ValkeyValue> FlushAllDatabases(FlushMode mode)
         => Ok(RequestType.FlushAll, [mode == FlushMode.Sync ? ValkeyLiterals.SYNC : ValkeyLiterals.ASYNC]);
 
-    public static Cmd<string, ValkeyValue> FlushDatabaseAsync()
+    public static Cmd<string, ValkeyValue> FlushDatabase()
         => Ok(RequestType.FlushDB);
 
-    public static Cmd<string, ValkeyValue> FlushDatabaseAsync(FlushMode mode)
+    public static Cmd<string, ValkeyValue> FlushDatabase(FlushMode mode)
         => Ok(RequestType.FlushDB, [mode == FlushMode.Sync ? ValkeyLiterals.SYNC : ValkeyLiterals.ASYNC]);
 
     public static Cmd<GlideString, string> Info(InfoOptions.Section[] sections)
         => new(RequestType.Info, sections.ToGlideStrings(), false, gs => gs.ToString());
 
-    public static Cmd<long, DateTimeOffset> LastSaveAsync()
+    public static Cmd<long, DateTimeOffset> LastSave()
         => new(RequestType.LastSave, [], false, DateTimeOffset.FromUnixTimeSeconds);
 
-    public static Cmd<object, LatencyEntry[]> LatencyHistoryAsync(ValkeyValue @event)
+    public static Cmd<object, LatencyEntry[]> LatencyHistory(ValkeyValue @event)
         => new(RequestType.LatencyHistory, [@event], false, ConvertLatencyHistoryResponse);
 
-    public static Cmd<object, LatencyEventInfo[]> LatencyLatestAsync()
+    public static Cmd<object, LatencyEventInfo[]> LatencyLatest()
         => new(RequestType.LatencyLatest, [], false, ConvertLatencyLatestResponse);
 
-    public static Cmd<long, long> LatencyResetAsync(IEnumerable<ValkeyValue> events)
+    public static Cmd<long, long> LatencyReset(IEnumerable<ValkeyValue> events)
         => new(RequestType.LatencyReset, events.ToGlideStrings(), false, l => l);
 
-    public static Cmd<GlideString, string> LolwutAsync(LolwutOptions? options = null)
+    public static Cmd<GlideString, string> Lolwut(LolwutOptions? options = null)
         => new(RequestType.Lolwut, options is null ? [] : [.. options.ToArgs()], false, gs => gs.ToString());
 
-    public static Cmd<GlideString, string> MemoryDoctorAsync()
+    public static Cmd<GlideString, string> MemoryDoctor()
         => new(RequestType.MemoryDoctor, [], false, gs => gs.ToString());
 
-    public static Cmd<GlideString, string> MemoryMallocStatsAsync()
+    public static Cmd<GlideString, string> MemoryMallocStats()
         => new(RequestType.MemoryMallocStats, [], false, gs => gs.ToString());
 
-    public static Cmd<string, ValkeyValue> MemoryPurgeAsync()
+    public static Cmd<string, ValkeyValue> MemoryPurge()
         => Ok(RequestType.MemoryPurge, []);
 
-    public static Cmd<Dictionary<GlideString, object>, MemoryStats> MemoryStatsAsync()
+    public static Cmd<Dictionary<GlideString, object>, MemoryStats> MemoryStats()
         => new(RequestType.MemoryStats, [], false, ParseMemoryStats);
 
     public static Cmd<GlideString, ValkeyValue> Ping()
@@ -113,19 +114,19 @@ internal partial class Request
     public static Cmd<GlideString, ValkeyValue> Ping(ValkeyValue message)
         => new(RequestType.Ping, [message], false, gs => (ValkeyValue)gs);
 
-    public static Cmd<string, ValkeyValue> ReplicaOfAsync(string host, int port)
+    public static Cmd<string, ValkeyValue> ReplicaOf(string host, int port)
         => Ok(RequestType.ReplicaOf, [host, port.ToGlideString()]);
 
-    public static Cmd<string, ValkeyValue> ReplicaOfNoOneAsync()
+    public static Cmd<string, ValkeyValue> ReplicaOfNoOne()
         => Ok(RequestType.ReplicaOf, [ValkeyLiterals.NO, ValkeyLiterals.ONE]);
 
-    public static Cmd<string, ValkeyValue> SaveAsync()
+    public static Cmd<string, ValkeyValue> Save()
         => Ok(RequestType.Save);
 
     public static Cmd<string, ValkeyValue> Select(long index)
         => Ok(RequestType.Select, [index.ToGlideString()]);
 
-    public static Cmd<object[], DateTimeOffset> TimeAsync()
+    public static Cmd<object[], DateTimeOffset> Time()
         => new(RequestType.Time, [], false, arr =>
         {
             long seconds = long.Parse(arr[0] is GlideString gs1 ? gs1.ToString() : arr[0].ToString()!);
@@ -162,6 +163,7 @@ internal partial class Request
                     string value = kvp.Value is GlideString gs ? gs.ToString() : kvp.Value?.ToString() ?? string.Empty;
                     result.Add(new KeyValuePair<string, string>(key, value));
                 }
+
                 return [.. result];
             }
 
@@ -183,6 +185,7 @@ internal partial class Request
                         result.Add(new KeyValuePair<string, string>(key, value));
                     }
                 }
+
                 return [.. result];
             }
 
@@ -205,6 +208,7 @@ internal partial class Request
                 Duration = TimeSpan.FromMilliseconds(Convert.ToInt64(entry[1])),
             };
         }
+
         return entries;
     }
 
@@ -226,6 +230,7 @@ internal partial class Request
                 Count = entry.Length > 5 ? Convert.ToInt64(entry[5]) : null,
             };
         }
+
         return entries;
     }
 

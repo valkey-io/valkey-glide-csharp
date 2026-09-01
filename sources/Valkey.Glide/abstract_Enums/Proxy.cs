@@ -26,6 +26,7 @@ internal static class ProxyExtensions
     /// <summary>
     /// Whether a proxy supports databases (e.g. database > 0).
     /// </summary>
+    /// <param name="proxy">The proxy to check.</param>
     internal static bool SupportsDatabases(this Proxy proxy) => proxy switch
     {
         Proxy.Twemproxy => false,
@@ -36,6 +37,7 @@ internal static class ProxyExtensions
     /// <summary>
     /// Whether a proxy supports pub/sub.
     /// </summary>
+    /// <param name="proxy">The proxy to check.</param>
     internal static bool SupportsPubSub(this Proxy proxy) => proxy switch
     {
         Proxy.Twemproxy => false,
@@ -46,6 +48,7 @@ internal static class ProxyExtensions
     /// <summary>
     /// Whether a proxy supports the <c>ConnectionMultiplexer.GetServer</c>.
     /// </summary>
+    /// <param name="proxy">The proxy to check.</param>
     internal static bool SupportsServerApi(this Proxy proxy) => proxy switch
     {
         Proxy.Twemproxy => false,

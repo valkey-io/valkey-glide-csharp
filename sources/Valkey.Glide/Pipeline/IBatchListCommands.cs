@@ -30,8 +30,6 @@ internal interface IBatchListCommands
     /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.ListLeftPushAsync(ValkeyKey, IEnumerable{ValkeyValue}, When)" /></returns>
     IBatch ListLeftPush(ValkeyKey key, IEnumerable<ValkeyValue> values, When when);
 
-
-
     /// <inheritdoc cref="IListBaseCommands.ListRightPopAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IListBaseCommands.ListRightPopAsync(ValkeyKey)" /></returns>
     IBatch ListRightPop(ValkeyKey key);
@@ -55,8 +53,6 @@ internal interface IBatchListCommands
     /// <inheritdoc cref="IDatabaseAsync.ListRightPushAsync(ValkeyKey, IEnumerable{ValkeyValue}, When)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IDatabaseAsync.ListRightPushAsync(ValkeyKey, IEnumerable{ValkeyValue}, When)" /></returns>
     IBatch ListRightPush(ValkeyKey key, IEnumerable<ValkeyValue> values, When when);
-
-
 
     /// <inheritdoc cref="IListBaseCommands.ListLengthAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IListBaseCommands.ListLengthAsync(ValkeyKey)" /></returns>

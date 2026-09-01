@@ -36,6 +36,7 @@ internal static class ServerTypeExtensions
     /// <summary>
     /// Whether a server type can have only a single primary, meaning an election if multiple are found.
     /// </summary>
+    /// <param name="type">The server type to check.</param>
     internal static bool HasSinglePrimary(this ServerType type) => type switch
     {
         ServerType.Envoyproxy => false,
@@ -45,6 +46,7 @@ internal static class ServerTypeExtensions
     /// <summary>
     /// Whether a server type supports.
     /// </summary>
+    /// <param name="type">The server type to check.</param>
     internal static bool SupportsAutoConfigure(this ServerType type) => type switch
     {
         ServerType.Twemproxy => false,

@@ -24,6 +24,7 @@ public abstract class Condition
     /// <param name="key">The key of the hash to check.</param>
     /// <param name="hashField">The field in the hash to check.</param>
     /// <param name="value">The value that the hash field must match.</param>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="hashField"/> is null.</exception>
     public static Condition HashEqual(ValkeyKey key, ValkeyValue hashField, ValkeyValue value)
     {
         if (hashField.IsNull) throw new ArgumentNullException(nameof(hashField));
@@ -36,6 +37,7 @@ public abstract class Condition
     /// </summary>
     /// <param name="key">The key of the hash to check.</param>
     /// <param name="hashField">The field in the hash to check.</param>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="hashField"/> is null.</exception>
     public static Condition HashExists(ValkeyKey key, ValkeyValue hashField)
     {
         if (hashField.IsNull) throw new ArgumentNullException(nameof(hashField));
@@ -48,6 +50,7 @@ public abstract class Condition
     /// <param name="key">The key of the hash to check.</param>
     /// <param name="hashField">The field in the hash to check.</param>
     /// <param name="value">The value that the hash field must not match.</param>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="hashField"/> is null.</exception>
     public static Condition HashNotEqual(ValkeyKey key, ValkeyValue hashField, ValkeyValue value)
     {
         if (hashField.IsNull) throw new ArgumentNullException(nameof(hashField));
@@ -60,6 +63,7 @@ public abstract class Condition
     /// </summary>
     /// <param name="key">The key of the hash to check.</param>
     /// <param name="hashField">The field in the hash that must not exist.</param>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="hashField"/> is null.</exception>
     public static Condition HashNotExists(ValkeyKey key, ValkeyValue hashField)
     {
         if (hashField.IsNull) throw new ArgumentNullException(nameof(hashField));
@@ -407,9 +411,9 @@ public abstract class Condition
     /// <summary>
     /// Validates the result of the condition check against the expected outcome.
     /// </summary>
-    /// <param name="res">The result from the condition command execution.</param>
+    /// <param name="result">The result from the condition command execution.</param>
     /// <returns><see langword="true"/> if the condition is satisfied; otherwise, <see langword="false"/>.</returns>
-    protected abstract bool ValidateImpl(object? res);
+    protected abstract bool ValidateImpl(object? result);
 
 #pragma warning disable IDE1006 // Naming Styles
 #pragma warning disable IDE0045 // Convert to conditional expression
@@ -497,7 +501,8 @@ public abstract class Condition
 
         public override string ToString()
             => (memberName.IsNull ? key.ToString() : ((string?)key) + " " + type + " > " + memberName)
-                + (expectedEqual ? " == " : " != ") + expectedValue;
+                + (expectedEqual ? " == " : " != ")
+                + expectedValue;
 
         internal sealed override List<ICmd> CreateCommands()
             => [
@@ -530,8 +535,7 @@ public abstract class Condition
         private readonly ValkeyValue? expectedValue;
         private readonly ValkeyKey key;
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1242:Do not pass non-read-only struct by read-only reference.", Justification = "Attribute")]
-        public ListCondition(in ValkeyKey key, long index, bool expectedResult, in ValkeyValue? expectedValue)
+        public ListCondition(in ValkeyKey key, long index, bool expectedResult, ValkeyValue? expectedValue)
         {
             if (key.IsNull) throw new ArgumentNullException(nameof(key));
             this.key = key;
@@ -541,21 +545,29 @@ public abstract class Condition
         }
 
         public override string ToString()
-            => ((string?)key) + "[" + index.ToString() + "]" + (expectedValue.HasValue ? (expectedResult ? " == " : " != ")
-                + expectedValue.Value : (expectedResult ? " exists" : " does not exist"));
+            => ((string?)key)
+                + "["
+                + index.ToString()
+                + "]"
+                + (expectedValue.HasValue ? (expectedResult ? " == " : " != ")
+                    + expectedValue.Value : (expectedResult ? " exists" : " does not exist"));
 
         internal sealed override List<ICmd> CreateCommands()
             => [
                 Request.Watch([key]),
-                Request.CustomCommand([ValkeyCommand.LINDEX.ToString(), key, index.ToString()]),
+                Request.ListGetByIndex(key, index),
             ];
 
         protected override bool ValidateImpl(object? result)
         {
+            var value = (ValkeyValue)result!;
+
             if (expectedValue.HasValue)
-                return ((ValkeyValue)(GlideString?)result == expectedValue.Value) == expectedResult;
-            else
-                return (result is null) != expectedResult;
+            {
+                return (value == expectedValue.Value) == expectedResult;
+            }
+
+            return value.IsNull != expectedResult;
         }
     }
 
@@ -686,6 +698,7 @@ public abstract class Condition
 /// <summary>
 /// Indicates the status of a condition as part of a transaction.
 /// </summary>
+/// <param name="condition">The condition to track.</param>
 public sealed class ConditionResult(Condition condition)
 {
     internal readonly Condition Condition = condition;

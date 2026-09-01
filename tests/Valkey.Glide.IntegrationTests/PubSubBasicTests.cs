@@ -22,10 +22,10 @@ public class PubSubBasicTests
         var message = BuildMessage(channelMode);
 
         // Build client and verify subscription.
-        using var subscriber = await BuildSubscriber(isCluster, message, subscribeMode);
+        await using var subscriber = await BuildSubscriber(isCluster, message, subscribeMode);
         await AssertSubscribedAsync(subscriber, message, subscribeMode);
 
-        using var publisher = BuildPublisher(isCluster);
+        await using var publisher = BuildPublisher(isCluster);
 
         // Publish messages and verify receipt.
         await PublishAsync(publisher, message);
@@ -51,10 +51,10 @@ public class PubSubBasicTests
         };
 
         // Build client and verify subscription.
-        using var subscriber = await BuildSubscriber(isCluster, messages, subscribeMode);
+        await using var subscriber = await BuildSubscriber(isCluster, messages, subscribeMode);
         await AssertSubscribedAsync(subscriber, messages, subscribeMode);
 
-        using var publisher = BuildPublisher(isCluster);
+        await using var publisher = BuildPublisher(isCluster);
 
         // Publish messages and verify receipt.
         await PublishAsync(publisher, messages);
@@ -76,13 +76,13 @@ public class PubSubBasicTests
         var message = BuildMessage(channelMode);
 
         // Build clients and verify subscriptions.
-        using var subscriber1 = await BuildSubscriber(isCluster, message, subscribeMode);
+        await using var subscriber1 = await BuildSubscriber(isCluster, message, subscribeMode);
         await AssertSubscribedAsync(subscriber1, message, subscribeMode);
 
-        using var subscriber2 = await BuildSubscriber(isCluster, message, subscribeMode);
+        await using var subscriber2 = await BuildSubscriber(isCluster, message, subscribeMode);
         await AssertSubscribedAsync(subscriber2, message, subscribeMode);
 
-        using var publisher = BuildPublisher(isCluster);
+        await using var publisher = BuildPublisher(isCluster);
 
         // Publish message and verify receipt.
         await PublishAsync(publisher, message);
@@ -119,11 +119,11 @@ public class PubSubBasicTests
         var messages = new List<PubSubMessage> { channelMessage, patternMessage };
         if (isSharded) messages.Add(shardedChannelMessage!);
 
-        using var subscriber = await BuildSubscriber(isCluster, messages);
+        await using var subscriber = await BuildSubscriber(isCluster, messages);
         await AssertSubscribedAsync(subscriber, messages);
 
         // Publish to channel and sharded channel.
-        using var publisher = BuildPublisher(isCluster);
+        await using var publisher = BuildPublisher(isCluster);
         await PublishAsync(publisher, messages);
 
         // The channel message should be received twice - once for the
@@ -149,10 +149,10 @@ public class PubSubBasicTests
             _ => throw new ArgumentOutOfRangeException(nameof(channelMode))
         };
 
-        using var subscriber = await BuildSubscriber(isCluster, expected, subscribeMode);
+        await using var subscriber = await BuildSubscriber(isCluster, expected, subscribeMode);
         await AssertSubscribedAsync(subscriber, expected, subscribeMode);
 
-        using var publisher = BuildPublisher(isCluster);
+        await using var publisher = BuildPublisher(isCluster);
         await PublishAsync(publisher, expected);
 
         await AssertReceivedAsync(subscriber, expected);

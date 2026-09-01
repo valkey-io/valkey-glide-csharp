@@ -85,7 +85,6 @@ public class SharedBatchTests
             : (await ((GlideClient)client).Exec((Batch)batch2, false))!;
 
         Assert.Equivalent(new object[] { 1L, ValkeyValue.Ok, ValkeyValue.Ok }, res);
-
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -146,16 +145,16 @@ public class SharedBatchTests
         {
             var clusterBatch = new ClusterBatch(true);
             _ = clusterBatch.SetAsync(key1, foobarString)
-                           .SetAsync(key2, foobarString)
-                           .SetAsync(key3, foobarString);
+                .SetAsync(key2, foobarString)
+                .SetAsync(key3, foobarString);
             execResult = await ((GlideClusterClient)client).Exec(clusterBatch, true);
         }
         else
         {
             var batch = new Batch(true);
             _ = batch.SetAsync(key1, foobarString)
-                    .SetAsync(key2, foobarString)
-                    .SetAsync(key3, foobarString);
+                .SetAsync(key2, foobarString)
+                .SetAsync(key3, foobarString);
             execResult = await ((GlideClient)client).Exec(batch, true);
         }
 
@@ -203,6 +202,7 @@ public class SharedBatchTests
         {
             await ((GlideClient)client).WatchAsync(keys);
         }
+
         await client.SetAsync(key2, helloString);
         if (isCluster)
         {

@@ -5,7 +5,7 @@ using static Valkey.Glide.Route;
 
 namespace Valkey.Glide.Internals;
 
-internal class ResponseConverters
+internal static class ResponseConverters
 {
     public static ClusterValue<object?> HandleCustomCommandClusterValue(object? value, Route? route = null)
         => HandleServerValue<object, ClusterValue<object?>>(value, true, data
@@ -32,8 +32,10 @@ internal class ResponseConverters
     /// <param name="value">Value from GLIDE core to handle.</param>
     /// <param name="isNullable">Whether it could be nullable.</param>
     /// <param name="converter">Optional function to convert <typeparamref name="R" /> to <typeparamref name="T" />.</param>
+    /// <param name="allowConverterToHandleNull">Whether to let the converter handle a <see langword="null"/> value.</param>
     /// <returns>A converted value.</returns>
     /// <exception cref="Exception">When <paramref name="value"/> has incorrect type or value.</exception>
+    /// <exception cref="RequestException">Thrown if <paramref name="value"/> is <see langword="null"/> and not nullable, or is not of the expected type.</exception>
     public static T HandleServerValue<R, T>(object? value, bool isNullable, Func<R, T> converter, bool allowConverterToHandleNull = false)
     {
         if (value is null)
@@ -43,14 +45,17 @@ internal class ResponseConverters
                 // Let the converter handle the null value by passing default(R)
                 return converter(default!);
             }
+
             if (isNullable)
             {
 #pragma warning disable CS8603 // Possible null reference return.
                 return default; // will return a null
 #pragma warning restore CS8603 // Possible null reference return.
             }
+
             throw new RequestException($"Unexpected return type from Glide: got null expected {typeof(T).GetRealTypeName()}");
         }
+
         return value is R val
             ? converter(val)
             : throw new RequestException($"Unexpected return type from Glide: got {value?.GetType().GetRealTypeName()} expected {typeof(R).GetRealTypeName()}");

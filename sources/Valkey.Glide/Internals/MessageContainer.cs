@@ -34,7 +34,10 @@ internal class MessageContainer(BaseClient client) : IDisposable
                 {
                     message.SetException(new TaskCanceledException($"Client {_client} closed"));
                 }
-                catch (Exception) { }
+                catch (Exception ex)
+                {
+                    Logger.Log(Level.Warn, GetType().Name, $"Failed to cancel pending request during dispose: {ex.Message}");
+                }
             }
         }
     }
@@ -68,6 +71,7 @@ internal class MessageContainer(BaseClient client) : IDisposable
                 _messages.Add(message);
             }
         }
+
         return message;
     }
 

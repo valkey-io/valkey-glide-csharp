@@ -10,6 +10,7 @@ public enum FtInfoConsistencyMode
 {
     /// <summary>Requires consistent results across shards.</summary>
     Consistent,
+
     /// <summary>Allows inconsistent (faster) results.</summary>
     Inconsistent,
 }

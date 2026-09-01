@@ -25,7 +25,7 @@ public class PubSubCommandTests(TestConfiguration config)
     #region Constants
 
     private static readonly bool IsSharedPubSubSupported = TestConfiguration.IsVersionAtLeast("7.0.0");
-    private static readonly string SkipSharedPubSubMessage = "Sharded PubSub is supported since 7.0.0";
+    private const string SkipSharedPubSubMessage = "Sharded PubSub is supported since 7.0.0";
 
     private static readonly ValkeyValue Message1 = "message1";
     private static readonly ValkeyValue Message2 = "message2";
@@ -50,7 +50,7 @@ public class PubSubCommandTests(TestConfiguration config)
     {
         var channel = ValkeyChannel.Literal($"test-channel-{Guid.NewGuid()}");
 
-        using var subscriberConnection = TestConfiguration.DefaultCompatibleConnection();
+        await using var subscriberConnection = TestConfiguration.DefaultCompatibleConnection();
         var subscriber = subscriberConnection.GetSubscriber();
         var queue = await subscriber.SubscribeAsync(channel);
 
@@ -500,7 +500,7 @@ public class PubSubCommandTests(TestConfiguration config)
     public async Task SubscriptionChannelsAsync_NoSubscribers_ReturnsEmpty()
     {
         using var standalone = new StandaloneServer();
-        using var connection = await standalone.CreateConnectionMultiplexerAsync();
+        await using var connection = await standalone.CreateConnectionMultiplexerAsync();
         var server = connection.GetServers().First();
 
         Assert.Empty(await server.SubscriptionChannelsAsync());
@@ -509,7 +509,7 @@ public class PubSubCommandTests(TestConfiguration config)
     [Fact]
     public async Task SubscriptionChannelsAsync_WithSubscriber_ReturnsChannel()
     {
-        using var connection = TestConfiguration.DefaultCompatibleConnection();
+        await using var connection = TestConfiguration.DefaultCompatibleConnection();
         var server = connection.GetServers().First();
         var subscriber = connection.GetSubscriber();
 
@@ -533,7 +533,7 @@ public class PubSubCommandTests(TestConfiguration config)
     [Fact]
     public async Task SubscriptionChannelsAsync_WithPattern_FiltersChannels()
     {
-        using var connection = TestConfiguration.DefaultCompatibleConnection();
+        await using var connection = TestConfiguration.DefaultCompatibleConnection();
         var server = connection.GetServers().First();
         var subscriber = connection.GetSubscriber();
 

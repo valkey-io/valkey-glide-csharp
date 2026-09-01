@@ -1,54 +1,50 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using static Valkey.Glide.Internals.Request;
+using Valkey.Glide.Internals;
 
 namespace Valkey.Glide.Pipeline;
 
-/// <summary>
-/// Geospatial commands for BaseBatch.
-/// </summary>
 public abstract partial class BaseBatch<T>
 {
     /// <inheritdoc cref="IBatchGeospatialCommands.GeoAdd(ValkeyKey, ValkeyValue, GeoPosition, GeoAddCondition)" />
     public T GeoAdd(ValkeyKey key, ValkeyValue member, GeoPosition position, GeoAddCondition condition = GeoAddCondition.Always) => GeoAdd(key, member, position, new GeoAddOptions { Condition = condition });
 
     /// <inheritdoc cref="IBatchGeospatialCommands.GeoAdd(ValkeyKey, ValkeyValue, GeoPosition, GeoAddOptions)" />
-    public T GeoAdd(ValkeyKey key, ValkeyValue member, GeoPosition position, GeoAddOptions options) => AddCmd(GeoAddAsync(key, member, position, options));
+    public T GeoAdd(ValkeyKey key, ValkeyValue member, GeoPosition position, GeoAddOptions options) => AddCmd(Request.GeoAdd(key, member, position, options));
 
     /// <inheritdoc cref="IBatchGeospatialCommands.GeoAdd(ValkeyKey, IDictionary{ValkeyValue, GeoPosition}, GeoAddCondition)" />
     public T GeoAdd(ValkeyKey key, IDictionary<ValkeyValue, GeoPosition> members, GeoAddCondition condition = GeoAddCondition.Always) => GeoAdd(key, members, new GeoAddOptions { Condition = condition });
 
     /// <inheritdoc cref="IBatchGeospatialCommands.GeoAdd(ValkeyKey, IDictionary{ValkeyValue, GeoPosition}, GeoAddOptions)" />
-    public T GeoAdd(ValkeyKey key, IDictionary<ValkeyValue, GeoPosition> members, GeoAddOptions options) => AddCmd(GeoAddAsync(key, members, options));
+    public T GeoAdd(ValkeyKey key, IDictionary<ValkeyValue, GeoPosition> members, GeoAddOptions options) => AddCmd(Request.GeoAdd(key, members, options));
 
     /// <inheritdoc cref="IBatchGeospatialCommands.GeoDistance(ValkeyKey, ValkeyValue, ValkeyValue, GeoUnit)" />
-    public T GeoDistance(ValkeyKey key, ValkeyValue member1, ValkeyValue member2, GeoUnit unit = GeoUnit.Meters) => AddCmd(GeoDistanceAsync(key, member1, member2, unit));
+    public T GeoDistance(ValkeyKey key, ValkeyValue member1, ValkeyValue member2, GeoUnit unit = GeoUnit.Meters) => AddCmd(Request.GeoDistance(key, member1, member2, unit));
 
     /// <inheritdoc cref="IBatchGeospatialCommands.GeoHash(ValkeyKey, ValkeyValue)" />
-    public T GeoHash(ValkeyKey key, ValkeyValue member) => AddCmd(GeoHashAsync(key, member));
+    public T GeoHash(ValkeyKey key, ValkeyValue member) => AddCmd(Request.GeoHash(key, member));
 
     /// <inheritdoc cref="IBatchGeospatialCommands.GeoHash(ValkeyKey, IEnumerable{ValkeyValue})" />
-    public T GeoHash(ValkeyKey key, IEnumerable<ValkeyValue> members) => AddCmd(GeoHashAsync(key, [.. members]));
+    public T GeoHash(ValkeyKey key, IEnumerable<ValkeyValue> members) => AddCmd(Request.GeoHash(key, [.. members]));
 
     /// <inheritdoc cref="IBatchGeospatialCommands.GeoPosition(ValkeyKey, ValkeyValue)" />
-    public T GeoPosition(ValkeyKey key, ValkeyValue member) => AddCmd(GeoPositionAsync(key, member));
+    public T GeoPosition(ValkeyKey key, ValkeyValue member) => AddCmd(Request.GeoPosition(key, member));
 
     /// <inheritdoc cref="IBatchGeospatialCommands.GeoPosition(ValkeyKey, IEnumerable{ValkeyValue})" />
-    public T GeoPosition(ValkeyKey key, IEnumerable<ValkeyValue> members) => AddCmd(GeoPositionAsync(key, [.. members]));
+    public T GeoPosition(ValkeyKey key, IEnumerable<ValkeyValue> members) => AddCmd(Request.GeoPosition(key, [.. members]));
 
     /// <inheritdoc cref="IBatchGeospatialCommands.GeoSearch(ValkeyKey, ValkeyValue, GeoSearchShape, GeoSearchOptions)" />
-    public T GeoSearch(ValkeyKey key, ValkeyValue from, GeoSearchShape shape, GeoSearchOptions options = default) => AddCmd(GeoSearchAsync(key, from, shape, options));
+    public T GeoSearch(ValkeyKey key, ValkeyValue from, GeoSearchShape shape, GeoSearchOptions options = default) => AddCmd(Request.GeoSearch(key, from, shape, options));
 
     /// <inheritdoc cref="IBatchGeospatialCommands.GeoSearch(ValkeyKey, GeoPosition, GeoSearchShape, GeoSearchOptions)" />
-    public T GeoSearch(ValkeyKey key, GeoPosition from, GeoSearchShape shape, GeoSearchOptions options = default) => AddCmd(GeoSearchAsync(key, from, shape, options));
+    public T GeoSearch(ValkeyKey key, GeoPosition from, GeoSearchShape shape, GeoSearchOptions options = default) => AddCmd(Request.GeoSearch(key, from, shape, options));
 
     /// <inheritdoc cref="IBatchGeospatialCommands.GeoSearchAndStore(ValkeyKey, ValkeyKey, ValkeyValue, GeoSearchShape, GeoSearchStoreOptions)" />
-    public T GeoSearchAndStore(ValkeyKey source, ValkeyKey destination, ValkeyValue from, GeoSearchShape shape, GeoSearchStoreOptions options = default) => AddCmd(GeoSearchAndStoreAsync(source, destination, from, shape, options));
+    public T GeoSearchAndStore(ValkeyKey source, ValkeyKey destination, ValkeyValue from, GeoSearchShape shape, GeoSearchStoreOptions options = default) => AddCmd(Request.GeoSearchAndStore(source, destination, from, shape, options));
 
     /// <inheritdoc cref="IBatchGeospatialCommands.GeoSearchAndStore(ValkeyKey, ValkeyKey, GeoPosition, GeoSearchShape, GeoSearchStoreOptions)" />
-    public T GeoSearchAndStore(ValkeyKey source, ValkeyKey destination, GeoPosition from, GeoSearchShape shape, GeoSearchStoreOptions options = default) => AddCmd(GeoSearchAndStoreAsync(source, destination, from, shape, options));
+    public T GeoSearchAndStore(ValkeyKey source, ValkeyKey destination, GeoPosition from, GeoSearchShape shape, GeoSearchStoreOptions options = default) => AddCmd(Request.GeoSearchAndStore(source, destination, from, shape, options));
 
-    // Explicit interface implementations for IBatchGeospatialCommands
     IBatch IBatchGeospatialCommands.GeoAdd(ValkeyKey key, ValkeyValue member, GeoPosition position, GeoAddCondition condition) => GeoAdd(key, member, position, condition);
     IBatch IBatchGeospatialCommands.GeoAdd(ValkeyKey key, ValkeyValue member, GeoPosition position, GeoAddOptions options) => GeoAdd(key, member, position, options);
     IBatch IBatchGeospatialCommands.GeoAdd(ValkeyKey key, IDictionary<ValkeyValue, GeoPosition> members, GeoAddCondition condition) => GeoAdd(key, members, condition);
@@ -62,5 +58,4 @@ public abstract partial class BaseBatch<T>
     IBatch IBatchGeospatialCommands.GeoSearch(ValkeyKey key, GeoPosition from, GeoSearchShape shape, GeoSearchOptions options) => GeoSearch(key, from, shape, options);
     IBatch IBatchGeospatialCommands.GeoSearchAndStore(ValkeyKey source, ValkeyKey destination, ValkeyValue from, GeoSearchShape shape, GeoSearchStoreOptions options) => GeoSearchAndStore(source, destination, from, shape, options);
     IBatch IBatchGeospatialCommands.GeoSearchAndStore(ValkeyKey source, ValkeyKey destination, GeoPosition from, GeoSearchShape shape, GeoSearchStoreOptions options) => GeoSearchAndStore(source, destination, from, shape, options);
-
 }

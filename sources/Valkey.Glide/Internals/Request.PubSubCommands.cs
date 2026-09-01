@@ -5,7 +5,7 @@ using static Valkey.Glide.Internals.TimeUtils;
 
 namespace Valkey.Glide.Internals;
 
-internal partial class Request
+internal static partial class Request
 {
     #region Command Builders
 
@@ -92,6 +92,7 @@ internal partial class Request
     /// <summary>
     /// Parses and returns a dictionary from the given <see cref="GetSubscriptions"/> response dictionary.
     /// </summary>
+    /// <param name="response">The subscriptions response.</param>
     private static Dictionary<string, IReadOnlySet<ValkeyKey>> ConvertGetSubscriptionsResponse(Dictionary<GlideString, object> response)
     {
         Dictionary<string, IReadOnlySet<ValkeyKey>> resultDict = [];

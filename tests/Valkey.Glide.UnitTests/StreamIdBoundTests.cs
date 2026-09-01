@@ -6,7 +6,7 @@ public class StreamIdBoundTests
 {
     #region Constants
 
-    private static readonly string TestId = "1234567890-0";
+    private const string TestId = "1234567890-0";
 
     #endregion
     #region Tests

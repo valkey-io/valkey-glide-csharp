@@ -7,7 +7,7 @@ using static Valkey.Glide.Internals.TimeUtils;
 
 namespace Valkey.Glide.Internals;
 
-internal partial class Request
+internal static partial class Request
 {
     #region Constants
 

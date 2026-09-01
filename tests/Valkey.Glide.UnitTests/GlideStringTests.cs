@@ -9,7 +9,7 @@ public class GlideStringTests
     {
         gs[] arr = ["abc", "abcd", "abcde", "abd", "abb", "ab1"];
         Assert.Equal(new gs[] { "ab1", "abb", "abc", "abd", "abcd", "abcde" }, [.. arr.Order()]);
-        Assert.Equal(new gs[] { "ab1", "abb", "abc", "abd", "abcd", "abcde" }, [.. arr.OrderBy(s => s)]);
+        Assert.Equal(new gs[] { "abc", "abd", "abb", "ab1", "abcd", "abcde" }, [.. arr.OrderBy(s => s.Length)]);
     }
 
     [Fact]
@@ -168,7 +168,7 @@ public class GlideStringTests
         // Before fix: ~3.3 MB — 65,536 "$"{b:X2}"" strings + string.Join result.
         Assert.True(allocated < 4096,
             $"GlideString(byte[]) allocated {allocated:N0} bytes for a {size}-byte payload; " +
-            $"expected < 4 KB. The hex-dump Str field may be built eagerly.");
+                "expected < 4 KB. The hex-dump Str field may be built eagerly.");
 
         // Correctness: 'x' is valid UTF-8, so conversion must succeed
         Assert.True(result.CanConvertToString());

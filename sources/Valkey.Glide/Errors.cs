@@ -15,13 +15,13 @@ public static class Errors
         /// <summary>
         /// Initializes a new instance of the <see cref="GlideException"/> class.
         /// </summary>
-        public GlideException() : base() { }
+        protected GlideException() { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GlideException"/> class with a specified error message.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
-        public GlideException(string message) : base(message) { }
+        protected GlideException(string message) : base(message) { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GlideException"/> class with a specified
@@ -29,7 +29,7 @@ public static class Errors
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         /// <param name="innerException">The exception that is the cause of the current exception.</param>
-        public GlideException(string message, Exception innerException) : base(message, innerException) { }
+        protected GlideException(string message, Exception innerException) : base(message, innerException) { }
     }
 
     /// <summary>
@@ -40,7 +40,7 @@ public static class Errors
         /// <summary>
         /// Initializes a new instance of the <see cref="RequestException"/> class.
         /// </summary>
-        public RequestException() : base() { }
+        public RequestException() { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RequestException"/> class with a specified error message.
@@ -66,7 +66,7 @@ public static class Errors
         /// <summary>
         /// Initializes a new instance of the <see cref="ValkeyServerException"/> class.
         /// </summary>
-        public ValkeyServerException() : base() { }
+        public ValkeyServerException() { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ValkeyServerException"/> class with a specified error message.
@@ -91,7 +91,7 @@ public static class Errors
         /// <summary>
         /// Initializes a new instance of the <see cref="ExecAbortException"/> class.
         /// </summary>
-        public ExecAbortException() : base() { }
+        public ExecAbortException() { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ExecAbortException"/> class with a specified error message.
@@ -192,7 +192,7 @@ public static class Errors
         /// <summary>
         /// Initializes a new instance of the <see cref="CircuitBreakerException"/> class.
         /// </summary>
-        public CircuitBreakerException() : base() { }
+        public CircuitBreakerException() { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CircuitBreakerException"/> class with a specified error message.

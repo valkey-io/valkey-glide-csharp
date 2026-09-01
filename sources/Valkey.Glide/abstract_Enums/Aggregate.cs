@@ -28,6 +28,8 @@ internal static class AggregateExtensions
     /// <summary>
     /// Converts to command arguments.
     /// </summary>
+    /// <param name="aggregate">The aggregation mode to convert.</param>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="aggregate"/> is not a supported <see cref="Aggregate"/> value.</exception>
     internal static GlideString[] ToArgs(this Aggregate aggregate)
         => aggregate switch
         {

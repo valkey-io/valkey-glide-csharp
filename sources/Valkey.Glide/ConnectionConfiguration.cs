@@ -126,8 +126,8 @@ public abstract class ConnectionConfiguration
 
     /// <summary>
     /// Represents the strategy used to determine how and when to reconnect, in case of connection
-    /// failures. The time between attempts grows exponentially, to the formula <c>rand(0 ... factor *
-    /// (exponentBase ^ N))</c>, where <c>N</c> is the number of failed attempts.
+    /// failures. The time between attempts grows exponentially, to the formula
+    /// <c>rand(0 ... factor * (exponentBase ^ N))</c>, where <c>N</c> is the number of failed attempts.
     /// <para />
     /// Once the maximum value is reached, that will remain the time between retry attempts until a
     /// reconnect attempt is successful. The client will attempt to reconnect indefinitely.
@@ -272,8 +272,8 @@ public abstract class ConnectionConfiguration
 
     #endregion
 
-    private static readonly string DEFAULT_HOST = "localhost";
-    private static readonly ushort DEFAULT_PORT = 6379;
+    private const string DEFAULT_HOST = "localhost";
+    private const ushort DEFAULT_PORT = 6379;
 
     /// <summary>
     /// Basic class which holds common configuration for all types of clients.<br />
@@ -436,6 +436,7 @@ public abstract class ConnectionConfiguration
         /// <summary>
         /// <b>Add</b> a new address to the list with default port.
         /// </summary>
+        /// <param name="host">The host to add.</param>
         public T WithAddress(string host)
         {
             Address = (host, DEFAULT_PORT);
@@ -769,6 +770,8 @@ public abstract class ConnectionConfiguration
         /// </summary>
         /// <param name="credentials">The server credentials for authentication.</param>
         /// <returns>The builder instance for method chaining.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="credentials"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if the IAM authentication service type is not a supported <see cref="ServiceType"/> value.</exception>
         public T WithCredentials(ServerCredentials credentials)
         {
             ArgumentNullException.ThrowIfNull(credentials);
@@ -1022,7 +1025,7 @@ public abstract class ConnectionConfiguration
         /// The maximum number of concurrent requests allowed to be in-flight. When this limit is
         /// reached, new requests will immediately fail with a <see cref="Errors.RequestException"/>.
         /// </summary>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown when value is zero.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if value is zero.</exception>
         /// <seealso href="https://glide.valkey.io/how-to/connections/limit-inflight-requests/">Valkey GLIDE – Limit Inflight Requests</seealso>
         public uint? InflightRequestsLimit
         {
@@ -1033,6 +1036,7 @@ public abstract class ConnectionConfiguration
                 {
                     ArgumentOutOfRangeException.ThrowIfZero(value.Value, nameof(value));
                 }
+
                 Config.InflightRequestsLimit = value;
             }
         }
@@ -1086,6 +1090,7 @@ public abstract class ConnectionConfiguration
         public new StandaloneClientConfiguration Build() => new() { Request = base.Build() };
 
         #region Node Discovery Mode
+
         /// <summary>
         /// Controls how the client discovers node roles and topology during connection
         /// initialization. If not set, defaults to <see cref="NodeDiscoveryMode.Standard" />.
@@ -1103,16 +1108,17 @@ public abstract class ConnectionConfiguration
             NodeDiscoveryMode = nodeDiscoveryMode;
             return this;
         }
-        #endregion
 
+        #endregion
         #region PubSub Subscriptions
+
         /// <summary>
         /// Configure PubSub subscriptions for the standalone client.
         /// </summary>
         /// <param name="config">The PubSub subscription configuration.</param>
         /// <returns>This configuration builder instance for method chaining.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when config is null.</exception>
-        /// <exception cref="ArgumentException">Thrown when config is invalid.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if config is null.</exception>
+        /// <exception cref="ArgumentException">Thrown if config is invalid.</exception>
         public StandaloneClientConfigurationBuilder WithPubSubSubscriptions(StandalonePubSubSubscriptionConfig config)
         {
             ArgumentNullException.ThrowIfNull(config);
@@ -1120,6 +1126,7 @@ public abstract class ConnectionConfiguration
             Config.PubSubSubscriptions = config;
             return this;
         }
+
         #endregion
     }
 
@@ -1139,6 +1146,7 @@ public abstract class ConnectionConfiguration
         public new ClusterClientConfiguration Build() => new() { Request = base.Build() };
 
         #region Refresh Topology
+
         /// <summary>
         /// Enables refreshing the cluster topology using only the initial nodes.
         /// <para />
@@ -1210,8 +1218,8 @@ public abstract class ConnectionConfiguration
         /// </summary>
         /// <param name="config">The PubSub subscription configuration.</param>
         /// <returns>This configuration builder instance for method chaining.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when config is null.</exception>
-        /// <exception cref="ArgumentException">Thrown when config is invalid.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if config is null.</exception>
+        /// <exception cref="ArgumentException">Thrown if config is invalid.</exception>
         public ClusterClientConfigurationBuilder WithPubSubSubscriptions(ClusterPubSubSubscriptionConfig config)
         {
             ArgumentNullException.ThrowIfNull(config);
@@ -1231,6 +1239,7 @@ internal static class ReadFromStrategyExtensions
     /// <summary>
     /// Returns <see langword="true"/> if the strategy requires an Availability Zone (AZ).
     /// </summary>
+    /// <param name="strategy">The read-from strategy to check.</param>
     internal static bool IsAzReadFromStrategy(this ConnectionConfiguration.ReadFromStrategy strategy) =>
         strategy is ConnectionConfiguration.ReadFromStrategy.AzAffinity
             or ConnectionConfiguration.ReadFromStrategy.AzAffinityReplicasAndPrimary;

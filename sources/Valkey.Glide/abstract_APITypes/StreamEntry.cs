@@ -33,6 +33,7 @@ public readonly struct StreamEntry
     /// <summary>
     /// Search for a specific field by name, returning the value.
     /// </summary>
+    /// <param name="fieldName">The name of the field to search for.</param>
     public ValkeyValue this[ValkeyValue fieldName]
     {
         get
@@ -46,6 +47,7 @@ public readonly struct StreamEntry
                         return values[i].value;
                 }
             }
+
             return ValkeyValue.Null;
         }
     }
@@ -61,6 +63,8 @@ public readonly struct StreamEntry
     /// <summary>
     /// Creates an stream entry.
     /// </summary>
+    /// <param name="id">The ID assigned to the message.</param>
+    /// <param name="values">The values contained within the message.</param>
     public StreamEntry(ValkeyValue id, NameValueEntry[] values)
     {
         Id = id;

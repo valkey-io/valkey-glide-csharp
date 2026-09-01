@@ -33,6 +33,8 @@ internal static class SortOrderExtensions
     /// Converts SortOrder to Order for use with methods that require Order.
     /// Default maps to Ascending since that's the server default.
     /// </summary>
+    /// <param name="sortOrder">The sort order to convert.</param>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="sortOrder"/> is not a supported <see cref="SortOrder"/> value.</exception>
     internal static Order ToOrder(this SortOrder sortOrder) => sortOrder switch
     {
         SortOrder.Default => Order.Ascending,

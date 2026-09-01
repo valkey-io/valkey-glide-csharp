@@ -8,7 +8,7 @@ using static Valkey.Glide.Internals.TimeUtils;
 
 namespace Valkey.Glide.Internals;
 
-internal partial class Request
+internal static partial class Request
 {
     #region Public Methods
 
@@ -36,6 +36,7 @@ internal partial class Request
     /// <summary>
     /// Converts the given <see cref="Ft.CreateOptions"/> to command arguments.
     /// </summary>
+    /// <param name="options">The index creation options to convert.</param>
     private static GlideString[] ToArgs(Ft.CreateOptions? options)
     {
         if (options is null)
@@ -45,15 +46,10 @@ internal partial class Request
 
         List<GlideString> args = [
             ValkeyLiterals.ON,
-            options.DataType switch
-            {
-                Ft.DataType.Hash => ValkeyLiterals.HASH,
-                Ft.DataType.Json => ValkeyLiterals.JSON,
-                _ => throw new ArgumentOutOfRangeException(nameof(options.DataType)),
-            }];
+            options.DataType.ToLiteral()];
 
         var prefixes = options.Prefixes;
-        if (prefixes.Count() > 0)
+        if (prefixes.Any())
         {
             args.AddRange(ToArgs(ValkeyLiterals.PREFIX, prefixes));
         }
@@ -91,6 +87,7 @@ internal partial class Request
     /// <summary>
     /// Converts the given <see cref="Ft.CreateField"/> array to command arguments.
     /// </summary>
+    /// <param name="schema">The index schema fields to convert.</param>
     private static GlideString[] ToArgs(IEnumerable<Ft.CreateField> schema)
     {
         List<GlideString> args = [ValkeyLiterals.SCHEMA];
@@ -98,12 +95,15 @@ internal partial class Request
         {
             args.AddRange(ToArgs(field));
         }
+
         return [.. args];
     }
 
     /// <summary>
-    /// Converts the given <see cref="Ft.CreateOptions"/> to command arguments.
+    /// Converts the given <see cref="Ft.SearchOptions"/> to command arguments.
     /// </summary>
+    /// <param name="options">The search options to convert.</param>
+    /// <exception cref="ArgumentException">Thrown if <see cref="Ft.SearchSortBy.WithSortKeys"/> is used together with <see cref="Ft.SearchOptions.NoContent"/>.</exception>
     private static GlideString[] ToArgs(Ft.SearchOptions? options)
     {
         if (options is null)
@@ -224,6 +224,7 @@ internal partial class Request
     /// <summary>
     /// Converts the given <see cref="Ft.AggregateOptions"/> to command arguments.
     /// </summary>
+    /// <param name="options">The aggregation options to convert.</param>
     private static GlideString[] ToArgs(Ft.AggregateOptions? options)
     {
         if (options is null)
@@ -287,6 +288,7 @@ internal partial class Request
     /// <summary>
     /// Converts the given <see cref="Ft.InfoOptions"/> to command arguments (without scope keyword).
     /// </summary>
+    /// <param name="options">The info options to convert.</param>
     private static GlideString[] ToArgs(Ft.InfoOptions? options)
     {
         if (options is null)
@@ -312,6 +314,8 @@ internal partial class Request
     /// <summary>
     /// Converts the given <see cref="Ft.CreateField"/> to command arguments.
     /// </summary>
+    /// <param name="field">The schema field to convert.</param>
+    /// <exception cref="ArgumentException">Thrown if the field type is not supported.</exception>
     private static GlideString[] ToArgs(Ft.CreateField field)
     {
         List<GlideString> args = [field.Identifier];
@@ -330,10 +334,12 @@ internal partial class Request
                 {
                     args.Add(ValkeyLiterals.NOSTEM);
                 }
+
                 if (!text.WithSuffixTrie)
                 {
                     args.Add(ValkeyLiterals.NOSUFFIXTRIE);
                 }
+
                 break;
 
             case Ft.CreateTagField tag:
@@ -343,6 +349,7 @@ internal partial class Request
                     args.Add(ValkeyLiterals.SEPARATOR);
                     args.Add(tag.Separator.Value.ToString());
                 }
+
                 if (tag.CaseSensitive)
                 {
                     args.Add(ValkeyLiterals.CASESENSITIVE);
@@ -368,6 +375,7 @@ internal partial class Request
                     flatAttrs.Add(ValkeyLiterals.INITIAL_CAP);
                     flatAttrs.Add(flat.InitialCap.Value.ToGlideString());
                 }
+
                 args.Add(flatAttrs.Count.ToGlideString());
                 args.AddRange(flatAttrs);
                 break;
@@ -386,21 +394,25 @@ internal partial class Request
                     hnswAttrs.Add(ValkeyLiterals.INITIAL_CAP);
                     hnswAttrs.Add(hnsw.InitialCap.Value.ToGlideString());
                 }
+
                 if (hnsw.NumberOfEdges.HasValue)
                 {
                     hnswAttrs.Add(ValkeyLiterals.M);
                     hnswAttrs.Add(hnsw.NumberOfEdges.Value.ToGlideString());
                 }
+
                 if (hnsw.VectorsExaminedOnConstruction.HasValue)
                 {
                     hnswAttrs.Add(ValkeyLiterals.EF_CONSTRUCTION);
                     hnswAttrs.Add(hnsw.VectorsExaminedOnConstruction.Value.ToGlideString());
                 }
+
                 if (hnsw.VectorsExaminedOnRuntime.HasValue)
                 {
                     hnswAttrs.Add(ValkeyLiterals.EF_RUNTIME);
                     hnswAttrs.Add(hnsw.VectorsExaminedOnRuntime.Value.ToGlideString());
                 }
+
                 args.Add(hnswAttrs.Count.ToGlideString());
                 args.AddRange(hnswAttrs);
                 break;
@@ -415,6 +427,8 @@ internal partial class Request
     /// <summary>
     /// Converts the given <see cref="Ft.DistanceMetric"/> to command arguments.
     /// </summary>
+    /// <param name="metric">The distance metric to convert.</param>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="metric"/> is not a supported <see cref="Ft.DistanceMetric"/> value.</exception>
     private static GlideString ToArgs(Ft.DistanceMetric metric) => metric switch
     {
         Ft.DistanceMetric.Cosine => ValkeyLiterals.COSINE,
@@ -485,6 +499,7 @@ internal partial class Request
                     }));
             }
         }
+
         return [.. results];
     }
 

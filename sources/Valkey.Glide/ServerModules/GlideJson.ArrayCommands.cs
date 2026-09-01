@@ -44,7 +44,6 @@ public static partial class GlideJson
     }
 
     #endregion
-
     #region JSON.ARRINSERT
 
     /// <summary>
@@ -83,7 +82,6 @@ public static partial class GlideJson
     }
 
     #endregion
-
     #region JSON.ARRINDEX
 
     /// <summary>
@@ -150,7 +148,6 @@ public static partial class GlideJson
     }
 
     #endregion
-
     #region JSON.ARRLEN
 
     /// <summary>
@@ -202,7 +199,6 @@ public static partial class GlideJson
     }
 
     #endregion
-
     #region JSON.ARRPOP
 
     /// <summary>
@@ -233,8 +229,10 @@ public static partial class GlideJson
     {
         if (result is null)
             return null;
+
         if (result is object?[] arr)
             return [.. arr.Select(o => o is null ? (ValkeyValue?)null : ToValkeyValue(o))];
+
         // Single value (legacy path) - wrap in array for consistent return type
         return [ToValkeyValue(result)];
     }
@@ -260,7 +258,6 @@ public static partial class GlideJson
     }
 
     #endregion
-
     #region JSON.ARRTRIM
 
     /// <summary>

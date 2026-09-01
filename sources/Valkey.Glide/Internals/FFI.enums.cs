@@ -12,7 +12,7 @@ internal partial class FFI
     /// The cache metric to retrieve from the client-side cache.<p/>
     /// Must match the glide-core cache metric methods.
     /// </summary>
-    internal enum CacheMetricsType : uint
+    internal enum CacheMetricsType : int
     {
         HitRate = 0,
         MissRate = 1,
@@ -26,7 +26,7 @@ internal partial class FFI
     /// The periodic topology checks mode for cluster clients.<p/>
     /// Must match <c>glide_core::client::PeriodicCheck</c> in glide-core.
     /// </summary>
-    internal enum PeriodicChecksMode : uint
+    internal enum PeriodicChecksMode : int
     {
         Enabled = 0,
         Disabled = 1,
@@ -60,13 +60,11 @@ internal partial class FFI
     // TODO #472: Auto-generate this enum
     internal enum RequestType : int
     {
-        /// Invalid request type
         InvalidRequest = 0,
-
-        /// An unknown command, where all arguments are defined by the user.
         CustomCommand = 1,
 
-        //// Bitmap commands
+        #region Bitmap commands
+
         BitCount = 101,
         BitField = 102,
         BitFieldReadOnly = 103,
@@ -75,7 +73,9 @@ internal partial class FFI
         GetBit = 106,
         SetBit = 107,
 
-        //// Cluster commands
+        #endregion
+        #region Cluster commands
+
         Asking = 201,
         ClusterAddSlots = 202,
         ClusterAddSlotsRange = 203,
@@ -107,7 +107,9 @@ internal partial class FFI
         ReadOnly = 229,
         ReadWrite = 230,
 
-        //// Connection Management commands
+        #endregion
+        #region Connection Management commands
+
         Auth = 301,
         ClientCaching = 302,
         ClientGetName = 303,
@@ -134,7 +136,9 @@ internal partial class FFI
         Reset = 324,
         Select = 325,
 
-        //// Generic commands
+        #endregion
+        #region Generic commands
+
         Copy = 401,
         Del = 402,
         Dump = 403,
@@ -168,7 +172,9 @@ internal partial class FFI
         Wait = 431,
         WaitAof = 432,
 
-        //// Geospatial indices commands
+        #endregion
+        #region Geospatial indices commands
+
         GeoAdd = 501,
         GeoDist = 502,
         GeoHash = 503,
@@ -180,7 +186,9 @@ internal partial class FFI
         GeoSearch = 509,
         GeoSearchStore = 510,
 
-        //// Hash commands
+        #endregion
+        #region Hash commands
+
         HDel = 601,
         HExists = 602,
         HGet = 603,
@@ -209,12 +217,16 @@ internal partial class FFI
         HExpireTime = 626,
         HPExpireTime = 627,
 
-        //// HyperLogLog commands
+        #endregion
+        #region HyperLogLog commands
+
         PfAdd = 701,
         PfCount = 702,
         PfMerge = 703,
 
-        //// List commands
+        #endregion
+        #region List commands
+
         BLMove = 801,
         BLMPop = 802,
         BLPop = 803,
@@ -238,7 +250,9 @@ internal partial class FFI
         RPush = 821,
         RPushX = 822,
 
-        //// Pub/Sub commands
+        #endregion
+        #region Pub/Sub commands
+
         PSubscribe = 901,
         Publish = 902,
         PubSubChannels = 903,
@@ -260,7 +274,9 @@ internal partial class FFI
         SUnsubscribeBlocking = 919,
         GetSubscriptions = 920,
 
-        //// Scripting and Functions commands
+        #endregion
+        #region Scripting and Functions commands
+
         Eval = 1001,
         EvalReadOnly = 1002,
         EvalSha = 1003,
@@ -282,7 +298,9 @@ internal partial class FFI
         ScriptLoad = 1019,
         ScriptShow = 1020,
 
-        //// Server management commands
+        #endregion
+        #region Server management commands
+
         AclCat = 1101,
         AclDelUser = 1102,
         AclDryRun = 1103,
@@ -346,7 +364,9 @@ internal partial class FFI
         Sync = 1161,
         Time = 1162,
 
-        //// Set commands
+        #endregion
+        #region Set commands
+
         SAdd = 1201,
         SCard = 1202,
         SDiff = 1203,
@@ -365,7 +385,9 @@ internal partial class FFI
         SUnion = 1216,
         SUnionStore = 1217,
 
-        //// Sorted set commands
+        #endregion
+        #region Sorted set commands
+
         BZMPop = 1301,
         BZPopMax = 1302,
         BZPopMin = 1303,
@@ -402,7 +424,9 @@ internal partial class FFI
         ZUnion = 1334,
         ZUnionStore = 1335,
 
-        //// Stream commands
+        #endregion
+        #region Stream commands
+
         XAck = 1401,
         XAdd = 1402,
         XAutoClaim = 1403,
@@ -425,7 +449,9 @@ internal partial class FFI
         XSetId = 1420,
         XTrim = 1421,
 
-        //// String commands
+        #endregion
+        #region String commands
+
         Append = 1501,
         Decr = 1502,
         DecrBy = 1503,
@@ -449,14 +475,18 @@ internal partial class FFI
         Strlen = 1521,
         Substr = 1522,
 
-        //// Transaction commands
+        #endregion
+        #region Transaction commands
+
         Discard = 1601,
         Exec = 1602,
         Multi = 1603,
         UnWatch = 1604,
         Watch = 1605,
 
-        //// JSON commands
+        #endregion
+        #region JSON commands
+
         JsonArrAppend = 2001,
         JsonArrIndex = 2002,
         JsonArrInsert = 2003,
@@ -480,7 +510,9 @@ internal partial class FFI
         JsonToggle = 2021,
         JsonType = 2022,
 
-        //// Vector Search commands
+        #endregion
+        #region Vector Search commands
+
         FtList = 2101,
         FtAggregate = 2102,
         FtAliasAdd = 2103,
@@ -494,13 +526,15 @@ internal partial class FFI
         FtInfo = 2111,
         FtProfile = 2112,
         FtSearch = 2113,
+
+        #endregion
     }
 
     /// <summary>
     /// The command routing type for cluster clients.<p/>
     /// Must match <c>redis::cluster_routing::RoutingInfo</c> in glide-core.
     /// </summary>
-    internal enum RouteType : uint
+    internal enum RouteType : int
     {
         Random = 0,
         AllNodes = 1,
@@ -514,7 +548,7 @@ internal partial class FFI
     /// The AWS service type for IAM authentication.<p/>
     /// Must match <c>glide_core::iam::ServiceType</c> in glide-core.
     /// </summary>
-    internal enum ServiceType : uint
+    internal enum ServiceType : int
     {
         ElastiCache = 0,
         MemoryDB = 1,
@@ -524,7 +558,7 @@ internal partial class FFI
     /// The TLS mode for server connections.<p/>
     /// Must match <c>glide_core::client::TlsMode</c> in glide-core.
     /// </summary>
-    internal enum TlsMode : uint
+    internal enum TlsMode : int
     {
         NoTls = 0,
         InsecureTls = 1,

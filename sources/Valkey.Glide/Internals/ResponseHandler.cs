@@ -6,7 +6,7 @@ using static Valkey.Glide.Errors;
 
 namespace Valkey.Glide.Internals;
 
-internal class ResponseHandler
+internal static class ResponseHandler
 {
     [StructLayout(LayoutKind.Sequential)]
     private struct GlideValue
@@ -16,7 +16,7 @@ internal class ResponseHandler
         public uint Size;
     }
 
-    public enum ValueType : uint
+    public enum ValueType : int
     {
         Null = 0,
         Int = 1,
@@ -65,6 +65,7 @@ internal class ResponseHandler
         {
             res[(GlideString)values[i]!] = values[i + 1];
         }
+
         return res;
     }
 

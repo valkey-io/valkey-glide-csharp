@@ -224,5 +224,4 @@ public class FtCommandTests
             ["FT.INFO", "idx", "LOCAL", "SOMESHARDS", "INCONSISTENT"],
             Request.FtInfoLocal("idx", new Ft.InfoOptions { SomeShards = true, Inconsistent = true }).GetArgs());
     }
-
 }

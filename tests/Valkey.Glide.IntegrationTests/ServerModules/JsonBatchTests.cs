@@ -590,7 +590,6 @@ public class JsonBatchTests(TestConfiguration config)
     }
 
     #endregion
-
     #region Cluster Batch Tests
 
     [Theory(DisableDiscoveryEnumeration = true)]
