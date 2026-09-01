@@ -586,12 +586,10 @@ dotnet_diagnostic.RCS0050.severity = error
 dotnet_diagnostic.RCS0054.severity = error
 dotnet_diagnostic.RCS0055.severity = error
 dotnet_diagnostic.RCS0060.severity = error
-dotnet_diagnostic.RCS0061.severity = error
 dotnet_diagnostic.RCS0063.severity = error
 
 roslynator_blank_line_between_single_line_accessors = false
 roslynator_blank_line_after_file_scoped_namespace_declaration = true
-roslynator_blank_line_between_switch_sections = true
 
 # Common Analyzers (RCS1)
 dotnet_diagnostic.RCS1006.severity = error
