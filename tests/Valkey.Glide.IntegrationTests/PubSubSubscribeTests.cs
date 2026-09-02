@@ -41,10 +41,13 @@ public class PubSubSubscribeTests
         // Build one message for each channel mode.
         var channelMessage = BuildMessage(PubSubChannelMode.Exact);
         var patternMessage = BuildMessage(PubSubChannelMode.Pattern);
-        var shardedChannelMessage = isSharded ? BuildMessage(PubSubChannelMode.Sharded) : null;
-
         var expectedMessages = new List<PubSubMessage> { channelMessage, patternMessage };
-        if (isSharded) expectedMessages.Add(shardedChannelMessage!);
+
+        if (isSharded)
+        {
+            var shardedChannelMessage = BuildMessage(PubSubChannelMode.Sharded);
+            expectedMessages.Add(shardedChannelMessage);
+        }
 
         // Build subscriber using the specified subscribe mode.
         await using var subscriber = await BuildSubscriber(isCluster, expectedMessages, subscribeMode);
@@ -66,12 +69,16 @@ public class PubSubSubscribeTests
         var messagesPerChannelMode = 128;
         var channelMessages = Enumerable.Range(0, messagesPerChannelMode).Select(_ => BuildMessage(PubSubChannelMode.Exact)).ToArray();
         var patternMessages = Enumerable.Range(0, messagesPerChannelMode).Select(_ => BuildMessage(PubSubChannelMode.Pattern)).ToArray();
-        var shardedChannelMessages = isSharded ? Enumerable.Range(0, messagesPerChannelMode).Select(_ => BuildMessage(PubSubChannelMode.Sharded)).ToArray() : null;
 
         var messages = new List<PubSubMessage>();
         messages.AddRange(channelMessages);
         messages.AddRange(patternMessages);
-        if (isSharded) messages.AddRange(shardedChannelMessages!);
+
+        if (isSharded)
+        {
+            var shardedChannelMessages = Enumerable.Range(0, messagesPerChannelMode).Select(_ => BuildMessage(PubSubChannelMode.Sharded)).ToArray();
+            messages.AddRange(shardedChannelMessages);
+        }
 
         // Build subscriber using the specified subscribe mode.
         await using var subscriber = await BuildSubscriber(isCluster, messages, subscribeMode);

@@ -209,11 +209,8 @@ public class ScriptingCommandTests(TestConfiguration config)
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task ScriptKillAsync_NoScriptRunning_ThrowsException(BaseClient client)
-    {
-        // Try to kill when no script is running
-        _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
+        => _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
             await client.ScriptKillAsync(CancellationToken));
-    }
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
@@ -661,16 +658,10 @@ redis.register_function('{funcName}', function(keys, args) return 'test' end)";
         }
 
         // Verify function no longer exists (use routing for cluster clients)
-        if (client is GlideClusterClient clusterClient5)
-        {
-            _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-                await clusterClient5.FCallAsync(funcName, Route.Random, CancellationToken));
-        }
-        else
-        {
-            _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-                await client.FCallAsync(funcName, CancellationToken));
-        }
+        Func<Task> fCallAsync = client is GlideClusterClient clusterClient5
+            ? async () => await clusterClient5.FCallAsync(funcName, Route.Random, CancellationToken)
+            : async () => await client.FCallAsync(funcName, CancellationToken);
+        _ = await Assert.ThrowsAsync<Errors.RequestException>(fCallAsync);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]

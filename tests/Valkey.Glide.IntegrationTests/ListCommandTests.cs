@@ -326,9 +326,9 @@ public class ListCommandTests(TestConfiguration config)
         Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "LMPOP is supported since 7.0.0"
         );
 
-        string key1 = $"{{listKey}}-multipop1-{Guid.NewGuid().ToString()}";
-        string key2 = $"{{listKey}}-multipop2-{Guid.NewGuid().ToString()}";
-        string key3 = $"{{listKey}}-multipop3-{Guid.NewGuid().ToString()}";
+        string key1 = $"{{listKey}}-multipop1-{Guid.NewGuid()}";
+        string key2 = $"{{listKey}}-multipop2-{Guid.NewGuid()}";
+        string key3 = $"{{listKey}}-multipop3-{Guid.NewGuid()}";
 
         // Test LMPOP with empty lists
         ListPopResult emptyResult = await client.ListLeftPopAsync([key1, key2], 2);
@@ -469,8 +469,8 @@ public class ListCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestListMove(BaseClient client)
     {
-        string source = $"{{listKey}}-movesrc-{Guid.NewGuid().ToString()}";
-        string dest = $"{{listKey}}-movedst-{Guid.NewGuid().ToString()}";
+        var source = $"{{listKey}}-movesrc-{Guid.NewGuid()}";
+        var dest = $"{{listKey}}-movedst-{Guid.NewGuid()}";
 
         // Test move from non-existent source
         ValkeyValue nullMove = await client.ListMoveAsync("{listKey}-non-exist-source", dest, ListSide.Left, ListSide.Right);

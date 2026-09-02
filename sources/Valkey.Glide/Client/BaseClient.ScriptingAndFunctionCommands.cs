@@ -237,24 +237,18 @@ public abstract partial class BaseClient
     public async Task<bool[]> ScriptExistsAsync(
         IEnumerable<string> sha1Hashes,
         CancellationToken cancellationToken = default)
-    {
-        return await Command(Request.ScriptExists([.. sha1Hashes]));
-    }
+        => await Command(Request.ScriptExists([.. sha1Hashes]));
 
     /// <inheritdoc cref="IBaseClient.ScriptFlushAsync(CancellationToken)"/>
     public async Task ScriptFlushAsync(
         CancellationToken cancellationToken = default)
-    {
-        _ = await Command(Request.ScriptFlush());
-    }
+        => _ = await Command(Request.ScriptFlush());
 
     /// <inheritdoc cref="IBaseClient.ScriptFlushAsync(FlushMode, CancellationToken)"/>
     public async Task ScriptFlushAsync(
         FlushMode mode,
         CancellationToken cancellationToken = default)
-    {
-        _ = await Command(Request.ScriptFlush(mode));
-    }
+        => _ = await Command(Request.ScriptFlush(mode));
 
     /// <inheritdoc cref="IBaseClient.ScriptShowAsync(string, CancellationToken)"/>
     public async Task<string?> ScriptShowAsync(
@@ -275,9 +269,7 @@ public abstract partial class BaseClient
     /// <inheritdoc cref="IBaseClient.ScriptKillAsync(CancellationToken)"/>
     public async Task ScriptKillAsync(
         CancellationToken cancellationToken = default)
-    {
-        _ = await Command(Request.ScriptKill());
-    }
+        => _ = await Command(Request.ScriptKill());
 
     // ===== Function Execution =====
 
@@ -285,9 +277,7 @@ public abstract partial class BaseClient
     public async Task<ValkeyResult> FCallAsync(
         string function,
         CancellationToken cancellationToken = default)
-    {
-        return await Command(Request.FCall(function, null, null));
-    }
+        => await Command(Request.FCall(function, null, null));
 
     /// <inheritdoc cref="IBaseClient.FCallAsync(string, IEnumerable{string}, IEnumerable{string}, CancellationToken)"/>
     public async Task<ValkeyResult> FCallAsync(
@@ -295,17 +285,13 @@ public abstract partial class BaseClient
         IEnumerable<string> keys,
         IEnumerable<string> args,
         CancellationToken cancellationToken = default)
-    {
-        return await Command(Request.FCall(function, [.. keys], [.. args]));
-    }
+        => await Command(Request.FCall(function, [.. keys], [.. args]));
 
     /// <inheritdoc cref="IBaseClient.FCallReadOnlyAsync(string, CancellationToken)"/>
     public async Task<ValkeyResult> FCallReadOnlyAsync(
         string function,
         CancellationToken cancellationToken = default)
-    {
-        return await Command(Request.FCallReadOnly(function, null, null));
-    }
+        => await Command(Request.FCallReadOnly(function, null, null));
 
     /// <inheritdoc cref="IBaseClient.FCallReadOnlyAsync(string, IEnumerable{string}, IEnumerable{string}, CancellationToken)"/>
     public async Task<ValkeyResult> FCallReadOnlyAsync(
@@ -313,9 +299,7 @@ public abstract partial class BaseClient
         IEnumerable<string> keys,
         IEnumerable<string> args,
         CancellationToken cancellationToken = default)
-    {
-        return await Command(Request.FCallReadOnly(function, [.. keys], [.. args]));
-    }
+        => await Command(Request.FCallReadOnly(function, [.. keys], [.. args]));
 
     // ===== Function Management =====
 
@@ -324,65 +308,49 @@ public abstract partial class BaseClient
         string libraryCode,
         bool replace = false,
         CancellationToken cancellationToken = default)
-    {
-        return await Command(Request.FunctionLoad(libraryCode, replace));
-    }
+        => await Command(Request.FunctionLoad(libraryCode, replace));
 
     /// <inheritdoc cref="IBaseClient.FunctionFlushAsync(CancellationToken)"/>
     public async Task FunctionFlushAsync(
         CancellationToken cancellationToken = default)
-    {
-        _ = await Command(Request.FunctionFlush());
-    }
+        => _ = await Command(Request.FunctionFlush());
 
     /// <inheritdoc cref="IBaseClient.FunctionFlushAsync(FlushMode, CancellationToken)"/>
     public async Task FunctionFlushAsync(
         FlushMode mode,
         CancellationToken cancellationToken = default)
-    {
-        _ = await Command(Request.FunctionFlush(mode));
-    }
+        => _ = await Command(Request.FunctionFlush(mode));
 
     /// <inheritdoc cref="IBaseClient.FunctionDeleteAsync(string, CancellationToken)"/>
     public async Task FunctionDeleteAsync(
         string libraryName,
         CancellationToken cancellationToken = default)
-    {
-        _ = await Command(Request.FunctionDelete(libraryName));
-    }
+        => _ = await Command(Request.FunctionDelete(libraryName));
 
     /// <inheritdoc cref="IBaseClient.FunctionKillAsync(CancellationToken)"/>
     public async Task FunctionKillAsync(
         CancellationToken cancellationToken = default)
-    {
-        _ = await Command(Request.FunctionKill());
-    }
+        => _ = await Command(Request.FunctionKill());
 
     // ===== Function Persistence =====
 
     /// <inheritdoc cref="IBaseClient.FunctionDumpAsync(CancellationToken)"/>
     public async Task<byte[]> FunctionDumpAsync(
         CancellationToken cancellationToken = default)
-    {
-        return await Command(Request.FunctionDump());
-    }
+        => await Command(Request.FunctionDump());
 
     /// <inheritdoc cref="IBaseClient.FunctionRestoreAsync(byte[], CancellationToken)"/>
     public async Task FunctionRestoreAsync(
         byte[] payload,
         CancellationToken cancellationToken = default)
-    {
-        _ = await Command(Request.FunctionRestore(payload, null));
-    }
+        => _ = await Command(Request.FunctionRestore(payload, null));
 
     /// <inheritdoc cref="IBaseClient.FunctionRestoreAsync(byte[], FunctionRestorePolicy, CancellationToken)"/>
     public async Task FunctionRestoreAsync(
         byte[] payload,
         FunctionRestorePolicy policy,
         CancellationToken cancellationToken = default)
-    {
-        _ = await Command(Request.FunctionRestore(payload, policy));
-    }
+        => _ = await Command(Request.FunctionRestore(payload, policy));
 
     // ===== StackExchange.Redis Compatibility Methods =====
 

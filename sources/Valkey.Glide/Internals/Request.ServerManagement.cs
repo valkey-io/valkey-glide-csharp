@@ -139,8 +139,7 @@ internal static partial class Request
     #region Response Converters
 
     private static Cmd<object, KeyValuePair<string, string>[]> ConfigGetAsyncInternal(GlideString[] args)
-    {
-        return new(RequestType.ConfigGet, args, false, response =>
+        => new(RequestType.ConfigGet, args, false, response =>
         {
             // Handle both array and dictionary formats
             if (response is null)
@@ -192,7 +191,6 @@ internal static partial class Request
             // Fallback for unexpected types
             return [];
         });
-    }
 
     private static LatencyEntry[] ConvertLatencyHistoryResponse(object response)
     {

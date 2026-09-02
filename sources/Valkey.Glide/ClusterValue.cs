@@ -1,5 +1,7 @@
 ﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Diagnostics.CodeAnalysis;
+
 using Valkey.Glide.Internals;
 
 namespace Valkey.Glide;
@@ -22,7 +24,6 @@ public sealed class ClusterValue<T>
 {
     #region Private Fields
 
-    private T? _singleValue = default;
     private Dictionary<string, T>? _multiValue = null;
 
     #endregion
@@ -51,7 +52,7 @@ public sealed class ClusterValue<T>
     /// </summary>
     /// <param name="obj">The value to wrap.</param>
     internal static ClusterValue<T> OfSingleValue(T obj)
-        => new() { _singleValue = obj };
+        => new() { SingleValue = obj };
 
     /// <summary>
     /// Builds a cluster value from the given values.
@@ -95,8 +96,12 @@ public sealed class ClusterValue<T>
     /// </summary>
     /// <returns>The single value response</returns>
     /// <exception cref="Exception">Thrown when <see cref="HasSingleData" /> is <see langword="false" />.</exception>
+    [AllowNull]
     public T SingleValue
-        => HasSingleData ? _singleValue! : throw new Exception("No single value stored");
+    {
+        get => HasSingleData ? field : throw new Exception("No single value stored");
+        private set;
+    } = default!;
 
     #endregion
 }

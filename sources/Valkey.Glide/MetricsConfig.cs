@@ -64,7 +64,9 @@ public sealed class MetricsConfig
         public MetricsConfig Build()
         {
             if (_endpoint == null)
+            {
                 throw new InvalidOperationException("Endpoint must be specified");
+            }
 
             return new MetricsConfig(_endpoint);
         }

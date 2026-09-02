@@ -83,14 +83,9 @@ internal static class ScriptParameterMapper
             Type memberType = property?.PropertyType ?? field!.FieldType;
 
             // Determine if this is a key or argument based on type
-            if (IsKeyType(memberType))
-            {
-                replacements[i] = $"KEYS[{keyIndex++}]";
-            }
-            else
-            {
-                replacements[i] = $"ARGV[{argIndex++}]";
-            }
+            replacements[i] = IsKeyType(memberType)
+                ? $"KEYS[{keyIndex++}]"
+                : $"ARGV[{argIndex++}]";
         }
 
         // Replace placeholders
@@ -122,14 +117,9 @@ internal static class ScriptParameterMapper
             // Heuristic: parameters named "key", "keys", or starting with "key" are keys
             bool isKey = paramName == "key" || paramName == "keys" || paramName.StartsWith("key");
 
-            if (isKey)
-            {
-                replacements[i] = $"KEYS[{keyIndex++}]";
-            }
-            else
-            {
-                replacements[i] = $"ARGV[{argIndex++}]";
-            }
+            replacements[i] = isKey
+                ? $"KEYS[{keyIndex++}]"
+                : $"ARGV[{argIndex++}]";
         }
 
         // Replace placeholders

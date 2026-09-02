@@ -800,35 +800,24 @@ public class CommandTests
     [Fact]
     public void ValidateStringCommandArrayConverters()
     {
-        Assert.Multiple(
-            () =>
-            {
-                // Test MGET with GlideString objects (what the server actually returns)
-                var mgetResponse = new object[] { new GlideString("value1"), null!, new GlideString("value3") };
-                var result = Request.Get(["key1", "key2", "key3"]).Converter(mgetResponse);
-                Assert.Equal(3, result.Length);
-                Assert.Equal(new ValkeyValue("value1"), result[0]);
-                Assert.Equal(ValkeyValue.Null, result[1]);
-                Assert.Equal(new ValkeyValue("value3"), result[2]);
-            },
+        // Test MGET with GlideString objects (what the server actually returns)
+        var mgetResponse = new object[] { new GlideString("value1"), null!, new GlideString("value3") };
+        var mgetResult = Request.Get(["key1", "key2", "key3"]).Converter(mgetResponse);
+        Assert.Equal(3, result.Length);
+        Assert.Equal(new ValkeyValue("value1"), result[0]);
+        Assert.Equal(ValkeyValue.Null, result[1]);
+        Assert.Equal(new ValkeyValue("value3"), result[2]);
 
-            () =>
-            {
-                // Test empty MGET response
-                var emptyResult = Request.Get([]).Converter([]);
-                Assert.Empty(emptyResult);
-            },
+        // Test empty MGET response
+        var emptyResult = Request.Get([]).Converter([]);
+        Assert.Empty(emptyResult);
 
-            () =>
-            {
-                // Test MGET with all null values
-                var allNullResponse = new object[] { null!, null! };
-                var result = Request.Get(["key1", "key2"]).Converter(allNullResponse);
-                Assert.Equal(2, result.Length);
-                Assert.Equal(ValkeyValue.Null, result[0]);
-                Assert.Equal(ValkeyValue.Null, result[1]);
-            }
-        );
+        // Test MGET with all null values
+        var allNullResponse = new object[] { null!, null! };
+        var allNullResult = Request.Get(["key1", "key2"]).Converter(allNullResponse);
+        Assert.Equal(2, allNullResult.Length);
+        Assert.Equal(ValkeyValue.Null, allNullResult[0]);
+        Assert.Equal(ValkeyValue.Null, allNullResult[1]);
     }
 
     [Fact]

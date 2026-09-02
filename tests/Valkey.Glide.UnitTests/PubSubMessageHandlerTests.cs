@@ -15,7 +15,7 @@ public class PubSubMessageHandlerTests
         using var handler = new PubSubMessageHandler(callback, context);
 
         // Assert - GetQueue should throw when callback is configured
-        _ = Assert.Throws<InvalidOperationException>(() => handler.GetQueue());
+        _ = Assert.Throws<InvalidOperationException>(handler.GetQueue);
     }
 
     [Fact]
@@ -183,7 +183,7 @@ public class PubSubMessageHandlerTests
         handler.Dispose();
 
         // Act & Assert
-        _ = Assert.Throws<ObjectDisposedException>(() => handler.GetQueue());
+        _ = Assert.Throws<ObjectDisposedException>(handler.GetQueue);
     }
 
     [Fact]

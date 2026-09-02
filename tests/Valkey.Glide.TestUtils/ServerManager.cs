@@ -28,11 +28,8 @@ public static class ServerManager
         string directory = Directory.GetCurrentDirectory();
         while (!Directory.EnumerateFiles(directory, "Valkey.Glide.sln").Any())
         {
-            directory = Path.GetDirectoryName(directory)!;
-            if (directory == null)
-            {
-                throw new FileNotFoundException("Can't detect the project directory");
-            }
+            directory = Path.GetDirectoryName(directory)
+                ?? throw new FileNotFoundException("Can't detect the project directory");
         }
 
         // [B] Determine script and certificates paths

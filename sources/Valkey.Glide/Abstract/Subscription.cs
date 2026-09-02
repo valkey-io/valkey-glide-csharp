@@ -22,36 +22,28 @@ internal sealed class Subscription : IDisposable
     /// </summary>
     /// <param name="handler">The handler to add.</param>
     public void AddHandler(Action<ValkeyChannel, ValkeyValue> handler)
-    {
-        _handlers += handler;
-    }
+        => _handlers += handler;
 
     /// <summary>
     /// Removes a handler from this subscription.
     /// </summary>
     /// <param name="handler">The specific handler to remove.</param>
     public void RemoveHandler(Action<ValkeyChannel, ValkeyValue> handler)
-    {
-        _handlers -= handler;
-    }
+        => _handlers -= handler;
 
     /// <summary>
     /// Adds a new message queue to this subscription.
     /// </summary>
     /// <param name="queue">The queue to add.</param>
     public void AddQueue(ChannelMessageQueue queue)
-    {
-        ChannelMessageQueue.Combine(ref _queues, queue);
-    }
+        => ChannelMessageQueue.Combine(ref _queues, queue);
 
     /// <summary>
     /// Removes a message queue from this subscription.
     /// </summary>
     /// <param name="queue">The queue to remove.</param>
     public void RemoveQueue(ChannelMessageQueue queue)
-    {
-        ChannelMessageQueue.Remove(ref _queues, queue);
-    }
+        => ChannelMessageQueue.Remove(ref _queues, queue);
 
     /// <summary>
     /// Invokes all handlers and writes to all queues for a received message.
@@ -93,9 +85,7 @@ internal sealed class Subscription : IDisposable
     /// </summary>
     /// <returns>True if empty, otherwise false.</returns>
     public bool IsEmpty()
-    {
-        return _handlers == null && _queues == null;
-    }
+        => _handlers == null && _queues == null;
 
     /// <inheritdoc/>
     public void Dispose()

@@ -146,10 +146,13 @@ public class PubSubUnsubscribeTests
         // Build one message for each channel mode.
         var channelMessage = BuildMessage(PubSubChannelMode.Exact);
         var patternMessage = BuildMessage(PubSubChannelMode.Pattern);
-        var shardedChannelMessage = isSharded ? BuildMessage(PubSubChannelMode.Sharded) : null;
-
         var messages = new List<PubSubMessage> { channelMessage, patternMessage };
-        if (isSharded) messages.Add(shardedChannelMessage!);
+
+        var shardedChannelMessage = isSharded ? BuildMessage(PubSubChannelMode.Sharded) : null;
+        if (isSharded)
+        {
+            messages.Add(shardedChannelMessage!);
+        }
 
         // Build subscriber and verify it's active.
         await using var subscriber = await BuildSubscriber(isCluster, messages);
@@ -173,14 +176,19 @@ public class PubSubUnsubscribeTests
 
         // Build many messages for each channel mode.
         var messagesPerChannelMode = 128;
-        var channelMessages = Enumerable.Range(0, messagesPerChannelMode).Select(_ => BuildMessage(PubSubChannelMode.Exact)).ToArray();
-        var patternMessages = Enumerable.Range(0, messagesPerChannelMode).Select(_ => BuildMessage(PubSubChannelMode.Pattern)).ToArray();
-        var shardedChannelMessages = isSharded ? Enumerable.Range(0, messagesPerChannelMode).Select(_ => BuildMessage(PubSubChannelMode.Sharded)).ToArray() : null;
-
         var messages = new List<PubSubMessage>();
+
+        var channelMessages = Enumerable.Range(0, messagesPerChannelMode).Select(_ => BuildMessage(PubSubChannelMode.Exact)).ToArray();
         messages.AddRange(channelMessages);
+
+        var patternMessages = Enumerable.Range(0, messagesPerChannelMode).Select(_ => BuildMessage(PubSubChannelMode.Pattern)).ToArray();
         messages.AddRange(patternMessages);
-        if (isSharded) messages.AddRange(shardedChannelMessages!);
+
+        if (isSharded)
+        {
+            var shardedChannelMessages = Enumerable.Range(0, messagesPerChannelMode).Select(_ => BuildMessage(PubSubChannelMode.Sharded)).ToArray();
+            messages.AddRange(shardedChannelMessages!);
+        }
 
         // Build subscriber and verify it's active.
         await using var subscriber = await BuildSubscriber(isCluster, messages);

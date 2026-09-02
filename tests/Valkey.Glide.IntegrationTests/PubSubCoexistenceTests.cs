@@ -43,10 +43,9 @@ public class PubSubCoexistenceTests
         // Publish to channel with custom command and verify receipt.
         var args = new GlideString[] { "PUBLISH", message.Channel, message.Message };
 
-        if (isCluster)
-            _ = await ((GlideClusterClient)publisher).CustomCommand(args);
-        else
-            _ = await ((GlideClient)publisher).CustomCommand(args);
+        _ = isCluster
+            ? await ((GlideClusterClient)publisher).CustomCommand(args)
+            : await ((GlideClient)publisher).CustomCommand(args);
 
         await AssertReceivedAsync(subscriber, [message]);
     }

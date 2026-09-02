@@ -118,8 +118,7 @@ public class AzAffinityTests(TestConfiguration config)
         ClusterValue<object?> azGetResult = await azTestClient.CustomCommand(["config", "get", "availability-zone"], AllNodes);
         foreach (object? value in azGetResult.MultiValue.Values)
         {
-            object[]? configArray = value as object[];
-            if (configArray != null && configArray.Length >= 2)
+            if (value is object[] configArray && configArray.Length >= 2)
             {
                 Assert.Equal(az, configArray[1]?.ToString());
             }

@@ -117,7 +117,10 @@ public class PubSubBasicTests
         var shardedChannelMessage = isSharded ? PubSubMessage.FromShardedChannel(message, channel) : null;
 
         var messages = new List<PubSubMessage> { channelMessage, patternMessage };
-        if (isSharded) messages.Add(shardedChannelMessage!);
+        if (isSharded)
+        {
+            messages.Add(shardedChannelMessage!);
+        }
 
         await using var subscriber = await BuildSubscriber(isCluster, messages);
         await AssertSubscribedAsync(subscriber, messages);
@@ -129,7 +132,10 @@ public class PubSubBasicTests
         // The channel message should be received twice - once for the
         // channel subscription and once for the pattern subscription.
         var expected = new List<PubSubMessage> { channelMessage, channelMessage, patternMessage };
-        if (isSharded) expected.Add(shardedChannelMessage!);
+        if (isSharded)
+        {
+            expected.Add(shardedChannelMessage!);
+        }
 
         await AssertReceivedAsync(subscriber, expected);
     }

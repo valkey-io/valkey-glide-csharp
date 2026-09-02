@@ -241,7 +241,9 @@ internal sealed class Subscriber : ISubscriber
     private static void ThrowIfChannelNullOrEmpty(ValkeyChannel channel)
     {
         if (channel.IsNullOrEmpty)
+        {
             throw new ArgumentException("Channel cannot be null or empty");
+        }
     }
 
     #endregion

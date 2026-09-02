@@ -176,28 +176,11 @@ public class ReadFromTests
 
     [Fact]
     public void ReadFromProperty_SetNull_DoesNotThrow()
-    {
-        // Arrange
-        var options = new ConfigurationOptions();
-
-        // Act & Assert - Setting to null should not throw
-        options.ReadFrom = null;
-        Assert.Null(options.ReadFrom);
-    }
+        => Assert.Null(new ConfigurationOptions { ReadFrom = null }.ReadFrom);
 
     [Fact]
     public void Clone_WithNullReadFrom_ClonesCorrectly()
-    {
-        // Arrange
-        var original = new ConfigurationOptions();
-        original.ReadFrom = null;
-
-        // Act
-        ConfigurationOptions cloned = original.Clone();
-
-        // Assert
-        Assert.Null(cloned.ReadFrom);
-    }
+        => Assert.Null(new ConfigurationOptions { ReadFrom = null }.Clone().ReadFrom);
 
     [Theory]
     [InlineData("readFrom=AzAffinity,az=")]
@@ -215,15 +198,8 @@ public class ReadFromTests
     [InlineData(ReadFromStrategy.AllNodes, "readFrom=AllNodes")]
     public void ToString_WithReadFromStrategyWithoutAz_IncludesCorrectFormat(ReadFromStrategy strategy, string expectedSubstring)
     {
-        // Arrange
-        var options = new ConfigurationOptions();
-        options.ReadFrom = new ReadFrom(strategy);
-
-        // Act
-        string result = options.ToString();
-
-        // Assert
-        Assert.Contains(expectedSubstring, result);
+        var options = new ConfigurationOptions { ReadFrom = new ReadFrom(strategy) };
+        Assert.Contains(expectedSubstring, options.ToString());
     }
 
     [Theory]
@@ -231,15 +207,8 @@ public class ReadFromTests
     [InlineData(ReadFromStrategy.AzAffinityReplicasAndPrimary, "eu-west-1b", "readFrom=AzAffinityReplicasAndPrimary,az=eu-west-1b")]
     public void ToString_WithReadFromStrategyWithAz_IncludesCorrectFormat(ReadFromStrategy strategy, string az, string expectedSubstring)
     {
-        // Arrange
-        var options = new ConfigurationOptions();
-        options.ReadFrom = new ReadFrom(strategy, az);
-
-        // Act
-        string result = options.ToString();
-
-        // Assert
-        Assert.Contains(expectedSubstring, result);
+        var options = new ConfigurationOptions { ReadFrom = new ReadFrom(strategy, az) };
+        Assert.Contains(expectedSubstring, options.ToString());
     }
 
     [Theory]
@@ -247,14 +216,9 @@ public class ReadFromTests
     [InlineData("eu-west-1b")]
     public void ToString_WithAzAffinityStrategy_IncludesCorrectAzFormat(string azValue)
     {
-        // Arrange
-        var options = new ConfigurationOptions();
-        options.ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinity, azValue);
+        var options = new ConfigurationOptions { ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinity, azValue) };
+        var result = options.ToString();
 
-        // Act
-        string result = options.ToString();
-
-        // Assert
         Assert.Contains("readFrom=AzAffinity", result);
         Assert.Contains($"az={azValue}", result);
     }
@@ -264,14 +228,9 @@ public class ReadFromTests
     [InlineData("eu-central-1b")]
     public void ToString_WithAzAffinityReplicasAndPrimaryStrategy_IncludesCorrectAzFormat(string azValue)
     {
-        // Arrange
-        var options = new ConfigurationOptions();
-        options.ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinityReplicasAndPrimary, azValue);
+        var options = new ConfigurationOptions { ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinityReplicasAndPrimary, azValue) };
+        var result = options.ToString();
 
-        // Act
-        string result = options.ToString();
-
-        // Assert
         Assert.Contains("readFrom=AzAffinityReplicasAndPrimary", result);
         Assert.Contains($"az={azValue}", result);
     }
@@ -279,14 +238,9 @@ public class ReadFromTests
     [Fact]
     public void ToString_WithNullReadFrom_DoesNotIncludeReadFromOrAz()
     {
-        // Arrange
-        var options = new ConfigurationOptions();
-        options.ReadFrom = null;
+        var options = new ConfigurationOptions { ReadFrom = null };
+        var result = options.ToString();
 
-        // Act
-        string result = options.ToString();
-
-        // Assert
         Assert.DoesNotContain("readFrom=", result);
         Assert.DoesNotContain("az=", result);
     }
@@ -489,11 +443,10 @@ public class ReadFromTests
     [Fact]
     public void ReadFromProperty_SetMultipleTimes_UpdatesCorrectly()
     {
-        // Arrange
-        var options = new ConfigurationOptions();
+        // Arrange & Act
+        var options = new ConfigurationOptions { ReadFrom = new ReadFrom(ReadFromStrategy.Primary) };
 
-        // Act & Assert - Set Primary first
-        options.ReadFrom = new ReadFrom(ReadFromStrategy.Primary);
+        // Assert
         Assert.Equal(ReadFromStrategy.Primary, options.ReadFrom.Value.Strategy);
         Assert.Null(options.ReadFrom.Value.Az);
 
@@ -543,8 +496,7 @@ public class ReadFromTests
     public void Clone_ModifyingClonedReadFrom_DoesNotAffectOriginal()
     {
         // Arrange
-        var original = new ConfigurationOptions();
-        original.ReadFrom = new ReadFrom(ReadFromStrategy.Primary);
+        var original = new ConfigurationOptions { ReadFrom = new ReadFrom(ReadFromStrategy.Primary) };
 
         // Act
         ConfigurationOptions cloned = original.Clone();
@@ -605,8 +557,7 @@ public class ReadFromTests
     public void ReadFromProperty_AfterSettingToNonNull_CanBeSetBackToNull()
     {
         // Arrange
-        var options = new ConfigurationOptions();
-        options.ReadFrom = new ReadFrom(ReadFromStrategy.Primary);
+        var options = new ConfigurationOptions { ReadFrom = new ReadFrom(ReadFromStrategy.Primary) };
 
         // Act
         options.ReadFrom = null;

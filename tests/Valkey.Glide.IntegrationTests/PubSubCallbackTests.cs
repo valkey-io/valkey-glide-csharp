@@ -119,7 +119,9 @@ public class PubSubCallbackTests
                 {
                     receivedMessages.Add(msg);
                     if (receivedMessages.Count >= messageCount)
+                    {
                         completed.Set();
+                    }
                 }
             });
 
