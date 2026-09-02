@@ -461,7 +461,7 @@ public class CommandTests
 
             // Server Management Command Converters
             () => Assert.Equal("Background append only file rewriting started", Request.BgRewriteAof().Converter("Background append only file rewriting started")),
-            () => Assert.Equal([new("maxmemory", "100mb")], Request.ConfigGet("maxmemory").Converter(new object[] { (gs)"maxmemory", "100mb" })),
+            () => Assert.Equal([new("maxmemory", "100mb")], Request.ConfigGet("maxmemory").Converter(new object[] { "maxmemory", "100mb" })),
             () => Assert.Empty(Request.ConfigGet("nonexistent").Converter(Array.Empty<object>())),
             () => Assert.Equal(100L, Request.DatabaseSize().Converter(100L)),
             () => Assert.Equal(0L, Request.DatabaseSize().Converter(0L)),
@@ -605,13 +605,13 @@ public class CommandTests
             // SCAN Commands Converters
             () =>
             {
-                var result = Request.Scan("0").Converter(["0", new object[] { (gs)"key1", (gs)"key2" }]);
+                var result = Request.Scan("0").Converter(["0", new object[] { "key1", "key2" }]);
                 Assert.Equal("0", result.Item1);
                 Assert.Equal([new ValkeyKey("key1"), new ValkeyKey("key2")], result.Item2);
             },
             () =>
             {
-                var result = Request.Scan("10").Converter(["5", new object[] { (gs)"test" }]);
+                var result = Request.Scan("10").Converter(["5", new object[] { "test" }]);
                 Assert.Equal("5", result.Item1);
                 Assert.Equal([new ValkeyKey("test")], result.Item2);
             },
@@ -630,14 +630,14 @@ public class CommandTests
             () => Assert.Equal(new long[] { 0L, 0L }, Request.WaitAof(false, 0, TimeSpan.Zero).Converter([0L, 0L])),
 
             () => Assert.Equal("one", Request.ListLeftPop("a").Converter("one")),
-            () => Assert.Equal(["one", "two"], Request.ListLeftPop("a", 2).Converter([(gs)"one", (gs)"two"])!),
+            () => Assert.Equal(["one", "two"], Request.ListLeftPop("a", 2).Converter(["one", "two"])!),
             () => Assert.Null(Request.ListLeftPop("a", 2).Converter(null!)),
             () => Assert.Equal(ValkeyValue.Null, Request.ListLeftPop("a").Converter(null!)),
             () => Assert.Equal(1L, Request.ListLeftPush("a", "value").Converter(1L)),
             () => Assert.Equal(2L, Request.ListLeftPush("a", ["one", "two"]).Converter(2L)),
             () => Assert.Equal("three", Request.ListRightPop("a").Converter("three")),
             () => Assert.Equal(ValkeyValue.Null, Request.ListRightPop("a").Converter(null!)),
-            () => Assert.Equal(["three", "four"], Request.ListRightPop("a", 2).Converter([(gs)"three", (gs)"four"])!),
+            () => Assert.Equal(["three", "four"], Request.ListRightPop("a", 2).Converter(["three", "four"])!),
             () => Assert.Null(Request.ListRightPop("a", 2).Converter(null!)),
             () => Assert.Equal(2L, Request.ListRightPush("a", "value").Converter(2L)),
             () => Assert.Equal(3L, Request.ListRightPush("a", ["three", "four"]).Converter(3L)),
@@ -647,8 +647,8 @@ public class CommandTests
             () => Assert.Equal(1L, Request.ListRemove("a", "value", 1).Converter(1L)),
             () => Assert.Equal(0L, Request.ListRemove("a", "nonexistent", 0).Converter(0L)),
             () => Assert.Equal(ValkeyValue.Ok, Request.ListTrim("a", 0, 10).Converter("OK")),
-            () => Assert.Equal(["one", "two", "three"], Request.ListRange("a", 0, -1).Converter([(gs)"one", (gs)"two", (gs)"three"])),
-            () => Assert.IsType<ValkeyValue[]>(Request.ListRange("a", 0, -1).Converter([(gs)"one", (gs)"two", (gs)"three"])),
+            () => Assert.Equal(["one", "two", "three"], Request.ListRange("a", 0, -1).Converter(["one", "two", "three"])),
+            () => Assert.IsType<ValkeyValue[]>(Request.ListRange("a", 0, -1).Converter(["one", "two", "three"])),
             () => Assert.Equal([], Request.ListRange("nonexistent", 0, -1).Converter([])),
 
             // Hash Commands
@@ -663,13 +663,13 @@ public class CommandTests
             () => Assert.Equal(15L, Request.HashIncrementBy("key", "field", 5L).Converter(15L)),
             () => Assert.Equal(10L, Request.HashIncrementBy("key", "field", 1L).Converter(10L)),
             () => Assert.Equal(12.5, Request.HashIncrementBy("key", "field", 2.5).Converter(12.5)),
-            () => Assert.Equal<ISet<ValkeyValue>>(new HashSet<ValkeyValue> { "field1", "field2" }, Request.HashKeys("key").Converter([(gs)"field1", (gs)"field2"])),
+            () => Assert.Equal(new HashSet<ValkeyValue> { "field1", "field2" }, Request.HashKeys("key").Converter(["field1", "field2"])),
             () => Assert.Empty(Request.HashKeys("nonexistent").Converter([])),
             () => Assert.Equal(5L, Request.HashLength("key").Converter(5L)),
             () => Assert.Equal(10L, Request.HashStringLength("key", "field").Converter(10L)),
 
             // Hash Field Expire Commands converters (Valkey 9.0+)
-            () => Assert.Equal((ValkeyValue[])["value1", "value2"], Request.HashGet("key", ["field1", "field2"], GetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60))).Converter([(gs)"value1", (gs)"value2"])),
+            () => Assert.Equal((ValkeyValue[])["value1", "value2"], Request.HashGet("key", ["field1", "field2"], GetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60))).Converter(["value1", "value2"])),
             () => Assert.Equal((ValkeyValue[])[ValkeyValue.Null], Request.HashGet("key", ["field1"], GetExpiryOptions.Persist()).Converter([null!])),
             () => Assert.True(Request.HashSet("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1")], new HashSetOptions { Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60)) }).Converter(1L)),
             () => Assert.False(Request.HashSet("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1")], new HashSetOptions { Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60)) }).Converter(0L)),
@@ -684,9 +684,9 @@ public class CommandTests
             () => Assert.False(Request.HashTimeToLive("key", ["field1"]).Converter([-2L])[0].Exists),
 
             // List Commands converters
-            () => Assert.Equal(["key", "value"], Request.ListBlockingLeftPop(["key"], TimeSpan.FromSeconds(1)).Converter([(gs)"key", (gs)"value"])!),
+            () => Assert.Equal(["key", "value"], Request.ListBlockingLeftPop(["key"], TimeSpan.FromSeconds(1)).Converter(["key", "value"])!),
             () => Assert.Null(Request.ListBlockingLeftPop(["key"], TimeSpan.FromSeconds(1)).Converter(null!)),
-            () => Assert.Equal(["list1", "element"], Request.ListBlockingRightPop(["list1", "list2"], TimeSpan.FromSeconds(5)).Converter([(gs)"list1", (gs)"element"])!),
+            () => Assert.Equal(["list1", "element"], Request.ListBlockingRightPop(["list1", "list2"], TimeSpan.FromSeconds(5)).Converter(["list1", "element"])!),
             () => Assert.Null(Request.ListBlockingRightPop(["key"], TimeSpan.Zero).Converter(null!)),
             () => Assert.Equal("moved_value", Request.ListBlockingMove("src", "dest", ListSide.Left, ListSide.Right, TimeSpan.FromSeconds(2)).Converter("moved_value")),
             () => Assert.Equal(ValkeyValue.Null, Request.ListBlockingMove("src", "dest", ListSide.Left, ListSide.Right, TimeSpan.FromSeconds(2)).Converter(null!)),
@@ -836,9 +836,9 @@ public class CommandTests
     {
         HashSet<object> testHashSet =
         [
-            (gs)"member1",
-            (gs)"member2",
-            (gs)"member3"
+            "member1",
+            "member2",
+            "member3"
         ];
 
         Assert.Multiple([
@@ -880,31 +880,31 @@ public class CommandTests
         // Test for HashGetAsync with multiple fields
         List<object?> testList =
         [
-            (gs)"value1",
-            (gs)"value2",
+            "value1",
+            "value2",
             null!,
         ];
 
         // Test for HashGetAsync (all) and HashRandomFieldsWithValuesAsync
-        Dictionary<GlideString, object> testKvpList = new() {
-            {"field1", (gs)"value1" },
-            {"field2", (gs)"value2" },
-            {"field3", (gs)"value3" },
+        var testKvpList = new Dictionary<GlideString, object>() {
+            { "field1", "value1" },
+            { "field2", "value2" },
+            { "field3", "value3" }
         };
 
         object[] testObjectNestedArray =
          [
-            new object[] { (gs)"field1", (gs)"value1" },
-            new object[] { (gs)"field2", (gs)"value2" },
-            new object[] { (gs)"field3", (gs)"value3" },
+            new object[] { "field1", "value1" },
+            new object[] { "field2", "value2" },
+            new object[] { "field3", "value3" },
          ];
 
         // Test for HashValuesAsync and HashRandomFieldsAsync
         object[] testObjectArray =
         [
-            (gs)"value1",
-            (gs)"value2",
-            (gs)"value3"
+            "value1",
+            "value2",
+            "value3"
         ];
 
         Assert.Multiple(

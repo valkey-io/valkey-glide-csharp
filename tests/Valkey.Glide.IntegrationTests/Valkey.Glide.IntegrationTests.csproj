@@ -60,9 +60,6 @@
   <ItemGroup>
     <Using Include="Xunit" />
     <Using Include="Valkey.Glide" />
-    <Using Include="Valkey.Glide.GlideString">
-      <Alias>gs</Alias>
-    </Using>
   </ItemGroup>
 
   <ItemGroup Condition="'$(Configuration)' == 'Lint'">

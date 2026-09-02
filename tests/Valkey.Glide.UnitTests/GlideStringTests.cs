@@ -7,27 +7,27 @@ public class GlideStringTests
     [Fact]
     public void Sorting()
     {
-        gs[] arr = ["abc", "abcd", "abcde", "abd", "abb", "ab1"];
-        Assert.Equal(new gs[] { "ab1", "abb", "abc", "abd", "abcd", "abcde" }, [.. arr.Order()]);
-        Assert.Equal(new gs[] { "abc", "abd", "abb", "ab1", "abcd", "abcde" }, [.. arr.OrderBy(s => s.Length)]);
+        GlideString[] arr = ["abc", "abcd", "abcde", "abd", "abb", "ab1"];
+        Assert.Equal(new GlideString[] { "ab1", "abb", "abc", "abd", "abcd", "abcde" }, [.. arr.Order()]);
+        Assert.Equal(new GlideString[] { "abc", "abd", "abb", "ab1", "abcd", "abcde" }, [.. arr.OrderBy(s => s.Length)]);
     }
 
     [Fact]
     public void Comparing()
     {
-        Assert.Equal(new gs("abc"), new gs("abc"));
-        Assert.NotEqual(new gs("abc"), new gs("abd"));
-        Assert.Equal(new gs("abc"), new gs([.. "abc".ToCharArray().Select(c => (byte)c)]));
-        Assert.Equal(new gs("abc123"), new gs("abc") + "123");
-        Assert.Equal(new gs("abc123"), "abc" + new gs("123"));
+        Assert.Equal(new GlideString("abc"), new GlideString("abc"));
+        Assert.NotEqual(new GlideString("abc"), new GlideString("abd"));
+        Assert.Equal(new GlideString("abc"), new GlideString([.. "abc".ToCharArray().Select(c => (byte)c)]));
+        Assert.Equal(new GlideString("abc123"), new GlideString("abc") + "123");
+        Assert.Equal(new GlideString("abc123"), "abc" + new GlideString("123"));
     }
 
     [Fact]
     public void Handling()
     {
-        gs gs = new("abc");
+        var gs = new GlideString("abc");
         gs += "123";
-        Assert.Equal(new gs("abc123"), gs);
+        Assert.Equal(new GlideString("abc123"), gs);
         Assert.True(gs.CanConvertToString());
         string str = "שלום hello 汉字";
         gs = str;
@@ -42,11 +42,11 @@ public class GlideStringTests
         Assert.False(gs.CanConvertToString());
         Assert.Contains("Value isn't convertible to string", gs);
 
-        gs = new gs("abc") + "123";
+        gs = new GlideString("abc") + "123";
         Assert.True(gs.CanConvertToString());
         Assert.Equal("abc123", gs.ToString());
 
-        Assert.Equal(new gs("abc"), "abc".ToGlideString());
+        Assert.Equal(new GlideString("abc"), "abc".ToGlideString());
     }
 
     [Fact]
@@ -158,10 +158,10 @@ public class GlideStringTests
         Array.Fill(payload, (byte)'x');
 
         // Warm up to avoid first-JIT noise
-        _ = new gs(payload);
+        _ = new GlideString(payload);
 
         long before = GC.GetAllocatedBytesForCurrentThread();
-        gs result = new(payload);
+        var result = new GlideString(payload);
         long allocated = GC.GetAllocatedBytesForCurrentThread() - before;
 
         // After fix: only GlideString object + lock object (~a few hundred bytes).
@@ -179,7 +179,7 @@ public class GlideStringTests
     public void ByteArrayConstructor_NonUtf8_HexDumpBuiltLazily()
     {
         byte[] binaryData = [0x00, 0xFF, 0x80, 0x7F, 0xC0, 0xC1]; // not valid UTF-8
-        gs result = new(binaryData);
+        var result = new GlideString(binaryData);
 
         // Conversion must fail
         Assert.False(result.CanConvertToString());

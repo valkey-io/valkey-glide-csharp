@@ -59,9 +59,6 @@
   <ItemGroup>
     <Using Include="Xunit" />
     <Using Include="Valkey.Glide" />
-    <Using Include="Valkey.Glide.GlideString">
-      <Alias>gs</Alias>
-    </Using>
     <Using Include="System.Runtime.InteropServices" />
     <Using Include="Valkey.Glide.Internals" />
   </ItemGroup>

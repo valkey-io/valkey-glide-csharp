@@ -39,7 +39,7 @@ public class StandaloneClientTests(TestConfiguration config)
         string value = Guid.NewGuid().ToString();
         await client.SetAsync(key1, value);
 
-        gs dump = (await client.CustomCommand(["DUMP", key1]) as gs)!;
+        var dump = (await client.CustomCommand(["DUMP", key1]) as GlideString)!;
 
         Assert.Equal("OK", await client.CustomCommand(["RESTORE", key2, "0", dump!]));
         ValkeyValue retrievedValue = await client.GetAsync(key2);
@@ -47,8 +47,7 @@ public class StandaloneClientTests(TestConfiguration config)
 
         // Set and get a binary value
         await client.SetAsync(key3, dump!);
-        ValkeyValue binaryValue = await client.GetAsync(key3);
-        Assert.Equal(dump, (gs)binaryValue);
+        Assert.Equal(dump, await client.GetAsync(key3));
     }
 
     [Fact]
@@ -73,18 +72,18 @@ public class StandaloneClientTests(TestConfiguration config)
         string key1 = Guid.NewGuid().ToString();
         Assert.Equal(2L, await client.CustomCommand(["hset", key1, "f1", "v1", "f2", "v2"]));
         Assert.Equal(
-            new Dictionary<gs, gs> { { "f1", "v1" }, { "f2", "v2" } },
+            new Dictionary<GlideString, GlideString> { { "f1", "v1" }, { "f2", "v2" } },
             await client.CustomCommand(["hgetall", key1])
         );
         Assert.Equal(
-            new gs?[] { "v1", "v2", null },
+            new GlideString?[] { "v1", "v2", null },
             await client.CustomCommand(["hmget", key1, "f1", "f2", "f3"])
         );
 
         string key2 = Guid.NewGuid().ToString();
         Assert.Equal(3L, await client.CustomCommand(["sadd", key2, "a", "b", "c"]));
         Assert.Equal(
-            [new gs("a"), new gs("b"), new gs("c")],
+            [new GlideString("a"), new GlideString("b"), new GlideString("c")],
             await client.CustomCommand(["smembers", key2]) as HashSet<object>
         );
         Assert.Equal(
@@ -95,8 +94,8 @@ public class StandaloneClientTests(TestConfiguration config)
         string key3 = Guid.NewGuid().ToString();
         _ = await client.CustomCommand(["xadd", key3, "0-1", "str-1-id-1-field-1", "str-1-id-1-value-1", "str-1-id-1-field-2", "str-1-id-1-value-2"]);
         _ = await client.CustomCommand(["xadd", key3, "0-2", "str-1-id-2-field-1", "str-1-id-2-value-1", "str-1-id-2-field-2", "str-1-id-2-value-2"]);
-        _ = Assert.IsType<Dictionary<gs, object?>>(await client.CustomCommand(["xread", "streams", key3, "stream", "0-1", "0-2"]));
-        _ = Assert.IsType<Dictionary<gs, object?>>(await client.CustomCommand(["xinfo", "stream", key3, "full"]));
+        _ = Assert.IsType<Dictionary<GlideString, object?>>(await client.CustomCommand(["xread", "streams", key3, "stream", "0-1", "0-2"]));
+        _ = Assert.IsType<Dictionary<GlideString, object?>>(await client.CustomCommand(["xinfo", "stream", key3, "full"]));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
