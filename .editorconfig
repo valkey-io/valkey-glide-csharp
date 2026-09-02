@@ -82,7 +82,7 @@ dotnet_diagnostic.IDE0002.severity = none
 # IDE0008: Use explicit type - disabled to allow var usage for brevity
 dotnet_diagnostic.IDE0008.severity = none
 
-# IDE0046: allow a standalone `if` instead of a forced ternary/conditional return
+# IDE0046: Use conditional expression for return – disabled to provide flexibility for better readability
 dotnet_diagnostic.IDE0046.severity = none
 
 # IDE0090: Simplify 'new' expression - use var for brevity
