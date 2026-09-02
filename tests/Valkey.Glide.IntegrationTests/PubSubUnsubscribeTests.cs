@@ -148,10 +148,10 @@ public class PubSubUnsubscribeTests
         var patternMessage = BuildMessage(PubSubChannelMode.Pattern);
         var messages = new List<PubSubMessage> { channelMessage, patternMessage };
 
-        var shardedChannelMessage = isSharded ? BuildMessage(PubSubChannelMode.Sharded) : null;
         if (isSharded)
         {
-            messages.Add(shardedChannelMessage!);
+            var shardedChannelMessage = BuildMessage(PubSubChannelMode.Sharded);
+            messages.Add(shardedChannelMessage);
         }
 
         // Build subscriber and verify it's active.
@@ -176,13 +176,9 @@ public class PubSubUnsubscribeTests
 
         // Build many messages for each channel mode.
         var messagesPerChannelMode = 128;
-        var messages = new List<PubSubMessage>();
-
         var channelMessages = Enumerable.Range(0, messagesPerChannelMode).Select(_ => BuildMessage(PubSubChannelMode.Exact)).ToArray();
-        messages.AddRange(channelMessages);
-
         var patternMessages = Enumerable.Range(0, messagesPerChannelMode).Select(_ => BuildMessage(PubSubChannelMode.Pattern)).ToArray();
-        messages.AddRange(patternMessages);
+        var messages = [..channelMessages, ..patternMessages];
 
         if (isSharded)
         {
