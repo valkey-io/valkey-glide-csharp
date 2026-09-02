@@ -803,7 +803,7 @@ dotnet_diagnostic.RCS1268.severity = error
 # RCS1267: Use string interpolation instead of 'string.Concat'
 
 # IDE0130: Namespace does not match folder structure
-[sources/Valkey.Glide/{Abstract,Client}/*.cs]
+[sources/Valkey.Glide/**.cs]
 dotnet_style_namespace_match_folder = false
 dotnet_diagnostic.IDE0130.severity = none
 
