@@ -314,7 +314,7 @@ public class SortedSetCommandTests
             // Test SortedSetRandomMembersAsync converter
             () =>
             {
-                object[] testRandomResponse = ["member1", "member2"];
+                object[] testRandomResponse = [new GlideString("member1"), new GlideString("member2")];
                 ValkeyValue[] result = Request.SortedSetRandomMembers("key", 2).Converter(testRandomResponse);
                 Assert.Equal(2, result.Length);
                 Assert.Equal("member1", result[0]);
@@ -357,7 +357,7 @@ public class SortedSetCommandTests
             {
                 object[] testScanResponse = [
                     5L,
-                    new object[] { "member1", "10.5", "member2", "8.25" }
+                    new object[] { new GlideString("member1"), new GlideString("10.5"), new GlideString("member2"), new GlideString("8.25") }
                 ];
                 (long cursor, SortedSetEntry[] items) = Request.SortedSetScan("key", 0).Converter(testScanResponse);
                 Assert.Equal(5L, cursor);
@@ -385,7 +385,7 @@ public class SortedSetCommandTests
             {
                 object[] testScanResponse = [
                     10L,
-                    new object[] { "single", "42.0" }
+                    new object[] { new GlideString("single"), new GlideString("42.0") }
                 ];
                 (long cursor, SortedSetEntry[] items) = Request.SortedSetScan("key", 0).Converter(testScanResponse);
                 Assert.Equal(10L, cursor);
@@ -398,8 +398,8 @@ public class SortedSetCommandTests
             () =>
             {
                 object[] testScanResponse = [
-                    "15",
-                    new object[] { "test", "1.5" }
+                    new GlideString("15"),
+                    new object[] { new GlideString("test"), new GlideString("1.5") }
                 ];
                 (long cursor, SortedSetEntry[] items) = Request.SortedSetScan("key", 0).Converter(testScanResponse);
                 Assert.Equal(15L, cursor);

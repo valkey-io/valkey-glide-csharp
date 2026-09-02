@@ -461,7 +461,7 @@ public class CommandTests
 
             // Server Management Command Converters
             () => Assert.Equal("Background append only file rewriting started", Request.BgRewriteAof().Converter("Background append only file rewriting started")),
-            () => Assert.Equal([new("maxmemory", "100mb")], Request.ConfigGet("maxmemory").Converter(new object[] { "maxmemory", "100mb" })),
+            () => Assert.Equal([new("maxmemory", "100mb")], Request.ConfigGet("maxmemory").Converter(new object[] { new GlideString("maxmemory"), "100mb" })),
             () => Assert.Empty(Request.ConfigGet("nonexistent").Converter(Array.Empty<object>())),
             () => Assert.Equal(100L, Request.DatabaseSize().Converter(100L)),
             () => Assert.Equal(0L, Request.DatabaseSize().Converter(0L)),
@@ -605,13 +605,13 @@ public class CommandTests
             // SCAN Commands Converters
             () =>
             {
-                var result = Request.Scan("0").Converter(["0", new object[] { "key1", "key2" }]);
+                var result = Request.Scan("0").Converter(["0", new object[] { new GlideString("key1"), new GlideString("key2") }]);
                 Assert.Equal("0", result.Item1);
                 Assert.Equal([new ValkeyKey("key1"), new ValkeyKey("key2")], result.Item2);
             },
             () =>
             {
-                var result = Request.Scan("10").Converter(["5", new object[] { "test" }]);
+                var result = Request.Scan("10").Converter(["5", new object[] { new GlideString("test") }]);
                 Assert.Equal("5", result.Item1);
                 Assert.Equal([new ValkeyKey("test")], result.Item2);
             },
@@ -630,14 +630,14 @@ public class CommandTests
             () => Assert.Equal(new long[] { 0L, 0L }, Request.WaitAof(false, 0, TimeSpan.Zero).Converter([0L, 0L])),
 
             () => Assert.Equal("one", Request.ListLeftPop("a").Converter("one")),
-            () => Assert.Equal(["one", "two"], Request.ListLeftPop("a", 2).Converter(["one", "two"])!),
+            () => Assert.Equal(["one", "two"], Request.ListLeftPop("a", 2).Converter([new GlideString("one"), new GlideString("two")])!),
             () => Assert.Null(Request.ListLeftPop("a", 2).Converter(null!)),
             () => Assert.Equal(ValkeyValue.Null, Request.ListLeftPop("a").Converter(null!)),
             () => Assert.Equal(1L, Request.ListLeftPush("a", "value").Converter(1L)),
             () => Assert.Equal(2L, Request.ListLeftPush("a", ["one", "two"]).Converter(2L)),
             () => Assert.Equal("three", Request.ListRightPop("a").Converter("three")),
             () => Assert.Equal(ValkeyValue.Null, Request.ListRightPop("a").Converter(null!)),
-            () => Assert.Equal(["three", "four"], Request.ListRightPop("a", 2).Converter(["three", "four"])!),
+            () => Assert.Equal(["three", "four"], Request.ListRightPop("a", 2).Converter([new GlideString("three"), new GlideString("four")])!),
             () => Assert.Null(Request.ListRightPop("a", 2).Converter(null!)),
             () => Assert.Equal(2L, Request.ListRightPush("a", "value").Converter(2L)),
             () => Assert.Equal(3L, Request.ListRightPush("a", ["three", "four"]).Converter(3L)),
@@ -647,8 +647,8 @@ public class CommandTests
             () => Assert.Equal(1L, Request.ListRemove("a", "value", 1).Converter(1L)),
             () => Assert.Equal(0L, Request.ListRemove("a", "nonexistent", 0).Converter(0L)),
             () => Assert.Equal(ValkeyValue.Ok, Request.ListTrim("a", 0, 10).Converter("OK")),
-            () => Assert.Equal(["one", "two", "three"], Request.ListRange("a", 0, -1).Converter(["one", "two", "three"])),
-            () => Assert.IsType<ValkeyValue[]>(Request.ListRange("a", 0, -1).Converter(["one", "two", "three"])),
+            () => Assert.Equal(["one", "two", "three"], Request.ListRange("a", 0, -1).Converter([new GlideString("one"), new GlideString("two"), new GlideString("three")])),
+            () => Assert.IsType<ValkeyValue[]>(Request.ListRange("a", 0, -1).Converter([new GlideString("one"), new GlideString("two"), new GlideString("three")])),
             () => Assert.Equal([], Request.ListRange("nonexistent", 0, -1).Converter([])),
 
             // Hash Commands
@@ -663,13 +663,13 @@ public class CommandTests
             () => Assert.Equal(15L, Request.HashIncrementBy("key", "field", 5L).Converter(15L)),
             () => Assert.Equal(10L, Request.HashIncrementBy("key", "field", 1L).Converter(10L)),
             () => Assert.Equal(12.5, Request.HashIncrementBy("key", "field", 2.5).Converter(12.5)),
-            () => Assert.Equal(new HashSet<ValkeyValue> { "field1", "field2" }, Request.HashKeys("key").Converter(["field1", "field2"])),
+            () => Assert.Equal(new HashSet<ValkeyValue> { "field1", "field2" }, Request.HashKeys("key").Converter([new GlideString("field1"), new GlideString("field2")])),
             () => Assert.Empty(Request.HashKeys("nonexistent").Converter([])),
             () => Assert.Equal(5L, Request.HashLength("key").Converter(5L)),
             () => Assert.Equal(10L, Request.HashStringLength("key", "field").Converter(10L)),
 
             // Hash Field Expire Commands converters (Valkey 9.0+)
-            () => Assert.Equal((ValkeyValue[])["value1", "value2"], Request.HashGet("key", ["field1", "field2"], GetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60))).Converter(["value1", "value2"])),
+            () => Assert.Equal((ValkeyValue[])["value1", "value2"], Request.HashGet("key", ["field1", "field2"], GetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60))).Converter([new GlideString("value1"), new GlideString("value2")])),
             () => Assert.Equal((ValkeyValue[])[ValkeyValue.Null], Request.HashGet("key", ["field1"], GetExpiryOptions.Persist()).Converter([null!])),
             () => Assert.True(Request.HashSet("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1")], new HashSetOptions { Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60)) }).Converter(1L)),
             () => Assert.False(Request.HashSet("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1")], new HashSetOptions { Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60)) }).Converter(0L)),
@@ -684,21 +684,21 @@ public class CommandTests
             () => Assert.False(Request.HashTimeToLive("key", ["field1"]).Converter([-2L])[0].Exists),
 
             // List Commands converters
-            () => Assert.Equal(["key", "value"], Request.ListBlockingLeftPop(["key"], TimeSpan.FromSeconds(1)).Converter(["key", "value"])!),
+            () => Assert.Equal(["key", "value"], Request.ListBlockingLeftPop(["key"], TimeSpan.FromSeconds(1)).Converter([new GlideString("key"), new GlideString("value")])!),
             () => Assert.Null(Request.ListBlockingLeftPop(["key"], TimeSpan.FromSeconds(1)).Converter(null!)),
-            () => Assert.Equal(["list1", "element"], Request.ListBlockingRightPop(["list1", "list2"], TimeSpan.FromSeconds(5)).Converter(["list1", "element"])!),
+            () => Assert.Equal(["list1", "element"], Request.ListBlockingRightPop(["list1", "list2"], TimeSpan.FromSeconds(5)).Converter([new GlideString("list1"), new GlideString("element")])!),
             () => Assert.Null(Request.ListBlockingRightPop(["key"], TimeSpan.Zero).Converter(null!)),
             () => Assert.Equal("moved_value", Request.ListBlockingMove("src", "dest", ListSide.Left, ListSide.Right, TimeSpan.FromSeconds(2)).Converter("moved_value")),
             () => Assert.Equal(ValkeyValue.Null, Request.ListBlockingMove("src", "dest", ListSide.Left, ListSide.Right, TimeSpan.FromSeconds(2)).Converter(null!)),
             () => Assert.True(Request.ListBlockingPop(["key"], ListSide.Left, TimeSpan.FromSeconds(1)).Converter(null!).IsNull),
             () => Assert.True(Request.ListBlockingPop(["key"], ListSide.Left, 2, TimeSpan.FromSeconds(1)).Converter(null!).IsNull),
-            () => Assert.False(Request.ListBlockingPop(["mylist"], ListSide.Left, TimeSpan.FromSeconds(1)).Converter(new() { { (GlideString)"mylist", new object[] { (GlideString)"value1" } } }).IsNull),
-            () => Assert.False(Request.ListBlockingPop(["list2"], ListSide.Right, 3, TimeSpan.FromSeconds(2)).Converter(new() { { (GlideString)"list2", new object[] { (GlideString)"elem1", (GlideString)"elem2" } } }).IsNull),
+            () => Assert.False(Request.ListBlockingPop(["mylist"], ListSide.Left, TimeSpan.FromSeconds(1)).Converter(new() { { new GlideString("mylist"), new object[] { new GlideString("value1") } } }).IsNull),
+            () => Assert.False(Request.ListBlockingPop(["list2"], ListSide.Right, 3, TimeSpan.FromSeconds(2)).Converter(new() { { new GlideString("list2"), new object[] { new GlideString("elem1"), new GlideString("elem2") } } }).IsNull),
             () => Assert.True(Request.ListBlockingPop(["key"], ListSide.Left, TimeSpan.FromSeconds(1)).Converter([]).IsNull),
             () => Assert.True(Request.ListLeftPop(["key1", "key2"], 2).Converter(null!).IsNull),
             () => Assert.True(Request.ListRightPop(["key1", "key2"], 3).Converter(null!).IsNull),
-            () => Assert.False(Request.ListLeftPop(["mylist"], 1).Converter(new() { { (GlideString)"mylist", new object[] { (GlideString)"left_value" } } }).IsNull),
-            () => Assert.False(Request.ListRightPop(["list2"], 2).Converter(new() { { (GlideString)"list2", new object[] { (GlideString)"right1", (GlideString)"right2" } } }).IsNull),
+            () => Assert.False(Request.ListLeftPop(["mylist"], 1).Converter(new() { { new GlideString("mylist"), new object[] { new GlideString("left_value") } } }).IsNull),
+            () => Assert.False(Request.ListRightPop(["list2"], 2).Converter(new() { { new GlideString("list2"), new object[] { new GlideString("right1"), new GlideString("right2") } } }).IsNull),
             () => Assert.True(Request.ListLeftPop(["empty"], 1).Converter([]).IsNull),
             () => Assert.True(Request.ListRightPop(["empty"], 1).Converter([]).IsNull),
 
@@ -825,9 +825,9 @@ public class CommandTests
     {
         HashSet<object> testHashSet =
         [
-            "member1",
-            "member2",
-            "member3"
+            new GlideString("member1"),
+            new GlideString("member2"),
+            new GlideString("member3")
         ];
 
         Assert.Multiple([
@@ -869,31 +869,31 @@ public class CommandTests
         // Test for HashGetAsync with multiple fields
         List<object?> testList =
         [
-            "value1",
-            "value2",
+            new GlideString("value1"),
+            new GlideString("value2"),
             null!,
         ];
 
         // Test for HashGetAsync (all) and HashRandomFieldsWithValuesAsync
         var testKvpList = new Dictionary<GlideString, object>() {
-            { "field1", "value1" },
-            { "field2", "value2" },
-            { "field3", "value3" }
+            { "field1", new GlideString("value1") },
+            { "field2", new GlideString("value2") },
+            { "field3", new GlideString("value3") }
         };
 
         object[] testObjectNestedArray =
          [
-            new object[] { "field1", "value1" },
-            new object[] { "field2", "value2" },
-            new object[] { "field3", "value3" },
+            new object[] { new GlideString("field1"), new GlideString("value1") },
+            new object[] { new GlideString("field2"), new GlideString("value2") },
+            new object[] { new GlideString("field3"), new GlideString("value3") },
          ];
 
         // Test for HashValuesAsync and HashRandomFieldsAsync
         object[] testObjectArray =
         [
-            "value1",
-            "value2",
-            "value3"
+            new GlideString("value1"),
+            new GlideString("value2"),
+            new GlideString("value3")
         ];
 
         Assert.Multiple(
@@ -1046,12 +1046,12 @@ public class CommandTests
             ["radix-tree-keys"] = 1L,
             ["radix-tree-nodes"] = 2L,
             ["groups"] = 1L,
-            ["last-generated-id"] = (GlideString)"5-0",
-            ["max-deleted-entry-id"] = (GlideString)"2-0",
+            ["last-generated-id"] = new GlideString("5-0"),
+            ["max-deleted-entry-id"] = new GlideString("2-0"),
             ["entries-added"] = 4L,
-            ["recorded-first-entry-id"] = (GlideString)"3-0",
-            ["first-entry"] = new object[] { (GlideString)"3-0", new object[] { (GlideString)"f1", (GlideString)"v1" } },
-            ["last-entry"] = new object[] { (GlideString)"5-0", new object[] { (GlideString)"f2", (GlideString)"v2" } },
+            ["recorded-first-entry-id"] = new GlideString("3-0"),
+            ["first-entry"] = new object[] { new GlideString("3-0"), new object[] { new GlideString("f1"), new GlideString("v1") } },
+            ["last-entry"] = new object[] { new GlideString("5-0"), new object[] { new GlideString("f2"), new GlideString("v2") } },
         };
 
         var info = Request.StreamInfo("key").Converter(raw);
@@ -1081,7 +1081,7 @@ public class CommandTests
             ["length"] = 1L,
             ["radix-tree-keys"] = 1L,
             ["radix-tree-nodes"] = 2L,
-            ["last-generated-id"] = (GlideString)"1-0",
+            ["last-generated-id"] = new GlideString("1-0"),
             ["groups"] = 0L,
             ["first-entry"] = null!,
             ["last-entry"] = null!,
@@ -1105,7 +1105,7 @@ public class CommandTests
         {
             new Dictionary<GlideString, object>
             {
-                ["name"] = (GlideString)"consumer1",
+                ["name"] = new GlideString("consumer1"),
                 ["pending"] = 3L,
                 ["idle"] = 5000L,
                 ["inactive"] = 8000L,
@@ -1129,7 +1129,7 @@ public class CommandTests
         {
             new Dictionary<GlideString, object>
             {
-                ["name"] = (GlideString)"consumer1",
+                ["name"] = new GlideString("consumer1"),
                 ["pending"] = 1L,
                 ["idle"] = 100L,
             },
@@ -1151,12 +1151,12 @@ public class CommandTests
             ["mystream"] = new Dictionary<GlideString, object>
             {
                 ["0-0"] = null!,
-                ["1-0"] = new object[] { new object[] { (GlideString)"f1", (GlideString)"v1" } },
+                ["1-0"] = new object[] { new object[] { new GlideString("f1"), new GlideString("v1") } },
                 ["2-0"] = new object[]
                 {
-                    new object[] { (GlideString)"f1", (GlideString)"v1" },
-                    new object[] { (GlideString)"f2", (GlideString)"v2" },
-                    new object[] { (GlideString)"f3", (GlideString)"v3" },
+                    new object[] { new GlideString("f1"), new GlideString("v1") },
+                    new object[] { new GlideString("f2"), new GlideString("v2") },
+                    new object[] { new GlideString("f3"), new GlideString("v3") },
                 },
             },
         };
@@ -1183,7 +1183,7 @@ public class CommandTests
             ["stream0"] = new Dictionary<GlideString, object>(),
             ["stream1"] = new Dictionary<GlideString, object>
             {
-                ["1-0"] = new object[] { new object[] { (GlideString)"v1", (GlideString)"f1" } },
+                ["1-0"] = new object[] { new object[] { new GlideString("v1"), new GlideString("f1") } },
             },
         };
 

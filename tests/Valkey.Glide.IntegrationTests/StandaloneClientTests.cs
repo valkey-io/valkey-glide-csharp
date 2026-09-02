@@ -47,7 +47,7 @@ public class StandaloneClientTests(TestConfiguration config)
 
         // Set and get a binary value
         await client.SetAsync(key3, dump!);
-        Assert.Equal(dump, await client.GetAsync(key3));
+        Assert.Equal(dump, (GlideString)await client.GetAsync(key3));
     }
 
     [Fact]
