@@ -36,14 +36,12 @@ public class PubSubSubscribeTests
     [MemberData(nameof(ClusterAndSubscribeModeData), MemberType = typeof(PubSubUtils))]
     public static async Task SingleSubscription_AllChannelModes_SubscribesSuccessfully(bool isCluster, SubscribeMode subscribeMode)
     {
-        var isSharded = IsShardedSupported(isCluster);
-
         // Build one message for each channel mode.
         var channelMessage = BuildMessage(PubSubChannelMode.Exact);
         var patternMessage = BuildMessage(PubSubChannelMode.Pattern);
         var expectedMessages = new List<PubSubMessage> { channelMessage, patternMessage };
 
-        if (isSharded)
+        if (IsShardedSupported(isCluster))
         {
             var shardedChannelMessage = BuildMessage(PubSubChannelMode.Sharded);
             expectedMessages.Add(shardedChannelMessage);
@@ -63,8 +61,6 @@ public class PubSubSubscribeTests
     [MemberData(nameof(ClusterAndSubscribeModeData), MemberType = typeof(PubSubUtils))]
     public static async Task ManySubscriptions_AllChannelModes_SubscribesSuccessfully(bool isCluster, SubscribeMode subscribeMode)
     {
-        var isSharded = IsShardedSupported(isCluster);
-
         // Build many messages for each channel mode.
         var messagesPerChannelMode = 128;
         var channelMessages = Enumerable.Range(0, messagesPerChannelMode).Select(_ => BuildMessage(PubSubChannelMode.Exact)).ToArray();
@@ -74,7 +70,7 @@ public class PubSubSubscribeTests
         messages.AddRange(channelMessages);
         messages.AddRange(patternMessages);
 
-        if (isSharded)
+        if (IsShardedSupported(isCluster))
         {
             var shardedChannelMessages = Enumerable.Range(0, messagesPerChannelMode).Select(_ => BuildMessage(PubSubChannelMode.Sharded)).ToArray();
             messages.AddRange(shardedChannelMessages);
