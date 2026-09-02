@@ -178,7 +178,7 @@ public class PubSubUnsubscribeTests
         var messagesPerChannelMode = 128;
         var channelMessages = Enumerable.Range(0, messagesPerChannelMode).Select(_ => BuildMessage(PubSubChannelMode.Exact)).ToArray();
         var patternMessages = Enumerable.Range(0, messagesPerChannelMode).Select(_ => BuildMessage(PubSubChannelMode.Pattern)).ToArray();
-        var messages = [..channelMessages, ..patternMessages];
+        List<PubSubMessage> messages = [.. channelMessages, .. patternMessages];
 
         if (isSharded)
         {
