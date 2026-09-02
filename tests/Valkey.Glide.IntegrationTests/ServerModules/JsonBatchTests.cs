@@ -29,7 +29,7 @@ public class JsonBatchTests(TestConfiguration config)
         }
 
         string key = GetUniqueKey();
-        string jsonValue = "{\"name\":\"John\",\"age\":30}";
+        string jsonValue = /*lang=json,strict*/ "{\"name\":\"John\",\"age\":30}";
 
         try
         {
@@ -70,7 +70,7 @@ public class JsonBatchTests(TestConfiguration config)
         }
 
         string key = GetUniqueKey();
-        string jsonValue = "{\"counter\":10,\"multiplier\":5}";
+        string jsonValue = /*lang=json,strict*/ "{\"counter\":10,\"multiplier\":5}";
 
         try
         {
@@ -110,7 +110,7 @@ public class JsonBatchTests(TestConfiguration config)
         }
 
         string key = GetUniqueKey();
-        string jsonValue = "{\"items\":[1,2,3]}";
+        string jsonValue = /*lang=json,strict*/ "{\"items\":[1,2,3]}";
 
         try
         {
@@ -153,7 +153,7 @@ public class JsonBatchTests(TestConfiguration config)
         }
 
         string key = GetUniqueKey();
-        string jsonValue = "{\"a\":1,\"b\":2,\"c\":3}";
+        string jsonValue = /*lang=json,strict*/ "{\"a\":1,\"b\":2,\"c\":3}";
 
         try
         {
@@ -194,7 +194,7 @@ public class JsonBatchTests(TestConfiguration config)
         }
 
         string key = GetUniqueKey();
-        string jsonValue = "{\"greeting\":\"Hello\"}";
+        string jsonValue = /*lang=json,strict*/ "{\"greeting\":\"Hello\"}";
 
         try
         {
@@ -240,8 +240,8 @@ public class JsonBatchTests(TestConfiguration config)
 
         try
         {
-            await GlideJson.SetAsync(client, key1, "$", "{\"a\":1,\"b\":{\"c\":2}}");
-            await GlideJson.SetAsync(client, key2, "$", "{\"arr\":[1,2,3],\"num\":42}");
+            await GlideJson.SetAsync(client, key1, "$", /*lang=json,strict*/ "{\"a\":1,\"b\":{\"c\":2}}");
+            await GlideJson.SetAsync(client, key2, "$", /*lang=json,strict*/ "{\"arr\":[1,2,3],\"num\":42}");
 
             Batch batch = new(false);
             _ = GlideJsonBatch.Del(batch, key1, "$.b");
@@ -281,7 +281,7 @@ public class JsonBatchTests(TestConfiguration config)
         }
 
         string key = GetUniqueKey();
-        string jsonValue = "{\"active\":true,\"enabled\":false}";
+        string jsonValue = /*lang=json,strict*/ "{\"active\":true,\"enabled\":false}";
 
         try
         {
@@ -321,7 +321,7 @@ public class JsonBatchTests(TestConfiguration config)
         }
 
         string key = GetUniqueKey();
-        string jsonValue = "{\"a\":1,\"b\":{\"c\":2,\"d\":3}}";
+        string jsonValue = /*lang=json,strict*/ "{\"a\":1,\"b\":{\"c\":2,\"d\":3}}";
 
         try
         {
@@ -368,9 +368,9 @@ public class JsonBatchTests(TestConfiguration config)
 
         try
         {
-            await GlideJson.SetAsync(client, key1, "$", "{\"value\":1}");
-            await GlideJson.SetAsync(client, key2, "$", "{\"value\":2}");
-            await GlideJson.SetAsync(client, key3, "$", "{\"value\":3}");
+            await GlideJson.SetAsync(client, key1, "$", /*lang=json,strict*/ "{\"value\":1}");
+            await GlideJson.SetAsync(client, key2, "$", /*lang=json,strict*/ "{\"value\":2}");
+            await GlideJson.SetAsync(client, key3, "$", /*lang=json,strict*/ "{\"value\":3}");
 
             Batch batch = new(false);
             _ = GlideJsonBatch.MGet(batch, [(GlideString)key1, key2, key3], "$.value");
@@ -408,9 +408,9 @@ public class JsonBatchTests(TestConfiguration config)
         try
         {
             Batch batch = new(false);
-            _ = GlideJsonBatch.Set(batch, key, "$", "{\"a\":1}", GlideJson.SetCondition.OnlyIfDoesNotExist);
+            _ = GlideJsonBatch.Set(batch, key, "$", /*lang=json,strict*/ "{\"a\":1}", GlideJson.SetCondition.OnlyIfDoesNotExist);
             _ = GlideJsonBatch.Set(batch, key, "$.a", "2", GlideJson.SetCondition.OnlyIfExists);
-            _ = GlideJsonBatch.Set(batch, key, "$", "{\"b\":1}", GlideJson.SetCondition.OnlyIfDoesNotExist);
+            _ = GlideJsonBatch.Set(batch, key, "$", /*lang=json,strict*/ "{\"b\":1}", GlideJson.SetCondition.OnlyIfDoesNotExist);
             _ = GlideJsonBatch.Get(batch, key);
 
             object?[]? results = await client.Exec(batch, true);
@@ -443,7 +443,7 @@ public class JsonBatchTests(TestConfiguration config)
 
         try
         {
-            await GlideJson.SetAsync(client, key, "$", "{\"arr\":[1,2,3,4,5]}");
+            await GlideJson.SetAsync(client, key, "$", /*lang=json,strict*/ "{\"arr\":[1,2,3,4,5]}");
 
             Batch batch = new(false);
             _ = GlideJsonBatch.ArrInsert(batch, key, "$.arr", 2, ["\"inserted\""]);
@@ -487,7 +487,7 @@ public class JsonBatchTests(TestConfiguration config)
 
         try
         {
-            await GlideJson.SetAsync(client, key, "$", "{\"arr\":[1,2,3,4,5]}");
+            await GlideJson.SetAsync(client, key, "$", /*lang=json,strict*/ "{\"arr\":[1,2,3,4,5]}");
 
             Batch batch = new(false);
             _ = GlideJsonBatch.ArrPop(batch, key, "$.arr");
@@ -530,7 +530,7 @@ public class JsonBatchTests(TestConfiguration config)
 
         try
         {
-            await GlideJson.SetAsync(client, key, "$", "{\"a\":1,\"b\":\"hello\"}");
+            await GlideJson.SetAsync(client, key, "$", /*lang=json,strict*/ "{\"a\":1,\"b\":\"hello\"}");
 
             Batch batch = new(false);
             _ = GlideJsonBatch.Resp(batch, key);
@@ -565,7 +565,7 @@ public class JsonBatchTests(TestConfiguration config)
         try
         {
             Batch batch = new(true);
-            _ = GlideJsonBatch.Set(batch, key, "$", "{\"counter\":0}");
+            _ = GlideJsonBatch.Set(batch, key, "$", /*lang=json,strict*/ "{\"counter\":0}");
             _ = GlideJsonBatch.NumIncrBy(batch, key, "$.counter", 1);
             _ = GlideJsonBatch.NumIncrBy(batch, key, "$.counter", 1);
             _ = GlideJsonBatch.NumIncrBy(batch, key, "$.counter", 1);
@@ -603,7 +603,7 @@ public class JsonBatchTests(TestConfiguration config)
         }
 
         string key = GetUniqueKey();
-        string jsonValue = "{\"name\":\"John\",\"age\":30}";
+        string jsonValue = /*lang=json,strict*/ "{\"name\":\"John\",\"age\":30}";
 
         try
         {
@@ -646,7 +646,7 @@ public class JsonBatchTests(TestConfiguration config)
 
         try
         {
-            await GlideJson.SetAsync(client, key, "$", "{\"arr\":[1,2,3],\"obj\":{\"a\":1}}");
+            await GlideJson.SetAsync(client, key, "$", /*lang=json,strict*/ "{\"arr\":[1,2,3],\"obj\":{\"a\":1}}");
 
             ClusterBatch batch = new(false);
             _ = GlideJsonBatch.ArrAppend(batch, key, "$.arr", ["4"]);
