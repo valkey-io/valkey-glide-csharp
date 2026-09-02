@@ -803,10 +803,10 @@ public class CommandTests
         // Test MGET with GlideString objects (what the server actually returns)
         var mgetResponse = new object[] { new GlideString("value1"), null!, new GlideString("value3") };
         var mgetResult = Request.Get(["key1", "key2", "key3"]).Converter(mgetResponse);
-        Assert.Equal(3, result.Length);
-        Assert.Equal(new ValkeyValue("value1"), result[0]);
-        Assert.Equal(ValkeyValue.Null, result[1]);
-        Assert.Equal(new ValkeyValue("value3"), result[2]);
+        Assert.Equal(3, mgetResult.Length);
+        Assert.Equal(new ValkeyValue("value1"), mgetResult[0]);
+        Assert.Equal(ValkeyValue.Null, mgetResult[1]);
+        Assert.Equal(new ValkeyValue("value3"), mgetResult[2]);
 
         // Test empty MGET response
         var emptyResult = Request.Get([]).Converter([]);
