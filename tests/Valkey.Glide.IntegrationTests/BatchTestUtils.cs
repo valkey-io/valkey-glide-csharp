@@ -357,7 +357,7 @@ internal partial class BatchTestUtils
         testData.Add(new(1L, "SetDiffStore(prefix+destKey, [prefix+key1, prefix+key2])"));
 
         _ = batch.SetPop(key3);
-        testData.Add(new("z", "SetPop(key3)"));
+        testData.Add(new(new GlideString("z"), "SetPop(key3)"));
 
         _ = batch.SetCard(key3);
         testData.Add(new(0L, "SetCard(key3) after pop"));
