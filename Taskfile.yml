@@ -114,11 +114,13 @@ tasks:
 
     lint:csharp:
         desc: "Run C# linting"
+        env:
+            Configuration: Lint
         cmds:
             - dotnet format --verify-no-changes
             # Shutdown build server to release file locks before lint build
             - dotnet build-server shutdown
-            - dotnet build --configuration Lint --framework net8.0 -m:1
+            - dotnet build
 
     lint:markdown:
         desc: "Run Markdown linting"
@@ -157,6 +159,8 @@ tasks:
 
     format:csharp:
         desc: "Run C# formatting"
+        env:
+            Configuration: Lint
         cmd: dotnet format
 
     format:markdown:

@@ -106,18 +106,25 @@ public class PubSubBasicTests
     [MemberData(nameof(ClusterMode), MemberType = typeof(Data))]
     public static async Task DifferentChannelsWithSameName_ExactPatternSharded_IsolatedCorrectly(bool isCluster)
     {
-        bool isSharded = IsShardedSupported(isCluster);
-
         // Build messages that all use the same channel/pattern name but different channel modes.
         var channel = BuildChannel();
         var message = "message";
 
         var channelMessage = PubSubMessage.FromChannel(message, channel);
         var patternMessage = PubSubMessage.FromPattern(message, channel, channel);
-        var shardedChannelMessage = isSharded ? PubSubMessage.FromShardedChannel(message, channel) : null;
 
         var messages = new List<PubSubMessage> { channelMessage, patternMessage };
-        if (isSharded) messages.Add(shardedChannelMessage!);
+
+        // The channel message should be received twice - once for the
+        // channel subscription and once for the pattern subscription.
+        var expected = new List<PubSubMessage> { channelMessage, channelMessage, patternMessage };
+
+        if (IsShardedSupported(isCluster))
+        {
+            var shardedChannelMessage = PubSubMessage.FromShardedChannel(message, channel);
+            messages.Add(shardedChannelMessage);
+            expected.Add(shardedChannelMessage);
+        }
 
         await using var subscriber = await BuildSubscriber(isCluster, messages);
         await AssertSubscribedAsync(subscriber, messages);
@@ -125,11 +132,6 @@ public class PubSubBasicTests
         // Publish to channel and sharded channel.
         await using var publisher = BuildPublisher(isCluster);
         await PublishAsync(publisher, messages);
-
-        // The channel message should be received twice - once for the
-        // channel subscription and once for the pattern subscription.
-        var expected = new List<PubSubMessage> { channelMessage, channelMessage, patternMessage };
-        if (isSharded) expected.Add(shardedChannelMessage!);
 
         await AssertReceivedAsync(subscriber, expected);
     }

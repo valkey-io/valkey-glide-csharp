@@ -214,11 +214,10 @@ public class SortedSetCommandTests
     public void SortedSetCommands_ValidateArrayConverters()
     {
         // Test data for score-based converters
-        Dictionary<GlideString, object> testScoreDict = new()
-        {
-            {"member1", 10.5},
-            {"member2", 8.25},
-            {"member3", 15.0}
+        var testScoreDict = new Dictionary<GlideString, object>() {
+            { "member1", 10.5 },
+            { "member2", 8.25 },
+            { "member3", 15.0 }
         };
 
         Assert.Multiple(
@@ -253,14 +252,11 @@ public class SortedSetCommandTests
             // Test SortedSetPopMinAsync converter - single element
             () =>
             {
-                Dictionary<gs, object> testDict = new()
-                {
-                    { (gs)"member1", 8.25 }
-                };
-                SortedSetEntry? result = Request.SortedSetPopMin("key").Converter(testDict);
-                _ = Assert.NotNull(result);
-                Assert.Equal("member1", result.Value.Element);
-                Assert.Equal(8.25, result.Value.Score);
+                var response = new Dictionary<GlideString, object>() { { "member1", 8.25 } };
+                var result = Assert.NotNull(Request.SortedSetPopMin("key").Converter(response));
+
+                Assert.Equal("member1", result.Element);
+                Assert.Equal(8.25, result.Score);
             },
 
             // Test SortedSetPopMinAsync converter - null result
@@ -273,10 +269,7 @@ public class SortedSetCommandTests
             // Test SortedSetPopMaxAsync converter - single element
             () =>
             {
-                Dictionary<gs, object> testDict = new()
-                {
-                    { (gs)"member1", 10.5 }
-                };
+                var testDict = new Dictionary<GlideString, object>() { { "member1", 10.5 } };
                 SortedSetEntry? result = Request.SortedSetPopMax("key").Converter(testDict);
                 _ = Assert.NotNull(result);
                 Assert.Equal("member1", result.Value.Element);
@@ -286,10 +279,10 @@ public class SortedSetCommandTests
             // Test SortedSetPopMinAsync converter - multiple elements
             () =>
             {
-                Dictionary<gs, object> testDict = new()
+                Dictionary<GlideString, object> testDict = new()
                 {
-                    { (gs)"member1", 5.0 },
-                    { (gs)"member2", 8.25 }
+                    { "member1", 5.0 },
+                    { "member2", 8.25 }
                 };
                 SortedSetEntry[] result = Request.SortedSetPopMin("key", 2).Converter(testDict);
                 Assert.Equal(2, result.Length);
@@ -300,10 +293,10 @@ public class SortedSetCommandTests
             // Test SortedSetPopMaxAsync converter - multiple elements
             () =>
             {
-                Dictionary<gs, object> testDict = new()
+                Dictionary<GlideString, object> testDict = new()
                 {
-                    { (gs)"member1", 10.5 },
-                    { (gs)"member2", 8.25 }
+                    { "member1", 10.5 },
+                    { "member2", 8.25 }
                 };
                 SortedSetEntry[] result = Request.SortedSetPopMax("key", 2).Converter(testDict);
                 Assert.Equal(2, result.Length);
@@ -321,7 +314,7 @@ public class SortedSetCommandTests
             // Test SortedSetRandomMembersAsync converter
             () =>
             {
-                object[] testRandomResponse = [(gs)"member1", (gs)"member2"];
+                object[] testRandomResponse = [new GlideString("member1"), new GlideString("member2")];
                 ValkeyValue[] result = Request.SortedSetRandomMembers("key", 2).Converter(testRandomResponse);
                 Assert.Equal(2, result.Length);
                 Assert.Equal("member1", result[0]);
@@ -364,7 +357,7 @@ public class SortedSetCommandTests
             {
                 object[] testScanResponse = [
                     5L,
-                    new object[] { (gs)"member1", (gs)"10.5", (gs)"member2", (gs)"8.25" }
+                    new object[] { new GlideString("member1"), new GlideString("10.5"), new GlideString("member2"), new GlideString("8.25") }
                 ];
                 (long cursor, SortedSetEntry[] items) = Request.SortedSetScan("key", 0).Converter(testScanResponse);
                 Assert.Equal(5L, cursor);
@@ -392,7 +385,7 @@ public class SortedSetCommandTests
             {
                 object[] testScanResponse = [
                     10L,
-                    new object[] { (gs)"single", (gs)"42.0" }
+                    new object[] { new GlideString("single"), new GlideString("42.0") }
                 ];
                 (long cursor, SortedSetEntry[] items) = Request.SortedSetScan("key", 0).Converter(testScanResponse);
                 Assert.Equal(10L, cursor);
@@ -405,8 +398,8 @@ public class SortedSetCommandTests
             () =>
             {
                 object[] testScanResponse = [
-                    (gs)"15",
-                    new object[] { (gs)"test", (gs)"1.5" }
+                    new GlideString("15"),
+                    new object[] { new GlideString("test"), new GlideString("1.5") }
                 ];
                 (long cursor, SortedSetEntry[] items) = Request.SortedSetScan("key", 0).Converter(testScanResponse);
                 Assert.Equal(15L, cursor);

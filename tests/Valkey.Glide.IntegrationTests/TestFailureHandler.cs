@@ -72,7 +72,7 @@ public static class TestFailureHandler
         string? workspace = Environment.GetEnvironmentVariable("GITHUB_WORKSPACE");
         if (workspace is not null && filePath.StartsWith(workspace))
         {
-            filePath = filePath.Substring(workspace.Length).TrimStart('/');
+            filePath = filePath[workspace.Length..].TrimStart('/');
         }
 
         return $"[{testName}]({GitHubUrl}/{repo}/blob/{sha}/{filePath}#L{lineNumber})";

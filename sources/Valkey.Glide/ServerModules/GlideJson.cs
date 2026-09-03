@@ -105,7 +105,9 @@ public static partial class GlideJson
     private static GlideString ToGlideString(ValkeyValue value)
     {
         if (value.IsNull)
+        {
             throw new ArgumentException("Null ValkeyValue is not valid for command arguments", nameof(value));
+        }
 
         return new GlideString(value.ToString());
     }
@@ -165,15 +167,13 @@ public static partial class GlideJson
     }
 
     private static GlideString[] BuildSetArgs(GlideString key, GlideString path, GlideString value, SetCondition condition)
-    {
-        return condition switch
+        => condition switch
         {
             SetCondition.None => [JsonSet, key, path, value],
             SetCondition.OnlyIfDoesNotExist => [JsonSet, key, path, value, ValkeyLiterals.NX],
             SetCondition.OnlyIfExists => [JsonSet, key, path, value, ValkeyLiterals.XX],
             _ => throw new ArgumentOutOfRangeException(nameof(condition), condition, "Invalid SetCondition value")
         };
-    }
 
     #endregion
     #region JSON.GET
@@ -323,10 +323,14 @@ public static partial class GlideJson
     private static ValkeyValue[] ConvertToValkeyValueArray(object? result)
     {
         if (result is null)
+        {
             return [];
+        }
 
         if (result is object?[] arr)
+        {
             return [.. arr.Select(ToValkeyValue)];
+        }
 
         return [ToValkeyValue(result)];
     }
@@ -475,10 +479,14 @@ public static partial class GlideJson
     private static ValkeyValue[] ConvertToValkeyValueArrayNullable(object? result)
     {
         if (result is null)
+        {
             return [];
+        }
 
         if (result is object?[] arr)
+        {
             return [.. arr.Select(ToValkeyValue)];
+        }
 
         // Single value (legacy path) - wrap in array for consistent return type
         return [ToValkeyValue(result)];
@@ -593,10 +601,14 @@ public static partial class GlideJson
     private static long?[]? ConvertToNullableLongArray(object? result)
     {
         if (result is null)
+        {
             return null;
+        }
 
         if (result is object?[] arr)
+        {
             return [.. arr.Select(o => o is null ? (long?)null : (long)o)];
+        }
 
         // Single value (legacy path) - wrap in array for consistent return type
         return [(long)result];
@@ -611,10 +623,14 @@ public static partial class GlideJson
     private static long?[] ConvertToNullableLongArrayNonNull(object? result)
     {
         if (result is null)
+        {
             throw new InvalidOperationException("Unexpected null result from server");
+        }
 
         if (result is object?[] arr)
+        {
             return [.. arr.Select(o => o is null ? (long?)null : (long)o)];
+        }
 
         // Single value (legacy path) - wrap in array for consistent return type
         return [(long)result];
@@ -721,10 +737,14 @@ public static partial class GlideJson
     private static bool?[]? ConvertToNullableBoolArray(object? result)
     {
         if (result is null)
+        {
             return null;
+        }
 
         if (result is object?[] arr)
+        {
             return [.. arr.Select(o => o is null ? (bool?)null : Convert.ToBoolean(o))];
+        }
 
         // Single value (legacy path) - wrap in array for consistent return type
         return [Convert.ToBoolean(result)];

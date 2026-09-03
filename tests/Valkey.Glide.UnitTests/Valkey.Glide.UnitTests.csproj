@@ -59,19 +59,16 @@
   <ItemGroup>
     <Using Include="Xunit" />
     <Using Include="Valkey.Glide" />
-    <Using Include="Valkey.Glide.GlideString">
-      <Alias>gs</Alias>
-    </Using>
     <Using Include="System.Runtime.InteropServices" />
     <Using Include="Valkey.Glide.Internals" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(Configuration)' == 'Lint'">
-    <PackageReference Include="Roslynator.Analyzers" Version="4.16.1">
+  <ItemGroup>
+    <PackageReference Include="Roslynator.Analyzers" Version="5.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Roslynator.Formatting.Analyzers" Version="4.16.1">
+    <PackageReference Include="Roslynator.Formatting.Analyzers" Version="5.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

@@ -82,6 +82,9 @@ dotnet_diagnostic.IDE0002.severity = none
 # IDE0008: Use explicit type - disabled to allow var usage for brevity
 dotnet_diagnostic.IDE0008.severity = none
 
+# IDE0046: Use conditional expression for return – disabled to provide flexibility for better readability
+dotnet_diagnostic.IDE0046.severity = none
+
 # IDE0090: Simplify 'new' expression - use var for brevity
 csharp_style_implicit_object_creation_when_type_is_apparent = true:error
 
@@ -803,7 +806,7 @@ dotnet_diagnostic.RCS1268.severity = error
 # RCS1267: Use string interpolation instead of 'string.Concat'
 
 # IDE0130: Namespace does not match folder structure
-[sources/Valkey.Glide/{Abstract,Client}/*.cs]
+[sources/Valkey.Glide/**.cs]
 dotnet_style_namespace_match_folder = false
 dotnet_diagnostic.IDE0130.severity = none
 

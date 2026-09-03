@@ -10,8 +10,7 @@ public class ConnectionMultiplexerReadFromMappingTests
     public void CreateClientConfigBuilder_WithReadFromPrimary_MapsCorrectly()
     {
         // Arrange
-        var options = new ConfigurationOptions();
-        options.ReadFrom = new ReadFrom(ReadFromStrategy.Primary);
+        var options = new ConfigurationOptions { ReadFrom = new ReadFrom(ReadFromStrategy.Primary) };
 
         // Act
         StandaloneClientConfigurationBuilder standaloneBuilder = ConnectionMultiplexer.CreateClientConfigBuilder<StandaloneClientConfigurationBuilder>(options);
@@ -32,8 +31,7 @@ public class ConnectionMultiplexerReadFromMappingTests
     public void CreateClientConfigBuilder_WithReadFromPreferReplica_MapsCorrectly()
     {
         // Arrange
-        var options = new ConfigurationOptions();
-        options.ReadFrom = new ReadFrom(ReadFromStrategy.PreferReplica);
+        var options = new ConfigurationOptions { ReadFrom = new ReadFrom(ReadFromStrategy.PreferReplica) };
 
         // Act
         StandaloneClientConfigurationBuilder standaloneBuilder = ConnectionMultiplexer.CreateClientConfigBuilder<StandaloneClientConfigurationBuilder>(options);
@@ -54,8 +52,7 @@ public class ConnectionMultiplexerReadFromMappingTests
     public void CreateClientConfigBuilder_WithReadFromAzAffinity_MapsCorrectly()
     {
         // Arrange
-        var options = new ConfigurationOptions();
-        options.ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinity, "us-east-1a");
+        var options = new ConfigurationOptions { ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinity, "us-east-1a") };
 
         // Act
         StandaloneClientConfigurationBuilder standaloneBuilder = ConnectionMultiplexer.CreateClientConfigBuilder<StandaloneClientConfigurationBuilder>(options);
@@ -76,8 +73,7 @@ public class ConnectionMultiplexerReadFromMappingTests
     public void CreateClientConfigBuilder_WithReadFromAzAffinityReplicasAndPrimary_MapsCorrectly()
     {
         // Arrange
-        var options = new ConfigurationOptions();
-        options.ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinityReplicasAndPrimary, "eu-west-1b");
+        var options = new ConfigurationOptions { ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinityReplicasAndPrimary, "eu-west-1b") };
 
         // Act
         StandaloneClientConfigurationBuilder standaloneBuilder = ConnectionMultiplexer.CreateClientConfigBuilder<StandaloneClientConfigurationBuilder>(options);
@@ -98,8 +94,7 @@ public class ConnectionMultiplexerReadFromMappingTests
     public void CreateClientConfigBuilder_WithNullReadFrom_HandlesCorrectly()
     {
         // Arrange
-        var options = new ConfigurationOptions();
-        options.ReadFrom = null;
+        var options = new ConfigurationOptions { ReadFrom = null };
 
         // Act
         StandaloneClientConfigurationBuilder standaloneBuilder = ConnectionMultiplexer.CreateClientConfigBuilder<StandaloneClientConfigurationBuilder>(options);
@@ -117,8 +112,7 @@ public class ConnectionMultiplexerReadFromMappingTests
     public void CreateClientConfigBuilder_ReadFromFlowsToConnectionConfig()
     {
         // Arrange
-        var options = new ConfigurationOptions();
-        options.ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinity, "ap-south-1");
+        var options = new ConfigurationOptions { ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinity, "ap-south-1") };
 
         // Act
         StandaloneClientConfigurationBuilder standaloneBuilder = ConnectionMultiplexer.CreateClientConfigBuilder<StandaloneClientConfigurationBuilder>(options);
@@ -135,8 +129,7 @@ public class ConnectionMultiplexerReadFromMappingTests
     public void CreateClientConfigBuilder_ReadFromFlowsToFfiLayer()
     {
         // Arrange
-        var options = new ConfigurationOptions();
-        options.ReadFrom = new ReadFrom(ReadFromStrategy.PreferReplica);
+        var options = new ConfigurationOptions { ReadFrom = new ReadFrom(ReadFromStrategy.PreferReplica) };
 
         // Act
         StandaloneClientConfigurationBuilder standaloneBuilder = ConnectionMultiplexer.CreateClientConfigBuilder<StandaloneClientConfigurationBuilder>(options);
@@ -165,8 +158,8 @@ public class ConnectionMultiplexerReadFromMappingTests
     public void CreateClientConfigBuilder_AllReadFromStrategies_MapCorrectly(ReadFromStrategy strategy, string? az)
     {
         // Arrange
-        var options = new ConfigurationOptions();
-        options.ReadFrom = az != null ? new ReadFrom(strategy, az) : new ReadFrom(strategy);
+        var readFrom = az != null ? new ReadFrom(strategy, az) : new ReadFrom(strategy);
+        var options = new ConfigurationOptions { ReadFrom = readFrom };
 
         // Act
         StandaloneClientConfigurationBuilder standaloneBuilder = ConnectionMultiplexer.CreateClientConfigBuilder<StandaloneClientConfigurationBuilder>(options);

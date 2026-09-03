@@ -558,7 +558,7 @@ public class CompressionTests(CompressionFixture fixture)
         string key = $"incompatible_{commandName.ToLower()}_{Guid.NewGuid()}";
 
         // Replace {key} placeholder with actual key and convert to GlideString
-        GlideString[] args = [.. commandArgs.Select(arg => (GlideString)arg.Replace("{key}", key))];
+        var args = commandArgs.Select(arg => arg.Replace("{key}", key).ToGlideString()).ToArray();
 
         var exception = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
             await ZstdClient.CustomCommand(args));

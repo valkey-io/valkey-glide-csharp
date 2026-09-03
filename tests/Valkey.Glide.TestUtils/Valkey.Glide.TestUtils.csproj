@@ -46,12 +46,12 @@
     <Using Include="Valkey.Glide" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(Configuration)' == 'Lint'">
-    <PackageReference Include="Roslynator.Analyzers" Version="4.16.1">
+  <ItemGroup>
+    <PackageReference Include="Roslynator.Analyzers" Version="5.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Roslynator.Formatting.Analyzers" Version="4.16.1">
+    <PackageReference Include="Roslynator.Formatting.Analyzers" Version="5.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

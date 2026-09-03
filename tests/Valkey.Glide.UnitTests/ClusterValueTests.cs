@@ -17,12 +17,12 @@ public class ClusterValueTests
     private static readonly Dictionary<string, int> ValueEmpty = [];
     private static readonly Dictionary<string, int> ValueString = new() { ["node1"] = 1 };
     private static readonly Dictionary<string, int> ValueStrings = new() { ["node1"] = 1, ["node2"] = 2 };
-    private static readonly Dictionary<gs, int> ValueGlideStrings = new() { ["node1"] = 1, ["node2"] = 2 };
+    private static readonly Dictionary<GlideString, int> ValueGlideStrings = new() { ["node1"] = 1, ["node2"] = 2 };
 
     private static readonly Dictionary<string, string> ReferenceEmpty = [];
     private static readonly Dictionary<string, string> ReferenceString = new() { ["node1"] = "value1" };
     private static readonly Dictionary<string, string> ReferenceStrings = new() { ["node1"] = "value1", ["node2"] = "value2" };
-    private static readonly Dictionary<gs, string> ReferenceGlideStrings = new() { ["node1"] = "value1", ["node2"] = "value2" };
+    private static readonly Dictionary<GlideString, string> ReferenceGlideStrings = new() { ["node1"] = "value1", ["node2"] = "value2" };
 
     #endregion
     #region Tests

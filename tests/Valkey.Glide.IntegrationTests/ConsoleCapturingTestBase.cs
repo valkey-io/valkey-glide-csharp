@@ -20,7 +20,5 @@ public abstract class ConsoleCapturingTestBase : IDisposable
 #pragma warning restore IDE0290
 
     public void Dispose()
-    {
-        _interceptor.Dispose();
-    }
+        => _interceptor.Dispose();
 }

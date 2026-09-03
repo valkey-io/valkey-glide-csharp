@@ -33,12 +33,12 @@ public class ClusterClientTests(TestConfiguration config)
         Dictionary<string, object?> info = (await client.CustomCommand(["info"])).MultiValue;
         foreach (object? nodeInfo in info.Values)
         {
-            Assert.Contains("# Server", nodeInfo as gs);
+            Assert.Contains("# Server", nodeInfo as GlideString);
         }
 
         // command which returns a map even on a single node route
         ClusterValue<object?> config = await client.CustomCommand(["config", "get", "*file"], Route.Random);
-        Assert.True((config.SingleValue as Dictionary<gs, object?>)!.Count > 0);
+        Assert.True((config.SingleValue as Dictionary<GlideString, object?>)!.Count > 0);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -49,7 +49,7 @@ public class ClusterClientTests(TestConfiguration config)
         SortedSet<string> ports = [];
         foreach (int i in Enumerable.Range(0, 100))
         {
-            string res = ((await client.CustomCommand(["info", "server"], Route.Random)).SingleValue! as gs)!;
+            string res = ((await client.CustomCommand(["info", "server"], Route.Random)).SingleValue! as GlideString)!;
             foreach (string line in res!.Split("\r\n"))
             {
                 if (line.Contains("tcp_port"))
@@ -72,19 +72,19 @@ public class ClusterClientTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task CustomCommandWithSingleNodeRoute(GlideClusterClient client)
     {
-        string res = ((await client.CustomCommand(["info", "replication"], new SlotKeyRoute("abc", SlotType.Primary))).SingleValue! as gs)!;
+        string res = ((await client.CustomCommand(["info", "replication"], new SlotKeyRoute("abc", SlotType.Primary))).SingleValue! as GlideString)!;
         Assert.Contains("role:master", res);
 
-        res = ((await client.CustomCommand(["info", "replication"], new SlotKeyRoute("abc", SlotType.Replica))).SingleValue! as gs)!;
+        res = ((await client.CustomCommand(["info", "replication"], new SlotKeyRoute("abc", SlotType.Replica))).SingleValue! as GlideString)!;
         Assert.Contains("role:slave", res);
 
-        res = ((await client.CustomCommand(["info", "replication"], new SlotIdRoute(42, SlotType.Primary))).SingleValue! as gs)!;
+        res = ((await client.CustomCommand(["info", "replication"], new SlotIdRoute(42, SlotType.Primary))).SingleValue! as GlideString)!;
         Assert.Contains("role:master", res);
 
-        res = ((await client.CustomCommand(["info", "replication"], new SlotIdRoute(42, SlotType.Replica))).SingleValue! as gs)!;
+        res = ((await client.CustomCommand(["info", "replication"], new SlotIdRoute(42, SlotType.Replica))).SingleValue! as GlideString)!;
         Assert.Contains("role:slave", res);
 
-        res = ((await client.CustomCommand(["info", "replication"], new ByAddressRoute(TestConfiguration.CLUSTER_ADDRESS.Host, TestConfiguration.CLUSTER_ADDRESS.Port))).SingleValue! as gs)!;
+        res = ((await client.CustomCommand(["info", "replication"], new ByAddressRoute(TestConfiguration.CLUSTER_ADDRESS.Host, TestConfiguration.CLUSTER_ADDRESS.Port))).SingleValue! as GlideString)!;
         Assert.Contains("# Replication", res);
     }
 

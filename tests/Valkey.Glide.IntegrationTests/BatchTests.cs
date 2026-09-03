@@ -1022,8 +1022,9 @@ public class BatchTests(TestConfiguration config)
 
     private DateTime ParseTimeResponse(object? res)
     {
-        object[] arr = (object[])res!;
-        return DateTime.UnixEpoch.AddSeconds(double.Parse((arr[0] as gs)!))
-            .AddMicroseconds(double.Parse((arr[1] as gs)!));
+        var arr = (object[])res!;
+        var secs = double.Parse((arr[0] as GlideString)!);
+        var micros = double.Parse((arr[1] as GlideString)!);
+        return DateTime.UnixEpoch.AddSeconds(secs).AddMicroseconds(micros);
     }
 }
