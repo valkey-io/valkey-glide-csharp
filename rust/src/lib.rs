@@ -2039,6 +2039,7 @@ pub struct MonitorConfig {
     pub database: u16,
     pub username: *const c_char,
     pub password: *const c_char,
+    pub lib_name: *const c_char,
 }
 
 struct MonitorAdapter {
@@ -2074,16 +2075,26 @@ pub unsafe extern "C-unwind" fn create_monitor_client(
 ) -> *const MonitorConnectionResponse {
     let config = unsafe { &*config };
 
-    let host = match unsafe { CStr::from_ptr(config.host) }.to_str() {
-        Ok(s) => s.to_owned(),
-        Err(e) => {
-            let err_msg = CString::new(format!("Invalid UTF-8 in host: {e}")).unwrap_or_default();
-            return Box::into_raw(Box::new(MonitorConnectionResponse {
-                conn_ptr: std::ptr::null(),
-                connection_error_message: err_msg.into_raw(),
-            }));
-        }
-    };
+    // Converts a required C string field to a Rust `String`, or returns an error response
+    // immediately if it is not valid UTF-8. Shared by `host` and `lib_name`, which are the two
+    // required (non-optional) string fields on `MonitorConfig`.
+    macro_rules! required_field {
+        ($ptr:expr, $field_name:literal) => {
+            match unsafe { crate::ffi::ptr_to_str($ptr) } {
+                Ok(s) => s,
+                Err(e) => {
+                    let err_msg = CString::new(format!("Invalid UTF-8 in {}: {e}", $field_name))
+                        .unwrap_or_default();
+                    return Box::into_raw(Box::new(MonitorConnectionResponse {
+                        conn_ptr: std::ptr::null(),
+                        connection_error_message: err_msg.into_raw(),
+                    }));
+                }
+            }
+        };
+    }
+
+    let host = required_field!(config.host, "host");
 
     let address = NodeAddress {
         host,
@@ -2114,13 +2125,15 @@ pub unsafe extern "C-unwind" fn create_monitor_client(
         }
     };
 
+    let lib_name = required_field!(config.lib_name, "lib_name");
+
     let redis_conn_info = redis::RedisConnectionInfo {
         db: config.database as i64,
         username,
         password,
         protocol: redis::ProtocolVersion::RESP2,
         client_name: None,
-        lib_name: Some(env!("GLIDE_NAME").to_string()),
+        lib_name: Some(lib_name),
         server_assisted_cache: false,
         cache: None,
     };

@@ -28,7 +28,7 @@ use redis::{
 /// # Safety
 ///
 /// * `ptr` must be able to be safely casted to a valid [`CStr`] via [`CStr::from_ptr`]. See the safety documentation of [`std::ffi::CStr::from_ptr`].
-unsafe fn ptr_to_str(ptr: *const c_char) -> Result<String, String> {
+pub(crate) unsafe fn ptr_to_str(ptr: *const c_char) -> Result<String, String> {
     if !ptr.is_null() {
         unsafe { CStr::from_ptr(ptr) }
             .to_str()
@@ -155,6 +155,9 @@ pub struct ConnectionConfig {
     pub protocol: redis::ProtocolVersion,
     /// zero pointer is valid, means no client name is given (`None`)
     pub client_name: *const c_char,
+    /// Library name override for CLIENT SETINFO LIB-NAME. Always provided by the C# layer
+    /// (defaults to "GlideC#"); must be non-null.
+    pub lib_name: *const c_char,
     pub lazy_connect: bool,
     pub refresh_topology_from_initial_nodes: bool,
     pub pubsub_config: PubSubConfigInfo,
@@ -311,7 +314,7 @@ pub(crate) unsafe fn create_connection_request(
             None
         },
         client_name: unsafe { ptr_to_opt_str(config.client_name) }?,
-        lib_name: Some(env!("GLIDE_NAME").to_string()),
+        lib_name: Some(unsafe { ptr_to_str(config.lib_name) }?),
         authentication_info: if config.has_authentication_info {
             let auth_info = config.authentication_info;
             let iam_config = if auth_info.has_iam_credentials {

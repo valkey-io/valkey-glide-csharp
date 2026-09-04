@@ -1002,6 +1002,109 @@ public class ConnectionConfigurationTests
         => Assert.Null(new ClusterClientConfigurationBuilder { AddressResolver = null }.Build().Request.AddressResolver);
 
     #endregion
+    #region LibName and ClientInfoTag Tests
+
+    [Fact]
+    public void LibName_NotSet_DefaultsToGlideCSharp()
+        => Assert.Null(new StandaloneClientConfigurationBuilder().Build().Request.LibName);
+
+    [Fact]
+    public void LibName_Set_OverridesDefault()
+    {
+        var config = new StandaloneClientConfigurationBuilder()
+            .WithLibraryName("custom-lib")
+            .Build();
+        Assert.Equal("custom-lib", config.Request.LibName);
+    }
+
+    [Fact]
+    public void LibName_SetNull_FallsBackToDefault()
+    {
+        var config = new StandaloneClientConfigurationBuilder()
+            .WithLibraryName(null)
+            .Build();
+        Assert.Null(config.Request.LibName);
+    }
+
+    [Fact]
+    public void ClientInfoTag_Set_StoresTag()
+    {
+        var config = new StandaloneClientConfigurationBuilder()
+            .WithClientInfoTag("my-framework:1.0")
+            .Build();
+        Assert.Equal("my-framework:1.0", config.Request.ClientInfoTag);
+    }
+
+    [Fact]
+    public void ClientInfoTag_Null_ClearsTag()
+    {
+        var config = new StandaloneClientConfigurationBuilder()
+            .WithClientInfoTag(null)
+            .Build();
+        Assert.Null(config.Request.ClientInfoTag);
+    }
+
+    [Fact]
+    public void LibName_Cluster_Set_OverridesDefault()
+    {
+        var config = new ClusterClientConfigurationBuilder()
+            .WithLibraryName("cluster-lib")
+            .Build();
+        Assert.Equal("cluster-lib", config.Request.LibName);
+    }
+
+    [Fact]
+    public void LibraryName_NotSet_ExposesDefaultGlideCSharp()
+    {
+        var builder = new StandaloneClientConfigurationBuilder();
+        Assert.Equal("GlideC#", builder.LibraryName);
+    }
+
+    [Fact]
+    public void LibraryName_Cluster_NotSet_ExposesDefaultGlideCSharp()
+    {
+        var builder = new ClusterClientConfigurationBuilder();
+        Assert.Equal("GlideC#", builder.LibraryName);
+    }
+
+    /// <summary>
+    /// Composition itself (base name + tag folding rules) is covered by
+    /// <see cref="UtilsTests"/>; these pin only that <c>ToFfi()</c> wires the resolved value
+    /// through to the FFI layer correctly.
+    /// </summary>
+    [Fact]
+    public void LibraryNameAndTag_ToFfi_PassesResolvedLibNameToFfiLayer()
+    {
+        var config = new StandaloneClientConfigurationBuilder()
+            .WithLibraryName("custom")
+            .WithClientInfoTag("tag:1")
+            .Build();
+
+        using FFI.ConnectionConfig ffi = config.Request.ToFfi();
+        Assert.Equal("custom(tag:1)", ffi.ResolvedLibName);
+    }
+
+    [Fact]
+    public void ClientInfoTag_ToFfi_PassesComposedDefaultLibNameToFfiLayer()
+    {
+        var config = new StandaloneClientConfigurationBuilder()
+            .WithClientInfoTag("lmcache:1.2")
+            .Build();
+
+        using FFI.ConnectionConfig ffi = config.Request.ToFfi();
+        Assert.Equal("GlideC#(lmcache:1.2)", ffi.ResolvedLibName);
+    }
+
+    [Fact]
+    public void LibraryName_Default_ToFfi_PassesGlideCSharpToFfiLayer()
+    {
+        var config = new StandaloneClientConfigurationBuilder().Build();
+
+        using FFI.ConnectionConfig ffi = config.Request.ToFfi();
+        Assert.Equal("GlideC#", ffi.ResolvedLibName);
+    }
+
+    #endregion
     #region Helpers
 
     private static dynamic GetConfigurationBuilder(bool clusterMode)
