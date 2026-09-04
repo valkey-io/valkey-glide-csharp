@@ -34,6 +34,7 @@ internal partial class FFI
             if (_ptr != IntPtr.Zero)
             {
                 FreeMemory();
+                DestroyStruct(_ptr);
                 FreeStructPtr(_ptr);
                 _ptr = IntPtr.Zero;
             }
@@ -43,6 +44,15 @@ internal partial class FFI
         protected abstract IntPtr AllocateAndCopy();
 
         protected abstract void FreeMemory();
+
+        /// <summary>
+        /// Releases unmanaged memory the runtime marshaller allocated for reference-typed struct
+        /// fields (e.g. <see cref="UnmanagedType.LPUTF8Str"/> strings), which <see cref="FreeMemory"/>
+        /// (manual <see cref="IntPtr"/> frees) does not cover. No-op by default; override for structs
+        /// that contain such fields. Called after <see cref="FreeMemory"/> and before the block is freed.
+        /// </summary>
+        /// <param name="ptr">Pointer to the marshalled struct whose reference-typed fields are released.</param>
+        protected virtual void DestroyStruct(IntPtr ptr) { }
     }
 
     // A wrapper for a command, resposible for marshalling (allocating and freeing) the required data
@@ -213,6 +223,12 @@ internal partial class FFI
         /// </summary>
         internal NodeDiscoveryMode NodeDiscoveryMode => _request.NodeDiscoveryMode;
 
+        /// <summary>
+        /// The resolved library name marshalled into the underlying FFI request. Exposed for testing
+        /// that <see cref="Utils.ResolveLibraryName"/> is correctly wired through to the FFI layer.
+        /// </summary>
+        internal string ResolvedLibName => _request.ResolvedLibName;
+
         public ConnectionConfig(
             List<NodeAddress> addresses,
             bool clusterMode,
@@ -251,7 +267,10 @@ internal partial class FFI
 
             // Periodic checks
             PeriodicChecksMode? periodicChecksMode,
-            uint? periodicChecksIntervalSec)
+            uint? periodicChecksIntervalSec,
+
+            // Resolved library name
+            string resolvedLibName)
         {
             _request = new()
             {
@@ -313,6 +332,9 @@ internal partial class FFI
                 HasPeriodicChecksConfig = periodicChecksMode.HasValue,
                 PeriodicChecksMode = periodicChecksMode ?? default,
                 PeriodicChecksIntervalSec = periodicChecksIntervalSec ?? 0,
+
+                // CLIENT SETINFO LIB-NAME
+                ResolvedLibName = resolvedLibName,
             };
         }
 
@@ -380,6 +402,9 @@ internal partial class FFI
 
         protected override IntPtr AllocateAndCopy()
             => StructToPtr(_request);
+
+        protected override void DestroyStruct(IntPtr ptr)
+            => Marshal.DestroyStructure(ptr, typeof(ConnectionRequest));
 
         /// <summary>
         /// Marshals the node addresses.
@@ -739,6 +764,13 @@ internal partial class FFI
 
         [MarshalAs(UnmanagedType.LPUTF8Str)]
         public string? ClientName;
+
+        /// <summary>
+        /// The fully composed value sent to <c>CLIENT SETINFO LIB-NAME</c> (already includes any
+        /// <c>ClientInfoTag</c>). Named distinctly from the raw <c>LibName</c> to avoid re-composing.
+        /// </summary>
+        [MarshalAs(UnmanagedType.LPUTF8Str)]
+        public string ResolvedLibName;
 
         [MarshalAs(UnmanagedType.U1)]
         public bool LazyConnect;
@@ -1281,6 +1313,12 @@ internal partial class FFI
         /// or <see langword="null"/> if not set.</summary>
         [MarshalAs(UnmanagedType.LPUTF8Str)]
         public string? Password;
+
+        /// <summary>
+        /// The resolved library name reported via CLIENT SETINFO LIB-NAME for the MONITOR connection.
+        /// </summary>
+        [MarshalAs(UnmanagedType.LPUTF8Str)]
+        public string LibName;
     }
 
     /// <summary>

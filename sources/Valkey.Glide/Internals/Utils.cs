@@ -68,4 +68,31 @@ internal static class Utils
 
         return list;
     }
+
+    /// <summary>
+    /// The default library name reported via <c>CLIENT SETINFO LIB-NAME</c> when no override is supplied.
+    /// </summary>
+    public const string DefaultLibraryName = "GlideC#";
+
+    /// <summary>
+    /// Composes the value reported via <c>CLIENT SETINFO LIB-NAME</c> from an optional library-name
+    /// override and an optional client-info tag. Used by every connection type (standard, cluster,
+    /// and MONITOR) so the composition stays identical across them.
+    /// </summary>
+    /// <param name="libraryName">Full override for the library name, or <see langword="null"/> to use <see cref="DefaultLibraryName"/>.</param>
+    /// <param name="clientInfoTag">
+    /// Tag appended in parentheses, e.g. <c>GlideC#(tag)</c>, or <see langword="null"/> for none.
+    /// A non-null value — including an empty or whitespace-only one — is passed through as
+    /// supplied. GLIDE core validates the effective library name before client creation and fails
+    /// creation with a configuration error if it is malformed; validation is deliberately not
+    /// duplicated here, per the standing rule that the client defers to the server.
+    /// </param>
+    /// <returns>The resolved library name to send to the server.</returns>
+    public static string ResolveLibraryName(string? libraryName, string? clientInfoTag)
+    {
+        string baseName = libraryName ?? DefaultLibraryName;
+        return clientInfoTag is null
+            ? baseName
+            : $"{baseName}({clientInfoTag})";
+    }
 }

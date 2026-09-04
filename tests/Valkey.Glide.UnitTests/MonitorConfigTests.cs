@@ -80,6 +80,9 @@ public class MonitorConfigTests
         _ = Assert.Throws<ObjectDisposedException>(() => config.WithAuth(Password));
         _ = Assert.Throws<ObjectDisposedException>(() => config.WithAuth(Username, Password));
         _ = Assert.Throws<ObjectDisposedException>(() => config.WithTls());
+        // WithDatabase previously lacked the guard its sibling mutators all have, so it silently
+        // mutated a disposed config instead of throwing.
+        _ = Assert.Throws<ObjectDisposedException>(() => config.WithDatabase(1));
     }
 
     [Fact]
@@ -100,6 +103,32 @@ public class MonitorConfigTests
         config.Dispose();
 
         Assert.All(passwordRef, c => Assert.Equal('\0', c));
+    }
+
+    [Fact]
+    public void LibraryName_NotSet_DefaultsToGlideCSharp()
+    {
+        using var config = BuildMonitorConfig();
+        Assert.Equal("GlideC#", config.LibraryName);
+    }
+
+    [Fact]
+    public void WithLibraryName_OverridesDefault()
+    {
+        using var config = BuildMonitorConfig().WithLibraryName("custom-mon");
+        Assert.Equal("custom-mon", config.LibraryName);
+    }
+
+    /// <summary>
+    /// Composition itself (base name + tag folding rules) is covered by
+    /// <see cref="UtilsTests"/>, which <see cref="MonitorConfig"/> shares via
+    /// <see cref="Utils.ResolveLibraryName"/>; this pins only that the tag is stored.
+    /// </summary>
+    [Fact]
+    public void WithClientInfoTag_StoresTag()
+    {
+        using var config = BuildMonitorConfig().WithClientInfoTag("svc:1.0");
+        Assert.Equal("svc:1.0", config.ClientInfoTag);
     }
 
     #endregion
