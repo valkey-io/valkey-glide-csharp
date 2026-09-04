@@ -41,7 +41,9 @@ public class PubSubPerformanceTests
         var throughput = messageCount / stopwatch.Elapsed.TotalSeconds;
 
         // Verify high throughput (should handle at least 10,000 msg/sec)
-        Assert.True(throughput >= 10_000);
+        Assert.True(
+            throughput >= 10_000,
+            $"Throughput {throughput:F0} msg/sec is below target of 10,000 msg/sec. Processed {messageCount} messages in {stopwatch.Elapsed.TotalMilliseconds:F2}ms");
     }
 
     [Fact]
@@ -94,11 +96,15 @@ public class PubSubPerformanceTests
         var gen2Collections = finalGen2 - initialGen2;
 
         // Verify reasonable memory growth (should be less than 10MB for 50k messages)
-        Assert.True(memoryGrowth < 10_000_000);
+        Assert.True(
+            memoryGrowth < 10_000_000,
+            $"Memory grew by {memoryGrowth:N0} bytes ({memoryGrowth / 1024.0 / 1024.0:F2} MB) - excessive allocation pressure. Gen0: {gen0Collections}, Gen1: {gen1Collections}, Gen2: {gen2Collections}");
 
         // Verify minimal Gen2 collections (should be reasonable for 50k messages)
         // Note: GC behavior can vary based on system load and other factors
-        Assert.True(gen2Collections <= 100);
+        Assert.True(
+            gen2Collections <= 100,
+            $"Too many Gen2 collections ({gen2Collections}) - indicates allocation pressure. Gen0: {gen0Collections}, Gen1: {gen1Collections}");
     }
 
     [Fact]
@@ -142,7 +148,9 @@ public class PubSubPerformanceTests
         var throughput = totalMessages / stopwatch.Elapsed.TotalSeconds;
 
         // Verify high throughput even with concurrent access
-        Assert.True(throughput >= 5_000);
+        Assert.True(
+            throughput >= 5_000,
+            $"Concurrent throughput {throughput:F0} msg/sec is below target of 5,000 msg/sec. Processed {totalMessages} messages from {threadCount} threads in {stopwatch.Elapsed.TotalMilliseconds:F2}ms");
     }
 
     [Fact]
@@ -188,7 +196,9 @@ public class PubSubPerformanceTests
         var maxBurstTime = burstTimes.Max(t => t.TotalMilliseconds);
 
         // Verify burst handling is efficient
-        Assert.True(avgBurstTime < 1000);
+        Assert.True(
+            avgBurstTime < 1000,
+            $"Average burst time {avgBurstTime:F2}ms exceeds 1 second threshold. Processed {burstCount} bursts of {burstSize} messages. Max burst time: {maxBurstTime:F2}ms, Total time: {totalStopwatch.Elapsed.TotalMilliseconds:F2}ms");
     }
 
     [Fact]
@@ -262,9 +272,13 @@ public class PubSubPerformanceTests
         var throughputStdDev = Math.Sqrt(throughputSamples.Average(t => Math.Pow(t - avgThroughput, 2)));
 
         // Verify stable performance over time
-        Assert.True(avgThroughput >= targetRate * 0.8);
+        Assert.True(
+            avgThroughput >= targetRate * 0.8,
+            $"Average throughput {avgThroughput:F0} is below 80% of target rate {targetRate}. Processed {messagesReceived} messages over {duration} seconds. Min: {minThroughput:F0}, Max: {maxThroughput:F0}, StdDev: {throughputStdDev:F0}");
 
         // Verify throughput stability (std dev should be less than 20% of average)
-        Assert.True(throughputStdDev < avgThroughput * 0.2);
+        Assert.True(
+            throughputStdDev < avgThroughput * 0.2,
+            $"Throughput std dev {throughputStdDev:F0} indicates unstable performance. Average: {avgThroughput:F0}, Min: {minThroughput:F0}, Max: {maxThroughput:F0}");
     }
 }

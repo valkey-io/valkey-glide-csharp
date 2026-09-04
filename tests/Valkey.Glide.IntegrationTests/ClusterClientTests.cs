@@ -443,8 +443,8 @@ public class ClusterClientTests(TestConfiguration config)
         // Each node should have a reasonable time
         foreach (var serverTime in allTimes.Values)
         {
-            TimeSpan diff = (serverTime - localTime).Duration();
-            Assert.True(diff < TimeSpan.FromSeconds(10));
+            var diff = (serverTime - localTime).Duration();
+            Assert.InRange(diff, TimeSpan.Zero, TimeSpan.FromSeconds(10));
         }
 
         // Test with specific route
