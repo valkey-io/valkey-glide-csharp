@@ -81,8 +81,11 @@ public sealed class LoadedLuaScript
     /// var result = await loaded.EvaluateAsync(db, new { key = new ValkeyKey("mykey"), value = "myvalue" });
     /// </code>
     /// </remarks>
-    public async Task<ValkeyResult> EvaluateAsync(IDatabaseAsync db, object? parameters = null,
-        ValkeyKey? withKeyPrefix = null, CommandFlags flags = CommandFlags.None)
+    public async Task<ValkeyResult> EvaluateAsync(
+        IDatabaseAsync db,
+        object? parameters = null,
+        ValkeyKey? withKeyPrefix = null,
+        CommandFlags flags = CommandFlags.None)
     {
         if (db == null)
         {

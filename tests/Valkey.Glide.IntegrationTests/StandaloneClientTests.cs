@@ -450,7 +450,8 @@ public class StandaloneClientTests(TestConfiguration config)
 
         // Server time should be close to local time (within 10 seconds)
         TimeSpan diff = (serverTime - localTime).Duration();
-        Assert.True(diff < TimeSpan.FromSeconds(10),
+        Assert.True(
+            diff < TimeSpan.FromSeconds(10),
             $"Server time {serverTime} differs from local time {localTime} by {diff}");
     }
 

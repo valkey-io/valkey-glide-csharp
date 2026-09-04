@@ -39,8 +39,8 @@ public class DebugSleepTests
 
         // Expect a timeout exception on short timeout
         _ = await Assert.ThrowsAsync<TimeoutException>(() => isCluster
-                ? ((GlideClusterClient)client).Exec((ClusterBatch)batch, true, (ClusterBatchOptions)options)
-                : ((GlideClient)client).Exec((Batch)batch, true, (BatchOptions)options));
+            ? ((GlideClusterClient)client).Exec((ClusterBatch)batch, true, (ClusterBatchOptions)options)
+            : ((GlideClient)client).Exec((Batch)batch, true, (BatchOptions)options));
 
         // Wait for server to wake up
         Thread.Sleep(TimeSpan.FromSeconds(1));

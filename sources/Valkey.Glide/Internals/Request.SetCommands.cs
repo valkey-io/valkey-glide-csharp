@@ -71,7 +71,7 @@ internal static partial class Request
         => new(RequestType.SRandMember, [key.ToGlideString()], true, response => response is null ? ValkeyValue.Null : (ValkeyValue)response, allowConverterToHandleNull: true);
 
     public static Cmd<object[], ValkeyValue[]> SetRandomMembers(ValkeyKey key, long count)
-        => new(RequestType.SRandMember, [key.ToGlideString(), count.ToGlideString()], false, ToValkeyValueArray);
+        => ToValkeyValues(RequestType.SRandMember, [key, count.ToGlideString()]);
 
     public static Cmd<bool, bool> SetMove(ValkeyKey source, ValkeyKey destination, ValkeyValue value)
         => Simple<bool>(RequestType.SMove, [source.ToGlideString(), destination.ToGlideString(), value.ToGlideString()]);
@@ -80,9 +80,5 @@ internal static partial class Request
         => new(RequestType.SScan, [key, cursor.ToGlideString(), .. options?.ToArgs() ?? []], false, ConvertSetScanResponse);
 
     private static (long cursor, ValkeyValue[] items) ConvertSetScanResponse(object[] response)
-    {
-        var cursor = response[0] is long l ? l : long.Parse(response[0].ToString()!);
-        var items = ToValkeyValueArray((object[])response[1]);
-        return (cursor, items);
-    }
+        => (ToLong(response[0]), ToValkeyValues((object[])response[1]));
 }

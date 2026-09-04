@@ -17,21 +17,25 @@ public class PubSubThreadSafetyTests
         var messagesReceived = new ConcurrentBag<PubSubMessage>();
         var config = new StandalonePubSubSubscriptionConfig()
             .WithChannel("test-channel")
-            .WithCallback((msg, ctx) =>
-            {
-                messagesReceived.Add(msg);
-                Thread.Sleep(1); // Simulate some processing
-            }, null);
+            .WithCallback(
+                (msg, ctx) =>
+                {
+                    messagesReceived.Add(msg);
+                    Thread.Sleep(1); // Simulate some processing
+                },
+                null);
 
         var client = CreateMockClientWithPubSub(config);
 
         // Act - Process 100 messages concurrently from multiple threads
         var tasks = Enumerable.Range(0, 100)
-            .Select(i => Task.Run(() =>
-            {
-                var message = PubSubMessage.FromChannel($"message-{i}", "test-channel");
-                client.HandlePubSubMessage(message);
-            }, TestContext.Current.CancellationToken))
+            .Select(i => Task.Run(
+                () =>
+                {
+                    var message = PubSubMessage.FromChannel($"message-{i}", "test-channel");
+                    client.HandlePubSubMessage(message);
+                },
+                TestContext.Current.CancellationToken))
             .ToArray();
 
         await Task.WhenAll(tasks);
@@ -54,44 +58,50 @@ public class PubSubThreadSafetyTests
 
         var config = new StandalonePubSubSubscriptionConfig()
             .WithChannel("test-channel")
-            .WithCallback((msg, ctx) =>
-            {
-                processingStarted.Set();
-                _ = continueProcessing.Wait(TimeSpan.FromSeconds(5));
-                Thread.Sleep(50); // Simulate processing
-            }, null);
+            .WithCallback(
+                (msg, ctx) =>
+                {
+                    processingStarted.Set();
+                    _ = continueProcessing.Wait(TimeSpan.FromSeconds(5));
+                    Thread.Sleep(50); // Simulate processing
+                },
+                null);
 
         var client = CreateMockClientWithPubSub(config);
 
         // Act - Start message processing
-        var messageTask = Task.Run(() =>
-        {
-            try
+        var messageTask = Task.Run(
+            () =>
             {
-                var message = PubSubMessage.FromChannel("test-message", "test-channel");
-                client.HandlePubSubMessage(message);
-            }
-            catch (Exception ex)
-            {
-                exceptions.Add(ex);
-            }
-        }, TestContext.Current.CancellationToken);
+                try
+                {
+                    var message = PubSubMessage.FromChannel("test-message", "test-channel");
+                    client.HandlePubSubMessage(message);
+                }
+                catch (Exception ex)
+                {
+                    exceptions.Add(ex);
+                }
+            },
+            TestContext.Current.CancellationToken);
 
         // Wait for processing to start
         _ = processingStarted.Wait(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
 
         // Dispose client while message is being processed
-        var disposeTask = Task.Run(() =>
-        {
-            try
+        var disposeTask = Task.Run(
+            () =>
             {
-                client.Dispose();
-            }
-            catch (Exception ex)
-            {
-                exceptions.Add(ex);
-            }
-        }, TestContext.Current.CancellationToken);
+                try
+                {
+                    client.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    exceptions.Add(ex);
+                }
+            },
+            TestContext.Current.CancellationToken);
 
         // Allow message processing to continue
         continueProcessing.Set();
@@ -113,11 +123,13 @@ public class PubSubThreadSafetyTests
 
         // Act - Access PubSubQueue from multiple threads concurrently
         var tasks = Enumerable.Range(0, 50)
-            .Select(_ => Task.Run(() =>
-            {
-                var queue = client.PubSubQueue;
-                Assert.NotNull(queue);
-            }, TestContext.Current.CancellationToken))
+            .Select(_ => Task.Run(
+                () =>
+                {
+                    var queue = client.PubSubQueue;
+                    Assert.NotNull(queue);
+                },
+                TestContext.Current.CancellationToken))
             .ToArray();
 
         await Task.WhenAll(tasks);
@@ -174,11 +186,13 @@ public class PubSubThreadSafetyTests
         var client = CreateMockClientWithPubSub(config);
 
         // Start a long-running message processing
-        var messageTask = Task.Run(() =>
-        {
-            var message = PubSubMessage.FromChannel("test-message", "test-channel");
-            client.HandlePubSubMessage(message);
-        }, TestContext.Current.CancellationToken);
+        var messageTask = Task.Run(
+            () =>
+            {
+                var message = PubSubMessage.FromChannel("test-message", "test-channel");
+                client.HandlePubSubMessage(message);
+            },
+            TestContext.Current.CancellationToken);
 
         await Task.Delay(100, TestContext.Current.CancellationToken); // Let message processing start
 
@@ -214,7 +228,8 @@ public class PubSubThreadSafetyTests
         public void InitializePubSubHandlerForTest(BasePubSubSubscriptionConfig? config)
         {
             // Use reflection to call private InitializePubSubHandler method
-            var method = typeof(BaseClient).GetMethod("InitializePubSubHandler",
+            var method = typeof(BaseClient).GetMethod(
+                "InitializePubSubHandler",
                 System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
             _ = (method?.Invoke(this, [config]));
         }

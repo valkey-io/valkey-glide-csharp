@@ -29,7 +29,7 @@ internal static partial class Request
         => new(RequestType.XClaim, [key, groupName, consumerName, .. options.ToArgs(messageIds)], false, ConvertStreamEntriesResponse);
 
     public static Cmd<object[], ValkeyValue[]> StreamClaimJustIds(ValkeyKey key, ValkeyValue groupName, ValkeyValue consumerName, IEnumerable<ValkeyValue> messageIds, StreamClaimOptions options)
-        => new(RequestType.XClaim, [key, groupName, consumerName, .. options.ToArgs(messageIds), ValkeyLiterals.JUSTID], false, ToValkeyValueArray);
+        => ToValkeyValues(RequestType.XClaim, [key, groupName, consumerName, .. options.ToArgs(messageIds), ValkeyLiterals.JUSTID]);
 
     public static Cmd<long, bool> StreamDelete(ValkeyKey key, ValkeyValue messageId)
         => Boolean<long>(RequestType.XDel, [key, messageId]);
@@ -149,14 +149,16 @@ internal static partial class Request
     }
 
     private static StreamAutoClaimJustIdResult ConvertStreamAutoClaimJustIdResponse(object[] response)
-        => new(nextStartId: ToValkeyValue(response[0]),
-            claimedIds: ToValkeyValueArray(response[1]),
-            deletedIds: response.Length > 2 ? ToValkeyValueArray(response[2]) : []);
+        => new(
+            nextStartId: ToValkeyValue(response[0]),
+            claimedIds: ToValkeyValues(response[1]),
+            deletedIds: response.Length > 2 ? ToValkeyValues(response[2]) : []);
 
     private static StreamAutoClaimResult ConvertStreamAutoClaimResponse(object[] response)
-        => new(nextStartId: ToValkeyValue(response[0]),
+        => new(
+            nextStartId: ToValkeyValue(response[0]),
             claimedEntries: ConvertStreamEntriesResponse((Dictionary<GlideString, object>)response[1]),
-            deletedIds: response.Length > 2 ? ToValkeyValueArray(response[2]) : []);
+            deletedIds: response.Length > 2 ? ToValkeyValues(response[2]) : []);
 
     private static StreamConsumerInfoFull ConvertStreamConsumerInfoFullResponse(Dictionary<GlideString, object> map)
     {

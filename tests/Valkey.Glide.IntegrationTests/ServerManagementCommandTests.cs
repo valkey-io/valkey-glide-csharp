@@ -223,10 +223,10 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
         try
         {
             await StandaloneClient.ConfigSetAsync(new Dictionary<ValkeyValue, ValkeyValue>
-            {
-                { "lfu-decay-time", "5" },
-                { "lfu-log-factor", "20" }
-            });
+                {
+                    { "lfu-decay-time", "5" },
+                    { "lfu-log-factor", "20" }
+                });
 
             var result = await StandaloneClient.ConfigGetAsync(
                 ["lfu-decay-time", "lfu-log-factor"]);
@@ -237,10 +237,10 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
         finally
         {
             await StandaloneClient.ConfigSetAsync(new Dictionary<ValkeyValue, ValkeyValue>
-            {
-                { "lfu-decay-time", originalDecayTime },
-                { "lfu-log-factor", originalLogFactor }
-            });
+                {
+                    { "lfu-decay-time", originalDecayTime },
+                    { "lfu-log-factor", originalLogFactor }
+                });
         }
     }
 
@@ -260,10 +260,10 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
         try
         {
             await ClusterClient.ConfigSetAsync(new Dictionary<ValkeyValue, ValkeyValue>
-            {
-                { "lfu-decay-time", "5" },
-                { "lfu-log-factor", "20" }
-            });
+                {
+                    { "lfu-decay-time", "5" },
+                    { "lfu-log-factor", "20" }
+                });
 
             var result = await ClusterClient.ConfigGetAsync(
                 ["lfu-decay-time", "lfu-log-factor"], AllPrimaries);
@@ -278,10 +278,10 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
         finally
         {
             await ClusterClient.ConfigSetAsync(new Dictionary<ValkeyValue, ValkeyValue>
-            {
-                { "lfu-decay-time", originalDecayTime },
-                { "lfu-log-factor", originalLogFactor }
-            });
+                {
+                    { "lfu-decay-time", originalDecayTime },
+                    { "lfu-log-factor", originalLogFactor }
+                });
         }
     }
 
@@ -852,14 +852,16 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     /// Polls until the database is empty.
     /// </summary>
     private Task WaitForFlushedAsync(bool isCluster)
-        => Polling.WaitForAsync(async () =>
-        {
-            long size = isCluster
-                ? await ClusterClient.DatabaseSizeAsync()
-                : await StandaloneClient.DatabaseSizeAsync();
+        => Polling.WaitForAsync(
+            async () =>
+            {
+                long size = isCluster
+                    ? await ClusterClient.DatabaseSizeAsync()
+                    : await StandaloneClient.DatabaseSizeAsync();
 
-            return size == 0;
-        }, "Timed out waiting for database empty");
+                return size == 0;
+            },
+            "Timed out waiting for database empty");
 
     /// <summary>
     /// Polls until the specified key does not exist.
@@ -873,17 +875,19 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     /// Polls until no RDB save or AOF rewrite is in progress on any node.
     /// </summary>
     private Task WaitForSaveNotInProgressAsync(bool clusterMode)
-        => Polling.WaitForAsync(async () =>
-        {
-            var args = new[] { Section.PERSISTENCE };
-            IEnumerable<string> infoValues = clusterMode
-                ? (await ClusterClient.InfoAsync(args)).Values
-                : [await StandaloneClient.InfoAsync(args)];
+        => Polling.WaitForAsync(
+            async () =>
+            {
+                var args = new[] { Section.PERSISTENCE };
+                IEnumerable<string> infoValues = clusterMode
+                    ? (await ClusterClient.InfoAsync(args)).Values
+                    : [await StandaloneClient.InfoAsync(args)];
 
-            return infoValues.All(info =>
-                !info.Contains("rdb_bgsave_in_progress:1")
-                    && !info.Contains("aof_rewrite_in_progress:1"));
-        }, "Timed out waiting for save to complete");
+                return infoValues.All(info =>
+                    !info.Contains("rdb_bgsave_in_progress:1")
+                        && !info.Contains("aof_rewrite_in_progress:1"));
+            },
+            "Timed out waiting for save to complete");
 
     #endregion
     #region Failover Tests
@@ -952,11 +956,13 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
         => WaitForRoleAsync(client, "slave");
 
     private static Task WaitForRoleAsync(GlideClient client, string expectedRole)
-        => Polling.WaitForAsync(async () =>
-        {
-            string info = await client.InfoAsync([Section.REPLICATION]);
-            return info.Contains($"role:{expectedRole}");
-        }, $"Timed out waiting for role to become '{expectedRole}'");
+        => Polling.WaitForAsync(
+            async () =>
+            {
+                string info = await client.InfoAsync([Section.REPLICATION]);
+                return info.Contains($"role:{expectedRole}");
+            },
+            $"Timed out waiting for role to become '{expectedRole}'");
 
     #endregion
 }

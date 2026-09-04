@@ -444,8 +444,7 @@ public class ClusterClientTests(TestConfiguration config)
         foreach (var serverTime in allTimes.Values)
         {
             TimeSpan diff = (serverTime - localTime).Duration();
-            Assert.True(diff < TimeSpan.FromSeconds(10),
-                $"Server time {serverTime} differs from local time {localTime} by {diff}");
+            Assert.True(diff < TimeSpan.FromSeconds(10));
         }
 
         // Test with specific route

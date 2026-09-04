@@ -468,7 +468,8 @@ public partial interface IBaseClient
     Task<bool> HashSetAsync(
         ValkeyKey key,
         ValkeyValue hashField,
-        ValkeyValue value, SetExpiryOptions expiry);
+        ValkeyValue value,
+        SetExpiryOptions expiry);
 
     /// <summary>
     /// Sets multiple hash field values with an expiry.

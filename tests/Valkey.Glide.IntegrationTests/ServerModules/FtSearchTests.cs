@@ -26,7 +26,10 @@ public class FtSearchTests(TestConfiguration config)
         (string index, _, string[] keys) = await FtUtils.CreateSearchIndexAsync(client);
 
         // Sort by price ascending for deterministic order: 10, 25, 50
-        Ft.SearchResult result = await Ft.SearchAsync(client, index, "@price:[-inf +inf]",
+        Ft.SearchResult result = await Ft.SearchAsync(
+            client,
+            index,
+            "@price:[-inf +inf]",
             new Ft.SearchOptions
             {
                 SortBy = new Ft.SearchSortBy { Field = "price", Order = SortOrder.Ascending },
@@ -85,7 +88,10 @@ public class FtSearchTests(TestConfiguration config)
         await Skip.IfSearchModuleNotLoaded(client);
         (string index, _, _) = await FtUtils.CreateSearchIndexAsync(client);
 
-        Ft.SearchResult result = await Ft.SearchAsync(client, index, "@price:[-inf +inf]",
+        Ft.SearchResult result = await Ft.SearchAsync(
+            client,
+            index,
+            "@price:[-inf +inf]",
             new Ft.SearchOptions
             {
                 Limit = new Ft.SearchLimit { Offset = 0, Count = 2 },
@@ -103,7 +109,10 @@ public class FtSearchTests(TestConfiguration config)
         await Skip.IfSearchModuleNotLoaded(client);
         (string index, _, _) = await FtUtils.CreateSearchIndexAsync(client);
 
-        Ft.SearchResult result = await Ft.SearchAsync(client, index, "@price:[-inf +inf]",
+        Ft.SearchResult result = await Ft.SearchAsync(
+            client,
+            index,
+            "@price:[-inf +inf]",
             new Ft.SearchOptions
             {
                 SortBy = new Ft.SearchSortBy
@@ -131,7 +140,10 @@ public class FtSearchTests(TestConfiguration config)
         await Skip.IfSearchModuleNotLoaded(client);
         (string index, _, _) = await FtUtils.CreateSearchIndexAsync(client);
 
-        Ft.SearchResult result = await Ft.SearchAsync(client, index, "@price:[-inf +inf]",
+        Ft.SearchResult result = await Ft.SearchAsync(
+            client,
+            index,
+            "@price:[-inf +inf]",
             new Ft.SearchOptions
             {
                 Return = ["title", "price"],
@@ -189,7 +201,10 @@ public class FtSearchTests(TestConfiguration config)
         await Skip.IfSearchModuleNotLoaded(client);
         (string index, _, _) = await FtUtils.CreateSearchIndexAsync(client);
 
-        Ft.SearchResult result = await Ft.SearchAsync(client, index, "@price:[-inf +inf]",
+        Ft.SearchResult result = await Ft.SearchAsync(
+            client,
+            index,
+            "@price:[-inf +inf]",
             new Ft.SearchOptions
             {
                 Limit = new Ft.SearchLimit { Offset = 0, Count = 1 },

@@ -35,8 +35,7 @@ public static class Polling
         string message,
         TimeSpan? timeout = null,
         TimeSpan? interval = null)
-        => WaitForAsync(()
-            => Task.FromResult(condition()), message, timeout, interval);
+        => WaitForAsync(() => Task.FromResult(condition()), message, timeout, interval);
 
     /// <summary>
     /// Polls the given <paramref name="condition"/> until it returns <see langword="true"/>, or fails with

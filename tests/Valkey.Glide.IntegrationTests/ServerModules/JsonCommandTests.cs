@@ -1255,8 +1255,7 @@ public class JsonCommandTests(TestConfiguration config)
         Assert.NotNull(intResult);
         Assert.NotNull(floatResult);
         // Integer values may return "integer" or "number" depending on the JSON module version
-        Assert.True(intResult is "integer" or "number",
-            $"Expected 'integer' or 'number' but got '{intResult}'");
+        Assert.True(intResult is "integer" or "number");
         Assert.Equal("number", floatResult);
     }
 
@@ -1317,8 +1316,7 @@ public class JsonCommandTests(TestConfiguration config)
 
         _ = Assert.Single(ageResult);
         string? ageType = (string?)ageResult[0];
-        Assert.True(ageType is "integer" or "number",
-            $"Expected 'integer' or 'number' but got '{ageType}'");
+        Assert.True(ageType is "integer" or "number");
 
         _ = Assert.Single(activeResult);
         Assert.Equal("boolean", (string?)activeResult[0]);
@@ -1419,8 +1417,7 @@ public class JsonCommandTests(TestConfiguration config)
         Assert.Equal(3, result.Length);
         Assert.Equal("string", (string?)result[0]);
         string? secondType = (string?)result[1];
-        Assert.True(secondType is "integer" or "number",
-            $"Expected 'integer' or 'number' but got '{secondType}'");
+        Assert.True(secondType is "integer" or "number");
         Assert.Equal("boolean", (string?)result[2]);
     }
 

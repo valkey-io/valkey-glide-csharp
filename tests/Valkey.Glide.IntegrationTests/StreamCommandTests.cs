@@ -638,13 +638,16 @@ public class StreamCommandTests
         await client.StreamGroupCreateAsync(key, "mygroup", "0");
         _ = await client.StreamReadGroupAsync(new StreamPosition(key, StreamPosition.UndeliveredMessages), "mygroup", "consumer1");
 
-        StreamPendingMessageInfo[] messages = await client.StreamPendingAsync(key, "mygroup", new StreamPendingOptions
-        {
-            Count = 10,
-            ConsumerName = "consumer1",
-            Start = StreamIdBound.Inclusive(id1),
-            End = StreamIdBound.Inclusive(id2),
-        });
+        StreamPendingMessageInfo[] messages = await client.StreamPendingAsync(
+            key,
+            "mygroup",
+            new StreamPendingOptions
+            {
+                Count = 10,
+                ConsumerName = "consumer1",
+                Start = StreamIdBound.Inclusive(id1),
+                End = StreamIdBound.Inclusive(id2),
+            });
 
         Assert.Equal(2, messages.Length);
         Assert.Equal(id1.ToString(), messages[0].MessageId.ToString());

@@ -37,7 +37,8 @@ public class PubSubMemoryLeakFixValidationTests
         Console.WriteLine($"Memory growth: {memoryGrowth:N0} bytes");
 
         // Assert: Memory growth should be reasonable (less than 5MB for 10k messages)
-        Assert.True(memoryGrowth < 5_000_000,
+        Assert.True(
+            memoryGrowth < 5_000_000,
             $"Excessive memory growth detected: {memoryGrowth:N0} bytes for {messageCount} messages");
     }
 
