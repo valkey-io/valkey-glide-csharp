@@ -191,25 +191,17 @@ internal static partial class Request
     /// Parses a response value as a <see langword="long"/>.
     /// </summary>
     /// <param name="value">The response value to parse.</param>
-    /// <exception cref="RequestException">Thrown if <paramref name="value"/> is not a long or numeric string.</exception>
-    private static long ToLong(object value) => value switch
-    {
-        long l => l,
-        GlideString gs => long.Parse(gs.ToString(), CultureInfo.InvariantCulture),
-        _ => throw new RequestException($"Expected a long or numeric string, got {value.GetType()}"),
-    };
+    /// <exception cref="RequestException">Thrown if <paramref name="value"/> could not be parsed as a <see langword="long"/>.</exception>
+    private static long ToLong(object value)
+        => TryToLong(value) ?? throw new RequestException($"Could not convert {value.GetType()} value to long.");
 
     /// <summary>
     /// Parses a response value as a <see langword="double"/>.
     /// </summary>
     /// <param name="value">The response value to parse.</param>
-    /// <exception cref="RequestException">Thrown if <paramref name="value"/> is not a double or numeric string.</exception>
-    private static double ToDouble(object value) => value switch
-    {
-        double d => d,
-        GlideString gs => double.Parse(gs.ToString(), CultureInfo.InvariantCulture),
-        _ => throw new RequestException($"Expected a double or numeric string, got {value.GetType()}"),
-    };
+    /// <exception cref="RequestException">Thrown if <paramref name="value"/> could not be parsed as a <see langword="double"/>.</exception>
+    private static double ToDouble(object value)
+        => TryToDouble(value) ?? throw new RequestException($"Could not convert {value.GetType()} value to double.");
 
     /// <summary>
     /// Parses the given response values as a <see langword="long"/> array.
@@ -223,7 +215,7 @@ internal static partial class Request
     /// </summary>
     /// <param name="values">The response values to parse.</param>
     private static long?[] ToNullableLongs(object?[] values)
-        => [.. values.Select(item => item is null ? (long?)null : ToLong(item))];
+        => [.. values.Select(TryToLong)];
 
     /// <summary>
     /// Parses a response value in Unix milliseconds as a <see cref="DateTimeOffset"/>.
@@ -238,6 +230,30 @@ internal static partial class Request
     /// <param name="value">The response value to parse.</param>
     private static TimeSpan ToTimeSpan(object value)
         => TimeSpan.FromMilliseconds(ToLong(value));
+
+    /// <summary>
+    /// Attempts to parse a response value as a <see langword="double"/>.
+    /// </summary>
+    /// <param name="value">The response value to parse.</param>
+    /// <exception cref="FormatException">Thrown if <paramref name="value"/> could not be parsed as a <see langword="double"/>.</exception>
+    private static double? TryToDouble(object? value) => value switch
+    {
+        double d => d,
+        GlideString gs => double.Parse(gs.ToString(), CultureInfo.InvariantCulture),
+        _ => null,
+    };
+
+    /// <summary>
+    /// Attempts to parse a response value as a <see langword="long"/>.
+    /// </summary>
+    /// <param name="value">The response value to parse.</param>
+    /// <exception cref="FormatException">Thrown if <paramref name="value"/> could not be parsed as a <see langword="long"/>.</exception>
+    private static long? TryToLong(object? value) => value switch
+    {
+        long l => l,
+        GlideString gs => long.Parse(gs.ToString(), CultureInfo.InvariantCulture),
+        _ => null,
+    };
 
     #endregion
     #region Response Map Helpers
@@ -287,7 +303,14 @@ internal static partial class Request
     /// <param name="key">The field key to read.</param>
     /// <exception cref="RequestException">Thrown if the value for <paramref name="key"/> is not a double or string.</exception>
     private static double? TryGetDouble(Dictionary<GlideString, object> map, string key)
-        => map.TryGetValue(key, out var value) ? ToDouble(value) : null;
+    {
+        if (!map.TryGetValue(key, out var value) || value is null)
+        {
+            return null;
+        }
+
+        return ToDouble(value);
+    }
 
     /// <summary>
     /// Returns a required <see langword="int"/> value from the given response dictionary.
@@ -321,14 +344,14 @@ internal static partial class Request
     /// <param name="key">The field key to read.</param>
     /// <exception cref="RequestException">Thrown if the value for <paramref name="key"/> is not a long or string.</exception>
     private static long? TryGetLong(Dictionary<GlideString, object> map, string key)
-        => map.TryGetValue(key, out var value)
-            ? value switch
-            {
-                null => null,
-                long l => l,
-                GlideString gs => long.Parse(gs.ToString()),
-                _ => throw new RequestException($"Response field '{key}' expected long or string, got {value.GetType()}"),
-            } : null;
+    {
+        if (!map.TryGetValue(key, out var value) || value is null)
+        {
+            return null;
+        }
+
+        return ToLong(value);
+    }
 
     /// <summary>
     /// Returns a required <see langword="string"/> value from the given response dictionary.
