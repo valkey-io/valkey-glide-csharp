@@ -301,15 +301,15 @@ internal static partial class Request
     /// </summary>
     /// <param name="map">The response dictionary.</param>
     /// <param name="key">The field key to read.</param>
-    /// <exception cref="RequestException">Thrown if the value for <paramref name="key"/> is not a double or string.</exception>
+    /// <exception cref="RequestException">Thrown if the value for <paramref name="key"/> could not be parsed as a <see langword="double"/>.</exception>
     private static double? TryGetDouble(Dictionary<GlideString, object> map, string key)
     {
-        if (!map.TryGetValue(key, out var value) || value is null)
+        if (!map.TryGetValue(key, out var value))
         {
             return null;
         }
 
-        return ToDouble(value);
+        return TryToDouble(value) ?? throw new RequestException($"Could not convert '{key}' field {value.GetType()} value to double.");
     }
 
     /// <summary>
@@ -342,15 +342,15 @@ internal static partial class Request
     /// </summary>
     /// <param name="map">The response dictionary.</param>
     /// <param name="key">The field key to read.</param>
-    /// <exception cref="RequestException">Thrown if the value for <paramref name="key"/> is not a long or string.</exception>
+    /// <exception cref="RequestException">Thrown if the value for <paramref name="key"/> could not be parsed as a <see langword="long"/>.</exception>
     private static long? TryGetLong(Dictionary<GlideString, object> map, string key)
     {
-        if (!map.TryGetValue(key, out var value) || value is null)
+        if (!map.TryGetValue(key, out var value))
         {
             return null;
         }
 
-        return ToLong(value);
+        return TryToLong(value) ?? throw new RequestException($"Could not convert '{key}' field {value.GetType()} value to long.");
     }
 
     /// <summary>
