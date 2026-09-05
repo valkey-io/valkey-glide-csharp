@@ -74,8 +74,7 @@ internal static partial class Request
     }
 
     public static Cmd<long, DateTimeOffset?> ExpireTime(ValkeyKey key)
-        => new(RequestType.PExpireTime, [key], true, response =>
-            response is -1 or -2 ? null : DateTimeOffset.FromUnixTimeMilliseconds(response));
+        => new(RequestType.PExpireTime, [key], true, response => response is -1 or -2 ? null : DateTimeOffset.FromUnixTimeMilliseconds(response));
 
     public static Cmd<object, bool> Migrate(IEnumerable<ValkeyKey> keys, MigrateOptions options)
         => new(RequestType.Migrate, options.ToArgs(keys.ToGlideStrings()), false, response => response is string s && s == "OK");
@@ -137,12 +136,16 @@ internal static partial class Request
         List<GlideString> args = [cursor.ToGlideString()];
         args.AddRange(ToScanArgs(options));
 
-        return new(RequestType.Scan, [.. args], false, arr =>
-        {
-            string nextCursor = arr[0].ToString() ?? "0";
-            ValkeyKey[] keys = [.. ((object[])arr[1]).Select(item => new ValkeyKey(item.ToString()))];
-            return (nextCursor, keys);
-        });
+        return new(
+            RequestType.Scan,
+            [.. args],
+            false,
+            arr =>
+            {
+                string nextCursor = arr[0].ToString() ?? "0";
+                ValkeyKey[] keys = [.. ((object[])arr[1]).Select(item => new ValkeyKey(item.ToString()))];
+                return (nextCursor, keys);
+            });
     }
 
     public static Cmd<long, long> SortAndStore(ValkeyKey destination, ValkeyKey key, long skip = 0, long take = -1, Order order = Order.Ascending, SortType sortType = SortType.Numeric, ValkeyValue by = default, ValkeyValue[]? get = null)
@@ -279,20 +282,24 @@ internal static partial class Request
         => Simple<long>(RequestType.Touch, keys.ToGlideStrings());
 
     public static Cmd<GlideString, ValkeyType> Type(ValkeyKey key)
-        => new(RequestType.Type, [key], false, response =>
-        {
-            string typeStr = response.ToString();
-            return typeStr switch
+        => new(
+            RequestType.Type,
+            [key],
+            false,
+            response =>
             {
-                "string" => ValkeyType.String,
-                "list" => ValkeyType.List,
-                "set" => ValkeyType.Set,
-                "zset" => ValkeyType.SortedSet,
-                "hash" => ValkeyType.Hash,
-                "stream" => ValkeyType.Stream,
-                _ => ValkeyType.None
-            };
-        });
+                string typeStr = response.ToString();
+                return typeStr switch
+                {
+                    "string" => ValkeyType.String,
+                    "list" => ValkeyType.List,
+                    "set" => ValkeyType.Set,
+                    "zset" => ValkeyType.SortedSet,
+                    "hash" => ValkeyType.Hash,
+                    "stream" => ValkeyType.Stream,
+                    _ => ValkeyType.None
+                };
+            });
 
     public static Cmd<long, bool> Unlink(ValkeyKey key)
         => Boolean<long>(RequestType.Unlink, [key]);
@@ -304,12 +311,11 @@ internal static partial class Request
         => Simple<long>(RequestType.Wait, [numreplicas.ToGlideString(), ToULongMs(timeout, nameof(timeout)).ToGlideString()]);
 
     public static Cmd<object[], long[]> WaitAof(bool localAof, long numreplicas, TimeSpan timeout)
-        => new(RequestType.WaitAof, [(localAof ? 1L : 0L).ToGlideString(), numreplicas.ToGlideString(), ToULongMs(timeout, nameof(timeout)).ToGlideString()], false, arr =>
-            {
-                long local = Convert.ToInt64(arr[0] is GlideString gs0 ? gs0.ToString() : arr[0]);
-                long replicas = Convert.ToInt64(arr[1] is GlideString gs1 ? gs1.ToString() : arr[1]);
-                return [local, replicas];
-            });
+        => new(
+            RequestType.WaitAof,
+            [(localAof ? 1L : 0L).ToGlideString(), numreplicas.ToGlideString(), ToULongMs(timeout, nameof(timeout)).ToGlideString()],
+            false,
+            ToLongs);
 
     #endregion
 }

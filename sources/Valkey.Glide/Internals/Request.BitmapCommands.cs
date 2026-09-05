@@ -52,19 +52,17 @@ internal static partial class Request
         }
 
         // Preserve null values to indicate overflow with OVERFLOW FAIL
-        return new(RequestType.BitField, [.. args], false, response =>
-            [.. response.Select(item => item is null ? (long?)null : Convert.ToInt64(item))]);
+        return new(RequestType.BitField, [.. args], false, ToNullableLongs);
     }
 
     public static Cmd<object[], long[]> BitFieldReadOnly(ValkeyKey key, BitFieldOptions.IBitFieldReadOnlySubCommand[] subCommands)
     {
-        List<GlideString> args = [key.ToGlideString()];
+        List<GlideString> args = [key];
         foreach (var subCommand in subCommands)
         {
             args.AddRange(subCommand.ToArgs().ToGlideStrings());
         }
 
-        return new(RequestType.BitFieldReadOnly, [.. args], false, response =>
-            [.. response.Select(Convert.ToInt64)]);
+        return new(RequestType.BitFieldReadOnly, [.. args], false, ToLongs);
     }
 }

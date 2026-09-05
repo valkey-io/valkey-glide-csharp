@@ -74,8 +74,8 @@ internal static partial class Request
     /// <param name="request">The request type</param>
     /// <param name="args">The command arguments</param>
     /// <returns>A command that converts an array to a ValkeyValue array</returns>
-    private static Cmd<object[], ValkeyValue[]> ToValkeyValueArray(RequestType request, GlideString[] args)
-        => new(request, args, false, ToValkeyValueArray);
+    private static Cmd<object[], ValkeyValue[]> ToValkeyValues(RequestType request, GlideString[] args)
+        => new(request, args, false, ToValkeyValues);
 
     /// <summary>
     /// Converts a keyword and items into a counted array: <c>keyword count item1 item2 ...</c>.
@@ -160,14 +160,14 @@ internal static partial class Request
     /// Converts the given object to a <see cref="ValkeyValue"/> array.
     /// </summary>
     /// <param name="value">The object to convert.</param>
-    private static ValkeyValue[] ToValkeyValueArray(object value)
-        => ToValkeyValueArray((object[])value);
+    private static ValkeyValue[] ToValkeyValues(object value)
+        => ToValkeyValues((object[])value);
 
     /// <summary>
     /// Converts the given objects to a <see cref="ValkeyValue"/> array.
     /// </summary>
     /// <param name="items">The objects to convert.</param>
-    private static ValkeyValue[] ToValkeyValueArray(IEnumerable<object> items)
+    private static ValkeyValue[] ToValkeyValues(object[] items)
         => [.. items.Select(ToValkeyValue)];
 
     /// <summary>
@@ -191,13 +191,31 @@ internal static partial class Request
     /// Parses a response value as a <see langword="long"/>.
     /// </summary>
     /// <param name="value">The response value to parse.</param>
-    /// <exception cref="RequestException">Thrown if <paramref name="value"/> is not a long or numeric string.</exception>
-    private static long ToLong(object value) => value switch
-    {
-        long l => l,
-        GlideString gs => long.Parse(gs.ToString(), CultureInfo.InvariantCulture),
-        _ => throw new RequestException($"Expected a long or numeric string, got {value.GetType()}"),
-    };
+    /// <exception cref="RequestException">Thrown if <paramref name="value"/> could not be parsed as a <see langword="long"/>.</exception>
+    private static long ToLong(object value)
+        => TryToLong(value) ?? throw new RequestException($"Could not convert {value.GetType()} value '{value}' to long.");
+
+    /// <summary>
+    /// Parses a response value as a <see langword="double"/>.
+    /// </summary>
+    /// <param name="value">The response value to parse.</param>
+    /// <exception cref="RequestException">Thrown if <paramref name="value"/> could not be parsed as a <see langword="double"/>.</exception>
+    private static double ToDouble(object value)
+        => TryToDouble(value) ?? throw new RequestException($"Could not convert {value.GetType()} value '{value}' to double.");
+
+    /// <summary>
+    /// Parses the given response values as a <see langword="long"/> array.
+    /// </summary>
+    /// <param name="values">The response values to parse.</param>
+    private static long[] ToLongs(object[] values)
+        => [.. values.Select(ToLong)];
+
+    /// <summary>
+    /// Parses the given response values as a optional <see langword="long"/> array.
+    /// </summary>
+    /// <param name="values">The response values to parse.</param>
+    private static long?[] ToNullableLongs(object?[] values)
+        => [.. values.Select(TryToLong)];
 
     /// <summary>
     /// Parses a response value in Unix milliseconds as a <see cref="DateTimeOffset"/>.
@@ -212,6 +230,30 @@ internal static partial class Request
     /// <param name="value">The response value to parse.</param>
     private static TimeSpan ToTimeSpan(object value)
         => TimeSpan.FromMilliseconds(ToLong(value));
+
+    /// <summary>
+    /// Attempts to parse a response value as a <see langword="double"/>.
+    /// </summary>
+    /// <param name="value">The response value to parse.</param>
+    /// <exception cref="FormatException">Thrown if <paramref name="value"/> could not be parsed as a <see langword="double"/>.</exception>
+    private static double? TryToDouble(object? value) => value switch
+    {
+        double d => d,
+        GlideString gs => double.Parse(gs.ToString(), CultureInfo.InvariantCulture),
+        _ => null,
+    };
+
+    /// <summary>
+    /// Attempts to parse a response value as a <see langword="long"/>.
+    /// </summary>
+    /// <param name="value">The response value to parse.</param>
+    /// <exception cref="FormatException">Thrown if <paramref name="value"/> could not be parsed as a <see langword="long"/>.</exception>
+    private static long? TryToLong(object? value) => value switch
+    {
+        long l => l,
+        GlideString gs => long.Parse(gs.ToString(), CultureInfo.InvariantCulture),
+        _ => null,
+    };
 
     #endregion
     #region Response Map Helpers
@@ -242,7 +284,7 @@ internal static partial class Request
     private static char GetChar(Dictionary<GlideString, object> map, string key)
     {
         var s = GetString(map, key);
-        return s.Length == 1 ? s[0] : throw new RequestException($"Response field '{key}' expected single character, got '{s}'");
+        return s.Length == 1 ? s[0] : throw new RequestException($"Could not convert '{key}' field string value '{s}' to char.");
     }
 
     /// <summary>
@@ -259,15 +301,16 @@ internal static partial class Request
     /// </summary>
     /// <param name="map">The response dictionary.</param>
     /// <param name="key">The field key to read.</param>
-    /// <exception cref="RequestException">Thrown if the value for <paramref name="key"/> is not a double or string.</exception>
+    /// <exception cref="RequestException">Thrown if the value for <paramref name="key"/> could not be parsed as a <see langword="double"/>.</exception>
     private static double? TryGetDouble(Dictionary<GlideString, object> map, string key)
-        => map.TryGetValue(key, out var value)
-            ? value switch
-            {
-                double d => d,
-                GlideString gs => double.Parse(gs.ToString()),
-                _ => throw new RequestException($"Response field '{key}' expected double or string, got {value.GetType()}"),
-            } : null;
+    {
+        if (!map.TryGetValue(key, out var value))
+        {
+            return null;
+        }
+
+        return TryToDouble(value) ?? throw new RequestException($"Could not convert '{key}' field {value.GetType()} value '{value}' to double.");
+    }
 
     /// <summary>
     /// Returns a required <see langword="int"/> value from the given response dictionary.
@@ -299,16 +342,16 @@ internal static partial class Request
     /// </summary>
     /// <param name="map">The response dictionary.</param>
     /// <param name="key">The field key to read.</param>
-    /// <exception cref="RequestException">Thrown if the value for <paramref name="key"/> is not a long or string.</exception>
+    /// <exception cref="RequestException">Thrown if the value for <paramref name="key"/> could not be parsed as a <see langword="long"/>.</exception>
     private static long? TryGetLong(Dictionary<GlideString, object> map, string key)
-        => map.TryGetValue(key, out var value)
-            ? value switch
-            {
-                null => null,
-                long l => l,
-                GlideString gs => long.Parse(gs.ToString()),
-                _ => throw new RequestException($"Response field '{key}' expected long or string, got {value.GetType()}"),
-            } : null;
+    {
+        if (!map.TryGetValue(key, out var value))
+        {
+            return null;
+        }
+
+        return TryToLong(value) ?? throw new RequestException($"Could not convert '{key}' field {value.GetType()} value '{value}' to long.");
+    }
 
     /// <summary>
     /// Returns a required <see langword="string"/> value from the given response dictionary.
@@ -390,14 +433,9 @@ internal static partial class Request
             return null;
         }
 
-        IEnumerable<object> items = value switch
-        {
-            object[] arr => arr,
-            HashSet<object> set => set,
-            _ => throw new RequestException($"Response field '{key}' expected array, got {value.GetType()}"),
-        };
-
-        return ToValkeyValueArray(items);
+        return value is object[] arr
+            ? ToValkeyValues(arr)
+            : throw new RequestException($"Could not convert '{key}' field {value.GetType()} value '{value}' to array.");
     }
 
     #endregion

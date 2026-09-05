@@ -66,25 +66,25 @@ public class PubSubCallbackTests
         using var completed = new ManualResetEventSlim(false);
 
         await using var subscriber = await BuildSubscriber(
-                isCluster,
-                message,
-                callback: (msg, context) =>
+            isCluster,
+            message,
+            callback: (msg, context) =>
+            {
+                int invocation = Interlocked.Increment(ref receivedCount);
+
+                // Throw exception on first message, succeed on subsequent messages
+                if (invocation == 1)
                 {
-                    int invocation = Interlocked.Increment(ref receivedCount);
+                    throw new InvalidOperationException("Test exception in callback");
+                }
 
-                    // Throw exception on first message, succeed on subsequent messages
-                    if (invocation == 1)
-                    {
-                        throw new InvalidOperationException("Test exception in callback");
-                    }
+                _ = Interlocked.Increment(ref succeededCount);
 
-                    _ = Interlocked.Increment(ref succeededCount);
-
-                    if (invocation >= 3)
-                    {
-                        completed.Set();
-                    }
-                });
+                if (invocation >= 3)
+                {
+                    completed.Set();
+                }
+            });
 
         await using var publisher = BuildPublisher(isCluster);
 

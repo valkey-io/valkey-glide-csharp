@@ -420,10 +420,10 @@ public abstract class ConnectionConfiguration
         protected (string? host, ushort? port) Address
         {
             set => Config.Addresses.Add(new NodeAddress
-            (
-                value.host ?? DEFAULT_HOST,
-                value.port ?? DEFAULT_PORT
-            ));
+                (
+                    value.host ?? DEFAULT_HOST,
+                    value.port ?? DEFAULT_PORT
+                ));
         }
 
         /// <inheritdoc cref="Address" />

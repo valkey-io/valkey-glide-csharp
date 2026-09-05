@@ -1244,18 +1244,17 @@ public class JsonCommandTests(TestConfiguration config)
     {
         await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
-        string keyInteger = GetUniqueKey("integer");
-        string keyFloat = GetUniqueKey("float");
+        var keyInteger = GetUniqueKey("integer");
+        var keyFloat = GetUniqueKey("float");
 
         await GlideJson.SetAsync(client, keyInteger, "$", "42");
         await GlideJson.SetAsync(client, keyFloat, "$", "3.14");
-        string? intResult = await GlideJson.TypeAsync(client, keyInteger);
-        string? floatResult = await GlideJson.TypeAsync(client, keyFloat);
 
-        Assert.NotNull(intResult);
-        Assert.NotNull(floatResult);
-        // Integer values may return "integer" or "number" depending on the JSON module version
-        Assert.True(intResult is "integer" or "number",
+        var intResult = await GlideJson.TypeAsync(client, keyInteger);
+        var floatResult = await GlideJson.TypeAsync(client, keyFloat);
+
+        Assert.True(
+            intResult is "integer" or "number",
             $"Expected 'integer' or 'number' but got '{intResult}'");
         Assert.Equal("number", floatResult);
     }
@@ -1306,22 +1305,20 @@ public class JsonCommandTests(TestConfiguration config)
         string jsonValue = /*lang=json,strict*/ "{\"name\":\"John\",\"age\":30,\"active\":true}";
 
         await GlideJson.SetAsync(client, key, "$", jsonValue);
-        ValkeyValue[] nameResult = await GlideJson.TypeAsync(client, key, "$.name");
-        ValkeyValue[] ageResult = await GlideJson.TypeAsync(client, key, "$.age");
-        ValkeyValue[] activeResult = await GlideJson.TypeAsync(client, key, "$.active");
 
-        // JSONPath returns an array of types
-        // Results should be arrays containing the type strings
-        _ = Assert.Single(nameResult);
-        Assert.Equal("string", (string?)nameResult[0]);
+        var nameResult = await GlideJson.TypeAsync(client, key, "$.name");
+        var nameType = Assert.Single(nameResult);
+        Assert.Equal("string", nameType);
 
-        _ = Assert.Single(ageResult);
-        string? ageType = (string?)ageResult[0];
-        Assert.True(ageType is "integer" or "number",
+        var ageResult = await GlideJson.TypeAsync(client, key, "$.age");
+        string? ageType = Assert.Single(ageResult);
+        Assert.True(
+            ageType is "integer" or "number",
             $"Expected 'integer' or 'number' but got '{ageType}'");
 
-        _ = Assert.Single(activeResult);
-        Assert.Equal("boolean", (string?)activeResult[0]);
+        var activeResult = await GlideJson.TypeAsync(client, key, "$.active");
+        var activeType = Assert.Single(activeResult);
+        Assert.Equal("boolean", activeType);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1334,11 +1331,10 @@ public class JsonCommandTests(TestConfiguration config)
         string jsonValue = /*lang=json,strict*/ "{\"name\":\"John\",\"age\":30}";
 
         await GlideJson.SetAsync(client, key, "$", jsonValue);
-        ValkeyValue[] result = await GlideJson.TypeAsync(client, key, ".name");
 
-        // Legacy path returns a single type string wrapped in array
-        _ = Assert.Single(result);
-        Assert.Equal("string", (string?)result[0]);
+        var result = await GlideJson.TypeAsync(client, key, ".name");
+        var type = Assert.Single(result);
+        Assert.Equal("string", type);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1348,10 +1344,7 @@ public class JsonCommandTests(TestConfiguration config)
         await ModuleUtils.SkipIfJsonModuleNotAvailableAsync(client);
 
         string key = GetUniqueKey("nonexistent");
-
-        string? result = await GlideJson.TypeAsync(client, key);
-
-        Assert.Null(result);
+        Assert.Null(await GlideJson.TypeAsync(client, key));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1419,7 +1412,8 @@ public class JsonCommandTests(TestConfiguration config)
         Assert.Equal(3, result.Length);
         Assert.Equal("string", (string?)result[0]);
         string? secondType = (string?)result[1];
-        Assert.True(secondType is "integer" or "number",
+        Assert.True(
+            secondType is "integer" or "number",
             $"Expected 'integer' or 'number' but got '{secondType}'");
         Assert.Equal("boolean", (string?)result[2]);
     }

@@ -586,6 +586,7 @@ dotnet_diagnostic.RCS0016.severity = error
 dotnet_diagnostic.RCS0031.severity = error
 dotnet_diagnostic.RCS0049.severity = error
 dotnet_diagnostic.RCS0050.severity = error
+dotnet_diagnostic.RCS0053.severity = error
 dotnet_diagnostic.RCS0054.severity = error
 dotnet_diagnostic.RCS0055.severity = error
 dotnet_diagnostic.RCS0060.severity = error
@@ -686,13 +687,6 @@ dotnet_diagnostic.RCS1262.severity = error
 dotnet_diagnostic.RCS1263.severity = error
 dotnet_diagnostic.RCS1265.severity = error
 dotnet_diagnostic.RCS1268.severity = error
-
-# ----------------------------------------
-
-# TODO #549: Enable these analyzers
-# Configuration=Lint dotnet format Valkey.Glide.sln analyzers --diagnostics <ID> --severity info
-
-# RCS0053: Fix formatting of a list
 
 # ----------------------------------------
 

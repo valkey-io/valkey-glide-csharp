@@ -8,10 +8,13 @@ namespace Valkey.Glide.Internals;
 internal static class ResponseConverters
 {
     public static ClusterValue<object?> HandleCustomCommandClusterValue(object? value, Route? route = null)
-        => HandleServerValue<object, ClusterValue<object?>>(value, true, data
-            => (data is string str && str == "OK") || route is SingleNodeRoute || data is not Dictionary<GlideString, object?>
-                ? ClusterValue<object?>.OfSingleValue(data)
-                : ClusterValue<object?>.OfMultiValue((Dictionary<GlideString, object?>)data));
+        => HandleServerValue<object, ClusterValue<object?>>(
+            value,
+            true,
+            data
+                => (data is string str && str == "OK") || route is SingleNodeRoute || data is not Dictionary<GlideString, object?>
+                    ? ClusterValue<object?>.OfSingleValue(data)
+                    : ClusterValue<object?>.OfMultiValue((Dictionary<GlideString, object?>)data));
 
     /// <summary>
     /// Process and convert a cluster multi-node response.

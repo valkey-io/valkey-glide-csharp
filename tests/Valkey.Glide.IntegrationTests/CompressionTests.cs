@@ -367,7 +367,8 @@ public class CompressionTests(CompressionFixture fixture)
         await ZstdClient.SetAsync(keysAndValues);
 
         var statsAfter = BaseClient.GetStatistics();
-        Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
+        Assert.True(
+            statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
             $"MSET should compress values. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
 
         // Verify values can be retrieved and decompressed
@@ -393,7 +394,8 @@ public class CompressionTests(CompressionFixture fixture)
         Assert.True(result, "MSETNX should succeed for new keys");
 
         var statsAfter = BaseClient.GetStatistics();
-        Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
+        Assert.True(
+            statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
             $"MSETNX should compress values. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
 
         // Verify values can be retrieved and decompressed
@@ -415,7 +417,8 @@ public class CompressionTests(CompressionFixture fixture)
         _ = await ZstdClient.ExpireAsync(key, TimeSpan.FromSeconds(10));
 
         var statsAfter = BaseClient.GetStatistics();
-        Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
+        Assert.True(
+            statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
             $"SET should compress values. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
 
         ValkeyValue retrieved = await ZstdClient.GetAsync(key);
@@ -433,7 +436,8 @@ public class CompressionTests(CompressionFixture fixture)
         Assert.True(result);
 
         var statsAfter = BaseClient.GetStatistics();
-        Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
+        Assert.True(
+            statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
             $"SET NX should compress values. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
 
         ValkeyValue retrieved = await ZstdClient.GetAsync(key);
@@ -456,7 +460,8 @@ public class CompressionTests(CompressionFixture fixture)
         Assert.Equal("OK", result?.ToString());
 
         var statsAfter = BaseClient.GetStatistics();
-        Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
+        Assert.True(
+            statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
             $"SETEX via CustomCommand should compress value. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
 
         // Verify value can be retrieved and decompressed
@@ -481,7 +486,8 @@ public class CompressionTests(CompressionFixture fixture)
         Assert.Equal("OK", result?.ToString());
 
         var statsAfter = BaseClient.GetStatistics();
-        Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
+        Assert.True(
+            statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
             $"PSETEX via CustomCommand should compress value. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
 
         // Verify value can be retrieved and decompressed
@@ -506,7 +512,8 @@ public class CompressionTests(CompressionFixture fixture)
         Assert.Equal(1L, result);
 
         var statsAfter = BaseClient.GetStatistics();
-        Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
+        Assert.True(
+            statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
             $"SETNX via CustomCommand should compress value. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
 
         // Verify value can be retrieved and decompressed
@@ -592,7 +599,8 @@ public class CompressionTests(CompressionFixture fixture)
         var statsAfter = BaseClient.GetStatistics();
 
         // Verify compression occurred (3 SET commands should compress)
-        Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
+        Assert.True(
+            statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
             $"Batch should compress values. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
 
         // Verify results - first 3 are SET results (OK), last 3 are GET results
@@ -623,7 +631,8 @@ public class CompressionTests(CompressionFixture fixture)
         var statsAfter = BaseClient.GetStatistics();
 
         // Verify compression occurred
-        Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
+        Assert.True(
+            statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
             $"Transaction should compress values. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
 
         // Verify results
@@ -650,7 +659,8 @@ public class CompressionTests(CompressionFixture fixture)
         var statsAfter = BaseClient.GetStatistics();
 
         // Verify compression occurred for SETEX via CustomCommand in batch
-        Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
+        Assert.True(
+            statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
             $"Batch CustomCommand should compress values. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
 
         // Verify results
@@ -680,7 +690,8 @@ public class CompressionTests(CompressionFixture fixture)
         var statsAfter = BaseClient.GetStatistics();
 
         // Verify compression occurred
-        Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
+        Assert.True(
+            statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
             $"Cluster batch should compress values. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
 
         // Verify results
@@ -714,7 +725,8 @@ public class CompressionTests(CompressionFixture fixture)
         var statsAfter = BaseClient.GetStatistics();
 
         // Verify compression occurred (3 SET commands should compress)
-        Assert.True(statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
+        Assert.True(
+            statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
             $"Batch should compress values. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
 
         // Verify results - first 3 are SET results (OK), last is MGET result (array)

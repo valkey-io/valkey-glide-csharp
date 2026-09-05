@@ -104,13 +104,11 @@ public abstract partial class BaseClient
         => await Command(Request.HashSet(key, hashFieldsAndValues, condition));
 
     /// <inheritdoc cref="IBaseClient.HashSetAsync(ValkeyKey, IEnumerable{KeyValuePair{ValkeyValue, ValkeyValue}}, HashSetOptions)"/>
-    public async Task<bool> HashSetAsync(ValkeyKey key, IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>> hashFieldsAndValues,
-        HashSetOptions options)
+    public async Task<bool> HashSetAsync(ValkeyKey key, IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>> hashFieldsAndValues, HashSetOptions options)
         => await Command(Request.HashSet(key, hashFieldsAndValues, options));
 
     /// <inheritdoc cref="IBaseClient.HashSetAsync(ValkeyKey, ValkeyValue, ValkeyValue, HashSetOptions)"/>
-    public async Task<bool> HashSetAsync(ValkeyKey key, ValkeyValue hashField, ValkeyValue value,
-        HashSetOptions options)
+    public async Task<bool> HashSetAsync(ValkeyKey key, ValkeyValue hashField, ValkeyValue value, HashSetOptions options)
         => await HashSetAsync(key, [new KeyValuePair<ValkeyValue, ValkeyValue>(hashField, value)], options);
 
     /// <inheritdoc cref="IBaseClient.HashSetAsync(ValkeyKey, ValkeyValue, ValkeyValue, SetExpiryOptions)"/>

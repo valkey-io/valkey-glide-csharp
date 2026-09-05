@@ -12,8 +12,7 @@ namespace Valkey.Glide;
 /// </summary>
 internal static class ScriptParameterMapper
 {
-    private static readonly Regex ParameterRegex = new(@"@([a-zA-Z_][a-zA-Z0-9_]*)",
-        RegexOptions.Compiled);
+    private static readonly Regex ParameterRegex = new(@"@([a-zA-Z_][a-zA-Z0-9_]*)", RegexOptions.Compiled);
 
     /// <summary>
     /// Prepares a script by extracting parameters and converting to KEYS/ARGV syntax.
@@ -44,12 +43,14 @@ internal static class ScriptParameterMapper
 
         // Convert @param to placeholder for later substitution
         // We use placeholders because we don't know yet if parameters are keys or arguments
-        string executableScript = ParameterRegex.Replace(script, match =>
-        {
-            string paramName = match.Groups[1].Value;
-            int index = parameterIndices[paramName];
-            return $"{{PARAM_{index}}}";
-        });
+        string executableScript = ParameterRegex.Replace(
+            script,
+            match =>
+            {
+                string paramName = match.Groups[1].Value;
+                int index = parameterIndices[paramName];
+                return $"{{PARAM_{index}}}";
+            });
 
         return (script, executableScript, parameters.ToArray());
     }
@@ -75,10 +76,9 @@ internal static class ScriptParameterMapper
             string paramName = parameterNames[i];
 
             // Get the parameter's type
-            var property = paramType.GetProperty(paramName,
-                BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
-            var field = paramType.GetField(paramName,
-                BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+            var flags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase;
+            var property = paramType.GetProperty(paramName, flags);
+            var field = paramType.GetField(paramName, flags);
 
             Type memberType = property?.PropertyType ?? field!.FieldType;
 
@@ -139,18 +139,20 @@ internal static class ScriptParameterMapper
     /// <param name="missingMember">Output parameter for the first missing member name.</param>
     /// <param name="badTypeMember">Output parameter for the first member with invalid type.</param>
     /// <returns>True if all parameters are valid, false otherwise.</returns>
-    internal static bool IsValidParameterHash(Type type, string[] parameterNames,
-        out string? missingMember, out string? badTypeMember)
+    internal static bool IsValidParameterHash(
+        Type type,
+        string[] parameterNames,
+        out string? missingMember,
+        out string? badTypeMember)
     {
         missingMember = null;
         badTypeMember = null;
 
         foreach (string paramName in parameterNames)
         {
-            var property = type.GetProperty(paramName,
-                BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
-            var field = type.GetField(paramName,
-                BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+            var flags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase;
+            var property = type.GetProperty(paramName, flags);
+            var field = type.GetField(paramName, flags);
 
             if (property == null && field == null)
             {
@@ -196,10 +198,9 @@ internal static class ScriptParameterMapper
 
         foreach (string paramName in parameterNames)
         {
-            var property = type.GetProperty(paramName,
-                BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
-            var field = type.GetField(paramName,
-                BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+            var flags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase;
+            var property = type.GetProperty(paramName, flags);
+            var field = type.GetField(paramName, flags);
 
             MemberExpression member;
             Type memberType;

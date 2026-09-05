@@ -161,10 +161,10 @@ public static class Options
         internal ClusterBatchRetryStrategy? RetryStrategy { get; } = retryStrategy;
 
         internal override FFI.BatchOptions ToFfi() => new(
-                RetryStrategy?.RetryServerError,
-                RetryStrategy?.RetryConnectionError,
-                _timeout,
-                Route?.ToFfi()
+            RetryStrategy?.RetryServerError,
+            RetryStrategy?.RetryConnectionError,
+            _timeout,
+            Route?.ToFfi()
             );
     }
 }
