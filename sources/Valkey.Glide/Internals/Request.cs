@@ -193,7 +193,7 @@ internal static partial class Request
     /// <param name="value">The response value to parse.</param>
     /// <exception cref="RequestException">Thrown if <paramref name="value"/> could not be parsed as a <see langword="long"/>.</exception>
     private static long ToLong(object value)
-        => TryToLong(value) ?? throw new RequestException($"Could not convert {value.GetType()} value to long.");
+        => TryToLong(value) ?? throw new RequestException($"Could not convert {value.GetType()} value '{value}' to long.");
 
     /// <summary>
     /// Parses a response value as a <see langword="double"/>.
@@ -201,7 +201,7 @@ internal static partial class Request
     /// <param name="value">The response value to parse.</param>
     /// <exception cref="RequestException">Thrown if <paramref name="value"/> could not be parsed as a <see langword="double"/>.</exception>
     private static double ToDouble(object value)
-        => TryToDouble(value) ?? throw new RequestException($"Could not convert {value.GetType()} value to double.");
+        => TryToDouble(value) ?? throw new RequestException($"Could not convert {value.GetType()} value '{value}' to double.");
 
     /// <summary>
     /// Parses the given response values as a <see langword="long"/> array.
@@ -284,7 +284,7 @@ internal static partial class Request
     private static char GetChar(Dictionary<GlideString, object> map, string key)
     {
         var s = GetString(map, key);
-        return s.Length == 1 ? s[0] : throw new RequestException($"Response field '{key}' expected single character, got '{s}'");
+        return s.Length == 1 ? s[0] : throw new RequestException($"Could not convert '{key}' field string value '{s}' to char.");
     }
 
     /// <summary>
@@ -309,7 +309,7 @@ internal static partial class Request
             return null;
         }
 
-        return TryToDouble(value) ?? throw new RequestException($"Could not convert '{key}' field {value.GetType()} value to double.");
+        return TryToDouble(value) ?? throw new RequestException($"Could not convert '{key}' field {value.GetType()} value '{value}' to double.");
     }
 
     /// <summary>
@@ -350,7 +350,7 @@ internal static partial class Request
             return null;
         }
 
-        return TryToLong(value) ?? throw new RequestException($"Could not convert '{key}' field {value.GetType()} value to long.");
+        return TryToLong(value) ?? throw new RequestException($"Could not convert '{key}' field {value.GetType()} value '{value}' to long.");
     }
 
     /// <summary>
@@ -433,14 +433,9 @@ internal static partial class Request
             return null;
         }
 
-        IEnumerable<object> items = value switch
-        {
-            object[] arr => arr,
-            HashSet<object> set => set,
-            _ => throw new RequestException($"Response field '{key}' expected array, got {value.GetType()}"),
-        };
-
-        return ToValkeyValues(items);
+        return value is object[] arr
+            ? ToValkeyValues(arr)
+            : throw new RequestException($"Could not convert '{key}' field {value.GetType()} value '{value}' to array.");
     }
 
     #endregion
