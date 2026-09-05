@@ -77,6 +77,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `GlideString(byte[])` no longer builds the hex-dump representation on construction (#522)
 - `CompareTo(null)` returns a positive value for `ScoreBound` and `GlideString` (#550)
 - `ClusterValue<T>.HasSingleData` returns expected result for value-type `T` (#547)
+- Culture-invariant parsing of numeric string responses (#557)
 
 ## 1.1.0
 
