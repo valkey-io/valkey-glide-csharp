@@ -235,24 +235,28 @@ internal static partial class Request
     /// Attempts to parse a response value as a <see langword="double"/>.
     /// </summary>
     /// <param name="value">The response value to parse.</param>
-    /// <exception cref="FormatException">Thrown if <paramref name="value"/> could not be parsed as a <see langword="double"/>.</exception>
+    /// <exception cref="RequestException">Thrown if <paramref name="value"/> could not be parsed as a <see langword="double"/>.</exception>
+    /// <exception cref="FormatException">Thrown if <paramref name="value"/> is a non-numeric <see cref="GlideString"/>.</exception>
     private static double? TryToDouble(object? value) => value switch
     {
+        null => null,
         double d => d,
         GlideString gs => double.Parse(gs.ToString(), CultureInfo.InvariantCulture),
-        _ => null,
+        _ => throw new RequestException($"Could not convert {value.GetType()} value '{value}' to double."),
     };
 
     /// <summary>
     /// Attempts to parse a response value as a <see langword="long"/>.
     /// </summary>
     /// <param name="value">The response value to parse.</param>
-    /// <exception cref="FormatException">Thrown if <paramref name="value"/> could not be parsed as a <see langword="long"/>.</exception>
+    /// <exception cref="RequestException">Thrown if <paramref name="value"/> could not be parsed as a <see langword="long"/>.</exception>
+    /// <exception cref="FormatException">Thrown if <paramref name="value"/> is a non-numeric <see cref="GlideString"/>.</exception>
     private static long? TryToLong(object? value) => value switch
     {
+        null => null,
         long l => l,
         GlideString gs => long.Parse(gs.ToString(), CultureInfo.InvariantCulture),
-        _ => null,
+        _ => throw new RequestException($"Could not convert {value.GetType()} value '{value}' to long."),
     };
 
     #endregion
@@ -304,12 +308,12 @@ internal static partial class Request
     /// <exception cref="RequestException">Thrown if the value for <paramref name="key"/> could not be parsed as a <see langword="double"/>.</exception>
     private static double? TryGetDouble(Dictionary<GlideString, object> map, string key)
     {
-        if (!map.TryGetValue(key, out var value))
+        if (!map.TryGetValue(key, out var value) || value is null)
         {
             return null;
         }
 
-        return TryToDouble(value) ?? throw new RequestException($"Could not convert '{key}' field {value.GetType()} value '{value}' to double.");
+        return TryToDouble(value);
     }
 
     /// <summary>
@@ -345,12 +349,12 @@ internal static partial class Request
     /// <exception cref="RequestException">Thrown if the value for <paramref name="key"/> could not be parsed as a <see langword="long"/>.</exception>
     private static long? TryGetLong(Dictionary<GlideString, object> map, string key)
     {
-        if (!map.TryGetValue(key, out var value))
+        if (!map.TryGetValue(key, out var value) || value is null)
         {
             return null;
         }
 
-        return TryToLong(value) ?? throw new RequestException($"Could not convert '{key}' field {value.GetType()} value '{value}' to long.");
+        return TryToLong(value);
     }
 
     /// <summary>
