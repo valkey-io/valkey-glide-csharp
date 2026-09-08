@@ -52,6 +52,8 @@ public abstract class ConnectionConfiguration
         public uint DatabaseId;
         public Protocol? Protocol;
         public string? ClientName;
+        public string? LibName;
+        public string? ClientInfoTag;
         public bool LazyConnect;
         public bool RefreshTopologyFromInitialNodes;
         public BasePubSubSubscriptionConfig? PubSubSubscriptions;
@@ -82,6 +84,9 @@ public abstract class ConnectionConfiguration
         public PeriodicChecksMode? PeriodicChecksMode;
         public uint? PeriodicChecksIntervalSecs;
 
+        /// <summary>
+        /// Computes the resolved library name to send via CLIENT SETINFO LIB-NAME.
+        /// </summary>
         internal FFI.ConnectionConfig ToFfi() => new(
             Addresses,
             ClusterMode,
@@ -120,7 +125,10 @@ public abstract class ConnectionConfiguration
 
             // Periodic checks
             PeriodicChecksMode,
-            PeriodicChecksIntervalSecs
+            PeriodicChecksIntervalSecs,
+
+            // CLIENT SETINFO LIB-NAME
+            Internals.Utils.ResolveLibraryName(LibName, ClientInfoTag)
         );
     }
 
@@ -866,6 +874,60 @@ public abstract class ConnectionConfiguration
         public T WithClientName(string? clientName)
         {
             ClientName = clientName;
+            return (T)this;
+        }
+
+        #endregion
+        #region Library Name
+
+        /// <summary>
+        /// Full override for the library name reported via <c>CLIENT SETINFO LIB-NAME</c> during connection establishment.
+        /// Defaults to <c>GlideC#</c>. When set, this replaces the default identifier entirely.
+        /// <para/>
+        /// Use <see cref="ClientInfoTag"/> instead if you want to preserve the GLIDE identity while adding a framework tag.
+        /// </summary>
+        /// <seealso cref="ClientInfoTag"/>
+        public string? LibraryName
+        {
+            get => Config.LibName ?? Internals.Utils.DefaultLibraryName;
+            set => Config.LibName = value;
+        }
+
+        /// <inheritdoc cref="LibraryName" />
+        public T WithLibraryName(string? libraryName)
+        {
+            LibraryName = libraryName;
+            return (T)this;
+        }
+
+        #endregion
+        #region Client Info Tag
+
+        /// <summary>
+        /// A tag appended to the library name reported via <c>CLIENT SETINFO LIB-NAME</c>.
+        /// The tag is appended in parentheses to preserve the underlying GLIDE identity for adoption tracking.
+        /// <para/>
+        /// For example, setting <c>ClientInfoTag = "my-framework:1.0"</c> produces <c>GlideC#(my-framework:1.0)</c>.
+        /// <para/>
+        /// A <see langword="null"/> value is treated as absent: the base library name is reported
+        /// unchanged, with no <c>()</c> suffix. Any other value — including empty or
+        /// whitespace-only — is passed through as supplied. Character validation is performed
+        /// entirely by the GLIDE core, which permits only printable ASCII from <c>!</c> through
+        /// <c>~</c> (excluding space) plus at most one matched, non-empty trailing <c>(tag)</c>
+        /// group; a malformed value fails client creation with a configuration error rather than
+        /// being silently dropped.
+        /// </summary>
+        /// <seealso cref="LibraryName"/>
+        public string? ClientInfoTag
+        {
+            get => Config.ClientInfoTag;
+            set => Config.ClientInfoTag = value;
+        }
+
+        /// <inheritdoc cref="ClientInfoTag" />
+        public T WithClientInfoTag(string? clientInfoTag)
+        {
+            ClientInfoTag = clientInfoTag;
             return (T)this;
         }
 
