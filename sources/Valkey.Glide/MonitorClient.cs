@@ -63,6 +63,7 @@ public sealed class MonitorClient : IAsyncDisposable, IDisposable
             Database = config.Database,
             Username = config.Username,
             Password = config.Password is not null ? new string(config.Password) : null,
+            LibName = Internals.Utils.ResolveLibraryName(config.LibraryName, config.ClientInfoTag),
         };
 
         IntPtr configPtr = Marshal.AllocHGlobal(Marshal.SizeOf<MonitorConfigFfi>());
