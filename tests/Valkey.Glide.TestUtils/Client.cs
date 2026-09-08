@@ -35,6 +35,20 @@ public static class Client
     }
 
     /// <summary>
+    /// Returns the output of the <c>CLIENT INFO</c> command for the given client.
+    /// </summary>
+    /// <param name="client">A client that is connected to the server.</param>
+    /// <returns>A task that resolves to the raw <c>CLIENT INFO</c> string.</returns>
+    public static async Task<string> GetClientInfo(BaseClient client)
+    {
+        GlideString[] infoCommand = ["CLIENT", "INFO"];
+        object? result = client is GlideClusterClient clusterClient
+            ? (await clusterClient.CustomCommand(infoCommand, Route.Random)).SingleValue
+            : await ((GlideClient)client).CustomCommand(infoCommand);
+        return result!.ToString()!;
+    }
+
+    /// <summary>
     /// Returns the Valkey server version.
     /// </summary>
     /// <param name="client">A client that is connected to the server.</param>
