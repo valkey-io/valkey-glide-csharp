@@ -2134,6 +2134,7 @@ pub unsafe extern "C-unwind" fn create_monitor_client(
         protocol: redis::ProtocolVersion::RESP2,
         client_name: None,
         lib_name: Some(lib_name),
+        lib_ver: None,
         server_assisted_cache: false,
         cache: None,
     };

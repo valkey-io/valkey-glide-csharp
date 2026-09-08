@@ -315,6 +315,7 @@ pub(crate) unsafe fn create_connection_request(
         },
         client_name: unsafe { ptr_to_opt_str(config.client_name) }?,
         lib_name: Some(unsafe { ptr_to_str(config.lib_name) }?),
+        lib_ver: None,
         authentication_info: if config.has_authentication_info {
             let auth_info = config.authentication_info;
             let iam_config = if auth_info.has_iam_credentials {
