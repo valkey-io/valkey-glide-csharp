@@ -23,8 +23,7 @@ internal static partial class Request
         => ToValkeyValue(RequestType.Get, [key], isNullable: true);
 
     public static Cmd<object[], ValkeyValue[]> Get(IEnumerable<ValkeyKey> keys)
-        => new(RequestType.MGet, keys.ToGlideStrings(), false, array =>
-            [.. array.Select(item => item is null ? ValkeyValue.Null : (ValkeyValue)(GlideString)item)]);
+        => ToValkeyValues(RequestType.MGet, keys.ToGlideStrings());
 
     public static Cmd<GlideString, ValkeyValue> GetDelete(ValkeyKey key)
         => ToValkeyValue(RequestType.GetDel, [key], isNullable: true);

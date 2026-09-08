@@ -10,7 +10,11 @@ internal static partial class Request
     #region Command Builders
 
     public static Cmd<object[], (Dictionary<string, IReadOnlySet<ValkeyKey>>, Dictionary<string, IReadOnlySet<ValkeyKey>>)> GetSubscriptions()
-        => new(RequestType.GetSubscriptions, [], false, objects =>
+        => new(
+            RequestType.GetSubscriptions,
+            [],
+            false,
+            objects =>
             {
                 // Parse desired and actual pub/sub subscription dictionaries from the response.
                 var desiredDict = ConvertGetSubscriptionsResponse((Dictionary<GlideString, object>)objects[1]);
@@ -53,8 +57,10 @@ internal static partial class Request
         => Simple<object>(RequestType.PUnsubscribe, patterns, isNullable: true);
 
     public static Cmd<object, object> PUnsubscribeBlocking(GlideString[] patterns, TimeSpan timeout)
-        => Simple<object>(RequestType.PUnsubscribeBlocking,
-            [.. patterns, ToULongMs(timeout, nameof(timeout)).ToGlideString()], isNullable: true);
+        => Simple<object>(
+            RequestType.PUnsubscribeBlocking,
+            [.. patterns, ToULongMs(timeout, nameof(timeout)).ToGlideString()],
+            isNullable: true);
 
     public static Cmd<long, long> SPublish(GlideString channel, GlideString message)
         => Simple<long>(RequestType.SPublish, [channel, message]);
@@ -69,22 +75,28 @@ internal static partial class Request
         => Simple<object>(RequestType.Subscribe, channels, isNullable: true);
 
     public static Cmd<object, object> SubscribeBlocking(GlideString[] channels, TimeSpan timeout)
-        => Simple<object>(RequestType.SubscribeBlocking,
-            [.. channels, ToULongMs(timeout, nameof(timeout)).ToGlideString()], isNullable: true);
+        => Simple<object>(
+            RequestType.SubscribeBlocking,
+            [.. channels, ToULongMs(timeout, nameof(timeout)).ToGlideString()],
+            isNullable: true);
 
     public static Cmd<object, object> SUnsubscribe(GlideString[] channels)
         => Simple<object>(RequestType.SUnsubscribe, channels, isNullable: true);
 
     public static Cmd<object, object> SUnsubscribeBlocking(GlideString[] channels, TimeSpan timeout)
-        => Simple<object>(RequestType.SUnsubscribeBlocking,
-            [.. channels, ToULongMs(timeout, nameof(timeout)).ToGlideString()], isNullable: true);
+        => Simple<object>(
+            RequestType.SUnsubscribeBlocking,
+            [.. channels, ToULongMs(timeout, nameof(timeout)).ToGlideString()],
+            isNullable: true);
 
     public static Cmd<object, object> Unsubscribe(GlideString[] channels)
         => Simple<object>(RequestType.Unsubscribe, channels, isNullable: true);
 
     public static Cmd<object, object> UnsubscribeBlocking(GlideString[] channels, TimeSpan timeout)
-        => Simple<object>(RequestType.UnsubscribeBlocking,
-            [.. channels, ToULongMs(timeout, nameof(timeout)).ToGlideString()], isNullable: true);
+        => Simple<object>(
+            RequestType.UnsubscribeBlocking,
+            [.. channels, ToULongMs(timeout, nameof(timeout)).ToGlideString()],
+            isNullable: true);
 
     #endregion
     #region Response Converters

@@ -127,70 +127,78 @@ internal static partial class Request
         => Ok(RequestType.Select, [index.ToGlideString()]);
 
     public static Cmd<object[], DateTimeOffset> Time()
-        => new(RequestType.Time, [], false, arr =>
-        {
-            long seconds = long.Parse(arr[0] is GlideString gs1 ? gs1.ToString() : arr[0].ToString()!);
-            long microseconds = long.Parse(arr[1] is GlideString gs2 ? gs2.ToString() : arr[1].ToString()!);
-            return DateTimeOffset.FromUnixTimeSeconds(seconds)
-                .AddMicroseconds(microseconds);
-        });
+        => new(
+            RequestType.Time,
+            [],
+            false,
+            arr =>
+            {
+                long seconds = long.Parse(arr[0] is GlideString gs1 ? gs1.ToString() : arr[0].ToString()!);
+                long microseconds = long.Parse(arr[1] is GlideString gs2 ? gs2.ToString() : arr[1].ToString()!);
+                return DateTimeOffset.FromUnixTimeSeconds(seconds)
+                    .AddMicroseconds(microseconds);
+            });
 
     #endregion
     #region Response Converters
 
     private static Cmd<object, KeyValuePair<string, string>[]> ConfigGetAsyncInternal(GlideString[] args)
-        => new(RequestType.ConfigGet, args, false, response =>
-        {
-            // Handle both array and dictionary formats
-            if (response is null)
+        => new(
+            RequestType.ConfigGet,
+            args,
+            false,
+            response =>
             {
-                return [];
-            }
-
-            // If it's a dictionary, convert directly
-            if (response is Dictionary<GlideString, object> dict)
-            {
-                if (dict.Count == 0)
+                // Handle both array and dictionary formats
+                if (response is null)
                 {
                     return [];
                 }
 
-                List<KeyValuePair<string, string>> result = [];
-                foreach (KeyValuePair<GlideString, object> kvp in dict)
+                // If it's a dictionary, convert directly
+                if (response is Dictionary<GlideString, object> dict)
                 {
-                    string key = kvp.Key.ToString();
-                    string value = kvp.Value is GlideString gs ? gs.ToString() : kvp.Value?.ToString() ?? string.Empty;
-                    result.Add(new KeyValuePair<string, string>(key, value));
-                }
-
-                return [.. result];
-            }
-
-            // If it's an array, convert from array
-            if (response is object[] array)
-            {
-                if (array.Length == 0)
-                {
-                    return [];
-                }
-
-                List<KeyValuePair<string, string>> result = [];
-                for (int i = 0; i < array.Length; i += 2)
-                {
-                    if (i + 1 < array.Length)
+                    if (dict.Count == 0)
                     {
-                        string key = array[i] is GlideString gs1 ? gs1.ToString() : "";
-                        string value = array[i + 1] is GlideString gs2 ? gs2.ToString() : array[i + 1]?.ToString() ?? "";
+                        return [];
+                    }
+
+                    List<KeyValuePair<string, string>> result = [];
+                    foreach (KeyValuePair<GlideString, object> kvp in dict)
+                    {
+                        string key = kvp.Key.ToString();
+                        string value = kvp.Value is GlideString gs ? gs.ToString() : kvp.Value?.ToString() ?? string.Empty;
                         result.Add(new KeyValuePair<string, string>(key, value));
                     }
+
+                    return [.. result];
                 }
 
-                return [.. result];
-            }
+                // If it's an array, convert from array
+                if (response is object[] array)
+                {
+                    if (array.Length == 0)
+                    {
+                        return [];
+                    }
 
-            // Fallback for unexpected types
-            return [];
-        });
+                    List<KeyValuePair<string, string>> result = [];
+                    for (int i = 0; i < array.Length; i += 2)
+                    {
+                        if (i + 1 < array.Length)
+                        {
+                            string key = array[i] is GlideString gs1 ? gs1.ToString() : "";
+                            string value = array[i + 1] is GlideString gs2 ? gs2.ToString() : array[i + 1]?.ToString() ?? "";
+                            result.Add(new KeyValuePair<string, string>(key, value));
+                        }
+                    }
+
+                    return [.. result];
+                }
+
+                // Fallback for unexpected types
+                return [];
+            });
 
     private static LatencyEntry[] ConvertLatencyHistoryResponse(object response)
     {

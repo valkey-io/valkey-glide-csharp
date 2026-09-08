@@ -101,13 +101,15 @@ public class ServerManagementTests(ServerManagementFixture fixture) : IClassFixt
     #region Helpers
 
     private Task WaitForSaveNotInProgressAsync()
-        => Polling.WaitForAsync(async () =>
-        {
-            string? info = await fixture.Server.InfoRawAsync("persistence");
-            return info is not null
-                && !info.Contains("rdb_bgsave_in_progress:1")
-                && !info.Contains("aof_rewrite_in_progress:1");
-        }, "Timed out waiting for save to complete");
+        => Polling.WaitForAsync(
+            async () =>
+            {
+                string? info = await fixture.Server.InfoRawAsync("persistence");
+                return info is not null
+                    && !info.Contains("rdb_bgsave_in_progress:1")
+                    && !info.Contains("aof_rewrite_in_progress:1");
+            },
+            "Timed out waiting for save to complete");
 
     #endregion
     #region ReplicaOf Tests
@@ -139,11 +141,13 @@ public class ServerManagementTests(ServerManagementFixture fixture) : IClassFixt
     }
 
     private static Task WaitForRoleAsync(IServer server, string expectedRole)
-        => Polling.WaitForAsync(async () =>
-        {
-            var info = await server.InfoRawAsync("replication");
-            return info?.Contains($"role:{expectedRole}") == true;
-        }, $"Timed out waiting for role to become '{expectedRole}'");
+        => Polling.WaitForAsync(
+            async () =>
+            {
+                var info = await server.InfoRawAsync("replication");
+                return info?.Contains($"role:{expectedRole}") == true;
+            },
+            $"Timed out waiting for role to become '{expectedRole}'");
 
     #endregion
 }

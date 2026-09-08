@@ -278,11 +278,13 @@ public class PubSubMessageHandlerTests
         Task handleTask = Task.Run(() => handler.HandleMessage(message), TestContext.Current.CancellationToken);
         _ = callbackStarted.Wait(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
 
-        Task disposeTask = Task.Run(() =>
-        {
-            disposeStarted.Set();
-            handler.Dispose();
-        }, TestContext.Current.CancellationToken);
+        Task disposeTask = Task.Run(
+            () =>
+            {
+                disposeStarted.Set();
+                handler.Dispose();
+            },
+            TestContext.Current.CancellationToken);
 
         await Task.WhenAll(handleTask, disposeTask);
 

@@ -50,19 +50,10 @@ internal static partial class Request
     }
 
     public static Cmd<object[], GeoPosition?> GeoPosition(ValkeyKey key, ValkeyValue member)
-    {
-        GlideString[] args = [key.ToGlideString(), member.ToGlideString()];
-        return new(RequestType.GeoPos, args, false, response =>
-            response.Length > 0 ? ParseGeoPosition(response[0]) : null);
-    }
+        => new(RequestType.GeoPos, [key, member], false, response => response.Length > 0 ? ParseGeoPosition(response[0]) : null);
 
     public static Cmd<object[], GeoPosition?[]> GeoPosition(ValkeyKey key, ValkeyValue[] members)
-    {
-        var args = new List<GlideString> { key.ToGlideString() };
-        args.AddRange(members.Select(m => m.ToGlideString()));
-        return new(RequestType.GeoPos, [.. args], false, response =>
-            [.. response.Select(ParseGeoPosition)]);
-    }
+        => new(RequestType.GeoPos, [key, .. members], false, response => [.. response.Select(ParseGeoPosition)]);
 
     public static Cmd<object[], GeoSearchResult[]> GeoSearch(ValkeyKey key, ValkeyValue from, GeoSearchShape shape, GeoSearchOptions options = default)
     {

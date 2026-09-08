@@ -71,10 +71,8 @@ public sealed class PubSubMessage
             Pattern = Pattern?.ToString()
         };
 
-        return JsonSerializer.Serialize(messageObject, new JsonSerializerOptions
-        {
-            WriteIndented = false
-        });
+        var options = new JsonSerializerOptions { WriteIndented = false };
+        return JsonSerializer.Serialize(messageObject, options);
     }
 
     /// <summary>

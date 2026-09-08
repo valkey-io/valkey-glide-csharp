@@ -59,7 +59,8 @@ public class PubSubFFIMemoryLeakTests
         Console.WriteLine($"Processed {messageCount:N0} messages successfully");
 
         // Assert: Memory growth should be bounded
-        Assert.True(totalMemoryGrowth < maxMemoryGrowthBytes,
+        Assert.True(
+            totalMemoryGrowth < maxMemoryGrowthBytes,
             $"Memory leak detected. Total memory growth: {totalMemoryGrowth:N0} bytes, " +
                 $"limit: {maxMemoryGrowthBytes:N0} bytes");
     }
@@ -107,7 +108,8 @@ public class PubSubFFIMemoryLeakTests
         Console.WriteLine($"Memory growth under GC pressure: {memoryGrowth:N0} bytes");
 
         // Assert: Should remain stable even under GC pressure
-        Assert.True(memoryGrowth < 20_000_000, // 20MB max under pressure
+        Assert.True(
+            memoryGrowth < 20_000_000, // 20MB max under pressure
             $"Memory leak detected under GC pressure: {memoryGrowth:N0} bytes");
     }
 
@@ -129,24 +131,26 @@ public class PubSubFFIMemoryLeakTests
         for (int threadIndex = 0; threadIndex < threadsCount; threadIndex++)
         {
             int capturedIndex = threadIndex;
-            tasks[threadIndex] = Task.Run(() =>
-            {
-                try
+            tasks[threadIndex] = Task.Run(
+                () =>
                 {
-                    for (int i = 0; i < messagesPerThread; i++)
+                    try
                     {
-                        string message = $"concurrent-message-{capturedIndex}-{i}";
-                        string channel = $"concurrent-channel-{capturedIndex}";
-                        string? pattern = i % 2 == 0 ? $"pattern-{capturedIndex}" : null;
+                        for (int i = 0; i < messagesPerThread; i++)
+                        {
+                            string message = $"concurrent-message-{capturedIndex}-{i}";
+                            string channel = $"concurrent-channel-{capturedIndex}";
+                            string? pattern = i % 2 == 0 ? $"pattern-{capturedIndex}" : null;
 
-                        ProcessSingleMessage(message, channel, pattern);
+                            ProcessSingleMessage(message, channel, pattern);
+                        }
                     }
-                }
-                catch (Exception ex)
-                {
-                    exceptions[capturedIndex] = ex;
-                }
-            }, TestContext.Current.CancellationToken);
+                    catch (Exception ex)
+                    {
+                        exceptions[capturedIndex] = ex;
+                    }
+                },
+                TestContext.Current.CancellationToken);
         }
 
         // Wait for all tasks to complete
@@ -169,7 +173,8 @@ public class PubSubFFIMemoryLeakTests
         Console.WriteLine($"Processed {threadsCount * messagesPerThread:N0} messages concurrently");
 
         // Assert: Memory should remain bounded even with concurrent access
-        Assert.True(memoryGrowth < 30_000_000, // 30MB max for concurrent test
+        Assert.True(
+            memoryGrowth < 30_000_000, // 30MB max for concurrent test
             $"Memory leak detected in concurrent processing: {memoryGrowth:N0} bytes");
     }
 
@@ -237,12 +242,14 @@ public class PubSubFFIMemoryLeakTests
             Console.WriteLine($"Memory trend growth: {trendGrowth:N0} bytes");
 
             // Memory should not continuously grow over time
-            Assert.True(trendGrowth < 25_000_000, // 25MB max trend growth
+            Assert.True(
+                trendGrowth < 25_000_000, // 25MB max trend growth
                 $"Continuous memory growth detected: {trendGrowth:N0} bytes over time");
         }
 
         // Assert: Total memory growth should be reasonable
-        Assert.True(totalGrowth < 40_000_000, // 40MB max for extended test
+        Assert.True(
+            totalGrowth < 40_000_000, // 40MB max for extended test
             $"Excessive memory growth over extended duration: {totalGrowth:N0} bytes");
     }
 

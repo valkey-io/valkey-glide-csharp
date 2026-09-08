@@ -91,8 +91,11 @@ public class ScriptParameterMapperTests
         string[] parameterNames = ["Key", "Value"];
 
         // Act
-        bool isValid = ScriptParameterMapper.IsValidParameterHash(type, parameterNames,
-            out string? missingMember, out string? badTypeMember);
+        bool isValid = ScriptParameterMapper.IsValidParameterHash(
+            type,
+            parameterNames,
+            out string? missingMember,
+            out string? badTypeMember);
 
         // Assert
         Assert.True(isValid);
@@ -108,8 +111,11 @@ public class ScriptParameterMapperTests
         string[] parameterNames = ["Key", "NonExistent"];
 
         // Act
-        bool isValid = ScriptParameterMapper.IsValidParameterHash(type, parameterNames,
-            out string? missingMember, out string? badTypeMember);
+        bool isValid = ScriptParameterMapper.IsValidParameterHash(
+            type,
+            parameterNames,
+            out string? missingMember,
+            out string? badTypeMember);
 
         // Assert
         Assert.False(isValid);
@@ -125,8 +131,11 @@ public class ScriptParameterMapperTests
         string[] parameterNames = ["InvalidProperty"];
 
         // Act
-        bool isValid = ScriptParameterMapper.IsValidParameterHash(type, parameterNames,
-            out string? missingMember, out string? badTypeMember);
+        bool isValid = ScriptParameterMapper.IsValidParameterHash(
+            type,
+            parameterNames,
+            out string? missingMember,
+            out string? badTypeMember);
 
         // Assert
         Assert.False(isValid);
@@ -142,8 +151,11 @@ public class ScriptParameterMapperTests
         string[] parameterNames = ["key", "VALUE"]; // Different case
 
         // Act
-        bool isValid = ScriptParameterMapper.IsValidParameterHash(type, parameterNames,
-            out string? missingMember, out string? badTypeMember);
+        bool isValid = ScriptParameterMapper.IsValidParameterHash(
+            type,
+            parameterNames,
+            out string? missingMember,
+            out string? badTypeMember);
 
         // Assert
         Assert.True(isValid);

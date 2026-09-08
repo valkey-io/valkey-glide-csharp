@@ -356,7 +356,8 @@ public abstract partial class BaseClient
 
     /// <inheritdoc cref="IScriptingAndFunctionBaseCommands.ScriptEvaluateAsync(string, IEnumerable{ValkeyKey}, IEnumerable{ValkeyValue})"/>
     public async Task<ValkeyResult> ScriptEvaluateAsync(
-        string script, IEnumerable<ValkeyKey>? keys = null,
+        string script,
+        IEnumerable<ValkeyKey>? keys = null,
         IEnumerable<ValkeyValue>? values = null)
     {
         // Use the optimized ScriptInvoke path via Script object

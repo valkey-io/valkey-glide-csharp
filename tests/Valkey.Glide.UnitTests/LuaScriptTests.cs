@@ -21,13 +21,17 @@ public class LuaScriptTests
 
     [Fact]
     public void Prepare_WithNullScript_ThrowsArgumentException()
-        => Assert.Equal("script", Assert.Throws<ArgumentNullException>(()
-            => LuaScript.Prepare(null!)).ParamName);
+        => Assert.Equal(
+            "script",
+            Assert.Throws<ArgumentNullException>(()
+                => LuaScript.Prepare(null!)).ParamName);
 
     [Fact]
     public void Prepare_WithEmptyScript_ThrowsArgumentException()
-        => Assert.Equal("script", Assert.Throws<ArgumentException>(()
-            => LuaScript.Prepare("")).ParamName);
+        => Assert.Equal(
+            "script",
+            Assert.Throws<ArgumentException>(()
+                => LuaScript.Prepare("")).ParamName);
 
     [Fact]
     public void Prepare_ExtractsParametersCorrectly()

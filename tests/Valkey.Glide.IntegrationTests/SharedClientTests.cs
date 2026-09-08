@@ -77,21 +77,23 @@ public class SharedClientTests(TestConfiguration config)
         for (int i = 0; i < 100; ++i)
         {
             int index = i;
-            operations.Add(Task.Run(async () =>
-            {
-                for (int i = 0; i < 1000; ++i)
+            operations.Add(Task.Run(
+                async () =>
                 {
-                    if ((i + index) % 2 == 0)
+                    for (int i = 0; i < 1000; ++i)
                     {
-                        await StringCommandTests.GetAndSetRandomValuesAsync(client);
+                        if ((i + index) % 2 == 0)
+                        {
+                            await StringCommandTests.GetAndSetRandomValuesAsync(client);
+                        }
+                        else
+                        {
+                            ValkeyValue result = await client.GetAsync(Guid.NewGuid().ToString());
+                            Assert.True(result.IsNull);
+                        }
                     }
-                    else
-                    {
-                        ValkeyValue result = await client.GetAsync(Guid.NewGuid().ToString());
-                        Assert.True(result.IsNull);
-                    }
-                }
-            }, TestContext.Current.CancellationToken));
+                },
+                TestContext.Current.CancellationToken));
         }
 
         await Task.WhenAll(operations);

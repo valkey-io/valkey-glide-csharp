@@ -327,14 +327,15 @@ public class GeospatialCommandsTests(TestConfiguration config)
     public async Task GeoSearchAsync_WithDemandClosest_LimitsToClosest(IDatabaseAsync db)
     {
         string key = $"ser-geosearch-closest-{Guid.NewGuid()}";
-        _ = await db.GeoAddAsync(key,
-        [
-            Palermo,
-            Catania,
-            new GeoEntry(13.5, 38.0, "Close"),
-            Trapani,
-            Enna,
-        ]);
+        _ = await db.GeoAddAsync(
+            key,
+            [
+                    Palermo,
+                    Catania,
+                    new GeoEntry(13.5, 38.0, "Close"),
+                    Trapani,
+                    Enna,
+                ]);
 
         var closestResults = await db.GeoSearchAsync(key, PalermoName, Circle200Km, count: 3, demandClosest: true, order: Order.Ascending);
         Assert.Equal(3, closestResults.Length);

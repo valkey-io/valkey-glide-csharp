@@ -166,7 +166,8 @@ public class GlideStringTests
 
         // After fix: only GlideString object + lock object (~a few hundred bytes).
         // Before fix: ~3.3 MB — 65,536 "$"{b:X2}"" strings + string.Join result.
-        Assert.True(allocated < 4096,
+        Assert.True(
+            allocated < 4096,
             $"GlideString(byte[]) allocated {allocated:N0} bytes for a {size}-byte payload; " +
                 "expected < 4 KB. The hex-dump Str field may be built eagerly.");
 

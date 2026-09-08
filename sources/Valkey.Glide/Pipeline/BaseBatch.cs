@@ -41,7 +41,8 @@ public abstract partial class BaseBatch<T>(bool isAtomic) : IBatch where T : Bas
             return null;
         }
 
-        Debug.Assert(response.Length == Commands.Count,
+        Debug.Assert(
+            response.Length == Commands.Count,
             $"Response misaligned: received {response.Length} responses but submitted {Commands.Count} commands");
 
         for (int i = 0; i < response?.Length; i++)

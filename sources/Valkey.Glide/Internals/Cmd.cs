@@ -51,7 +51,8 @@ internal class Cmd<R, T> : ICmd
             return value;
         }
 
-        Debug.Assert(value!.GetType() == typeof(R) || typeof(R).IsAssignableFrom(value!.GetType()),
+        Debug.Assert(
+            value!.GetType() == typeof(R) || typeof(R).IsAssignableFrom(value!.GetType()),
             $"Unexpected return type from Glide: got {value?.GetType().GetRealTypeName()} expected {typeof(R).GetRealTypeName()}");
 
         return Converter((R)value!);
@@ -81,11 +82,16 @@ internal class Cmd<R, T> : ICmd
     /// Convert a command to one which handles a <see cref="ClusterValue{T}" />.
     /// </summary>
     public Cmd<object, ClusterValue<T>> ToClusterValue()
-        => new(Request, ArgsArray.Args, IsNullable, value => value is Dictionary<GlideString, object> dict
-            ? ClusterValue<T>.OfMultiValue(dict.ConvertValues(Converter))
-            : value is Dictionary<string, object> stringDict
-                ? ClusterValue<T>.OfMultiValue(stringDict.ConvertValues(Converter))
-                : ClusterValue<T>.OfSingleValue(Converter((R)value)), AllowConverterToHandleNull);
+        => new(
+            Request,
+            ArgsArray.Args,
+            IsNullable,
+            value => value is Dictionary<GlideString, object> dict
+                ? ClusterValue<T>.OfMultiValue(dict.ConvertValues(Converter))
+                : value is Dictionary<string, object> stringDict
+                    ? ClusterValue<T>.OfMultiValue(stringDict.ConvertValues(Converter))
+                    : ClusterValue<T>.OfSingleValue(Converter((R)value)),
+            AllowConverterToHandleNull);
 
     /// <summary>
     /// Convert a command to one which handles a <see cref="ClusterValue{T}" /> for the given route.

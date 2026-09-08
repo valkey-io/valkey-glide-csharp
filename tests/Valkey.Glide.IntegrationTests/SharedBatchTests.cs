@@ -51,8 +51,8 @@ public class SharedBatchTests
 
         // First exception is raised, all data lost
         Exception err = await Assert.ThrowsAsync<RequestException>(async () => _ = isCluster
-                ? await ((GlideClusterClient)client).Exec((ClusterBatch)batch, true)
-                : await ((GlideClient)client).Exec((Batch)batch, true));
+            ? await ((GlideClusterClient)client).Exec((ClusterBatch)batch, true)
+            : await ((GlideClient)client).Exec((Batch)batch, true));
         Assert.Contains("wrong kind of value", err.Message);
     }
 

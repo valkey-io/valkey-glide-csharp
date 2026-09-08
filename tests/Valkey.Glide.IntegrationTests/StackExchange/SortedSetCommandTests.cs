@@ -563,11 +563,13 @@ public class SortedSetCommandTests(TestConfiguration config)
         // Get random members with scores
         SortedSetEntry[] results = await db.SortedSetRandomMembersWithScoresAsync(key, 2);
         Assert.Equal(2, results.Length);
-        Assert.All(results, entry =>
-        {
-            Assert.Contains(entry.Element.ToString(), new[] { "member1", "member2", "member3" });
-            Assert.True(entry.Score > 0);
-        });
+        Assert.All(
+            results,
+            entry =>
+            {
+                Assert.Contains(entry.Element.ToString(), new[] { "member1", "member2", "member3" });
+                Assert.True(entry.Score > 0);
+            });
     }
 
     #endregion
@@ -868,11 +870,13 @@ public class SortedSetCommandTests(TestConfiguration config)
     public async Task SortedSetScanAsync_ReturnsAllMembers(IDatabaseAsync db)
     {
         string key = $"ser-zscan-all-{Guid.NewGuid()}";
-        _ = await db.SortedSetAddAsync(key, [
-            new SortedSetEntry("member1", 1.0),
-            new SortedSetEntry("member2", 2.0),
-            new SortedSetEntry("member3", 3.0)
-        ]);
+        _ = await db.SortedSetAddAsync(
+            key,
+            [
+                    new SortedSetEntry("member1", 1.0),
+                    new SortedSetEntry("member2", 2.0),
+                    new SortedSetEntry("member3", 3.0)
+                ]);
 
         List<SortedSetEntry> results = [];
         await foreach (SortedSetEntry entry in db.SortedSetScanAsync(key))
@@ -891,12 +895,14 @@ public class SortedSetCommandTests(TestConfiguration config)
     public async Task SortedSetScanAsync_WithPattern_FiltersResults(IDatabaseAsync db)
     {
         string key = $"ser-zscan-pattern-{Guid.NewGuid()}";
-        _ = await db.SortedSetAddAsync(key, [
-            new SortedSetEntry("test1", 1.0),
-            new SortedSetEntry("test2", 2.0),
-            new SortedSetEntry("other1", 3.0),
-            new SortedSetEntry("other2", 4.0)
-        ]);
+        _ = await db.SortedSetAddAsync(
+            key,
+            [
+                    new SortedSetEntry("test1", 1.0),
+                    new SortedSetEntry("test2", 2.0),
+                    new SortedSetEntry("other1", 3.0),
+                    new SortedSetEntry("other2", 4.0)
+                ]);
 
         List<SortedSetEntry> results = [];
         await foreach (SortedSetEntry entry in db.SortedSetScanAsync(key, "test*"))
@@ -965,11 +971,13 @@ public class SortedSetCommandTests(TestConfiguration config)
     public async Task SortedSetScanAsync_PreservesScores(IDatabaseAsync db)
     {
         string key = $"ser-zscan-scores-{Guid.NewGuid()}";
-        _ = await db.SortedSetAddAsync(key, [
-            new SortedSetEntry("member1", 1.5),
-            new SortedSetEntry("member2", 2.75),
-            new SortedSetEntry("member3", 3.125)
-        ]);
+        _ = await db.SortedSetAddAsync(
+            key,
+            [
+                    new SortedSetEntry("member1", 1.5),
+                    new SortedSetEntry("member2", 2.75),
+                    new SortedSetEntry("member3", 3.125)
+                ]);
 
         List<SortedSetEntry> results = [];
         await foreach (SortedSetEntry entry in db.SortedSetScanAsync(key))

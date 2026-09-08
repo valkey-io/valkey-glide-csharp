@@ -29,7 +29,9 @@ public class FtInfoTests(TestConfiguration config)
         var index = Guid.NewGuid().ToString();
         var prefix = $"{index}:";
 
-        await Ft.CreateAsync(client, index,
+        await Ft.CreateAsync(
+            client,
+            index,
             [
                 new Ft.CreateTextField("title"),
                 new Ft.CreateTagField("category"),
@@ -47,7 +49,8 @@ public class FtInfoTests(TestConfiguration config)
                 StopWords = ["the", "a"],
             });
 
-        _ = await client.HashSetAsync($"{prefix}1",
+        _ = await client.HashSetAsync(
+            $"{prefix}1",
             [new("title", "hello world"),
             new("category", "test"),
             new("price", "42"),

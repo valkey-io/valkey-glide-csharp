@@ -35,7 +35,10 @@ public class FtAggregateTests(TestConfiguration config)
         await Skip.IfSearchModuleNotLoaded(client);
         (string index, _, _) = await FtUtils.CreateAggregateIndexAsync(client);
 
-        var rows = await Ft.AggregateAsync(client, index, "@price:[-inf +inf]",
+        var rows = await Ft.AggregateAsync(
+            client,
+            index,
+            "@price:[-inf +inf]",
             new Ft.AggregateOptions
             {
                 LoadFields = ["@category"],
@@ -83,7 +86,10 @@ public class FtAggregateTests(TestConfiguration config)
         await Skip.IfSearchModuleNotLoaded(client);
         (string index, _, _) = await FtUtils.CreateAggregateIndexAsync(client);
 
-        var rows = await Ft.AggregateAsync(client, index, "@price:[-inf +inf]",
+        var rows = await Ft.AggregateAsync(
+            client,
+            index,
+            "@price:[-inf +inf]",
             new Ft.AggregateOptions
             {
                 LoadFields = ["@price"],
@@ -122,7 +128,10 @@ public class FtAggregateTests(TestConfiguration config)
         await Skip.IfSearchModuleNotLoaded(client);
         (string index, _, _) = await FtUtils.CreateAggregateIndexAsync(client);
 
-        var rows = await Ft.AggregateAsync(client, index, "@price:[-inf +inf]",
+        var rows = await Ft.AggregateAsync(
+            client,
+            index,
+            "@price:[-inf +inf]",
             new Ft.AggregateOptions
             {
                 LoadFields = ["@price"],
@@ -136,12 +145,13 @@ public class FtAggregateTests(TestConfiguration config)
                 ],
             });
 
-        Assert.Equivalent(new Dictionary<ValkeyValue, ValkeyValue>[]
-            {
-                new() { ["price"] = "25" },
-                new() { ["price"] = "30" },
-                new() { ["price"] = "50" },
-            },
+        Assert.Equivalent(
+            new Dictionary<ValkeyValue, ValkeyValue>[]
+                {
+                    new() { ["price"] = "25" },
+                    new() { ["price"] = "30" },
+                    new() { ["price"] = "50" },
+                },
             rows);
     }
 
@@ -152,7 +162,10 @@ public class FtAggregateTests(TestConfiguration config)
         await Skip.IfSearchModuleNotLoaded(client);
         (string index, _, _) = await FtUtils.CreateAggregateIndexAsync(client);
 
-        var rows = await Ft.AggregateAsync(client, index, "@price:[-inf +inf]",
+        var rows = await Ft.AggregateAsync(
+            client,
+            index,
+            "@price:[-inf +inf]",
             new Ft.AggregateOptions
             {
                 LoadFields = ["@price"],
@@ -170,14 +183,15 @@ public class FtAggregateTests(TestConfiguration config)
                 ],
             });
 
-        Assert.Equivalent(new Dictionary<ValkeyValue, ValkeyValue>[]
-            {
-                new() { ["price"] = "10", ["double_price"] = "20" },
-                new() { ["price"] = "15", ["double_price"] = "30" },
-                new() { ["price"] = "25", ["double_price"] = "50" },
-                new() { ["price"] = "30", ["double_price"] = "60" },
-                new() { ["price"] = "50", ["double_price"] = "100" },
-            },
+        Assert.Equivalent(
+            new Dictionary<ValkeyValue, ValkeyValue>[]
+                {
+                    new() { ["price"] = "10", ["double_price"] = "20" },
+                    new() { ["price"] = "15", ["double_price"] = "30" },
+                    new() { ["price"] = "25", ["double_price"] = "50" },
+                    new() { ["price"] = "30", ["double_price"] = "60" },
+                    new() { ["price"] = "50", ["double_price"] = "100" },
+                },
             rows);
     }
 
@@ -188,7 +202,10 @@ public class FtAggregateTests(TestConfiguration config)
         await Skip.IfSearchModuleNotLoaded(client);
         (string index, _, _) = await FtUtils.CreateAggregateIndexAsync(client);
 
-        var rows = await Ft.AggregateAsync(client, index, "@price:[-inf +inf]",
+        var rows = await Ft.AggregateAsync(
+            client,
+            index,
+            "@price:[-inf +inf]",
             new Ft.AggregateOptions
             {
                 LoadFields = ["@price"],
@@ -202,11 +219,12 @@ public class FtAggregateTests(TestConfiguration config)
                 ],
             });
 
-        Assert.Equivalent(new Dictionary<ValkeyValue, ValkeyValue>[]
-            {
-                new() { ["price"] = "10" },
-                new() { ["price"] = "15" },
-            },
+        Assert.Equivalent(
+            new Dictionary<ValkeyValue, ValkeyValue>[]
+                {
+                    new() { ["price"] = "10" },
+                    new() { ["price"] = "15" },
+                },
             rows);
     }
 
@@ -217,7 +235,10 @@ public class FtAggregateTests(TestConfiguration config)
         await Skip.IfSearchModuleNotLoaded(client);
         (string index, _, _) = await FtUtils.CreateAggregateIndexAsync(client);
 
-        var rows = await Ft.AggregateAsync(client, index, "@price:[-inf +inf]",
+        var rows = await Ft.AggregateAsync(
+            client,
+            index,
+            "@price:[-inf +inf]",
             new Ft.AggregateOptions
             {
                 LoadFields = ["@category"],

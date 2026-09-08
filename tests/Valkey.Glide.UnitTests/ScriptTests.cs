@@ -153,21 +153,23 @@ public class ScriptTests
         // Create multiple tasks that access the script concurrently
         for (int i = 0; i < 10; i++)
         {
-            tasks.Add(Task.Run(() =>
-            {
-                try
+            tasks.Add(Task.Run(
+                () =>
                 {
-                    for (int j = 0; j < 100; j++)
+                    try
                     {
-                        var hash = script.Hash;
-                        Assert.NotNull(hash);
+                        for (int j = 0; j < 100; j++)
+                        {
+                            var hash = script.Hash;
+                            Assert.NotNull(hash);
+                        }
                     }
-                }
-                catch (Exception ex)
-                {
-                    exceptions.Add(ex);
-                }
-            }, TestContext.Current.CancellationToken));
+                    catch (Exception ex)
+                    {
+                        exceptions.Add(ex);
+                    }
+                },
+                TestContext.Current.CancellationToken));
         }
 
         await Task.WhenAll(tasks);
@@ -189,17 +191,19 @@ public class ScriptTests
         // Create multiple tasks that try to dispose the script concurrently
         for (int i = 0; i < 10; i++)
         {
-            tasks.Add(Task.Run(() =>
-            {
-                try
+            tasks.Add(Task.Run(
+                () =>
                 {
-                    script.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    exceptions.Add(ex);
-                }
-            }, TestContext.Current.CancellationToken));
+                    try
+                    {
+                        script.Dispose();
+                    }
+                    catch (Exception ex)
+                    {
+                        exceptions.Add(ex);
+                    }
+                },
+                TestContext.Current.CancellationToken));
         }
 
         await Task.WhenAll(tasks);

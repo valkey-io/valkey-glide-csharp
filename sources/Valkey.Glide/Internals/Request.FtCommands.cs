@@ -598,7 +598,9 @@ internal static partial class Request
     }
 
     private static Ft.InfoVectorField ParseInfoVectorField(
-        ValkeyValue identifier, ValkeyValue attribute, long userIndexedMemory,
+        ValkeyValue identifier,
+        ValkeyValue attribute,
+        long userIndexedMemory,
         Dictionary<GlideString, object> fieldMap)
     {
         var indexMap = fieldMap.TryGetValue("index", out var indexObj)

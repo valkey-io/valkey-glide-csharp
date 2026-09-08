@@ -657,19 +657,23 @@ internal partial class BatchTestUtils
         string combineDestKey = $"{prefix}combineDest-{Guid.NewGuid()}";
 
         // Setup data for combine operations
-        _ = batch.SortedSetAdd(combineKey1, new Dictionary<ValkeyValue, double>
-        {
-            ["testMember1"] = 6.0,
-            ["testMember2"] = 2.0,
-            ["testMember3"] = 3.0
-        });
+        _ = batch.SortedSetAdd(
+            combineKey1,
+            new Dictionary<ValkeyValue, double>
+            {
+                ["testMember1"] = 6.0,
+                ["testMember2"] = 2.0,
+                ["testMember3"] = 3.0
+            });
         testData.Add(new(3L, "SortedSetAdd(combineKey1, test data for combine)"));
 
-        _ = batch.SortedSetAdd(combineKey3, new Dictionary<ValkeyValue, double>
-        {
-            ["testMember2"] = 25.0,
-            ["testMember4"] = 40.0
-        });
+        _ = batch.SortedSetAdd(
+            combineKey3,
+            new Dictionary<ValkeyValue, double>
+            {
+                ["testMember2"] = 25.0,
+                ["testMember4"] = 40.0
+            });
         testData.Add(new(2L, "SortedSetAdd(combineKey3, test data for combine)"));
 
         _ = batch.SortedSetUnion([combineKey1, combineKey3]);
@@ -700,11 +704,13 @@ internal partial class BatchTestUtils
         // Test pop operations
         // Test pop operations - add data first to prevent blocking
         string popKey = $"{atomicPrefix}pop-{Guid.NewGuid()}";
-        _ = batch.SortedSetAdd(popKey, new Dictionary<ValkeyValue, double>
-        {
-            ["member1"] = 1.0,
-            ["member2"] = 2.0
-        });
+        _ = batch.SortedSetAdd(
+            popKey,
+            new Dictionary<ValkeyValue, double>
+            {
+                ["member1"] = 1.0,
+                ["member2"] = 2.0
+            });
         testData.Add(new(2L, "SortedSetAdd(popKey, test data for pop)"));
 
         // Test SortedSetPop (ZMPOP) - requires Redis 7.0+
@@ -718,12 +724,14 @@ internal partial class BatchTestUtils
         string newDestKey = $"{prefix}newdest-{Guid.NewGuid()}";
 
         // Setup data
-        _ = batch.SortedSetAdd(newKey, new Dictionary<ValkeyValue, double>
-        {
-            ["newMember1"] = 10.5,
-            ["newMember2"] = 8.2,
-            ["newMember3"] = 15.0
-        });
+        _ = batch.SortedSetAdd(
+            newKey,
+            new Dictionary<ValkeyValue, double>
+            {
+                ["newMember1"] = 10.5,
+                ["newMember2"] = 8.2,
+                ["newMember3"] = 15.0
+            });
         testData.Add(new(3L, "SortedSetAdd(newKey, test data for new commands)"));
 
         // Test SortedSetPopMin
@@ -739,12 +747,14 @@ internal partial class BatchTestUtils
         testData.Add(new(new ValkeyValue("newMember1"), "SortedSetRandomMember(newKey)"));
 
         // Setup data
-        _ = batch.SortedSetAdd(newKey, new Dictionary<ValkeyValue, double>
-        {
-            ["newMember1"] = 10.5,
-            ["newMember2"] = 8.2,
-            ["newMember3"] = 15.0
-        });
+        _ = batch.SortedSetAdd(
+            newKey,
+            new Dictionary<ValkeyValue, double>
+            {
+                ["newMember1"] = 10.5,
+                ["newMember2"] = 8.2,
+                ["newMember3"] = 15.0
+            });
         testData.Add(new(2L, "SortedSetAdd(newKey, test data for new commands)"));
 
         // Test SortedSetRank
@@ -791,18 +801,22 @@ internal partial class BatchTestUtils
         string unionKey1 = $"{prefix}union1-{Guid.NewGuid()}";
         string unionKey2 = $"{prefix}union2-{Guid.NewGuid()}";
 
-        _ = batch.SortedSetAdd(unionKey1, new Dictionary<ValkeyValue, double>
-        {
-            ["common"] = 1.0,
-            ["unique1"] = 2.0
-        });
+        _ = batch.SortedSetAdd(
+            unionKey1,
+            new Dictionary<ValkeyValue, double>
+            {
+                ["common"] = 1.0,
+                ["unique1"] = 2.0
+            });
         testData.Add(new(2L, "SortedSetAdd(unionKey1, union test data)"));
 
-        _ = batch.SortedSetAdd(unionKey2, new Dictionary<ValkeyValue, double>
-        {
-            ["common"] = 3.0,
-            ["unique2"] = 4.0
-        });
+        _ = batch.SortedSetAdd(
+            unionKey2,
+            new Dictionary<ValkeyValue, double>
+            {
+                ["common"] = 3.0,
+                ["unique2"] = 4.0
+            });
         testData.Add(new(2L, "SortedSetAdd(unionKey2, union test data)"));
 
         // Test SortedSetUnion
@@ -1241,11 +1255,13 @@ internal partial class BatchTestUtils
 
         // HashGet test
         _ = batch.HashGet(key1);
-        testData.Add(new(new Dictionary<ValkeyValue, ValkeyValue> {
-            { "field1", value1 },
-            { "counter", "16" },
-            { "float_counter", "13" }
-        }, "HashGet(key1)"));
+        testData.Add(new(
+            new Dictionary<ValkeyValue, ValkeyValue> {
+                { "field1", value1 },
+                { "counter", "16" },
+                { "float_counter", "13" }
+                },
+            "HashGet(key1)"));
 
         // HashValues test
         _ = batch.HashValues(key1);
@@ -1331,11 +1347,13 @@ internal partial class BatchTestUtils
         _ = batch.GeoAdd(sourceKey, "Palermo", new GeoPosition(13.361389, 38.115556));
         testData.Add(new(1L, "GeoAdd(key1, Palermo)"));
 
-        _ = batch.GeoAdd(sourceKey, new Dictionary<ValkeyValue, GeoPosition>
-        {
-            ["Catania"] = new(15.087269, 37.502669),
-            ["Rome"] = new(12.496366, 41.902782),
-        });
+        _ = batch.GeoAdd(
+            sourceKey,
+            new Dictionary<ValkeyValue, GeoPosition>
+            {
+                ["Catania"] = new(15.087269, 37.502669),
+                ["Rome"] = new(12.496366, 41.902782),
+            });
         testData.Add(new(2L, "GeoAdd(key1, [Catania, Rome])"));
 
         // Test GeoAdd with options
@@ -1345,11 +1363,13 @@ internal partial class BatchTestUtils
         _ = batch.GeoAdd(sourceKey, "Milan", new GeoPosition(9.189982, 45.4642035), GeoAddCondition.OnlyIfNotExists);
         testData.Add(new(true, "GeoAdd(key1, Milan, NX) - add new"));
 
-        _ = batch.GeoAdd(prefix + sourceKey, new Dictionary<ValkeyValue, GeoPosition>
-        {
-            ["Palermo"] = new(13.361389, 38.115556),
-            ["Catania"] = new(15.087269, 37.502669),
-        });
+        _ = batch.GeoAdd(
+            prefix + sourceKey,
+            new Dictionary<ValkeyValue, GeoPosition>
+            {
+                ["Palermo"] = new(13.361389, 38.115556),
+                ["Catania"] = new(15.087269, 37.502669),
+            });
         testData.Add(new(2L, "GeoAdd(prefix+key1, [Palermo, Catania])"));
 
         // Test GeoDistance
@@ -1459,26 +1479,34 @@ internal partial class BatchTestUtils
         testData.Add(new(3L, "BitCount(bitOpDest) after OR"));
 
         // Test BitField - bit 7 set = value 1 in first byte
-        _ = batch.BitField(key1, [
-            new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(0))
-        ]);
+        _ = batch.BitField(
+            key1,
+            [
+                    new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(0))
+                ]);
         testData.Add(new(new long[] { 1L }, "BitField(key1, GET u8 0)"));
 
-        _ = batch.BitField(key1, [
-            new BitFieldOptions.BitFieldSet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(8), 255)
-        ]);
+        _ = batch.BitField(
+            key1,
+            [
+                    new BitFieldOptions.BitFieldSet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(8), 255)
+                ]);
         testData.Add(new(new long[] { 1L }, "BitField(key1, SET u8 8 255)"));
 
-        _ = batch.BitField(key1, [
-            new BitFieldOptions.BitFieldIncrBy(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(8), 1)
-        ]);
+        _ = batch.BitField(
+            key1,
+            [
+                    new BitFieldOptions.BitFieldIncrBy(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(8), 1)
+                ]);
         testData.Add(new(new long[] { 0L }, "BitField(key1, INCRBY u8 8 1)"));
 
         // Test BitFieldReadOnly
-        _ = batch.BitFieldReadOnly(key1, [
-            new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(0)),
-            new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(8))
-        ]);
+        _ = batch.BitFieldReadOnly(
+            key1,
+            [
+                    new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(0)),
+                    new BitFieldOptions.BitFieldGet(BitFieldOptions.Encoding.Unsigned(8), new BitFieldOptions.BitOffset(8))
+                ]);
         testData.Add(new(new long[] { 1L, 0L }, "BitFieldReadOnly(key1, GET u8 0, GET u8 8)"));
 
         return testData;

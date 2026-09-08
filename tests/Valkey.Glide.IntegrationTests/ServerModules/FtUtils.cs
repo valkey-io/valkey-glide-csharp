@@ -58,17 +58,19 @@ public static class FtUtils
         var prefix = $"{index}:";
         var tag = $"{{{index}}}";
 
-        await Ft.CreateAsync(client, index,
-        [
-            new Ft.CreateTextField("title"),
-            new Ft.CreateNumericField("price"),
-            new Ft.CreateTagField("category"),
-        ],
-        new Ft.CreateOptions
-        {
-            DataType = Ft.DataType.Hash,
-            Prefixes = [prefix],
-        });
+        await Ft.CreateAsync(
+            client,
+            index,
+            [
+                    new Ft.CreateTextField("title"),
+                    new Ft.CreateNumericField("price"),
+                    new Ft.CreateTagField("category"),
+                ],
+            new Ft.CreateOptions
+            {
+                DataType = Ft.DataType.Hash,
+                Prefixes = [prefix],
+            });
 
         string[] keys =
         [
@@ -77,26 +79,29 @@ public static class FtUtils
             $"{prefix}{tag}:3",
         ];
 
-        _ = await client.HashSetAsync(keys[0],
-        [
-            new("title", "Alpha Widget"),
-            new("price", "10"),
-            new("category", "electronics"),
-        ]);
+        _ = await client.HashSetAsync(
+            keys[0],
+            [
+                    new("title", "Alpha Widget"),
+                    new("price", "10"),
+                    new("category", "electronics"),
+                ]);
 
-        _ = await client.HashSetAsync(keys[1],
-        [
-            new("title", "Beta Gadget"),
-            new("price", "25"),
-            new("category", "electronics"),
-        ]);
+        _ = await client.HashSetAsync(
+            keys[1],
+            [
+                    new("title", "Beta Gadget"),
+                    new("price", "25"),
+                    new("category", "electronics"),
+                ]);
 
-        _ = await client.HashSetAsync(keys[2],
-        [
-            new("title", "Gamma Tool"),
-            new("price", "50"),
-            new("category", "hardware"),
-        ]);
+        _ = await client.HashSetAsync(
+            keys[2],
+            [
+                    new("title", "Gamma Tool"),
+                    new("price", "50"),
+                    new("category", "hardware"),
+                ]);
 
         await WaitForIndexingAsync(client, index);
 
@@ -116,17 +121,19 @@ public static class FtUtils
         var prefix = $"{index}:";
         var tag = $"{{{index}}}";
 
-        await Ft.CreateAsync(client, index,
-        [
-            new Ft.CreateTextField("title"),
-            new Ft.CreateNumericField("price"),
-            new Ft.CreateTagField("category"),
-        ],
-        new Ft.CreateOptions
-        {
-            DataType = Ft.DataType.Hash,
-            Prefixes = [prefix],
-        });
+        await Ft.CreateAsync(
+            client,
+            index,
+            [
+                    new Ft.CreateTextField("title"),
+                    new Ft.CreateNumericField("price"),
+                    new Ft.CreateTagField("category"),
+                ],
+            new Ft.CreateOptions
+            {
+                DataType = Ft.DataType.Hash,
+                Prefixes = [prefix],
+            });
 
         string[] keys =
         [
@@ -137,40 +144,45 @@ public static class FtUtils
             $"{prefix}{tag}:5",
         ];
 
-        _ = await client.HashSetAsync(keys[0],
-        [
-            new("title", "Alpha Widget"),
-            new("price", "10"),
-            new("category", "electronics"),
-        ]);
+        _ = await client.HashSetAsync(
+            keys[0],
+            [
+                    new("title", "Alpha Widget"),
+                    new("price", "10"),
+                    new("category", "electronics"),
+                ]);
 
-        _ = await client.HashSetAsync(keys[1],
-        [
-            new("title", "Beta Gadget"),
-            new("price", "25"),
-            new("category", "electronics"),
-        ]);
+        _ = await client.HashSetAsync(
+            keys[1],
+            [
+                    new("title", "Beta Gadget"),
+                    new("price", "25"),
+                    new("category", "electronics"),
+                ]);
 
-        _ = await client.HashSetAsync(keys[2],
-        [
-            new("title", "Gamma Tool"),
-            new("price", "50"),
-            new("category", "hardware"),
-        ]);
+        _ = await client.HashSetAsync(
+            keys[2],
+            [
+                    new("title", "Gamma Tool"),
+                    new("price", "50"),
+                    new("category", "hardware"),
+                ]);
 
-        _ = await client.HashSetAsync(keys[3],
-        [
-            new("title", "Delta Device"),
-            new("price", "30"),
-            new("category", "electronics"),
-        ]);
+        _ = await client.HashSetAsync(
+            keys[3],
+            [
+                    new("title", "Delta Device"),
+                    new("price", "30"),
+                    new("category", "electronics"),
+                ]);
 
-        _ = await client.HashSetAsync(keys[4],
-        [
-            new("title", "Epsilon Wrench"),
-            new("price", "15"),
-            new("category", "hardware"),
-        ]);
+        _ = await client.HashSetAsync(
+            keys[4],
+            [
+                    new("title", "Epsilon Wrench"),
+                    new("price", "15"),
+                    new("category", "hardware"),
+                ]);
 
         await WaitForIndexingAsync(client, index);
 

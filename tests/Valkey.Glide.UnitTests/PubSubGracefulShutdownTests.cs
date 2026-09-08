@@ -39,20 +39,22 @@ public class PubSubGracefulShutdownTests
         CancellationTokenSource cts = new();
         int messagesProcessed = 0;
 
-        Task processingTask = Task.Run(async () =>
-        {
-            try
+        Task processingTask = Task.Run(
+            async () =>
             {
-                await foreach (int message in channel.Reader.ReadAllAsync(cts.Token))
+                try
                 {
-                    _ = Interlocked.Increment(ref messagesProcessed);
+                    await foreach (int message in channel.Reader.ReadAllAsync(cts.Token))
+                    {
+                        _ = Interlocked.Increment(ref messagesProcessed);
+                    }
                 }
-            }
-            catch (OperationCanceledException)
-            {
-                // Expected when cancelled
-            }
-        }, TestContext.Current.CancellationToken);
+                catch (OperationCanceledException)
+                {
+                    // Expected when cancelled
+                }
+            },
+            TestContext.Current.CancellationToken);
 
         await channel.Writer.WriteAsync(1, TestContext.Current.CancellationToken);
         await channel.Writer.WriteAsync(2, TestContext.Current.CancellationToken);
@@ -72,15 +74,17 @@ public class PubSubGracefulShutdownTests
         int messagesProcessed = 0;
         bool processingCompleted = false;
 
-        Task processingTask = Task.Run(async () =>
-        {
-            await foreach (int message in channel.Reader.ReadAllAsync(TestContext.Current.CancellationToken))
+        Task processingTask = Task.Run(
+            async () =>
             {
-                _ = Interlocked.Increment(ref messagesProcessed);
-            }
+                await foreach (int message in channel.Reader.ReadAllAsync(TestContext.Current.CancellationToken))
+                {
+                    _ = Interlocked.Increment(ref messagesProcessed);
+                }
 
-            processingCompleted = true;
-        }, TestContext.Current.CancellationToken);
+                processingCompleted = true;
+            },
+            TestContext.Current.CancellationToken);
 
         await channel.Writer.WriteAsync(1, TestContext.Current.CancellationToken);
         await channel.Writer.WriteAsync(2, TestContext.Current.CancellationToken);

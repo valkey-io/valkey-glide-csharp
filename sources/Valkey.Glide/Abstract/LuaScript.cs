@@ -132,8 +132,11 @@ public sealed class LuaScript
     /// var result = await script.EvaluateAsync(db, new { key = new ValkeyKey("mykey"), value = "myvalue" });
     /// </code>
     /// </example>
-    public async Task<ValkeyResult> EvaluateAsync(IDatabaseAsync db, object? parameters = null,
-        ValkeyKey? withKeyPrefix = null, CommandFlags flags = CommandFlags.None)
+    public async Task<ValkeyResult> EvaluateAsync(
+        IDatabaseAsync db,
+        object? parameters = null,
+        ValkeyKey? withKeyPrefix = null,
+        CommandFlags flags = CommandFlags.None)
     {
         if (db == null)
         {
@@ -165,8 +168,11 @@ public sealed class LuaScript
         Type paramType = parameters.GetType();
 
         // Validate parameters
-        if (!ScriptParameterMapper.IsValidParameterHash(paramType, Arguments,
-            out string? missingMember, out string? badTypeMember))
+        if (!ScriptParameterMapper.IsValidParameterHash(
+            paramType,
+            Arguments,
+            out string? missingMember,
+            out string? badTypeMember))
         {
             if (missingMember != null)
             {

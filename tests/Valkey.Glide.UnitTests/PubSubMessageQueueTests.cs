@@ -291,39 +291,43 @@ public class PubSubMessageQueueTests
         for (int i = 0; i < producerThreads; i++)
         {
             int threadId = i;
-            tasks.Add(Task.Run(() =>
-            {
-                for (int j = 0; j < messageCount / producerThreads; j++)
+            tasks.Add(Task.Run(
+                () =>
                 {
-                    string messageContent = $"thread-{threadId}-message-{j}";
-                    var message = PubSubMessage.FromChannel(messageContent, $"channel-{threadId}");
-                    queue.EnqueueMessage(message);
-                    producedMessages.Add(messageContent);
-                }
-            }, TestContext.Current.CancellationToken));
+                    for (int j = 0; j < messageCount / producerThreads; j++)
+                    {
+                        string messageContent = $"thread-{threadId}-message-{j}";
+                        var message = PubSubMessage.FromChannel(messageContent, $"channel-{threadId}");
+                        queue.EnqueueMessage(message);
+                        producedMessages.Add(messageContent);
+                    }
+                },
+                TestContext.Current.CancellationToken));
         }
 
         // Consumer tasks
         for (int i = 0; i < consumerThreads; i++)
         {
-            tasks.Add(Task.Run(async () =>
-            {
-                int messagesConsumed = 0;
-                while (messagesConsumed < messageCount / consumerThreads)
+            tasks.Add(Task.Run(
+                async () =>
                 {
-                    try
+                    int messagesConsumed = 0;
+                    while (messagesConsumed < messageCount / consumerThreads)
                     {
-                        PubSubMessage message = await queue.GetMessageAsync(TestContext.Current.CancellationToken);
-                        consumedMessages.Add(message.Message);
-                        messagesConsumed++;
+                        try
+                        {
+                            PubSubMessage message = await queue.GetMessageAsync(TestContext.Current.CancellationToken);
+                            consumedMessages.Add(message.Message);
+                            messagesConsumed++;
+                        }
+                        catch (ObjectDisposedException)
+                        {
+                            // Queue was disposed, exit
+                            break;
+                        }
                     }
-                    catch (ObjectDisposedException)
-                    {
-                        // Queue was disposed, exit
-                        break;
-                    }
-                }
-            }, TestContext.Current.CancellationToken));
+                },
+                TestContext.Current.CancellationToken));
         }
 
         // Act
@@ -361,16 +365,18 @@ public class PubSubMessageQueueTests
         // Consumer tasks using TryGetMessage
         for (int i = 0; i < consumerThreads; i++)
         {
-            tasks.Add(Task.Run(() =>
-            {
-                while (queue.TryGetMessage(out PubSubMessage? message))
+            tasks.Add(Task.Run(
+                () =>
                 {
-                    if (message != null)
+                    while (queue.TryGetMessage(out PubSubMessage? message))
                     {
-                        consumedMessages.Add(message.Message);
+                        if (message != null)
+                        {
+                            consumedMessages.Add(message.Message);
+                        }
                     }
-                }
-            }, TestContext.Current.CancellationToken));
+                },
+                TestContext.Current.CancellationToken));
         }
 
         // Act

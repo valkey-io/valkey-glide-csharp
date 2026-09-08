@@ -59,7 +59,8 @@ public sealed class CompressionConfig
     {
         if (minCompressionSize < MinCompressionSizeLimit)
         {
-            throw new ArgumentOutOfRangeException(nameof(minCompressionSize),
+            throw new ArgumentOutOfRangeException(
+                nameof(minCompressionSize),
                 $"minCompressionSize must be at least {MinCompressionSizeLimit} bytes");
         }
 

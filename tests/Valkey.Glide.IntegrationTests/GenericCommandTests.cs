@@ -729,12 +729,14 @@ public class GenericCommandTests(TestConfiguration config)
         Assert.Equal(["1", "2", "3"], [.. result.Select(v => v.ToString())]);
 
         // Test combined options
-        result = await client.SortAsync(key, new SortOptions
-        {
-            Order = SortOrder.Descending,
-            Skip = 1,
-            Take = 2
-        });
+        result = await client.SortAsync(
+            key,
+            new SortOptions
+            {
+                Order = SortOrder.Descending,
+                Skip = 1,
+                Take = 2
+            });
         Assert.Equal(2, result.Length);
         Assert.Equal(["2", "1"], [.. result.Select(v => v.ToString())]);
     }
@@ -804,11 +806,13 @@ public class GenericCommandTests(TestConfiguration config)
         Assert.Equal(["2", "1"], [.. result.Select(v => v.ToString())]);
 
         // Test with GET pattern using SortOptions
-        result = await client.SortAsync(userKey, new SortOptions
-        {
-            By = "user:*->age",
-            Get = ["user:*->name"]
-        });
+        result = await client.SortAsync(
+            userKey,
+            new SortOptions
+            {
+                By = "user:*->age",
+                Get = ["user:*->name"]
+            });
         Assert.Equal(["Bob", "Alice"], [.. result.Select(v => v.ToString())]);
     }
 
