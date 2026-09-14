@@ -330,6 +330,7 @@ pub(crate) unsafe fn create_connection_request(
                         .iam_credentials
                         .has_refresh_interval_seconds
                         .then_some(auth_info.iam_credentials.refresh_interval_seconds),
+                    credentials_provider: None,
                 })
             } else {
                 None
