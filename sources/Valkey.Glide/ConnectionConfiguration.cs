@@ -226,7 +226,14 @@ public abstract class ConnectionConfiguration
             }
 
             Strategy = strategy;
-            Az = az;
+
+            // The core compares availability zones with exact equality and never trims, so a padded
+            // value such as "us-east-1a " (easily produced by an environment variable or file read)
+            // would engage the strategy, match no node, and silently fall back to spreading reads
+            // across all nodes. No real availability-zone name carries surrounding whitespace, so
+            // trimming here cannot break a value that works today, and keeps parity with the other
+            // GLIDE clients (e.g. Java's ConnectionManager.resolveClientAz).
+            Az = az.Trim();
         }
     }
 

@@ -3,6 +3,7 @@
 using Valkey.Glide.TestUtils;
 
 using static Valkey.Glide.ConnectionConfiguration;
+using static Valkey.Glide.Errors;
 
 namespace Valkey.Glide.IntegrationTests;
 
@@ -266,6 +267,29 @@ public class ReadFromTests(TestConfiguration config)
             // Cleanup
             _ = await database.KeyDeleteAsync(testKey);
         }
+    }
+
+    #endregion
+    #region Read-Only Mode Compatibility Tests
+
+    [Theory]
+    [InlineData(ReadFromStrategy.AzAffinity)]
+    [InlineData(ReadFromStrategy.AzAffinityReplicasAndPrimary)]
+    [InlineData(ReadFromStrategy.AzAffinityAllNodes)]
+    public async Task ReadOnlyMode_WithAzAffinityStrategy_IsRejectedAtClientCreation(ReadFromStrategy strategy)
+    {
+        // Read-only mode is incompatible with every AZ-affinity read strategy. The rejection is
+        // enforced by the Rust core during (standalone) client creation and surfaces as a
+        // ConnectionException. ReadOnly has no public builder method yet, so it is set through the
+        // internal config, consistent with how the field is wired to the FFI.
+        StandaloneClientConfigurationBuilder builder = TestConfiguration.DefaultClientConfig()
+            .WithReadFrom(new ReadFrom(strategy, "us-east-1a"));
+        builder.Config.ReadOnly = true;
+        StandaloneClientConfiguration config = builder.Build();
+
+        ConnectionException exception = await Assert.ThrowsAsync<ConnectionException>(
+            async () => await GlideClient.CreateClient(config));
+        Assert.Contains("read-only mode is not compatible with AZAffinity", exception.Message);
     }
 
     #endregion

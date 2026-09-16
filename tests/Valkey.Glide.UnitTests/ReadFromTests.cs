@@ -470,6 +470,35 @@ public class ReadFromTests
         Assert.Equal("us-east-1a", options.ReadFrom.Value.Az);
     }
 
+    [Theory]
+    [InlineData(ReadFromStrategy.AzAffinity)]
+    [InlineData(ReadFromStrategy.AzAffinityReplicasAndPrimary)]
+    [InlineData(ReadFromStrategy.AzAffinityAllNodes)]
+    public void ReadFrom_ConstructedWithPaddedAz_TrimsSurroundingWhitespace(ReadFromStrategy strategy)
+    {
+        // The core compares AZ names with exact equality, so an untrimmed value would match no
+        // node and silently defeat AZ affinity. The client must forward the trimmed value, matching
+        // the Java and Node clients.
+        var readFrom = new ReadFrom(strategy, "  us-east-1a  ");
+
+        Assert.Equal(strategy, readFrom.Strategy);
+        Assert.Equal("us-east-1a", readFrom.Az);
+    }
+
+    [Theory]
+    [InlineData("readFrom=AzAffinity,az=  us-east-1a  ", ReadFromStrategy.AzAffinity)]
+    [InlineData("readFrom=AzAffinityReplicasAndPrimary,az=  eu-west-1b  ", ReadFromStrategy.AzAffinityReplicasAndPrimary)]
+    [InlineData("readFrom=AzAffinityAllNodes,az=  ap-south-1c  ", ReadFromStrategy.AzAffinityAllNodes)]
+    public void Parse_AzAffinityWithPaddedAz_TrimsSurroundingWhitespace(string connectionString, ReadFromStrategy expectedStrategy)
+    {
+        ConfigurationOptions options = ConfigurationOptions.Parse(connectionString);
+
+        _ = Assert.NotNull(options.ReadFrom);
+        Assert.Equal(expectedStrategy, options.ReadFrom.Value.Strategy);
+        _ = Assert.NotNull(options.ReadFrom.Value.Az);
+        Assert.DoesNotContain(" ", options.ReadFrom.Value.Az!);
+    }
+
     [Fact]
     public void ReadFromProperty_SetAzAffinityAllNodesWithoutAz_ThrowsArgumentException()
     {
