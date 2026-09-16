@@ -486,17 +486,16 @@ public class ReadFromTests
     }
 
     [Theory]
-    [InlineData("readFrom=AzAffinity,az=  us-east-1a  ", ReadFromStrategy.AzAffinity)]
-    [InlineData("readFrom=AzAffinityReplicasAndPrimary,az=  eu-west-1b  ", ReadFromStrategy.AzAffinityReplicasAndPrimary)]
-    [InlineData("readFrom=AzAffinityAllNodes,az=  ap-south-1c  ", ReadFromStrategy.AzAffinityAllNodes)]
-    public void Parse_AzAffinityWithPaddedAz_TrimsSurroundingWhitespace(string connectionString, ReadFromStrategy expectedStrategy)
+    [InlineData("readFrom=AzAffinity,az=  us-east-1a  ", ReadFromStrategy.AzAffinity, "us-east-1a")]
+    [InlineData("readFrom=AzAffinityReplicasAndPrimary,az=  eu-west-1b  ", ReadFromStrategy.AzAffinityReplicasAndPrimary, "eu-west-1b")]
+    [InlineData("readFrom=AzAffinityAllNodes,az=  ap-south-1c  ", ReadFromStrategy.AzAffinityAllNodes, "ap-south-1c")]
+    public void Parse_AzAffinityWithPaddedAz_TrimsSurroundingWhitespace(string connectionString, ReadFromStrategy expectedStrategy, string expectedAz)
     {
         ConfigurationOptions options = ConfigurationOptions.Parse(connectionString);
 
         _ = Assert.NotNull(options.ReadFrom);
         Assert.Equal(expectedStrategy, options.ReadFrom.Value.Strategy);
-        _ = Assert.NotNull(options.ReadFrom.Value.Az);
-        Assert.DoesNotContain(" ", options.ReadFrom.Value.Az!);
+        Assert.Equal(expectedAz, options.ReadFrom.Value.Az);
     }
 
     [Fact]
