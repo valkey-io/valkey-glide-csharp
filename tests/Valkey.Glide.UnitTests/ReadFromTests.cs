@@ -239,6 +239,18 @@ public class ReadFromTests
         Assert.Contains($"az={azValue}", result);
     }
 
+    [Theory]
+    [InlineData("us-east-1a")]
+    [InlineData("ap-south-1c")]
+    public void ToString_WithAzAffinityAllNodesStrategy_IncludesCorrectAzFormat(string azValue)
+    {
+        var options = new ConfigurationOptions { ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinityAllNodes, azValue) };
+        var result = options.ToString();
+
+        Assert.Contains("readFrom=AzAffinityAllNodes", result);
+        Assert.Contains($"az={azValue}", result);
+    }
+
     [Fact]
     public void ToString_WithNullReadFrom_DoesNotIncludeReadFromOrAz()
     {
@@ -678,13 +690,16 @@ public class ReadFromTests
     [InlineData("PREFERREPLICA")]
     [InlineData("azaffinity")]
     [InlineData("AzAffinityReplicasAndPrimary")]
+    [InlineData("azaffinityallnodes")]
     public Task ConnectionString_CaseInsensitiveReadFromParsing(string strategyString)
     {
         // Arrange
         ReadFromStrategy expectedStrategy = Enum.Parse<ReadFromStrategy>(strategyString, ignoreCase: true);
 
         string connectionString = $"localhost:6379,readFrom={strategyString}";
-        if (expectedStrategy is ReadFromStrategy.AzAffinity or ReadFromStrategy.AzAffinityReplicasAndPrimary)
+        if (expectedStrategy is ReadFromStrategy.AzAffinity
+            or ReadFromStrategy.AzAffinityReplicasAndPrimary
+            or ReadFromStrategy.AzAffinityAllNodes)
         {
             connectionString += ",az=test-zone";
         }
@@ -701,6 +716,7 @@ public class ReadFromTests
     [InlineData(ReadFromStrategy.PreferReplica, null)]
     [InlineData(ReadFromStrategy.AzAffinity, "us-east-1a")]
     [InlineData(ReadFromStrategy.AzAffinityReplicasAndPrimary, "eu-west-1b")]
+    [InlineData(ReadFromStrategy.AzAffinityAllNodes, "ap-south-1c")]
     [InlineData(null, null)] // Null ReadFrom test case
     public Task RoundTripSerialization_MaintainsConfigurationIntegrity(ReadFromStrategy? strategy, string? az)
     {
