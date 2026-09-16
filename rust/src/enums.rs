@@ -52,6 +52,7 @@ pub enum ReadFromStrategy {
     AZAffinity = 2,
     AZAffinityReplicasAndPrimary = 3,
     AllNodes = 4,
+    AZAffinityAllNodes = 5,
 }
 
 /// The command routing type for cluster clients.

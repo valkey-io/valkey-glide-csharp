@@ -91,6 +91,27 @@ public class ConnectionMultiplexerReadFromMappingTests
     }
 
     [Fact]
+    public void CreateClientConfigBuilder_WithReadFromAzAffinityAllNodes_MapsCorrectly()
+    {
+        // Arrange
+        var options = new ConfigurationOptions { ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinityAllNodes, "us-east-1a") };
+
+        // Act
+        StandaloneClientConfigurationBuilder standaloneBuilder = ConnectionMultiplexer.CreateClientConfigBuilder<StandaloneClientConfigurationBuilder>(options);
+        ClusterClientConfigurationBuilder clusterBuilder = ConnectionMultiplexer.CreateClientConfigBuilder<ClusterClientConfigurationBuilder>(options);
+
+        // Assert
+        StandaloneClientConfiguration standaloneConfig = standaloneBuilder.Build();
+        ClusterClientConfiguration clusterConfig = clusterBuilder.Build();
+
+        Assert.Equal(ReadFromStrategy.AzAffinityAllNodes, standaloneConfig.Request.ReadFrom!.Value.Strategy);
+        Assert.Equal("us-east-1a", standaloneConfig.Request.ReadFrom!.Value.Az);
+
+        Assert.Equal(ReadFromStrategy.AzAffinityAllNodes, clusterConfig.Request.ReadFrom!.Value.Strategy);
+        Assert.Equal("us-east-1a", clusterConfig.Request.ReadFrom!.Value.Az);
+    }
+
+    [Fact]
     public void CreateClientConfigBuilder_WithNullReadFrom_HandlesCorrectly()
     {
         // Arrange
@@ -149,12 +170,33 @@ public class ConnectionMultiplexerReadFromMappingTests
         Assert.Null(connectionConfig.ReadFrom.Value.Az);
     }
 
+    [Fact]
+    public void CreateClientConfigBuilder_AzAffinityAllNodesFlowsToFfiLayer()
+    {
+        // Arrange
+        var options = new ConfigurationOptions { ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinityAllNodes, "us-east-1a") };
+
+        // Act
+        StandaloneClientConfigurationBuilder standaloneBuilder = ConnectionMultiplexer.CreateClientConfigBuilder<StandaloneClientConfigurationBuilder>(options);
+        StandaloneClientConfiguration standaloneConfig = standaloneBuilder.Build();
+        ConnectionConfig connectionConfig = standaloneConfig.ToRequest();
+
+        // Assert - ToFfi() marshals the ReadFrom strategy (including its AZ) across the FFI boundary
+        // without throwing, exercising the AzAffinityAllNodes -> core mapping in the native layer.
+        using var ffiConfig = connectionConfig.ToFfi();
+
+        _ = Assert.NotNull(connectionConfig.ReadFrom);
+        Assert.Equal(ReadFromStrategy.AzAffinityAllNodes, connectionConfig.ReadFrom.Value.Strategy);
+        Assert.Equal("us-east-1a", connectionConfig.ReadFrom.Value.Az);
+    }
+
     [Theory]
     [InlineData(ReadFromStrategy.Primary, null)]
     [InlineData(ReadFromStrategy.PreferReplica, null)]
     [InlineData(ReadFromStrategy.AllNodes, null)]
     [InlineData(ReadFromStrategy.AzAffinity, "us-west-2")]
     [InlineData(ReadFromStrategy.AzAffinityReplicasAndPrimary, "eu-central-1")]
+    [InlineData(ReadFromStrategy.AzAffinityAllNodes, "ap-south-1a")]
     public void CreateClientConfigBuilder_AllReadFromStrategies_MapCorrectly(ReadFromStrategy strategy, string? az)
     {
         // Arrange

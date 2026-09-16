@@ -3,6 +3,7 @@
 using Valkey.Glide.TestUtils;
 
 using static Valkey.Glide.ConnectionConfiguration;
+using static Valkey.Glide.Errors;
 
 namespace Valkey.Glide.IntegrationTests;
 
@@ -25,11 +26,13 @@ public class ReadFromTests(TestConfiguration config)
     [InlineData("AllNodes", ReadFromStrategy.AllNodes, null, true)]
     [InlineData("AzAffinity", ReadFromStrategy.AzAffinity, "us-east-1a", true)]
     [InlineData("AzAffinityReplicasAndPrimary", ReadFromStrategy.AzAffinityReplicasAndPrimary, "eu-west-1b", true)]
+    [InlineData("AzAffinityAllNodes", ReadFromStrategy.AzAffinityAllNodes, "us-east-1a", true)]
     [InlineData("Primary", ReadFromStrategy.Primary, null, false)]
     [InlineData("PreferReplica", ReadFromStrategy.PreferReplica, null, false)]
     [InlineData("AllNodes", ReadFromStrategy.AllNodes, null, false)]
     [InlineData("AzAffinity", ReadFromStrategy.AzAffinity, "ap-south-1c", false)]
     [InlineData("AzAffinityReplicasAndPrimary", ReadFromStrategy.AzAffinityReplicasAndPrimary, "us-west-2b", false)]
+    [InlineData("AzAffinityAllNodes", ReadFromStrategy.AzAffinityAllNodes, "ap-south-1c", false)]
     public async Task ConnectionString_ReadFromConfigurationFlowsToFFILayer(
         string strategyString, ReadFromStrategy expectedStrategy, string? expectedAz, bool useStandalone)
     {
@@ -264,6 +267,29 @@ public class ReadFromTests(TestConfiguration config)
             // Cleanup
             _ = await database.KeyDeleteAsync(testKey);
         }
+    }
+
+    #endregion
+    #region Read-Only Mode Compatibility Tests
+
+    [Theory]
+    [InlineData(ReadFromStrategy.AzAffinity)]
+    [InlineData(ReadFromStrategy.AzAffinityReplicasAndPrimary)]
+    [InlineData(ReadFromStrategy.AzAffinityAllNodes)]
+    public async Task ReadOnlyMode_WithAzAffinityStrategy_IsRejectedAtClientCreation(ReadFromStrategy strategy)
+    {
+        // Read-only mode is incompatible with every AZ-affinity read strategy. The rejection is
+        // enforced by the Rust core during (standalone) client creation and surfaces as a
+        // ConnectionException. ReadOnly has no public builder method yet, so it is set through the
+        // internal config, consistent with how the field is wired to the FFI.
+        StandaloneClientConfigurationBuilder builder = TestConfiguration.DefaultClientConfig()
+            .WithReadFrom(new ReadFrom(strategy, "us-east-1a"));
+        builder.Config.ReadOnly = true;
+        StandaloneClientConfiguration config = builder.Build();
+
+        ConnectionException exception = await Assert.ThrowsAsync<ConnectionException>(
+            async () => await GlideClient.CreateClient(config));
+        Assert.Contains("read-only mode is not compatible with AZAffinity", exception.Message);
     }
 
     #endregion

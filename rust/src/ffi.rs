@@ -309,6 +309,9 @@ pub(crate) unsafe fn create_connection_request(
                     }?)
                 }
                 ReadFromStrategy::AllNodes => coreReadFrom::AllNodes,
+                ReadFromStrategy::AZAffinityAllNodes => {
+                    coreReadFrom::AZAffinityAllNodes(unsafe { ptr_to_str(config.read_from.az) }?)
+                }
             })
         } else {
             None

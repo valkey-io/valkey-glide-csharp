@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Support additional configuration options:
   - All nodes read-from strategy (#207)
+  - AZ affinity across all nodes read-from strategy (#533)
   - Circuit breaker (#474)
   - Client library name and info tag (#514)
   - Inflight requests limit (#484)
