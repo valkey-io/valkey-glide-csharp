@@ -260,6 +260,27 @@ public abstract class ConnectionConfiguration
         /// Read from all nodes (primary and replicas) in round-robin.
         /// </summary>
         AllNodes,
+
+        /// <summary>
+        /// Spread the read requests equally among all nodes (primary and replicas) within the client's
+        /// Availability Zone (AZ) in a round-robin manner, falling back to a round-robin across all nodes
+        /// if no node in the client's AZ is available.
+        /// <para>
+        /// Unlike <see cref="AzAffinityReplicasAndPrimary"/>, this strategy does not prioritize replicas
+        /// ahead of the primary within the AZ, which is what makes an even per-node read distribution
+        /// possible. Unlike <see cref="AllNodes"/>, which is AZ-agnostic, this strategy is scoped to the
+        /// client's AZ.
+        /// </para>
+        /// <para>
+        /// Choose this over <see cref="AzAffinityReplicasAndPrimary"/> when the in-AZ primary should
+        /// take a share of the reads. That strategy sends every read to an in-AZ replica whenever one is
+        /// connected, so the primary serves reads only as a fallback.
+        /// </para>
+        /// <para>
+        /// Requires an Availability Zone (AZ) to be set on the client configuration.
+        /// </para>
+        /// </summary>
+        AzAffinityAllNodes,
     }
 
     /// <summary>
@@ -1304,5 +1325,6 @@ internal static class ReadFromStrategyExtensions
     /// <param name="strategy">The read-from strategy to check.</param>
     internal static bool IsAzReadFromStrategy(this ConnectionConfiguration.ReadFromStrategy strategy) =>
         strategy is ConnectionConfiguration.ReadFromStrategy.AzAffinity
-            or ConnectionConfiguration.ReadFromStrategy.AzAffinityReplicasAndPrimary;
+            or ConnectionConfiguration.ReadFromStrategy.AzAffinityReplicasAndPrimary
+            or ConnectionConfiguration.ReadFromStrategy.AzAffinityAllNodes;
 }

@@ -25,11 +25,13 @@ public class ReadFromTests(TestConfiguration config)
     [InlineData("AllNodes", ReadFromStrategy.AllNodes, null, true)]
     [InlineData("AzAffinity", ReadFromStrategy.AzAffinity, "us-east-1a", true)]
     [InlineData("AzAffinityReplicasAndPrimary", ReadFromStrategy.AzAffinityReplicasAndPrimary, "eu-west-1b", true)]
+    [InlineData("AzAffinityAllNodes", ReadFromStrategy.AzAffinityAllNodes, "us-east-1a", true)]
     [InlineData("Primary", ReadFromStrategy.Primary, null, false)]
     [InlineData("PreferReplica", ReadFromStrategy.PreferReplica, null, false)]
     [InlineData("AllNodes", ReadFromStrategy.AllNodes, null, false)]
     [InlineData("AzAffinity", ReadFromStrategy.AzAffinity, "ap-south-1c", false)]
     [InlineData("AzAffinityReplicasAndPrimary", ReadFromStrategy.AzAffinityReplicasAndPrimary, "us-west-2b", false)]
+    [InlineData("AzAffinityAllNodes", ReadFromStrategy.AzAffinityAllNodes, "ap-south-1c", false)]
     public async Task ConnectionString_ReadFromConfigurationFlowsToFFILayer(
         string strategyString, ReadFromStrategy expectedStrategy, string? expectedAz, bool useStandalone)
     {

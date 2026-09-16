@@ -106,6 +106,52 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
     }
 
     [Fact]
+    public async Task ConfigurationOptions_ReadFromAzAffinityAllNodes_MapsToStandaloneClientConfigurationBuilder()
+    {
+        // Arrange
+        const string testAz = "us-east-1a";
+        var configOptions = new ConfigurationOptions
+        {
+            ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinityAllNodes, testAz)
+        };
+        configOptions.EndPoints.Add(TestConfiguration.STANDALONE_ADDRESS.Host, TestConfiguration.STANDALONE_ADDRESS.Port);
+        configOptions.Ssl = TestConfiguration.TLS;
+
+        // Act
+        await using ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(configOptions);
+
+        // Assert
+        Assert.NotNull(connectionMultiplexer);
+        Assert.NotNull(connectionMultiplexer.RawConfig);
+        Assert.True(connectionMultiplexer.RawConfig.ReadFrom.HasValue);
+        Assert.Equal(ReadFromStrategy.AzAffinityAllNodes, connectionMultiplexer.RawConfig.ReadFrom.Value.Strategy);
+        Assert.Equal(testAz, connectionMultiplexer.RawConfig.ReadFrom.Value.Az);
+    }
+
+    [Fact]
+    public async Task ConfigurationOptions_ReadFromAzAffinityAllNodes_MapsToClusterClientConfigurationBuilder()
+    {
+        // Arrange
+        const string testAz = "ap-south-1c";
+        var configOptions = new ConfigurationOptions
+        {
+            ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinityAllNodes, testAz)
+        };
+        configOptions.EndPoints.Add(TestConfiguration.CLUSTER_ADDRESS.Host, TestConfiguration.CLUSTER_ADDRESS.Port);
+        configOptions.Ssl = TestConfiguration.TLS;
+
+        // Act
+        await using ConnectionMultiplexer connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(configOptions);
+
+        // Assert
+        Assert.NotNull(connectionMultiplexer);
+        Assert.NotNull(connectionMultiplexer.RawConfig);
+        Assert.True(connectionMultiplexer.RawConfig.ReadFrom.HasValue);
+        Assert.Equal(ReadFromStrategy.AzAffinityAllNodes, connectionMultiplexer.RawConfig.ReadFrom.Value.Strategy);
+        Assert.Equal(testAz, connectionMultiplexer.RawConfig.ReadFrom.Value.Az);
+    }
+
+    [Fact]
     public async Task ConfigurationOptions_ReadFromPrimary_MapsToClusterClientConfigurationBuilder()
     {
         // Arrange
@@ -294,6 +340,7 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
     [InlineData(ReadFromStrategy.AllNodes, null)]
     [InlineData(ReadFromStrategy.AzAffinity, "us-east-1a")]
     [InlineData(ReadFromStrategy.AzAffinityReplicasAndPrimary, "eu-west-1b")]
+    [InlineData(ReadFromStrategy.AzAffinityAllNodes, "ap-south-1c")]
     public async Task EndToEnd_ReadFromConfiguration_FlowsFromConnectionStringToConnectionConfig(ReadFromStrategy strategy, string? az)
     {
         // Arrange
@@ -306,6 +353,7 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
             ReadFromStrategy.AllNodes => ",readFrom=AllNodes",
             ReadFromStrategy.AzAffinity => $",readFrom=AzAffinity,az={az}",
             ReadFromStrategy.AzAffinityReplicasAndPrimary => $",readFrom=AzAffinityReplicasAndPrimary,az={az}",
+            ReadFromStrategy.AzAffinityAllNodes => $",readFrom=AzAffinityAllNodes,az={az}",
             _ => throw new ArgumentException("Invalid ReadFromStrategy for this test"),
         };
 
