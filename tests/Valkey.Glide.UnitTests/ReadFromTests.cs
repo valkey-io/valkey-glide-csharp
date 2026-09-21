@@ -405,69 +405,23 @@ public class ReadFromTests
         Assert.Equal(options.Password, reparsed.Password);
     }
 
-    [Fact]
-    public void ReadFromProperty_SetValidPrimaryStrategy_DoesNotThrow()
+    [Theory]
+    [InlineData(ReadFromStrategy.Primary, null)]
+    [InlineData(ReadFromStrategy.PreferReplica, null)]
+    [InlineData(ReadFromStrategy.AllNodes, null)]
+    [InlineData(ReadFromStrategy.AzAffinity, "us-east-1")]
+    [InlineData(ReadFromStrategy.AzAffinityReplicasAndPrimary, "eu-west-1")]
+    [InlineData(ReadFromStrategy.AzAffinityAllNodes, "us-east-1a")]
+    public void ReadFromProperty_SetValidStrategy_DoesNotThrow(ReadFromStrategy strategy, string? az)
     {
         // Arrange
         var options = new ConfigurationOptions();
-        var readFrom = new ReadFrom(ReadFromStrategy.Primary);
+        var readFrom = az != null ? new ReadFrom(strategy, az) : new ReadFrom(strategy);
 
         // Act & Assert
         options.ReadFrom = readFrom;
-        Assert.Equal(ReadFromStrategy.Primary, options.ReadFrom.Value.Strategy);
-        Assert.Null(options.ReadFrom.Value.Az);
-    }
-
-    [Fact]
-    public void ReadFromProperty_SetValidPreferReplicaStrategy_DoesNotThrow()
-    {
-        // Arrange
-        var options = new ConfigurationOptions();
-        var readFrom = new ReadFrom(ReadFromStrategy.PreferReplica);
-
-        // Act & Assert
-        options.ReadFrom = readFrom;
-        Assert.Equal(ReadFromStrategy.PreferReplica, options.ReadFrom.Value.Strategy);
-        Assert.Null(options.ReadFrom.Value.Az);
-    }
-
-    [Fact]
-    public void ReadFromProperty_SetValidAzAffinityStrategy_DoesNotThrow()
-    {
-        // Arrange
-        var options = new ConfigurationOptions();
-        var readFrom = new ReadFrom(ReadFromStrategy.AzAffinity, "us-east-1");
-
-        // Act & Assert
-        options.ReadFrom = readFrom;
-        Assert.Equal(ReadFromStrategy.AzAffinity, options.ReadFrom.Value.Strategy);
-        Assert.Equal("us-east-1", options.ReadFrom.Value.Az);
-    }
-
-    [Fact]
-    public void ReadFromProperty_SetValidAzAffinityReplicasAndPrimaryStrategy_DoesNotThrow()
-    {
-        // Arrange
-        var options = new ConfigurationOptions();
-        var readFrom = new ReadFrom(ReadFromStrategy.AzAffinityReplicasAndPrimary, "eu-west-1");
-
-        // Act & Assert
-        options.ReadFrom = readFrom;
-        Assert.Equal(ReadFromStrategy.AzAffinityReplicasAndPrimary, options.ReadFrom.Value.Strategy);
-        Assert.Equal("eu-west-1", options.ReadFrom.Value.Az);
-    }
-
-    [Fact]
-    public void ReadFromProperty_SetValidAzAffinityAllNodesStrategy_DoesNotThrow()
-    {
-        // Arrange
-        var options = new ConfigurationOptions();
-        var readFrom = new ReadFrom(ReadFromStrategy.AzAffinityAllNodes, "us-east-1a");
-
-        // Act & Assert
-        options.ReadFrom = readFrom;
-        Assert.Equal(ReadFromStrategy.AzAffinityAllNodes, options.ReadFrom.Value.Strategy);
-        Assert.Equal("us-east-1a", options.ReadFrom.Value.Az);
+        Assert.Equal(strategy, options.ReadFrom.Value.Strategy);
+        Assert.Equal(az, options.ReadFrom.Value.Az);
     }
 
     [Theory]
@@ -476,9 +430,8 @@ public class ReadFromTests
     [InlineData(ReadFromStrategy.AzAffinityAllNodes)]
     public void ReadFrom_ConstructedWithPaddedAz_TrimsSurroundingWhitespace(ReadFromStrategy strategy)
     {
-        // The core compares AZ names with exact equality, so an untrimmed value would match no
-        // node and silently defeat AZ affinity. The client must forward the trimmed value, matching
-        // the Java and Node clients.
+        // The core matches AZ names by exact equality, so an untrimmed value would match no node
+        // and silently defeat AZ affinity. The client must forward the trimmed value.
         var readFrom = new ReadFrom(strategy, "  us-east-1a  ");
 
         Assert.Equal(strategy, readFrom.Strategy);

@@ -335,27 +335,16 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
     }
 
     [Theory]
-    [InlineData(ReadFromStrategy.Primary, null)]
-    [InlineData(ReadFromStrategy.PreferReplica, null)]
-    [InlineData(ReadFromStrategy.AllNodes, null)]
-    [InlineData(ReadFromStrategy.AzAffinity, "us-east-1a")]
-    [InlineData(ReadFromStrategy.AzAffinityReplicasAndPrimary, "eu-west-1b")]
-    [InlineData(ReadFromStrategy.AzAffinityAllNodes, "ap-south-1c")]
-    public async Task EndToEnd_ReadFromConfiguration_FlowsFromConnectionStringToConnectionConfig(ReadFromStrategy strategy, string? az)
+    [InlineData("readFrom=Primary", ReadFromStrategy.Primary, null)]
+    [InlineData("readFrom=PreferReplica", ReadFromStrategy.PreferReplica, null)]
+    [InlineData("readFrom=AllNodes", ReadFromStrategy.AllNodes, null)]
+    [InlineData("readFrom=AzAffinity,az=us-east-1a", ReadFromStrategy.AzAffinity, "us-east-1a")]
+    [InlineData("readFrom=AzAffinityReplicasAndPrimary,az=eu-west-1b", ReadFromStrategy.AzAffinityReplicasAndPrimary, "eu-west-1b")]
+    [InlineData("readFrom=AzAffinityAllNodes,az=ap-south-1c", ReadFromStrategy.AzAffinityAllNodes, "ap-south-1c")]
+    public async Task EndToEnd_ReadFromConfiguration_FlowsFromConnectionStringToConnectionConfig(string readFromSegment, ReadFromStrategy strategy, string? az)
     {
         // Arrange
-        string connectionString = $"{TestConfiguration.STANDALONE_ADDRESS},ssl={TestConfiguration.TLS}";
-
-        connectionString += strategy switch
-        {
-            ReadFromStrategy.Primary => ",readFrom=Primary",
-            ReadFromStrategy.PreferReplica => ",readFrom=PreferReplica",
-            ReadFromStrategy.AllNodes => ",readFrom=AllNodes",
-            ReadFromStrategy.AzAffinity => $",readFrom=AzAffinity,az={az}",
-            ReadFromStrategy.AzAffinityReplicasAndPrimary => $",readFrom=AzAffinityReplicasAndPrimary,az={az}",
-            ReadFromStrategy.AzAffinityAllNodes => $",readFrom=AzAffinityAllNodes,az={az}",
-            _ => throw new ArgumentException("Invalid ReadFromStrategy for this test"),
-        };
+        string connectionString = $"{TestConfiguration.STANDALONE_ADDRESS},ssl={TestConfiguration.TLS},{readFromSegment}";
 
         // Act
         await using var connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(connectionString);
