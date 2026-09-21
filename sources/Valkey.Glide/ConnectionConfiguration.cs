@@ -59,6 +59,12 @@ public abstract class ConnectionConfiguration
         public BasePubSubSubscriptionConfig? PubSubSubscriptions;
         public uint? PubSubReconciliationIntervalMs;
         public CompressionConfig? CompressionConfig;
+
+        /// <summary>
+        /// Whether the client connects in read-only mode. Not compatible with the AZ-affinity read
+        /// strategies (see <see cref="ReadFrom"/>); the core rejects that combination when a
+        /// standalone client is created. No public builder exposes this yet; it is set internally.
+        /// </summary>
         public bool ReadOnly;
         public NodeDiscoveryMode NodeDiscoveryMode = NodeDiscoveryMode.Standard;
         public ClientSideCacheConfig? ClientSideCacheConfig;
@@ -176,6 +182,12 @@ public abstract class ConnectionConfiguration
     /// <summary>
     /// Represents the client's read from strategy and Availability zone if applicable.
     /// </summary>
+    /// <remarks>
+    /// The AZ-affinity strategies (<see cref="ReadFromStrategy.AzAffinity"/>,
+    /// <see cref="ReadFromStrategy.AzAffinityReplicasAndPrimary"/>, and
+    /// <see cref="ReadFromStrategy.AzAffinityAllNodes"/>) are not compatible with read-only mode;
+    /// combining them is rejected when the client is created.
+    /// </remarks>
     [StructLayout(LayoutKind.Sequential)]
     public struct ReadFrom
     {

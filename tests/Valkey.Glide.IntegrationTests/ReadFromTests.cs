@@ -278,12 +278,9 @@ public class ReadFromTests(TestConfiguration config)
     [InlineData(ReadFromStrategy.AzAffinityAllNodes)]
     public async Task ReadOnlyMode_WithAzAffinityStrategy_IsRejectedAtClientCreation(ReadFromStrategy strategy)
     {
-        // Read-only mode is incompatible with every AZ-affinity read strategy. The rejection is
-        // enforced by the Rust core during (standalone) client creation and surfaces as a
-        // ConnectionException. ReadOnly has no public builder method yet, so it is set through the
-        // internal config, consistent with how the field is wired to the FFI.
+        // ReadOnly has no public builder yet, so it is set through the internal config.
         StandaloneClientConfigurationBuilder builder = TestConfiguration.DefaultClientConfig()
-            .WithReadFrom(new ReadFrom(strategy, "us-east-1a"));
+            .WithReadFrom(new ReadFrom(strategy, Data.AvailabilityZone));
         builder.Config.ReadOnly = true;
         StandaloneClientConfiguration config = builder.Build();
 
