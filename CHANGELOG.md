@@ -64,6 +64,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Rename `StreamPendingEntryInfo` to `StreamPendingEntry`
   - Update `StreamClaimOptions` to use factory and fluent methods instead of an object initializer
 - `Logger`, `InfoOptions`, and `Options` are now `static` classes.
+- The Availability Zone (`ReadFrom.Az`) is trimmed of surrounding whitespace before it is used, so an AZ-affinity strategy configured with a padded value now engages AZ affinity instead of silently spreading reads across all nodes (#533)
 
 ### Fixed
 
