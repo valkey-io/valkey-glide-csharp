@@ -183,9 +183,7 @@ public abstract class ConnectionConfiguration
     /// Represents the client's read from strategy and Availability zone if applicable.
     /// </summary>
     /// <remarks>
-    /// The AZ-affinity strategies (<see cref="ReadFromStrategy.AzAffinity"/>,
-    /// <see cref="ReadFromStrategy.AzAffinityReplicasAndPrimary"/>, and
-    /// <see cref="ReadFromStrategy.AzAffinityAllNodes"/>) are not compatible with read-only mode;
+    /// The AZ-affinity <see cref="ReadFromStrategy"/> values are not compatible with read-only mode;
     /// combining them is rejected when the client is created.
     /// </remarks>
     [StructLayout(LayoutKind.Sequential)]

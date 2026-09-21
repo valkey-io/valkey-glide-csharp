@@ -280,7 +280,7 @@ public class ReadFromTests(TestConfiguration config)
     {
         // ReadOnly has no public builder yet, so it is set through the internal config.
         StandaloneClientConfigurationBuilder builder = TestConfiguration.DefaultClientConfig()
-            .WithReadFrom(new ReadFrom(strategy, Data.AvailabilityZone));
+            .WithReadFrom(new ReadFrom(strategy, "us-east-1a"));
         builder.Config.ReadOnly = true;
         StandaloneClientConfiguration config = builder.Build();
 

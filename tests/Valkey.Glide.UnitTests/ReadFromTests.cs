@@ -88,19 +88,14 @@ public class ReadFromTests
         Assert.Equal("us-east-1", options.ReadFrom.Value.Az);
     }
 
-    [Fact]
-    public void ReadFromProperty_SetAzAffinityWithoutAz_ThrowsArgumentException()
+    [Theory]
+    [InlineData(ReadFromStrategy.AzAffinity)]
+    [InlineData(ReadFromStrategy.AzAffinityReplicasAndPrimary)]
+    [InlineData(ReadFromStrategy.AzAffinityAllNodes)]
+    public void ReadFromProperty_SetAzStrategyWithoutAz_ThrowsArgumentException(ReadFromStrategy strategy)
     {
-        // Arrange
-        var options = new ConfigurationOptions();
-
-        // Act & Assert
-        ArgumentException exception = Assert.Throws<ArgumentException>(() =>
-        {
-            // This should throw because ReadFrom constructor validates AZ requirement
-            var readFrom = new ReadFrom(ReadFromStrategy.AzAffinity);
-            options.ReadFrom = readFrom;
-        });
+        // The parameterless ReadFrom constructor must reject every AZ-affinity strategy.
+        ArgumentException exception = Assert.Throws<ArgumentException>(() => new ReadFrom(strategy));
         Assert.Contains("Availability zone must be specified", exception.Message);
     }
 
@@ -213,42 +208,6 @@ public class ReadFromTests
     {
         var options = new ConfigurationOptions { ReadFrom = new ReadFrom(strategy, az) };
         Assert.Contains(expectedSubstring, options.ToString());
-    }
-
-    [Theory]
-    [InlineData("us-east-1a")]
-    [InlineData("eu-west-1b")]
-    public void ToString_WithAzAffinityStrategy_IncludesCorrectAzFormat(string azValue)
-    {
-        var options = new ConfigurationOptions { ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinity, azValue) };
-        var result = options.ToString();
-
-        Assert.Contains("readFrom=AzAffinity", result);
-        Assert.Contains($"az={azValue}", result);
-    }
-
-    [Theory]
-    [InlineData("us-west-2a")]
-    [InlineData("eu-central-1b")]
-    public void ToString_WithAzAffinityReplicasAndPrimaryStrategy_IncludesCorrectAzFormat(string azValue)
-    {
-        var options = new ConfigurationOptions { ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinityReplicasAndPrimary, azValue) };
-        var result = options.ToString();
-
-        Assert.Contains("readFrom=AzAffinityReplicasAndPrimary", result);
-        Assert.Contains($"az={azValue}", result);
-    }
-
-    [Theory]
-    [InlineData("us-east-1a")]
-    [InlineData("ap-south-1c")]
-    public void ToString_WithAzAffinityAllNodesStrategy_IncludesCorrectAzFormat(string azValue)
-    {
-        var options = new ConfigurationOptions { ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinityAllNodes, azValue) };
-        var result = options.ToString();
-
-        Assert.Contains("readFrom=AzAffinityAllNodes", result);
-        Assert.Contains($"az={azValue}", result);
     }
 
     [Fact]
@@ -451,28 +410,20 @@ public class ReadFromTests
         Assert.Equal(expectedAz, options.ReadFrom.Value.Az);
     }
 
-    [Fact]
-    public void ReadFromProperty_SetAzAffinityAllNodesWithoutAz_ThrowsArgumentException()
-    {
-        // Act & Assert - AzAffinityAllNodes requires an AZ, so the parameterless constructor must throw
-        ArgumentException exception = Assert.Throws<ArgumentException>(()
-            => new ReadFrom(ReadFromStrategy.AzAffinityAllNodes));
-        Assert.Contains("Availability zone must be specified", exception.Message);
-    }
-
     [Theory]
-    [InlineData("")]
-    [InlineData(" ")]
-    [InlineData("\t")]
-    [InlineData("\n")]
-    public void ReadFromProperty_SetAzAffinityAllNodesWithEmptyOrWhitespaceAz_ThrowsArgumentException(string azValue)
+    [InlineData(ReadFromStrategy.AzAffinity, "")]
+    [InlineData(ReadFromStrategy.AzAffinity, " ")]
+    [InlineData(ReadFromStrategy.AzAffinity, "\t")]
+    [InlineData(ReadFromStrategy.AzAffinity, "\n")]
+    [InlineData(ReadFromStrategy.AzAffinityReplicasAndPrimary, "")]
+    [InlineData(ReadFromStrategy.AzAffinityReplicasAndPrimary, " ")]
+    [InlineData(ReadFromStrategy.AzAffinityAllNodes, "")]
+    [InlineData(ReadFromStrategy.AzAffinityAllNodes, " ")]
+    [InlineData(ReadFromStrategy.AzAffinityAllNodes, "\t")]
+    [InlineData(ReadFromStrategy.AzAffinityAllNodes, "\n")]
+    public void ReadFromProperty_SetAzStrategyWithEmptyOrWhitespaceAz_ThrowsArgumentException(ReadFromStrategy strategy, string azValue)
     {
-        // Arrange
-        var options = new ConfigurationOptions();
-
-        // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(()
-            => options.ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinityAllNodes, azValue));
+        var exception = Assert.Throws<ArgumentException>(() => new ReadFrom(strategy, azValue));
         Assert.Contains("Availability zone cannot be empty or whitespace", exception.Message);
     }
 
@@ -494,38 +445,6 @@ public class ReadFromTests
         // Act & Assert - Change back to null
         options.ReadFrom = null;
         Assert.Null(options.ReadFrom);
-    }
-
-    [Theory]
-    [InlineData("")]
-    [InlineData(" ")]
-    [InlineData("\t")]
-    [InlineData("\n")]
-    public void ReadFromProperty_SetAzAffinityWithEmptyOrWhitespaceAz_ThrowsArgumentException(string azValue)
-    {
-        // Arrange
-        var options = new ConfigurationOptions();
-
-        // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(()
-            => options.ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinity, azValue));
-        Assert.Contains("Availability zone cannot be empty or whitespace", exception.Message);
-    }
-
-    [Theory]
-    [InlineData("")]
-    [InlineData(" ")]
-    [InlineData("\t")]
-    [InlineData("\n")]
-    public void ReadFromProperty_SetAzAffinityReplicasAndPrimaryWithEmptyOrWhitespaceAz_ThrowsArgumentException(string azValue)
-    {
-        // Arrange
-        var options = new ConfigurationOptions();
-
-        // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(()
-            => options.ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinityReplicasAndPrimary, azValue));
-        Assert.Contains("Availability zone cannot be empty or whitespace", exception.Message);
     }
 
     [Fact]

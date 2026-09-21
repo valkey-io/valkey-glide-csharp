@@ -8,19 +8,10 @@ namespace Valkey.Glide.TestUtils;
 public static class Data
 {
     /// <summary>
-    /// A sample Availability Zone (AZ) identifier for AZ-affinity tests.
+    /// RESP protocol versions for testing.
     /// </summary>
-    public const string AvailabilityZone = "us-east-1a";
-
-    /// <summary>
-    /// A second sample Availability Zone (AZ) identifier, distinct from <see cref="AvailabilityZone"/>.
-    /// </summary>
-    public const string OtherAvailabilityZone = "us-east-1b";
-
-    /// <summary>
-    /// An Availability Zone (AZ) identifier that no node belongs to, used to exercise fallback behaviour.
-    /// </summary>
-    public const string NonExistingAvailabilityZone = "non-existing-az";
+    public static TheoryData<ConnectionConfiguration.Protocol> Protocols =>
+        [ConnectionConfiguration.Protocol.RESP2, ConnectionConfiguration.Protocol.RESP3];
 
     /// <summary>
     /// Cluster modes for testing.
