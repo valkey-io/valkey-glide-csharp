@@ -43,7 +43,8 @@ pub enum PushKind {
 }
 
 /// The read-from strategy for routing read commands.
-/// Must match [`glide_core::client::ReadFrom`] in glide-core.
+/// Must match [`glide_core::client::ReadFrom`] in glide-core and the `ReadFromStrategy` enum in
+/// `sources/Valkey.Glide/ConnectionConfiguration.cs`, which marshals its value here directly.
 #[repr(u32)]
 #[derive(Clone, Copy)]
 pub enum ReadFromStrategy {

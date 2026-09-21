@@ -227,12 +227,9 @@ public abstract class ConnectionConfiguration
 
             Strategy = strategy;
 
-            // The core compares availability zones with exact equality and never trims, so a padded
-            // value such as "us-east-1a " (easily produced by an environment variable or file read)
-            // would engage the strategy, match no node, and silently fall back to spreading reads
-            // across all nodes. No real availability-zone name carries surrounding whitespace, so
-            // trimming here cannot break a value that works today, and keeps parity with the other
-            // GLIDE clients (e.g. Java's ConnectionManager.resolveClientAz).
+            // The core matches availability zones by exact equality, so a padded value would match
+            // no node and silently disable AZ affinity. Trim so a surrounding-whitespace value still
+            // engages the strategy.
             Az = az.Trim();
         }
     }
@@ -240,6 +237,11 @@ public abstract class ConnectionConfiguration
     /// <summary>
     /// Represents the client's read from strategy.
     /// </summary>
+    /// <remarks>
+    /// The numeric values are part of the FFI contract and must match the <c>ReadFromStrategy</c>
+    /// enum in <c>rust/src/enums.rs</c>; they are assigned explicitly so inserting a member cannot
+    /// silently renumber the others.
+    /// </remarks>
     /// <seealso href="https://glide.valkey.io/how-to/connections/read-strategy/">Valkey GLIDE – Read Strategy</seealso>
     public enum ReadFromStrategy : uint
     {
@@ -256,38 +258,23 @@ public abstract class ConnectionConfiguration
         /// <summary>
         /// Read from replicas in the client's Availability Zone (AZ), falling back to other nodes if needed.
         /// </summary>
-        AzAffinity,
+        AzAffinity = 2,
 
         /// <summary>
         /// Read from replicas or the primary in the client's Availability Zone (AZ), falling back to other nodes if needed.
         /// </summary>
-        AzAffinityReplicasAndPrimary,
+        AzAffinityReplicasAndPrimary = 3,
 
         /// <summary>
         /// Read from all nodes (primary and replicas) in round-robin.
         /// </summary>
-        AllNodes,
+        AllNodes = 4,
 
         /// <summary>
-        /// Spread the read requests equally among all nodes (primary and replicas) within the client's
-        /// Availability Zone (AZ) in a round-robin manner, falling back to a round-robin across all nodes
-        /// if no node in the client's AZ is available.
-        /// <para>
-        /// Unlike <see cref="AzAffinityReplicasAndPrimary"/>, this strategy does not prioritize replicas
-        /// ahead of the primary within the AZ, which is what makes an even per-node read distribution
-        /// possible. Unlike <see cref="AllNodes"/>, which is AZ-agnostic, this strategy is scoped to the
-        /// client's AZ.
-        /// </para>
-        /// <para>
-        /// Choose this over <see cref="AzAffinityReplicasAndPrimary"/> when the in-AZ primary should
-        /// take a share of the reads. That strategy sends every read to an in-AZ replica whenever one is
-        /// connected, so the primary serves reads only as a fallback.
-        /// </para>
-        /// <para>
-        /// Requires an Availability Zone (AZ) to be set on the client configuration.
-        /// </para>
+        /// Reads from all nodes within the client's Availability Zone (AZ) in a round-robin manner,
+        /// falling back to other nodes if needed.
         /// </summary>
-        AzAffinityAllNodes,
+        AzAffinityAllNodes = 5,
     }
 
     /// <summary>
