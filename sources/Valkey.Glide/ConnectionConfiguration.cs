@@ -59,6 +59,12 @@ public abstract class ConnectionConfiguration
         public BasePubSubSubscriptionConfig? PubSubSubscriptions;
         public uint? PubSubReconciliationIntervalMs;
         public CompressionConfig? CompressionConfig;
+
+        /// <summary>
+        /// Whether the client connects in read-only mode. Not compatible with the AZ-affinity read
+        /// strategies (see <see cref="ReadFrom"/>); the core rejects that combination when a
+        /// standalone client is created. No public builder exposes this yet; it is set internally.
+        /// </summary>
         public bool ReadOnly;
         public NodeDiscoveryMode NodeDiscoveryMode = NodeDiscoveryMode.Standard;
         public ClientSideCacheConfig? ClientSideCacheConfig;
@@ -176,6 +182,10 @@ public abstract class ConnectionConfiguration
     /// <summary>
     /// Represents the client's read from strategy and Availability zone if applicable.
     /// </summary>
+    /// <remarks>
+    /// The AZ-affinity <see cref="ReadFromStrategy"/> values are not compatible with read-only mode;
+    /// combining them is rejected when the client is created.
+    /// </remarks>
     [StructLayout(LayoutKind.Sequential)]
     public struct ReadFrom
     {
@@ -226,13 +236,22 @@ public abstract class ConnectionConfiguration
             }
 
             Strategy = strategy;
-            Az = az;
+
+            // The core matches availability zones by exact equality, so a padded value would match
+            // no node and silently disable AZ affinity. Trim so a surrounding-whitespace value still
+            // engages the strategy.
+            Az = az.Trim();
         }
     }
 
     /// <summary>
     /// Represents the client's read from strategy.
     /// </summary>
+    /// <remarks>
+    /// The numeric values are part of the FFI contract and must match the <c>ReadFromStrategy</c>
+    /// enum in <c>rust/src/enums.rs</c>; they are assigned explicitly so inserting a member cannot
+    /// silently renumber the others.
+    /// </remarks>
     /// <seealso href="https://glide.valkey.io/how-to/connections/read-strategy/">Valkey GLIDE – Read Strategy</seealso>
     public enum ReadFromStrategy : uint
     {
@@ -249,17 +268,23 @@ public abstract class ConnectionConfiguration
         /// <summary>
         /// Read from replicas in the client's Availability Zone (AZ), falling back to other nodes if needed.
         /// </summary>
-        AzAffinity,
+        AzAffinity = 2,
 
         /// <summary>
         /// Read from replicas or the primary in the client's Availability Zone (AZ), falling back to other nodes if needed.
         /// </summary>
-        AzAffinityReplicasAndPrimary,
+        AzAffinityReplicasAndPrimary = 3,
 
         /// <summary>
         /// Read from all nodes (primary and replicas) in round-robin.
         /// </summary>
-        AllNodes,
+        AllNodes = 4,
+
+        /// <summary>
+        /// Reads from all nodes within the client's Availability Zone (AZ) in a round-robin manner,
+        /// falling back to other nodes if needed.
+        /// </summary>
+        AzAffinityAllNodes = 5,
     }
 
     /// <summary>
@@ -1304,5 +1329,6 @@ internal static class ReadFromStrategyExtensions
     /// <param name="strategy">The read-from strategy to check.</param>
     internal static bool IsAzReadFromStrategy(this ConnectionConfiguration.ReadFromStrategy strategy) =>
         strategy is ConnectionConfiguration.ReadFromStrategy.AzAffinity
-            or ConnectionConfiguration.ReadFromStrategy.AzAffinityReplicasAndPrimary;
+            or ConnectionConfiguration.ReadFromStrategy.AzAffinityReplicasAndPrimary
+            or ConnectionConfiguration.ReadFromStrategy.AzAffinityAllNodes;
 }

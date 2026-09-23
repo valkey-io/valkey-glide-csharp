@@ -13,8 +13,17 @@ internal static class Skip
 
     private static readonly Version Valkey7_0 = new("7.0.0");
     private static readonly Version Valkey7_2 = new("7.2.0");
+    private static readonly Version Valkey8_0 = new("8.0.0");
     private static readonly Version Valkey8_1 = new("8.1.0");
     private static readonly Version Valkey9_0 = new("9.0.0");
+
+    /// <summary>
+    /// Skips the test if AZ-affinity read strategies are not supported.
+    /// </summary>
+    public static void IfAzAffinityNotSupported()
+        => Assert.SkipWhen(
+            TestConfiguration.SERVER_VERSION < Valkey8_0,
+            "AZ affinity requires Valkey 8.0+");
 
     /// <summary>
     /// Skips the test if <c>CLIENT SETINFO</c> (lib-name / lib-ver reporting) is not supported.

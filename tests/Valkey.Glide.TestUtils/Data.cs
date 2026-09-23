@@ -8,6 +8,12 @@ namespace Valkey.Glide.TestUtils;
 public static class Data
 {
     /// <summary>
+    /// RESP protocol versions for testing.
+    /// </summary>
+    public static TheoryData<ConnectionConfiguration.Protocol> Protocols =>
+        [ConnectionConfiguration.Protocol.RESP2, ConnectionConfiguration.Protocol.RESP3];
+
+    /// <summary>
     /// Cluster modes for testing.
     /// </summary>
     public static TheoryData<bool> ClusterMode => [true, false];

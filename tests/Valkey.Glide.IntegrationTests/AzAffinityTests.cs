@@ -2,6 +2,8 @@
 
 using System.Text.RegularExpressions;
 
+using Valkey.Glide.TestUtils;
+
 using static Valkey.Glide.Commands.Options.InfoOptions;
 using static Valkey.Glide.ConnectionConfiguration;
 using static Valkey.Glide.Route;
@@ -14,6 +16,12 @@ public class AzAffinityTests(TestConfiguration config)
 {
     public TestConfiguration Config { get; } = config;
 
+    private const string Az = "us-east-1a";
+    private const string OtherAz = "us-east-1b";
+    private const string NonExistingAz = "non-existing-Az";
+
+    private static readonly Regex GetCallsRegex = new(@"cmdstat_get:calls=(\d+)", RegexOptions.Compiled);
+
     private static async Task<GlideClusterClient> CreateAzTestClient(ReadFromStrategy strategy, string az, ConnectionConfiguration.Protocol protocol)
     {
         ClusterClientConfiguration config = TestConfiguration.DefaultClusterClientConfig()
@@ -23,6 +31,18 @@ public class AzAffinityTests(TestConfiguration config)
             .Build();
         return await GlideClusterClient.CreateClient(config);
     }
+
+    private static async Task<GlideClusterClient> CreateConfigClient(ConnectionConfiguration.Protocol protocol)
+        => await GlideClusterClient.CreateClient(
+            TestConfiguration.DefaultClusterClientConfig().WithProtocolVersion(protocol).Build());
+
+    /// <summary>Sets the <c>availability-zone</c> config on the nodes selected by <paramref name="route"/>.</summary>
+    private static async Task SetAvailabilityZone(GlideClusterClient client, string az, Route route)
+        => _ = await client.CustomCommand(["config", "set", "availability-zone", az], route);
+
+    /// <summary>Resets command stats on all nodes.</summary>
+    private static async Task ResetStats(GlideClusterClient client)
+        => _ = await client.CustomCommand(["config", "resetstat"], AllNodes);
 
     private static async Task<int> GetReplicaCountInCluster(GlideClusterClient client)
     {
@@ -39,25 +59,29 @@ public class AzAffinityTests(TestConfiguration config)
         throw new Exception("Can't get replica count");
     }
 
+    /// <summary>Parses the <c>cmdstat_get:calls</c> value from a node's INFO output, or 0 if absent.</summary>
+    private static int GetCalls(string infoValue)
+    {
+        Match m = GetCallsRegex.Match(infoValue);
+        return m.Success ? int.Parse(m.Groups[1].Value) : 0;
+    }
+
     [Theory]
-    [InlineData(ConnectionConfiguration.Protocol.RESP2)]
-    [InlineData(ConnectionConfiguration.Protocol.RESP3)]
+    [MemberData(nameof(Data.Protocols), MemberType = typeof(Data))]
     public async Task TestRoutingWithAzAffinityStrategyTo1Replica(ConnectionConfiguration.Protocol protocol)
     {
-        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("8.0.0"), "AZ affinity requires server version 8.0.0 or higher");
+        Skip.IfAzAffinityNotSupported();
 
-        await using GlideClusterClient configClient = await GlideClusterClient.CreateClient(
-            TestConfiguration.DefaultClusterClientConfig().WithProtocolVersion(protocol).Build());
-        const string az = "us-east-1a";
+        await using GlideClusterClient configClient = await CreateConfigClient(protocol);
         const int nGetCalls = 3;
         string key = Guid.NewGuid().ToString();
 
         // Reset the availability zone for all nodes
-        _ = await configClient.CustomCommand(["config", "set", "availability-zone", ""], AllNodes);
-        _ = await configClient.CustomCommand(["config", "resetstat"], AllNodes);
-        _ = await configClient.CustomCommand(["config", "set", "availability-zone", az], new SlotKeyRoute(key, SlotType.Replica));
+        await SetAvailabilityZone(configClient, "", AllNodes);
+        await ResetStats(configClient);
+        await SetAvailabilityZone(configClient, Az, new SlotKeyRoute(key, SlotType.Replica));
 
-        await using GlideClusterClient azTestClient = await CreateAzTestClient(ReadFromStrategy.AzAffinity, az, protocol);
+        await using GlideClusterClient azTestClient = await CreateAzTestClient(ReadFromStrategy.AzAffinity, Az, protocol);
 
         for (int i = 0; i < nGetCalls; i++)
         {
@@ -69,18 +93,18 @@ public class AzAffinityTests(TestConfiguration config)
         int changedAzCount = 0;
         foreach (string value in infoResult.MultiValue.Values)
         {
-            Match m = Regex.Match(value, @"cmdstat_get:calls=(\d+)");
-            if (value.Contains($"availability_zone:{az}"))
+            int calls = GetCalls(value);
+            if (value.Contains($"availability_zone:{Az}"))
             {
                 changedAzCount++;
-                if (value.Contains("role:slave") && m.Success)
+                if (value.Contains("role:slave") && calls > 0)
                 {
-                    Assert.Equal(nGetCalls, int.Parse(m.Groups[1].Value));
+                    Assert.Equal(nGetCalls, calls);
                 }
             }
-            else if (m.Success)
+            else if (calls > 0)
             {
-                Assert.Fail($"Non AZ replica got {m.Groups[1].Value} get calls");
+                Assert.Fail($"Non AZ replica got {calls} get calls");
             }
         }
 
@@ -89,38 +113,34 @@ public class AzAffinityTests(TestConfiguration config)
     }
 
     [Theory]
-    [InlineData(ConnectionConfiguration.Protocol.RESP2)]
-    [InlineData(ConnectionConfiguration.Protocol.RESP3)]
+    [MemberData(nameof(Data.Protocols), MemberType = typeof(Data))]
     public async Task TestRoutingBySlotToReplicaWithAzAffinityStrategyToAllReplicas(ConnectionConfiguration.Protocol protocol)
     {
-        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("8.0.0"), "AZ affinity requires server version 8.0.0 or higher");
+        Skip.IfAzAffinityNotSupported();
 
-        await using GlideClusterClient configClient = await GlideClusterClient.CreateClient(
-            TestConfiguration.DefaultClusterClientConfig().WithProtocolVersion(protocol).Build());
-        const string az = "us-east-1a";
+        await using GlideClusterClient configClient = await CreateConfigClient(protocol);
         string key = Guid.NewGuid().ToString();
 
         // Reset the availability zone for all nodes
-        _ = await configClient.CustomCommand(["config", "set", "availability-zone", ""], AllNodes);
-        _ = await configClient.CustomCommand(["config", "resetstat"], AllNodes);
+        await SetAvailabilityZone(configClient, "", AllNodes);
+        await ResetStats(configClient);
 
         // Get Replica Count for current cluster
-        ClusterValue<string> clusterInfo = await configClient.InfoAsync([Section.REPLICATION], new SlotKeyRoute(key, SlotType.Primary));
         int nReplicas = await GetReplicaCountInCluster(configClient);
         int nCallsPerReplica = 5;
         int nGetCalls = nCallsPerReplica * nReplicas;
 
         // Setting AZ for all Nodes
-        _ = await configClient.CustomCommand(["config", "set", "availability-zone", az], AllNodes);
+        await SetAvailabilityZone(configClient, Az, AllNodes);
 
-        await using GlideClusterClient azTestClient = await CreateAzTestClient(ReadFromStrategy.AzAffinity, az, protocol);
+        await using GlideClusterClient azTestClient = await CreateAzTestClient(ReadFromStrategy.AzAffinity, Az, protocol);
 
         ClusterValue<object?> azGetResult = await azTestClient.CustomCommand(["config", "get", "availability-zone"], AllNodes);
         foreach (object? value in azGetResult.MultiValue.Values)
         {
             if (value is object[] configArray && configArray.Length >= 2)
             {
-                Assert.Equal(az, configArray[1]?.ToString());
+                Assert.Equal(Az, configArray[1]?.ToString());
             }
         }
 
@@ -135,27 +155,25 @@ public class AzAffinityTests(TestConfiguration config)
         // Check that all replicas have the same number of GET calls
         foreach (string value in infoResult.MultiValue.Values)
         {
-            Match m = Regex.Match(value, @"cmdstat_get:calls=(\d+)");
-            if (value.Contains("role:slave") && m.Success)
+            if (value.Contains("role:slave") && GetCalls(value) > 0)
             {
-                Assert.Equal(nCallsPerReplica, int.Parse(m.Groups[1].Value));
+                Assert.Equal(nCallsPerReplica, GetCalls(value));
             }
         }
     }
 
     [Theory]
-    [InlineData(ConnectionConfiguration.Protocol.RESP2)]
-    [InlineData(ConnectionConfiguration.Protocol.RESP3)]
+    [MemberData(nameof(Data.Protocols), MemberType = typeof(Data))]
     public async Task TestAzAffinityNonExistingAz(ConnectionConfiguration.Protocol protocol)
     {
-        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("8.0.0"), "AZ affinity requires server version 8.0.0 or higher");
+        Skip.IfAzAffinityNotSupported();
 
         const int nGetCalls = 3;
 
-        await using GlideClusterClient azTestClient = await CreateAzTestClient(ReadFromStrategy.AzAffinity, "non-existing-az", protocol);
+        await using GlideClusterClient azTestClient = await CreateAzTestClient(ReadFromStrategy.AzAffinity, NonExistingAz, protocol);
 
         // Reset stats
-        _ = await azTestClient.CustomCommand(["config", "resetstat"], AllNodes);
+        await ResetStats(azTestClient);
 
         // Execute GET commands
         for (int i = 0; i < nGetCalls; i++)
@@ -168,43 +186,38 @@ public class AzAffinityTests(TestConfiguration config)
         // We expect the calls to be distributed evenly among the replicas
         foreach (string value in infoResult.MultiValue.Values)
         {
-            Match m = Regex.Match(value, @"cmdstat_get:calls=(\d+)");
-            if (value.Contains("role:slave") && m.Success)
+            if (value.Contains("role:slave") && GetCalls(value) > 0)
             {
-                Assert.Equal(1, int.Parse(m.Groups[1].Value));
+                Assert.Equal(1, GetCalls(value));
             }
         }
     }
 
     [Theory]
-    [InlineData(ConnectionConfiguration.Protocol.RESP2)]
-    [InlineData(ConnectionConfiguration.Protocol.RESP3)]
+    [MemberData(nameof(Data.Protocols), MemberType = typeof(Data))]
     public async Task TestAzAffinityReplicasAndPrimaryRoutesToPrimary(ConnectionConfiguration.Protocol protocol)
     {
-        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("8.0.0"), "AZ affinity requires server version 8.0.0 or higher");
+        Skip.IfAzAffinityNotSupported();
 
-        await using GlideClusterClient configClient = await GlideClusterClient.CreateClient(
-            TestConfiguration.DefaultClusterClientConfig().WithProtocolVersion(protocol).Build());
-        const string az = "us-east-1a";
-        const string otherAz = "us-east-1b";
+        await using GlideClusterClient configClient = await CreateConfigClient(protocol);
         int nReplicas = await GetReplicaCountInCluster(configClient);
         string key = Guid.NewGuid().ToString();
 
-        // Reset stats and set all nodes to otherAz
-        _ = await configClient.CustomCommand(["config", "resetstat"], AllNodes);
-        _ = await configClient.CustomCommand(["config", "set", "availability-zone", otherAz], AllNodes);
+        // Reset stats and set all nodes to OtherAz
+        await ResetStats(configClient);
+        await SetAvailabilityZone(configClient, OtherAz, AllNodes);
 
-        // Set primary which holds the key to az
-        _ = await configClient.CustomCommand(["config", "set", "availability-zone", az], new SlotKeyRoute(key, SlotType.Primary));
+        // Set primary which holds the key to Az
+        await SetAvailabilityZone(configClient, Az, new SlotKeyRoute(key, SlotType.Primary));
 
         // Verify primary AZ
         ClusterValue<object?> primaryAzResult = await configClient.CustomCommand(["config", "get", "availability-zone"], new SlotKeyRoute(key, SlotType.Primary));
         if (primaryAzResult.SingleValue is object[] primaryConfigArray && primaryConfigArray.Length >= 2)
         {
-            Assert.Equal(az, primaryConfigArray[1]?.ToString());
+            Assert.Equal(Az, primaryConfigArray[1]?.ToString());
         }
 
-        await using GlideClusterClient azTestClient = await CreateAzTestClient(ReadFromStrategy.AzAffinityReplicasAndPrimary, az, protocol);
+        await using GlideClusterClient azTestClient = await CreateAzTestClient(ReadFromStrategy.AzAffinityReplicasAndPrimary, Az, protocol);
 
         // Execute GET commands
         for (int i = 0; i < nReplicas; i++)
@@ -217,19 +230,19 @@ public class AzAffinityTests(TestConfiguration config)
         // Check that only the primary in the specified AZ handled all GET calls
         foreach (string value in infoResult.MultiValue.Values)
         {
-            Match m = Regex.Match(value, @"cmdstat_get:calls=(\d+)");
-            if (value.Contains(az))
+            int calls = GetCalls(value);
+            if (value.Contains(Az))
             {
-                if (value.Contains("role:slave") && m.Success)
+                if (value.Contains("role:slave") && calls > 0)
                 {
-                    Assert.Fail($"Replica node got GET {m.Groups[1].Value} calls when shouldn't be");
+                    Assert.Fail($"Replica node got GET {calls} calls when shouldn't be");
                 }
 
                 if (value.Contains("role:master"))
                 {
-                    if (m.Success)
+                    if (calls > 0)
                     {
-                        Assert.Equal(nReplicas, int.Parse(m.Groups[1].Value));
+                        Assert.Equal(nReplicas, calls);
                     }
                     else
                     {
@@ -238,5 +251,125 @@ public class AzAffinityTests(TestConfiguration config)
                 }
             }
         }
+    }
+
+    [Theory]
+    [MemberData(nameof(Data.Protocols), MemberType = typeof(Data))]
+    public async Task TestAzAffinityAllNodesSplitsBetweenPrimaryAndReplica(ConnectionConfiguration.Protocol protocol)
+    {
+        Skip.IfAzAffinityNotSupported();
+
+        await using GlideClusterClient configClient = await CreateConfigClient(protocol);
+        const int nGetCalls = 4;
+        const int nodesInSameAz = 2; // one primary + one replica
+        int callsPerNode = nGetCalls / nodesInSameAz;
+        string key = Guid.NewGuid().ToString();
+
+        // Reset stats and place every node outside the client's AZ...
+        await ResetStats(configClient);
+        await SetAvailabilityZone(configClient, OtherAz, AllNodes);
+
+        // ...then move exactly the primary and replica owning the key into the client's AZ.
+        await SetAvailabilityZone(configClient, Az, new SlotKeyRoute(key, SlotType.Primary));
+        await SetAvailabilityZone(configClient, Az, new SlotKeyRoute(key, SlotType.Replica));
+
+        await using GlideClusterClient azTestClient = await CreateAzTestClient(ReadFromStrategy.AzAffinityAllNodes, Az, protocol);
+
+        for (int i = 0; i < nGetCalls; i++)
+        {
+            _ = await azTestClient.GetAsync(key);
+        }
+
+        ClusterValue<string> infoResult = await azTestClient.InfoAsync([Section.ALL], AllNodes);
+
+        int matchingNodeCount = 0;
+        int totalGetCalls = 0;
+        foreach (string value in infoResult.MultiValue.Values)
+        {
+            int calls = GetCalls(value);
+            totalGetCalls += calls;
+
+            bool inAz = value.Contains($"availability_zone:{Az}");
+            if (inAz)
+            {
+                if (calls > 0)
+                {
+                    Assert.Equal(callsPerNode, calls);
+                    matchingNodeCount++;
+                }
+            }
+            else if (calls > 0)
+            {
+                Assert.Fail($"Out-of-AZ node received {calls} GET calls when it shouldn't");
+            }
+        }
+
+        // Both the in-AZ primary and the in-AZ replica should evenly split the GET calls,
+        // and no reads should have landed outside the AZ.
+        Assert.Equal(nodesInSameAz, matchingNodeCount);
+        Assert.Equal(nGetCalls, totalGetCalls);
+    }
+
+    [Theory]
+    [MemberData(nameof(Data.Protocols), MemberType = typeof(Data))]
+    public async Task TestAzAffinityAllNodesFallsBackToAllNodesWhenNoInAzNode(ConnectionConfiguration.Protocol protocol)
+    {
+        Skip.IfAzAffinityNotSupported();
+
+        await using GlideClusterClient configClient = await CreateConfigClient(protocol);
+        string key = Guid.NewGuid().ToString();
+
+        // Clear any AZ so that the non-existing AZ matches nothing, triggering the all-nodes fallback.
+        await SetAvailabilityZone(configClient, "", AllNodes);
+        await ResetStats(configClient);
+
+        int nReplicas = await GetReplicaCountInCluster(configClient);
+        int nodesInShard = nReplicas + 1; // primary + replicas
+        Assert.True(nodesInShard > 1, "shard must have at least one replica for this test");
+
+        // nGetCalls == nodesInShard gives exactly one GET per shard node under round-robin.
+        int nGetCalls = nodesInShard;
+
+        // Use a client AZ that no node belongs to, forcing the all-nodes fallback.
+        await using GlideClusterClient azTestClient = await CreateAzTestClient(ReadFromStrategy.AzAffinityAllNodes, NonExistingAz, protocol);
+
+        for (int i = 0; i < nGetCalls; i++)
+        {
+            _ = await azTestClient.GetAsync(key);
+        }
+
+        ClusterValue<string> infoResult = await azTestClient.InfoAsync([Section.ALL], AllNodes);
+
+        int nodesWithGets = 0;
+        int totalGetCalls = 0;
+        bool primaryReceivedGets = false;
+        bool replicaReceivedGets = false;
+        foreach (string value in infoResult.MultiValue.Values)
+        {
+            int calls = GetCalls(value);
+            if (calls == 0)
+            {
+                continue;
+            }
+
+            totalGetCalls += calls;
+            nodesWithGets++;
+
+            if (value.Contains("role:master"))
+            {
+                primaryReceivedGets = true;
+            }
+
+            if (value.Contains("role:slave"))
+            {
+                replicaReceivedGets = true;
+            }
+        }
+
+        // Under the all-nodes fallback, every node in the shard (primary + replicas) receives traffic.
+        Assert.Equal(nodesInShard, nodesWithGets);
+        Assert.True(primaryReceivedGets, "primary must receive GET calls");
+        Assert.True(replicaReceivedGets, "at least one replica must receive GET calls");
+        Assert.Equal(nGetCalls, totalGetCalls);
     }
 }

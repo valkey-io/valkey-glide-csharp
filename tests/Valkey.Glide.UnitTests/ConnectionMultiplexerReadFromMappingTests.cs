@@ -7,90 +7,6 @@ namespace Valkey.Glide.UnitTests;
 public class ConnectionMultiplexerReadFromMappingTests
 {
     [Fact]
-    public void CreateClientConfigBuilder_WithReadFromPrimary_MapsCorrectly()
-    {
-        // Arrange
-        var options = new ConfigurationOptions { ReadFrom = new ReadFrom(ReadFromStrategy.Primary) };
-
-        // Act
-        StandaloneClientConfigurationBuilder standaloneBuilder = ConnectionMultiplexer.CreateClientConfigBuilder<StandaloneClientConfigurationBuilder>(options);
-        ClusterClientConfigurationBuilder clusterBuilder = ConnectionMultiplexer.CreateClientConfigBuilder<ClusterClientConfigurationBuilder>(options);
-
-        // Assert
-        StandaloneClientConfiguration standaloneConfig = standaloneBuilder.Build();
-        ClusterClientConfiguration clusterConfig = clusterBuilder.Build();
-
-        Assert.Equal(ReadFromStrategy.Primary, standaloneConfig.Request.ReadFrom!.Value.Strategy);
-        Assert.Null(standaloneConfig.Request.ReadFrom!.Value.Az);
-
-        Assert.Equal(ReadFromStrategy.Primary, clusterConfig.Request.ReadFrom!.Value.Strategy);
-        Assert.Null(clusterConfig.Request.ReadFrom!.Value.Az);
-    }
-
-    [Fact]
-    public void CreateClientConfigBuilder_WithReadFromPreferReplica_MapsCorrectly()
-    {
-        // Arrange
-        var options = new ConfigurationOptions { ReadFrom = new ReadFrom(ReadFromStrategy.PreferReplica) };
-
-        // Act
-        StandaloneClientConfigurationBuilder standaloneBuilder = ConnectionMultiplexer.CreateClientConfigBuilder<StandaloneClientConfigurationBuilder>(options);
-        ClusterClientConfigurationBuilder clusterBuilder = ConnectionMultiplexer.CreateClientConfigBuilder<ClusterClientConfigurationBuilder>(options);
-
-        // Assert
-        StandaloneClientConfiguration standaloneConfig = standaloneBuilder.Build();
-        ClusterClientConfiguration clusterConfig = clusterBuilder.Build();
-
-        Assert.Equal(ReadFromStrategy.PreferReplica, standaloneConfig.Request.ReadFrom!.Value.Strategy);
-        Assert.Null(standaloneConfig.Request.ReadFrom!.Value.Az);
-
-        Assert.Equal(ReadFromStrategy.PreferReplica, clusterConfig.Request.ReadFrom!.Value.Strategy);
-        Assert.Null(clusterConfig.Request.ReadFrom!.Value.Az);
-    }
-
-    [Fact]
-    public void CreateClientConfigBuilder_WithReadFromAzAffinity_MapsCorrectly()
-    {
-        // Arrange
-        var options = new ConfigurationOptions { ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinity, "us-east-1a") };
-
-        // Act
-        StandaloneClientConfigurationBuilder standaloneBuilder = ConnectionMultiplexer.CreateClientConfigBuilder<StandaloneClientConfigurationBuilder>(options);
-        ClusterClientConfigurationBuilder clusterBuilder = ConnectionMultiplexer.CreateClientConfigBuilder<ClusterClientConfigurationBuilder>(options);
-
-        // Assert
-        StandaloneClientConfiguration standaloneConfig = standaloneBuilder.Build();
-        ClusterClientConfiguration clusterConfig = clusterBuilder.Build();
-
-        Assert.Equal(ReadFromStrategy.AzAffinity, standaloneConfig.Request.ReadFrom!.Value.Strategy);
-        Assert.Equal("us-east-1a", standaloneConfig.Request.ReadFrom!.Value.Az);
-
-        Assert.Equal(ReadFromStrategy.AzAffinity, clusterConfig.Request.ReadFrom!.Value.Strategy);
-        Assert.Equal("us-east-1a", clusterConfig.Request.ReadFrom!.Value.Az);
-    }
-
-    [Fact]
-    public void CreateClientConfigBuilder_WithReadFromAzAffinityReplicasAndPrimary_MapsCorrectly()
-    {
-        // Arrange
-        var options = new ConfigurationOptions { ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinityReplicasAndPrimary, "eu-west-1b") };
-
-        // Act
-        StandaloneClientConfigurationBuilder standaloneBuilder = ConnectionMultiplexer.CreateClientConfigBuilder<StandaloneClientConfigurationBuilder>(options);
-        ClusterClientConfigurationBuilder clusterBuilder = ConnectionMultiplexer.CreateClientConfigBuilder<ClusterClientConfigurationBuilder>(options);
-
-        // Assert
-        StandaloneClientConfiguration standaloneConfig = standaloneBuilder.Build();
-        ClusterClientConfiguration clusterConfig = clusterBuilder.Build();
-
-        Assert.Equal(ReadFromStrategy.AzAffinityReplicasAndPrimary, standaloneConfig.Request.ReadFrom!.Value.Strategy);
-        Assert.Equal("eu-west-1b", standaloneConfig.Request.ReadFrom!.Value.Az);
-
-        Assert.Equal(ReadFromStrategy.AzAffinityReplicasAndPrimary, clusterConfig.Request.ReadFrom!.Value.Strategy);
-        Assert.Equal("eu-west-1b", clusterConfig.Request.ReadFrom!.Value.Az);
-    }
-
-    [Fact]
     public void CreateClientConfigBuilder_WithNullReadFrom_HandlesCorrectly()
     {
         // Arrange
@@ -125,28 +41,27 @@ public class ConnectionMultiplexerReadFromMappingTests
         Assert.Equal("ap-south-1", connectionConfig.ReadFrom.Value.Az);
     }
 
-    [Fact]
-    public void CreateClientConfigBuilder_ReadFromFlowsToFfiLayer()
+    [Theory]
+    [InlineData(ReadFromStrategy.PreferReplica, null)]
+    [InlineData(ReadFromStrategy.AzAffinityAllNodes, "us-east-1a")]
+    public void CreateClientConfigBuilder_ReadFromFlowsToFfiLayer(ReadFromStrategy strategy, string? az)
     {
         // Arrange
-        var options = new ConfigurationOptions { ReadFrom = new ReadFrom(ReadFromStrategy.PreferReplica) };
+        var readFrom = az != null ? new ReadFrom(strategy, az) : new ReadFrom(strategy);
+        var options = new ConfigurationOptions { ReadFrom = readFrom };
 
         // Act
         StandaloneClientConfigurationBuilder standaloneBuilder = ConnectionMultiplexer.CreateClientConfigBuilder<StandaloneClientConfigurationBuilder>(options);
         StandaloneClientConfiguration standaloneConfig = standaloneBuilder.Build();
-
-        // Assert - Verify ReadFrom flows through to FFI layer
         ConnectionConfig connectionConfig = standaloneConfig.ToRequest();
 
-        // We can't directly access the FFI structure, but we can verify it's properly set in the ConnectionConfig
-        // The ToFfi() method will properly marshal the ReadFrom to the FFI layer
+        // Assert - ToFfi() marshals the ReadFrom strategy (including its AZ) across the FFI boundary
+        // without throwing, exercising the strategy -> core mapping in the native layer.
         using var ffiConfig = connectionConfig.ToFfi();
 
-        // The fact that ToFfi() doesn't throw and the connectionConfig has the correct ReadFrom
-        // indicates that the mapping is working correctly
         _ = Assert.NotNull(connectionConfig.ReadFrom);
-        Assert.Equal(ReadFromStrategy.PreferReplica, connectionConfig.ReadFrom.Value.Strategy);
-        Assert.Null(connectionConfig.ReadFrom.Value.Az);
+        Assert.Equal(strategy, connectionConfig.ReadFrom.Value.Strategy);
+        Assert.Equal(az, connectionConfig.ReadFrom.Value.Az);
     }
 
     [Theory]
@@ -155,6 +70,7 @@ public class ConnectionMultiplexerReadFromMappingTests
     [InlineData(ReadFromStrategy.AllNodes, null)]
     [InlineData(ReadFromStrategy.AzAffinity, "us-west-2")]
     [InlineData(ReadFromStrategy.AzAffinityReplicasAndPrimary, "eu-central-1")]
+    [InlineData(ReadFromStrategy.AzAffinityAllNodes, "ap-south-1a")]
     public void CreateClientConfigBuilder_AllReadFromStrategies_MapCorrectly(ReadFromStrategy strategy, string? az)
     {
         // Arrange

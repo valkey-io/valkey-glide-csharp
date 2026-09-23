@@ -12,6 +12,7 @@ public class ReadFromTests
     [InlineData("readFrom=AllNodes", ReadFromStrategy.AllNodes, null)]
     [InlineData("readFrom=AzAffinity,Az=us-east-1", ReadFromStrategy.AzAffinity, "us-east-1")]
     [InlineData("readFrom=AzAffinityReplicasAndPrimary,Az=us-east-1", ReadFromStrategy.AzAffinityReplicasAndPrimary, "us-east-1")]
+    [InlineData("readFrom=AzAffinityAllNodes,Az=us-east-1", ReadFromStrategy.AzAffinityAllNodes, "us-east-1")]
     [InlineData("readFrom=primary", ReadFromStrategy.Primary, null)]
     [InlineData("readFrom=allnodes", ReadFromStrategy.AllNodes, null)]
     [InlineData("readFrom=azaffinity,Az=us-east-1", ReadFromStrategy.AzAffinity, "us-east-1")]
@@ -55,6 +56,7 @@ public class ReadFromTests
     [Theory]
     [InlineData("readFrom=AzAffinity")]
     [InlineData("readFrom=AzAffinityReplicasAndPrimary")]
+    [InlineData("readFrom=AzAffinityAllNodes")]
     public void Parse_AzAffinityStrategiesWithoutAz_ThrowsArgumentException(string connectionString)
     {
         // Act & Assert
@@ -86,19 +88,14 @@ public class ReadFromTests
         Assert.Equal("us-east-1", options.ReadFrom.Value.Az);
     }
 
-    [Fact]
-    public void ReadFromProperty_SetAzAffinityWithoutAz_ThrowsArgumentException()
+    [Theory]
+    [InlineData(ReadFromStrategy.AzAffinity)]
+    [InlineData(ReadFromStrategy.AzAffinityReplicasAndPrimary)]
+    [InlineData(ReadFromStrategy.AzAffinityAllNodes)]
+    public void ReadFromProperty_SetAzStrategyWithoutAz_ThrowsArgumentException(ReadFromStrategy strategy)
     {
-        // Arrange
-        var options = new ConfigurationOptions();
-
-        // Act & Assert
-        ArgumentException exception = Assert.Throws<ArgumentException>(() =>
-        {
-            // This should throw because ReadFrom constructor validates AZ requirement
-            var readFrom = new ReadFrom(ReadFromStrategy.AzAffinity);
-            options.ReadFrom = readFrom;
-        });
+        // The parameterless ReadFrom constructor must reject every AZ-affinity strategy.
+        ArgumentException exception = Assert.Throws<ArgumentException>(() => new ReadFrom(strategy));
         Assert.Contains("Availability zone must be specified", exception.Message);
     }
 
@@ -185,6 +182,7 @@ public class ReadFromTests
     [Theory]
     [InlineData("readFrom=AzAffinity,az=")]
     [InlineData("readFrom=AzAffinityReplicasAndPrimary,az= ")]
+    [InlineData("readFrom=AzAffinityAllNodes,az=\t")]
     public void Parse_AzAffinityWithEmptyOrWhitespaceAz_ThrowsSpecificException(string connectionString)
     {
         // Act & Assert
@@ -205,34 +203,11 @@ public class ReadFromTests
     [Theory]
     [InlineData(ReadFromStrategy.AzAffinity, "us-east-1a", "readFrom=AzAffinity,az=us-east-1a")]
     [InlineData(ReadFromStrategy.AzAffinityReplicasAndPrimary, "eu-west-1b", "readFrom=AzAffinityReplicasAndPrimary,az=eu-west-1b")]
+    [InlineData(ReadFromStrategy.AzAffinityAllNodes, "ap-south-1c", "readFrom=AzAffinityAllNodes,az=ap-south-1c")]
     public void ToString_WithReadFromStrategyWithAz_IncludesCorrectFormat(ReadFromStrategy strategy, string az, string expectedSubstring)
     {
         var options = new ConfigurationOptions { ReadFrom = new ReadFrom(strategy, az) };
         Assert.Contains(expectedSubstring, options.ToString());
-    }
-
-    [Theory]
-    [InlineData("us-east-1a")]
-    [InlineData("eu-west-1b")]
-    public void ToString_WithAzAffinityStrategy_IncludesCorrectAzFormat(string azValue)
-    {
-        var options = new ConfigurationOptions { ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinity, azValue) };
-        var result = options.ToString();
-
-        Assert.Contains("readFrom=AzAffinity", result);
-        Assert.Contains($"az={azValue}", result);
-    }
-
-    [Theory]
-    [InlineData("us-west-2a")]
-    [InlineData("eu-central-1b")]
-    public void ToString_WithAzAffinityReplicasAndPrimaryStrategy_IncludesCorrectAzFormat(string azValue)
-    {
-        var options = new ConfigurationOptions { ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinityReplicasAndPrimary, azValue) };
-        var result = options.ToString();
-
-        Assert.Contains("readFrom=AzAffinityReplicasAndPrimary", result);
-        Assert.Contains($"az={azValue}", result);
     }
 
     [Fact]
@@ -274,6 +249,7 @@ public class ReadFromTests
     [InlineData("readFrom=AllNodes")]
     [InlineData("readFrom=AzAffinity,az=us-east-1")]
     [InlineData("readFrom=AzAffinityReplicasAndPrimary,az=eu-west-1")]
+    [InlineData("readFrom=AzAffinityAllNodes,az=ap-south-1")]
     public void RoundTrip_ParseToStringToParse_PreservesReadFromConfiguration(string originalConnectionString)
     {
         // Act - First parse
@@ -388,56 +364,67 @@ public class ReadFromTests
         Assert.Equal(options.Password, reparsed.Password);
     }
 
-    [Fact]
-    public void ReadFromProperty_SetValidPrimaryStrategy_DoesNotThrow()
+    [Theory]
+    [InlineData(ReadFromStrategy.Primary, null)]
+    [InlineData(ReadFromStrategy.PreferReplica, null)]
+    [InlineData(ReadFromStrategy.AllNodes, null)]
+    [InlineData(ReadFromStrategy.AzAffinity, "us-east-1")]
+    [InlineData(ReadFromStrategy.AzAffinityReplicasAndPrimary, "eu-west-1")]
+    [InlineData(ReadFromStrategy.AzAffinityAllNodes, "us-east-1a")]
+    public void ReadFromProperty_SetValidStrategy_DoesNotThrow(ReadFromStrategy strategy, string? az)
     {
         // Arrange
         var options = new ConfigurationOptions();
-        var readFrom = new ReadFrom(ReadFromStrategy.Primary);
+        var readFrom = az != null ? new ReadFrom(strategy, az) : new ReadFrom(strategy);
 
         // Act & Assert
         options.ReadFrom = readFrom;
-        Assert.Equal(ReadFromStrategy.Primary, options.ReadFrom.Value.Strategy);
-        Assert.Null(options.ReadFrom.Value.Az);
+        Assert.Equal(strategy, options.ReadFrom.Value.Strategy);
+        Assert.Equal(az, options.ReadFrom.Value.Az);
     }
 
-    [Fact]
-    public void ReadFromProperty_SetValidPreferReplicaStrategy_DoesNotThrow()
+    [Theory]
+    [InlineData(ReadFromStrategy.AzAffinity)]
+    [InlineData(ReadFromStrategy.AzAffinityReplicasAndPrimary)]
+    [InlineData(ReadFromStrategy.AzAffinityAllNodes)]
+    public void ReadFrom_ConstructedWithPaddedAz_TrimsSurroundingWhitespace(ReadFromStrategy strategy)
     {
-        // Arrange
-        var options = new ConfigurationOptions();
-        var readFrom = new ReadFrom(ReadFromStrategy.PreferReplica);
+        // The core matches AZ names by exact equality, so an untrimmed value would match no node
+        // and silently defeat AZ affinity. The client must forward the trimmed value.
+        var readFrom = new ReadFrom(strategy, "  us-east-1a  ");
 
-        // Act & Assert
-        options.ReadFrom = readFrom;
-        Assert.Equal(ReadFromStrategy.PreferReplica, options.ReadFrom.Value.Strategy);
-        Assert.Null(options.ReadFrom.Value.Az);
+        Assert.Equal(strategy, readFrom.Strategy);
+        Assert.Equal("us-east-1a", readFrom.Az);
     }
 
-    [Fact]
-    public void ReadFromProperty_SetValidAzAffinityStrategy_DoesNotThrow()
+    [Theory]
+    [InlineData("readFrom=AzAffinity,az=  us-east-1a  ", ReadFromStrategy.AzAffinity, "us-east-1a")]
+    [InlineData("readFrom=AzAffinityReplicasAndPrimary,az=  eu-west-1b  ", ReadFromStrategy.AzAffinityReplicasAndPrimary, "eu-west-1b")]
+    [InlineData("readFrom=AzAffinityAllNodes,az=  ap-south-1c  ", ReadFromStrategy.AzAffinityAllNodes, "ap-south-1c")]
+    public void Parse_AzAffinityWithPaddedAz_TrimsSurroundingWhitespace(string connectionString, ReadFromStrategy expectedStrategy, string expectedAz)
     {
-        // Arrange
-        var options = new ConfigurationOptions();
-        var readFrom = new ReadFrom(ReadFromStrategy.AzAffinity, "us-east-1");
+        ConfigurationOptions options = ConfigurationOptions.Parse(connectionString);
 
-        // Act & Assert
-        options.ReadFrom = readFrom;
-        Assert.Equal(ReadFromStrategy.AzAffinity, options.ReadFrom.Value.Strategy);
-        Assert.Equal("us-east-1", options.ReadFrom.Value.Az);
+        _ = Assert.NotNull(options.ReadFrom);
+        Assert.Equal(expectedStrategy, options.ReadFrom.Value.Strategy);
+        Assert.Equal(expectedAz, options.ReadFrom.Value.Az);
     }
 
-    [Fact]
-    public void ReadFromProperty_SetValidAzAffinityReplicasAndPrimaryStrategy_DoesNotThrow()
+    [Theory]
+    [InlineData(ReadFromStrategy.AzAffinity, "")]
+    [InlineData(ReadFromStrategy.AzAffinity, " ")]
+    [InlineData(ReadFromStrategy.AzAffinity, "\t")]
+    [InlineData(ReadFromStrategy.AzAffinity, "\n")]
+    [InlineData(ReadFromStrategy.AzAffinityReplicasAndPrimary, "")]
+    [InlineData(ReadFromStrategy.AzAffinityReplicasAndPrimary, " ")]
+    [InlineData(ReadFromStrategy.AzAffinityAllNodes, "")]
+    [InlineData(ReadFromStrategy.AzAffinityAllNodes, " ")]
+    [InlineData(ReadFromStrategy.AzAffinityAllNodes, "\t")]
+    [InlineData(ReadFromStrategy.AzAffinityAllNodes, "\n")]
+    public void ReadFromProperty_SetAzStrategyWithEmptyOrWhitespaceAz_ThrowsArgumentException(ReadFromStrategy strategy, string azValue)
     {
-        // Arrange
-        var options = new ConfigurationOptions();
-        var readFrom = new ReadFrom(ReadFromStrategy.AzAffinityReplicasAndPrimary, "eu-west-1");
-
-        // Act & Assert
-        options.ReadFrom = readFrom;
-        Assert.Equal(ReadFromStrategy.AzAffinityReplicasAndPrimary, options.ReadFrom.Value.Strategy);
-        Assert.Equal("eu-west-1", options.ReadFrom.Value.Az);
+        var exception = Assert.Throws<ArgumentException>(() => new ReadFrom(strategy, azValue));
+        Assert.Contains("Availability zone cannot be empty or whitespace", exception.Message);
     }
 
     [Fact]
@@ -458,38 +445,6 @@ public class ReadFromTests
         // Act & Assert - Change back to null
         options.ReadFrom = null;
         Assert.Null(options.ReadFrom);
-    }
-
-    [Theory]
-    [InlineData("")]
-    [InlineData(" ")]
-    [InlineData("\t")]
-    [InlineData("\n")]
-    public void ReadFromProperty_SetAzAffinityWithEmptyOrWhitespaceAz_ThrowsArgumentException(string azValue)
-    {
-        // Arrange
-        var options = new ConfigurationOptions();
-
-        // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(()
-            => options.ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinity, azValue));
-        Assert.Contains("Availability zone cannot be empty or whitespace", exception.Message);
-    }
-
-    [Theory]
-    [InlineData("")]
-    [InlineData(" ")]
-    [InlineData("\t")]
-    [InlineData("\n")]
-    public void ReadFromProperty_SetAzAffinityReplicasAndPrimaryWithEmptyOrWhitespaceAz_ThrowsArgumentException(string azValue)
-    {
-        // Arrange
-        var options = new ConfigurationOptions();
-
-        // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(()
-            => options.ReadFrom = new ReadFrom(ReadFromStrategy.AzAffinityReplicasAndPrimary, azValue));
-        Assert.Contains("Availability zone cannot be empty or whitespace", exception.Message);
     }
 
     [Fact]
@@ -608,10 +563,12 @@ public class ReadFromTests
     [InlineData("", "", "cannot be empty")]
     [InlineData("AzAffinity", "", "Availability zone cannot be empty or whitespace")]
     [InlineData("AzAffinityReplicasAndPrimary", "", "Availability zone cannot be empty or whitespace")]
+    [InlineData("AzAffinityAllNodes", "", "Availability zone cannot be empty or whitespace")]
     [InlineData("AzAffinity", "   ", "Availability zone cannot be empty or whitespace")]
     [InlineData("AzAffinity", "\t", "Availability zone cannot be empty or whitespace")]
     [InlineData("AzAffinity", "\n", "Availability zone cannot be empty or whitespace")]
     [InlineData("AzAffinityReplicasAndPrimary", "   ", "Availability zone cannot be empty or whitespace")]
+    [InlineData("AzAffinityAllNodes", "   ", "Availability zone cannot be empty or whitespace")]
     public async Task ConnectionString_ArgumentExceptionScenarios(string readFromStrategy, string azValue, string expectedErrorSubstring)
     {
         // Arrange
@@ -633,13 +590,16 @@ public class ReadFromTests
     [InlineData("PREFERREPLICA")]
     [InlineData("azaffinity")]
     [InlineData("AzAffinityReplicasAndPrimary")]
+    [InlineData("azaffinityallnodes")]
     public Task ConnectionString_CaseInsensitiveReadFromParsing(string strategyString)
     {
         // Arrange
         ReadFromStrategy expectedStrategy = Enum.Parse<ReadFromStrategy>(strategyString, ignoreCase: true);
 
         string connectionString = $"localhost:6379,readFrom={strategyString}";
-        if (expectedStrategy is ReadFromStrategy.AzAffinity or ReadFromStrategy.AzAffinityReplicasAndPrimary)
+        if (expectedStrategy is ReadFromStrategy.AzAffinity
+            or ReadFromStrategy.AzAffinityReplicasAndPrimary
+            or ReadFromStrategy.AzAffinityAllNodes)
         {
             connectionString += ",az=test-zone";
         }
@@ -656,6 +616,7 @@ public class ReadFromTests
     [InlineData(ReadFromStrategy.PreferReplica, null)]
     [InlineData(ReadFromStrategy.AzAffinity, "us-east-1a")]
     [InlineData(ReadFromStrategy.AzAffinityReplicasAndPrimary, "eu-west-1b")]
+    [InlineData(ReadFromStrategy.AzAffinityAllNodes, "ap-south-1c")]
     [InlineData(null, null)] // Null ReadFrom test case
     public Task RoundTripSerialization_MaintainsConfigurationIntegrity(ReadFromStrategy? strategy, string? az)
     {
