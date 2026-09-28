@@ -38,7 +38,7 @@ jobs:
                   restore-keys: rust-lint-
 
             - name: Install cargo-deny
-              uses: taiki-e/install-action@3f74d7c16a4242f1c95561e98edc25d36adb4375 # v2.87.12
+              uses: taiki-e/install-action@94c31af3204a9f15ab40b35ad084410b905bbc73 # v2.87.17
               with:
                   tool: cargo-deny@0.19
 
@@ -52,7 +52,7 @@ jobs:
                   dotnet-version: "10"
 
             - name: Install uv
-              uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+              uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
 
             - name: Install Task
               uses: go-task/setup-task@a00fbb05ce67b35648be3c78cbc9fd85354c757e # v2.2.0
