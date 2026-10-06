@@ -188,7 +188,7 @@ unsafe fn report_error(
     error_string: String,
     error_type: RequestErrorType,
 ) {
-    logger_core::log(logger_core::Level::Error, "ffi", &error_string);
+    glide_logger::log(glide_logger::Level::Error, "ffi", &error_string);
     let err_ptr = CString::into_raw(
         CString::new(error_string).expect("Couldn't convert error message to CString"),
     );
@@ -289,45 +289,46 @@ pub unsafe extern "C-unwind" fn create_client(
 
             // Set up graceful shutdown coordination for PubSub task
             // Only spawn the callback task if a callback is provided
-            let (pubsub_shutdown, pubsub_task) =
-                if let (true, Some(callback)) = (is_subscriber, pubsub_callback) {
-                    let (shutdown_tx, mut shutdown_rx) = tokio::sync::oneshot::channel();
+            let (pubsub_shutdown, pubsub_task) = if let (true, Some(callback)) =
+                (is_subscriber, pubsub_callback)
+            {
+                let (shutdown_tx, mut shutdown_rx) = tokio::sync::oneshot::channel();
 
-                    let task_handle = runtime.spawn(async move {
-                        logger_core::log(logger_core::Level::Info, "pubsub", "PubSub task started");
+                let task_handle = runtime.spawn(async move {
+                    glide_logger::log(glide_logger::Level::Info, "pubsub", "PubSub task started");
 
-                        loop {
-                            tokio::select! {
-                                Some(push_msg) = push_rx.recv() => {
-                                    unsafe {
-                                        process_push_notification(push_msg, callback);
-                                    }
-                                }
-                                _ = &mut shutdown_rx => {
-                                    logger_core::log(
-                                        logger_core::Level::Info,
-                                        "pubsub",
-                                        "PubSub task received shutdown signal",
-                                    );
-                                    break;
+                    loop {
+                        tokio::select! {
+                            Some(push_msg) = push_rx.recv() => {
+                                unsafe {
+                                    process_push_notification(push_msg, callback);
                                 }
                             }
+                            _ = &mut shutdown_rx => {
+                                glide_logger::log(
+                                    glide_logger::Level::Info,
+                                    "pubsub",
+                                    "PubSub task received shutdown signal",
+                                );
+                                break;
+                            }
                         }
+                    }
 
-                        logger_core::log(
-                            logger_core::Level::Info,
-                            "pubsub",
-                            "PubSub task completed gracefully",
-                        );
-                    });
+                    glide_logger::log(
+                        glide_logger::Level::Info,
+                        "pubsub",
+                        "PubSub task completed gracefully",
+                    );
+                });
 
-                    (
-                        std::sync::Mutex::new(Some(shutdown_tx)),
-                        std::sync::Mutex::new(Some(task_handle)),
-                    )
-                } else {
-                    (std::sync::Mutex::new(None), std::sync::Mutex::new(None))
-                };
+                (
+                    std::sync::Mutex::new(Some(shutdown_tx)),
+                    std::sync::Mutex::new(Some(task_handle)),
+                )
+            } else {
+                (std::sync::Mutex::new(None), std::sync::Mutex::new(None))
+            };
 
             let client_adapter = Arc::new(Client {
                 runtime,
@@ -389,8 +390,8 @@ unsafe fn process_push_notification(push_msg: redis::PushInfo, pubsub_callback: 
             Value::Int(num) => num.to_string().into_bytes(),
             Value::SimpleString(s) => s.into_bytes(),
             _ => {
-                logger_core::log(
-                    logger_core::Level::Warn,
+                glide_logger::log(
+                    glide_logger::Level::Warn,
                     "pubsub",
                     format!("Unexpected value type in PubSub message: {:?}", value),
                 );
@@ -457,16 +458,16 @@ unsafe fn process_push_notification(push_msg: redis::PushInfo, pubsub_callback: 
             (None, &strings[0], &strings[1], PushKind::SUnsubscribe)
         }
         (redis::PushKind::Disconnection, _) => {
-            logger_core::log(
-                logger_core::Level::Info,
+            glide_logger::log(
+                glide_logger::Level::Info,
                 "pubsub",
                 "PubSub disconnection received",
             );
             return;
         }
         (kind, len) => {
-            logger_core::log(
-                logger_core::Level::Error,
+            glide_logger::log(
+                glide_logger::Level::Error,
                 "pubsub",
                 format!(
                     "Invalid PubSub message structure: kind={:?}, len={}",
@@ -523,8 +524,8 @@ pub extern "C" fn close_client(client_ptr: *const c_void) {
     if let Ok(mut guard) = client.pubsub_shutdown.lock()
         && let Some(shutdown_tx) = guard.take()
     {
-        logger_core::log(
-            logger_core::Level::Debug,
+        glide_logger::log(
+            glide_logger::Level::Debug,
             "pubsub",
             "Signaling PubSub task to shutdown",
         );
@@ -539,8 +540,8 @@ pub extern "C" fn close_client(client_ptr: *const c_void) {
     {
         let timeout = std::time::Duration::from_secs(5);
 
-        logger_core::log(
-            logger_core::Level::Debug,
+        glide_logger::log(
+            glide_logger::Level::Debug,
             "pubsub",
             format!(
                 "Waiting for PubSub task to complete (timeout: {:?})",
@@ -554,22 +555,22 @@ pub extern "C" fn close_client(client_ptr: *const c_void) {
 
         match result {
             Ok(Ok(())) => {
-                logger_core::log(
-                    logger_core::Level::Info,
+                glide_logger::log(
+                    glide_logger::Level::Info,
                     "pubsub",
                     "PubSub task completed successfully",
                 );
             }
             Ok(Err(e)) => {
-                logger_core::log(
-                    logger_core::Level::Warn,
+                glide_logger::log(
+                    glide_logger::Level::Warn,
                     "pubsub",
                     format!("PubSub task completed with error: {:?}", e),
                 );
             }
             Err(_) => {
-                logger_core::log(
-                    logger_core::Level::Warn,
+                glide_logger::log(
+                    glide_logger::Level::Warn,
                     "pubsub",
                     format!(
                         "PubSub task did not complete within timeout ({:?})",
@@ -674,7 +675,7 @@ pub unsafe extern "C-unwind" fn command(
                     core.client.compression_manager().as_deref(),
                 )
                 .unwrap_or_else(|e| {
-                    logger_core::log_warn(
+                    glide_logger::log_warn(
                         "response_decompression",
                         format!("Failed to decompress response: {}", e),
                     );
@@ -815,7 +816,7 @@ pub unsafe extern "C-unwind" fn batch(
                     ) {
                         Ok(decompressed) => decompressed,
                         Err(e) => {
-                            logger_core::log_warn(
+                            glide_logger::log_warn(
                                 "batch_decompression",
                                 format!(
                                     "Failed to decompress batch response: {}, returning original",
@@ -891,28 +892,28 @@ pub unsafe extern "C" fn free_string(str_ptr: *mut c_char) {
     }
 }
 
-impl From<logger_core::Level> for Level {
-    fn from(level: logger_core::Level) -> Self {
+impl From<glide_logger::Level> for Level {
+    fn from(level: glide_logger::Level) -> Self {
         match level {
-            logger_core::Level::Error => Level::Error,
-            logger_core::Level::Warn => Level::Warn,
-            logger_core::Level::Info => Level::Info,
-            logger_core::Level::Debug => Level::Debug,
-            logger_core::Level::Trace => Level::Trace,
-            logger_core::Level::Off => Level::Off,
+            glide_logger::Level::Error => Level::Error,
+            glide_logger::Level::Warn => Level::Warn,
+            glide_logger::Level::Info => Level::Info,
+            glide_logger::Level::Debug => Level::Debug,
+            glide_logger::Level::Trace => Level::Trace,
+            glide_logger::Level::Off => Level::Off,
         }
     }
 }
 
-impl From<Level> for logger_core::Level {
-    fn from(level: Level) -> logger_core::Level {
+impl From<Level> for glide_logger::Level {
+    fn from(level: Level) -> glide_logger::Level {
         match level {
-            Level::Error => logger_core::Level::Error,
-            Level::Warn => logger_core::Level::Warn,
-            Level::Info => logger_core::Level::Info,
-            Level::Debug => logger_core::Level::Debug,
-            Level::Trace => logger_core::Level::Trace,
-            Level::Off => logger_core::Level::Off,
+            Level::Error => glide_logger::Level::Error,
+            Level::Warn => glide_logger::Level::Warn,
+            Level::Info => glide_logger::Level::Info,
+            Level::Debug => glide_logger::Level::Debug,
+            Level::Trace => glide_logger::Level::Trace,
+            Level::Off => glide_logger::Level::Off,
         }
     }
 }
@@ -942,7 +943,7 @@ pub unsafe extern "C" fn log(
             return;
         }
     };
-    logger_core::log(log_level.into(), log_id, msg);
+    glide_logger::log(log_level.into(), log_id, msg);
 }
 
 /// Initializes the logger with the given level and optional file name.
@@ -974,7 +975,7 @@ pub unsafe extern "C" fn init_logger(
         }
     };
 
-    let logger_level = logger_core::init(level.map(|level| level.into()), file_name_as_str);
+    let logger_level = glide_logger::init(level.map(|level| level.into()), file_name_as_str);
     unsafe { *level_out = logger_level.into() };
     std::ptr::null_mut()
 }
@@ -1807,7 +1808,7 @@ pub extern "C" fn create_batch_otel_span() -> *const c_void {
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn drop_otel_span(span_ptr: *const c_void) {
     if span_ptr.is_null() {
-        logger_core::log_debug("ffi_otel", "drop_otel_span: Ignoring null span pointer");
+        glide_logger::log_debug("ffi_otel", "drop_otel_span: Ignoring null span pointer");
         return;
     }
 
@@ -1820,7 +1821,7 @@ pub unsafe extern "C" fn drop_otel_span(span_ptr: *const c_void) {
 
         match result {
             Ok(_) => {
-                logger_core::log_debug(
+                glide_logger::log_debug(
                     "ffi_otel",
                     format!(
                         "drop_otel_span: Successfully dropped span with pointer {:p}",
@@ -1829,7 +1830,7 @@ pub unsafe extern "C" fn drop_otel_span(span_ptr: *const c_void) {
                 );
             }
             Err(_) => {
-                logger_core::log_error(
+                glide_logger::log_error(
                     "ffi_otel",
                     format!(
                         "drop_otel_span: Panic occurred while dropping span pointer {:p} - likely invalid pointer",
@@ -1850,7 +1851,7 @@ fn get_command_name(request_type_u32: u32) -> Option<String> {
     let cmd = match request_type.get_command() {
         Some(cmd) => cmd,
         None => {
-            logger_core::log_error(
+            glide_logger::log_error(
                 "ffi_otel",
                 "get_command_name: RequestType has no command available",
             );
@@ -1862,7 +1863,7 @@ fn get_command_name(request_type_u32: u32) -> Option<String> {
     let cmd_bytes = match cmd.command() {
         Some(bytes) => bytes,
         None => {
-            logger_core::log_error(
+            glide_logger::log_error(
                 "ffi_otel",
                 "get_command_name: Command has no bytes available",
             );
@@ -1874,7 +1875,7 @@ fn get_command_name(request_type_u32: u32) -> Option<String> {
     let command_name = match std::str::from_utf8(cmd_bytes.as_slice()) {
         Ok(name) => name,
         Err(e) => {
-            logger_core::log_error(
+            glide_logger::log_error(
                 "ffi_otel",
                 format!("get_command_name: Command bytes are not valid UTF-8: {e}"),
             );
@@ -1884,7 +1885,7 @@ fn get_command_name(request_type_u32: u32) -> Option<String> {
 
     // Validate command name length (reasonable limit to prevent abuse)
     if command_name.len() > 256 {
-        logger_core::log_error(
+        glide_logger::log_error(
             "ffi_otel",
             format!(
                 "get_command_name: Command name too long ({} chars), max 256",
@@ -1927,7 +1928,7 @@ fn create_span(command_name: &str) -> *const c_void {
     let span = GlideOpenTelemetry::new_span(command_name);
     let span_ptr = Arc::into_raw(Arc::new(span)) as *const c_void;
 
-    logger_core::log_debug(
+    glide_logger::log_debug(
         "ffi_otel",
         format!(
             "create_span: Successfully created span '{command_name}' with pointer {:p}",
