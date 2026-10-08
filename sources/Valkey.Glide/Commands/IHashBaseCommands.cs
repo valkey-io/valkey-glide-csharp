@@ -120,6 +120,28 @@ public interface IHashBaseCommands
     Task<long> HashDeleteAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields);
 
     /// <summary>
+    /// Atomically returns and removes one or more fields from a hash.
+    /// When the last field is removed, the key is deleted.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/hgetdel/">Valkey commands – HGETDEL</seealso>
+    /// <param name="key">The hash key.</param>
+    /// <param name="hashFields">The fields to retrieve and remove. At least one field must be specified.</param>
+    /// <returns>
+    /// An array of values in the same order as <paramref name="hashFields"/>, or
+    /// <see cref="ValkeyValue.Null"/> for each field that does not exist.
+    /// </returns>
+    /// <remarks>
+    /// <para>Since Valkey 9.1.0.</para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// await client.HashSetAsync("myhash", [new("name", "Alice")]);
+    /// var values = await client.HashGetDelAsync("myhash", ["name", "age"]); // ["Alice", null]
+    /// </code>
+    /// </example>
+    Task<ValkeyValue[]> HashGetDelAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields);
+
+    /// <summary>
     /// Checks if a field exists in a hash.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hexists/">Valkey commands – HEXISTS</seealso>

@@ -17,6 +17,21 @@ internal static partial class Request
     public static Cmd<long, long> HashDelete(ValkeyKey key, ValkeyValue[] hashFields)
         => Simple<long>(RequestType.HDel, [key, .. hashFields.ToGlideStrings()]);
 
+    public static Cmd<object[], ValkeyValue[]> HashGetDel(ValkeyKey key, ValkeyValue[] hashFields)
+    {
+        if (hashFields.Length == 0)
+        {
+            throw new ArgumentException("At least one hash field must be specified.", nameof(hashFields));
+        }
+
+        return new(
+            RequestType.HGetDel,
+            [key, .. ToArgs(ValkeyLiterals.FIELDS, hashFields)],
+            false,
+            response => [.. response.Select(item =>
+                item == null ? ValkeyValue.Null : (ValkeyValue)(GlideString)item)]);
+    }
+
     public static Cmd<bool, bool> HashExists(ValkeyKey key, ValkeyValue hashField)
         => Boolean<bool>(RequestType.HExists, [key, hashField]);
 

@@ -40,6 +40,10 @@ public abstract partial class BaseClient
     public async Task<long> HashDeleteAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields)
         => await Command(Request.HashDelete(key, [.. hashFields]));
 
+    /// <inheritdoc cref="IHashBaseCommands.HashGetDelAsync(ValkeyKey, IEnumerable{ValkeyValue})"/>
+    public async Task<ValkeyValue[]> HashGetDelAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields)
+        => await Command(Request.HashGetDel(key, [.. hashFields]));
+
     /// <inheritdoc cref="IHashBaseCommands.HashExistsAsync(ValkeyKey, ValkeyValue)"/>
     public async Task<bool> HashExistsAsync(ValkeyKey key, ValkeyValue hashField)
         => await Command(Request.HashExists(key, hashField));

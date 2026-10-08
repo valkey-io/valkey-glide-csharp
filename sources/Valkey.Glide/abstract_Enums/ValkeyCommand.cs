@@ -71,6 +71,7 @@ internal enum ValkeyCommand
     HEXPIRETIME,
     HGET,
     HGETALL,
+    HGETDEL,
     HINCRBY,
     HINCRBYFLOAT,
     HKEYS,
@@ -294,6 +295,7 @@ internal static class ValkeyCommandExtensions
             case ValkeyCommand.HDEL:
             case ValkeyCommand.HEXPIRE:
             case ValkeyCommand.HEXPIREAT:
+            case ValkeyCommand.HGETDEL:
             case ValkeyCommand.HINCRBY:
             case ValkeyCommand.HINCRBYFLOAT:
             case ValkeyCommand.HMSET:
