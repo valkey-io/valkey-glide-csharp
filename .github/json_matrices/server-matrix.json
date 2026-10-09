@@ -1,8 +1,18 @@
 [
     {
         "type": "valkey",
-        "version": "9.0",
+        "version": "9.2.0-rc1",
         "profiles": ["standard", "full"]
+    },
+    {
+        "type": "valkey",
+        "version": "9.1",
+        "profiles": ["full"]
+    },
+    {
+        "type": "valkey",
+        "version": "9.0",
+        "profiles": ["full"]
     },
     {
         "type": "valkey",
