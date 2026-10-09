@@ -80,6 +80,7 @@ runs:
         # tests connect to these Docker containers via modules-standalone-endpoint
         # and modules-cluster-endpoints env vars.
         - name: Start module servers via Docker (valkey 9.2.0-rc1, ubuntu)
+          # TODO valkey-io/valkey-glide#7312: Bump to 9.2.0 once released.
           if: "${{ inputs.server-version == '9.2.0-rc1' && inputs.os == 'ubuntu' }}"
           uses: ./valkey-glide/.github/actions/start-valkey-docker
           with:

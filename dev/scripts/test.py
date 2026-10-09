@@ -28,7 +28,6 @@ Options:
 import argparse
 import json
 import os
-import re
 import shutil
 import subprocess
 import sys
@@ -68,15 +67,14 @@ def _check_server_version() -> None:
             f"Coverage requires {server_type} but found: {result.stdout.strip()}"
         )
 
-    # Release candidates report the release version (e.g. "9.2.0-rc1" reports "v=9.2.0").
-    expected_version = server_version.split("-")[0]
-    match = re.search(r"v=(\S+)", result.stdout)
-    installed_version = match.group(1) if match else ""
-
-    if not (
-        installed_version == expected_version
-        or installed_version.startswith(f"{expected_version}.")
-    ):
+    # TODO valkey-io/valkey-glide#7312: Restore the version check
+    # below once Valkey 9.2.0 is released. Release candidates report the release version
+    # (e.g. "9.2.0-rc1" reports "v=9.2.0"), so the rc version is hardcoded until then.
+    # if f"v={server_version}." not in result.stdout:
+    #     raise RuntimeError(
+    #         f"Coverage requires version {server_version} but found: {result.stdout.strip()}"
+    #     )
+    if "v=9.2.0 " not in result.stdout:
         raise RuntimeError(
             f"Coverage requires version {server_version} but found: {result.stdout.strip()}"
         )

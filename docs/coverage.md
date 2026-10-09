@@ -75,7 +75,7 @@ Example:
 ```json
 {
   "server_type": "valkey",
-  "server_version": "9.2.0-rc1",
+  "server_version": "9.0",
   "line_coverage": 70.6,
   "branch_coverage": 50.9
 }

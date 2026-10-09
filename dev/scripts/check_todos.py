@@ -3,17 +3,21 @@
 """Check that all TODOs follow the required format.
 
 Validation rules:
-  1. Every TODO must follow the format `TODO #<github_id>: <description>`.
+  1. Every TODO must follow the format:
+    - `TODO #<github_id>: <description>` for issues in this repository
+    - `TODO <owner>/<repo>#<github_id>: <description>` for issues in other repositories.
   2. The description should provide a summary of the proposed changes, and must be at least 10 characters long.
-  3. The referenced number must correspond to an open Valkey GLIDE C# GitHub issue.
+  3. The referenced number must correspond to an open GitHub issue in the corrsponding repository.
   4. Files can be excluded from validation using `dev/conf/check-todos-ignore`.
 
-Example:
+Examples:
     // TODO #472: Auto-generate this enum from the Rust source.
+    // TODO valkey-io/valkey-glide#7312: Bump to Valkey 9.2.0 once released.
 
 Options:
   --fail-issues ID [ID ...]
-      When provided, the script fails if any TODOs reference the specified issue IDs.
+      When provided, the script fails if any TODOs reference the specified issue IDs
+      in the Valkey GLIDE C# repository.
 
       In CI, the check-todos workflow automatically detects issues closed by the
       current pull request and passes them to this flag. This prevents merging a
@@ -49,7 +53,7 @@ _TODO_GREP_PATTERN = r"\bTODO\b"
 
 # Used to validate format and extract GitHub issue ID and description.
 _TODO_VALIDATION_PATTERN = re.compile(
-    r"TODO #(?P<github_id>\d+): (?P<description>.+)",
+    r"TODO (?:(?P<github_repo>[\w.-]+/[\w.-]+))?#(?P<github_id>\d+): (?P<description>.+)",
 )
 
 # Minimum length for the description.
@@ -106,7 +110,17 @@ def _find_todos() -> list[_Todo]:
     return todos
 
 
-def _check_issue(github_id: int) -> str | None:
+def _issue_ref(github_repo: str, github_id: int) -> str:
+    """Return the GitHub reference for an issue:
+      - `#<github_id>` for issues in this repository
+      - `<github_repo>#<github_id> for issues in other repositories.
+    """
+    return (
+        f"#{github_id}" if github_repo == GITHUB_REPO else f"{github_repo}#{github_id}"
+    )
+
+
+def _check_issue(github_repo: str, github_id: int) -> str | None:
     """Check issue state. Returns an error message, or None if the issue is open."""
     result = subprocess.run(
         [
@@ -115,7 +129,7 @@ def _check_issue(github_id: int) -> str | None:
             "view",
             str(github_id),
             "--repo",
-            GITHUB_REPO,
+            github_repo,
             "--json",
             "state",
             "--jq",
@@ -127,13 +141,13 @@ def _check_issue(github_id: int) -> str | None:
     )
 
     if result.returncode != 0:
-        return f"#{github_id} is not a valid GitHub issue"
+        return f"{_issue_ref(github_repo, github_id)} is not a valid GitHub issue"
 
     state = result.stdout.strip()
     if state == "OPEN":
         return None
 
-    return f"#{github_id} is not open (state: {state})"
+    return f"{_issue_ref(github_repo, github_id)} is not open (state: {state})"
 
 
 def _validate_todos(todos: list[_Todo], fail_issues: set[int]) -> dict[_Todo, str]:
@@ -142,28 +156,32 @@ def _validate_todos(todos: list[_Todo], fail_issues: set[int]) -> dict[_Todo, st
     Returns a map from failed TODO to the corresponding reason.
     """
     failures: dict[_Todo, str] = {}
-    checked_issues: dict[int, str | None] = {}
+    checked_issues: dict[tuple[str, int], str | None] = {}
 
     for todo in todos:
         # Validate format.
         match = _TODO_VALIDATION_PATTERN.search(todo.text)
         if not match:
             failures[todo] = (
-                "invalid format (expected: TODO #<github_id>: <description>)"
+                "invalid format (expected: TODO #<github_id>: <description> "
+                "or TODO <owner>/<repo>#<github_id>: <description>)"
             )
             continue
 
         # Check GitHub issue
+        github_repo = match.group("github_repo") or GITHUB_REPO
         github_id = int(match.group("github_id"))
 
-        if fail_issues and github_id in fail_issues:
+        if github_repo == GITHUB_REPO and github_id in fail_issues:
             failures[todo] = f"TODO cannot reference #{github_id}"
             continue
 
-        if github_id not in checked_issues:
-            checked_issues[github_id] = _check_issue(github_id)
-        if checked_issues[github_id]:
-            failures[todo] = checked_issues[github_id]
+        issue = (github_repo, github_id)
+        if issue not in checked_issues:
+            checked_issues[issue] = _check_issue(github_repo, github_id)
+
+        if checked_issues[issue]:
+            failures[todo] = checked_issues[issue]
             continue
 
         # Check description length
