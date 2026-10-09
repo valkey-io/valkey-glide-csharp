@@ -112,8 +112,8 @@ def _find_todos() -> list[_Todo]:
 
 def _issue_ref(github_repo: str, github_id: int) -> str:
     """Return the GitHub reference for an issue:
-      - `#<github_id>` for issues in this repository
-      - `<github_repo>#<github_id> for issues in other repositories.
+    - `#<github_id>` for issues in this repository
+    - `<github_repo>#<github_id>` for issues in other repositories.
     """
     return (
         f"#{github_id}" if github_repo == GITHUB_REPO else f"{github_repo}#{github_id}"
