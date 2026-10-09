@@ -136,10 +136,10 @@ public interface IHashBaseCommands
     /// <example>
     /// <code>
     /// await client.HashSetAsync("myhash", [new("name", "Alice")]);
-    /// var values = await client.HashGetDelAsync("myhash", ["name", "age"]); // ["Alice", null]
+    /// var values = await client.HashGetDeleteAsync("myhash", ["name", "age"]); // ["Alice", null]
     /// </code>
     /// </example>
-    Task<ValkeyValue[]> HashGetDelAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields);
+    Task<ValkeyValue[]> HashGetDeleteAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields);
 
     /// <summary>
     /// Checks if a field exists in a hash.

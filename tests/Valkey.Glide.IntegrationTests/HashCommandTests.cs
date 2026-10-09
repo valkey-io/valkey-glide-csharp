@@ -129,13 +129,13 @@ public class HashCommandTests(TestConfiguration config)
     }
 
     #endregion
-    #region HashGetDelAsync
+    #region HashGetDeleteAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task TestHashGetDel(BaseClient client)
+    public async Task TestHashGetDelete(BaseClient client)
     {
-        Skip.IfHashGetDelNotSupported();
+        Skip.IfHashGetDeleteNotSupported();
 
         string key = Guid.NewGuid().ToString();
         _ = await client.HashSetAsync(key, [
@@ -143,16 +143,16 @@ public class HashCommandTests(TestConfiguration config)
             new KeyValuePair<ValkeyValue, ValkeyValue>("field2", "value2")
         ]);
 
-        ValkeyValue[] values = await client.HashGetDelAsync(key, ["field1", "missing"]);
+        ValkeyValue[] values = await client.HashGetDeleteAsync(key, ["field1", "missing"]);
         Assert.Equal((ValkeyValue[])["value1", ValkeyValue.Null], values);
         Assert.False(await client.HashExistsAsync(key, "field1"));
         Assert.True(await client.HashExistsAsync(key, "field2"));
 
-        values = await client.HashGetDelAsync(key, ["field2"]);
+        values = await client.HashGetDeleteAsync(key, ["field2"]);
         Assert.Equal((ValkeyValue[])["value2"], values);
         Assert.Equal(0, await client.HashLengthAsync(key));
 
-        values = await client.HashGetDelAsync(Guid.NewGuid().ToString(), ["field1", "field2"]);
+        values = await client.HashGetDeleteAsync(Guid.NewGuid().ToString(), ["field1", "field2"]);
         Assert.Equal((ValkeyValue[])[ValkeyValue.Null, ValkeyValue.Null], values);
     }
 

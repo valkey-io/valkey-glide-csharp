@@ -17,7 +17,7 @@ internal static partial class Request
     public static Cmd<long, long> HashDelete(ValkeyKey key, ValkeyValue[] hashFields)
         => Simple<long>(RequestType.HDel, [key, .. hashFields.ToGlideStrings()]);
 
-    public static Cmd<object[], ValkeyValue[]> HashGetDel(ValkeyKey key, ValkeyValue[] hashFields)
+    public static Cmd<object[], ValkeyValue[]> HashGetDelete(ValkeyKey key, ValkeyValue[] hashFields)
     {
         if (hashFields.Length == 0)
         {

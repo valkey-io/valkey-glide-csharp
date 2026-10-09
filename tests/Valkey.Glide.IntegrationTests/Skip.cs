@@ -61,7 +61,7 @@ internal static class Skip
     /// <summary>
     /// Skips the test if HGETDEL is not supported.
     /// </summary>
-    public static void IfHashGetDelNotSupported()
+    public static void IfHashGetDeleteNotSupported()
         => Assert.SkipWhen(
             TestConfiguration.SERVER_VERSION < Valkey9_1,
             "HGETDEL requires Valkey 9.1+");

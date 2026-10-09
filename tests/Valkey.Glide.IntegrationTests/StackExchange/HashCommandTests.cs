@@ -164,11 +164,11 @@ public class HashCommandTests(TestConfiguration config)
     }
 
     #endregion
-    #region HashGetDelAsync
+    #region HashGetDeleteAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task HashGetDelAsync_AtomicallyReturnsAndRemovesFields(IDatabaseAsync db)
+    public async Task HashGetDeleteAsync_AtomicallyReturnsAndRemovesFields(IDatabaseAsync db)
     {
         Skip.IfHashGetDelNotSupported();
 
@@ -178,7 +178,7 @@ public class HashCommandTests(TestConfiguration config)
             new HashEntry("field2", "value2")
         ]);
 
-        ValkeyValue[] values = await db.HashGetDelAsync(key, ["field1", "missing"]);
+        ValkeyValue[] values = await db.HashGetDeleteAsync(key, ["field1", "missing"]);
         Assert.Equal((ValkeyValue[])["value1", ValkeyValue.Null], values);
         Assert.False(await db.HashExistsAsync(key, "field1"));
         Assert.True(await db.HashExistsAsync(key, "field2"));
