@@ -74,13 +74,13 @@ runs:
               engine-version: ${{ inputs.server-version }}
               target: ${{ inputs.target }}
 
-        # For valkey 9.0 on ubuntu, also start Docker containers with the
+        # For valkey 9.2.0-rc1 on ubuntu, also start Docker containers with the
         # valkey-bundle image (includes modules: Search, JSON, Bloom, LDAP) on
         # dedicated ports. Regular tests use the source-built server; module
         # tests connect to these Docker containers via modules-standalone-endpoint
         # and modules-cluster-endpoints env vars.
-        - name: Start module servers via Docker (valkey 9.0, ubuntu)
-          if: "${{ inputs.server-version == '9.0' && inputs.os == 'ubuntu' }}"
+        - name: Start module servers via Docker (valkey 9.2.0-rc1, ubuntu)
+          if: "${{ inputs.server-version == '9.2.0-rc1' && inputs.os == 'ubuntu' }}"
           uses: ./valkey-glide/.github/actions/start-valkey-docker
           with:
               engine-version: ${{ inputs.server-version }}
