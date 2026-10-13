@@ -32,6 +32,13 @@ internal static partial class Request
                 item == null ? ValkeyValue.Null : (ValkeyValue)(GlideString)item)]);
     }
 
+    public static Cmd<object[], ValkeyValue> HashGetDelete(ValkeyKey key, ValkeyValue hashField)
+    => new(
+        RequestType.HGetDel,
+        [key, ValkeyLiterals.FIELDS, 1.ToGlideString(), hashField],
+        false,
+        response => ToValkeyValue(response[0]));
+
     public static Cmd<bool, bool> HashExists(ValkeyKey key, ValkeyValue hashField)
         => Boolean<bool>(RequestType.HExists, [key, hashField]);
 

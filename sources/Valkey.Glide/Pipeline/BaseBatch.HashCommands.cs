@@ -35,6 +35,9 @@ public abstract partial class BaseBatch<T>
     /// <inheritdoc cref="IBatchHashCommands.HashDelete(ValkeyKey, IEnumerable{ValkeyValue})" />
     public T HashDelete(ValkeyKey key, IEnumerable<ValkeyValue> hashFields) => AddCmd(Request.HashDelete(key, [.. hashFields]));
 
+    /// <inheritdoc cref="IBatchHashCommands.HashGetDelete(ValkeyKey, ValkeyValue)" />
+    public T HashGetDelete(ValkeyKey key, ValkeyValue hashField) => AddCmd(Request.HashGetDelete(key, hashField));
+
     /// <inheritdoc cref="IBatchHashCommands.HashGetDelete(ValkeyKey, IEnumerable{ValkeyValue})" />
     public T HashGetDelete(ValkeyKey key, IEnumerable<ValkeyValue> hashFields) => AddCmd(Request.HashGetDelete(key, [.. hashFields]));
 
@@ -111,6 +114,7 @@ public abstract partial class BaseBatch<T>
 
     IBatch IBatchHashCommands.HashDelete(ValkeyKey key, IEnumerable<ValkeyValue> hashFields) => HashDelete(key, hashFields);
     IBatch IBatchHashCommands.HashDelete(ValkeyKey key, ValkeyValue hashField) => HashDelete(key, hashField);
+    IBatch IBatchHashCommands.HashGetDelete(ValkeyKey key, ValkeyValue hashField) => HashGetDelete(key, hashField);
     IBatch IBatchHashCommands.HashGetDelete(ValkeyKey key, IEnumerable<ValkeyValue> hashFields) => HashGetDelete(key, hashFields);
     IBatch IBatchHashCommands.HashExists(ValkeyKey key, ValkeyValue hashField) => HashExists(key, hashField);
     IBatch IBatchHashCommands.HashExpire(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, TimeSpan expiry, ExpireCondition condition) => HashExpire(key, hashFields, expiry, condition);

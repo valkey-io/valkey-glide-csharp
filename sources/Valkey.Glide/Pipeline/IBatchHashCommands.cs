@@ -35,6 +35,10 @@ internal interface IBatchHashCommands
     /// <returns>Command Response - <inheritdoc cref="IHashBaseCommands.HashDeleteAsync(ValkeyKey, IEnumerable{ValkeyValue})" /></returns>
     IBatch HashDelete(ValkeyKey key, IEnumerable<ValkeyValue> hashFields);
 
+    /// <inheritdoc cref="IHashBaseCommands.HashGetDeleteAsync(ValkeyKey, ValkeyValue)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IHashBaseCommands.HashGetDeleteAsync(ValkeyKey, ValkeyValue)" /></returns>
+    IBatch HashGetDelete(ValkeyKey key, ValkeyValue hashField);
+
     /// <inheritdoc cref="IHashBaseCommands.HashGetDeleteAsync(ValkeyKey, IEnumerable{ValkeyValue})" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IHashBaseCommands.HashGetDeleteAsync(ValkeyKey, IEnumerable{ValkeyValue})" /></returns>
     IBatch HashGetDelete(ValkeyKey key, IEnumerable<ValkeyValue> hashFields);
