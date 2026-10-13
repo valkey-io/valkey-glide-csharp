@@ -67,7 +67,14 @@ def _check_server_version() -> None:
             f"Coverage requires {server_type} but found: {result.stdout.strip()}"
         )
 
-    if f"v={server_version}." not in result.stdout:
+    # TODO valkey-io/valkey-glide#7312: Restore the version check
+    # below once Valkey 9.2.0 is released. Release candidates report the release version
+    # (e.g. "9.2.0-rc1" reports "v=9.2.0"), so the rc version is hardcoded until then.
+    # if f"v={server_version}." not in result.stdout:
+    #     raise RuntimeError(
+    #         f"Coverage requires version {server_version} but found: {result.stdout.strip()}"
+    #     )
+    if "v=9.2.0 " not in result.stdout:
         raise RuntimeError(
             f"Coverage requires version {server_version} but found: {result.stdout.strip()}"
         )
