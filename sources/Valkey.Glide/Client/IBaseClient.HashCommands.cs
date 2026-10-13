@@ -496,44 +496,4 @@ public partial interface IBaseClient
         ValkeyKey key,
         IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>> hashFieldsAndValues,
         SetExpiryOptions expiry);
-
-    /// <summary>
-    /// Returns the values associated with the specified fields in the hash stored at key and deletes those fields from the hash.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/hgetdel/">Valkey commands – HGETDEL</seealso>
-    /// <param name="key">The hash key.</param>
-    /// <param name="hashField">The field to retrieve</param>
-    /// <returns>
-    /// A value associated with the given field that is deleted or nil if the field does not exist.
-    /// </returns>
-    /// <example>
-    /// <code>
-    /// await client.HashSetAsync("myhash", [new("name", "Alice"), new("age", "30")]);
-    /// var entries = await client.HashGetDeleteAsync("myhash", "name");  // "Alice"
-    /// </code>
-    /// </example>
-    /// <remarks>
-    /// <para>Since Valkey 9.1.0.</para>
-    /// </remarks>
-    Task<ValkeyValue> HashGetDeleteAsync(ValkeyKey key, ValkeyValue hashField);
-
-    /// <summary>
-    /// Returns the values associated with the specified fields in the hash stored at key and deletes those fields from the hash.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/hgetdel/">Valkey commands – HGETDEL</seealso>
-    /// <param name="key">The hash key.</param>
-    /// <param name="hashFields">The fields to retrieve</param>
-    /// <returns>
-    /// An array of values associated with the given fields that are deleted or nil for the fields that do not exist. These are in same order as requested.
-    /// </returns>
-    /// <example>
-    /// <code>
-    /// await client.HashSetAsync("myhash", [new("name", "Alice"), new("age", "30")]);
-    /// var entries = await client.HashGetDeleteAsync("myhash", ["name","age"]);  // ["Alice", "30"]
-    /// </code>
-    /// </example>
-    /// <remarks>
-    /// <para>Since Valkey 9.1.0.</para>
-    /// </remarks>
-    Task<ValkeyValue[]> HashGetDeleteAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields);
 }
