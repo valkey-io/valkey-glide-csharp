@@ -150,8 +150,7 @@ public class GenericCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestKeyExpireTime(BaseClient client)
     {
-        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "PEXPIRETIME is supported since 7.0.0"
-        );
+        Version.SkipIfLessThan(Version.Valkey7_0);
         string key = Guid.NewGuid().ToString();
         string value = "test_value";
 

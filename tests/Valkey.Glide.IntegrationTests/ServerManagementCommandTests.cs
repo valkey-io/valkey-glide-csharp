@@ -402,7 +402,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
     public async Task BackgroundSaveCancelAsync_ThrowsWhenNoSaveInProgress(bool clusterMode)
     {
-        Skip.IfBgSaveCancelNotSupported();
+        Version.SkipIfLessThan(Version.Valkey8_1);
         await WaitForSaveNotInProgressAsync(clusterMode);
 
         BaseClient client = clusterMode ? ClusterClient : StandaloneClient;
@@ -435,7 +435,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     [Fact]
     public async Task BackgroundSaveCancelAsync_Cluster_WithRoute_ThrowsWhenNoSaveInProgress()
     {
-        Skip.IfBgSaveCancelNotSupported();
+        Version.SkipIfLessThan(Version.Valkey8_1);
         await WaitForSaveNotInProgressAsync(true);
 
         var ex = await Assert.ThrowsAsync<RequestException>(() => ClusterClient.BackgroundSaveCancelAsync(Route.Random));
@@ -465,6 +465,37 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
 
         var result = await ClusterClient.BgRewriteAofAsync(Route.Random);
         Assert.Contains(result.SingleValue, BgRewriteAofResponses);
+    }
+
+    #endregion
+    #region InfoAsync Tests
+
+    /// <summary>
+    /// Valid values for the <c>rdb_current_bgsave_type</c> and <c>rdb_last_bgsave_type</c> fields.
+    /// </summary>
+    private static readonly string[] BgSaveTypes = ["fork", "forkless", "none"];
+
+    [Theory]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
+    public async Task InfoAsync_Persistence_ReturnsValkey9_2Fields(bool clusterMode)
+    {
+        Version.SkipIfLessThan(Version.Valkey9_2);
+
+        BaseClient client = fixture.GetClient(clusterMode);
+        Assert.Contains(await Client.GetInfo(client, "rdb_current_bgsave_type"), BgSaveTypes);
+        Assert.Contains(await Client.GetInfo(client, "rdb_last_bgsave_type"), BgSaveTypes);
+
+        long secondsRemaining = long.Parse(await Client.GetInfo(client, "forkless_estimated_seconds_remaining"));
+        Assert.InRange(secondsRemaining, -1, long.MaxValue);
+    }
+
+    [Fact]
+    public async Task InfoAsync_Cluster_ReturnsValkey9_2Fields()
+    {
+        Version.SkipIfLessThan(Version.Valkey9_2);
+
+        long fallbacks = long.Parse(await Client.GetInfo(ClusterClient, "cluster_io_main_thread_fallbacks"));
+        Assert.InRange(fallbacks, 0, long.MaxValue);
     }
 
     #endregion
@@ -517,7 +548,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
         Assert.True(commandInfo.MaxDuration >= commandInfo.LatestDuration);
 
         BaseClient client = isCluster ? ClusterClient : StandaloneClient;
-        if (Client.GetVersion(client) >= new Version(8, 1, 0))
+        if (Client.GetVersion(client) >= Version.Valkey8_1)
         {
             Assert.True(Assert.NotNull(commandInfo.Sum) > TimeSpan.Zero);
             Assert.True(Assert.NotNull(commandInfo.Count) > 0);
@@ -758,7 +789,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
         Assert.True(stats.RssOverheadRatio >= 0);
 
         // Optional Valkey 7.0+ fields
-        if (TestConfiguration.IsVersionAtLeast("7.0.0"))
+        if (!Version.IsLessThan(Version.Valkey7_0))
         {
             Assert.True(stats.ClusterLinks is not null and >= 0);
             Assert.True(stats.FunctionsCaches is not null and >= 0);
@@ -770,7 +801,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
         }
 
         // Optional Valkey 8.0+ fields
-        if (TestConfiguration.IsVersionAtLeast("8.0.0"))
+        if (!Version.IsLessThan(Version.Valkey8_0))
         {
             Assert.True(stats.AllocatorMuzzy is not null and >= 0);
             Assert.True(stats.DbDictRehashingCount is not null);

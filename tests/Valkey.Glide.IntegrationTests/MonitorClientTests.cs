@@ -99,7 +99,7 @@ public class MonitorClientTests(StandaloneClientFixture fixture) : IClassFixture
     [Fact]
     public async Task Monitor_ReportsConfiguredLibNameAndTag()
     {
-        Skip.IfClientSetInfoNotSupported();
+        Version.SkipIfLessThan(Version.Valkey7_2);
 
         const string tag = "monitor-tag:1.0";
         var addr = fixture.Server.Address;

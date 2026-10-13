@@ -323,8 +323,7 @@ public class ListCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestListMultiPop(BaseClient client)
     {
-        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "LMPOP is supported since 7.0.0"
-        );
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         string key1 = $"{{listKey}}-multipop1-{Guid.NewGuid()}";
         string key2 = $"{{listKey}}-multipop2-{Guid.NewGuid()}";
@@ -746,8 +745,7 @@ public class ListCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestListBlockingPop(BaseClient client)
     {
-        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "BLMPOP is supported since 7.0.0"
-        );
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         // Use hash tags to ensure keys map to same slot in cluster mode
         string key1 = $"{{testkey}}-{Guid.NewGuid()}";

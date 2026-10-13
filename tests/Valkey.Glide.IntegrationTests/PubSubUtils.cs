@@ -205,7 +205,7 @@ public static class PubSubUtils
     /// Returns true if sharded pub/sub is supported.
     /// </summary>
     public static bool IsShardedSupported()
-        => TestConfiguration.IsVersionAtLeast("7.0.0");
+        => !Version.IsLessThan(Version.Valkey7_0);
 
     /// <summary>
     /// Returns true if sharded pub/sub is supported for the given cluster mode.

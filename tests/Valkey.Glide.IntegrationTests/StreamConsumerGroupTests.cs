@@ -682,7 +682,7 @@ public class StreamConsumerGroupTests
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StreamGroupSetIdAsync_WithEntriesRead(BaseClient client)
     {
-        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "ENTRIESREAD parameter requires server version 7.0.0 or higher");
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         string key = "{StreamGroup}" + Guid.NewGuid();
 
