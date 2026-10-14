@@ -5,8 +5,12 @@ using System.Collections.Concurrent;
 using Valkey.Glide.TestUtils;
 
 using static Valkey.Glide.IntegrationTests.PubSubUtils;
+using static Valkey.Glide.TestUtils.Assertions;
+
 // Type alias for readability.
-using MessageInfo = (Valkey.Glide.ValkeyChannel Channel, Valkey.Glide.ValkeyValue Message);
+using MessageInfo = (
+    Valkey.Glide.ValkeyChannel Channel,
+    Valkey.Glide.ValkeyValue Message);
 
 namespace Valkey.Glide.IntegrationTests.StackExchange;
 
@@ -660,10 +664,7 @@ public class PubSubCommandTests(TestConfiguration config)
             interval: AssertRetryInterval);
 
         // Handler invocation order is not guaranteed.
-        Assert.Equal(
-            expected.OrderBy(m => m.ToString()),
-            actual.OrderBy(m => m.ToString()));
-
+        AssertEqualIgnoreOrder(expected, actual);
         actual.Clear();
     }
 

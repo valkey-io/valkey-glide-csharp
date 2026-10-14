@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using static Valkey.Glide.TestUtils.Assertions;
+
 namespace Valkey.Glide.IntegrationTests.StackExchange;
 
 /// <summary>
@@ -68,6 +70,7 @@ public class SetCommandTests(TestConfiguration config)
     public async Task SetScanAsync_WithPageSize_ReturnsAllMembers(IDatabaseAsync db)
     {
         string key = $"ser-sscan-pagesize-{Guid.NewGuid()}";
+
         // Add enough members to require multiple pages
         ValkeyValue[] members = [.. Enumerable.Range(1, 100).Select(i => (ValkeyValue)$"member{i}")];
         _ = await db.SetAddAsync(key, members);
@@ -171,16 +174,15 @@ public class SetCommandTests(TestConfiguration config)
         string key = $"ser-smembers-{Guid.NewGuid()}";
         _ = await db.SetAddAsync(key, ["a", "b", "c"]);
 
-        ValkeyValue[] members = await db.SetMembersAsync(key);
-        Assert.Equal(3, members.Length);
-        Assert.Equal(new HashSet<ValkeyValue> { "a", "b", "c" }, [.. members]);
+        var members = await db.SetMembersAsync(key);
+        AssertEqualIgnoreOrder(["a", "b", "c"], members);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task SetMembersAsync_NonExistentKey_ReturnsEmpty(IDatabaseAsync db)
     {
-        ValkeyValue[] members = await db.SetMembersAsync($"ser-smembers-{Guid.NewGuid()}");
+        var members = await db.SetMembersAsync($"ser-smembers-{Guid.NewGuid()}");
         Assert.Empty(members);
     }
 
@@ -257,7 +259,7 @@ public class SetCommandTests(TestConfiguration config)
         string key = $"ser-srand2-{Guid.NewGuid()}";
         _ = await db.SetAddAsync(key, ["a", "b", "c"]);
 
-        ValkeyValue[] members = await db.SetRandomMembersAsync(key, 2);
+        var members = await db.SetRandomMembersAsync(key, 2);
         Assert.Equal(2, members.Length);
         foreach (ValkeyValue v in members)
         {
@@ -347,8 +349,7 @@ public class SetCommandTests(TestConfiguration config)
         _ = await db.SetAddAsync(key2, ["b", "c"]);
 
         var result = await db.SetCombineAsync(SetOperation.Union, key1, key2);
-        Assert.Equal(3, result.Length);
-        Assert.Equal(new HashSet<ValkeyValue> { "a", "b", "c" }, [.. result]);
+        AssertEqualIgnoreOrder(["a", "b", "c"], result);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -361,8 +362,7 @@ public class SetCommandTests(TestConfiguration config)
         _ = await db.SetAddAsync(key2, ["b", "c", "d"]);
 
         var result = await db.SetCombineAsync(SetOperation.Intersect, key1, key2);
-        Assert.Equal(2, result.Length);
-        Assert.Equal(new HashSet<ValkeyValue> { "b", "c" }, [.. result]);
+        AssertEqualIgnoreOrder(["b", "c"], result);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -375,7 +375,7 @@ public class SetCommandTests(TestConfiguration config)
         _ = await db.SetAddAsync(key2, ["b", "c", "d"]);
 
         var result = await db.SetCombineAsync(SetOperation.Difference, key1, key2);
-        Assert.Equal(new HashSet<ValkeyValue> { "a" }, [.. result]);
+        AssertEqualIgnoreOrder(["a"], result);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -391,8 +391,7 @@ public class SetCommandTests(TestConfiguration config)
 
         ValkeyKey[] keys = [key1, key2, key3];
         var result = await db.SetCombineAsync(SetOperation.Union, keys);
-        Assert.Equal(4, result.Length);
-        Assert.Equal(new HashSet<ValkeyValue> { "a", "b", "c", "d" }, [.. result]);
+        AssertEqualIgnoreOrder(["a", "b", "c", "d"], result);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -408,8 +407,7 @@ public class SetCommandTests(TestConfiguration config)
 
         ValkeyKey[] keys = [key1, key2, key3];
         var result = await db.SetCombineAsync(SetOperation.Intersect, keys);
-        Assert.Equal(2, result.Length);
-        Assert.Equal(new HashSet<ValkeyValue> { "b", "c" }, [.. result]);
+        AssertEqualIgnoreOrder(["b", "c"], result);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -425,7 +423,7 @@ public class SetCommandTests(TestConfiguration config)
 
         ValkeyKey[] keys = [key1, key2, key3];
         var result = await db.SetCombineAsync(SetOperation.Difference, keys);
-        Assert.Equal(new HashSet<ValkeyValue> { "a" }, [.. result]);
+        AssertEqualIgnoreOrder(["a"], result);
     }
 
     #endregion
@@ -443,7 +441,7 @@ public class SetCommandTests(TestConfiguration config)
 
         long count = await db.SetCombineAndStoreAsync(SetOperation.Union, dest, key1, key2);
         Assert.Equal(3, count);
-        Assert.Equal(new HashSet<ValkeyValue> { "a", "b", "c" }, [.. await db.SetMembersAsync(dest)]);
+        AssertEqualIgnoreOrder(["a", "b", "c"], await db.SetMembersAsync(dest));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -458,7 +456,7 @@ public class SetCommandTests(TestConfiguration config)
 
         long count = await db.SetCombineAndStoreAsync(SetOperation.Intersect, dest, key1, key2);
         Assert.Equal(2, count);
-        Assert.Equal(new HashSet<ValkeyValue> { "b", "c" }, [.. await db.SetMembersAsync(dest)]);
+        AssertEqualIgnoreOrder(["b", "c"], await db.SetMembersAsync(dest));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -473,7 +471,7 @@ public class SetCommandTests(TestConfiguration config)
 
         long count = await db.SetCombineAndStoreAsync(SetOperation.Difference, dest, key1, key2);
         Assert.Equal(1, count);
-        Assert.Equal(new HashSet<ValkeyValue> { "a" }, [.. await db.SetMembersAsync(dest)]);
+        AssertEqualIgnoreOrder(["a"], await db.SetMembersAsync(dest));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]

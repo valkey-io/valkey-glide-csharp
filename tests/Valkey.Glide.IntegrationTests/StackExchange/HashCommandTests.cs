@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using static Valkey.Glide.TestUtils.Assertions;
+
 namespace Valkey.Glide.IntegrationTests.StackExchange;
 
 /// <summary>
@@ -125,7 +127,7 @@ public class HashCommandTests(TestConfiguration config)
         _ = await db.HashSetAsync(key, "field2", "value2", When.Always);
 
         var entries = await db.HashGetAllAsync(key);
-        Assert.Equal(new HashSet<HashEntry> { new("field1", "value1"), new("field2", "value2") }, [.. entries]);
+        AssertEqualIgnoreOrder([new("field1", "value1"), new("field2", "value2")], entries);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -193,7 +195,7 @@ public class HashCommandTests(TestConfiguration config)
         _ = await db.HashSetAsync(key, "field2", "value2", When.Always);
 
         var keys = await db.HashKeysAsync(key);
-        Assert.Equal(new HashSet<ValkeyValue> { "field1", "field2" }, [.. keys]);
+        AssertEqualIgnoreOrder(["field1", "field2"], keys);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -250,7 +252,7 @@ public class HashCommandTests(TestConfiguration config)
         _ = await db.HashSetAsync(key, "field2", "value2", When.Always);
 
         var values = await db.HashValuesAsync(key);
-        Assert.Equal(["value1", "value2"], values.Order());
+        AssertEqualIgnoreOrder(["value1", "value2"], values);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]

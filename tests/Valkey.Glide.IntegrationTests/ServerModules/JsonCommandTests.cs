@@ -2,6 +2,8 @@
 
 using Valkey.Glide.ServerModules;
 
+using static Valkey.Glide.TestUtils.Assertions;
+
 namespace Valkey.Glide.IntegrationTests.ServerModules;
 
 /// <summary>
@@ -1942,7 +1944,7 @@ public class JsonCommandTests(TestConfiguration config)
         await GlideJson.SetAsync(client, key, "$", jsonValue);
         var result = await GlideJson.StrLenAsync(client, key, "$..a");
 
-        Assert.Equal([3L, 5L], result!.Order());
+        AssertEqualIgnoreOrder([3L, 5L], result!);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]

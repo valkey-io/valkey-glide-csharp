@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using static Valkey.Glide.TestUtils.Assertions;
+
 namespace Valkey.Glide.IntegrationTests;
 
 public class GeospatialCommandTests(TestConfiguration config)
@@ -44,13 +46,6 @@ public class GeospatialCommandTests(TestConfiguration config)
     private static readonly GeoSearchCircle Circle200Km = new(200, GeoUnit.Kilometers);
     private static readonly GeoSearchCircle Circle100Km = new(100, GeoUnit.Kilometers);
     private static readonly GeoSearchBox Box400Km = new(400, 400, GeoUnit.Kilometers);
-
-    // Common expected results.
-    private static readonly HashSet<GeoSearchResult> PalermoCataniaSearchResults =
-    [
-        new(PalermoName),
-        new(CataniaName),
-    ];
 
     #endregion
     #region GeoAddAsync
@@ -406,22 +401,17 @@ public class GeospatialCommandTests(TestConfiguration config)
         var shapeMiles = new GeoSearchCircle(124.27, GeoUnit.Miles);
         var shapeFeet = new GeoSearchCircle(656168, GeoUnit.Feet);
 
-        var resultsMeters = await client.GeoSearchAsync(key, PalermoPos, shapeMeters);
-        var resultsKilometers = await client.GeoSearchAsync(key, PalermoPos, shapeKilometers);
-        var resultsMiles = await client.GeoSearchAsync(key, PalermoPos, shapeMiles);
-        var resultsFeet = await client.GeoSearchAsync(key, PalermoPos, shapeFeet);
-
-        var expected = new HashSet<GeoSearchResult>
+        var expected = new GeoSearchResult[]
         {
-            new(PalermoName),
             new(CataniaName),
+            new(PalermoName),
             new(TrapaniName)
         };
 
-        Assert.Equal(expected, [.. resultsMeters]);
-        Assert.Equal(expected, [.. resultsKilometers]);
-        Assert.Equal(expected, [.. resultsMiles]);
-        Assert.Equal(expected, [.. resultsFeet]);
+        AssertEqualIgnoreOrder(expected, await client.GeoSearchAsync(key, PalermoPos, shapeMeters));
+        AssertEqualIgnoreOrder(expected, await client.GeoSearchAsync(key, PalermoPos, shapeKilometers));
+        AssertEqualIgnoreOrder(expected, await client.GeoSearchAsync(key, PalermoPos, shapeMiles));
+        AssertEqualIgnoreOrder(expected, await client.GeoSearchAsync(key, PalermoPos, shapeFeet));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -453,7 +443,7 @@ public class GeospatialCommandTests(TestConfiguration config)
         _ = await client.GeoAddAsync(key, members);
 
         var results = await client.GeoSearchAsync(key, PalermoName, Circle200Km);
-        Assert.Equal(new HashSet<GeoSearchResult> { new(PalermoName), new(CataniaName), new("edge") }, [.. results]);
+        AssertEqualIgnoreOrder([new(CataniaName), new(PalermoName), new("edge")], results);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -464,7 +454,7 @@ public class GeospatialCommandTests(TestConfiguration config)
         _ = await client.GeoAddAsync(key, PalermoCatania);
 
         var results = await client.GeoSearchAsync(key, PalermoPos, Circle200Km);
-        Assert.Equal(PalermoCataniaSearchResults, [.. results]);
+        AssertEqualIgnoreOrder([new(CataniaName), new(PalermoName)], results);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -481,7 +471,7 @@ public class GeospatialCommandTests(TestConfiguration config)
         _ = await client.GeoAddAsync(key, members);
 
         var results = await client.GeoSearchAsync(key, PalermoName, Box400Km);
-        Assert.Equal(new HashSet<GeoSearchResult> { new(PalermoName), new(CataniaName), new("edge") }, [.. results]);
+        AssertEqualIgnoreOrder([new(CataniaName), new(PalermoName), new("edge")], results);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -492,7 +482,7 @@ public class GeospatialCommandTests(TestConfiguration config)
         _ = await client.GeoAddAsync(key, PalermoCatania);
 
         var results = await client.GeoSearchAsync(key, PalermoPos, Box400Km);
-        Assert.Equal(PalermoCataniaSearchResults, [.. results]);
+        AssertEqualIgnoreOrder([new(CataniaName), new(PalermoName)], results);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -534,7 +524,7 @@ public class GeospatialCommandTests(TestConfiguration config)
 
         var closestResults = await client.GeoSearchAsync(key, PalermoName, Circle200Km, new GeoSearchOptions { Count = 3 });
         var closestExpected = new GeoSearchResult[] { new(PalermoName), new("close1"), new("edge2") };
-        Assert.Equal(closestExpected.ToHashSet(), [.. closestResults]);
+        AssertEqualIgnoreOrder(closestExpected, closestResults);
 
         // Test that demandClosest=false works (should return any results, not necessarily closest)
         var anyResults = await client.GeoSearchAsync(key, PalermoName, Circle200Km, new GeoSearchOptions { Count = 3, Any = true });
