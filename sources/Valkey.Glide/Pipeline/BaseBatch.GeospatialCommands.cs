@@ -22,13 +22,13 @@ public abstract partial class BaseBatch<T>
     public T GeoDistance(ValkeyKey key, ValkeyValue member1, ValkeyValue member2, GeoUnit unit = GeoUnit.Meters) => AddCmd(Request.GeoDistance(key, member1, member2, unit));
 
     /// <inheritdoc cref="IBatchGeospatialCommands.GeoHash(ValkeyKey, ValkeyValue)" />
-    public T GeoHash(ValkeyKey key, ValkeyValue member) => AddCmd(Request.GeoHash(key, member));
+    public T GeoHash(ValkeyKey key, ValkeyValue member) => AddCmd(Request.GeoHash(key, [member]).ToFirstValue());
 
     /// <inheritdoc cref="IBatchGeospatialCommands.GeoHash(ValkeyKey, IEnumerable{ValkeyValue})" />
     public T GeoHash(ValkeyKey key, IEnumerable<ValkeyValue> members) => AddCmd(Request.GeoHash(key, [.. members]));
 
     /// <inheritdoc cref="IBatchGeospatialCommands.GeoPosition(ValkeyKey, ValkeyValue)" />
-    public T GeoPosition(ValkeyKey key, ValkeyValue member) => AddCmd(Request.GeoPosition(key, member));
+    public T GeoPosition(ValkeyKey key, ValkeyValue member) => AddCmd(Request.GeoPosition(key, [member]).ToFirstValue());
 
     /// <inheritdoc cref="IBatchGeospatialCommands.GeoPosition(ValkeyKey, IEnumerable{ValkeyValue})" />
     public T GeoPosition(ValkeyKey key, IEnumerable<ValkeyValue> members) => AddCmd(Request.GeoPosition(key, [.. members]));

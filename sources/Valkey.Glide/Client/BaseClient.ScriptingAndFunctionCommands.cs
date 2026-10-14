@@ -228,10 +228,7 @@ public abstract partial class BaseClient
     public async Task<bool> ScriptExistsAsync(
         string sha1Hash,
         CancellationToken cancellationToken = default)
-    {
-        bool[] results = await ScriptExistsAsync([sha1Hash], cancellationToken);
-        return results[0];
-    }
+        => await Command(Request.ScriptExists([sha1Hash]).ToFirstValue());
 
     /// <inheritdoc cref="IBaseClient.ScriptExistsAsync(IEnumerable{string}, CancellationToken)"/>
     public async Task<bool[]> ScriptExistsAsync(

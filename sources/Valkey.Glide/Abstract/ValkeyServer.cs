@@ -293,9 +293,7 @@ internal partial class ValkeyServer(Database conn, EndPoint endpoint) : IServer
         using Script scriptObj = new(script);
         string hash = scriptObj.Hash;
 
-        // Call SCRIPT EXISTS with the hash
-        bool[] results = await _conn.Command(Request.ScriptExists([hash]), MakeRoute());
-        return results.Length > 0 && results[0];
+        return await _conn.Command(Request.ScriptExists([hash]).ToFirstValue(), MakeRoute());
     }
 
     /// <inheritdoc/>
@@ -311,9 +309,7 @@ internal partial class ValkeyServer(Database conn, EndPoint endpoint) : IServer
         // Convert byte array to hex string
         string hash = BitConverter.ToString(sha1).Replace("-", "").ToLowerInvariant();
 
-        // Call SCRIPT EXISTS with the hash
-        bool[] results = await _conn.Command(Request.ScriptExists([hash]), MakeRoute());
-        return results.Length > 0 && results[0];
+        return await _conn.Command(Request.ScriptExists([hash]).ToFirstValue(), MakeRoute());
     }
 
     /// <inheritdoc/>

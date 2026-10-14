@@ -11,131 +11,6 @@ public class HashCommandTests(TestConfiguration config)
 {
     public TestConfiguration Config { get; } = config;
 
-    #region HashSetAsync
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task HashSetAsync_WhenAlways_SetsField(IDatabaseAsync db)
-    {
-        string key = $"ser-hset-{Guid.NewGuid()}";
-
-        Assert.True(await db.HashSetAsync(key, "field1", "value1", When.Always));
-        Assert.Equal("value1", await db.HashGetAsync(key, "field1"));
-
-        Assert.False(await db.HashSetAsync(key, "field1", "updated", When.Always));
-        Assert.Equal("updated", await db.HashGetAsync(key, "field1"));
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task HashSetAsync_WhenNotExists_SetsOnlyNewField(IDatabaseAsync db)
-    {
-        string key = $"ser-hsetnx-{Guid.NewGuid()}";
-
-        Assert.True(await db.HashSetAsync(key, "field1", "value1", When.NotExists));
-        Assert.Equal("value1", await db.HashGetAsync(key, "field1"));
-
-        Assert.False(await db.HashSetAsync(key, "field1", "should-not-update", When.NotExists));
-        Assert.Equal("value1", await db.HashGetAsync(key, "field1"));
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task HashSetAsync_WhenExists_Throws(IDatabaseAsync db)
-        => _ = await Assert.ThrowsAsync<ArgumentException>(
-            () => db.HashSetAsync("key", "field1", "value1", When.Exists));
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task HashSetAsync_MultiField_WhenAlways_SetsFields(IDatabaseAsync db)
-    {
-        string key = $"ser-hmset-{Guid.NewGuid()}";
-
-        HashEntry[] entries =
-        [
-            new("field1", "value1"),
-            new("field2", "value2"),
-        ];
-        await db.HashSetAsync(key, entries);
-
-        Assert.Equal("value1", await db.HashGetAsync(key, "field1"));
-        Assert.Equal("value2", await db.HashGetAsync(key, "field2"));
-    }
-
-    #endregion
-    #region HashIncrementAsync
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task HashIncrementAsync_Long(IDatabaseAsync db)
-    {
-        string key = $"ser-hincr-{Guid.NewGuid()}";
-
-        Assert.Equal(5, await db.HashIncrementAsync(key, "counter", 5));
-        Assert.Equal(6, await db.HashIncrementAsync(key, "counter"));
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task HashIncrementAsync_Double(IDatabaseAsync db)
-    {
-        string key = $"ser-hincrf-{Guid.NewGuid()}";
-
-        Assert.Equal(2.5, await db.HashIncrementAsync(key, "counter", 2.5));
-        Assert.Equal(5.0, await db.HashIncrementAsync(key, "counter", 2.5));
-    }
-
-    #endregion
-    #region HashGetAsync
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task HashGetAsync_SingleField_ReturnsValue(IDatabaseAsync db)
-    {
-        string key = $"ser-hget-{Guid.NewGuid()}";
-        _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
-
-        Assert.Equal("value1", await db.HashGetAsync(key, "field1"));
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task HashGetAsync_SingleField_NonExistent_ReturnsNull(IDatabaseAsync db)
-        => Assert.True((await db.HashGetAsync(Guid.NewGuid().ToString(), "nonexistent")).IsNull);
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task HashGetAsync_MultiField_ReturnsValues(IDatabaseAsync db)
-    {
-        string key = $"ser-hmget-{Guid.NewGuid()}";
-        _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
-        _ = await db.HashSetAsync(key, "field2", "value2", When.Always);
-
-        var results = await db.HashGetAsync(key, ["field1", "field2", "nonexistent"]);
-        Assert.Equal(new ValkeyValue[] { "value1", "value2", ValkeyValue.Null }, results);
-    }
-
-    #endregion
-    #region HashGetAllAsync
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task HashGetAllAsync_ReturnsAllEntries(IDatabaseAsync db)
-    {
-        string key = $"ser-hgetall-{Guid.NewGuid()}";
-        _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
-        _ = await db.HashSetAsync(key, "field2", "value2", When.Always);
-
-        var entries = await db.HashGetAllAsync(key);
-        AssertEqualIgnoreOrder([new("field1", "value1"), new("field2", "value2")], entries);
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task HashGetAllAsync_NonExistentKey_ReturnsEmpty(IDatabaseAsync db)
-        => Assert.Empty(await db.HashGetAllAsync(Guid.NewGuid().ToString()));
-
-    #endregion
     #region HashDeleteAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -166,47 +41,6 @@ public class HashCommandTests(TestConfiguration config)
     }
 
     #endregion
-    #region HashGetDeleteAsync
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task HashGetDeleteAsync_AtomicallyReturnsAndRemovesFields(IDatabaseAsync db)
-    {
-        Version.SkipIfLessThan(Version.Valkey9_1);
-
-        string key = $"ser-hgetdel-{Guid.NewGuid()}";
-        await db.HashSetAsync(
-            key,
-            [
-                new HashEntry("field1", "value1"),
-                new HashEntry("field2", "value2")
-            ]);
-
-        ValkeyValue[] values = await db.HashFieldGetAndDeleteAsync(key, ["field1", "missing"]);
-        Assert.Equal((ValkeyValue[])["value1", ValkeyValue.Null], values);
-        Assert.False(await db.HashExistsAsync(key, "field1"));
-        Assert.True(await db.HashExistsAsync(key, "field2"));
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task HashGetDeleteAsync_AtomicallyReturnsAndRemovesField(IDatabaseAsync db)
-    {
-        Version.SkipIfLessThan(Version.Valkey9_1);
-
-        string key = $"ser-hgetdel-{Guid.NewGuid()}";
-        await db.HashSetAsync(
-            key,
-            [
-                new HashEntry("field1", "value1")
-            ]);
-
-        ValkeyValue value = await db.HashFieldGetAndDeleteAsync(key, "field1");
-        Assert.Equal("value1", value);
-        Assert.False(await db.HashExistsAsync(key, "field1"));
-    }
-
-    #endregion
     #region HashExistsAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -223,83 +57,6 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task HashExistsAsync_NonExistentField_ReturnsFalse(IDatabaseAsync db)
         => Assert.False(await db.HashExistsAsync($"ser-hexists-{Guid.NewGuid()}", "nonexistent"));
-
-    #endregion
-    #region HashKeysAsync
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task HashKeysAsync_ReturnsAllKeys(IDatabaseAsync db)
-    {
-        string key = $"ser-hkeys-{Guid.NewGuid()}";
-        _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
-        _ = await db.HashSetAsync(key, "field2", "value2", When.Always);
-
-        var keys = await db.HashKeysAsync(key);
-        AssertEqualIgnoreOrder(["field1", "field2"], keys);
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task HashKeysAsync_NonExistentKey_ReturnsEmpty(IDatabaseAsync db)
-        => Assert.Empty(await db.HashKeysAsync(Guid.NewGuid().ToString()));
-
-    #endregion
-    #region HashLengthAsync
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task HashLengthAsync_ReturnsFieldCount(IDatabaseAsync db)
-    {
-        string key = $"ser-hlen-{Guid.NewGuid()}";
-        _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
-        _ = await db.HashSetAsync(key, "field2", "value2", When.Always);
-
-        Assert.Equal(2, await db.HashLengthAsync(key));
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task HashLengthAsync_NonExistentKey_ReturnsZero(IDatabaseAsync db)
-        => Assert.Equal(0, await db.HashLengthAsync(Guid.NewGuid().ToString()));
-
-    #endregion
-    #region HashStringLengthAsync
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task HashStringLengthAsync_ReturnsValueLength(IDatabaseAsync db)
-    {
-        string key = $"ser-hstrlen-{Guid.NewGuid()}";
-        _ = await db.HashSetAsync(key, "field1", "hello", When.Always);
-
-        Assert.Equal(5, await db.HashStringLengthAsync(key, "field1"));
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task HashStringLengthAsync_NonExistentField_ReturnsZero(IDatabaseAsync db)
-        => Assert.Equal(0, await db.HashStringLengthAsync($"ser-hstrlen-{Guid.NewGuid()}", "nonexistent"));
-
-    #endregion
-    #region HashValuesAsync
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task HashValuesAsync_ReturnsAllValues(IDatabaseAsync db)
-    {
-        string key = $"ser-hvals-{Guid.NewGuid()}";
-        _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
-        _ = await db.HashSetAsync(key, "field2", "value2", When.Always);
-
-        var values = await db.HashValuesAsync(key);
-        AssertEqualIgnoreOrder(["value1", "value2"], values);
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task HashValuesAsync_NonExistentKey_ReturnsEmpty(IDatabaseAsync db)
-        => Assert.Empty(await db.HashValuesAsync(Guid.NewGuid().ToString()));
 
     #endregion
     #region HashFieldExpireAsync
@@ -366,6 +123,169 @@ public class HashCommandTests(TestConfiguration config)
     }
 
     #endregion
+    #region HashFieldGetAndDeleteAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashFieldGetAndDeleteAsync_SingleField(IDatabaseAsync db)
+    {
+        Version.SkipIfLessThan(Version.Valkey9_1);
+
+        string key = $"ser-hgetdel-single-{Guid.NewGuid()}";
+        _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
+        _ = await db.HashSetAsync(key, "field2", "value2", When.Always);
+
+        Assert.Equal("value1", await db.HashFieldGetAndDeleteAsync(key, "field1"));
+        Assert.False(await db.HashExistsAsync(key, "field1"));
+        Assert.True(await db.HashExistsAsync(key, "field2"));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashFieldGetAndDeleteAsync_MultipleFields(IDatabaseAsync db)
+    {
+        Version.SkipIfLessThan(Version.Valkey9_1);
+
+        string key = $"ser-hgetdel-multi-{Guid.NewGuid()}";
+        _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
+        _ = await db.HashSetAsync(key, "field2", "value2", When.Always);
+        _ = await db.HashSetAsync(key, "field3", "value3", When.Always);
+
+        ValkeyValue[] values = await db.HashFieldGetAndDeleteAsync(key, ["field1", "missing", "field2"]);
+        Assert.Equal(["value1", ValkeyValue.Null, "value2"], values);
+
+        Assert.False(await db.HashExistsAsync(key, "field1"));
+        Assert.False(await db.HashExistsAsync(key, "field2"));
+        Assert.True(await db.HashExistsAsync(key, "field3"));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashFieldGetAndDeleteAsync_Empty(IDatabaseAsync db)
+        => Assert.Empty(await db.HashFieldGetAndDeleteAsync(Guid.NewGuid().ToString(), []));
+
+    #endregion
+    #region HashFieldGetAndSetExpiryAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashFieldGetAndSetExpiry_SingleField_WithTimeSpan(IDatabaseAsync db)
+    {
+        Version.SkipIfLessThan(Version.Valkey9_0);
+
+        string key = $"ser-hgetex-single-ts-{Guid.NewGuid()}";
+        _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
+
+        var value = await db.HashFieldGetAndSetExpiryAsync(key, "field1", TimeSpan.FromSeconds(60));
+        Assert.Equal("value1", value);
+
+        var ttl = Assert.Single(await db.HashFieldGetTimeToLiveAsync(key, ["field1"]));
+        Assert.True(ttl is > 0 and <= 60000);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashFieldGetAndSetExpiry_MultiField_WithTimeSpan(IDatabaseAsync db)
+    {
+        Version.SkipIfLessThan(Version.Valkey9_0);
+
+        string key = $"ser-hgetex-ts-{Guid.NewGuid()}";
+        _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
+        _ = await db.HashSetAsync(key, "field2", "value2", When.Always);
+
+        var values = await db.HashFieldGetAndSetExpiryAsync(key, ["field1", "field2"], TimeSpan.FromSeconds(60));
+        Assert.Equal(new ValkeyValue[] { "value1", "value2" }, values);
+
+        var ttls = await db.HashFieldGetTimeToLiveAsync(key, ["field1", "field2"]);
+        Assert.Equal(2, ttls.Length);
+        Assert.True(ttls[0] is > 0 and <= 60000);
+        Assert.True(ttls[1] is > 0 and <= 60000);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashFieldGetAndSetExpiry_SingleField_WithNullTimeSpan_Persists(IDatabaseAsync db)
+    {
+        Version.SkipIfLessThan(Version.Valkey9_0);
+
+        string key = $"ser-hgetex-persist-null-{Guid.NewGuid()}";
+        _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
+        _ = await db.HashFieldExpireAsync(key, ["field1"], TimeSpan.FromSeconds(60));
+
+        var value = await db.HashFieldGetAndSetExpiryAsync(key, "field1", expiry: null);
+        Assert.Equal("value1", value);
+
+        var ttls = await db.HashFieldGetTimeToLiveAsync(key, ["field1"]);
+        Assert.Equal(new long[] { -1 }, ttls);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashFieldGetAndSetExpiry_SingleField_WithDateTime(IDatabaseAsync db)
+    {
+        Version.SkipIfLessThan(Version.Valkey9_0);
+
+        string key = $"ser-hgetex-single-dt-{Guid.NewGuid()}";
+        _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
+
+        var value = await db.HashFieldGetAndSetExpiryAsync(key, "field1", DateTime.UtcNow.AddMinutes(5));
+        Assert.Equal("value1", value);
+
+        var expireTimes = await db.HashFieldGetExpireDateTimeAsync(key, ["field1"]);
+        Assert.True(expireTimes[0] > 0);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashFieldGetAndSetExpiry_MultiField_WithDateTime(IDatabaseAsync db)
+    {
+        Version.SkipIfLessThan(Version.Valkey9_0);
+
+        string key = $"ser-hgetex-dt-{Guid.NewGuid()}";
+        _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
+
+        var values = await db.HashFieldGetAndSetExpiryAsync(key, ["field1"], DateTime.UtcNow.AddMinutes(5));
+        Assert.Equal(new ValkeyValue[] { "value1" }, values);
+
+        var expireTimes = await db.HashFieldGetExpireDateTimeAsync(key, ["field1"]);
+        Assert.True(expireTimes[0] > 0);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashFieldGetAndSetExpiry_SingleField_WithPersistTrue(IDatabaseAsync db)
+    {
+        Version.SkipIfLessThan(Version.Valkey9_0);
+
+        string key = $"ser-hgetex-persist-{Guid.NewGuid()}";
+        _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
+        _ = await db.HashFieldExpireAsync(key, ["field1"], TimeSpan.FromSeconds(60));
+
+        var value = await db.HashFieldGetAndSetExpiryAsync(key, "field1", persist: true);
+        Assert.Equal("value1", value);
+
+        var ttls = await db.HashFieldGetTimeToLiveAsync(key, ["field1"]);
+        Assert.Equal(new long[] { -1 }, ttls);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashFieldGetAndSetExpiry_MultiField_WithPersistTrue(IDatabaseAsync db)
+    {
+        Version.SkipIfLessThan(Version.Valkey9_0);
+
+        string key = $"ser-hgetex-multi-persist-{Guid.NewGuid()}";
+        _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
+        _ = await db.HashFieldExpireAsync(key, ["field1"], TimeSpan.FromSeconds(60));
+
+        var values = await db.HashFieldGetAndSetExpiryAsync(key, ["field1"], persist: true);
+        Assert.Equal(new ValkeyValue[] { "value1" }, values);
+
+        var ttls = await db.HashFieldGetTimeToLiveAsync(key, ["field1"]);
+        Assert.Equal(new long[] { -1 }, ttls);
+    }
+
+    #endregion
     #region HashFieldGetExpireDateTimeAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -423,53 +343,6 @@ public class HashCommandTests(TestConfiguration config)
 
         var results = await db.HashFieldPersistAsync(key, ["field1", "field2", "nonexistent"]);
         Assert.Equal([PersistResult.Success, PersistResult.ConditionNotMet, PersistResult.NoSuchField], results);
-    }
-
-    #endregion
-    #region HashRandomFieldAsync
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task HashRandomFieldAsync_ReturnsField(IDatabaseAsync db)
-    {
-        string key = $"ser-hrandfield-{Guid.NewGuid()}";
-        _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
-        _ = await db.HashSetAsync(key, "field2", "value2", When.Always);
-
-        var field = await db.HashRandomFieldAsync(key);
-        Assert.Contains(field.ToString(), new[] { "field1", "field2" });
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task HashRandomFieldsAsync_ReturnsFields(IDatabaseAsync db)
-    {
-        string key = $"ser-hrandfields-{Guid.NewGuid()}";
-        await db.HashSetAsync(key, [new("field1", "value1"), new("field2", "value2"), new("field3", "value3")]);
-
-        var fields = await db.HashRandomFieldsAsync(key, 2);
-        Assert.Equal(2, fields.Length);
-        foreach (var field in fields)
-        {
-            Assert.Contains(field.ToString(), new[] { "field1", "field2", "field3" });
-        }
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task HashRandomFieldsWithValuesAsync_ReturnsEntries(IDatabaseAsync db)
-    {
-        string key = $"ser-hrandfieldwv-{Guid.NewGuid()}";
-        await db.HashSetAsync(key, [new("field1", "value1"), new("field2", "value2"), new("field3", "value3")]);
-
-        var entries = await db.HashRandomFieldsWithValuesAsync(key, 2);
-        Assert.Equal(2, entries.Length);
-        foreach (var entry in entries)
-        {
-            string fieldName = entry.Name.ToString();
-            Assert.Contains(fieldName, new[] { "field1", "field2", "field3" });
-            Assert.Equal("value" + fieldName[5..], entry.Value.ToString());
-        }
     }
 
     #endregion
@@ -618,125 +491,253 @@ public class HashCommandTests(TestConfiguration config)
     }
 
     #endregion
-    #region HashFieldGetAndSetExpiryAsync
+    #region HashGetAllAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task HashFieldGetAndSetExpiry_SingleField_WithTimeSpan(IDatabaseAsync db)
+    public async Task HashGetAllAsync_ReturnsAllEntries(IDatabaseAsync db)
     {
-        Version.SkipIfLessThan(Version.Valkey9_0);
-
-        string key = $"ser-hgetex-single-ts-{Guid.NewGuid()}";
-        _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
-
-        var value = await db.HashFieldGetAndSetExpiryAsync(key, "field1", TimeSpan.FromSeconds(60));
-        Assert.Equal("value1", value);
-
-        var ttl = Assert.Single(await db.HashFieldGetTimeToLiveAsync(key, ["field1"]));
-        Assert.True(ttl is > 0 and <= 60000);
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task HashFieldGetAndSetExpiry_MultiField_WithTimeSpan(IDatabaseAsync db)
-    {
-        Version.SkipIfLessThan(Version.Valkey9_0);
-
-        string key = $"ser-hgetex-ts-{Guid.NewGuid()}";
+        string key = $"ser-hgetall-{Guid.NewGuid()}";
         _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
         _ = await db.HashSetAsync(key, "field2", "value2", When.Always);
 
-        var values = await db.HashFieldGetAndSetExpiryAsync(key, ["field1", "field2"], TimeSpan.FromSeconds(60));
-        Assert.Equal(new ValkeyValue[] { "value1", "value2" }, values);
-
-        var ttls = await db.HashFieldGetTimeToLiveAsync(key, ["field1", "field2"]);
-        Assert.Equal(2, ttls.Length);
-        Assert.True(ttls[0] is > 0 and <= 60000);
-        Assert.True(ttls[1] is > 0 and <= 60000);
+        var entries = await db.HashGetAllAsync(key);
+        AssertEqualIgnoreOrder([new("field1", "value1"), new("field2", "value2")], entries);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task HashFieldGetAndSetExpiry_SingleField_WithNullTimeSpan_Persists(IDatabaseAsync db)
+    public async Task HashGetAllAsync_NonExistentKey_ReturnsEmpty(IDatabaseAsync db)
+        => Assert.Empty(await db.HashGetAllAsync(Guid.NewGuid().ToString()));
+
+    #endregion
+    #region HashGetAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashGetAsync_SingleField_ReturnsValue(IDatabaseAsync db)
     {
-        Version.SkipIfLessThan(Version.Valkey9_0);
-
-        string key = $"ser-hgetex-persist-null-{Guid.NewGuid()}";
+        string key = $"ser-hget-{Guid.NewGuid()}";
         _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
-        _ = await db.HashFieldExpireAsync(key, ["field1"], TimeSpan.FromSeconds(60));
 
-        var value = await db.HashFieldGetAndSetExpiryAsync(key, "field1", expiry: null);
-        Assert.Equal("value1", value);
-
-        var ttls = await db.HashFieldGetTimeToLiveAsync(key, ["field1"]);
-        Assert.Equal(new long[] { -1 }, ttls);
+        Assert.Equal("value1", await db.HashGetAsync(key, "field1"));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task HashFieldGetAndSetExpiry_SingleField_WithDateTime(IDatabaseAsync db)
+    public async Task HashGetAsync_SingleField_NonExistent_ReturnsNull(IDatabaseAsync db)
+        => Assert.True((await db.HashGetAsync(Guid.NewGuid().ToString(), "nonexistent")).IsNull);
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashGetAsync_MultiField_ReturnsValues(IDatabaseAsync db)
     {
-        Version.SkipIfLessThan(Version.Valkey9_0);
-
-        string key = $"ser-hgetex-single-dt-{Guid.NewGuid()}";
+        string key = $"ser-hmget-{Guid.NewGuid()}";
         _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
+        _ = await db.HashSetAsync(key, "field2", "value2", When.Always);
 
-        var value = await db.HashFieldGetAndSetExpiryAsync(key, "field1", DateTime.UtcNow.AddMinutes(5));
-        Assert.Equal("value1", value);
+        var results = await db.HashGetAsync(key, ["field1", "field2", "nonexistent"]);
+        Assert.Equal(new ValkeyValue[] { "value1", "value2", ValkeyValue.Null }, results);
+    }
 
-        var expireTimes = await db.HashFieldGetExpireDateTimeAsync(key, ["field1"]);
-        Assert.True(expireTimes[0] > 0);
+    #endregion
+    #region HashIncrementAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashIncrementAsync_Long(IDatabaseAsync db)
+    {
+        string key = $"ser-hincr-{Guid.NewGuid()}";
+
+        Assert.Equal(5, await db.HashIncrementAsync(key, "counter", 5));
+        Assert.Equal(6, await db.HashIncrementAsync(key, "counter"));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task HashFieldGetAndSetExpiry_MultiField_WithDateTime(IDatabaseAsync db)
+    public async Task HashIncrementAsync_Double(IDatabaseAsync db)
     {
-        Version.SkipIfLessThan(Version.Valkey9_0);
+        string key = $"ser-hincrf-{Guid.NewGuid()}";
 
-        string key = $"ser-hgetex-dt-{Guid.NewGuid()}";
+        Assert.Equal(2.5, await db.HashIncrementAsync(key, "counter", 2.5));
+        Assert.Equal(5.0, await db.HashIncrementAsync(key, "counter", 2.5));
+    }
+
+    #endregion
+    #region HashKeysAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashKeysAsync_ReturnsAllKeys(IDatabaseAsync db)
+    {
+        string key = $"ser-hkeys-{Guid.NewGuid()}";
         _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
+        _ = await db.HashSetAsync(key, "field2", "value2", When.Always);
 
-        var values = await db.HashFieldGetAndSetExpiryAsync(key, ["field1"], DateTime.UtcNow.AddMinutes(5));
-        Assert.Equal(new ValkeyValue[] { "value1" }, values);
-
-        var expireTimes = await db.HashFieldGetExpireDateTimeAsync(key, ["field1"]);
-        Assert.True(expireTimes[0] > 0);
+        var keys = await db.HashKeysAsync(key);
+        AssertEqualIgnoreOrder(["field1", "field2"], keys);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task HashFieldGetAndSetExpiry_SingleField_WithPersistTrue(IDatabaseAsync db)
+    public async Task HashKeysAsync_NonExistentKey_ReturnsEmpty(IDatabaseAsync db)
+        => Assert.Empty(await db.HashKeysAsync(Guid.NewGuid().ToString()));
+
+    #endregion
+    #region HashLengthAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashLengthAsync_ReturnsFieldCount(IDatabaseAsync db)
     {
-        Version.SkipIfLessThan(Version.Valkey9_0);
-
-        string key = $"ser-hgetex-persist-{Guid.NewGuid()}";
+        string key = $"ser-hlen-{Guid.NewGuid()}";
         _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
-        _ = await db.HashFieldExpireAsync(key, ["field1"], TimeSpan.FromSeconds(60));
+        _ = await db.HashSetAsync(key, "field2", "value2", When.Always);
 
-        var value = await db.HashFieldGetAndSetExpiryAsync(key, "field1", persist: true);
-        Assert.Equal("value1", value);
-
-        var ttls = await db.HashFieldGetTimeToLiveAsync(key, ["field1"]);
-        Assert.Equal(new long[] { -1 }, ttls);
+        Assert.Equal(2, await db.HashLengthAsync(key));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task HashFieldGetAndSetExpiry_MultiField_WithPersistTrue(IDatabaseAsync db)
+    public async Task HashLengthAsync_NonExistentKey_ReturnsZero(IDatabaseAsync db)
+        => Assert.Equal(0, await db.HashLengthAsync(Guid.NewGuid().ToString()));
+
+    #endregion
+    #region HashRandomFieldAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashRandomFieldAsync_ReturnsField(IDatabaseAsync db)
     {
-        Version.SkipIfLessThan(Version.Valkey9_0);
-
-        string key = $"ser-hgetex-multi-persist-{Guid.NewGuid()}";
+        string key = $"ser-hrandfield-{Guid.NewGuid()}";
         _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
-        _ = await db.HashFieldExpireAsync(key, ["field1"], TimeSpan.FromSeconds(60));
+        _ = await db.HashSetAsync(key, "field2", "value2", When.Always);
 
-        var values = await db.HashFieldGetAndSetExpiryAsync(key, ["field1"], persist: true);
-        Assert.Equal(new ValkeyValue[] { "value1" }, values);
-
-        var ttls = await db.HashFieldGetTimeToLiveAsync(key, ["field1"]);
-        Assert.Equal(new long[] { -1 }, ttls);
+        var field = await db.HashRandomFieldAsync(key);
+        Assert.Contains(field.ToString(), new[] { "field1", "field2" });
     }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashRandomFieldsAsync_ReturnsFields(IDatabaseAsync db)
+    {
+        string key = $"ser-hrandfields-{Guid.NewGuid()}";
+        await db.HashSetAsync(key, [new("field1", "value1"), new("field2", "value2"), new("field3", "value3")]);
+
+        var fields = await db.HashRandomFieldsAsync(key, 2);
+        Assert.Equal(2, fields.Length);
+        foreach (var field in fields)
+        {
+            Assert.Contains(field.ToString(), new[] { "field1", "field2", "field3" });
+        }
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashRandomFieldsWithValuesAsync_ReturnsEntries(IDatabaseAsync db)
+    {
+        string key = $"ser-hrandfieldwv-{Guid.NewGuid()}";
+        await db.HashSetAsync(key, [new("field1", "value1"), new("field2", "value2"), new("field3", "value3")]);
+
+        var entries = await db.HashRandomFieldsWithValuesAsync(key, 2);
+        Assert.Equal(2, entries.Length);
+        foreach (var entry in entries)
+        {
+            string fieldName = entry.Name.ToString();
+            Assert.Contains(fieldName, new[] { "field1", "field2", "field3" });
+            Assert.Equal("value" + fieldName[5..], entry.Value.ToString());
+        }
+    }
+
+    #endregion
+    #region HashSetAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashSetAsync_WhenAlways_SetsField(IDatabaseAsync db)
+    {
+        string key = $"ser-hset-{Guid.NewGuid()}";
+
+        Assert.True(await db.HashSetAsync(key, "field1", "value1", When.Always));
+        Assert.Equal("value1", await db.HashGetAsync(key, "field1"));
+
+        Assert.False(await db.HashSetAsync(key, "field1", "updated", When.Always));
+        Assert.Equal("updated", await db.HashGetAsync(key, "field1"));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashSetAsync_WhenNotExists_SetsOnlyNewField(IDatabaseAsync db)
+    {
+        string key = $"ser-hsetnx-{Guid.NewGuid()}";
+
+        Assert.True(await db.HashSetAsync(key, "field1", "value1", When.NotExists));
+        Assert.Equal("value1", await db.HashGetAsync(key, "field1"));
+
+        Assert.False(await db.HashSetAsync(key, "field1", "should-not-update", When.NotExists));
+        Assert.Equal("value1", await db.HashGetAsync(key, "field1"));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashSetAsync_WhenExists_Throws(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<ArgumentException>(
+            () => db.HashSetAsync("key", "field1", "value1", When.Exists));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashSetAsync_MultiField_WhenAlways_SetsFields(IDatabaseAsync db)
+    {
+        string key = $"ser-hmset-{Guid.NewGuid()}";
+
+        HashEntry[] entries =
+        [
+            new("field1", "value1"),
+            new("field2", "value2"),
+        ];
+        await db.HashSetAsync(key, entries);
+
+        Assert.Equal("value1", await db.HashGetAsync(key, "field1"));
+        Assert.Equal("value2", await db.HashGetAsync(key, "field2"));
+    }
+
+    #endregion
+    #region HashStringLengthAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashStringLengthAsync_ReturnsValueLength(IDatabaseAsync db)
+    {
+        string key = $"ser-hstrlen-{Guid.NewGuid()}";
+        _ = await db.HashSetAsync(key, "field1", "hello", When.Always);
+
+        Assert.Equal(5, await db.HashStringLengthAsync(key, "field1"));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashStringLengthAsync_NonExistentField_ReturnsZero(IDatabaseAsync db)
+        => Assert.Equal(0, await db.HashStringLengthAsync($"ser-hstrlen-{Guid.NewGuid()}", "nonexistent"));
+
+    #endregion
+    #region HashValuesAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashValuesAsync_ReturnsAllValues(IDatabaseAsync db)
+    {
+        string key = $"ser-hvals-{Guid.NewGuid()}";
+        _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
+        _ = await db.HashSetAsync(key, "field2", "value2", When.Always);
+
+        var values = await db.HashValuesAsync(key);
+        AssertEqualIgnoreOrder(["value1", "value2"], values);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashValuesAsync_NonExistentKey_ReturnsEmpty(IDatabaseAsync db)
+        => Assert.Empty(await db.HashValuesAsync(Guid.NewGuid().ToString()));
 
     #endregion
 }
