@@ -503,7 +503,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
         Assert.All(InfoFields, field => Assert.Contains(field, info));
 
         // Valkey 9.2+
-        if (Version.IsLessThan(Version.Valkey9_2))
+        if (!Version.IsLessThan(Version.Valkey9_2))
         {
             info = await Client.GetInfo(client, Section.PERSISTENCE);
             Assert.Contains(Assert.Contains("rdb_current_bgsave_type", info), BgSaveTypes);
