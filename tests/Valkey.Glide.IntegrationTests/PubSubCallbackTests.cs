@@ -104,7 +104,13 @@ public class PubSubCallbackTests
     public static async Task Callback_WithMultipleMessages_PreservesOrder(bool isCluster)
     {
         int messageCount = 20;
-        var messages = Enumerable.Range(0, messageCount).Select(i => BuildMessage()).ToList();
+
+        // Use a single channel, since message order is only guaranteed per channel.
+        var channel = BuildChannel();
+        var messages = Enumerable
+            .Range(0, messageCount)
+            .Select(i => PubSubMessage.FromChannel($"message-{i}", channel))
+            .ToList();
 
         // Setup callback to capture received messages.
         List<PubSubMessage> receivedMessages = [];
