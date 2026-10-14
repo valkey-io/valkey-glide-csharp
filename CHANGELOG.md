@@ -41,6 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `CLIENT TRACKINGINFO` (#451)
   - `CLIENT UNPAUSE` (#437)
   - `FAILOVER` (#446)
+  - `HGETDEL` (#285)
   - `MEMORY DOCTOR` (#443)
   - `MEMORY MALLOC-STATS` (#443)
   - `MEMORY PURGE` (#443)
