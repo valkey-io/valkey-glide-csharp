@@ -19,11 +19,6 @@ internal static partial class Request
 
     public static Cmd<object[], ValkeyValue[]> HashGetDelete(ValkeyKey key, ValkeyValue[] hashFields)
     {
-        if (hashFields.Length == 0)
-        {
-            throw new ArgumentException("At least one hash field must be specified.", nameof(hashFields));
-        }
-
         return new(
             RequestType.HGetDel,
             [key, .. ToArgs(ValkeyLiterals.FIELDS, hashFields)],
