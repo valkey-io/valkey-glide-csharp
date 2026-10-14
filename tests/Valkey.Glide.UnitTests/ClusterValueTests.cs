@@ -86,14 +86,14 @@ public class ClusterValueTests
     {
         Assert.True(value.HasMultiData);
         Assert.False(value.HasSingleData);
-        Assert.Equivalent(expected, value.MultiValue);
+        Assert.Equal(expected, value.MultiValue);
     }
 
     private static void AssertSingleValue<T>(ClusterValue<T> value, T expected)
     {
         Assert.True(value.HasSingleData);
         Assert.False(value.HasMultiData);
-        Assert.Equivalent(expected, value.SingleValue);
+        Assert.Equal(expected, value.SingleValue);
     }
 
     #endregion

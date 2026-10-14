@@ -59,7 +59,8 @@ public class FtSearchTests(TestConfiguration config)
                     ["price"] = "50",
                     ["category"] = "hardware" } },
         };
-        Assert.Equivalent(expected, result.Documents);
+        Assert.Equal(expected.Select(e => e.Key), result.Documents.Select(d => d.Key));
+        Assert.Equal(expected.Select(e => e.Fields), result.Documents.Select(d => d.Fields));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -71,7 +72,7 @@ public class FtSearchTests(TestConfiguration config)
 
         Ft.SearchResult result = await Ft.SearchAsync(client, index, "@title:Alpha");
         Assert.Equal(1, result.TotalResults);
-        Assert.Equivalent(
+        Assert.Equal(
             new Dictionary<ValkeyValue, ValkeyValue>
             {
                 ["title"] = "Alpha Widget",
@@ -123,14 +124,13 @@ public class FtSearchTests(TestConfiguration config)
             });
 
         Assert.Equal(3, result.TotalResults);
-        Assert.Equivalent(
-            new Dictionary<ValkeyValue, ValkeyValue>[]
-            {
-                new() { ["title"] = "Alpha Widget", ["price"] = "10", ["category"] = "electronics" },
-                new() { ["title"] = "Beta Gadget", ["price"] = "25", ["category"] = "electronics" },
-                new() { ["title"] = "Gamma Tool", ["price"] = "50", ["category"] = "hardware" },
-            },
-            result.Documents.Select(d => d.Fields));
+        Dictionary<ValkeyValue, ValkeyValue>[] expected =
+        [
+            new() { ["title"] = "Alpha Widget", ["price"] = "10", ["category"] = "electronics" },
+            new() { ["title"] = "Beta Gadget", ["price"] = "25", ["category"] = "electronics" },
+            new() { ["title"] = "Gamma Tool", ["price"] = "50", ["category"] = "hardware" },
+        ];
+        Assert.Equal(expected, result.Documents.Select(d => d.Fields));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -151,11 +151,10 @@ public class FtSearchTests(TestConfiguration config)
 
         Assert.Equal(3, result.TotalResults);
 
+        HashSet<ValkeyValue> expected = ["title", "price"];
         foreach (Ft.SearchDocument doc in result.Documents)
         {
-            Assert.Equivalent(
-                new ValkeyValue[] { "title", "price" },
-                doc.Fields.Keys);
+            Assert.Equal(expected, [.. doc.Fields.Keys]);
         }
     }
 
@@ -184,7 +183,7 @@ public class FtSearchTests(TestConfiguration config)
 
         Ft.SearchDocument doc = Assert.Single(result.Documents);
         Assert.Equal(keys[0], doc.Key);
-        Assert.Equivalent(
+        Assert.Equal(
             new Dictionary<ValkeyValue, ValkeyValue>
             {
                 ["title"] = "Alpha Widget",

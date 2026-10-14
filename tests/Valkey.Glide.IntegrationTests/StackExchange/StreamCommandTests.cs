@@ -153,8 +153,8 @@ public class StreamCommandTests(TestConfiguration config)
 
         var entries = await db.StreamReadGroupAsync(key, "mygroup", "consumer1", ">");
         Assert.Equal(2, entries.Length);
-        Assert.Equivalent(new NameValueEntry[] { new("a1", "b1"), new("a2", "b2") }, entries[0].Values);
-        Assert.Equivalent(new NameValueEntry[] { new("c1", "d1"), new("c2", "d2"), new("c3", "d3") }, entries[1].Values);
+        Assert.Equal(new NameValueEntry[] { new("a1", "b1"), new("a2", "b2") }, entries[0].Values);
+        Assert.Equal(new NameValueEntry[] { new("c1", "d1"), new("c2", "d2"), new("c3", "d3") }, entries[1].Values);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -173,11 +173,11 @@ public class StreamCommandTests(TestConfiguration config)
 
         var stream0 = streams[0];
         Assert.Equal(key1, stream0.Key);
-        Assert.Equivalent(new NameValueEntry[] { new("f1", "v1"), new("f2", "v2") }, Assert.Single(stream0.Entries).Values);
+        Assert.Equal(new NameValueEntry[] { new("f1", "v1"), new("f2", "v2") }, Assert.Single(stream0.Entries).Values);
 
         var stream1 = streams[1];
         Assert.Equal(key2, stream1.Key);
-        Assert.Equivalent(new NameValueEntry[] { new("f3", "v3"), new("f4", "v4") }, Assert.Single(stream1.Entries).Values);
+        Assert.Equal(new NameValueEntry[] { new("f3", "v3"), new("f4", "v4") }, Assert.Single(stream1.Entries).Values);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -219,7 +219,7 @@ public class StreamCommandTests(TestConfiguration config)
         _ = await db.StreamCreateConsumerGroupAsync(key, "mygroup", id2);
 
         var entries = await db.StreamReadGroupAsync(key, "mygroup", "consumer1", ">");
-        Assert.Equivalent(new NameValueEntry[] { new("field3", "value3") }, Assert.Single(entries).Values);
+        Assert.Equal(new NameValueEntry[] { new("field3", "value3") }, Assert.Single(entries).Values);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]

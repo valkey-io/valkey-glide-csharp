@@ -36,9 +36,16 @@ public class SharedCommandTests(TestConfiguration config)
                 {
                     Assert.Null(actualResult[i]);
                 }
+                else if (expectedInfo[i].ExpectedValue is ListPopResult expectedPop)
+                {
+                    // ListPopResult does not implement value equality.
+                    ListPopResult actualPop = Assert.IsType<ListPopResult>(actualResult[i]);
+                    Assert.Equal(expectedPop.Key, actualPop.Key);
+                    Assert.Equal(expectedPop.Values, actualPop.Values);
+                }
                 else
                 {
-                    Assert.Equivalent(expectedInfo[i].ExpectedValue, actualResult[i]);
+                    Assert.Equal(expectedInfo[i].ExpectedValue, actualResult[i]);
                 }
             }
             catch (Exception e)

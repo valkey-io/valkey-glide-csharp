@@ -1942,7 +1942,7 @@ public class JsonCommandTests(TestConfiguration config)
         await GlideJson.SetAsync(client, key, "$", jsonValue);
         var result = await GlideJson.StrLenAsync(client, key, "$..a");
 
-        Assert.Equivalent(new long?[] { 3L, 5L }, result!.Order(), strict: true);
+        Assert.Equal([3L, 5L], result!.Order());
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]

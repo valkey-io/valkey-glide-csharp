@@ -634,7 +634,7 @@ public class PubSubCommandTests(TestConfiguration config)
 
             if (received.Count == expected.Count)
             {
-                Assert.Equivalent(expected, received);
+                Assert.Equal(expected, received);
                 return;
             }
 
@@ -659,7 +659,9 @@ public class PubSubCommandTests(TestConfiguration config)
             timeout: AssertTimeout,
             interval: AssertRetryInterval);
 
-        Assert.Equivalent(expected, actual);
+        // Handler invocation order is not guaranteed.
+        Assert.Equal(expected.Count, actual.Count);
+        Assert.All(expected, e => Assert.Contains(e, actual));
         actual.Clear();
     }
 

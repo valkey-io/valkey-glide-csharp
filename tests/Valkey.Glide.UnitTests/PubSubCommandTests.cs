@@ -151,8 +151,8 @@ public class PubSubCommandTests
         // Simulated response from server
         GlideString[] response = [Channel1, Channel2];
 
-        var expected = new ValkeyKey[] { Channel1, Channel2 };
-        Assert.Equivalent(expected, cmd.Converter(response));
+        var expected = new HashSet<ValkeyKey> { Channel1, Channel2 };
+        Assert.Equal(expected, cmd.Converter(response));
     }
 
     [Fact]
@@ -181,7 +181,7 @@ public class PubSubCommandTests
             { Channel2, 10L }
         };
 
-        Assert.Equivalent(expected, cmd.Converter(response));
+        Assert.Equal(expected, cmd.Converter(response));
     }
 
     [Fact]
@@ -221,7 +221,7 @@ public class PubSubCommandTests
             { Channel2, 7L }
         };
 
-        Assert.Equivalent(expected, cmd.Converter(response));
+        Assert.Equal(expected, cmd.Converter(response));
     }
 
     [Fact]
@@ -232,8 +232,8 @@ public class PubSubCommandTests
         // Simulated response from server
         GlideString[] response = [Channel1, Channel2];
 
-        var expected = new ValkeyKey[] { Channel1, Channel2 };
-        Assert.Equivalent(expected, cmd.Converter(response));
+        var expected = new HashSet<ValkeyKey> { Channel1, Channel2 };
+        Assert.Equal(expected, cmd.Converter(response));
     }
 
     [Fact]

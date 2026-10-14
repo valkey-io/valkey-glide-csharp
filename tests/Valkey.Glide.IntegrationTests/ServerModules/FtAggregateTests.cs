@@ -70,13 +70,12 @@ public class FtAggregateTests(TestConfiguration config)
                 ],
             });
 
-        Assert.Equivalent(
-            new Dictionary<ValkeyValue, ValkeyValue>[]
-            {
-                new() { ["category"] = "electronics", ["count"] = "3" },
-                new() { ["category"] = "hardware", ["count"] = "2" },
-            },
-            rows);
+        Dictionary<ValkeyValue, ValkeyValue>[] expected =
+        [
+            new() { ["category"] = "electronics", ["count"] = "3" },
+            new() { ["category"] = "hardware", ["count"] = "2" },
+        ];
+        Assert.Equal(expected, rows);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -109,16 +108,15 @@ public class FtAggregateTests(TestConfiguration config)
                 ],
             });
 
-        Assert.Equivalent(
-            new Dictionary<ValkeyValue, ValkeyValue>[]
-            {
-                new() { ["price"] = "10" },
-                new() { ["price"] = "15" },
-                new() { ["price"] = "25" },
-                new() { ["price"] = "30" },
-                new() { ["price"] = "50" },
-            },
-            rows);
+        Dictionary<ValkeyValue, ValkeyValue>[] expected =
+        [
+            new() { ["price"] = "10" },
+            new() { ["price"] = "15" },
+            new() { ["price"] = "25" },
+            new() { ["price"] = "30" },
+            new() { ["price"] = "50" },
+        ];
+        Assert.Equal(expected, rows);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -145,14 +143,13 @@ public class FtAggregateTests(TestConfiguration config)
                 ],
             });
 
-        Assert.Equivalent(
-            new Dictionary<ValkeyValue, ValkeyValue>[]
-                {
-                    new() { ["price"] = "25" },
-                    new() { ["price"] = "30" },
-                    new() { ["price"] = "50" },
-                },
-            rows);
+        Dictionary<ValkeyValue, ValkeyValue>[] expected =
+        [
+            new() { ["price"] = "25" },
+            new() { ["price"] = "30" },
+            new() { ["price"] = "50" },
+        ];
+        Assert.Equal(expected, rows);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -183,16 +180,15 @@ public class FtAggregateTests(TestConfiguration config)
                 ],
             });
 
-        Assert.Equivalent(
-            new Dictionary<ValkeyValue, ValkeyValue>[]
-                {
-                    new() { ["price"] = "10", ["double_price"] = "20" },
-                    new() { ["price"] = "15", ["double_price"] = "30" },
-                    new() { ["price"] = "25", ["double_price"] = "50" },
-                    new() { ["price"] = "30", ["double_price"] = "60" },
-                    new() { ["price"] = "50", ["double_price"] = "100" },
-                },
-            rows);
+        Dictionary<ValkeyValue, ValkeyValue>[] expected =
+        [
+            new() { ["price"] = "10", ["double_price"] = "20" },
+            new() { ["price"] = "15", ["double_price"] = "30" },
+            new() { ["price"] = "25", ["double_price"] = "50" },
+            new() { ["price"] = "30", ["double_price"] = "60" },
+            new() { ["price"] = "50", ["double_price"] = "100" },
+        ];
+        Assert.Equal(expected, rows);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -219,13 +215,12 @@ public class FtAggregateTests(TestConfiguration config)
                 ],
             });
 
-        Assert.Equivalent(
-            new Dictionary<ValkeyValue, ValkeyValue>[]
-                {
-                    new() { ["price"] = "10" },
-                    new() { ["price"] = "15" },
-                },
-            rows);
+        Dictionary<ValkeyValue, ValkeyValue>[] expected =
+        [
+            new() { ["price"] = "10" },
+            new() { ["price"] = "15" },
+        ];
+        Assert.Equal(expected, rows);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -271,10 +266,11 @@ public class FtAggregateTests(TestConfiguration config)
                 ],
             });
 
-        Assert.Equivalent(
-            new Dictionary<ValkeyValue, ValkeyValue>[] {
-                new() { ["category"] = "electronics", ["count"] = "3" } },
-            rows);
+        Dictionary<ValkeyValue, ValkeyValue>[] expected =
+        [
+            new() { ["category"] = "electronics", ["count"] = "3" },
+        ];
+        Assert.Equal(expected, rows);
     }
 
     #endregion

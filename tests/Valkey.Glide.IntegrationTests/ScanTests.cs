@@ -23,7 +23,7 @@ public class ScanTests(TestConfiguration config)
         // Get all keys with matching prefix.
         var matchingKeys = await ExecuteScanAsync(client, $"{prefix}:*");
 
-        Assert.Equivalent(new[] { key1, key2 }, matchingKeys);
+        Assert.Equal(new HashSet<ValkeyKey> { key1, key2 }, [.. matchingKeys]);
 
         // Get all keys with non-existent prefix.
         matchingKeys = await ExecuteScanAsync(client, "nonexistent:*");
@@ -51,7 +51,7 @@ public class ScanTests(TestConfiguration config)
         // Get all keys with prefix.
         var matchingKeys = await ExecuteScanAsync(client, $"{prefix}:*");
 
-        Assert.Equivalent(new[] { stringKey, listKey, setKey }, matchingKeys);
+        Assert.Equal(new HashSet<ValkeyKey> { stringKey, listKey, setKey }, [.. matchingKeys]);
 
         // Remove keys.
         _ = await client.DeleteAsync([stringKey, listKey, setKey]);
@@ -74,7 +74,7 @@ public class ScanTests(TestConfiguration config)
         // Get all keys with matching prefix using small page size.
         var matchingKeys = await ExecuteScanAsync(client, $"{prefix}:match:*", pageSize: 1);
 
-        Assert.Equivalent(new[] { matchStringKey, matchListKey }, matchingKeys);
+        Assert.Equal(new HashSet<ValkeyKey> { matchStringKey, matchListKey }, [.. matchingKeys]);
 
         // Remove keys.
         _ = await client.DeleteAsync([matchStringKey, matchListKey, otherStringKey]);

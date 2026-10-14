@@ -97,8 +97,8 @@ public class PubSubConfigurationTests
         Assert.NotNull(storedConfig);
 
         // Check exact channels and patterns.
-        Assert.Equivalent(new HashSet<ValkeyKey> { Channel1, Channel2 }, storedConfig.Subscriptions[PubSubChannelMode.Exact]);
-        Assert.Equivalent(new HashSet<ValkeyKey> { Pattern1, Pattern2 }, storedConfig.Subscriptions[PubSubChannelMode.Pattern]);
+        Assert.Equal(new HashSet<ValkeyKey> { Channel1, Channel2 }, storedConfig.Subscriptions[PubSubChannelMode.Exact]);
+        Assert.Equal(new HashSet<ValkeyKey> { Pattern1, Pattern2 }, storedConfig.Subscriptions[PubSubChannelMode.Pattern]);
     }
 
     #endregion
@@ -180,9 +180,9 @@ public class PubSubConfigurationTests
         Assert.NotNull(storedConfig);
 
         // Check exact channels, patterns, and sharded channels.
-        Assert.Equivalent(new HashSet<ValkeyKey> { Channel1, Channel2 }, storedConfig.Subscriptions[PubSubChannelMode.Exact]);
-        Assert.Equivalent(new HashSet<ValkeyKey> { Pattern1, Pattern2 }, storedConfig.Subscriptions[PubSubChannelMode.Pattern]);
-        Assert.Equivalent(new HashSet<ValkeyKey> { ShardedChannel1, ShardedChannel2 }, storedConfig.Subscriptions[PubSubChannelMode.Sharded]);
+        Assert.Equal(new HashSet<ValkeyKey> { Channel1, Channel2 }, storedConfig.Subscriptions[PubSubChannelMode.Exact]);
+        Assert.Equal(new HashSet<ValkeyKey> { Pattern1, Pattern2 }, storedConfig.Subscriptions[PubSubChannelMode.Pattern]);
+        Assert.Equal(new HashSet<ValkeyKey> { ShardedChannel1, ShardedChannel2 }, storedConfig.Subscriptions[PubSubChannelMode.Sharded]);
     }
 
     #endregion
