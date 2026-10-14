@@ -222,7 +222,7 @@ public partial interface IDatabaseAsync
     /// <remarks>
     /// <para>Since Valkey 9.1.0.</para>
     /// </remarks>
-    Task<ValkeyValue[]> HashFieldGetAndDeleteAsync(ValkeyKey key, ValkeyValue[] hashFields, CommandFlags flags = CommandFlags.None);
+    Task<ValkeyValue[]> HashFieldGetAndDeleteAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, CommandFlags flags = CommandFlags.None);
 
     /// <summary>
     /// Sets the specified hash field and optionally sets its expiry.
