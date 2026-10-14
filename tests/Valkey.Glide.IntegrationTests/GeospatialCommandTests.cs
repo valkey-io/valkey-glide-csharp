@@ -46,7 +46,7 @@ public class GeospatialCommandTests(TestConfiguration config)
     private static readonly GeoSearchBox Box400Km = new(400, 400, GeoUnit.Kilometers);
 
     // Common expected results.
-    private static readonly GeoSearchResult[] PalermoCataniaSearchResults =
+    private static readonly HashSet<GeoSearchResult> PalermoCataniaSearchResults =
     [
         new(PalermoName),
         new(CataniaName),
@@ -411,10 +411,17 @@ public class GeospatialCommandTests(TestConfiguration config)
         var resultsMiles = await client.GeoSearchAsync(key, PalermoPos, shapeMiles);
         var resultsFeet = await client.GeoSearchAsync(key, PalermoPos, shapeFeet);
 
-        Assert.Equivalent(PalermoCataniaSearchResults, resultsMeters);
-        Assert.Equivalent(PalermoCataniaSearchResults, resultsKilometers);
-        Assert.Equivalent(PalermoCataniaSearchResults, resultsMiles);
-        Assert.Equivalent(PalermoCataniaSearchResults, resultsFeet);
+        var expected = new HashSet<GeoSearchResult>
+        {
+            new(PalermoName),
+            new(CataniaName),
+            new(TrapaniName)
+        };
+
+        Assert.Equal(expected, [.. resultsMeters]);
+        Assert.Equal(expected, [.. resultsKilometers]);
+        Assert.Equal(expected, [.. resultsMiles]);
+        Assert.Equal(expected, [.. resultsFeet]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -446,7 +453,7 @@ public class GeospatialCommandTests(TestConfiguration config)
         _ = await client.GeoAddAsync(key, members);
 
         var results = await client.GeoSearchAsync(key, PalermoName, Circle200Km);
-        Assert.Equivalent(PalermoCataniaSearchResults, results);
+        Assert.Equal(new HashSet<GeoSearchResult> { new(PalermoName), new(CataniaName), new("edge") }, [.. results]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -457,7 +464,7 @@ public class GeospatialCommandTests(TestConfiguration config)
         _ = await client.GeoAddAsync(key, PalermoCatania);
 
         var results = await client.GeoSearchAsync(key, PalermoPos, Circle200Km);
-        Assert.Equivalent(PalermoCataniaSearchResults, results);
+        Assert.Equal(PalermoCataniaSearchResults, [.. results]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -474,7 +481,7 @@ public class GeospatialCommandTests(TestConfiguration config)
         _ = await client.GeoAddAsync(key, members);
 
         var results = await client.GeoSearchAsync(key, PalermoName, Box400Km);
-        Assert.Equivalent(PalermoCataniaSearchResults, results);
+        Assert.Equal(new HashSet<GeoSearchResult> { new(PalermoName), new(CataniaName), new("edge") }, [.. results]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -485,7 +492,7 @@ public class GeospatialCommandTests(TestConfiguration config)
         _ = await client.GeoAddAsync(key, PalermoCatania);
 
         var results = await client.GeoSearchAsync(key, PalermoPos, Box400Km);
-        Assert.Equivalent(PalermoCataniaSearchResults, results);
+        Assert.Equal(PalermoCataniaSearchResults, [.. results]);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -526,8 +533,8 @@ public class GeospatialCommandTests(TestConfiguration config)
         _ = await client.GeoAddAsync(key, members);
 
         var closestResults = await client.GeoSearchAsync(key, PalermoName, Circle200Km, new GeoSearchOptions { Count = 3 });
-        var closestExpected = new GeoSearchResult[] { new(PalermoName), new(CataniaName), new("close1") };
-        Assert.Equivalent(closestExpected, closestResults);
+        var closestExpected = new GeoSearchResult[] { new(PalermoName), new("close1"), new("edge2") };
+        Assert.Equal(closestExpected.ToHashSet(), [.. closestResults]);
 
         // Test that demandClosest=false works (should return any results, not necessarily closest)
         var anyResults = await client.GeoSearchAsync(key, PalermoName, Circle200Km, new GeoSearchOptions { Count = 3, Any = true });
@@ -548,10 +555,10 @@ public class GeospatialCommandTests(TestConfiguration config)
         _ = await client.GeoAddAsync(key, members);
 
         var ascResults = await client.GeoSearchAsync(key, PalermoName, Circle200Km, new GeoSearchOptions { Order = Order.Ascending });
-        Assert.Equivalent(new GeoSearchResult[] { new(PalermoName), new(CataniaName), new("close1") }, ascResults);
+        Assert.Equal(new GeoSearchResult[] { new(PalermoName), new("edge1"), new(CataniaName) }, ascResults);
 
         var descResults = await client.GeoSearchAsync(key, PalermoName, Circle200Km, new GeoSearchOptions { Order = Order.Descending });
-        Assert.Equivalent(new GeoSearchResult[] { new("close1"), new(CataniaName), new(PalermoName) }, descResults);
+        Assert.Equal(new GeoSearchResult[] { new(CataniaName), new("edge1"), new(PalermoName) }, descResults);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -645,7 +652,7 @@ public class GeospatialCommandTests(TestConfiguration config)
         Assert.Equal(3, await client.GeoSearchAndStoreAsync(source, dest, PalermoName, Circle200Km));
 
         var stored = await client.GeoSearchAsync(dest, PalermoPos, Circle200Km, new GeoSearchOptions { Order = Order.Ascending });
-        Assert.Equivalent(new GeoSearchResult[] { new(CataniaName), new(PalermoName), new(TrapaniName) }, stored);
+        Assert.Equal(new GeoSearchResult[] { new(PalermoName), new(TrapaniName), new(CataniaName) }, stored);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -661,7 +668,7 @@ public class GeospatialCommandTests(TestConfiguration config)
         Assert.Equal(2, await client.GeoSearchAndStoreAsync(source, dest, PalermoPos, Circle200Km));
 
         var stored = await client.GeoSearchAsync(dest, PalermoPos, Circle200Km, new GeoSearchOptions { Order = Order.Ascending });
-        Assert.Equivalent(new GeoSearchResult[] { new(CataniaName), new(PalermoName) }, stored);
+        Assert.Equal(new GeoSearchResult[] { new(PalermoName), new(CataniaName) }, stored);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -750,7 +757,7 @@ public class GeospatialCommandTests(TestConfiguration config)
         Assert.Equal(2, await client.GeoSearchAndStoreAsync(source, dest, PalermoName, Circle200Km));
 
         var stored = await client.SortedSetRangeAsync(dest);
-        Assert.Equivalent(new ValkeyValue[] { PalermoName, CataniaName }, stored);
+        Assert.Equal(new ValkeyValue[] { PalermoName, CataniaName }, stored);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]

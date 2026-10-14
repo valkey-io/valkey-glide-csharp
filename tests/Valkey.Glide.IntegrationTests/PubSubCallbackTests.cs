@@ -130,6 +130,6 @@ public class PubSubCallbackTests
         // Publish all messages and verify they are received in order.
         await PublishAsync(publisher, messages);
         _ = completed.Wait(MaxDuration, TestContext.Current.CancellationToken);
-        Assert.Equivalent(messages, receivedMessages);
+        Assert.Equal(messages, receivedMessages);
     }
 }

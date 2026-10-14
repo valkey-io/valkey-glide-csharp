@@ -145,18 +145,17 @@ internal sealed class Subscriber : ISubscriber
     private async Task<long> SendPublishCommand(ValkeyChannel channel, ValkeyValue message)
     {
         var channelStr = channel.ToString();
-        var messageStr = message.ToString();
 
         if (channel.IsSharded)
         {
             ThrowIfNotClusterMode();
 
             // TODO #205: Refactor to use GlideClusterClient instead of custom command.
-            var result = await _client.Command(Request.CustomCommand(["SPUBLISH", channelStr, messageStr]), Route.Random);
+            var result = await _client.Command(Request.CustomCommand(["SPUBLISH", channelStr, message.ToGlideString()]), Route.Random);
             return Convert.ToInt64(result);
         }
 
-        return await _client.PublishAsync(channelStr, messageStr);
+        return await _client.PublishAsync(channelStr, message);
     }
 
     /// <summary>

@@ -262,7 +262,7 @@ public class ClusterClientTests(TestConfiguration config)
         {
             string echo = ev!.ToString();
             byte[] bytes = Encoding.ASCII.GetBytes(echo);
-            Assert.Equivalent(binaryData, bytes);
+            Assert.Equal(binaryData, bytes);
         }
     }
 
