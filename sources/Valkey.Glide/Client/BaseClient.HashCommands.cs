@@ -93,7 +93,15 @@ public abstract partial class BaseClient
 
     /// <inheritdoc cref="IBaseClient.HashGetAsync(ValkeyKey, ValkeyValue, GetExpiryOptions)"/>
     public async Task<ValkeyValue> HashGetAsync(ValkeyKey key, ValkeyValue hashField, GetExpiryOptions options)
-        => (await Command(Request.HashGet(key, [hashField], options))).First();
+        => await Command(Request.HashGet(key, [hashField], options).ToFirstValue());
+
+    /// <inheritdoc cref="IBaseClient.HashGetDeleteAsync(ValkeyKey, ValkeyValue)"/>
+    public async Task<ValkeyValue> HashGetDeleteAsync(ValkeyKey key, ValkeyValue hashField)
+        => await Command(Request.HashGetDelete(key, [hashField]).ToFirstValue());
+
+    /// <inheritdoc cref="IBaseClient.HashGetDeleteAsync(ValkeyKey, IEnumerable{ValkeyValue})"/>
+    public async Task<ValkeyValue[]> HashGetDeleteAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields)
+        => await Command(Request.HashGetDelete(key, hashFields));
 
     /// <inheritdoc cref="IBaseClient.HashSetAsync(ValkeyKey, ValkeyValue, ValkeyValue, HashSetCondition)"/>
     public async Task<bool> HashSetAsync(ValkeyKey key, ValkeyValue hashField, ValkeyValue value, HashSetCondition condition)
@@ -121,7 +129,7 @@ public abstract partial class BaseClient
 
     /// <inheritdoc cref="IBaseClient.HashPersistAsync(ValkeyKey, ValkeyValue)"/>
     public async Task<HashPersistResult> HashPersistAsync(ValkeyKey key, ValkeyValue hashField)
-        => (await Command(Request.HashPersist(key, [hashField]))).First();
+        => await Command(Request.HashPersist(key, [hashField]).ToFirstValue());
 
     /// <inheritdoc cref="IBaseClient.HashPersistAsync(ValkeyKey, IEnumerable{ValkeyValue})"/>
     public async Task<HashPersistResult[]> HashPersistAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields)
@@ -129,7 +137,7 @@ public abstract partial class BaseClient
 
     /// <inheritdoc cref="IBaseClient.HashExpireAsync(ValkeyKey, ValkeyValue, TimeSpan, ExpireCondition)"/>
     public async Task<HashExpireResult> HashExpireAsync(ValkeyKey key, ValkeyValue hashField, TimeSpan expiry, ExpireCondition condition = ExpireCondition.Always)
-        => (await Command(Request.HashExpire(key, expiry, [hashField], condition))).First();
+        => await Command(Request.HashExpire(key, expiry, [hashField], condition).ToFirstValue());
 
     /// <inheritdoc cref="IBaseClient.HashExpireAsync(ValkeyKey, IEnumerable{ValkeyValue}, TimeSpan, ExpireCondition)"/>
     public async Task<HashExpireResult[]> HashExpireAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, TimeSpan expiry, ExpireCondition condition = ExpireCondition.Always)
@@ -137,7 +145,7 @@ public abstract partial class BaseClient
 
     /// <inheritdoc cref="IBaseClient.HashExpireAtAsync(ValkeyKey, ValkeyValue, DateTimeOffset, ExpireCondition)"/>
     public async Task<HashExpireResult> HashExpireAtAsync(ValkeyKey key, ValkeyValue hashField, DateTimeOffset expiry, ExpireCondition condition = ExpireCondition.Always)
-        => (await Command(Request.HashExpireAt(key, expiry, [hashField], condition))).First();
+        => await Command(Request.HashExpireAt(key, expiry, [hashField], condition).ToFirstValue());
 
     /// <inheritdoc cref="IBaseClient.HashExpireAtAsync(ValkeyKey, IEnumerable{ValkeyValue}, DateTimeOffset, ExpireCondition)"/>
     public async Task<HashExpireResult[]> HashExpireAtAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, DateTimeOffset expiry, ExpireCondition condition = ExpireCondition.Always)
@@ -145,7 +153,7 @@ public abstract partial class BaseClient
 
     /// <inheritdoc cref="IBaseClient.HashExpireTimeAsync(ValkeyKey, ValkeyValue)"/>
     public async Task<ExpireTimeResult> HashExpireTimeAsync(ValkeyKey key, ValkeyValue hashField)
-        => (await Command(Request.HashExpireTime(key, [hashField]))).First();
+        => await Command(Request.HashExpireTime(key, [hashField]).ToFirstValue());
 
     /// <inheritdoc cref="IBaseClient.HashExpireTimeAsync(ValkeyKey, IEnumerable{ValkeyValue})"/>
     public async Task<ExpireTimeResult[]> HashExpireTimeAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields)
@@ -153,7 +161,7 @@ public abstract partial class BaseClient
 
     /// <inheritdoc cref="IBaseClient.HashTimeToLiveAsync(ValkeyKey, ValkeyValue)"/>
     public async Task<TimeToLiveResult> HashTimeToLiveAsync(ValkeyKey key, ValkeyValue hashField)
-        => (await Command(Request.HashTimeToLive(key, [hashField]))).First();
+        => await Command(Request.HashTimeToLive(key, [hashField]).ToFirstValue());
 
     /// <inheritdoc cref="IBaseClient.HashTimeToLiveAsync(ValkeyKey, IEnumerable{ValkeyValue})"/>
     public async Task<TimeToLiveResult[]> HashTimeToLiveAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields)

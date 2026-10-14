@@ -446,6 +446,18 @@ public class CommandFlagsTests(TestConfiguration config)
             () => db.HashFieldSetAndSetExpiryAsync("key", [], DateTime.MinValue, flags: UnsupportedFlag));
     }
 
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashFieldGetAndDeleteAsync_SingleField_ThrowsOnCommandFlags(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.HashFieldGetAndDeleteAsync("key", "field", UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashFieldGetAndDeleteAsync_MultiField_ThrowsOnCommandFlags(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.HashFieldGetAndDeleteAsync("key", ["field"], UnsupportedFlag));
+
     #endregion
     #region List Commands
 

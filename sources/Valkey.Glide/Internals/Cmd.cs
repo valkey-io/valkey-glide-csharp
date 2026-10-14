@@ -141,6 +141,19 @@ internal class Cmd<R, T> : ICmd
 #pragma warning restore IDE0072 // Populate switch
 }
 
+internal static class CmdExtensions
+{
+    /// <summary>
+    /// Convert a command that returns an array to one which returns only its first element.
+    /// Used to build single-field variants of multi-field commands.
+    /// </summary>
+    /// <typeparam name="R">The raw response type.</typeparam>
+    /// <typeparam name="T">The converted element type.</typeparam>
+    /// <param name="cmd">The multi-field command to convert.</param>
+    public static Cmd<R, T> ToFirstValue<R, T>(this Cmd<R, T[]> cmd)
+        => new(cmd.Request, cmd.ArgsArray.Args, cmd.IsNullable, response => cmd.Converter(response)[0], cmd.AllowConverterToHandleNull);
+}
+
 internal record ArgsArray
 {
     public GlideString[] Args = [];

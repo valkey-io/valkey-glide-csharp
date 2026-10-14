@@ -77,6 +77,49 @@ public partial interface IBaseClient
         GetExpiryOptions options);
 
     /// <summary>
+    /// Atomically gets and deletes a hash field.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/hgetdel/">Valkey commands – HGETDEL</seealso>
+    /// <param name="key">The hash key.</param>
+    /// <param name="hashField">The field to get and delete.</param>
+    /// <returns>
+    /// The value of <paramref name="hashField"/>, or <see cref="ValkeyValue.Null"/> if
+    /// the field or <paramref name="key"/> does not exist.
+    /// </returns>
+    /// <example>
+    /// <code>
+    /// await client.HashSetAsync("myhash", "field1", "value1");
+    /// var value = await client.HashGetDeleteAsync("myhash", "field1");  // "value1"; field1 is deleted
+    /// </code>
+    /// </example>
+    /// <remarks>
+    /// <para>Since Valkey 9.1.0.</para>
+    /// </remarks>
+    Task<ValkeyValue> HashGetDeleteAsync(ValkeyKey key, ValkeyValue hashField);
+
+    /// <summary>
+    /// Atomically gets and deletes multiple hash fields.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/hgetdel/">Valkey commands – HGETDEL</seealso>
+    /// <param name="key">The hash key.</param>
+    /// <param name="hashFields">The fields to get and delete.</param>
+    /// <returns>
+    /// A <see cref="ValkeyValue"/> array with one entry per field. Entries are the value of the
+    /// corresponding hash field, or <see cref="ValkeyValue.Null"/> if the field or <paramref name="key"/>
+    /// does not exist.
+    /// </returns>
+    /// <example>
+    /// <code>
+    /// await client.HashSetAsync("myhash", [new("field1", "value1"), new("field2", "value2")]);
+    /// var values = await client.HashGetDeleteAsync("myhash", ["field1", "missing"]);  // ["value1", ValkeyValue.Null]; field1 is deleted
+    /// </code>
+    /// </example>
+    /// <remarks>
+    /// <para>Since Valkey 9.1.0.</para>
+    /// </remarks>
+    Task<ValkeyValue[]> HashGetDeleteAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields);
+
+    /// <summary>
     /// Returns all field names from a hash.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hkeys/">Valkey commands – HKEYS</seealso>

@@ -92,6 +92,9 @@ internal static partial class Request
                 response
                     => [.. response.Select(item => item == null ? ValkeyValue.Null : (ValkeyValue)(GlideString)item)]);
 
+    public static Cmd<object[], ValkeyValue[]> HashGetDelete(ValkeyKey key, IEnumerable<ValkeyValue> hashFields)
+        => ToValkeyValues(RequestType.HGetDel, [key, .. ToArgs(ValkeyLiterals.FIELDS, hashFields)]);
+
     public static Cmd<long, long> HashIncrementBy(ValkeyKey key, ValkeyValue hashField, long value)
         => Simple<long>(RequestType.HIncrBy, [key, hashField, value.ToGlideString()]);
 

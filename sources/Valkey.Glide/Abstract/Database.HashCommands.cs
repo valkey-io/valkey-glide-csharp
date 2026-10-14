@@ -162,6 +162,26 @@ internal partial class Database
         return await HashGetAsync(key, hashFields, GetExpiryOptions.ExpireAt(new DateTimeOffset(expiry)));
     }
 
+    /// <inheritdoc cref="IDatabaseAsync.HashFieldGetAndDeleteAsync(ValkeyKey, ValkeyValue, CommandFlags)"/>
+    public Task<ValkeyValue> HashFieldGetAndDeleteAsync(ValkeyKey key, ValkeyValue hashField, CommandFlags flags = CommandFlags.None)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+        return HashGetDeleteAsync(key, hashField);
+    }
+
+    /// <inheritdoc cref="IDatabaseAsync.HashFieldGetAndDeleteAsync(ValkeyKey, ValkeyValue[], CommandFlags)"/>
+    public Task<ValkeyValue[]> HashFieldGetAndDeleteAsync(ValkeyKey key, ValkeyValue[] hashFields, CommandFlags flags = CommandFlags.None)
+    {
+        ArgumentNullException.ThrowIfNull(hashFields);
+        if (hashFields.Length == 0)
+        {
+            return Task.FromResult(Array.Empty<ValkeyValue>());
+        }
+
+        GuardClauses.ThrowIfCommandFlags(flags);
+        return HashGetDeleteAsync(key, hashFields);
+    }
+
     /// <inheritdoc cref="IDatabaseAsync.HashFieldSetAndSetExpiryAsync(ValkeyKey, ValkeyValue, ValkeyValue, TimeSpan?, bool, When, CommandFlags)"/>
     public async Task<ValkeyValue> HashFieldSetAndSetExpiryAsync(ValkeyKey key, ValkeyValue hashField, ValkeyValue value, TimeSpan? expiry = null, bool keepTtl = false, When when = When.Always, CommandFlags flags = CommandFlags.None)
     {

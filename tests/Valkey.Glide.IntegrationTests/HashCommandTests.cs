@@ -462,6 +462,48 @@ public class HashCommandTests(TestConfiguration config)
     }
 
     #endregion
+    #region HashGetDeleteAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestHashGetDelete_SingleField(BaseClient client)
+    {
+        Skip.IfHashGetDeleteNotSupported();
+
+        var key = Guid.NewGuid().ToString();
+        _ = await client.HashSetAsync(key, [new("field1", "value1"), new("field2", "value2")]);
+
+        Assert.Equal("value1", await client.HashGetDeleteAsync(key, "field1"));
+        Assert.False(await client.HashExistsAsync(key, "field1"));
+        Assert.True(await client.HashExistsAsync(key, "field2"));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestHashGetDelete_MultipleFields(BaseClient client)
+    {
+        Skip.IfHashGetDeleteNotSupported();
+
+        var key = Guid.NewGuid().ToString();
+        _ = await client.HashSetAsync(key, [new("field1", "value1"), new("field2", "value2"), new("field3", "value3")]);
+
+        var values = await client.HashGetDeleteAsync(key, ["field1", "missing", "field2"]);
+        Assert.Equal(["value1", ValkeyValue.Null, "value2"], values);
+
+        Assert.False(await client.HashExistsAsync(key, "field1"));
+        Assert.False(await client.HashExistsAsync(key, "field2"));
+        Assert.True(await client.HashExistsAsync(key, "field3"));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestHashGetDelete_Empty(BaseClient client)
+    {
+        Skip.IfHashGetDeleteNotSupported();
+        _ = await Assert.ThrowsAsync<RequestException>(() => client.HashGetDeleteAsync(Guid.NewGuid().ToString(), []));
+    }
+
+    #endregion
     #region HashSetExpiryAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]

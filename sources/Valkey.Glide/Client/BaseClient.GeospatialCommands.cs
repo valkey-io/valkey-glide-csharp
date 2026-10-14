@@ -29,7 +29,7 @@ public abstract partial class BaseClient
 
     /// <inheritdoc cref="IGeospatialBaseCommands.GeoHashAsync(ValkeyKey, ValkeyValue)"/>
     public async Task<string?> GeoHashAsync(ValkeyKey key, ValkeyValue member)
-        => await Command(Request.GeoHash(key, member));
+        => await Command(Request.GeoHash(key, [member]).ToFirstValue());
 
     /// <inheritdoc cref="IGeospatialBaseCommands.GeoHashAsync(ValkeyKey, IEnumerable{ValkeyValue})"/>
     public async Task<string?[]> GeoHashAsync(ValkeyKey key, IEnumerable<ValkeyValue> members)
@@ -37,7 +37,7 @@ public abstract partial class BaseClient
 
     /// <inheritdoc cref="IGeospatialBaseCommands.GeoPositionAsync(ValkeyKey, ValkeyValue)"/>
     public async Task<GeoPosition?> GeoPositionAsync(ValkeyKey key, ValkeyValue member)
-        => await Command(Request.GeoPosition(key, member));
+        => await Command(Request.GeoPosition(key, [member]).ToFirstValue());
 
     /// <inheritdoc cref="IGeospatialBaseCommands.GeoPositionAsync(ValkeyKey, IEnumerable{ValkeyValue})"/>
     public async Task<GeoPosition?[]> GeoPositionAsync(ValkeyKey key, IEnumerable<ValkeyValue> members)

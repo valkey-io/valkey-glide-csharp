@@ -1291,12 +1291,14 @@ internal partial class BatchTestUtils
         _ = batch.HashDelete(key2, ["multi1", "multi2"]);
         testData.Add(new(2L, "HashDelete(key2, [multi1, multi2])"));
 
-        // Hash Field Expire Commands (Valkey 9.0+)
+        // Valkey 9.0+ hash commands
+        // -------------------------
+
         if (TestConfiguration.SERVER_VERSION >= new Version("9.0.0"))
         {
+            // Set up data
             string expireKey = $"{atomicPrefix}expire-{Guid.NewGuid()}";
 
-            // Set up data for expire tests
             _ = batch.HashSet(expireKey, "expire_field1", "expire_value1");
             testData.Add(new(true, "HashSet(expireKey, expire_field1, expire_value1)"));
 
@@ -1304,6 +1306,9 @@ internal partial class BatchTestUtils
             testData.Add(new(true, "HashSet(expireKey, expire_field2, expire_value2)"));
 
             // Test HGETEX
+            _ = batch.HashGet(expireKey, "expire_field1", GetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60)));
+            testData.Add(new(new ValkeyValue("expire_value1"), "HashGet(expireKey, expire_field1, 60s)"));
+
             _ = batch.HashGet(expireKey, ["expire_field1"], GetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60)));
             testData.Add(new(new ValkeyValue[] { "expire_value1" }, "HashGet(expireKey, [expire_field1], 60s)"));
 
@@ -1312,6 +1317,9 @@ internal partial class BatchTestUtils
             testData.Add(new(true, "HashSet(expireKey, {setex_field: setex_value}, 60s)"));
 
             // Test HEXPIRE with seconds
+            _ = batch.HashExpire(expireKey, "expire_field1", TimeSpan.FromSeconds(30));
+            testData.Add(new(HashExpireResult.ExpirySet, "HashExpire(expireKey, expire_field1, 30s)"));
+
             _ = batch.HashExpire(expireKey, ["expire_field1"], TimeSpan.FromSeconds(30));
             testData.Add(new(new HashExpireResult[] { HashExpireResult.ExpirySet }, "HashExpire(expireKey, 30, [expire_field1])"));
 
@@ -1319,17 +1327,53 @@ internal partial class BatchTestUtils
             _ = batch.HashExpire(expireKey, ["expire_field2"], TimeSpan.FromMilliseconds(5000));
             testData.Add(new(new HashExpireResult[] { HashExpireResult.ExpirySet }, "HashExpire(expireKey, TimeSpan.FromMilliseconds(5000), [expire_field2])"));
 
+            // Test HEXPIREAT
+            _ = batch.HashExpireAt(expireKey, "expire_field1", DateTimeOffset.UtcNow.AddMinutes(5));
+            testData.Add(new(HashExpireResult.ExpirySet, "HashExpireAt(expireKey, expire_field1, +5m)"));
+
             // Test HTTL
+            _ = batch.HashTimeToLive(expireKey, "expire_field1");
+            testData.Add(new(default(TimeToLiveResult), "HashTimeToLive(expireKey, expire_field1)", true));
+
             _ = batch.HashTimeToLive(expireKey, ["expire_field1", "expire_field2"]);
             testData.Add(new(Array.Empty<TimeToLiveResult>(), "HashTimeToLive(expireKey, [expire_field1, expire_field2])", true));
 
             // Test HPERSIST
+            _ = batch.HashPersist(expireKey, "expire_field2");
+            testData.Add(new(HashPersistResult.ExpiryRemoved, "HashPersist(expireKey, expire_field2)"));
+
             _ = batch.HashPersist(expireKey, ["expire_field1"]);
             testData.Add(new(new HashPersistResult[] { HashPersistResult.ExpiryRemoved }, "HashPersist(expireKey, [expire_field1])"));
 
             // Test HEXPIRETIME
+            _ = batch.HashExpireTime(expireKey, "expire_field1");
+            testData.Add(new(default(ExpireTimeResult), "HashExpireTime(expireKey, expire_field1)", true));
+
             _ = batch.HashExpireTime(expireKey, ["expire_field1", "expire_field2"]);
             testData.Add(new(Array.Empty<ExpireTimeResult>(), "HashExpireTime(expireKey, [expire_field1, expire_field2])", true));
+        }
+
+        // Valkey 9.1+ hash commands
+        // -------------------------
+
+        if (TestConfiguration.SERVER_VERSION >= new Version("9.1.0"))
+        {
+            // Set up data
+            string getDelKey = $"{atomicPrefix}getdel-{Guid.NewGuid()}";
+
+            _ = batch.HashSet(getDelKey, "getdel_field1", "getdel_value1");
+            testData.Add(new(true, "HashSet(getDelKey, getdel_field1, getdel_value1)"));
+
+            _ = batch.HashSet(getDelKey, "getdel_field2", "getdel_value2");
+            testData.Add(new(true, "HashSet(getDelKey, getdel_field2, getdel_value2)"));
+
+            // Test HGETDEL
+            _ = batch.HashGetDelete(getDelKey, "getdel_field1");
+            testData.Add(new(new ValkeyValue("getdel_value1"), "HashGetDelete(getDelKey, getdel_field1)"));
+
+            // Test HGETDEL multiple fields
+            _ = batch.HashGetDelete(getDelKey, ["getdel_field2", "getdel_missing"]);
+            testData.Add(new(new ValkeyValue[] { "getdel_value2", ValkeyValue.Null }, "HashGetDelete(getDelKey, [getdel_field2, getdel_missing])"));
         }
 
         return testData;

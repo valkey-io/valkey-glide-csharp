@@ -79,9 +79,21 @@ internal interface IBatchHashCommands
     /// <returns>Command Response - <inheritdoc cref="IHashBaseCommands.HashRandomFieldsWithValuesAsync(ValkeyKey, long)" path="/returns" /></returns>
     IBatch HashRandomFieldsWithValues(ValkeyKey key, long count);
 
+    /// <inheritdoc cref="IBaseClient.HashGetAsync(ValkeyKey, ValkeyValue, GetExpiryOptions)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.HashGetAsync(ValkeyKey, ValkeyValue, GetExpiryOptions)" path="/returns" /></returns>
+    IBatch HashGet(ValkeyKey key, ValkeyValue hashField, GetExpiryOptions options);
+
     /// <inheritdoc cref="IBaseClient.HashGetAsync(ValkeyKey, IEnumerable{ValkeyValue}, GetExpiryOptions)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.HashGetAsync(ValkeyKey, IEnumerable{ValkeyValue}, GetExpiryOptions)" path="/returns" /></returns>
     IBatch HashGet(ValkeyKey key, IEnumerable<ValkeyValue> fields, GetExpiryOptions options);
+
+    /// <inheritdoc cref="IBaseClient.HashGetDeleteAsync(ValkeyKey, ValkeyValue)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.HashGetDeleteAsync(ValkeyKey, ValkeyValue)" path="/returns" /></returns>
+    IBatch HashGetDelete(ValkeyKey key, ValkeyValue hashField);
+
+    /// <inheritdoc cref="IBaseClient.HashGetDeleteAsync(ValkeyKey, IEnumerable{ValkeyValue})" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.HashGetDeleteAsync(ValkeyKey, IEnumerable{ValkeyValue})" path="/returns" /></returns>
+    IBatch HashGetDelete(ValkeyKey key, IEnumerable<ValkeyValue> hashFields);
 
     /// <inheritdoc cref="IBaseClient.HashSetAsync(ValkeyKey, ValkeyValue, ValkeyValue, HashSetCondition)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.HashSetAsync(ValkeyKey, ValkeyValue, ValkeyValue, HashSetCondition)" path="/returns" /></returns>
@@ -103,21 +115,41 @@ internal interface IBatchHashCommands
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.HashSetAsync(ValkeyKey, IEnumerable{KeyValuePair{ValkeyValue, ValkeyValue}}, SetExpiryOptions)" path="/returns" /></returns>
     IBatch HashSet(ValkeyKey key, IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>> hashFieldsAndValues, SetExpiryOptions expiry);
 
+    /// <inheritdoc cref="IBaseClient.HashPersistAsync(ValkeyKey, ValkeyValue)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.HashPersistAsync(ValkeyKey, ValkeyValue)" path="/returns" /></returns>
+    IBatch HashPersist(ValkeyKey key, ValkeyValue hashField);
+
     /// <inheritdoc cref="IBaseClient.HashPersistAsync(ValkeyKey, IEnumerable{ValkeyValue})" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.HashPersistAsync(ValkeyKey, IEnumerable{ValkeyValue})" path="/returns" /></returns>
     IBatch HashPersist(ValkeyKey key, IEnumerable<ValkeyValue> hashFields);
+
+    /// <inheritdoc cref="IBaseClient.HashExpireAsync(ValkeyKey, ValkeyValue, TimeSpan, ExpireCondition)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.HashExpireAsync(ValkeyKey, ValkeyValue, TimeSpan, ExpireCondition)" path="/returns" /></returns>
+    IBatch HashExpire(ValkeyKey key, ValkeyValue hashField, TimeSpan expiry, ExpireCondition condition = ExpireCondition.Always);
 
     /// <inheritdoc cref="IBaseClient.HashExpireAsync(ValkeyKey, IEnumerable{ValkeyValue}, TimeSpan, ExpireCondition)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.HashExpireAsync(ValkeyKey, IEnumerable{ValkeyValue}, TimeSpan, ExpireCondition)" path="/returns" /></returns>
     IBatch HashExpire(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, TimeSpan expiry, ExpireCondition condition = ExpireCondition.Always);
 
+    /// <inheritdoc cref="IBaseClient.HashExpireAtAsync(ValkeyKey, ValkeyValue, DateTimeOffset, ExpireCondition)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.HashExpireAtAsync(ValkeyKey, ValkeyValue, DateTimeOffset, ExpireCondition)" path="/returns" /></returns>
+    IBatch HashExpireAt(ValkeyKey key, ValkeyValue hashField, DateTimeOffset expiry, ExpireCondition condition = ExpireCondition.Always);
+
     /// <inheritdoc cref="IBaseClient.HashExpireAtAsync(ValkeyKey, IEnumerable{ValkeyValue}, DateTimeOffset, ExpireCondition)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.HashExpireAtAsync(ValkeyKey, IEnumerable{ValkeyValue}, DateTimeOffset, ExpireCondition)" path="/returns" /></returns>
     IBatch HashExpireAt(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, DateTimeOffset expiry, ExpireCondition condition = ExpireCondition.Always);
 
+    /// <inheritdoc cref="IBaseClient.HashExpireTimeAsync(ValkeyKey, ValkeyValue)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.HashExpireTimeAsync(ValkeyKey, ValkeyValue)" path="/returns" /></returns>
+    IBatch HashExpireTime(ValkeyKey key, ValkeyValue hashField);
+
     /// <inheritdoc cref="IBaseClient.HashExpireTimeAsync(ValkeyKey, IEnumerable{ValkeyValue})" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.HashExpireTimeAsync(ValkeyKey, IEnumerable{ValkeyValue})" path="/returns" /></returns>
     IBatch HashExpireTime(ValkeyKey key, IEnumerable<ValkeyValue> hashFields);
+
+    /// <inheritdoc cref="IBaseClient.HashTimeToLiveAsync(ValkeyKey, ValkeyValue)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.HashTimeToLiveAsync(ValkeyKey, ValkeyValue)" path="/returns" /></returns>
+    IBatch HashTimeToLive(ValkeyKey key, ValkeyValue hashField);
 
     /// <inheritdoc cref="IBaseClient.HashTimeToLiveAsync(ValkeyKey, IEnumerable{ValkeyValue})" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.HashTimeToLiveAsync(ValkeyKey, IEnumerable{ValkeyValue})" path="/returns" /></returns>

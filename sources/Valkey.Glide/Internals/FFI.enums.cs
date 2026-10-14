@@ -216,6 +216,7 @@ internal partial class FFI
         HPTtl = 625,
         HExpireTime = 626,
         HPExpireTime = 627,
+        HGetDel = 628,
 
         #endregion
         #region HyperLogLog commands

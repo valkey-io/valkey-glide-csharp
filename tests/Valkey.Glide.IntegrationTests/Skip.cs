@@ -16,6 +16,7 @@ internal static class Skip
     private static readonly Version Valkey8_0 = new("8.0.0");
     private static readonly Version Valkey8_1 = new("8.1.0");
     private static readonly Version Valkey9_0 = new("9.0.0");
+    private static readonly Version Valkey9_1 = new("9.1.0");
 
     /// <summary>
     /// Skips the test if AZ-affinity read strategies are not supported.
@@ -56,6 +57,14 @@ internal static class Skip
         => Assert.SkipWhen(
             TestConfiguration.SERVER_VERSION < Valkey9_0,
             "Hash expire commands require Valkey 9.0+");
+
+    /// <summary>
+    /// Skips the test if <c>HGETDEL</c> is not supported.
+    /// </summary>
+    public static void IfHashGetDeleteNotSupported()
+        => Assert.SkipWhen(
+            TestConfiguration.SERVER_VERSION < Valkey9_1,
+            "HGETDEL requires Valkey 9.1+");
 
     /// <summary>
     /// Skips the test if set intersection cardinality commands are not supported.
