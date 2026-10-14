@@ -52,6 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `SAVE` (#440)
 - Custom socket address resolution support via callback (#392)
 - `NodeDiscoveryMode` configuration option for standalone clients (#131)
+- `InfoOptions.Section.CLUSTER_INFO` for the `INFO cluster_info` section (#590)
 
 ### Changed
 

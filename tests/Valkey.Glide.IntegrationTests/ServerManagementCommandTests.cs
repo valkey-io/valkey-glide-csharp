@@ -471,31 +471,51 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     #region InfoAsync Tests
 
     /// <summary>
+    /// One field from each <c>INFO</c> section that is always populated.
+    /// Excludes sections that may be empty or depend on the server version or mode.
+    /// </summary>
+    private static readonly string[] InfoFields =
+    [
+        "redis_version",                // server
+        "connected_clients",            // clients
+        "used_memory",                  // memory
+        "rdb_changes_since_last_save",  // persistence
+        "total_commands_processed",     // stats
+        "role",                         // replication
+        "used_cpu_sys",                 // cpu
+        "cluster_enabled",              // cluster
+    ];
+
+    /// <summary>
     /// Valid values for the <c>rdb_current_bgsave_type</c> and <c>rdb_last_bgsave_type</c> fields.
+    /// Since Valkey 9.2.
     /// </summary>
     private static readonly string[] BgSaveTypes = ["fork", "forkless", "none"];
 
     [Theory]
     [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
-    public async Task InfoAsync_Persistence_ReturnsValkey9_2Fields(bool clusterMode)
+    public async Task InfoAsync_ReturnsExpectedFields(bool clusterMode)
     {
-        Version.SkipIfLessThan(Version.Valkey9_2);
+        var client = fixture.GetClient(clusterMode);
 
-        BaseClient client = fixture.GetClient(clusterMode);
-        Assert.Contains(await Client.GetInfo(client, "rdb_current_bgsave_type"), BgSaveTypes);
-        Assert.Contains(await Client.GetInfo(client, "rdb_last_bgsave_type"), BgSaveTypes);
+        // All sections
+        var info = await Client.GetInfo(client);
+        Assert.All(InfoFields, field => Assert.Contains(field, info));
 
-        long secondsRemaining = long.Parse(await Client.GetInfo(client, "forkless_estimated_seconds_remaining"));
-        Assert.InRange(secondsRemaining, -1, long.MaxValue);
-    }
+        // Valkey 9.2+
+        if (Version.IsLessThan(Version.Valkey9_2))
+        {
+            info = await Client.GetInfo(client, Section.PERSISTENCE);
+            Assert.Contains(Assert.Contains("rdb_current_bgsave_type", info), BgSaveTypes);
+            Assert.Contains(Assert.Contains("rdb_last_bgsave_type", info), BgSaveTypes);
+            Assert.True(long.Parse(Assert.Contains("forkless_estimated_seconds_remaining", info)) >= -1);
 
-    [Fact]
-    public async Task InfoAsync_Cluster_ReturnsValkey9_2Fields()
-    {
-        Version.SkipIfLessThan(Version.Valkey9_2);
-
-        long fallbacks = long.Parse(await Client.GetInfo(ClusterClient, "cluster_io_main_thread_fallbacks"));
-        Assert.InRange(fallbacks, 0, long.MaxValue);
+            if (clusterMode)
+            {
+                info = await Client.GetInfo(client, Section.CLUSTER_INFO);
+                Assert.True(long.Parse(Assert.Contains("cluster_io_main_thread_fallbacks", info)) >= 0);
+            }
+        }
     }
 
     #endregion

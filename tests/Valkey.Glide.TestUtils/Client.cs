@@ -71,28 +71,46 @@ public static class Client
     }
 
     /// <summary>
-    /// Returns the value of the given <c>INFO</c> command field.
+    /// Returns the fields and values from all <c>INFO</c> command sections.
     /// For cluster clients, the command is sent to a random node.
     /// </summary>
     /// <param name="client">A client that is connected to the server.</param>
-    /// <param name="field">The name of the <c>INFO</c> field.</param>
-    /// <returns>The value of the field.</returns>
-    public static async Task<string> GetInfo(BaseClient client, string field)
-    {
-        // Requests all sections, since some fields are not in the default sections.
-        var sections = new[] { Section.ALL };
-        string info = client is GlideClient standaloneClient
-            ? await standaloneClient.InfoAsync(sections)
-            : (await ((GlideClusterClient)client).InfoAsync(sections, Route.Random)).SingleValue;
+    /// <returns>A dictionary mapping each <c>INFO</c> field to its value.</returns>
+    public static Task<Dictionary<string, string>> GetInfo(BaseClient client)
+        => GetInfo(client, Section.ALL);
 
-        Dictionary<string, string> fields = info
+    /// <summary>
+    /// Returns the fields and values from the given <c>INFO</c> command section.
+    /// For cluster clients, the command is sent to a random node.
+    /// </summary>
+    /// <param name="client">A client that is connected to the server.</param>
+    /// <param name="section">The <c>INFO</c> section to request.</param>
+    /// <returns>A dictionary mapping each <c>INFO</c> field to its value.</returns>
+    public static Task<Dictionary<string, string>> GetInfo(BaseClient client, Section section)
+        => GetInfo(client, [section]);
+
+    /// <summary>
+    /// Returns the fields and values from the given <c>INFO</c> command sections.
+    /// For cluster clients, the command is sent to a random node.
+    /// </summary>
+    /// <param name="client">A client that is connected to the server.</param>
+    /// <param name="sections">The <c>INFO</c> sections to request.</param>
+    /// <returns>A dictionary mapping each <c>INFO</c> field to its value.</returns>
+    public static async Task<Dictionary<string, string>> GetInfo(BaseClient client, Section[] sections)
+    {
+        string info = client switch
+        {
+            GlideClient standaloneClient => await standaloneClient.InfoAsync(sections),
+            GlideClusterClient clusterClient => (await clusterClient.InfoAsync(sections, Route.Random)).SingleValue,
+            _ => throw new ArgumentException("Unknown client type."),
+        };
+
+        return info
             .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .Where(static line => !line.StartsWith('#'))
             .Select(static line => line.Split(':', 2))
             .Where(static parts => parts.Length == 2)
             .ToDictionary(static parts => parts[0], static parts => parts[1]);
-
-        return Assert.Contains(field, fields);
     }
 
     /// <summary>
