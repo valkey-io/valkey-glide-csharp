@@ -1,5 +1,6 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using static Valkey.Glide.Commands.Options.InfoOptions;
 using static Valkey.Glide.ConnectionConfiguration;
 
 namespace Valkey.Glide.TestUtils;
@@ -78,9 +79,11 @@ public static class Client
     /// <returns>The value of the field.</returns>
     public static async Task<string> GetInfo(BaseClient client, string field)
     {
+        // Requests all sections, since some fields are not in the default sections.
+        var sections = new[] { Section.ALL };
         string info = client is GlideClient standaloneClient
-            ? await standaloneClient.InfoAsync()
-            : (await ((GlideClusterClient)client).InfoAsync(Route.Random)).SingleValue;
+            ? await standaloneClient.InfoAsync(sections)
+            : (await ((GlideClusterClient)client).InfoAsync(sections, Route.Random)).SingleValue;
 
         Dictionary<string, string> fields = info
             .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
