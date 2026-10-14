@@ -169,11 +169,12 @@ internal partial class Database
         return HashGetDeleteAsync(key, hashField);
     }
 
-    /// <inheritdoc cref="IDatabaseAsync.HashFieldGetAndDeleteAsync(ValkeyKey, ValkeyValue[], CommandFlags)"/>
-    public Task<ValkeyValue[]> HashFieldGetAndDeleteAsync(ValkeyKey key, ValkeyValue[] hashFields, CommandFlags flags = CommandFlags.None)
+    /// <inheritdoc cref="IDatabaseAsync.HashFieldGetAndDeleteAsync(ValkeyKey, IEnumerable{ValkeyValue}, CommandFlags)"/>
+    public Task<ValkeyValue[]> HashFieldGetAndDeleteAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, CommandFlags flags = CommandFlags.None)
     {
         ArgumentNullException.ThrowIfNull(hashFields);
-        if (hashFields.Length == 0)
+
+        if (!hashFields.Any())
         {
             return Task.FromResult(Array.Empty<ValkeyValue>());
         }
