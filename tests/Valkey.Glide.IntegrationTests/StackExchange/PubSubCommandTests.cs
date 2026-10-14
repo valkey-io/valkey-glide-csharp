@@ -660,8 +660,10 @@ public class PubSubCommandTests(TestConfiguration config)
             interval: AssertRetryInterval);
 
         // Handler invocation order is not guaranteed.
-        Assert.Equal(expected.Count, actual.Count);
-        Assert.All(expected, e => Assert.Contains(e, actual));
+        Assert.Equal(
+            expected.OrderBy(m => m.ToString()),
+            actual.OrderBy(m => m.ToString()));
+
         actual.Clear();
     }
 
