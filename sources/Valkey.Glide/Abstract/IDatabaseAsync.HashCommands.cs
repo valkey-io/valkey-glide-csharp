@@ -316,4 +316,14 @@ public partial interface IDatabaseAsync
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<PersistResult[]> HashFieldPersistAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, CommandFlags flags = CommandFlags.None);
+
+    /// <inheritdoc cref="IBaseClient.HashGetDeleteAsync(ValkeyKey, ValkeyValue)"/>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    Task<ValkeyValue> HashFieldGetAndDeleteAsync(ValkeyKey key, ValkeyValue hashField, CommandFlags flags = CommandFlags.None);
+
+    /// <inheritdoc cref="IBaseClient.HashGetDeleteAsync(ValkeyKey, IEnumerable{ValkeyValue})"/>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    Task<ValkeyValue[]> HashFieldGetAndDeleteAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashField, CommandFlags flags = CommandFlags.None);
 }
