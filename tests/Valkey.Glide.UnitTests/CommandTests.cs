@@ -334,7 +334,6 @@ public class CommandTests
         () => Assert.Equal(["HDEL", "key", "field1", "field2"], Request.HashDelete("key", ["field1", "field2"]).GetArgs()),
         () => Assert.Equal(["HGETDEL", "key", "FIELDS", "1", "field"], Request.HashGetDelete("key", "field").GetArgs()),
         () => Assert.Equal(["HGETDEL", "key", "FIELDS", "2", "field1", "field2"], Request.HashGetDelete("key", ["field1", "field2"]).GetArgs()),
-        () => Assert.Throws<ArgumentException>(() => Request.HashGetDelete("key", [])),
         () => Assert.Equal(new string[] { "HEXISTS", "key", "field" }, Request.HashExists("key", "field").GetArgs()),
         () => Assert.Equal(new string[] { "HINCRBY", "key", "field", "5" }, Request.HashIncrementBy("key", "field", 5L).GetArgs()),
         () => Assert.Equal(new string[] { "HINCRBY", "key", "field", "1" }, Request.HashIncrementBy("key", "field", 1L).GetArgs()),

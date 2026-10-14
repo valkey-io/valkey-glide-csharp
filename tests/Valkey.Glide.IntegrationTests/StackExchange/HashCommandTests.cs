@@ -180,7 +180,7 @@ public class HashCommandTests(TestConfiguration config)
                 new HashEntry("field2", "value2")
             ]);
 
-        ValkeyValue[] values = await db.HashGetAndDeleteAsync(key, ["field1", "missing"]);
+        ValkeyValue[] values = await db.HashFieldGetAndDeleteAsync(key, ["field1", "missing"]);
         Assert.Equal((ValkeyValue[])["value1", ValkeyValue.Null], values);
         Assert.False(await db.HashExistsAsync(key, "field1"));
         Assert.True(await db.HashExistsAsync(key, "field2"));
@@ -199,8 +199,8 @@ public class HashCommandTests(TestConfiguration config)
                 new HashEntry("field1", "value1")
             ]);
 
-        ValkeyValue[] values = await db.HashGetAndDeleteAsync(key, "field1");
-        Assert.Equal((ValkeyValue[])["value1", ValkeyValue.Null], values);
+        ValkeyValue value = await db.HashFieldGetAndDeleteAsync(key, "field1");
+        Assert.Equal("value1", value);
         Assert.False(await db.HashExistsAsync(key, "field1"));
     }
 

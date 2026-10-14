@@ -18,14 +18,13 @@ internal static partial class Request
         => Simple<long>(RequestType.HDel, [key, .. hashFields.ToGlideStrings()]);
 
     public static Cmd<object[], ValkeyValue[]> HashGetDelete(ValkeyKey key, ValkeyValue[] hashFields)
-    {
-        return new(
-            RequestType.HGetDel,
-            [key, .. ToArgs(ValkeyLiterals.FIELDS, hashFields)],
-            false,
-            response => [.. response.Select(item =>
+    => new(
+        RequestType.HGetDel,
+        [key, .. ToArgs(ValkeyLiterals.FIELDS, hashFields)],
+        false,
+        response =>
+            [.. response.Select(item =>
                 item == null ? ValkeyValue.Null : (ValkeyValue)(GlideString)item)]);
-    }
 
     public static Cmd<object[], ValkeyValue> HashGetDelete(ValkeyKey key, ValkeyValue hashField)
     => new(
