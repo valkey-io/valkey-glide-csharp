@@ -651,7 +651,7 @@ public class StringCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task StringLongestCommonSubsequenceAsync_ReturnsCommonSubsequence(IDatabaseAsync db)
     {
-        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "LCS is supported since 7.0.0");
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         string key1 = $"ser-lcs-1-{Guid.NewGuid()}";
         string key2 = $"ser-lcs-2-{Guid.NewGuid()}";
@@ -667,7 +667,7 @@ public class StringCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task StringLongestCommonSubsequenceLengthAsync_ReturnsLength(IDatabaseAsync db)
     {
-        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "LCS is supported since 7.0.0");
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         string key1 = $"ser-lcslen-1-{Guid.NewGuid()}";
         string key2 = $"ser-lcslen-2-{Guid.NewGuid()}";
@@ -683,7 +683,7 @@ public class StringCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task StringLongestCommonSubsequenceWithMatchesAsync_ReturnsMatches(IDatabaseAsync db)
     {
-        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "LCS is supported since 7.0.0");
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         string key1 = $"ser-lcsmatch-1-{Guid.NewGuid()}";
         string key2 = $"ser-lcsmatch-2-{Guid.NewGuid()}";

@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.ServerModules;
+
 namespace Valkey.Glide.IntegrationTests;
 
 /// <summary>
@@ -52,5 +54,25 @@ internal static class ModuleUtils
     {
         bool isAvailable = await IsJsonModuleAvailableAsync(client);
         Assert.SkipWhen(!isAvailable, "JSON module is not available on the server");
+    }
+
+    /// <summary>
+    /// Skips the test if the Search module is not available on the server.
+    /// </summary>
+    /// <param name="client">The client to use for the check.</param>
+    public static async Task SkipIfSearchModuleNotAvailableAsync(BaseClient client)
+    {
+        // TODO #361: Use client.ModuleListAsync() once implemented.
+        try
+        {
+            _ = await Ft.ListAsync(client);
+        }
+        catch (Exception ex) when (
+            ex.Message.Contains("unknown command", StringComparison.OrdinalIgnoreCase) ||
+                ex.Message.Contains("ERR unknown", StringComparison.OrdinalIgnoreCase) ||
+                ex.Message.Contains("not loaded", StringComparison.OrdinalIgnoreCase))
+        {
+            Assert.Skip("Search module is not available on the server");
+        }
     }
 }

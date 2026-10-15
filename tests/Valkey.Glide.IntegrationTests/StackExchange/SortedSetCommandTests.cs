@@ -309,7 +309,7 @@ public class SortedSetCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task SortedSetIntersectionLengthAsync_WithCommandFlags(IDatabaseAsync db)
     {
-        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "ZINTERCARD is supported since 7.0.0");
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         string key1 = $"{{ser-zintercard}}-{Guid.NewGuid()}";
         string key2 = $"{{ser-zintercard}}-{Guid.NewGuid()}";
@@ -485,7 +485,7 @@ public class SortedSetCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task SortedSetPopAsync_MultiKey_WithCommandFlags(IDatabaseAsync db)
     {
-        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("7.0.0"), "ZMPOP is supported since 7.0.0");
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         string key1 = $"{{ser-zmpop}}-{Guid.NewGuid()}";
         string key2 = $"{{ser-zmpop}}-{Guid.NewGuid()}";

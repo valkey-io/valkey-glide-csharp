@@ -96,5 +96,14 @@ public static class InfoOptions
         /// EVERYTHING: Includes all and modules.
         /// </summary>
         EVERYTHING,
+
+        /// <summary>
+        /// CLUSTER_INFO: Cluster state and statistics
+        /// Only populated in cluster mode.
+        /// </summary>
+        /// <remarks>
+        /// <para>Since Valkey 9.0.0.</para>
+        /// </remarks>
+        CLUSTER_INFO,
     }
 }

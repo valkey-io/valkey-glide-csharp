@@ -174,7 +174,7 @@ public class ScriptingCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task ScriptShowAsync_CachedScript_ReturnsSourceCode(BaseClient client)
     {
-        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("8.0.0"), "SCRIPT SHOW is supported since Valkey 8.0.0");
+        Version.SkipIfLessThan(Version.Valkey8_0);
 
         // Load a script
         string scriptCode = "return 'show test'";
@@ -192,7 +192,7 @@ public class ScriptingCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task ScriptShowAsync_NonCachedScript_ReturnsNull(BaseClient client)
     {
-        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("8.0.0"), "SCRIPT SHOW is supported since Valkey 8.0.0");
+        Version.SkipIfLessThan(Version.Valkey8_0);
 
         // Flush scripts first
         await client.ScriptFlushAsync(CancellationToken);
@@ -332,7 +332,7 @@ public class ScriptingCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task FunctionLoadAsync_ValidLibraryCode_ReturnsLibraryName(BaseClient client)
     {
-        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         // Flush all functions first
         await client.FunctionFlushAsync(CancellationToken);
@@ -354,7 +354,7 @@ redis.register_function('{funcName}', function(keys, args) return 'Hello from fu
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task FunctionLoadAsync_WithReplace_ReplacesExistingLibrary(BaseClient client)
     {
-        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         // Flush all functions first (use routing for cluster clients)
         if (client is GlideClusterClient clusterClient)
@@ -417,7 +417,7 @@ redis.register_function('{funcName}', function(keys, args) return 'version 2' en
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task FunctionLoadAsync_WithoutReplace_ThrowsErrorForExistingLibrary(BaseClient client)
     {
-        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         // Flush all functions first
         await client.FunctionFlushAsync(CancellationToken);
@@ -440,7 +440,7 @@ redis.register_function('{funcName}', function(keys, args) return 'test' end)";
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task FunctionLoadAsync_InvalidCode_ThrowsException(BaseClient client)
     {
-        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         // Try to load invalid Lua code
         string invalidCode = @"#!lua name=invalidlib
@@ -454,7 +454,7 @@ this is not valid lua code";
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task FCallAsync_ExecutesLoadedFunction_ReturnsResult(BaseClient client)
     {
-        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         // Flush all functions first (use routing for cluster clients)
         if (client is GlideClusterClient clusterClient)
@@ -502,7 +502,7 @@ redis.register_function('{funcName}', function(keys, args) return 'Hello, World!
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task FCallAsync_WithKeysAndArgs_PassesParametersCorrectly(BaseClient client)
     {
-        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         // Flush all functions first
         await client.FunctionFlushAsync(CancellationToken);
@@ -529,7 +529,7 @@ end)";
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task FCallAsync_NonExistentFunction_ThrowsException(BaseClient client)
     {
-        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         // Flush all functions first
         await client.FunctionFlushAsync(CancellationToken);
@@ -545,7 +545,7 @@ end)";
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task FCallReadOnlyAsync_ExecutesFunction_ReturnsResult(BaseClient client)
     {
-        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         // Flush all functions first
         await client.FunctionFlushAsync(CancellationToken);
@@ -574,7 +574,7 @@ redis.register_function{{
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task FCallReadOnlyAsync_WithKeysAndArgs_PassesParametersCorrectly(BaseClient client)
     {
-        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         // Flush all functions first
         await client.FunctionFlushAsync(CancellationToken);
@@ -605,7 +605,7 @@ redis.register_function{{
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task FunctionFlushAsync_RemovesAllFunctions(BaseClient client)
     {
-        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         // Flush all functions first (use routing for cluster clients)
         if (client is GlideClusterClient clusterClient)
@@ -668,7 +668,7 @@ redis.register_function('{funcName}', function(keys, args) return 'test' end)";
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task FunctionFlushAsync_SyncMode_RemovesAllFunctions(BaseClient client)
     {
-        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         // Flush all functions first
         await client.FunctionFlushAsync(CancellationToken);
@@ -694,7 +694,7 @@ redis.register_function('{funcName}', function(keys, args) return 'test' end)";
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task FunctionFlushAsync_AsyncMode_RemovesAllFunctions(BaseClient client)
     {
-        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         // Flush all functions first
         await client.FunctionFlushAsync(CancellationToken);
@@ -723,7 +723,7 @@ redis.register_function('{funcName}', function(keys, args) return 'test' end)";
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task FCallAsync_FunctionError_ThrowsException(BaseClient client)
     {
-        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         // Flush all functions first
         await client.FunctionFlushAsync(CancellationToken);
@@ -748,7 +748,7 @@ end)";
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task FCallAsync_AccessesRedisData_WorksCorrectly(BaseClient client)
     {
-        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         // Flush all functions first
         await client.FunctionFlushAsync(CancellationToken);
@@ -780,7 +780,7 @@ end)";
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task FCallAsync_ModifiesRedisData_WorksCorrectly(BaseClient client)
     {
-        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         // Flush all functions first
         await client.FunctionFlushAsync(CancellationToken);
@@ -813,7 +813,7 @@ end)";
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task FCallAsync_ReturnsInteger_ConvertsCorrectly(BaseClient client)
     {
-        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         // Flush all functions first (use routing for cluster clients)
         if (client is GlideClusterClient clusterClient)
@@ -860,7 +860,7 @@ redis.register_function('{funcName}', function(keys, args) return 42 end)";
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task FCallAsync_ReturnsArray_ConvertsCorrectly(BaseClient client)
     {
-        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         // Flush all functions first (use routing for cluster clients)
         if (client is GlideClusterClient clusterClient)
@@ -912,7 +912,7 @@ redis.register_function('{funcName}', function(keys, args) return {{'a', 'b', 'c
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task FCallAsync_ReturnsNil_HandlesCorrectly(BaseClient client)
     {
-        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         // Skip for cluster clients - nil handling with routing needs investigation
         Assert.SkipWhen(client is GlideClusterClient, "Nil handling with cluster routing needs investigation");
@@ -941,7 +941,7 @@ redis.register_function('{funcName}', function(keys, args) return nil end)";
     [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
     public async Task FunctionListAsync_ReturnsAllLibraries(GlideClient client)
     {
-        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         // Flush all functions first
         await client.FunctionFlushAsync(CancellationToken);
@@ -968,7 +968,7 @@ redis.register_function('func2', function(keys, args) return 'result2' end)";
     [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
     public async Task FunctionListAsync_WithLibraryNameFilter_ReturnsMatchingLibrary(GlideClient client)
     {
-        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         // Flush all functions first
         await client.FunctionFlushAsync(CancellationToken);
@@ -994,7 +994,7 @@ redis.register_function('func2', function(keys, args) return 'result2' end)";
     [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
     public async Task FunctionListAsync_WithCodeFlag_IncludesSourceCode(GlideClient client)
     {
-        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         // Flush all functions first
         await client.FunctionFlushAsync(CancellationToken);
@@ -1018,7 +1018,7 @@ redis.register_function('codefunc', function(keys, args) return 'result' end)";
     [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
     public async Task FunctionStatsAsync_ReturnsStatistics(GlideClient client)
     {
-        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         // Flush all functions first
         await client.FunctionFlushAsync(CancellationToken);
@@ -1053,7 +1053,7 @@ redis.register_function('statsfunc', function(keys, args) return 'result' end)";
     [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
     public async Task FunctionDeleteAsync_RemovesLibrary(GlideClient client)
     {
-        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         // Flush all functions first
         await client.FunctionFlushAsync(CancellationToken);
@@ -1079,7 +1079,7 @@ redis.register_function('deletefunc', function(keys, args) return 'result' end)"
     [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
     public async Task FunctionDeleteAsync_NonExistentLibrary_ThrowsException(GlideClient client)
     {
-        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         // Try to delete non-existent library
         _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
@@ -1090,7 +1090,7 @@ redis.register_function('deletefunc', function(keys, args) return 'result' end)"
     [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
     public async Task FunctionKillAsync_NoFunctionRunning_ThrowsException(GlideClient client)
     {
-        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         // Try to kill when no function is running
         _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
@@ -1101,7 +1101,7 @@ redis.register_function('deletefunc', function(keys, args) return 'result' end)"
     [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
     public async Task FunctionDumpAsync_CreatesBackup(GlideClient client)
     {
-        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         // Flush all functions first
         await client.FunctionFlushAsync(CancellationToken);
@@ -1122,7 +1122,7 @@ redis.register_function('dumpfunc', function(keys, args) return 'result' end)";
     [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
     public async Task FunctionRestoreAsync_WithAppendPolicy_RestoresFunctions(GlideClient client)
     {
-        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         // Flush all functions first
         await client.FunctionFlushAsync(CancellationToken);
@@ -1146,7 +1146,7 @@ redis.register_function('restorefunc1', function(keys, args) return 'result1' en
     [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
     public async Task FunctionRestoreAsync_WithFlushPolicy_DeletesExistingFunctions(GlideClient client)
     {
-        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         // Flush all functions first
         await client.FunctionFlushAsync(CancellationToken);
@@ -1175,7 +1175,7 @@ redis.register_function('flushfunc2', function(keys, args) return 'result2' end)
     [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
     public async Task FunctionRestoreAsync_WithReplacePolicy_OverwritesConflictingFunctions(GlideClient client)
     {
-        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         // Flush all functions first
         await client.FunctionFlushAsync(CancellationToken);
@@ -1203,7 +1203,7 @@ redis.register_function('replacefunc', function(keys, args) return 'version2' en
     [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
     public async Task FunctionRestoreAsync_ConflictingLibraryWithAppend_ThrowsException(GlideClient client)
     {
-        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         // Flush all functions first
         await client.FunctionFlushAsync(CancellationToken);
@@ -1225,7 +1225,7 @@ redis.register_function('conflictfunc', function(keys, args) return 'result' end
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task FCallAsync_WithAllPrimariesRouting_ExecutesOnAllPrimaries(GlideClusterClient client)
     {
-        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         // Flush all functions first
         await client.FunctionFlushAsync(Route.AllPrimaries, CancellationToken);
@@ -1269,7 +1269,7 @@ redis.register_function('{funcName}', function(keys, args) return 'Hello from pr
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task FCallAsync_WithAllNodesRouting_ExecutesOnAllNodes(GlideClusterClient client)
     {
-        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         // Flush all functions first (must use AllPrimaries since replicas are read-only)
         await client.FunctionFlushAsync(Route.AllPrimaries, CancellationToken);
@@ -1316,7 +1316,7 @@ redis.register_function{{
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task FCallAsync_WithRandomRouting_ExecutesOnSingleNode(GlideClusterClient client)
     {
-        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         // Flush all functions first
         await client.FunctionFlushAsync(Route.AllPrimaries, CancellationToken);
@@ -1342,7 +1342,7 @@ redis.register_function('{funcName}', function(keys, args) return 'Random node r
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task FunctionLoadAsync_WithRouting_LoadsOnSpecifiedNodes(GlideClusterClient client)
     {
-        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         // Flush all functions first
         await client.FunctionFlushAsync(Route.AllPrimaries, CancellationToken);
@@ -1371,7 +1371,7 @@ redis.register_function('{funcName}', function(keys, args) return 'Loaded' end)"
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task FunctionDeleteAsync_WithRouting_DeletesFromSpecifiedNodes(GlideClusterClient client)
     {
-        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         // Flush all functions first
         await client.FunctionFlushAsync(Route.AllPrimaries, CancellationToken);
@@ -1401,7 +1401,7 @@ redis.register_function('{funcName}', function(keys, args) return 'test' end)";
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task FunctionListAsync_WithRouting_ReturnsLibrariesFromSpecifiedNodes(GlideClusterClient client)
     {
-        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         // Flush all functions first
         await client.FunctionFlushAsync(Route.AllPrimaries, CancellationToken);
@@ -1440,7 +1440,7 @@ redis.register_function('{funcName}', function(keys, args) return 'test' end)";
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task FunctionStatsAsync_WithRouting_ReturnsPerNodeStats(GlideClusterClient client)
     {
-        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         // Flush all functions first
         await client.FunctionFlushAsync(Route.AllPrimaries, CancellationToken);
@@ -1489,7 +1489,7 @@ redis.register_function('{funcName}', function(keys, args) return 'test' end)";
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task FunctionDumpAsync_WithRouting_CreatesBackupFromSpecifiedNode(GlideClusterClient client)
     {
-        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         // Flush all functions first
         await client.FunctionFlushAsync(Route.AllPrimaries, CancellationToken);
@@ -1516,7 +1516,7 @@ redis.register_function('{funcName}', function(keys, args) return 'test' end)";
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task FunctionRestoreAsync_WithRouting_RestoresToSpecifiedNodes(GlideClusterClient client)
     {
-        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         // Flush all functions first
         await client.FunctionFlushAsync(Route.AllPrimaries, CancellationToken);
@@ -1549,7 +1549,7 @@ redis.register_function('{funcName}', function(keys, args) return 'restored' end
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task FunctionRestoreAsync_WithReplacePolicy_ReplacesExistingFunctions(GlideClusterClient client)
     {
-        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         // Flush all functions first
         await client.FunctionFlushAsync(Route.AllPrimaries, CancellationToken);
@@ -1588,7 +1588,7 @@ redis.register_function('{funcName}', function(keys, args) return 'version 2' en
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task ClusterValue_MultiNodeResults_HandlesCorrectly(GlideClusterClient client)
     {
-        Assert.SkipWhen(TestConfiguration.SERVER_VERSION < new Version("7.0.0"), "FUNCTION commands are supported since 7.0.0");
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         // Flush all functions first
         await client.FunctionFlushAsync(Route.AllPrimaries, CancellationToken);

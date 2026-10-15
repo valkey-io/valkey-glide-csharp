@@ -505,8 +505,7 @@ public class ClusterClientTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task TestSelect(GlideClusterClient client)
     {
-        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("9.0.0"), "SELECT for Cluster Client is supported since 9.0.0"
-        );
+        Version.SkipIfLessThan(Version.Valkey9_0);
 
         // Test selecting database 0 (default)
         await client.SelectAsync(0);
@@ -519,8 +518,7 @@ public class ClusterClientTests(TestConfiguration config)
     [Fact]
     public async Task TestClusterDatabaseId()
     {
-        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("9.0.0"), "Multi-database support for Cluster Client requires Valkey 9.0+"
-        );
+        Version.SkipIfLessThan(Version.Valkey9_0);
 
         var config = TestConfiguration.DefaultClusterClientConfig()
             .WithDatabaseId(1)
@@ -546,8 +544,7 @@ public class ClusterClientTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task TestKeyMoveAsync(GlideClusterClient client)
     {
-        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("9.0.0"), "MOVE command for Cluster Client requires Valkey 9.0+ with multi-database support"
-        );
+        Version.SkipIfLessThan(Version.Valkey9_0);
 
         string key = Guid.NewGuid().ToString();
         string value = "test_value";
@@ -567,8 +564,7 @@ public class ClusterClientTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
     public async Task TestKeyCopyAsync(GlideClusterClient client)
     {
-        Assert.SkipWhen(TestConfiguration.IsVersionLessThan("9.0.0"), "COPY command with database parameter for Cluster Client requires Valkey 9.0+ with multi-database support"
-        );
+        Version.SkipIfLessThan(Version.Valkey9_0);
 
         string hashTag = Guid.NewGuid().ToString();
         string sourceKey = $"{{{hashTag}}}{Guid.NewGuid()}";

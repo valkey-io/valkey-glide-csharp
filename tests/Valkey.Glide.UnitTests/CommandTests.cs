@@ -69,6 +69,7 @@ public class CommandTests
         () => Assert.Equal(["INFO", "LATENCYSTATS"], Request.Info([InfoOptions.Section.LATENCYSTATS]).GetArgs()),
         () => Assert.Equal(["INFO", "SENTINEL"], Request.Info([InfoOptions.Section.SENTINEL]).GetArgs()),
         () => Assert.Equal(["INFO", "CLUSTER"], Request.Info([InfoOptions.Section.CLUSTER]).GetArgs()),
+        () => Assert.Equal(["INFO", "CLUSTER_INFO"], Request.Info([InfoOptions.Section.CLUSTER_INFO]).GetArgs()),
         () => Assert.Equal(["INFO", "MODULES"], Request.Info([InfoOptions.Section.MODULES]).GetArgs()),
         () => Assert.Equal(["INFO", "KEYSPACE"], Request.Info([InfoOptions.Section.KEYSPACE]).GetArgs()),
         () => Assert.Equal(["INFO", "ERRORSTATS"], Request.Info([InfoOptions.Section.ERRORSTATS]).GetArgs()),
