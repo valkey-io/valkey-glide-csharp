@@ -1,6 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using System.Collections.Concurrent;
+using System.Text;
 
 using Valkey.Glide.TestUtils;
 
@@ -81,10 +82,28 @@ public class PubSubCommandTests(TestConfiguration config)
 
     [Theory]
     [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
-    public async Task PublishAsync_BinaryPayload_PreservesBytes(bool isCluster)
+    public async Task PublishAsync_BinaryChannel_PreservesBytes(bool isCluster)
     {
-        // Use bytes that are invalid UTF-8 and would be corrupted by ANSI marshaling.
-        byte[] bytes = [0x74, 0x65, 0x73, 0x74, 0xC0, 0xAF];
+        // Include bytes that are invalid UTF-8.
+        var channel = ValkeyChannel.Literal([.. Encoding.ASCII.GetBytes($"test-binary-{Guid.NewGuid()}-"), 0xC0, 0xAF]);
+
+        var subscriber = BuildSubscriber(isCluster);
+        var publisher = BuildSubscriber(isCluster);
+
+        var received = new ConcurrentBag<MessageInfo>();
+        var handler = BuildHandler(received);
+        await subscriber.SubscribeAsync(channel, handler);
+
+        _ = await publisher.PublishAsync(channel, Message1);
+        await AssertHandlerReceives(received, [(channel, Message1)]);
+
+        await subscriber.UnsubscribeAsync(channel, handler);
+    }
+
+    [Theory]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
+    public async Task PublishAsync_BinaryMessage_PreservesBytes(bool isCluster)
+    {
         var channel = ValkeyChannel.Literal($"test-binary-{Guid.NewGuid()}");
 
         var subscriber = BuildSubscriber(isCluster);
@@ -94,8 +113,10 @@ public class PubSubCommandTests(TestConfiguration config)
         var handler = BuildHandler(received);
         await subscriber.SubscribeAsync(channel, handler);
 
-        _ = await publisher.PublishAsync(channel, bytes);
-        await AssertHandlerReceives(received, [(channel, bytes)]);
+        // Use bytes that are invalid UTF-8.
+        byte[] message = [0x74, 0x65, 0x73, 0x74, 0xC0, 0xAF];
+        _ = await publisher.PublishAsync(channel, message);
+        await AssertHandlerReceives(received, [(channel, message)]);
 
         await subscriber.UnsubscribeAsync(channel, handler);
     }

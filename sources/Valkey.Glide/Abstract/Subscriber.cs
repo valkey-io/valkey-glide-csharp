@@ -144,18 +144,16 @@ internal sealed class Subscriber : ISubscriber
     /// <returns>The number of clients that received the message.</returns>
     private async Task<long> SendPublishCommand(ValkeyChannel channel, ValkeyValue message)
     {
-        var channelStr = channel.ToString();
-
         if (channel.IsSharded)
         {
             ThrowIfNotClusterMode();
 
             // TODO #205: Refactor to use GlideClusterClient instead of custom command.
-            var result = await _client.Command(Request.CustomCommand(["SPUBLISH", channelStr, message.ToGlideString()]), Route.Random);
+            var result = await _client.Command(Request.CustomCommand(["SPUBLISH", channel.ToValkeyKey(), message.ToGlideString()]), Route.Random);
             return Convert.ToInt64(result);
         }
 
-        return await _client.PublishAsync(channelStr, message);
+        return await _client.PublishAsync(channel.ToValkeyKey(), message);
     }
 
     /// <summary>
@@ -164,23 +162,20 @@ internal sealed class Subscriber : ISubscriber
     /// <param name="channel">The channel to subscribe to.</param>
     private async Task SendSubscribeCommand(ValkeyChannel channel)
     {
-        var channelStr = channel.ToString();
-        var timeout = GetTimeout();
-
         if (channel.IsSharded)
         {
             ThrowIfNotClusterMode();
 
             // TODO #205: Refactor to use GlideClusterClient instead of custom command.
-            _ = await _client.Command(Request.CustomCommand(["SSUBSCRIBE_BLOCKING", channelStr, GetTimeoutMs().ToString()]), Route.Random);
+            _ = await _client.Command(Request.CustomCommand(["SSUBSCRIBE_BLOCKING", channel.ToValkeyKey(), GetTimeoutMs().ToString()]), Route.Random);
         }
         else if (channel.IsPattern)
         {
-            await _client.PSubscribeAsync(channelStr, timeout);
+            await _client.PSubscribeAsync(channel.ToValkeyKey(), GetTimeout());
         }
         else
         {
-            await _client.SubscribeAsync(channelStr, timeout);
+            await _client.SubscribeAsync(channel.ToValkeyKey(), GetTimeout());
         }
     }
 
@@ -190,23 +185,20 @@ internal sealed class Subscriber : ISubscriber
     /// <param name="channel">The channel to unsubscribe from.</param>
     private async Task SendUnsubscribeCommand(ValkeyChannel channel)
     {
-        var channelStr = channel.ToString();
-        var timeout = GetTimeout();
-
         if (channel.IsSharded)
         {
             ThrowIfNotClusterMode();
 
             // TODO #205: Refactor to use GlideClusterClient instead of custom command.
-            _ = await _client.Command(Request.CustomCommand(["SUNSUBSCRIBE_BLOCKING", channelStr, GetTimeoutMs().ToString()]), Route.Random);
+            _ = await _client.Command(Request.CustomCommand(["SUNSUBSCRIBE_BLOCKING", channel.ToValkeyKey(), GetTimeoutMs().ToString()]), Route.Random);
         }
         else if (channel.IsPattern)
         {
-            await _client.PUnsubscribeAsync(channelStr, timeout);
+            await _client.PUnsubscribeAsync(channel.ToValkeyKey(), GetTimeout());
         }
         else
         {
-            await _client.UnsubscribeAsync(channelStr, timeout);
+            await _client.UnsubscribeAsync(channel.ToValkeyKey(), GetTimeout());
         }
     }
 
