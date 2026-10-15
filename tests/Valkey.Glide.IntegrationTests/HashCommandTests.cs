@@ -372,7 +372,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestHashGetExpiry(BaseClient client)
     {
-        Skip.IfHashExpireNotSupported();
+        Version.SkipIfLessThan(Version.Valkey9_0);
 
         string key = Guid.NewGuid().ToString();
 
@@ -414,7 +414,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestHashGetExpiry_SingleField(BaseClient client)
     {
-        Skip.IfHashExpireNotSupported();
+        Version.SkipIfLessThan(Version.Valkey9_0);
 
         string key = Guid.NewGuid().ToString();
 
@@ -468,7 +468,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestHashSetExpiry(BaseClient client)
     {
-        Skip.IfHashExpireNotSupported();
+        Version.SkipIfLessThan(Version.Valkey9_0);
 
         string key = Guid.NewGuid().ToString();
 
@@ -503,7 +503,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestHashSetExpiry_SingleField(BaseClient client)
     {
-        Skip.IfHashExpireNotSupported();
+        Version.SkipIfLessThan(Version.Valkey9_0);
 
         string key = Guid.NewGuid().ToString();
 
@@ -562,7 +562,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestHashPersist(BaseClient client)
     {
-        Skip.IfHashExpireNotSupported();
+        Version.SkipIfLessThan(Version.Valkey9_0);
 
         string key = Guid.NewGuid().ToString();
 
@@ -598,7 +598,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestHashExpire(BaseClient client)
     {
-        Skip.IfHashExpireNotSupported();
+        Version.SkipIfLessThan(Version.Valkey9_0);
 
         string key = Guid.NewGuid().ToString();
 
@@ -632,7 +632,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestHashPExpire(BaseClient client)
     {
-        Skip.IfHashExpireNotSupported();
+        Version.SkipIfLessThan(Version.Valkey9_0);
 
         string key = Guid.NewGuid().ToString();
 
@@ -657,7 +657,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestHashExpireAt(BaseClient client)
     {
-        Skip.IfHashExpireNotSupported();
+        Version.SkipIfLessThan(Version.Valkey9_0);
 
         string key = Guid.NewGuid().ToString();
 
@@ -680,7 +680,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestHashPExpireAt(BaseClient client)
     {
-        Skip.IfHashExpireNotSupported();
+        Version.SkipIfLessThan(Version.Valkey9_0);
 
         string key = Guid.NewGuid().ToString();
 
@@ -706,7 +706,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestHashExpireTime(BaseClient client)
     {
-        Skip.IfHashExpireNotSupported();
+        Version.SkipIfLessThan(Version.Valkey9_0);
 
         string key = Guid.NewGuid().ToString();
 
@@ -742,7 +742,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestHashTimeToLive(BaseClient client)
     {
-        Skip.IfHashExpireNotSupported();
+        Version.SkipIfLessThan(Version.Valkey9_0);
 
         string key = Guid.NewGuid().ToString();
 

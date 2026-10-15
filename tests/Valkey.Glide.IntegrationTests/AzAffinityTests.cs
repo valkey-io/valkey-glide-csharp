@@ -70,7 +70,7 @@ public class AzAffinityTests(TestConfiguration config)
     [MemberData(nameof(Data.Protocols), MemberType = typeof(Data))]
     public async Task TestRoutingWithAzAffinityStrategyTo1Replica(ConnectionConfiguration.Protocol protocol)
     {
-        Skip.IfAzAffinityNotSupported();
+        Version.SkipIfLessThan(Version.Valkey8_0);
 
         await using GlideClusterClient configClient = await CreateConfigClient(protocol);
         const int nGetCalls = 3;
@@ -116,7 +116,7 @@ public class AzAffinityTests(TestConfiguration config)
     [MemberData(nameof(Data.Protocols), MemberType = typeof(Data))]
     public async Task TestRoutingBySlotToReplicaWithAzAffinityStrategyToAllReplicas(ConnectionConfiguration.Protocol protocol)
     {
-        Skip.IfAzAffinityNotSupported();
+        Version.SkipIfLessThan(Version.Valkey8_0);
 
         await using GlideClusterClient configClient = await CreateConfigClient(protocol);
         string key = Guid.NewGuid().ToString();
@@ -166,7 +166,7 @@ public class AzAffinityTests(TestConfiguration config)
     [MemberData(nameof(Data.Protocols), MemberType = typeof(Data))]
     public async Task TestAzAffinityNonExistingAz(ConnectionConfiguration.Protocol protocol)
     {
-        Skip.IfAzAffinityNotSupported();
+        Version.SkipIfLessThan(Version.Valkey8_0);
 
         const int nGetCalls = 3;
 
@@ -197,7 +197,7 @@ public class AzAffinityTests(TestConfiguration config)
     [MemberData(nameof(Data.Protocols), MemberType = typeof(Data))]
     public async Task TestAzAffinityReplicasAndPrimaryRoutesToPrimary(ConnectionConfiguration.Protocol protocol)
     {
-        Skip.IfAzAffinityNotSupported();
+        Version.SkipIfLessThan(Version.Valkey8_0);
 
         await using GlideClusterClient configClient = await CreateConfigClient(protocol);
         int nReplicas = await GetReplicaCountInCluster(configClient);
@@ -257,7 +257,7 @@ public class AzAffinityTests(TestConfiguration config)
     [MemberData(nameof(Data.Protocols), MemberType = typeof(Data))]
     public async Task TestAzAffinityAllNodesSplitsBetweenPrimaryAndReplica(ConnectionConfiguration.Protocol protocol)
     {
-        Skip.IfAzAffinityNotSupported();
+        Version.SkipIfLessThan(Version.Valkey8_0);
 
         await using GlideClusterClient configClient = await CreateConfigClient(protocol);
         const int nGetCalls = 4;
@@ -314,7 +314,7 @@ public class AzAffinityTests(TestConfiguration config)
     [MemberData(nameof(Data.Protocols), MemberType = typeof(Data))]
     public async Task TestAzAffinityAllNodesFallsBackToAllNodesWhenNoInAzNode(ConnectionConfiguration.Protocol protocol)
     {
-        Skip.IfAzAffinityNotSupported();
+        Version.SkipIfLessThan(Version.Valkey8_0);
 
         await using GlideClusterClient configClient = await CreateConfigClient(protocol);
         string key = Guid.NewGuid().ToString();

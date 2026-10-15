@@ -32,7 +32,7 @@ public class TestConfiguration : IDisposable
 
     private const string DefaultServerGroupName = "cluster";
 
-    public static Version SERVER_VERSION { get; internal set; } = new();
+    public static System.Version SERVER_VERSION { get; internal set; } = new();
     public static bool TLS { get; internal set; } = false;
 
     /// <summary>
@@ -46,12 +46,6 @@ public class TestConfiguration : IDisposable
     /// this will be false and cluster tests will be skipped gracefully.
     /// </summary>
     public static bool HasCluster => CLUSTER_ADDRESSES.Count > 0;
-
-    // Version check helper methods for test skipping
-    public static bool IsVersionLessThan(string version) => SERVER_VERSION < new Version(version);
-    public static bool IsVersionLessThan(int major, int minor = 0, int build = 0) => SERVER_VERSION < new Version(major, minor, build);
-    public static bool IsVersionAtLeast(string version) => SERVER_VERSION >= new Version(version);
-    public static bool IsVersionAtLeast(int major, int minor = 0, int build = 0) => SERVER_VERSION >= new Version(major, minor, build);
 
     public static StandaloneClientConfigurationBuilder DefaultClientConfig() =>
         new StandaloneClientConfigurationBuilder()
@@ -421,7 +415,7 @@ public class TestConfiguration : IDisposable
     private static void TestConsoleWriteLine(string message) =>
         TestContext.Current.SendDiagnosticMessage(message);
 
-    private static Version GetServerVersion()
+    private static System.Version GetServerVersion()
     {
         Exception? err = null;
         if (STANDALONE_ADDRESSES.Count > 0)

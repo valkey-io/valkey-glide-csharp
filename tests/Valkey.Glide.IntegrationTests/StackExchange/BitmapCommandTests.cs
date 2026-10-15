@@ -84,7 +84,7 @@ public class BitmapCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task StringBitCountAsync_WithBitIndexType_WorksCorrectly(IDatabaseAsync db)
     {
-        Skip.IfBitIndexTypeNotSupported();
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         string key = $"ser-bitcount-bit-{Guid.NewGuid()}";
 
@@ -137,7 +137,7 @@ public class BitmapCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task StringBitPositionAsync_WithBitIndexType_WorksCorrectly(IDatabaseAsync db)
     {
-        Skip.IfBitIndexTypeNotSupported();
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         string key = $"ser-bitpos-bit-{Guid.NewGuid()}";
 
