@@ -21,7 +21,7 @@ public class ClientInfoTagTests(TestConfiguration config)
     [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
     public async Task TestClientInfo_WithLibNameOnly_ReportsCustomLibName(bool useCluster)
     {
-        Skip.IfClientSetInfoNotSupported();
+        Version.SkipIfLessThan(Version.Valkey7_2);
 
         const string customLibName = "custom-client";
 
@@ -35,11 +35,7 @@ public class ClientInfoTagTests(TestConfiguration config)
                     .WithLibraryName(customLibName)
                     .Build());
 
-        string info = await Client.GetClientInfo(client);
-
-        Assert.Contains($"lib-name={customLibName}", info);
-        // Should NOT have parenthesized tag when no ClientInfoTag is set
-        Assert.DoesNotContain($"lib-name={customLibName}(", info);
+        Assert.Equal(customLibName, await Client.GetClientInfo(client, "lib-name"));
     }
 
     /// <summary>
@@ -49,7 +45,7 @@ public class ClientInfoTagTests(TestConfiguration config)
     [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
     public async Task TestClientInfo_WithClientInfoTagOnly_ReportsDefaultLibNameWithTag(bool useCluster)
     {
-        Skip.IfClientSetInfoNotSupported();
+        Version.SkipIfLessThan(Version.Valkey7_2);
 
         const string tag = "my-framework:1.0";
 
@@ -63,9 +59,7 @@ public class ClientInfoTagTests(TestConfiguration config)
                     .WithClientInfoTag(tag)
                     .Build());
 
-        string info = await Client.GetClientInfo(client);
-
-        Assert.Contains($"lib-name=GlideC#({tag})", info);
+        Assert.Equal($"GlideC#({tag})", await Client.GetClientInfo(client, "lib-name"));
     }
 
     /// <summary>
@@ -75,7 +69,7 @@ public class ClientInfoTagTests(TestConfiguration config)
     [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
     public async Task TestClientInfo_WithLibNameAndClientInfoTag_ReportsCombined(bool useCluster)
     {
-        Skip.IfClientSetInfoNotSupported();
+        Version.SkipIfLessThan(Version.Valkey7_2);
 
         const string customLibName = "custom-client";
         const string tag = "my-framework:1.0";
@@ -92,9 +86,7 @@ public class ClientInfoTagTests(TestConfiguration config)
                     .WithClientInfoTag(tag)
                     .Build());
 
-        string info = await Client.GetClientInfo(client);
-
-        Assert.Contains($"lib-name={customLibName}({tag})", info);
+        Assert.Equal($"{customLibName}({tag})", await Client.GetClientInfo(client, "lib-name"));
     }
 
     /// <summary>
@@ -117,7 +109,7 @@ public class ClientInfoTagTests(TestConfiguration config)
     [InlineData("caf\u00e9")]       // non-ASCII
     public async Task TestClientCreation_WithMalformedLibraryName_IsRejectedByCore(string invalidLibName)
     {
-        Skip.IfClientSetInfoNotSupported();
+        Version.SkipIfLessThan(Version.Valkey7_2);
 
         _ = await Assert.ThrowsAnyAsync<Exception>(async () =>
         {
@@ -134,7 +126,7 @@ public class ClientInfoTagTests(TestConfiguration config)
     [Fact]
     public async Task TestClientCreation_WithInteriorWhitespaceTag_IsRejectedByCore()
     {
-        Skip.IfClientSetInfoNotSupported();
+        Version.SkipIfLessThan(Version.Valkey7_2);
 
         _ = await Assert.ThrowsAnyAsync<Exception>(async () =>
         {
@@ -158,7 +150,7 @@ public class ClientInfoTagTests(TestConfiguration config)
     [InlineData("")]
     public async Task TestClientCreation_WithWhitespaceOrEmptyTag_IsRejectedByCore(string tag)
     {
-        Skip.IfClientSetInfoNotSupported();
+        Version.SkipIfLessThan(Version.Valkey7_2);
 
         _ = await Assert.ThrowsAnyAsync<Exception>(async () =>
         {

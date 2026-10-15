@@ -326,7 +326,7 @@ internal partial class BatchTestUtils
         _ = batch.SetDiff([prefix + key1, prefix + key2]);
         testData.Add(new(new HashSet<ValkeyValue>(), "SetDiff([prefix+key1, prefix+key2])", true));
 
-        if (TestConfiguration.IsVersionAtLeast("7.0.0"))
+        if (!Version.IsLessThan(Version.Valkey7_0))
         {
             _ = batch.SetInterCard([prefix + key1, prefix + key2]);
             testData.Add(new(1L, "SetInterCard([prefix+key1, prefix+key2])"));
@@ -482,7 +482,7 @@ internal partial class BatchTestUtils
         _ = batch.Expire(genericKey1, TimeSpan.FromSeconds(120));
         testData.Add(new(true, "KeyExpire(genericKey1, 120s)"));
 
-        if (TestConfiguration.SERVER_VERSION > new Version("7.0.0")) // KeyExpireTime added in 7.0.0
+        if (!Version.IsLessThan(Version.Valkey7_0)) // KeyExpireTime added in 7.0.0
         {
             _ = batch.ExpireTime(genericKey1);
             testData.Add(new(DateTimeOffset.UtcNow.AddSeconds(120), "KeyExpireTime(genericKey1)", true));
@@ -686,7 +686,7 @@ internal partial class BatchTestUtils
         testData.Add(new(4L, "SortedSetUnionAndStore(combineDestKey, [combineKey1, combineKey3])"));
 
         // Test SortedSetInterCard (ZINTERCARD) - requires Redis 7.0+
-        if (TestConfiguration.IsVersionAtLeast("7.0.0"))
+        if (!Version.IsLessThan(Version.Valkey7_0))
         {
             _ = batch.SortedSetInterCard([combineKey1, combineKey3]);
             testData.Add(new(1L, "SortedSetInterCard([combineKey1, combineKey3])"));
@@ -714,7 +714,7 @@ internal partial class BatchTestUtils
         testData.Add(new(2L, "SortedSetAdd(popKey, test data for pop)"));
 
         // Test SortedSetPop (ZMPOP) - requires Redis 7.0+
-        if (TestConfiguration.IsVersionAtLeast("7.0.0"))
+        if (!Version.IsLessThan(Version.Valkey7_0))
         {
             // SortedSetPop and SortedSetBlockingPop are SER-only (not on IBatch)
         }
@@ -982,7 +982,7 @@ internal partial class BatchTestUtils
         testData.Add(new(3L, "ListLength(trimKey2) after negative trim"));
 
         // Test LMPOP (ListLeftPop with multiple keys)
-        if (TestConfiguration.IsVersionAtLeast("7.0.0"))
+        if (!Version.IsLessThan(Version.Valkey7_0))
         {
             string lmpopKey1 = $"{prefix}lmpop1-{Guid.NewGuid()}";
             string lmpopKey2 = $"{prefix}lmpop2-{Guid.NewGuid()}";
@@ -1115,7 +1115,7 @@ internal partial class BatchTestUtils
         _ = batch.ListBlockingMove(moveSource, moveDest, ListSide.Left, ListSide.Right, BlockingTimeout);
         testData.Add(new(new ValkeyValue("move2"), "ListBlockingMove(moveSource, moveDest, Left, Right, 100ms)"));
 
-        if (TestConfiguration.IsVersionAtLeast("7.0.0"))
+        if (!Version.IsLessThan(Version.Valkey7_0))
         {
             // Push more data to moveSource for the blocking pop test
             _ = batch.ListRightPush(moveSource, "move3");
@@ -1155,7 +1155,7 @@ internal partial class BatchTestUtils
         testData.Add(new(1L, "ClientIdAsync()", true)); // Check type only since ID is dynamic
 
         // SELECT - 9.0.0 allows both standalone and cluster, else just run standalone
-        if (batch is Pipeline.Batch || TestConfiguration.SERVER_VERSION >= new Version("9.0.0"))
+        if (batch is Pipeline.Batch || !Version.IsLessThan(Version.Valkey9_0))
         {
             _ = batch.SelectAsync(0); // Select database 0 (default)
             testData.Add(new(ValkeyValue.Ok, "SelectAsync(0)"));
@@ -1292,7 +1292,7 @@ internal partial class BatchTestUtils
         testData.Add(new(2L, "HashDelete(key2, [multi1, multi2])"));
 
         // Hash Field Expire Commands (Valkey 9.0+)
-        if (TestConfiguration.SERVER_VERSION >= new Version("9.0.0"))
+        if (!Version.IsLessThan(Version.Valkey9_0))
         {
             string expireKey = $"{atomicPrefix}expire-{Guid.NewGuid()}";
 

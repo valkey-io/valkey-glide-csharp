@@ -939,7 +939,7 @@ public class SortedSetCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestSortedSetInterCard(BaseClient client)
     {
-        Skip.IfSortedSetPopNotSupported();
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         string key1 = $"{{sortedSetKey}}-{Guid.NewGuid()}";
         string key2 = $"{{sortedSetKey}}-{Guid.NewGuid()}";
@@ -1045,7 +1045,7 @@ public class SortedSetCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestSortedSetPopMultiKey(BaseClient client)
     {
-        Skip.IfSortedSetPopNotSupported();
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         string key1 = $"{{sortedSetKey}}1-{Guid.NewGuid()}";
         string key2 = $"{{sortedSetKey}}2-{Guid.NewGuid()}";
@@ -1127,7 +1127,7 @@ public class SortedSetCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestSortedSetBlockingPop(BaseClient client)
     {
-        Skip.IfSortedSetPopNotSupported();
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         string key1 = $"{{testKey}}-{Guid.NewGuid()}";
         string key2 = $"{{testKey}}-{Guid.NewGuid()}";
@@ -1184,7 +1184,7 @@ public class SortedSetCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestSortedSetBlockingCommands_NonExistentKeys(BaseClient client)
     {
-        Skip.IfSortedSetPopNotSupported();
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         string key1 = $"{{testKey}}-{Guid.NewGuid()}";
         string key2 = $"{{testKey}}-{Guid.NewGuid()}";
@@ -1754,7 +1754,7 @@ public class SortedSetCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestSortedSetPopMinAsync_MultiKey(BaseClient client)
     {
-        Skip.IfSortedSetPopNotSupported();
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         string key1 = $"{{testKey}}-{Guid.NewGuid()}";
         string key2 = $"{{testKey}}-{Guid.NewGuid()}";
@@ -1782,7 +1782,7 @@ public class SortedSetCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestSortedSetPopMaxAsync_MultiKey(BaseClient client)
     {
-        Skip.IfSortedSetPopNotSupported();
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         string key1 = $"{{testKey}}-{Guid.NewGuid()}";
 
@@ -1805,7 +1805,7 @@ public class SortedSetCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestSortedSetPopMinAsync_MultiKey_WithCount(BaseClient client)
     {
-        Skip.IfSortedSetPopNotSupported();
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         string key1 = $"{{testKey}}-{Guid.NewGuid()}";
         string key2 = $"{{testKey}}-{Guid.NewGuid()}";
@@ -1839,7 +1839,7 @@ public class SortedSetCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestSortedSetPopMaxAsync_MultiKey_WithCount(BaseClient client)
     {
-        Skip.IfSortedSetPopNotSupported();
+        Version.SkipIfLessThan(Version.Valkey7_0);
 
         string key1 = $"{{testKey}}-{Guid.NewGuid()}";
 

@@ -22,7 +22,7 @@ public class FtAggregateTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task AggregateAsync_MatchAll_ReturnsRows(BaseClient client)
     {
-        await Skip.IfSearchModuleNotLoaded(client);
+        await ModuleUtils.SkipIfSearchModuleNotAvailableAsync(client);
         (string index, _, _) = await FtUtils.CreateAggregateIndexAsync(client);
 
         Assert.Equal(5, (await Ft.AggregateAsync(client, index, "@price:[-inf +inf]")).Length);
@@ -32,7 +32,7 @@ public class FtAggregateTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task AggregateAsync_GroupByWithCountReducer_ReturnsGroupedResults(BaseClient client)
     {
-        await Skip.IfSearchModuleNotLoaded(client);
+        await ModuleUtils.SkipIfSearchModuleNotAvailableAsync(client);
         (string index, _, _) = await FtUtils.CreateAggregateIndexAsync(client);
 
         var rows = await Ft.AggregateAsync(
@@ -83,7 +83,7 @@ public class FtAggregateTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task AggregateAsync_SortByPrice_ReturnsSortedResults(BaseClient client)
     {
-        await Skip.IfSearchModuleNotLoaded(client);
+        await ModuleUtils.SkipIfSearchModuleNotAvailableAsync(client);
         (string index, _, _) = await FtUtils.CreateAggregateIndexAsync(client);
 
         var rows = await Ft.AggregateAsync(
@@ -125,7 +125,7 @@ public class FtAggregateTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task AggregateAsync_FilterByExpression_ReturnsFilteredResults(BaseClient client)
     {
-        await Skip.IfSearchModuleNotLoaded(client);
+        await ModuleUtils.SkipIfSearchModuleNotAvailableAsync(client);
         (string index, _, _) = await FtUtils.CreateAggregateIndexAsync(client);
 
         var rows = await Ft.AggregateAsync(
@@ -159,7 +159,7 @@ public class FtAggregateTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task AggregateAsync_ApplyTransformation_ReturnsTransformedResults(BaseClient client)
     {
-        await Skip.IfSearchModuleNotLoaded(client);
+        await ModuleUtils.SkipIfSearchModuleNotAvailableAsync(client);
         (string index, _, _) = await FtUtils.CreateAggregateIndexAsync(client);
 
         var rows = await Ft.AggregateAsync(
@@ -199,7 +199,7 @@ public class FtAggregateTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task AggregateAsync_WithLimit_ReturnsLimitedResults(BaseClient client)
     {
-        await Skip.IfSearchModuleNotLoaded(client);
+        await ModuleUtils.SkipIfSearchModuleNotAvailableAsync(client);
         (string index, _, _) = await FtUtils.CreateAggregateIndexAsync(client);
 
         var rows = await Ft.AggregateAsync(
@@ -232,7 +232,7 @@ public class FtAggregateTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task AggregateAsync_PipelineGroupBySortByLimit_ReturnsOrderedLimitedGroups(BaseClient client)
     {
-        await Skip.IfSearchModuleNotLoaded(client);
+        await ModuleUtils.SkipIfSearchModuleNotAvailableAsync(client);
         (string index, _, _) = await FtUtils.CreateAggregateIndexAsync(client);
 
         var rows = await Ft.AggregateAsync(

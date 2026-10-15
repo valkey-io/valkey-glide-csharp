@@ -402,7 +402,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
     public async Task BackgroundSaveCancelAsync_ThrowsWhenNoSaveInProgress(bool clusterMode)
     {
-        Skip.IfBgSaveCancelNotSupported();
+        Version.SkipIfLessThan(Version.Valkey8_1);
         await WaitForSaveNotInProgressAsync(clusterMode);
 
         BaseClient client = clusterMode ? ClusterClient : StandaloneClient;
@@ -435,7 +435,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     [Fact]
     public async Task BackgroundSaveCancelAsync_Cluster_WithRoute_ThrowsWhenNoSaveInProgress()
     {
-        Skip.IfBgSaveCancelNotSupported();
+        Version.SkipIfLessThan(Version.Valkey8_1);
         await WaitForSaveNotInProgressAsync(true);
 
         var ex = await Assert.ThrowsAsync<RequestException>(() => ClusterClient.BackgroundSaveCancelAsync(Route.Random));
@@ -465,6 +465,57 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
 
         var result = await ClusterClient.BgRewriteAofAsync(Route.Random);
         Assert.Contains(result.SingleValue, BgRewriteAofResponses);
+    }
+
+    #endregion
+    #region InfoAsync Tests
+
+    /// <summary>
+    /// One field from each <c>INFO</c> section that is always populated.
+    /// Excludes sections that may be empty or depend on the server version or mode.
+    /// </summary>
+    private static readonly string[] InfoFields =
+    [
+        "redis_version",                // server
+        "connected_clients",            // clients
+        "used_memory",                  // memory
+        "rdb_changes_since_last_save",  // persistence
+        "total_commands_processed",     // stats
+        "role",                         // replication
+        "used_cpu_sys",                 // cpu
+        "cluster_enabled",              // cluster
+    ];
+
+    /// <summary>
+    /// Valid values for the <c>rdb_current_bgsave_type</c> and <c>rdb_last_bgsave_type</c> fields.
+    /// Since Valkey 9.2.
+    /// </summary>
+    private static readonly string[] BgSaveTypes = ["fork", "forkless", "none"];
+
+    [Theory]
+    [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
+    public async Task InfoAsync_ReturnsExpectedFields(bool clusterMode)
+    {
+        var client = fixture.GetClient(clusterMode);
+
+        // All sections
+        var info = await Client.GetInfo(client);
+        Assert.All(InfoFields, field => Assert.Contains(field, info));
+
+        // Valkey 9.2+
+        if (!Version.IsLessThan(Version.Valkey9_2))
+        {
+            info = await Client.GetInfo(client, Section.PERSISTENCE);
+            Assert.Contains(Assert.Contains("rdb_current_bgsave_type", info), BgSaveTypes);
+            Assert.Contains(Assert.Contains("rdb_last_bgsave_type", info), BgSaveTypes);
+            Assert.True(long.Parse(Assert.Contains("forkless_estimated_seconds_remaining", info)) >= -1);
+
+            if (clusterMode)
+            {
+                info = await Client.GetInfo(client, Section.CLUSTER_INFO);
+                Assert.True(long.Parse(Assert.Contains("cluster_io_main_thread_fallbacks", info)) >= 0);
+            }
+        }
     }
 
     #endregion
@@ -517,7 +568,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
         Assert.True(commandInfo.MaxDuration >= commandInfo.LatestDuration);
 
         BaseClient client = isCluster ? ClusterClient : StandaloneClient;
-        if (Client.GetVersion(client) >= new Version(8, 1, 0))
+        if (Client.GetVersion(client) >= Version.Valkey8_1)
         {
             Assert.True(Assert.NotNull(commandInfo.Sum) > TimeSpan.Zero);
             Assert.True(Assert.NotNull(commandInfo.Count) > 0);
@@ -758,7 +809,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
         Assert.True(stats.RssOverheadRatio >= 0);
 
         // Optional Valkey 7.0+ fields
-        if (TestConfiguration.IsVersionAtLeast("7.0.0"))
+        if (!Version.IsLessThan(Version.Valkey7_0))
         {
             Assert.True(stats.ClusterLinks is not null and >= 0);
             Assert.True(stats.FunctionsCaches is not null and >= 0);
@@ -770,7 +821,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
         }
 
         // Optional Valkey 8.0+ fields
-        if (TestConfiguration.IsVersionAtLeast("8.0.0"))
+        if (!Version.IsLessThan(Version.Valkey8_0))
         {
             Assert.True(stats.AllocatorMuzzy is not null and >= 0);
             Assert.True(stats.DbDictRehashingCount is not null);
