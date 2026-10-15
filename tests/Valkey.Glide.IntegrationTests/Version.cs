@@ -12,6 +12,7 @@ internal static class Version
     public static readonly System.Version Valkey8_0 = new("8.0.0");
     public static readonly System.Version Valkey8_1 = new("8.1.0");
     public static readonly System.Version Valkey9_0 = new("9.0.0");
+    public static readonly System.Version Valkey9_1 = new("9.1.0");
     public static readonly System.Version Valkey9_2 = new("9.2.0");
 
     /// <summary>

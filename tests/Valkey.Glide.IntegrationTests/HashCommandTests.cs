@@ -135,7 +135,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestHashGetDelete(BaseClient client)
     {
-        Skip.IfHashGetDeleteNotSupported();
+        Version.SkipIfLessThan(Version.Valkey9_1);
 
         string key = Guid.NewGuid().ToString();
         _ = await client.HashSetAsync(

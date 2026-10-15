@@ -170,7 +170,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task HashGetDeleteAsync_AtomicallyReturnsAndRemovesFields(IDatabaseAsync db)
     {
-        Skip.IfHashGetDeleteNotSupported();
+        Version.SkipIfLessThan(Version.Valkey9_1);
 
         string key = $"ser-hgetdel-{Guid.NewGuid()}";
         await db.HashSetAsync(
@@ -190,7 +190,7 @@ public class HashCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task HashGetDeleteAsync_AtomicallyReturnsAndRemovesField(IDatabaseAsync db)
     {
-        Skip.IfHashGetDeleteNotSupported();
+        Version.SkipIfLessThan(Version.Valkey9_1);
 
         string key = $"ser-hgetdel-{Guid.NewGuid()}";
         await db.HashSetAsync(

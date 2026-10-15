@@ -1333,7 +1333,7 @@ internal partial class BatchTestUtils
         }
 
         // Hash Get Delete Commands (Valkey 9.1+)
-        if (TestConfiguration.SERVER_VERSION >= new Version("9.1.0"))
+        if (!Version.IsLessThan(Version.Valkey9_1))
         {
             string getDeleteKey = $"{atomicPrefix}get-delete-{Guid.NewGuid()}";
 
