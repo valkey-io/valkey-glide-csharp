@@ -437,8 +437,8 @@ public class ConnectionConfigurationTests
         var builder = new StandaloneClientConfigurationBuilder()
             .WithTrustedCertificate(CertData1);
 
-        Assert.Equivalent(
-            new List<byte[]> { CertData1 },
+        Assert.Equal(
+            [CertData1],
             builder.Build().Request.RootCertificates);
     }
 
@@ -449,8 +449,8 @@ public class ConnectionConfigurationTests
             .WithTrustedCertificate(CertData1)
             .WithTrustedCertificate(CertData2);
 
-        Assert.Equivalent(
-            new List<byte[]> { CertData1, CertData2 },
+        Assert.Equal(
+            [CertData1, CertData2],
             builder.Build().Request.RootCertificates);
     }
 
@@ -476,8 +476,8 @@ public class ConnectionConfigurationTests
         var builder = new StandaloneClientConfigurationBuilder()
             .WithTrustedCertificate(tempFile.Path);
 
-        Assert.Equivalent(
-            new List<byte[]> { CertData1 },
+        Assert.Equal(
+            [CertData1],
             builder.Build().Request.RootCertificates);
     }
 
@@ -491,8 +491,8 @@ public class ConnectionConfigurationTests
             .WithTrustedCertificate(tempFile1.Path)
             .WithTrustedCertificate(tempFile2.Path);
 
-        Assert.Equivalent(
-            new List<byte[]> { CertData1, CertData2 },
+        Assert.Equal(
+            [CertData1, CertData2],
             builder.Build().Request.RootCertificates);
     }
 
@@ -509,8 +509,8 @@ public class ConnectionConfigurationTests
         var builder = new StandaloneClientConfigurationBuilder()
             .WithTrustedCertificate(traversalPath);
 
-        Assert.Equivalent(
-            new List<byte[]> { CertData1 },
+        Assert.Equal(
+            [CertData1],
             builder.Build().Request.RootCertificates);
     }
 
@@ -534,8 +534,8 @@ public class ConnectionConfigurationTests
             .WithTrustedCertificate(tempFile1.Path)
             .WithTrustedCertificate(tempFile2.Path);
 
-        Assert.Equivalent(
-            new List<byte[]> { CertData1, CertData2 },
+        Assert.Equal(
+            [CertData1, CertData2],
             builder.Build().Request.RootCertificates);
     }
 

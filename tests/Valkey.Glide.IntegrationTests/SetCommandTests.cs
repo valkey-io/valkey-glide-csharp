@@ -219,7 +219,7 @@ public class SetCommandTests(TestConfiguration config)
         Assert.False(await client.SetIsMemberAsync(key, "nonexistent"));
 
         // Test multiple member check
-        Assert.Equivalent(
+        Assert.Equal(
             new bool[] { true, true, false },
             await client.SetIsMemberAsync(key, ["member1", "member2", "nonexistent"]));
     }
