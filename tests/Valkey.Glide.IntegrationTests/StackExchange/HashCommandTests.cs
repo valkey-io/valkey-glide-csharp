@@ -166,6 +166,47 @@ public class HashCommandTests(TestConfiguration config)
     }
 
     #endregion
+    #region HashGetDeleteAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashGetDeleteAsync_AtomicallyReturnsAndRemovesFields(IDatabaseAsync db)
+    {
+        Version.SkipIfLessThan(Version.Valkey9_1);
+
+        string key = $"ser-hgetdel-{Guid.NewGuid()}";
+        await db.HashSetAsync(
+            key,
+            [
+                new HashEntry("field1", "value1"),
+                new HashEntry("field2", "value2")
+            ]);
+
+        ValkeyValue[] values = await db.HashFieldGetAndDeleteAsync(key, ["field1", "missing"]);
+        Assert.Equal((ValkeyValue[])["value1", ValkeyValue.Null], values);
+        Assert.False(await db.HashExistsAsync(key, "field1"));
+        Assert.True(await db.HashExistsAsync(key, "field2"));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task HashGetDeleteAsync_AtomicallyReturnsAndRemovesField(IDatabaseAsync db)
+    {
+        Version.SkipIfLessThan(Version.Valkey9_1);
+
+        string key = $"ser-hgetdel-{Guid.NewGuid()}";
+        await db.HashSetAsync(
+            key,
+            [
+                new HashEntry("field1", "value1")
+            ]);
+
+        ValkeyValue value = await db.HashFieldGetAndDeleteAsync(key, "field1");
+        Assert.Equal("value1", value);
+        Assert.False(await db.HashExistsAsync(key, "field1"));
+    }
+
+    #endregion
     #region HashExistsAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]

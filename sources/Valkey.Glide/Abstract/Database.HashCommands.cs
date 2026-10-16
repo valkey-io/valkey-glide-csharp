@@ -241,6 +241,20 @@ internal partial class Database
         return [.. results.Select(r => (PersistResult)(int)r)];
     }
 
+    /// <inheritdoc cref="IDatabaseAsync.HashFieldGetAndDeleteAsync(ValkeyKey, ValkeyValue, CommandFlags)"/>
+    public async Task<ValkeyValue> HashFieldGetAndDeleteAsync(ValkeyKey key, ValkeyValue hashField, CommandFlags flags = CommandFlags.None)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+        return await HashGetDeleteAsync(key, hashField);
+    }
+
+    /// <inheritdoc cref="IDatabaseAsync.HashFieldGetAndDeleteAsync(ValkeyKey, IEnumerable{ValkeyValue}, CommandFlags)"/>
+    public async Task<ValkeyValue[]> HashFieldGetAndDeleteAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, CommandFlags flags = CommandFlags.None)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+        return await HashGetDeleteAsync(key, hashFields);
+    }
+
     #region Private Methods
 
     /// <summary>

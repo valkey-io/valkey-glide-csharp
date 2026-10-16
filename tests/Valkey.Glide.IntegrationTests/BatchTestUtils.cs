@@ -1332,6 +1332,39 @@ internal partial class BatchTestUtils
             testData.Add(new(Array.Empty<ExpireTimeResult>(), "HashExpireTime(expireKey, [expire_field1, expire_field2])", true));
         }
 
+        // Hash Get Delete Commands (Valkey 9.1+)
+        if (!Version.IsLessThan(Version.Valkey9_1))
+        {
+            string getDeleteKey = $"{atomicPrefix}get-delete-{Guid.NewGuid()}";
+
+            _ = batch.HashSet(getDeleteKey, "single", "single-value");
+            testData.Add(new(true, "HashSet(getDeleteKey, single, single-value)"));
+
+            _ = batch.HashGetDelete(getDeleteKey, "single");
+            testData.Add(new(new ValkeyValue("single-value"), "HashGetDelete(getDeleteKey, single)"));
+
+            _ = batch.HashSet(
+                getDeleteKey,
+                [
+                    new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1"),
+                    new KeyValuePair<ValkeyValue, ValkeyValue>("field2", "value2")
+                ]);
+            testData.Add(new(2L, "HashSet(getDeleteKey, field1/field2)"));
+
+            _ = batch.HashGetDelete(getDeleteKey, ["field1", "missing", "field2"]);
+            testData.Add(new(
+                new ValkeyValue[] { "value1", ValkeyValue.Null, "value2" },
+                "HashGetDelete(getDeleteKey, [field1, missing, field2])"));
+
+            _ = batch.HashLength(getDeleteKey);
+            testData.Add(new(0L, "HashLength(getDeleteKey) after HashGetDelete"));
+
+            _ = batch.HashGetDelete($"{getDeleteKey}-missing", ["field1", "field2"]);
+            testData.Add(new(
+                new ValkeyValue[] { ValkeyValue.Null, ValkeyValue.Null },
+                "HashGetDelete(missing key, [field1, field2])"));
+        }
+
         return testData;
     }
 

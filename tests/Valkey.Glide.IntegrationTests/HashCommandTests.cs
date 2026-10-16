@@ -129,6 +129,36 @@ public class HashCommandTests(TestConfiguration config)
     }
 
     #endregion
+    #region HashGetDeleteAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestHashGetDelete(BaseClient client)
+    {
+        Version.SkipIfLessThan(Version.Valkey9_1);
+
+        string key = Guid.NewGuid().ToString();
+        _ = await client.HashSetAsync(
+            key,
+            [
+                new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1"),
+                new KeyValuePair<ValkeyValue, ValkeyValue>("field2", "value2")
+            ]);
+
+        ValkeyValue value = await client.HashGetDeleteAsync(key, "field1");
+        Assert.Equal((ValkeyValue)"value1", value);
+        Assert.False(await client.HashExistsAsync(key, "field1"));
+        Assert.True(await client.HashExistsAsync(key, "field2"));
+
+        ValkeyValue[] values = await client.HashGetDeleteAsync(key, ["field2", "missing"]);
+        Assert.Equal((ValkeyValue[])["value2", ValkeyValue.Null], values);
+        Assert.Equal(0, await client.HashLengthAsync(key));
+
+        values = await client.HashGetDeleteAsync(Guid.NewGuid().ToString(), ["field1", "field2"]);
+        Assert.Equal((ValkeyValue[])[ValkeyValue.Null, ValkeyValue.Null], values);
+    }
+
+    #endregion
     #region HashExistsAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]
