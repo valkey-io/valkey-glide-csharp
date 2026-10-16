@@ -31,16 +31,7 @@ internal static partial class Request
     }
 
     public static Cmd<double?, double?> GeoDistance(ValkeyKey key, ValkeyValue member1, ValkeyValue member2, GeoUnit unit)
-    {
-        GlideString[] args = [key.ToGlideString(), member1.ToGlideString(), member2.ToGlideString(), unit.ToLiteral()];
-        return Simple<double?>(RequestType.GeoDist, args, true);
-    }
-
-    public static Cmd<object[], string?> GeoHash(ValkeyKey key, ValkeyValue member)
-    {
-        GlideString[] args = [key.ToGlideString(), member.ToGlideString()];
-        return new(RequestType.GeoHash, args, false, response => response.Length > 0 ? response[0]?.ToString() : null);
-    }
+        => Simple<double?>(RequestType.GeoDist, [key, member1, member2, unit.ToLiteral()], true);
 
     public static Cmd<object[], string?[]> GeoHash(ValkeyKey key, ValkeyValue[] members)
     {
@@ -48,9 +39,6 @@ internal static partial class Request
         args.AddRange(members.Select(m => m.ToGlideString()));
         return new(RequestType.GeoHash, [.. args], false, response => [.. response.Select(item => item?.ToString())]);
     }
-
-    public static Cmd<object[], GeoPosition?> GeoPosition(ValkeyKey key, ValkeyValue member)
-        => new(RequestType.GeoPos, [key, member], false, response => response.Length > 0 ? ParseGeoPosition(response[0]) : null);
 
     public static Cmd<object[], GeoPosition?[]> GeoPosition(ValkeyKey key, ValkeyValue[] members)
         => new(RequestType.GeoPos, [key, .. members], false, response => [.. response.Select(ParseGeoPosition)]);

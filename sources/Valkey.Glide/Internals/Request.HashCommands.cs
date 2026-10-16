@@ -17,22 +17,6 @@ internal static partial class Request
     public static Cmd<long, long> HashDelete(ValkeyKey key, ValkeyValue[] hashFields)
         => Simple<long>(RequestType.HDel, [key, .. hashFields.ToGlideStrings()]);
 
-    public static Cmd<object[], ValkeyValue[]> HashGetDelete(ValkeyKey key, ValkeyValue[] hashFields)
-    => new(
-        RequestType.HGetDel,
-        [key, .. ToArgs(ValkeyLiterals.FIELDS, hashFields)],
-        false,
-        response =>
-            [.. response.Select(item =>
-                item == null ? ValkeyValue.Null : (ValkeyValue)(GlideString)item)]);
-
-    public static Cmd<object[], ValkeyValue> HashGetDelete(ValkeyKey key, ValkeyValue hashField)
-    => new(
-        RequestType.HGetDel,
-        [key, ValkeyLiterals.FIELDS, 1.ToGlideString(), hashField],
-        false,
-        response => ToValkeyValue(response[0]));
-
     public static Cmd<bool, bool> HashExists(ValkeyKey key, ValkeyValue hashField)
         => Boolean<bool>(RequestType.HExists, [key, hashField]);
 
@@ -107,6 +91,9 @@ internal static partial class Request
                 true,
                 response
                     => [.. response.Select(item => item == null ? ValkeyValue.Null : (ValkeyValue)(GlideString)item)]);
+
+    public static Cmd<object[], ValkeyValue[]> HashGetDelete(ValkeyKey key, IEnumerable<ValkeyValue> hashFields)
+        => ToValkeyValues(RequestType.HGetDel, [key, .. ToArgs(ValkeyLiterals.FIELDS, hashFields)]);
 
     public static Cmd<long, long> HashIncrementBy(ValkeyKey key, ValkeyValue hashField, long value)
         => Simple<long>(RequestType.HIncrBy, [key, hashField, value.ToGlideString()]);

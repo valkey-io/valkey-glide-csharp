@@ -162,6 +162,27 @@ internal partial class Database
         return await HashGetAsync(key, hashFields, GetExpiryOptions.ExpireAt(new DateTimeOffset(expiry)));
     }
 
+    /// <inheritdoc cref="IDatabaseAsync.HashFieldGetAndDeleteAsync(ValkeyKey, ValkeyValue, CommandFlags)"/>
+    public Task<ValkeyValue> HashFieldGetAndDeleteAsync(ValkeyKey key, ValkeyValue hashField, CommandFlags flags = CommandFlags.None)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+        return HashGetDeleteAsync(key, hashField);
+    }
+
+    /// <inheritdoc cref="IDatabaseAsync.HashFieldGetAndDeleteAsync(ValkeyKey, IEnumerable{ValkeyValue}, CommandFlags)"/>
+    public Task<ValkeyValue[]> HashFieldGetAndDeleteAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, CommandFlags flags = CommandFlags.None)
+    {
+        ArgumentNullException.ThrowIfNull(hashFields);
+
+        if (!hashFields.Any())
+        {
+            return Task.FromResult(Array.Empty<ValkeyValue>());
+        }
+
+        GuardClauses.ThrowIfCommandFlags(flags);
+        return HashGetDeleteAsync(key, hashFields);
+    }
+
     /// <inheritdoc cref="IDatabaseAsync.HashFieldSetAndSetExpiryAsync(ValkeyKey, ValkeyValue, ValkeyValue, TimeSpan?, bool, When, CommandFlags)"/>
     public async Task<ValkeyValue> HashFieldSetAndSetExpiryAsync(ValkeyKey key, ValkeyValue hashField, ValkeyValue value, TimeSpan? expiry = null, bool keepTtl = false, When when = When.Always, CommandFlags flags = CommandFlags.None)
     {
@@ -239,20 +260,6 @@ internal partial class Database
         GuardClauses.ThrowIfCommandFlags(flags);
         var results = await HashPersistAsync(key, hashFields);
         return [.. results.Select(r => (PersistResult)(int)r)];
-    }
-
-    /// <inheritdoc cref="IDatabaseAsync.HashFieldGetAndDeleteAsync(ValkeyKey, ValkeyValue, CommandFlags)"/>
-    public async Task<ValkeyValue> HashFieldGetAndDeleteAsync(ValkeyKey key, ValkeyValue hashField, CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await HashGetDeleteAsync(key, hashField);
-    }
-
-    /// <inheritdoc cref="IDatabaseAsync.HashFieldGetAndDeleteAsync(ValkeyKey, IEnumerable{ValkeyValue}, CommandFlags)"/>
-    public async Task<ValkeyValue[]> HashFieldGetAndDeleteAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-        return await HashGetDeleteAsync(key, hashFields);
     }
 
     #region Private Methods
