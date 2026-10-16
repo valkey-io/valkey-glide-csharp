@@ -26,17 +26,11 @@ public static class Assertions
         List<T> unexpected = [.. actual];
         List<T> missing = [];
 
-        // Match by index to avoid removing a different element that compares equal to default(T).
-        foreach (T item in expected)
+        foreach (var item in expected)
         {
-            int index = unexpected.FindIndex(a => EqualityComparer<T>.Default.Equals(a, item));
-            if (index < 0)
+            if (!unexpected.Remove(item))
             {
                 missing.Add(item);
-            }
-            else
-            {
-                unexpected.RemoveAt(index);
             }
         }
 
