@@ -296,16 +296,16 @@ public class ConnectionManagementCommandTests(ServerFixture fixture) : IClassFix
 
     private static void AssertTrackingInfoOff(ClientTrackingInfo info)
     {
-        Assert.Equivalent(new HashSet<string> { "off" }, info.Flags);
+        Assert.Equal(new HashSet<string> { "off" }, info.Flags);
         Assert.Equal(-1, info.Redirect);
         Assert.Empty(info.Prefixes);
     }
 
     private static void AssertTrackingInfoOn(ClientTrackingInfo info)
     {
-        Assert.Equivalent(new HashSet<string> { "on", "bcast" }, info.Flags);
+        Assert.Equal(new HashSet<string> { "on", "bcast" }, info.Flags);
         Assert.Equal(0, info.Redirect);
-        Assert.Equivalent(new HashSet<string> { "" }, info.Prefixes);
+        Assert.Equal(new HashSet<string> { "" }, info.Prefixes);
     }
 
     #endregion

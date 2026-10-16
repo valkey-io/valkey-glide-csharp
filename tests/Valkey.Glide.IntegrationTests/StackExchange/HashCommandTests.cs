@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using static Valkey.Glide.TestUtils.Assertions;
+
 namespace Valkey.Glide.IntegrationTests.StackExchange;
 
 /// <summary>
@@ -110,7 +112,7 @@ public class HashCommandTests(TestConfiguration config)
         _ = await db.HashSetAsync(key, "field2", "value2", When.Always);
 
         var results = await db.HashGetAsync(key, ["field1", "field2", "nonexistent"]);
-        Assert.Equivalent(new ValkeyValue[] { "value1", "value2", ValkeyValue.Null }, results);
+        Assert.Equal(new ValkeyValue[] { "value1", "value2", ValkeyValue.Null }, results);
     }
 
     #endregion
@@ -125,7 +127,7 @@ public class HashCommandTests(TestConfiguration config)
         _ = await db.HashSetAsync(key, "field2", "value2", When.Always);
 
         var entries = await db.HashGetAllAsync(key);
-        Assert.Equivalent(new HashEntry[] { new("field1", "value1"), new("field2", "value2") }, entries);
+        AssertEqualIgnoreOrder([new("field1", "value1"), new("field2", "value2")], entries);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -234,7 +236,7 @@ public class HashCommandTests(TestConfiguration config)
         _ = await db.HashSetAsync(key, "field2", "value2", When.Always);
 
         var keys = await db.HashKeysAsync(key);
-        Assert.Equivalent(new[] { "field1", "field2" }, keys);
+        AssertEqualIgnoreOrder(["field1", "field2"], keys);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -291,7 +293,7 @@ public class HashCommandTests(TestConfiguration config)
         _ = await db.HashSetAsync(key, "field2", "value2", When.Always);
 
         var values = await db.HashValuesAsync(key);
-        Assert.Equivalent(new[] { "value1", "value2" }, values);
+        AssertEqualIgnoreOrder(["value1", "value2"], values);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -312,7 +314,7 @@ public class HashCommandTests(TestConfiguration config)
         _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
 
         var results = await db.HashFieldExpireAsync(key, ["field1"], TimeSpan.FromSeconds(60));
-        Assert.Equivalent(new[] { ExpireResult.Success }, results);
+        Assert.Equal([ExpireResult.Success], results);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -325,7 +327,7 @@ public class HashCommandTests(TestConfiguration config)
         _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
 
         var results = await db.HashFieldExpireAsync(key, ["field1"], DateTime.UtcNow.AddMinutes(5));
-        Assert.Equivalent(new[] { ExpireResult.Success }, results);
+        Assert.Equal([ExpireResult.Success], results);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -340,27 +342,27 @@ public class HashCommandTests(TestConfiguration config)
 
         // Always — should succeed
         var results = await db.HashFieldExpireAsync(key, ["field1", "field2"], TimeSpan.FromSeconds(60), ExpireWhen.Always);
-        Assert.Equivalent(new[] { ExpireResult.Success, ExpireResult.Success }, results);
+        Assert.Equal([ExpireResult.Success, ExpireResult.Success], results);
 
         // HasNoExpiry — should fail since both fields already have expiry
         results = await db.HashFieldExpireAsync(key, ["field1", "field2"], TimeSpan.FromSeconds(120), ExpireWhen.HasNoExpiry);
-        Assert.Equivalent(new[] { ExpireResult.ConditionNotMet, ExpireResult.ConditionNotMet }, results);
+        Assert.Equal([ExpireResult.ConditionNotMet, ExpireResult.ConditionNotMet], results);
 
         // HasExpiry — should succeed since both fields have expiry
         results = await db.HashFieldExpireAsync(key, ["field1", "field2"], TimeSpan.FromSeconds(30), ExpireWhen.HasExpiry);
-        Assert.Equivalent(new[] { ExpireResult.Success, ExpireResult.Success }, results);
+        Assert.Equal([ExpireResult.Success, ExpireResult.Success], results);
 
         // GreaterThanCurrentExpiry — 120s > 30s, should succeed
         results = await db.HashFieldExpireAsync(key, ["field1", "field2"], TimeSpan.FromSeconds(120), ExpireWhen.GreaterThanCurrentExpiry);
-        Assert.Equivalent(new[] { ExpireResult.Success, ExpireResult.Success }, results);
+        Assert.Equal([ExpireResult.Success, ExpireResult.Success], results);
 
         // LessThanCurrentExpiry — 10s < 120s, should succeed
         results = await db.HashFieldExpireAsync(key, ["field1", "field2"], TimeSpan.FromSeconds(10), ExpireWhen.LessThanCurrentExpiry);
-        Assert.Equivalent(new[] { ExpireResult.Success, ExpireResult.Success }, results);
+        Assert.Equal([ExpireResult.Success, ExpireResult.Success], results);
 
         // Non-existent field
         results = await db.HashFieldExpireAsync(key, ["nonexistent"], TimeSpan.FromSeconds(60));
-        Assert.Equivalent(new[] { ExpireResult.NoSuchField }, results);
+        Assert.Equal([ExpireResult.NoSuchField], results);
     }
 
     #endregion
@@ -420,7 +422,7 @@ public class HashCommandTests(TestConfiguration config)
         _ = await db.HashFieldExpireAsync(key, ["field1"], TimeSpan.FromSeconds(60));
 
         var results = await db.HashFieldPersistAsync(key, ["field1", "field2", "nonexistent"]);
-        Assert.Equivalent(new[] { PersistResult.Success, PersistResult.ConditionNotMet, PersistResult.NoSuchField }, results);
+        Assert.Equal([PersistResult.Success, PersistResult.ConditionNotMet, PersistResult.NoSuchField], results);
     }
 
     #endregion
@@ -645,7 +647,7 @@ public class HashCommandTests(TestConfiguration config)
         _ = await db.HashSetAsync(key, "field2", "value2", When.Always);
 
         var values = await db.HashFieldGetAndSetExpiryAsync(key, ["field1", "field2"], TimeSpan.FromSeconds(60));
-        Assert.Equivalent(new[] { "value1", "value2" }, values);
+        Assert.Equal(new ValkeyValue[] { "value1", "value2" }, values);
 
         var ttls = await db.HashFieldGetTimeToLiveAsync(key, ["field1", "field2"]);
         Assert.Equal(2, ttls.Length);
@@ -667,7 +669,7 @@ public class HashCommandTests(TestConfiguration config)
         Assert.Equal("value1", value);
 
         var ttls = await db.HashFieldGetTimeToLiveAsync(key, ["field1"]);
-        Assert.Equivalent(new[] { -1 }, ttls);
+        Assert.Equal(new long[] { -1 }, ttls);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -696,7 +698,7 @@ public class HashCommandTests(TestConfiguration config)
         _ = await db.HashSetAsync(key, "field1", "value1", When.Always);
 
         var values = await db.HashFieldGetAndSetExpiryAsync(key, ["field1"], DateTime.UtcNow.AddMinutes(5));
-        Assert.Equivalent(new[] { "value1" }, values);
+        Assert.Equal(new ValkeyValue[] { "value1" }, values);
 
         var expireTimes = await db.HashFieldGetExpireDateTimeAsync(key, ["field1"]);
         Assert.True(expireTimes[0] > 0);
@@ -716,7 +718,7 @@ public class HashCommandTests(TestConfiguration config)
         Assert.Equal("value1", value);
 
         var ttls = await db.HashFieldGetTimeToLiveAsync(key, ["field1"]);
-        Assert.Equivalent(new[] { -1 }, ttls);
+        Assert.Equal(new long[] { -1 }, ttls);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -730,10 +732,10 @@ public class HashCommandTests(TestConfiguration config)
         _ = await db.HashFieldExpireAsync(key, ["field1"], TimeSpan.FromSeconds(60));
 
         var values = await db.HashFieldGetAndSetExpiryAsync(key, ["field1"], persist: true);
-        Assert.Equivalent(new[] { "value1" }, values);
+        Assert.Equal(new ValkeyValue[] { "value1" }, values);
 
         var ttls = await db.HashFieldGetTimeToLiveAsync(key, ["field1"]);
-        Assert.Equivalent(new[] { -1 }, ttls);
+        Assert.Equal(new long[] { -1 }, ttls);
     }
 
     #endregion

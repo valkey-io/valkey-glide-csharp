@@ -27,7 +27,7 @@ public class PubSubIntrospectionTests(PubSubIntrospectionFixture fixture) : ICla
     public async Task PubSubChannelsAsync_WithActiveSubscription_ReturnsChannel(bool isCluster)
     {
         BaseClient client = isCluster ? fixture.ClusterClient! : fixture.StandaloneClient!;
-        Assert.Equivalent(new[] { fixture.Channel }, await client.PubSubChannelsAsync());
+        Assert.Equal(new HashSet<ValkeyKey> { fixture.Channel }, await client.PubSubChannelsAsync());
     }
 
     [Theory]
@@ -35,7 +35,7 @@ public class PubSubIntrospectionTests(PubSubIntrospectionFixture fixture) : ICla
     public async Task PubSubChannelsAsync_WithPattern_ReturnsMatchingChannels(bool isCluster)
     {
         BaseClient client = isCluster ? fixture.ClusterClient! : fixture.StandaloneClient!;
-        Assert.Equivalent(new[] { fixture.Channel }, await client.PubSubChannelsAsync(fixture.MatchChannel));
+        Assert.Equal(new HashSet<ValkeyKey> { fixture.Channel }, await client.PubSubChannelsAsync(fixture.MatchChannel));
     }
 
     [Theory]
@@ -45,7 +45,7 @@ public class PubSubIntrospectionTests(PubSubIntrospectionFixture fixture) : ICla
         var channel = fixture.Channel;
         BaseClient client = isCluster ? fixture.EmptyClusterClient! : fixture.EmptyStandaloneClient!;
 
-        Assert.Equivalent(
+        Assert.Equal(
             new Dictionary<ValkeyKey, long> { { channel, 0L } },
             await client.PubSubNumSubAsync([channel]));
     }
@@ -57,7 +57,7 @@ public class PubSubIntrospectionTests(PubSubIntrospectionFixture fixture) : ICla
         var channel = fixture.Channel;
         BaseClient client = isCluster ? fixture.ClusterClient! : fixture.StandaloneClient!;
 
-        Assert.Equivalent(
+        Assert.Equal(
             new Dictionary<ValkeyKey, long> { { channel, 1L } },
             await client.PubSubNumSubAsync([channel]));
     }
@@ -111,7 +111,7 @@ public class PubSubIntrospectionTests(PubSubIntrospectionFixture fixture) : ICla
         SkipUnlessShardedSupported();
 
         GlideClusterClient client = fixture.ClusterClient!;
-        Assert.Equivalent(new[] { fixture.ShardedChannel }, await client.PubSubShardChannelsAsync());
+        Assert.Equal(new HashSet<ValkeyKey> { fixture.ShardedChannel }, await client.PubSubShardChannelsAsync());
     }
 
     [Fact]
@@ -120,7 +120,7 @@ public class PubSubIntrospectionTests(PubSubIntrospectionFixture fixture) : ICla
         SkipUnlessShardedSupported();
 
         GlideClusterClient client = fixture.ClusterClient!;
-        Assert.Equivalent(new[] { fixture.ShardedChannel }, await client.PubSubShardChannelsAsync(fixture.MatchShardedChannel));
+        Assert.Equal(new HashSet<ValkeyKey> { fixture.ShardedChannel }, await client.PubSubShardChannelsAsync(fixture.MatchShardedChannel));
     }
 
     [Fact]
@@ -131,7 +131,7 @@ public class PubSubIntrospectionTests(PubSubIntrospectionFixture fixture) : ICla
         var channel = fixture.ShardedChannel;
         GlideClusterClient client = fixture.EmptyClusterClient!;
 
-        Assert.Equivalent(
+        Assert.Equal(
             new Dictionary<ValkeyKey, long> { { channel, 0L } },
             await client.PubSubShardNumSubAsync([channel]));
     }
@@ -144,7 +144,7 @@ public class PubSubIntrospectionTests(PubSubIntrospectionFixture fixture) : ICla
         var shardChannel = fixture.ShardedChannel;
         GlideClusterClient client = fixture.ClusterClient!;
 
-        Assert.Equivalent(
+        Assert.Equal(
             new Dictionary<ValkeyKey, long> { { shardChannel, 1L } },
             await client.PubSubShardNumSubAsync([shardChannel]));
     }
@@ -180,8 +180,11 @@ public class PubSubIntrospectionTests(PubSubIntrospectionFixture fixture) : ICla
             [PubSubChannelMode.Sharded] = IsShardedSupported(isCluster) ? [fixture.ShardedChannel] : []
         };
 
-        Assert.Equivalent(expected, state.Desired);
-        Assert.Equivalent(expected, state.Actual);
+        foreach (PubSubChannelMode mode in Enum.GetValues<PubSubChannelMode>())
+        {
+            Assert.Equal(expected[mode], state.Desired[mode]);
+            Assert.Equal(expected[mode], state.Actual[mode]);
+        }
     }
 }
 

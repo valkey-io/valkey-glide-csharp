@@ -59,7 +59,7 @@ public class ConfigurationOptionsTests
         var options = new ConfigurationOptions();
         options.TrustIssuer(tempFile.Path);
 
-        Assert.Equivalent(new[] { CertificateData }, options._trustedIssuers);
+        Assert.Equal(new[] { CertificateData }, options._trustedIssuers);
     }
 
     [Fact]
@@ -75,7 +75,7 @@ public class ConfigurationOptionsTests
         var options = new ConfigurationOptions();
         options.TrustIssuer(traversalPath);
 
-        Assert.Equivalent(new[] { CertificateData }, options._trustedIssuers);
+        Assert.Equal(new[] { CertificateData }, options._trustedIssuers);
     }
 
     [Fact]
@@ -91,7 +91,7 @@ public class ConfigurationOptionsTests
         var options = new ConfigurationOptions();
         options.TrustIssuer(Certificate);
 
-        Assert.Equivalent(new[] { CertificateData }, options._trustedIssuers);
+        Assert.Equal(new[] { CertificateData }, options._trustedIssuers);
     }
 
     #endregion

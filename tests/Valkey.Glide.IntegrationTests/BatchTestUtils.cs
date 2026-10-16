@@ -677,7 +677,7 @@ internal partial class BatchTestUtils
         testData.Add(new(2L, "SortedSetAdd(combineKey3, test data for combine)"));
 
         _ = batch.SortedSetUnion([combineKey1, combineKey3]);
-        testData.Add(new(new ValkeyValue[] { "testMember2", "testMember3", "testMember1", "testMember4" }, "SortedSetUnion([combineKey1, combineKey3])"));
+        testData.Add(new(new ValkeyValue[] { "testMember3", "testMember1", "testMember2", "testMember4" }, "SortedSetUnion([combineKey1, combineKey3])"));
 
         _ = batch.SortedSetInterWithScore([combineKey1, combineKey3]);
         testData.Add(new(new SortedSetEntry[] { new("testMember2", 27.0) }, "SortedSetInterWithScore([combineKey1, combineKey3])"));
@@ -821,7 +821,7 @@ internal partial class BatchTestUtils
 
         // Test SortedSetUnion
         _ = batch.SortedSetUnion([unionKey1, unionKey2]);
-        testData.Add(new(new ValkeyValue[] { "common", "unique1", "unique2" }, "SortedSetUnion([unionKey1, unionKey2])"));
+        testData.Add(new(new ValkeyValue[] { "unique1", "common", "unique2" }, "SortedSetUnion([unionKey1, unionKey2])"));
 
         // Test SortedSetUnionAndStore
         string unionDestKey = $"{prefix}uniondest-{Guid.NewGuid()}";
@@ -1081,7 +1081,7 @@ internal partial class BatchTestUtils
         testData.Add(new(-1L, "ListPosition(posKey, nonexistent)"));
 
         _ = batch.ListPositions(posKey, "a", 10);
-        testData.Add(new(Array.Empty<long>(), "ListPositions(posKey, a, count=10)"));
+        testData.Add(new(new long[] { 0, 2, 4 }, "ListPositions(posKey, a, count=10)"));
 
         // Test LSET (ListSet)
         string setKey = $"{atomicPrefix}set-{Guid.NewGuid()}";
@@ -1269,10 +1269,10 @@ internal partial class BatchTestUtils
 
         // HashRandomField tests
         _ = batch.HashRandomField(key1);
-        testData.Add(new(new ValkeyValue("field1"), "HashRandomField(key1)"));
+        testData.Add(new(new ValkeyValue("field1"), "HashRandomField(key1)", true));
 
         _ = batch.HashRandomFields(key1, 2);
-        testData.Add(new(new ValkeyValue[] { "field1", "counter" }, "HashRandomFields(key1, 2)"));
+        testData.Add(new(Array.Empty<ValkeyValue>(), "HashRandomFields(key1, 2)", true));
 
         _ = batch.HashRandomFieldsWithValues(key1, 2);
         testData.Add(new(Array.Empty<HashEntry>(), "HashRandomFieldsWithValues(key1, 2)", true));
@@ -1378,7 +1378,7 @@ internal partial class BatchTestUtils
 
         // Test GeoAdd
         _ = batch.GeoAdd(sourceKey, "Palermo", new GeoPosition(13.361389, 38.115556));
-        testData.Add(new(1L, "GeoAdd(key1, Palermo)"));
+        testData.Add(new(true, "GeoAdd(key1, Palermo)"));
 
         _ = batch.GeoAdd(
             sourceKey,

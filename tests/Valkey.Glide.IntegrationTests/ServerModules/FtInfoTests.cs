@@ -92,7 +92,7 @@ public class FtInfoTests(TestConfiguration config)
         _ = Assert.IsType<Ft.InfoState>(info.State);
 
         Assert.Equal((ValkeyValue)",.<>{}[]\"':;!@#$%^&*()-+=~/\\|?", info.Punctuation);
-        Assert.Equivalent(new ValkeyValue[] { "the", "a" }, info.StopWords);
+        Assert.Equal(new ValkeyValue[] { "the", "a" }, info.StopWords);
         Assert.True(info.WithOffsets!);
         Assert.Equal(4L, info.MinStemSize);
     }

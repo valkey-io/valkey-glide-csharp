@@ -242,28 +242,6 @@ public readonly struct ValkeyChannel : IEquatable<ValkeyChannel>
     /// </summary>
     public override string ToString() => ((string?)this) ?? "(null)";
 
-    internal void AssertNotNull()
-    {
-        if (IsNull) throw new ArgumentException("A null channel is not valid in this context");
-    }
-
-    /// <summary>
-    /// Converts this channel to a <see cref="ValkeyKey"/>.
-    /// </summary>
-    internal ValkeyKey ToValkeyKey()
-        => Value is null ? ValkeyKey.Null : (ValkeyKey)Value;
-
-    internal ValkeyChannel Clone()
-    {
-        if (Value is null || Value.Length == 0)
-        {
-            return this;
-        }
-
-        var copy = (byte[])Value.Clone();
-        return new ValkeyChannel(copy, Options);
-    }
-
     #region Keyspace
 
     /// <summary>
@@ -519,4 +497,14 @@ public readonly struct ValkeyChannel : IEquatable<ValkeyChannel>
             return BitConverter.ToString(arr);
         }
     }
+
+    #region Internal Methods
+
+    /// <summary>
+    /// Converts this channel to a <see cref="ValkeyKey"/>.
+    /// </summary>
+    internal ValkeyKey ToValkeyKey()
+        => Value is null ? ValkeyKey.Null : (ValkeyKey)Value;
+
+    #endregion
 }

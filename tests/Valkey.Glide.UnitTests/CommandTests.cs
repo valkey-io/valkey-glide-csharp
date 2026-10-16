@@ -755,7 +755,7 @@ public class CommandTests
         };
 
         var offInfo = Request.ClientTrackingInfo().Converter(offResponse);
-        Assert.Equivalent(new HashSet<string> { "off" }, offInfo.Flags);
+        Assert.Equal(new HashSet<string> { "off" }, offInfo.Flags);
         Assert.Equal(-1L, offInfo.Redirect);
         Assert.Empty(offInfo.Prefixes);
 
@@ -772,9 +772,9 @@ public class CommandTests
         };
 
         var onInfo = Request.ClientTrackingInfo().Converter(onResponse);
-        Assert.Equivalent(new HashSet<string> { "on", "bcast" }, onInfo.Flags);
+        Assert.Equal(new HashSet<string> { "on", "bcast" }, onInfo.Flags);
         Assert.Equal(0L, onInfo.Redirect);
-        Assert.Equivalent(new HashSet<string> { "user:", "session:" }, onInfo.Prefixes);
+        Assert.Equal(new HashSet<string> { "user:", "session:" }, onInfo.Prefixes);
     }
 
     [Fact]
@@ -1174,11 +1174,11 @@ public class CommandTests
 
         // Verify entry with single field.
         Assert.Equal("1-0", entries[0].Id);
-        Assert.Equivalent(new NameValueEntry[] { new("f1", "v1") }, entries[0].Values);
+        Assert.Equal(new NameValueEntry[] { new("f1", "v1") }, entries[0].Values);
 
         // Verify entry with multiple fields.
         Assert.Equal("2-0", entries[1].Id);
-        Assert.Equivalent(new NameValueEntry[] { new("f1", "v1"), new("f2", "v2"), new("f3", "v3") }, entries[1].Values);
+        Assert.Equal(new NameValueEntry[] { new("f1", "v1"), new("f2", "v2"), new("f3", "v3") }, entries[1].Values);
     }
 
     [Fact]
@@ -1204,7 +1204,7 @@ public class CommandTests
         Assert.Equal("stream1", streams[1].Key);
         var entry = Assert.Single(streams[1].Entries);
         Assert.Equal("1-0", entry.Id);
-        Assert.Equivalent(new NameValueEntry[] { new("v1", "f1") }, entry.Values);
+        Assert.Equal(new NameValueEntry[] { new("v1", "f1") }, entry.Values);
     }
 
     #endregion
