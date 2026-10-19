@@ -129,7 +129,7 @@ jobs:
             - name: Upload ORT results
               if: always()
               continue-on-error: true
-              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
               with:
                   name: ort_results
                   path: |
@@ -154,7 +154,7 @@ jobs:
 
             - name: Upload the final package list
               continue-on-error: true
-              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
               with:
                   name: final-package-list-${{ steps.date.outputs.date }}
                   path: |
@@ -163,7 +163,7 @@ jobs:
 
             - name: Upload the skipped package list
               continue-on-error: true
-              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
               with:
                   name: skipped-package-list-${{ steps.date.outputs.date }}
                   path: |
@@ -172,7 +172,7 @@ jobs:
 
             - name: Upload the unknown/unapproved package list
               continue-on-error: true
-              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
               with:
                   name: unapproved-package-list-${{ steps.date.outputs.date }}
                   path: |
