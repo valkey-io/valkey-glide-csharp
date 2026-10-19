@@ -174,13 +174,14 @@ internal partial class Database
     {
         ArgumentNullException.ThrowIfNull(hashFields);
 
-        if (!hashFields.Any())
+        ValkeyValue[] fields = [.. hashFields];
+        if (fields.Length == 0)
         {
             return Task.FromResult(Array.Empty<ValkeyValue>());
         }
 
         GuardClauses.ThrowIfCommandFlags(flags);
-        return HashGetDeleteAsync(key, hashFields);
+        return HashGetDeleteAsync(key, fields);
     }
 
     /// <inheritdoc cref="IDatabaseAsync.HashFieldSetAndSetExpiryAsync(ValkeyKey, ValkeyValue, ValkeyValue, TimeSpan?, bool, When, CommandFlags)"/>
