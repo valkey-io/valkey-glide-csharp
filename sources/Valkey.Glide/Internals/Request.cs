@@ -83,7 +83,11 @@ internal static partial class Request
     /// <param name="keyword">The keyword to prepend.</param>
     /// <param name="items">The objects to convert.</param>
     private static GlideString[] ToArgs(GlideString keyword, IEnumerable<ValkeyValue> items)
-        => [keyword, items.Count().ToGlideString(), .. items];
+    {
+        // Materialize so that the items are only enumerated once.
+        ValkeyValue[] array = [.. items];
+        return [keyword, array.Length.ToGlideString(), .. array];
+    }
 
     /// <summary>
     /// Converts a <see cref="GlideString"/>-keyed dictionary to a <see cref="ValkeyKey"/>-keyed dictionary with <see langword="long"/> values.

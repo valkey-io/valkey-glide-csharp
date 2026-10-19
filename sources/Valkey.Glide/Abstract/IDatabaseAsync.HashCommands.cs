@@ -194,6 +194,36 @@ public partial interface IDatabaseAsync
     /// </remarks>
     Task<ValkeyValue[]> HashFieldGetAndSetExpiryAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, DateTime expiry, CommandFlags flags = CommandFlags.None);
 
+    /// <inheritdoc cref="IBaseClient.HashGetDeleteAsync(ValkeyKey, ValkeyValue)" path="/*[not(self::example)]"/>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <example>
+    /// <code>
+    /// await db.HashSetAsync("myhash", "field1", "value1");
+    /// var value = await db.HashFieldGetAndDeleteAsync("myhash", "field1");  // "value1"; field1 is deleted
+    /// </code>
+    /// </example>
+    Task<ValkeyValue> HashFieldGetAndDeleteAsync(ValkeyKey key, ValkeyValue hashField, CommandFlags flags = CommandFlags.None);
+
+    /// <inheritdoc cref="IBaseClient.HashGetDeleteAsync(ValkeyKey, IEnumerable{ValkeyValue})" path="/*[not(self::returns) and not(self::example) and not(self::remarks)]"/>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <returns>
+    /// <inheritdoc cref="IBaseClient.HashGetDeleteAsync(ValkeyKey, IEnumerable{ValkeyValue})" path="/returns"/>
+    /// Returns an empty array if <paramref name="hashFields"/> is empty.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="hashFields"/> is <see langword="null"/>.</exception>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="hashFields"/> is not empty and <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <example>
+    /// <code>
+    /// await db.HashSetAsync("myhash", [new("field1", "value1"), new("field2", "value2")]);
+    /// var values = await db.HashFieldGetAndDeleteAsync("myhash", ["field1", "missing"]);  // ["value1", ValkeyValue.Null]; field1 is deleted
+    /// </code>
+    /// </example>
+    /// <remarks>
+    /// <para>Since Valkey 9.1.0.</para>
+    /// </remarks>
+    Task<ValkeyValue[]> HashFieldGetAndDeleteAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, CommandFlags flags = CommandFlags.None);
+
     /// <summary>
     /// Sets the specified hash field and optionally sets its expiry.
     /// </summary>
@@ -316,14 +346,4 @@ public partial interface IDatabaseAsync
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     Task<PersistResult[]> HashFieldPersistAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, CommandFlags flags = CommandFlags.None);
-
-    /// <inheritdoc cref="IBaseClient.HashGetDeleteAsync(ValkeyKey, ValkeyValue)"/>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<ValkeyValue> HashFieldGetAndDeleteAsync(ValkeyKey key, ValkeyValue hashField, CommandFlags flags = CommandFlags.None);
-
-    /// <inheritdoc cref="IBaseClient.HashGetDeleteAsync(ValkeyKey, IEnumerable{ValkeyValue})"/>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    Task<ValkeyValue[]> HashFieldGetAndDeleteAsync(ValkeyKey key, IEnumerable<ValkeyValue> hashFields, CommandFlags flags = CommandFlags.None);
 }
