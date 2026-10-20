@@ -38,6 +38,24 @@ internal static partial class Request
     private static Cmd<T, bool> Boolean<T>(RequestType request, GlideString[] args)
         => new(request, args, false, response => Convert.ToInt64(response) == 1);
 
+    /// <summary>
+    /// Create a Cmd which returns an optional Boolean value based on the response being 1, 0, or not.
+    /// </summary>
+    /// <param name="request">The request type</param>
+    /// <param name="args">The command arguments</param>
+    /// <returns>A command that converts the response to an optional boolean value (true if 1, false if 0, null otherwise)</returns>
+    private static Cmd<long, bool?> OptionalBoolean(RequestType request, GlideString[] args)
+        => new(
+            request,
+            args,
+            false,
+            response => response switch
+                {
+                    1 => true,
+                    0 => false,
+                    _ => null,
+                });
+
     private static readonly Func<string, ValkeyValue> ToOkConverter = _ => ValkeyValue.Ok;
 
     /// <summary>

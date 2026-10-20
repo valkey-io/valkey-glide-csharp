@@ -217,6 +217,29 @@ public partial interface IBaseClient
     Task<bool[]> SetIsMemberAsync(ValkeyKey key, IEnumerable<ValkeyValue> values);
 
     /// <summary>
+    /// Checks whether <paramref name="value"/> is a member of a set, distinguishing
+    /// between a missing member and a missing key.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/sismember/">Valkey commands – SISMEMBER</seealso>
+    /// <param name="key">The set key.</param>
+    /// <param name="value">The value to check for membership.</param>
+    /// <returns>
+    /// <see langword="true"/> if the value is a member of the set,
+    /// <see langword="false"/> if the set exists but the value is not a member,
+    /// or <see langword="null"/> if the set does not exist.
+    /// </returns>
+    /// <example>
+    /// <code>
+    /// await client.SetAddAsync("myset", ["a", "b", "c"]);
+    /// var isMember = await client.SetIsMemberIfExistsAsync("myset", "a");  // true
+    /// </code>
+    /// </example>
+    /// <remarks>
+    /// <para>Since Valkey 9.2.0.</para>
+    /// </remarks>
+    Task<bool?> SetIsMemberIfExistsAsync(ValkeyKey key, ValkeyValue value);
+
+    /// <summary>
     /// Returns all members of a set.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/smembers/">Valkey commands – SMEMBERS</seealso>

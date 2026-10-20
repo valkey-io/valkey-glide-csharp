@@ -99,6 +99,10 @@ internal interface IBatchSetCommands
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.SetIsMemberAsync(ValkeyKey, IEnumerable{ValkeyValue})" /></returns>
     IBatch SetIsMember(ValkeyKey key, IEnumerable<ValkeyValue> values);
 
+    /// <inheritdoc cref="IBaseClient.SetIsMemberIfExistsAsync(ValkeyKey, ValkeyValue)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.SetIsMemberIfExistsAsync(ValkeyKey, ValkeyValue)" /></returns>
+    IBatch SetIsMemberIfExists(ValkeyKey key, ValkeyValue value);
+
     /// <inheritdoc cref="ISetBaseCommands.SetRandomMemberAsync(ValkeyKey)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="ISetBaseCommands.SetRandomMemberAsync(ValkeyKey)" /></returns>
     IBatch SetRandomMember(ValkeyKey key);

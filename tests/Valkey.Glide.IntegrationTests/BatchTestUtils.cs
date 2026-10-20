@@ -256,6 +256,7 @@ internal partial class BatchTestUtils
         string key3 = $"{atomicPrefix}3-{Guid.NewGuid()}";
         string key4 = $"{atomicPrefix}4-{Guid.NewGuid()}";
         string key5 = $"{atomicPrefix}5-{Guid.NewGuid()}";
+        string key6 = $"{atomicPrefix}6-{Guid.NewGuid()}";
         string destKey = $"{atomicPrefix}dest-{Guid.NewGuid()}";
 
         _ = batch.SetAdd(key1, "a");
@@ -376,6 +377,18 @@ internal partial class BatchTestUtils
 
         _ = batch.SetIsMember(key1, ["c", "e", "nonexistent"]);
         testData.Add(new(new bool[] { true, true, false }, "SetIsMember(key1, [c, e, nonexistent])"));
+
+        if (!Version.IsLessThan(Version.Valkey9_2))
+        {
+            _ = batch.SetIsMemberIfExists(key1, "c");
+            testData.Add(new(true, "SetIsMemberIfExists(key1, c)"));
+
+            _ = batch.SetIsMemberIfExists(key1, "nonexistent");
+            testData.Add(new(false, "SetIsMemberIfExists(key1, nonexistent)"));
+
+            _ = batch.SetIsMemberIfExists(key6, "c");
+            testData.Add(new(null, "SetIsMemberIfExists(key6, c)"));
+        }
 
         _ = batch.SetRandomMember(key1);
         testData.Add(new(new ValkeyValue(""), "SetRandomMember(key1)", true)); // Can't predict exact value

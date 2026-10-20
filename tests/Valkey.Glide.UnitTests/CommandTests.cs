@@ -168,6 +168,7 @@ public class CommandTests
         () => Assert.Equal(["SISMEMBER", "mykey", "value"], Request.SetIsMember("mykey", "value").GetArgs()),
         () => Assert.Equal(["SISMEMBER", "test:set", "test-member"], Request.SetIsMember("test:set", "test-member").GetArgs()),
         () => Assert.Equal(["SMISMEMBER", "key", "member1", "member2", "member3"], Request.SetIsMember("key", ["member1", "member2", "member3"]).GetArgs()),
+        () => Assert.Equal(["SISMEMBER", "key", "member", "XX"], Request.SetIsMemberIfExists("key", "member").GetArgs()),
         () => Assert.Equal(["SMISMEMBER", "key"], Request.SetIsMember("key", []).GetArgs()),
         () => Assert.Equal(["SMISMEMBER", "key", "", " ", "null", "0", "-1"], Request.SetIsMember("key", ["", " ", "null", "0", "-1"]).GetArgs()),
         () => Assert.Equal(["SRANDMEMBER", "key"], Request.SetRandomMember("key").GetArgs()),
@@ -538,21 +539,25 @@ public class CommandTests
         () => Assert.Equal(ValkeyValue.Ok, Request.ClientPauseWrite(OneSecond).Converter("OK")),
         () => Assert.Equal(ValkeyValue.Ok, Request.ClientUnpause().Converter("OK")),
 
+        // Set command converters
         () => Assert.True(Request.SetAdd("key", "member").Converter(1L)),
         () => Assert.False(Request.SetAdd("key", "member").Converter(0L)),
-        () => Assert.True(Request.SetRemove("key", "member").Converter(1L)),
-        () => Assert.False(Request.SetRemove("key", "member").Converter(0L)),
-
         () => Assert.Equal(2L, Request.SetAdd("key", ["member1", "member2"]).Converter(2L)),
-        () => Assert.Equal(1L, Request.SetRemove("key", ["member1", "member2"]).Converter(1L)),
         () => Assert.Equal(5L, Request.SetCard("key").Converter(5L)),
-        () => Assert.Equal(3L, Request.SetInterCard(["key1", "key2"]).Converter(3L)),
-        () => Assert.Equal(4L, Request.SetUnionStore("dest", ["key1", "key2"]).Converter(4L)),
-        () => Assert.Equal(2L, Request.SetInterStore("dest", ["key1", "key2"]).Converter(2L)),
         () => Assert.Equal(1L, Request.SetDiffStore("dest", ["key1", "key2"]).Converter(1L)),
-
+        () => Assert.Equal(3L, Request.SetInterCard(["key1", "key2"]).Converter(3L)),
+        () => Assert.Equal(2L, Request.SetInterStore("dest", ["key1", "key2"]).Converter(2L)),
+        () => Assert.True(Request.SetIsMember("key", "member").Converter(true)),
+        () => Assert.False(Request.SetIsMember("key", "member").Converter(false)),
+        () => Assert.True(Request.SetIsMemberIfExists("key", "member").Converter(1L)),
+        () => Assert.False(Request.SetIsMemberIfExists("key", "member").Converter(0L)),
+        () => Assert.Null(Request.SetIsMemberIfExists("key", "member").Converter(-1L)),
         () => Assert.Equal<ValkeyValue>("member", Request.SetPop("key").Converter("member")),
         () => Assert.Null(Request.SetPop("key").Converter(null!)),
+        () => Assert.True(Request.SetRemove("key", "member").Converter(1L)),
+        () => Assert.False(Request.SetRemove("key", "member").Converter(0L)),
+        () => Assert.Equal(1L, Request.SetRemove("key", ["member1", "member2"]).Converter(1L)),
+        () => Assert.Equal(4L, Request.SetUnionStore("dest", ["key1", "key2"]).Converter(4L)),
 
         // Generic Commands Converters
         () => Assert.True(Request.Delete("key").Converter(1L)),
