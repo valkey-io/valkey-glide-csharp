@@ -76,6 +76,9 @@ public abstract partial class BaseBatch<T>
     /// <inheritdoc cref="IBatchSetCommands.SetIsMember(ValkeyKey, IEnumerable{ValkeyValue})" />
     public T SetIsMember(ValkeyKey key, IEnumerable<ValkeyValue> values) => AddCmd(Request.SetIsMember(key, values));
 
+    /// <inheritdoc cref="IBatchSetCommands.SetIsMemberIfExists(ValkeyKey, ValkeyValue)" />
+    public T SetIsMemberIfExists(ValkeyKey key, ValkeyValue value) => AddCmd(Request.SetIsMemberIfExists(key, value));
+
     /// <inheritdoc cref="IBatchSetCommands.SetRandomMember(ValkeyKey)" />
     public T SetRandomMember(ValkeyKey key) => AddCmd(Request.SetRandomMember(key));
 
@@ -111,6 +114,7 @@ public abstract partial class BaseBatch<T>
     IBatch IBatchSetCommands.SetDiffStore(ValkeyKey destination, IEnumerable<ValkeyKey> keys) => SetDiffStore(destination, keys);
     IBatch IBatchSetCommands.SetIsMember(ValkeyKey key, ValkeyValue value) => SetIsMember(key, value);
     IBatch IBatchSetCommands.SetIsMember(ValkeyKey key, IEnumerable<ValkeyValue> values) => SetIsMember(key, values);
+    IBatch IBatchSetCommands.SetIsMemberIfExists(ValkeyKey key, ValkeyValue value) => SetIsMemberIfExists(key, value);
     IBatch IBatchSetCommands.SetRandomMember(ValkeyKey key) => SetRandomMember(key);
     IBatch IBatchSetCommands.SetRandomMembers(ValkeyKey key, long count) => SetRandomMembers(key, count);
     IBatch IBatchSetCommands.SetMove(ValkeyKey source, ValkeyKey destination, ValkeyValue value) => SetMove(source, destination, value);
