@@ -434,14 +434,14 @@ public class StringCommandTests(TestConfiguration config)
     public async Task DeleteIfEqualAsync(BaseClient client)
     {
         Version.SkipIfLessThan(Version.Valkey9_0);
-        string key = Guid.NewGuid().ToString();
-        string value = Guid.NewGuid().ToString();
+        ValkeyKey key = Guid.NewGuid().ToString();
+        ValkeyValue value = Guid.NewGuid().ToString();
 
         await client.SetAsync(key, value);
 
         // Value not equal
         Assert.False(await client.DeleteIfEqualAsync(key, "other"));
-        Assert.Equal(value, (await client.GetAsync(key)).ToString());
+        Assert.Equal(value, await client.GetAsync(key));
 
         // Value equal
         Assert.True(await client.DeleteIfEqualAsync(key, value));
