@@ -164,18 +164,11 @@ internal static partial class Request
         => [.. items.Select(ToValkeyValue)];
 
     /// <summary>
-    /// Converts the given key-value pair to a <see cref="ValkeyValue"/> array: <c>key value</c>.
-    /// </summary>
-    /// <param name="pair">The key-value pair to convert.</param>
-    private static ValkeyValue[] ToValkeyValues(KeyValuePair<ValkeyValue, ValkeyValue> pair)
-        => [pair.Key, pair.Value];
-
-    /// <summary>
     /// Converts the given key-value pairs to a flattened <see cref="ValkeyValue"/> array: <c>key1 value1 key2 value2 ...</c>.
     /// </summary>
     /// <param name="pairs">The key-value pairs to convert.</param>
     private static ValkeyValue[] ToValkeyValues(IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>> pairs)
-        => [.. pairs.SelectMany(ToValkeyValues)];
+        => [.. pairs.SelectMany(p => (ValkeyValue[])[p.Key, p.Value])];
 
     /// <summary>
     /// Converts the given objects to a <see cref="ValkeyValue"/> set.
