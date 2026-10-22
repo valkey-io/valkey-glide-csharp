@@ -214,6 +214,15 @@ internal static partial class Request
     {
         List<GlideString> args = [key];
 
+        if (options.KeyCondition == HashSetKeyCondition.OnlyIfDoesNotExist)
+        {
+            args.Add(ValkeyLiterals.NX);
+        }
+        else if (options.KeyCondition == HashSetKeyCondition.OnlyIfExists)
+        {
+            args.Add(ValkeyLiterals.XX);
+        }
+
         if (options.Condition == HashSetCondition.OnlyIfNoneExist)
         {
             args.Add(ValkeyLiterals.FNX);

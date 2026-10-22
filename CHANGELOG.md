@@ -53,6 +53,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `REPLICAOF` (#446)
   - `RESET` (#435)
   - `SAVE` (#440)
+- Support new Valkey 9.1 commands:
+  - `HSETEX` with `NX` and `XX` options (#582)
 - Support new Valkey 9.2 commands:
   - `SISMEMBER` with `XX` option (#581)
   - `INFO` with `cluster_info` section (#590)

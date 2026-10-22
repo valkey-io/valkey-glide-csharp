@@ -1329,6 +1329,15 @@ internal partial class BatchTestUtils
             _ = batch.HashSet(expireKey, [new("setex_field", "setex_value")], new HashSetOptions { Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60)) });
             testData.Add(new(true, "HashSet(expireKey, {setex_field: setex_value}, 60s)"));
 
+            if (!Version.IsLessThan(Version.Valkey9_1))
+            {
+                _ = batch.HashSet(expireKey, [new("nx_field", "nx_value")], new HashSetOptions { KeyCondition = HashSetKeyCondition.OnlyIfDoesNotExist });
+                testData.Add(new(false, "HashSet(expireKey, {nx_field: nx_value}, NX)"));
+
+                _ = batch.HashSet(expireKey, [new("xx_field", "xx_value")], new HashSetOptions { KeyCondition = HashSetKeyCondition.OnlyIfExists });
+                testData.Add(new(true, "HashSet(expireKey, {xx_field: xx_value}, XX)"));
+            }
+
             // Test HEXPIRE with seconds
             _ = batch.HashExpire(expireKey, "expire_field1", TimeSpan.FromSeconds(30));
             testData.Add(new(HashExpireResult.ExpirySet, "HashExpire(expireKey, expire_field1, 30s)"));
