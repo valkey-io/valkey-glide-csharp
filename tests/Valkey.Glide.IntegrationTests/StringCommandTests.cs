@@ -431,6 +431,28 @@ public class StringCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task DeleteIfEqualAsync(BaseClient client)
+    {
+        Version.SkipIfLessThan(Version.Valkey9_0);
+        string key = Guid.NewGuid().ToString();
+        string value = Guid.NewGuid().ToString();
+
+        await client.SetAsync(key, value);
+
+        // Value not equal
+        Assert.False(await client.DeleteIfEqualAsync(key, "other"));
+        Assert.Equal(value, (await client.GetAsync(key)).ToString());
+
+        // Value equal
+        Assert.True(await client.DeleteIfEqualAsync(key, value));
+        Assert.False(await client.ExistsAsync(key));
+
+        // Non-existent key
+        Assert.False(await client.DeleteIfEqualAsync(key, value));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task IncrementAsync_ExistingKey(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();

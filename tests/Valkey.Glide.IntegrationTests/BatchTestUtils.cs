@@ -243,6 +243,26 @@ internal partial class BatchTestUtils
         _ = batch.GetExpiry(getSetExpiryKey2, GetExpiryOptions.ExpireAt(new DateTimeOffset(futureTime)));
         testData.Add(new(new ValkeyValue("expire-me-abs"), "GetExpiry(getSetExpiryKey2, futureTime)"));
 
+        // Valkey 9.0+ string commands
+        // ---------------------------
+
+        if (!Version.IsLessThan(Version.Valkey9_0))
+        {
+            // DeleteIfEqual tests
+            string deleteIfEqualKey = $"{atomicPrefix}deleteifequal-{Guid.NewGuid()}";
+            _ = batch.Set(deleteIfEqualKey, "value");
+            testData.Add(new(true, "Set(deleteIfEqualKey, value)"));
+
+            _ = batch.DeleteIfEqual(deleteIfEqualKey, "other");
+            testData.Add(new(false, "DeleteIfEqual(deleteIfEqualKey, other) value not equal"));
+
+            _ = batch.DeleteIfEqual(deleteIfEqualKey, "value");
+            testData.Add(new(true, "DeleteIfEqual(deleteIfEqualKey, value) value equal"));
+
+            _ = batch.DeleteIfEqual(deleteIfEqualKey, "value");
+            testData.Add(new(false, "DeleteIfEqual(deleteIfEqualKey, value) non-existent key"));
+        }
+
         return testData;
     }
 

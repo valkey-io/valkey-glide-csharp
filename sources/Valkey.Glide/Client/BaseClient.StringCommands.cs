@@ -81,6 +81,10 @@ public abstract partial class BaseClient
     public Task<double> DecrementAsync(ValkeyKey key, double value) =>
         Command(Request.IncrementByFloat(key, -value));
 
+    /// <inheritdoc cref="IBaseClient.DeleteIfEqualAsync(ValkeyKey, ValkeyValue)"/>
+    public Task<bool> DeleteIfEqualAsync(ValkeyKey key, ValkeyValue value) =>
+        Command(Request.DeleteIfEqual(key, value));
+
     /// <inheritdoc cref="IBaseClient.IncrementAsync(ValkeyKey, long)"/>
     public Task<long> IncrementAsync(ValkeyKey key, long value = 1) =>
         value == 1
