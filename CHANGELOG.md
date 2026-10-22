@@ -17,7 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Inflight requests limit (#484)
   - Mutual TLS (#488)
   - Periodic topology checks (#485)
-- Support missing stream commands for GLIDE client (#326):
+  - Custom socket address resolution support via callback (#392)
+  - Node discovery mode option for standalone clients (#131)
+- Support missing stream commands (#326):
   - `XAUTOCLAIM`
   - `XCLAIM`
   - `XGROUP CREATE`
@@ -29,7 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `XINFO GROUPS`
   - `XINFO STREAM FULL`
   - `XPENDING`
-- Support additional commands (#435):
+- Support missing commands (#435):
   - `BGREWRITEAOF` (#444)
   - `BGSAVE CANCEL` (#436)
   - `BGSAVE SCHEDULE` (#436)
@@ -52,9 +54,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `REPLICAOF` (#446)
   - `RESET` (#435)
   - `SAVE` (#440)
-- Custom socket address resolution support via callback (#392)
-- `NodeDiscoveryMode` configuration option for standalone clients (#131)
-- `InfoOptions.Section.CLUSTER_INFO` for the `INFO cluster_info` section (#590)
+- Support new Valkey 9.2 commands:
+  - `SISMEMBER` with `XX` option (#581)
+  - `INFO` with `cluster_info` section (#590)
 - Single-field batch overloads for hash field expiry commands (#285):
   - `HGETEX`
   - `HPERSIST`

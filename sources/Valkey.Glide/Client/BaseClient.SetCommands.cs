@@ -78,6 +78,10 @@ public abstract partial class BaseClient
     public async Task<bool[]> SetIsMemberAsync(ValkeyKey key, IEnumerable<ValkeyValue> values)
         => await Command(Request.SetIsMember(key, values));
 
+    /// <inheritdoc cref="IBaseClient.SetIsMemberIfExistsAsync(ValkeyKey, ValkeyValue)"/>
+    public async Task<bool?> SetIsMemberIfExistsAsync(ValkeyKey key, ValkeyValue value)
+        => await Command(Request.SetIsMemberIfExists(key, value));
+
     /// <inheritdoc cref="ISetBaseCommands.SetRandomMemberAsync(ValkeyKey)"/>
     public async Task<ValkeyValue> SetRandomMemberAsync(ValkeyKey key)
         => await Command(Request.SetRandomMember(key));

@@ -226,6 +226,25 @@ public class SetCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestSetIsMemberIfExistsAsync(BaseClient client)
+    {
+        Version.SkipIfLessThan(Version.Valkey9_2);
+
+        string key = Guid.NewGuid().ToString();
+
+        // Test on non-existent key
+        Assert.Null(await client.SetIsMemberIfExistsAsync(key, "member1"));
+
+        // Add members to set
+        Assert.Equal(2, await client.SetAddAsync(key, ["member1", "member2"]));
+
+        // Test on existing key
+        Assert.True(await client.SetIsMemberIfExistsAsync(key, "member1"));
+        Assert.False(await client.SetIsMemberIfExistsAsync(key, "nonexistent"));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestSetRandomMemberAsync(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
