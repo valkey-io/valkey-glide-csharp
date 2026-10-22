@@ -30,4 +30,13 @@ public sealed class HashSetOptions
     public SetExpiryOptions? Expiry { get; init; }
 
     #endregion
+    #region Internal Methods
+
+    /// <summary>
+    /// Converts to command arguments.
+    /// </summary>
+    internal GlideString[] ToArgs()
+        => [.. KeyCondition.ToArgs(), .. Condition.ToArgs(), .. Expiry?.ToArgs() ?? []];
+
+    #endregion
 }

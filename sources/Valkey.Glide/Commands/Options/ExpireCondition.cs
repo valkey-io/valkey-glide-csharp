@@ -40,3 +40,22 @@ public enum ExpireCondition
     /// </summary>
     OnlyIfLessThan,
 }
+
+internal static class ExpireConditionExtensions
+{
+    /// <summary>
+    /// Converts to command arguments.
+    /// </summary>
+    /// <param name="condition">The condition to convert.</param>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="condition"/> is not a supported <see cref="ExpireCondition"/> value.</exception>
+    internal static GlideString[] ToArgs(this ExpireCondition condition)
+        => condition switch
+        {
+            ExpireCondition.Always => [],
+            ExpireCondition.OnlyIfNotExists => [ValkeyLiterals.NX],
+            ExpireCondition.OnlyIfExists => [ValkeyLiterals.XX],
+            ExpireCondition.OnlyIfGreaterThan => [ValkeyLiterals.GT],
+            ExpireCondition.OnlyIfLessThan => [ValkeyLiterals.LT],
+            _ => throw new ArgumentOutOfRangeException(nameof(condition)),
+        };
+}

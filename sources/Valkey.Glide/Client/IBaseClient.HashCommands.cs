@@ -433,13 +433,13 @@ public partial interface IBaseClient
         HashSetCondition condition);
 
     /// <summary>
-    /// Sets a hash field value with options for expiry and condition.
+    /// Sets a hash field value with options for expiry and conditions.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hsetex/">Valkey commands – HSETEX</seealso>
     /// <param name="key">The hash key.</param>
     /// <param name="hashField">The field to set.</param>
     /// <param name="value">The value to set.</param>
-    /// <param name="options">The options including expiry and condition.</param>
+    /// <param name="options">The options including expiry and conditions.</param>
     /// <returns><see langword="true"/> if the field was set, <see langword="false"/> otherwise.</returns>
     /// <example>
     /// <code>
@@ -461,12 +461,12 @@ public partial interface IBaseClient
         HashSetOptions options);
 
     /// <summary>
-    /// Sets multiple hash field values with options for expiry and condition.
+    /// Sets multiple hash field values with options for expiry and conditions.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/hsetex/">Valkey commands – HSETEX</seealso>
     /// <param name="key">The hash key.</param>
     /// <param name="hashFieldsAndValues">The field-value pairs to set.</param>
-    /// <param name="options">The options including expiry and condition.</param>
+    /// <param name="options">The options including expiry and conditions.</param>
     /// <returns><see langword="true"/> if the fields were set, <see langword="false"/> otherwise.</returns>
     /// <example>
     /// <code>

@@ -24,7 +24,7 @@ internal static partial class Request
     {
         List<GlideString> args = [key, ToULongMs(expiry, nameof(expiry)).ToGlideString()];
 
-        AddExpireCondition(args, condition);
+        args.AddRange(condition.ToArgs());
         args.AddRange(ToArgs(ValkeyLiterals.FIELDS, hashFields));
 
         return new(
@@ -39,7 +39,7 @@ internal static partial class Request
     {
         List<GlideString> args = [key, expiry.ToUnixTimeMilliseconds().ToGlideString()];
 
-        AddExpireCondition(args, condition);
+        args.AddRange(condition.ToArgs());
         args.AddRange(ToArgs(ValkeyLiterals.FIELDS, hashFields));
 
         return new(
@@ -154,11 +154,7 @@ internal static partial class Request
     }
 
     public static Cmd<long, long> HashSet(ValkeyKey key, KeyValuePair<ValkeyValue, ValkeyValue>[] hashFieldsAndValues)
-    {
-        List<GlideString> args = [key];
-        AddPairs(args, hashFieldsAndValues);
-        return Simple<long>(RequestType.HSet, [.. args]);
-    }
+        => Simple<long>(RequestType.HSet, [key, .. ToValkeyValues(hashFieldsAndValues)]);
 
     public static Cmd<long, bool> HashSet(ValkeyKey key, ValkeyValue hashField, ValkeyValue value)
         => Boolean<long>(RequestType.HSet, [key, hashField, value]);
@@ -168,80 +164,19 @@ internal static partial class Request
         ValkeyValue hashField,
         ValkeyValue value,
         HashSetCondition condition)
-    {
-        List<GlideString> args = [key];
-
-        if (condition == HashSetCondition.OnlyIfNoneExist)
-        {
-            args.Add(ValkeyLiterals.FNX);
-        }
-        else if (condition == HashSetCondition.OnlyIfAllExist)
-        {
-            args.Add(ValkeyLiterals.FXX);
-        }
-
-        args.AddRange([ValkeyLiterals.FIELDS, 1.ToGlideString(), hashField, value]);
-        return Boolean<long>(RequestType.HSetEx, [.. args]);
-    }
+        => HashSet(key, [new KeyValuePair<ValkeyValue, ValkeyValue>(hashField, value)], condition);
 
     public static Cmd<long, bool> HashSet(
         ValkeyKey key,
         IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>> hashFieldsAndValues,
         HashSetCondition condition)
-    {
-        List<GlideString> args = [key];
-
-        if (condition == HashSetCondition.OnlyIfNoneExist)
-        {
-            args.Add(ValkeyLiterals.FNX);
-        }
-        else if (condition == HashSetCondition.OnlyIfAllExist)
-        {
-            args.Add(ValkeyLiterals.FXX);
-        }
-
-        args.Add(ValkeyLiterals.FIELDS);
-        args.Add(hashFieldsAndValues.Count().ToGlideString());
-        AddPairs(args, hashFieldsAndValues);
-
-        return Boolean<long>(RequestType.HSetEx, [.. args]);
-    }
+        => Boolean<long>(RequestType.HSetEx, [key, .. condition.ToArgs(), .. ToFields(hashFieldsAndValues)]);
 
     public static Cmd<long, bool> HashSet(
         ValkeyKey key,
         IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>> hashFieldsAndValues,
         HashSetOptions options)
-    {
-        List<GlideString> args = [key];
-
-        if (options.KeyCondition == HashSetKeyCondition.OnlyIfDoesNotExist)
-        {
-            args.Add(ValkeyLiterals.NX);
-        }
-        else if (options.KeyCondition == HashSetKeyCondition.OnlyIfExists)
-        {
-            args.Add(ValkeyLiterals.XX);
-        }
-
-        if (options.Condition == HashSetCondition.OnlyIfNoneExist)
-        {
-            args.Add(ValkeyLiterals.FNX);
-        }
-        else if (options.Condition == HashSetCondition.OnlyIfAllExist)
-        {
-            args.Add(ValkeyLiterals.FXX);
-        }
-
-        if (options.Expiry is not null)
-        {
-            AddExpiryArgs(args, options.Expiry);
-        }
-
-        args.Add(ValkeyLiterals.FIELDS);
-        args.Add(hashFieldsAndValues.Count().ToGlideString());
-        AddPairs(args, hashFieldsAndValues);
-        return Boolean<long>(RequestType.HSetEx, [.. args]);
-    }
+        => Boolean<long>(RequestType.HSetEx, [key, .. options.ToArgs(), .. ToFields(hashFieldsAndValues)]);
 
     public static Cmd<bool, bool> HashSetNotExists(ValkeyKey key, ValkeyValue hashField, ValkeyValue value)
         => Boolean<bool>(RequestType.HSetNX, [key, hashField, value]);
@@ -272,46 +207,13 @@ internal static partial class Request
     #region Argument Builders
 
     /// <summary>
-    /// Adds the given key-value pairs to the arguments list.
+    /// Converts field-value pairs into a counted array: <c>FIELDS count field1 value1 field2 value2 ...</c>.
     /// </summary>
-    /// <param name="args">The arguments list to append to.</param>
-    /// <param name="pairs">The key-value pairs to add.</param>
-    private static void AddPairs(List<GlideString> args, IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>> pairs)
+    /// <param name="pairs">The field-value pairs to convert.</param>
+    private static GlideString[] ToFields(IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>> pairs)
     {
-        foreach (var kvp in pairs)
-        {
-            args.Add(kvp.Key);
-            args.Add(kvp.Value);
-        }
-    }
-
-    /// <summary>
-    /// Adds the given expire condition to the arguments list.
-    /// </summary>
-    /// <param name="args">The arguments list to append to.</param>
-    /// <param name="condition">The expire condition to add.</param>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="condition"/> is not a recognized <see cref="ExpireCondition"/> value.</exception>
-    internal static void AddExpireCondition(List<GlideString> args, ExpireCondition condition)
-    {
-        switch (condition)
-        {
-            case ExpireCondition.Always:
-                break;
-            case ExpireCondition.OnlyIfNotExists:
-                args.Add(ValkeyLiterals.NX);
-                break;
-            case ExpireCondition.OnlyIfExists:
-                args.Add(ValkeyLiterals.XX);
-                break;
-            case ExpireCondition.OnlyIfGreaterThan:
-                args.Add(ValkeyLiterals.GT);
-                break;
-            case ExpireCondition.OnlyIfLessThan:
-                args.Add(ValkeyLiterals.LT);
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(condition));
-        }
+        ValkeyValue[] values = ToValkeyValues(pairs);
+        return [ValkeyLiterals.FIELDS, (values.Length / 2).ToGlideString(), .. values];
     }
 
     #endregion

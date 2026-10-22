@@ -323,6 +323,19 @@ public static partial class Ft
     }
 
     /// <summary>
+    /// Converts to command arguments.
+    /// </summary>
+    /// <param name="metric">The distance metric to convert.</param>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="metric"/> is not a supported <see cref="DistanceMetric"/> value.</exception>
+    internal static GlideString[] ToArgs(this DistanceMetric metric) => metric switch
+    {
+        DistanceMetric.Cosine => [ValkeyLiterals.COSINE],
+        DistanceMetric.Euclidean => [ValkeyLiterals.L2],
+        DistanceMetric.InnerProduct => [ValkeyLiterals.IP],
+        _ => throw new ArgumentOutOfRangeException(nameof(metric)),
+    };
+
+    /// <summary>
     /// The data type used to store documents in a search index.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ft.create/">Valkey commands – FT.CREATE</seealso>

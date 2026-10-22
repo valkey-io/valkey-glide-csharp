@@ -2,11 +2,8 @@
 
 using System.Globalization;
 
-using Valkey.Glide.Commands.Options;
-
 using static Valkey.Glide.Errors;
 using static Valkey.Glide.Internals.FFI;
-using static Valkey.Glide.Internals.TimeUtils;
 
 namespace Valkey.Glide.Internals;
 
@@ -123,32 +120,6 @@ internal static partial class Request
         return result;
     }
 
-    internal static GlideString[] ToScanArgs(ScanOptions? options)
-        => options?.ToArgs() ?? [];
-
-    /// <summary>
-    /// Appends SetExpiryOptions arguments (PX/PXAT/KEEPTTL) to the args list.
-    /// </summary>
-    /// <param name="args">The command arguments.</param>
-    /// <param name="options">The expiry options to append.</param>
-    private static void AddExpiryArgs(List<GlideString> args, SetExpiryOptions options)
-    {
-        if (options.Duration.HasValue)
-        {
-            args.Add(ValkeyLiterals.PX);
-            args.Add(ToULongMs(options.Duration.Value, nameof(options.Duration)).ToGlideString());
-        }
-        else if (options.Timestamp.HasValue)
-        {
-            args.Add(ValkeyLiterals.PXAT);
-            args.Add(options.Timestamp.Value.ToUnixTimeMilliseconds().ToGlideString());
-        }
-        else
-        {
-            args.Add(ValkeyLiterals.KEEPTTL);
-        }
-    }
-
     #region String Converters
 
     /// <summary>
@@ -191,6 +162,20 @@ internal static partial class Request
     /// <param name="items">The objects to convert.</param>
     private static ValkeyValue[] ToValkeyValues(object[] items)
         => [.. items.Select(ToValkeyValue)];
+
+    /// <summary>
+    /// Converts the given key-value pair to a <see cref="ValkeyValue"/> array: <c>key value</c>.
+    /// </summary>
+    /// <param name="pair">The key-value pair to convert.</param>
+    private static ValkeyValue[] ToValkeyValues(KeyValuePair<ValkeyValue, ValkeyValue> pair)
+        => [pair.Key, pair.Value];
+
+    /// <summary>
+    /// Converts the given key-value pairs to a flattened <see cref="ValkeyValue"/> array: <c>key1 value1 key2 value2 ...</c>.
+    /// </summary>
+    /// <param name="pairs">The key-value pairs to convert.</param>
+    private static ValkeyValue[] ToValkeyValues(IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>> pairs)
+        => [.. pairs.SelectMany(ToValkeyValues)];
 
     /// <summary>
     /// Converts the given objects to a <see cref="ValkeyValue"/> set.
