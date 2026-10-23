@@ -376,6 +376,11 @@ public class CommandTests
         () => Assert.Equal(["HGETDEL", "key", "FIELDS", "2", "field1", "field2"], Request.HashGetDelete("key", ["field1", "field2"]).GetArgs()),
         () => Assert.Equal(["HGETDEL", "key", "FIELDS", "0"], Request.HashGetDelete("key", []).GetArgs()),
 
+        // Hash HSETEX Command with Key Condition (Valkey 9.1+)
+        () => Assert.Equal(["HSETEX", "key", "NX", "FIELDS", "1", "field1", "value1"], Request.HashSet("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1")], new HashSetOptions { KeyCondition = HashSetKeyCondition.OnlyIfDoesNotExist }).GetArgs()),
+        () => Assert.Equal(["HSETEX", "key", "XX", "FIELDS", "1", "field1", "value1"], Request.HashSet("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1")], new HashSetOptions { KeyCondition = HashSetKeyCondition.OnlyIfExists }).GetArgs()),
+        () => Assert.Equal(["HSETEX", "key", "XX", "FNX", "PX", "60000", "FIELDS", "1", "field1", "value1"], Request.HashSet("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1")], new HashSetOptions { KeyCondition = HashSetKeyCondition.OnlyIfExists, Condition = HashSetCondition.OnlyIfNoneExist, Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60)) }).GetArgs()),
+
         // Geospatial Commands
         () => Assert.Equal(["GEOADD", "key", "13.361389000000001", "38.115555999999998", "Palermo"], Request.GeoAdd("key", "Palermo", new GeoPosition(13.361389, 38.115556)).GetArgs()),
         () => Assert.Equal(["GEOADD", "key", "15.087268999999999", "37.502668999999997", "Catania", "13.361389000000001", "38.115555999999998", "Palermo"], Request.GeoAdd("key", new SortedDictionary<ValkeyValue, GeoPosition> { ["Palermo"] = new(13.361389, 38.115556), ["Catania"] = new(15.087269, 37.502669) }).GetArgs()),

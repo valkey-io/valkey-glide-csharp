@@ -59,7 +59,7 @@ internal static partial class Request
     {
         List<GlideString> args = [key];
         args.Add(expiry.HasValue ? ToULongMs(expiry.Value, nameof(expiry)).ToGlideString() : InstantExpiry);
-        AddExpireCondition(args, condition);
+        args.AddRange(condition.ToArgs());
 
         return Simple<bool>(RequestType.PExpire, [.. args]);
     }
@@ -68,7 +68,7 @@ internal static partial class Request
     {
         List<GlideString> args = [key];
         args.Add(expiry.HasValue ? expiry.Value.ToUnixTimeMilliseconds().ToGlideString() : InstantExpiry);
-        AddExpireCondition(args, condition);
+        args.AddRange(condition.ToArgs());
 
         return Simple<bool>(RequestType.PExpireAt, [.. args]);
     }
@@ -134,7 +134,11 @@ internal static partial class Request
     public static Cmd<object[], (string, ValkeyKey[])> Scan(string cursor, ScanOptions? options = null)
     {
         List<GlideString> args = [cursor.ToGlideString()];
-        args.AddRange(ToScanArgs(options));
+
+        if (options != null)
+        {
+            args.AddRange(options.ToArgs());
+        }
 
         return new(
             RequestType.Scan,

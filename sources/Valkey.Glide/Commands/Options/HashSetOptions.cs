@@ -11,14 +11,32 @@ public sealed class HashSetOptions
     #region Public Properties
 
     /// <summary>
-    /// The condition under which to set the field(s).
+    /// The condition on the hash key under which to set the field(s).
     /// </summary>
+    /// <remarks>
+    /// <para>Since Valkey 9.1.0.</para>
+    /// </remarks>
+    public HashSetKeyCondition KeyCondition { get; init; } = HashSetKeyCondition.Always;
+
+    /// <summary>
+    /// The condition on the hash field(s) under which to set the field(s).
+    /// </summary>
+    // TODO #604: Rename to FieldsCondition.
     public HashSetCondition Condition { get; init; } = HashSetCondition.Always;
 
     /// <summary>
     /// The expiry configuration for the field(s). If <see langword="null"/>, no expiry is set.
     /// </summary>
     public SetExpiryOptions? Expiry { get; init; }
+
+    #endregion
+    #region Internal Methods
+
+    /// <summary>
+    /// Converts to command arguments.
+    /// </summary>
+    internal GlideString[] ToArgs()
+        => [.. KeyCondition.ToArgs(), .. Condition.ToArgs(), .. Expiry?.ToArgs() ?? []];
 
     #endregion
 }

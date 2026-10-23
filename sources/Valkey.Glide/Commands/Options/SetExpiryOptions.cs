@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Internals;
+
 namespace Valkey.Glide.Commands.Options;
 
 /// <summary>
@@ -52,6 +54,27 @@ public sealed class SetExpiryOptions
     /// </summary>
     /// <returns>A new <see cref="SetExpiryOptions"/> instance.</returns>
     public static SetExpiryOptions KeepTimeToLive() => new();
+
+    #endregion
+    #region Internal Methods
+
+    /// <summary>
+    /// Converts to command arguments.
+    /// </summary>
+    internal GlideString[] ToArgs()
+    {
+        if (Duration.HasValue)
+        {
+            return [ValkeyLiterals.PX, TimeUtils.ToULongMs(Duration.Value, nameof(Duration)).ToGlideString()];
+        }
+
+        if (Timestamp.HasValue)
+        {
+            return [ValkeyLiterals.PXAT, Timestamp.Value.ToUnixTimeMilliseconds().ToGlideString()];
+        }
+
+        return [ValkeyLiterals.KEEPTTL];
+    }
 
     #endregion
 }

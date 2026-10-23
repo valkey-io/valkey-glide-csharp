@@ -38,7 +38,7 @@ internal static partial class Request
         => ToValkeyValue(RequestType.GetRange, [key, start.ToGlideString(), end.ToGlideString()], isNullable: true);
 
     public static Cmd<GlideString, ValkeyValue> GetSet(ValkeyKey key, ValkeyValue value, SetOptions options)
-        => ToValkeyValue(RequestType.Set, [key, value, .. ToSetOptionsArgs(options), ValkeyLiterals.GET], isNullable: true);
+        => ToValkeyValue(RequestType.Set, [key, value, .. options.ToArgs(), ValkeyLiterals.GET], isNullable: true);
 
     public static Cmd<long, long> Increment(ValkeyKey key)
         => Simple<long>(RequestType.Incr, [key]);
@@ -78,7 +78,7 @@ internal static partial class Request
         => new(RequestType.MSet, values.ToGlideStrings(), false, _ => true);
 
     public static Cmd<string?, bool> Set(ValkeyKey key, ValkeyValue value, SetOptions options)
-        => NullableOKToBool(RequestType.Set, [key, value, .. ToSetOptionsArgs(options)]);
+        => NullableOKToBool(RequestType.Set, [key, value, .. options.ToArgs()]);
 
     public static Cmd<bool, bool> SetIfNotExists(KeyValuePair<ValkeyKey, ValkeyValue>[] values)
         => Simple<bool>(RequestType.MSetNX, values.ToGlideStrings());
@@ -130,21 +130,6 @@ internal static partial class Request
         }
 
         return new LCSMatchResult([.. matches], totalLength);
-    }
-
-    #endregion
-    #region Argument Builders
-
-    private static GlideString[] ToSetOptionsArgs(SetOptions options)
-    {
-        List<GlideString> args = [];
-        args.AddRange(options.Condition.ToArgs());
-        if (options.Expiry is not null)
-        {
-            AddExpiryArgs(args, options.Expiry);
-        }
-
-        return [.. args];
     }
 
     #endregion
