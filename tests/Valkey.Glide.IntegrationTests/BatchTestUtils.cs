@@ -1408,11 +1408,19 @@ internal partial class BatchTestUtils
             testData.Add(new(new ValkeyValue[] { "getdel_value2", ValkeyValue.Null }, "HashGetDelete(getDelKey, [getdel_field2, getdel_missing])"));
 
             // Test HSETEX with key condition
-            _ = batch.HashSet(getDelKey, [new("nx_field", "nx_value")], new HashSetOptions { KeyCondition = HashSetKeyCondition.OnlyIfDoesNotExist });
-            testData.Add(new(false, "HashSet(getDelKey, {nx_field: nx_value}, NX)"));
+            string keyConditionKey = $"{atomicPrefix}keycondition-{Guid.NewGuid()}";
 
-            _ = batch.HashSet(getDelKey, [new("xx_field", "xx_value")], new HashSetOptions { KeyCondition = HashSetKeyCondition.OnlyIfExists });
-            testData.Add(new(true, "HashSet(getDelKey, {xx_field: xx_value}, XX)"));
+            _ = batch.HashSet(keyConditionKey, [new("xx_field", "xx_value")], new HashSetOptions { KeyCondition = HashSetKeyCondition.OnlyIfExists });
+            testData.Add(new(false, "HashSet(keyConditionKey, {xx_field: xx_value}, XX)"));
+
+            _ = batch.HashSet(keyConditionKey, [new("nx_field", "nx_value")], new HashSetOptions { KeyCondition = HashSetKeyCondition.OnlyIfDoesNotExist });
+            testData.Add(new(true, "HashSet(keyConditionKey, {nx_field: nx_value}, NX)"));
+
+            _ = batch.HashSet(keyConditionKey, [new("nx_field2", "nx_value2")], new HashSetOptions { KeyCondition = HashSetKeyCondition.OnlyIfDoesNotExist });
+            testData.Add(new(false, "HashSet(keyConditionKey, {nx_field2: nx_value2}, NX)"));
+
+            _ = batch.HashSet(keyConditionKey, [new("xx_field", "xx_value")], new HashSetOptions { KeyCondition = HashSetKeyCondition.OnlyIfExists });
+            testData.Add(new(true, "HashSet(keyConditionKey, {xx_field: xx_value}, XX)"));
         }
 
         return testData;
