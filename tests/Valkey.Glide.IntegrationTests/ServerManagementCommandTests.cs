@@ -502,8 +502,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
         var info = await Client.GetInfo(client);
         Assert.All(InfoFields, field => Assert.Contains(field, info));
 
-        // Valkey 9.2+
-        if (!Version.IsLessThan(Version.Valkey9_2))
+        if (Version.IsAtLeast(Version.Valkey9_2))
         {
             info = await Client.GetInfo(client, Section.PERSISTENCE);
             Assert.Contains(Assert.Contains("rdb_current_bgsave_type", info), BgSaveTypes);
@@ -809,7 +808,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
         Assert.True(stats.RssOverheadRatio >= 0);
 
         // Optional Valkey 7.0+ fields
-        if (!Version.IsLessThan(Version.Valkey7_0))
+        if (Version.IsAtLeast(Version.Valkey7_0))
         {
             Assert.True(stats.ClusterLinks is not null and >= 0);
             Assert.True(stats.FunctionsCaches is not null and >= 0);
@@ -821,7 +820,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
         }
 
         // Optional Valkey 8.0+ fields
-        if (!Version.IsLessThan(Version.Valkey8_0))
+        if (Version.IsAtLeast(Version.Valkey8_0))
         {
             Assert.True(stats.AllocatorMuzzy is not null and >= 0);
             Assert.True(stats.DbDictRehashingCount is not null);

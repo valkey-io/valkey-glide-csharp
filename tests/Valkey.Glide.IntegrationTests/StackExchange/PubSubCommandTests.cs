@@ -29,9 +29,6 @@ public class PubSubCommandTests(TestConfiguration config)
 
     #region Constants
 
-    private static readonly bool IsSharedPubSubSupported = !Version.IsLessThan(Version.Valkey7_0);
-    private const string SkipSharedPubSubMessage = "Sharded PubSub is supported since 7.0.0";
-
     private static readonly ValkeyValue Message1 = "message1";
     private static readonly ValkeyValue Message2 = "message2";
 
@@ -209,7 +206,7 @@ public class PubSubCommandTests(TestConfiguration config)
     [Fact]
     public async Task Sharded_Subscribe_Handler()
     {
-        Assert.SkipUnless(IsSharedPubSubSupported, SkipSharedPubSubMessage);
+        PubSubUtils.SkipUnlessShardedSupported();
 
         bool isCluster = true;
 
@@ -233,7 +230,7 @@ public class PubSubCommandTests(TestConfiguration config)
     [Fact]
     public async Task Sharded_Subscribe_Queue()
     {
-        Assert.SkipUnless(IsSharedPubSubSupported, SkipSharedPubSubMessage);
+        PubSubUtils.SkipUnlessShardedSupported();
 
         bool isCluster = true;
 
@@ -428,7 +425,7 @@ public class PubSubCommandTests(TestConfiguration config)
     [Fact]
     public async Task QueueAndHandler_UnsubscribeSharded()
     {
-        Assert.SkipUnless(IsSharedPubSubSupported, SkipSharedPubSubMessage);
+        PubSubUtils.SkipUnlessShardedSupported();
 
         bool isCluster = true;
 

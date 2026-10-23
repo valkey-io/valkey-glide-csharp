@@ -108,6 +108,26 @@ public partial interface IBaseClient
     Task<double> DecrementAsync(ValkeyKey key, double value);
 
     /// <summary>
+    /// Deletes a key if its current value is equal to the given value.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/delifeq/">Valkey commands – DELIFEQ</seealso>
+    /// <param name="key">The key to delete.</param>
+    /// <param name="value">The value to compare against the current value of <paramref name="key"/>.</param>
+    /// <returns><see langword="true"/> if <paramref name="key"/> was deleted, <see langword="false"/> if
+    /// <paramref name="key"/> does not exist or its value is not equal to <paramref name="value"/>.</returns>
+    /// <example>
+    /// <code>
+    /// await client.SetAsync("key", "value");
+    /// var deleted = await client.DeleteIfEqualAsync("key", "other");  // false
+    /// deleted = await client.DeleteIfEqualAsync("key", "value");      // true
+    /// </code>
+    /// </example>
+    /// <remarks>
+    /// <para>Since Valkey 9.0.0.</para>
+    /// </remarks>
+    Task<bool> DeleteIfEqualAsync(ValkeyKey key, ValkeyValue value);
+
+    /// <summary>
     /// Increments the integer value of a string by a given amount.
     /// If the key does not exist, it is set to 0 before incrementing.
     /// </summary>
