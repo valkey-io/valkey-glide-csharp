@@ -27,12 +27,9 @@ internal static class SetOperationExtensions
 {
     internal static ValkeyCommand ToCommand(this SetOperation operation, bool store) => operation switch
     {
-        SetOperation.Intersect when store => ValkeyCommand.ZINTERSTORE,
-        SetOperation.Intersect => ValkeyCommand.ZINTER,
-        SetOperation.Union when store => ValkeyCommand.ZUNIONSTORE,
-        SetOperation.Union => ValkeyCommand.ZUNION,
-        SetOperation.Difference when store => ValkeyCommand.ZDIFFSTORE,
-        SetOperation.Difference => ValkeyCommand.ZDIFF,
+        SetOperation.Union => store ? ValkeyCommand.ZUNIONSTORE : ValkeyCommand.ZUNION,
+        SetOperation.Intersect => store ? ValkeyCommand.ZINTERSTORE : ValkeyCommand.ZINTER,
+        SetOperation.Difference => store ? ValkeyCommand.ZDIFFSTORE : ValkeyCommand.ZDIFF,
         _ => throw new ArgumentOutOfRangeException(nameof(operation)),
     };
 }

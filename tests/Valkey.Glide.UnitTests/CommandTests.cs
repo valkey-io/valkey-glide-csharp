@@ -1060,11 +1060,11 @@ public class CommandTests
             ["length"] = 3L,
             ["radix-tree-keys"] = 1L,
             ["radix-tree-nodes"] = 2L,
-            ["groups"] = 1L,
             ["last-generated-id"] = new GlideString("5-0"),
             ["max-deleted-entry-id"] = new GlideString("2-0"),
             ["entries-added"] = 4L,
             ["recorded-first-entry-id"] = new GlideString("3-0"),
+            ["groups"] = 1L,
             ["first-entry"] = new object[] { new GlideString("3-0"), new object[] { new GlideString("f1"), new GlideString("v1") } },
             ["last-entry"] = new object[] { new GlideString("5-0"), new object[] { new GlideString("f2"), new GlideString("v2") } },
         };

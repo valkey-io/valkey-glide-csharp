@@ -33,8 +33,8 @@ internal static class BitmapIndexTypeExtensions
     /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="indexType"/> is not a supported <see cref="BitmapIndexType"/> value.</exception>
     internal static ValkeyValue ToLiteral(this BitmapIndexType indexType) => indexType switch
     {
-        BitmapIndexType.Bit => ValkeyLiterals.BIT,
         BitmapIndexType.Byte => ValkeyLiterals.BYTE,
+        BitmapIndexType.Bit => ValkeyLiterals.BIT,
         _ => throw new ArgumentOutOfRangeException(nameof(indexType)),
     };
 }

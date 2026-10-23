@@ -484,6 +484,7 @@ public abstract partial class BaseClient : IBaseClient
             PushKind.PushMessage => true,       // Regular channel message
             PushKind.PushPMessage => true,      // Pattern-based message
             PushKind.PushSMessage => true,      // Shard channel message
+
             PushKind.PushDisconnection => false,
             PushKind.PushOther => false,
             PushKind.PushInvalidate => false,

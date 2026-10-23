@@ -546,13 +546,13 @@ public class CompressionTests(CompressionFixture fixture)
         { "DECRBY", ["DECRBY", "{key}", "10"] },
 
         // Bit commands
-        { "GETBIT", ["GETBIT", "{key}", "0"] },
-        { "SETBIT", ["SETBIT", "{key}", "7", "1"] },
         { "BITCOUNT", ["BITCOUNT", "{key}"] },
-        { "BITPOS", ["BITPOS", "{key}", "1"] },
         { "BITFIELD", ["BITFIELD", "{key}", "GET", "u8", "0"] },
         { "BITFIELD_RO", ["BITFIELD_RO", "{key}", "GET", "u8", "0"] },
         { "BITOP", ["BITOP", "AND", "{key}", "{key}"] },
+        { "BITPOS", ["BITPOS", "{key}", "1"] },
+        { "GETBIT", ["GETBIT", "{key}", "0"] },
+        { "SETBIT", ["SETBIT", "{key}", "7", "1"] },
 
         // LCS command
         { "LCS", ["LCS", "{key}", "{key}"] },
