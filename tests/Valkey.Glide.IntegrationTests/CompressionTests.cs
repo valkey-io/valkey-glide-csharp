@@ -527,42 +527,41 @@ public class CompressionTests(CompressionFixture fixture)
 
     /// <summary>
     /// Test data for incompatible commands that should throw when compression is enabled.
-    /// Each entry contains: command name (for display), command arguments (with {key} placeholder).
+    /// Each entry contains the command arguments, with {key} placeholder.
     /// </summary>
-    public static TheoryData<string, string[]> IncompatibleCommands => new()
+    public static TheoryData<string[]> IncompatibleCommands => new()
     {
         // String manipulation commands
-        { "APPEND", ["APPEND", "{key}", "suffix"] },
-        { "GETRANGE", ["GETRANGE", "{key}", "0", "4"] },
-        { "SETRANGE", ["SETRANGE", "{key}", "0", "test"] },
-        { "STRLEN", ["STRLEN", "{key}"] },
-        { "SUBSTR", ["SUBSTR", "{key}", "0", "4"] },
+        { ["APPEND", "{key}", "suffix"] },
+        { ["DELIFEQ", "{key}", "value"] },
+        { ["GETRANGE", "{key}", "0", "4"] },
+        { ["LCS", "{key}", "{key}"] },
+        { ["SETRANGE", "{key}", "0", "test"] },
+        { ["STRLEN", "{key}"] },
+        { ["SUBSTR", "{key}", "0", "4"] },
 
-        // Numeric commands
-        { "INCR", ["INCR", "{key}"] },
-        { "INCRBY", ["INCRBY", "{key}", "10"] },
-        { "INCRBYFLOAT", ["INCRBYFLOAT", "{key}", "1.5"] },
-        { "DECR", ["DECR", "{key}"] },
-        { "DECRBY", ["DECRBY", "{key}", "10"] },
+        // Numeric operations
+        { ["DECR", "{key}"] },
+        { ["DECRBY", "{key}", "10"] },
+        { ["INCR", "{key}"] },
+        { ["INCRBY", "{key}", "10"] },
+        { ["INCRBYFLOAT", "{key}", "1.5"] },
 
-        // Bit commands
-        { "GETBIT", ["GETBIT", "{key}", "0"] },
-        { "SETBIT", ["SETBIT", "{key}", "7", "1"] },
-        { "BITCOUNT", ["BITCOUNT", "{key}"] },
-        { "BITPOS", ["BITPOS", "{key}", "1"] },
-        { "BITFIELD", ["BITFIELD", "{key}", "GET", "u8", "0"] },
-        { "BITFIELD_RO", ["BITFIELD_RO", "{key}", "GET", "u8", "0"] },
-        { "BITOP", ["BITOP", "AND", "{key}", "{key}"] },
-
-        // LCS command
-        { "LCS", ["LCS", "{key}", "{key}"] },
+        // Bit operations
+        { ["GETBIT", "{key}", "0"] },
+        { ["SETBIT", "{key}", "7", "1"] },
+        { ["BITCOUNT", "{key}"] },
+        { ["BITPOS", "{key}", "1"] },
+        { ["BITFIELD", "{key}", "GET", "u8", "0"] },
+        { ["BITFIELD_RO", "{key}", "GET", "u8", "0"] },
+        { ["BITOP", "AND", "{key}", "{key}"] },
     };
 
     [Theory]
     [MemberData(nameof(IncompatibleCommands))]
-    public async Task Compression_IncompatibleCommand_ThrowsError(string commandName, string[] commandArgs)
+    public async Task Compression_IncompatibleCommand_ThrowsError(string[] commandArgs)
     {
-        string key = $"incompatible_{commandName.ToLower()}_{Guid.NewGuid()}";
+        string key = $"incompatible_{commandArgs[0].ToLower()}_{Guid.NewGuid()}";
 
         // Replace {key} placeholder with actual key and convert to GlideString
         var args = commandArgs.Select(arg => arg.Replace("{key}", key).ToGlideString()).ToArray();
