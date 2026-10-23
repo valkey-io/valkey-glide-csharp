@@ -263,6 +263,29 @@ internal partial class BatchTestUtils
             testData.Add(new(false, "DeleteIfEqual(deleteIfEqualKey, value) non-existent key"));
         }
 
+        // Valkey 9.2+ string commands
+        // ---------------------------
+
+        if (Version.IsAtLeast(Version.Valkey9_2))
+        {
+            // Set with OnlyIfNotEqual tests
+            string setIfNotEqualKey = $"{atomicPrefix}setifnotequal-{Guid.NewGuid()}";
+            _ = batch.Set(setIfNotEqualKey, "value", SetCondition.OnlyIfNotEqual("other"));
+            testData.Add(new(true, "Set(setIfNotEqualKey, value, OnlyIfNotEqual(other)) non-existent key"));
+
+            _ = batch.Set(setIfNotEqualKey, "new_value", SetCondition.OnlyIfNotEqual("other"));
+            testData.Add(new(true, "Set(setIfNotEqualKey, new_value, OnlyIfNotEqual(other)) value not equal"));
+
+            _ = batch.Set(setIfNotEqualKey, "other_value", SetCondition.OnlyIfNotEqual("new_value"));
+            testData.Add(new(false, "Set(setIfNotEqualKey, other_value, OnlyIfNotEqual(new_value)) value equal"));
+
+            _ = batch.GetSet(setIfNotEqualKey, "other_value", SetCondition.OnlyIfNotEqual("other"));
+            testData.Add(new(new ValkeyValue("new_value"), "GetSet(setIfNotEqualKey, other_value, OnlyIfNotEqual(other))"));
+
+            _ = batch.Get(setIfNotEqualKey);
+            testData.Add(new(new ValkeyValue("other_value"), "Get(setIfNotEqualKey)"));
+        }
+
         return testData;
     }
 
