@@ -6,7 +6,10 @@ using static Valkey.Glide.TestUtils.Assertions;
 
 namespace Valkey.Glide.IntegrationTests;
 
-public class IamAuthTests
+// IAM auth requires TLS (an IAM token must never traverse plaintext), so these
+// success-path tests run against the TLS-enabled fixture. CreateConfigBuilder()
+// already enables TLS + the trusted cert when the server is TLS-enabled.
+public class IamAuthTests(TlsServerFixture tlsServerFixture) : IClassFixture<TlsServerFixture>
 {
     private const string TestClusterName = "test-cluster";
     private const string TestRegion = "us-east-1";
@@ -22,14 +25,12 @@ public class IamAuthTests
         StandaloneServer server, ServerCredentials credentials) =>
         server.CreateConfigBuilder()
             .WithCredentials(credentials)
-            .WithTls(false)
             .Build();
 
     private static ConnectionConfiguration.ClusterClientConfiguration CreateClusterConfig(
         ClusterServer server, ServerCredentials credentials) =>
         server.CreateConfigBuilder()
             .WithCredentials(credentials)
-            .WithTls(false)
             .Build();
 
     [Fact]
@@ -37,7 +38,7 @@ public class IamAuthTests
     {
         var credentials = CreateCredentials(refreshIntervalSeconds: 5);
 
-        using var server = new StandaloneServer();
+        var server = tlsServerFixture.StandaloneServer;
         var config = CreateStandaloneConfig(server, credentials);
 
         await using var client = await GlideClient.CreateClient(config);
@@ -54,7 +55,7 @@ public class IamAuthTests
     {
         var credentials = CreateCredentials(refreshIntervalSeconds: 5);
 
-        using var server = new ClusterServer();
+        var server = tlsServerFixture.ClusterServer;
         var config = CreateClusterConfig(server, credentials);
 
         await using var client = await GlideClusterClient.CreateClient(config);
@@ -81,7 +82,7 @@ public class IamAuthTests
     {
         var credentials = CreateCredentials(refreshIntervalSeconds: 2);
 
-        using var server = new StandaloneServer();
+        var server = tlsServerFixture.StandaloneServer;
         var config = CreateStandaloneConfig(server, credentials);
 
         await using var client = await GlideClient.CreateClient(config);
@@ -106,7 +107,7 @@ public class IamAuthTests
     {
         var credentials = CreateCredentials(refreshIntervalSeconds: 2);
 
-        using var server = new ClusterServer();
+        var server = tlsServerFixture.ClusterServer;
         var config = CreateClusterConfig(server, credentials);
 
         await using var client = await GlideClusterClient.CreateClient(config);
