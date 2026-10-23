@@ -170,7 +170,16 @@ internal static partial class Request
     }
 
     public static Cmd<object[], (long cursor, SortedSetEntry[] items)> SortedSetScan(ValkeyKey key, long cursor, ScanOptions? options = null)
-        => new(RequestType.ZScan, [key, cursor.ToGlideString(), .. ToScanArgs(options)], false, ParseScanResponse);
+    {
+        List<GlideString> args = [key, cursor.ToGlideString()];
+
+        if (options != null)
+        {
+            args.AddRange(options.ToArgs());
+        }
+
+        return new(RequestType.ZScan, [.. args], false, ParseScanResponse);
+    }
 
     public static Cmd<double?, double?> SortedSetScore(ValkeyKey key, ValkeyValue member)
         => new(RequestType.ZScore, [key, member], true, response => response);

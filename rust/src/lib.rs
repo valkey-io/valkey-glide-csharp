@@ -2100,6 +2100,7 @@ pub unsafe extern "C-unwind" fn create_monitor_client(
     let address = NodeAddress {
         host,
         port: config.port,
+        unix_socket_path: None,
     };
 
     let tls_mode = if config.use_tls {

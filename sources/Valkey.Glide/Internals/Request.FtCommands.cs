@@ -203,13 +203,7 @@ internal static partial class Request
 
         if (options.Params.Count > 0)
         {
-            args.Add(ValkeyLiterals.PARAMS);
-            args.Add((options.Params.Count * 2).ToGlideString());
-            foreach (var p in options.Params)
-            {
-                args.Add(p.Key);
-                args.Add(p.Value);
-            }
+            args.AddRange(ToParams(options.Params));
         }
 
         if (options.Timeout.HasValue)
@@ -262,13 +256,7 @@ internal static partial class Request
 
         if (options.Params.Count > 0)
         {
-            args.Add(ValkeyLiterals.PARAMS);
-            args.Add((options.Params.Count * 2).ToGlideString());
-            foreach (var p in options.Params)
-            {
-                args.Add(p.Key);
-                args.Add(p.Value);
-            }
+            args.AddRange(ToParams(options.Params));
         }
 
         if (options.Timeout.HasValue)
@@ -367,7 +355,7 @@ internal static partial class Request
                 List<GlideString> flatAttrs =
                 [
                     ValkeyLiterals.DIM, flat.Dimensions.ToGlideString(),
-                    ValkeyLiterals.DISTANCE_METRIC, ToArgs(flat.DistanceMetric),
+                    ValkeyLiterals.DISTANCE_METRIC, .. flat.DistanceMetric.ToArgs(),
                     ValkeyLiterals.TYPE, ValkeyLiterals.FLOAT32,
                 ];
                 if (flat.InitialCap.HasValue)
@@ -386,7 +374,7 @@ internal static partial class Request
                 List<GlideString> hnswAttrs =
                 [
                     ValkeyLiterals.DIM, hnsw.Dimensions.ToGlideString(),
-                    ValkeyLiterals.DISTANCE_METRIC, ToArgs(hnsw.DistanceMetric),
+                    ValkeyLiterals.DISTANCE_METRIC, .. hnsw.DistanceMetric.ToArgs(),
                     ValkeyLiterals.TYPE, ValkeyLiterals.FLOAT32,
                 ];
                 if (hnsw.InitialCap.HasValue)
@@ -425,17 +413,14 @@ internal static partial class Request
     }
 
     /// <summary>
-    /// Converts the given <see cref="Ft.DistanceMetric"/> to command arguments.
+    /// Converts parameter name-value pairs into a counted array: <c>PARAMS nargs name1 value1 name2 value2 ...</c>.
     /// </summary>
-    /// <param name="metric">The distance metric to convert.</param>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="metric"/> is not a supported <see cref="Ft.DistanceMetric"/> value.</exception>
-    private static GlideString ToArgs(Ft.DistanceMetric metric) => metric switch
+    /// <param name="pairs">The parameter name-value pairs to convert.</param>
+    private static GlideString[] ToParams(IEnumerable<KeyValuePair<ValkeyValue, ValkeyValue>> pairs)
     {
-        Ft.DistanceMetric.Cosine => ValkeyLiterals.COSINE,
-        Ft.DistanceMetric.Euclidean => ValkeyLiterals.L2,
-        Ft.DistanceMetric.InnerProduct => ValkeyLiterals.IP,
-        _ => throw new ArgumentOutOfRangeException(nameof(metric)),
-    };
+        ValkeyValue[] values = ToValkeyValues(pairs);
+        return [ValkeyLiterals.PARAMS, values.Length.ToGlideString(), .. values];
+    }
 
     private static Ft.SearchResult ParseFtSearchResponse(object[] data)
     {

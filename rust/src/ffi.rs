@@ -506,6 +506,7 @@ unsafe fn convert_node_addresses(
             Ok(NodeAddress {
                 host: unsafe { ptr_to_str(addr.host) }?,
                 port: addr.port,
+                unix_socket_path: None,
             })
         })
         .collect()

@@ -21,4 +21,13 @@ public sealed class SetOptions
     public SetExpiryOptions? Expiry { get; init; }
 
     #endregion
+    #region Internal Methods
+
+    /// <summary>
+    /// Converts to command arguments.
+    /// </summary>
+    internal GlideString[] ToArgs()
+        => [.. Condition.ToArgs(), .. Expiry?.ToArgs() ?? []];
+
+    #endregion
 }

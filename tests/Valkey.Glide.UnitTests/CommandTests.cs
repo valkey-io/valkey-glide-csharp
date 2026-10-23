@@ -37,6 +37,7 @@ public class CommandTests
         () => Assert.Equal(11L, Request.Append("key", "value").Converter(11L)),
         () => Assert.Equal(["DECR", "key"], Request.Decrement("key").GetArgs()),
         () => Assert.Equal(["DECRBY", "key", "5"], Request.DecrementBy("key", 5).GetArgs()),
+        () => Assert.Equal(["DELIFEQ", "key", "value"], Request.DeleteIfEqual("key", "value").GetArgs()),
         () => Assert.Equal(["INCR", "key"], Request.Increment("key").GetArgs()),
         () => Assert.Equal(["INCRBY", "key", "5"], Request.IncrementBy("key", 5).GetArgs()),
         () => Assert.Equal(["INCRBYFLOAT", "key", "0.5"], Request.IncrementByFloat("key", 0.5).GetArgs()),
@@ -375,6 +376,11 @@ public class CommandTests
         () => Assert.Equal(["HGETDEL", "key", "FIELDS", "2", "field1", "field2"], Request.HashGetDelete("key", ["field1", "field2"]).GetArgs()),
         () => Assert.Equal(["HGETDEL", "key", "FIELDS", "0"], Request.HashGetDelete("key", []).GetArgs()),
 
+        // Hash HSETEX Command with Key Condition (Valkey 9.1+)
+        () => Assert.Equal(["HSETEX", "key", "NX", "FIELDS", "1", "field1", "value1"], Request.HashSet("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1")], new HashSetOptions { KeyCondition = HashSetKeyCondition.OnlyIfDoesNotExist }).GetArgs()),
+        () => Assert.Equal(["HSETEX", "key", "XX", "FIELDS", "1", "field1", "value1"], Request.HashSet("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1")], new HashSetOptions { KeyCondition = HashSetKeyCondition.OnlyIfExists }).GetArgs()),
+        () => Assert.Equal(["HSETEX", "key", "XX", "FNX", "PX", "60000", "FIELDS", "1", "field1", "value1"], Request.HashSet("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1")], new HashSetOptions { KeyCondition = HashSetKeyCondition.OnlyIfExists, Condition = HashSetCondition.OnlyIfNoneExist, Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60)) }).GetArgs()),
+
         // Geospatial Commands
         () => Assert.Equal(["GEOADD", "key", "13.361389000000001", "38.115555999999998", "Palermo"], Request.GeoAdd("key", "Palermo", new GeoPosition(13.361389, 38.115556)).GetArgs()),
         () => Assert.Equal(["GEOADD", "key", "15.087268999999999", "37.502668999999997", "Catania", "13.361389000000001", "38.115555999999998", "Palermo"], Request.GeoAdd("key", new SortedDictionary<ValkeyValue, GeoPosition> { ["Palermo"] = new(13.361389, 38.115556), ["Catania"] = new(15.087269, 37.502669) }).GetArgs()),
@@ -449,6 +455,8 @@ public class CommandTests
         () => Assert.Equal(11L, Request.Append("key", "value").Converter(11L)),
         () => Assert.Equal(9L, Request.Decrement("key").Converter(9L)),
         () => Assert.Equal(5L, Request.DecrementBy("key", 5).Converter(5L)),
+        () => Assert.True(Request.DeleteIfEqual("key", "value").Converter(true)),
+        () => Assert.False(Request.DeleteIfEqual("key", "value").Converter(false)),
         () => Assert.Equal(11L, Request.Increment("key").Converter(11L)),
         () => Assert.Equal(15L, Request.IncrementBy("key", 5).Converter(15L)),
         () => Assert.Equal(10.5, Request.IncrementByFloat("key", 0.5).Converter(10.5)),

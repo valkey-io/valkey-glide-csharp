@@ -16,16 +16,16 @@ internal static class Version
     public static readonly System.Version Valkey9_2 = new("9.2.0");
 
     /// <summary>
-    /// Returns whether the server version is less than the given version.
+    /// Returns whether the server version is at least the given version.
     /// </summary>
     /// <param name="version">The version to compare against.</param>
-    public static bool IsLessThan(System.Version version)
-        => TestConfiguration.SERVER_VERSION < version;
+    public static bool IsAtLeast(System.Version version)
+        => TestConfiguration.SERVER_VERSION >= version;
 
     /// <summary>
     /// Skips the test if the server version is less than the given version.
     /// </summary>
     /// <param name="version">The minimum server version required by the test.</param>
     public static void SkipIfLessThan(System.Version version)
-        => Assert.SkipWhen(IsLessThan(version), $"Test requires Valkey {version} or later");
+        => Assert.SkipUnless(IsAtLeast(version), $"Test requires Valkey {version} or later");
 }

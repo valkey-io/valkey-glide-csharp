@@ -597,6 +597,43 @@ public class HashCommandTests(TestConfiguration config)
         Assert.False(await client.HashExistsAsync(key, "nonexistent_field"));
     }
 
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestHashSetExpiry_KeyOnlyIfDoesNotExist(BaseClient client)
+    {
+        Version.SkipIfLessThan(Version.Valkey9_1);
+
+        string key = Guid.NewGuid().ToString();
+        var options = new HashSetOptions { KeyCondition = HashSetKeyCondition.OnlyIfDoesNotExist };
+
+        // Key does not exist
+        Assert.True(await client.HashSetAsync(key, "field1", "value1", options));
+        Assert.Equal("value1", await client.HashGetAsync(key, "field1"));
+
+        // Key exists
+        Assert.False(await client.HashSetAsync(key, "field2", "value2", options));
+        Assert.False(await client.HashExistsAsync(key, "field2"));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task TestHashSetExpiry_KeyOnlyIfExists(BaseClient client)
+    {
+        Version.SkipIfLessThan(Version.Valkey9_1);
+
+        string key = Guid.NewGuid().ToString();
+        var options = new HashSetOptions { KeyCondition = HashSetKeyCondition.OnlyIfExists };
+
+        // Key does not exist
+        Assert.False(await client.HashSetAsync(key, "field1", "value1", options));
+        Assert.False(await client.ExistsAsync(key));
+
+        // Key exists
+        Assert.True(await client.HashSetAsync(key, "field1", "value1"));
+        Assert.True(await client.HashSetAsync(key, "field2", "value2", options));
+        Assert.Equal("value2", await client.HashGetAsync(key, "field2"));
+    }
+
     #endregion
     #region HashPersistAsync
 
