@@ -84,6 +84,9 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
 
 #pragma warning restore RCS1047
 
+    /// <inheritdoc cref="IBatchStringCommands.DeleteIfEqual(ValkeyKey, ValkeyValue)" />
+    public T DeleteIfEqual(ValkeyKey key, ValkeyValue value) => AddCmd(Request.DeleteIfEqual(key, value));
+
     IBatch IBatchStringCommands.Get(ValkeyKey key) => GetAsync(key);
     IBatch IBatchStringCommands.Get(IEnumerable<ValkeyKey> keys) => GetAsync(keys);
     IBatch IBatchStringCommands.Set(ValkeyKey key, ValkeyValue value) => SetAsync(key, value);
@@ -102,6 +105,7 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
     IBatch IBatchStringCommands.Append(ValkeyKey key, ValkeyValue value) => AppendAsync(key, value);
     IBatch IBatchStringCommands.Decrement(ValkeyKey key, long value) => DecrementAsync(key, value);
     IBatch IBatchStringCommands.Decrement(ValkeyKey key, double value) => DecrementAsync(key, value);
+    IBatch IBatchStringCommands.DeleteIfEqual(ValkeyKey key, ValkeyValue value) => DeleteIfEqual(key, value);
     IBatch IBatchStringCommands.Increment(ValkeyKey key, long value) => IncrementAsync(key, value);
     IBatch IBatchStringCommands.Increment(ValkeyKey key, double value) => IncrementAsync(key, value);
     IBatch IBatchStringCommands.GetDelete(ValkeyKey key) => GetDeleteAsync(key);

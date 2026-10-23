@@ -475,6 +475,7 @@ internal partial class FFI
         SetRange = 1520,
         Strlen = 1521,
         Substr = 1522,
+        DelIfEq = 1523,
 
         #endregion
         #region Transaction commands

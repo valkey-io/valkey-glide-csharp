@@ -243,6 +243,26 @@ internal partial class BatchTestUtils
         _ = batch.GetExpiry(getSetExpiryKey2, GetExpiryOptions.ExpireAt(new DateTimeOffset(futureTime)));
         testData.Add(new(new ValkeyValue("expire-me-abs"), "GetExpiry(getSetExpiryKey2, futureTime)"));
 
+        // Valkey 9.0+ string commands
+        // ---------------------------
+
+        if (Version.IsAtLeast(Version.Valkey9_0))
+        {
+            // DeleteIfEqual tests
+            string deleteIfEqualKey = $"{atomicPrefix}deleteifequal-{Guid.NewGuid()}";
+            _ = batch.Set(deleteIfEqualKey, "value");
+            testData.Add(new(true, "Set(deleteIfEqualKey, value)"));
+
+            _ = batch.DeleteIfEqual(deleteIfEqualKey, "other");
+            testData.Add(new(false, "DeleteIfEqual(deleteIfEqualKey, other) value not equal"));
+
+            _ = batch.DeleteIfEqual(deleteIfEqualKey, "value");
+            testData.Add(new(true, "DeleteIfEqual(deleteIfEqualKey, value) value equal"));
+
+            _ = batch.DeleteIfEqual(deleteIfEqualKey, "value");
+            testData.Add(new(false, "DeleteIfEqual(deleteIfEqualKey, value) non-existent key"));
+        }
+
         return testData;
     }
 
@@ -327,7 +347,7 @@ internal partial class BatchTestUtils
         _ = batch.SetDiff([prefix + key1, prefix + key2]);
         testData.Add(new(new HashSet<ValkeyValue>(), "SetDiff([prefix+key1, prefix+key2])", true));
 
-        if (!Version.IsLessThan(Version.Valkey7_0))
+        if (Version.IsAtLeast(Version.Valkey7_0))
         {
             _ = batch.SetInterCard([prefix + key1, prefix + key2]);
             testData.Add(new(1L, "SetInterCard([prefix+key1, prefix+key2])"));
@@ -378,7 +398,7 @@ internal partial class BatchTestUtils
         _ = batch.SetIsMember(key1, ["c", "e", "nonexistent"]);
         testData.Add(new(new bool[] { true, true, false }, "SetIsMember(key1, [c, e, nonexistent])"));
 
-        if (!Version.IsLessThan(Version.Valkey9_2))
+        if (Version.IsAtLeast(Version.Valkey9_2))
         {
             _ = batch.SetIsMemberIfExists(key1, "c");
             testData.Add(new(true, "SetIsMemberIfExists(key1, c)"));
@@ -495,7 +515,7 @@ internal partial class BatchTestUtils
         _ = batch.Expire(genericKey1, TimeSpan.FromSeconds(120));
         testData.Add(new(true, "KeyExpire(genericKey1, 120s)"));
 
-        if (!Version.IsLessThan(Version.Valkey7_0)) // KeyExpireTime added in 7.0.0
+        if (Version.IsAtLeast(Version.Valkey7_0))
         {
             _ = batch.ExpireTime(genericKey1);
             testData.Add(new(DateTimeOffset.UtcNow.AddSeconds(120), "KeyExpireTime(genericKey1)", true));
@@ -699,7 +719,7 @@ internal partial class BatchTestUtils
         testData.Add(new(4L, "SortedSetUnionAndStore(combineDestKey, [combineKey1, combineKey3])"));
 
         // Test SortedSetInterCard (ZINTERCARD) - requires Redis 7.0+
-        if (!Version.IsLessThan(Version.Valkey7_0))
+        if (Version.IsAtLeast(Version.Valkey7_0))
         {
             _ = batch.SortedSetInterCard([combineKey1, combineKey3]);
             testData.Add(new(1L, "SortedSetInterCard([combineKey1, combineKey3])"));
@@ -727,7 +747,7 @@ internal partial class BatchTestUtils
         testData.Add(new(2L, "SortedSetAdd(popKey, test data for pop)"));
 
         // Test SortedSetPop (ZMPOP) - requires Redis 7.0+
-        if (!Version.IsLessThan(Version.Valkey7_0))
+        if (Version.IsAtLeast(Version.Valkey7_0))
         {
             // SortedSetPop and SortedSetBlockingPop are SER-only (not on IBatch)
         }
@@ -995,7 +1015,7 @@ internal partial class BatchTestUtils
         testData.Add(new(3L, "ListLength(trimKey2) after negative trim"));
 
         // Test LMPOP (ListLeftPop with multiple keys)
-        if (!Version.IsLessThan(Version.Valkey7_0))
+        if (Version.IsAtLeast(Version.Valkey7_0))
         {
             string lmpopKey1 = $"{prefix}lmpop1-{Guid.NewGuid()}";
             string lmpopKey2 = $"{prefix}lmpop2-{Guid.NewGuid()}";
@@ -1128,7 +1148,7 @@ internal partial class BatchTestUtils
         _ = batch.ListBlockingMove(moveSource, moveDest, ListSide.Left, ListSide.Right, BlockingTimeout);
         testData.Add(new(new ValkeyValue("move2"), "ListBlockingMove(moveSource, moveDest, Left, Right, 100ms)"));
 
-        if (!Version.IsLessThan(Version.Valkey7_0))
+        if (Version.IsAtLeast(Version.Valkey7_0))
         {
             // Push more data to moveSource for the blocking pop test
             _ = batch.ListRightPush(moveSource, "move3");
@@ -1168,7 +1188,7 @@ internal partial class BatchTestUtils
         testData.Add(new(1L, "ClientIdAsync()", true)); // Check type only since ID is dynamic
 
         // SELECT - 9.0.0 allows both standalone and cluster, else just run standalone
-        if (batch is Pipeline.Batch || !Version.IsLessThan(Version.Valkey9_0))
+        if (batch is Pipeline.Batch || Version.IsAtLeast(Version.Valkey9_0))
         {
             _ = batch.SelectAsync(0); // Select database 0 (default)
             testData.Add(new(ValkeyValue.Ok, "SelectAsync(0)"));
@@ -1307,7 +1327,7 @@ internal partial class BatchTestUtils
         // Valkey 9.0+ hash commands
         // -------------------------
 
-        if (!Version.IsLessThan(Version.Valkey9_0))
+        if (Version.IsAtLeast(Version.Valkey9_0))
         {
             // Set up data
             string expireKey = $"{atomicPrefix}expire-{Guid.NewGuid()}";
@@ -1369,7 +1389,7 @@ internal partial class BatchTestUtils
         // Valkey 9.1+ hash commands
         // -------------------------
 
-        if (!Version.IsLessThan(Version.Valkey9_1))
+        if (Version.IsAtLeast(Version.Valkey9_1))
         {
             // Set up data
             string getDelKey = $"{atomicPrefix}getdel-{Guid.NewGuid()}";
