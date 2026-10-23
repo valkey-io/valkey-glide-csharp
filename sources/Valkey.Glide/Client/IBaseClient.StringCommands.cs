@@ -335,7 +335,7 @@ public partial interface IBaseClient
     /// <param name="key">The key to get and set.</param>
     /// <param name="value">The new value to store.</param>
     /// <param name="condition">The condition under which the key should be set.</param>
-    /// <returns>The old value stored at <paramref name="key"/>, or <see cref="ValkeyValue.Null"/> when <paramref name="key"/> did not exist or the condition was not met.</returns>
+    /// <returns>The old value stored at <paramref name="key"/>, or <see cref="ValkeyValue.Null"/> if <paramref name="key"/> did not exist.</returns>
     /// <example>
     /// <code>
     /// await client.SetAsync("key", "oldValue");
@@ -351,7 +351,7 @@ public partial interface IBaseClient
     /// <param name="key">The key to get and set.</param>
     /// <param name="value">The new value to store.</param>
     /// <param name="options">The options for the SET command, including condition and expiry.</param>
-    /// <returns>The old value stored at <paramref name="key"/>, or <see cref="ValkeyValue.Null"/> when <paramref name="key"/> did not exist or the condition was not met.</returns>
+    /// <returns>The old value stored at <paramref name="key"/>, or <see cref="ValkeyValue.Null"/> if <paramref name="key"/> did not exist.</returns>
     /// <example>
     /// <code>
     /// await client.SetAsync("key", "oldValue");
