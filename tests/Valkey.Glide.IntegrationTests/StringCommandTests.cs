@@ -1101,24 +1101,4 @@ public class StringCommandTests(TestConfiguration config)
     }
 
     #endregion
-    #region Helpers
-
-    // Utility methods for other tests
-    internal static async Task GetAndSetValuesAsync(BaseClient client, string key, string value)
-    {
-        await client.SetAsync(key, value);
-
-        ValkeyValue retrievedValue = await client.GetAsync(key);
-        Assert.Equal(value, retrievedValue.ToString());
-    }
-
-    internal static async Task GetAndSetRandomValuesAsync(BaseClient client)
-    {
-        string key = Guid.NewGuid().ToString();
-        string value = Guid.NewGuid().ToString();
-
-        await GetAndSetValuesAsync(client, key, value);
-    }
-
-    #endregion
 }
