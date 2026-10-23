@@ -243,6 +243,32 @@ internal partial class BatchTestUtils
         _ = batch.GetExpiry(getSetExpiryKey2, GetExpiryOptions.ExpireAt(new DateTimeOffset(futureTime)));
         testData.Add(new(new ValkeyValue("expire-me-abs"), "GetExpiry(getSetExpiryKey2, futureTime)"));
 
+        // Valkey 8.1+ string commands
+        // ---------------------------
+
+        if (Version.IsAtLeast(Version.Valkey8_1))
+        {
+            // Set with OnlyIfEqual tests
+            string setIfEqualKey = $"{atomicPrefix}setifequal-{Guid.NewGuid()}";
+            _ = batch.Set(setIfEqualKey, "value", SetCondition.OnlyIfEqual("other"));
+            testData.Add(new(false, "Set(setIfEqualKey, value, OnlyIfEqual(other)) non-existent key"));
+
+            _ = batch.Set(setIfEqualKey, "value");
+            testData.Add(new(true, "Set(setIfEqualKey, value)"));
+
+            _ = batch.Set(setIfEqualKey, "new_value", SetCondition.OnlyIfEqual("other"));
+            testData.Add(new(false, "Set(setIfEqualKey, new_value, OnlyIfEqual(other)) value not equal"));
+
+            _ = batch.Set(setIfEqualKey, "new_value", SetCondition.OnlyIfEqual("value"));
+            testData.Add(new(true, "Set(setIfEqualKey, new_value, OnlyIfEqual(value)) value equal"));
+
+            _ = batch.GetSet(setIfEqualKey, "other_value", SetCondition.OnlyIfEqual("new_value"));
+            testData.Add(new(new ValkeyValue("new_value"), "GetSet(setIfEqualKey, other_value, OnlyIfEqual(new_value))"));
+
+            _ = batch.Get(setIfEqualKey);
+            testData.Add(new(new ValkeyValue("other_value"), "Get(setIfEqualKey)"));
+        }
+
         // Valkey 9.0+ string commands
         // ---------------------------
 

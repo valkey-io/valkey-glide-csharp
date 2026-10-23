@@ -44,7 +44,7 @@ public sealed class SetCondition
     #region Public Methods
 
     /// <summary>
-    /// Only set the value if the current value equals <paramref name="comparisonValue"/> (IFEQ).
+    /// Only set the value if the key exists and its value equals <paramref name="comparisonValue"/> (IFEQ).
     /// </summary>
     /// <param name="comparisonValue">The value to compare the current value against.</param>
     /// <remarks>
@@ -58,7 +58,7 @@ public sealed class SetCondition
         => new(SetConditionType.OnlyIfEqual, comparisonValue);
 
     /// <summary>
-    /// Only set the value if the current value does not equal <paramref name="comparisonValue"/> (IFNE).
+    /// Only set the value if the key does not exist or if its value does not equal <paramref name="comparisonValue"/> (IFNE).
     /// </summary>
     /// <param name="comparisonValue">The value to compare the current value against.</param>
     /// <remarks>
