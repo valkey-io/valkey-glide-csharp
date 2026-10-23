@@ -548,13 +548,13 @@ public class CompressionTests(CompressionFixture fixture)
         { ["INCRBYFLOAT", "{key}", "1.5"] },
 
         // Bit operations
-        { ["GETBIT", "{key}", "0"] },
-        { ["SETBIT", "{key}", "7", "1"] },
         { ["BITCOUNT", "{key}"] },
-        { ["BITPOS", "{key}", "1"] },
         { ["BITFIELD", "{key}", "GET", "u8", "0"] },
         { ["BITFIELD_RO", "{key}", "GET", "u8", "0"] },
         { ["BITOP", "AND", "{key}", "{key}"] },
+        { ["BITPOS", "{key}", "1"] },
+        { ["GETBIT", "{key}", "0"] },
+        { ["SETBIT", "{key}", "7", "1"] },
     };
 
     [Theory]

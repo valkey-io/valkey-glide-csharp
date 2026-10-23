@@ -32,10 +32,10 @@ internal static class GeoUnitExtensions
 {
     internal static ValkeyValue ToLiteral(this GeoUnit unit) => unit switch
     {
-        GeoUnit.Feet => ValkeyLiterals.ft,
-        GeoUnit.Kilometers => ValkeyLiterals.km,
         GeoUnit.Meters => ValkeyLiterals.m,
+        GeoUnit.Kilometers => ValkeyLiterals.km,
         GeoUnit.Miles => ValkeyLiterals.mi,
+        GeoUnit.Feet => ValkeyLiterals.ft,
         _ => throw new ArgumentOutOfRangeException(nameof(unit)),
     };
 }

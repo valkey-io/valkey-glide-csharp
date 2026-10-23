@@ -144,10 +144,10 @@ public class ClientInfoTagTests(TestConfiguration config)
     /// rather than being silently ignored.
     /// </summary>
     [Theory]
+    [InlineData("")]
     [InlineData(" ")]
     [InlineData("   ")]
     [InlineData("\t")]
-    [InlineData("")]
     public async Task TestClientCreation_WithWhitespaceOrEmptyTag_IsRejectedByCore(string tag)
     {
         Version.SkipIfLessThan(Version.Valkey7_2);
