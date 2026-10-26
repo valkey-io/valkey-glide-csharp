@@ -22,14 +22,12 @@ public class IamAuthTests
         StandaloneServer server, ServerCredentials credentials) =>
         server.CreateConfigBuilder()
             .WithCredentials(credentials)
-            .WithTls(false)
             .Build();
 
     private static ConnectionConfiguration.ClusterClientConfiguration CreateClusterConfig(
         ClusterServer server, ServerCredentials credentials) =>
         server.CreateConfigBuilder()
             .WithCredentials(credentials)
-            .WithTls(false)
             .Build();
 
     [Fact]
@@ -37,7 +35,7 @@ public class IamAuthTests
     {
         var credentials = CreateCredentials(refreshIntervalSeconds: 5);
 
-        using var server = new StandaloneServer();
+        using var server = new StandaloneServer(useTls: true);
         var config = CreateStandaloneConfig(server, credentials);
 
         await using var client = await GlideClient.CreateClient(config);
@@ -54,7 +52,7 @@ public class IamAuthTests
     {
         var credentials = CreateCredentials(refreshIntervalSeconds: 5);
 
-        using var server = new ClusterServer();
+        using var server = new ClusterServer(useTls: true);
         var config = CreateClusterConfig(server, credentials);
 
         await using var client = await GlideClusterClient.CreateClient(config);
@@ -81,7 +79,7 @@ public class IamAuthTests
     {
         var credentials = CreateCredentials(refreshIntervalSeconds: 2);
 
-        using var server = new StandaloneServer();
+        using var server = new StandaloneServer(useTls: true);
         var config = CreateStandaloneConfig(server, credentials);
 
         await using var client = await GlideClient.CreateClient(config);
@@ -106,7 +104,7 @@ public class IamAuthTests
     {
         var credentials = CreateCredentials(refreshIntervalSeconds: 2);
 
-        using var server = new ClusterServer();
+        using var server = new ClusterServer(useTls: true);
         var config = CreateClusterConfig(server, credentials);
 
         await using var client = await GlideClusterClient.CreateClient(config);
