@@ -1,10 +1,6 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using System;
-using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Channels;
-using System.Threading.Tasks;
 
 using Valkey.Glide.Internals;
 
@@ -93,10 +89,10 @@ public sealed class ChannelMessageQueue : IAsyncEnumerable<ChannelMessage>
     {
         Channel = channel;
         _parent = parent;
-        _queue = System.Threading.Channels.Channel.CreateUnbounded<ChannelMessage>(s_ChannelOptions);
+        _queue = System.Threading.Channels.Channel.CreateUnbounded<ChannelMessage>(UnboundedOptions);
     }
 
-    private static readonly UnboundedChannelOptions s_ChannelOptions = new()
+    private static readonly UnboundedChannelOptions UnboundedOptions = new()
     {
         SingleWriter = true,
         SingleReader = false,
@@ -106,7 +102,7 @@ public sealed class ChannelMessageQueue : IAsyncEnumerable<ChannelMessage>
     internal void Write(in ValkeyChannel channel, in ValkeyValue value)
     {
         var writer = _queue.Writer;
-        writer.TryWrite(new ChannelMessage(this, channel, value));
+        _ = writer.TryWrite(new ChannelMessage(this, channel, value));
     }
 
     /// <summary>
@@ -143,9 +139,15 @@ public sealed class ChannelMessageQueue : IAsyncEnumerable<ChannelMessage>
 
     private void AssertOnMessage(Delegate handler)
     {
-        if (handler == null) throw new ArgumentNullException(nameof(handler));
+        if (handler == null)
+        {
+            throw new ArgumentNullException(nameof(handler));
+        }
+
         if (Interlocked.CompareExchange(ref _onMessageHandler, handler, null) != null)
+        {
             throw new InvalidOperationException("Only a single " + nameof(OnMessage) + " is allowed");
+        }
     }
 
     /// <summary>
@@ -155,7 +157,7 @@ public sealed class ChannelMessageQueue : IAsyncEnumerable<ChannelMessage>
     public void OnMessage(Action<ChannelMessage> handler)
     {
         AssertOnMessage(handler);
-        ThreadPool.QueueUserWorkItem(state => _ = ((ChannelMessageQueue)state!).OnMessageSyncImpl(), this);
+        _ = ThreadPool.QueueUserWorkItem(state => _ = ((ChannelMessageQueue)state!).OnMessageSyncImpl(), this);
     }
 
     private async Task OnMessageSyncImpl()
@@ -167,7 +169,9 @@ public sealed class ChannelMessageQueue : IAsyncEnumerable<ChannelMessage>
             try
             {
                 if (!TryRead(out next))
+                {
                     next = await ReadAsync().ConfigureAwait(false);
+                }
             }
             catch (ChannelClosedException) { break; }
             catch { break; }
@@ -198,18 +202,25 @@ public sealed class ChannelMessageQueue : IAsyncEnumerable<ChannelMessage>
     public void OnMessage(Func<ChannelMessage, Task> handler)
     {
         AssertOnMessage(handler);
-        ThreadPool.QueueUserWorkItem(state => _ = ((ChannelMessageQueue)state!).OnMessageAsyncImpl(), this);
+        _ = ThreadPool.QueueUserWorkItem(state => _ = ((ChannelMessageQueue)state!).OnMessageAsyncImpl(), this);
     }
 
     internal static void Remove(ref ChannelMessageQueue? head, ChannelMessageQueue queue)
     {
-        if (queue is null) return;
+        if (queue is null)
+        {
+            return;
+        }
 
         bool found;
         do
         {
             var current = Volatile.Read(ref head);
-            if (current == null) return;
+            if (current == null)
+            {
+                return;
+            }
+
             if (current == queue)
             {
                 found = true;
@@ -279,7 +290,9 @@ public sealed class ChannelMessageQueue : IAsyncEnumerable<ChannelMessage>
             try
             {
                 if (!TryRead(out next))
+                {
                     next = await ReadAsync().ConfigureAwait(false);
+                }
             }
             catch (ChannelClosedException) { break; }
             catch { break; }
@@ -288,7 +301,9 @@ public sealed class ChannelMessageQueue : IAsyncEnumerable<ChannelMessage>
             {
                 var task = handler?.Invoke(next);
                 if (task != null && task.Status != TaskStatus.RanToCompletion)
+                {
                     await task.ConfigureAwait(false);
+                }
             }
             catch { }
         }
@@ -300,7 +315,7 @@ public sealed class ChannelMessageQueue : IAsyncEnumerable<ChannelMessage>
         while (current != null)
         {
             current._parent = null;
-            current._queue.Writer.TryComplete();
+            _ = current._queue.Writer.TryComplete();
             current = Volatile.Read(ref current._next);
         }
     }
@@ -330,7 +345,7 @@ public sealed class ChannelMessageQueue : IAsyncEnumerable<ChannelMessage>
             await parent.UnsubscribeAsync(this);
         }
 
-        _queue.Writer.TryComplete();
+        _ = _queue.Writer.TryComplete();
     }
 
     /// <inheritdoc/>

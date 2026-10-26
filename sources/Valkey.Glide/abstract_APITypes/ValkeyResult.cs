@@ -1,7 +1,5 @@
 ﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
@@ -84,13 +82,26 @@ public abstract class ValkeyResult
     /// <param name="type">The result type of the empty array.</param>
     internal static ValkeyResult EmptyArray(ResultType type) => type switch
     {
-        ResultType.Array => s_EmptyArray ??= new ArrayResult(Array.Empty<ValkeyResult>(), type),
-        ResultType.Set => s_EmptySet ??= new ArrayResult(Array.Empty<ValkeyResult>(), type),
-        ResultType.Map => s_EmptyMap ??= new ArrayResult(Array.Empty<ValkeyResult>(), type),
-        _ => new ArrayResult(Array.Empty<ValkeyResult>(), type),
+        ResultType.Array => s_emptyArray ??= new ArrayResult([], type),
+        ResultType.Set => s_emptySet ??= new ArrayResult([], type),
+        ResultType.Map => s_emptyMap ??= new ArrayResult([], type),
+        ResultType.None
+            or ResultType.SimpleString
+            or ResultType.Error
+            or ResultType.Integer
+            or ResultType.BulkString
+            or ResultType.Null
+            or ResultType.Boolean
+            or ResultType.Double
+            or ResultType.BigInteger
+            or ResultType.BlobError
+            or ResultType.VerbatimString
+            or ResultType.Attribute
+            or ResultType.Push
+            or _ => new ArrayResult([], type),
     };
 
-    private static ValkeyResult? s_EmptyArray, s_EmptySet, s_EmptyMap;
+    private static ValkeyResult? s_emptyArray, s_emptySet, s_emptyMap;
 
     /// <summary>
     /// A null array result.
@@ -339,18 +350,13 @@ public abstract class ValkeyResult
     internal abstract string? AsString();
     internal abstract string?[]? AsStringArray();
 
-    private sealed class ArrayResult : ValkeyResult
+    private sealed class ArrayResult(ValkeyResult[]? value, ResultType resultType) : ValkeyResult(value is null ? ResultType.Null : resultType)
     {
         public override bool IsNull => _value is null;
 
-        private readonly ValkeyResult[]? _value;
+        private readonly ValkeyResult[]? _value = value;
 
         internal override ResultType Resp2NullType => ResultType.Array;
-
-        public ArrayResult(ValkeyResult[]? value, ResultType resultType) : base(value is null ? ResultType.Null : resultType)
-        {
-            _value = value;
-        }
 
         public override int Length => _value is null ? -1 : _value.Length;
 
@@ -362,7 +368,11 @@ public abstract class ValkeyResult
 
         internal override bool AsBoolean()
         {
-            if (IsSingleton) return _value![0].AsBoolean();
+            if (IsSingleton)
+            {
+                return _value![0].AsBoolean();
+            }
+
             throw new InvalidCastException();
         }
 
@@ -372,14 +382,18 @@ public abstract class ValkeyResult
 
         internal override byte[]? AsByteArray()
         {
-            if (IsSingleton) return _value![0].AsByteArray();
+            if (IsSingleton)
+            {
+                return _value![0].AsByteArray();
+            }
+
             throw new InvalidCastException();
         }
 
         internal override byte[][]? AsByteArrayArray()
             => IsNull ? null
             : _value!.Length == 0
-                ? Array.Empty<byte[]>()
+                ? []
                 : Array.ConvertAll(_value, x => x.AsByteArray()!);
 
         private bool IsSingleton => _value?.Length == 1;
@@ -387,111 +401,159 @@ public abstract class ValkeyResult
 
         internal override double AsDouble()
         {
-            if (IsSingleton) return _value![0].AsDouble();
+            if (IsSingleton)
+            {
+                return _value![0].AsDouble();
+            }
+
             throw new InvalidCastException();
         }
 
         internal override double[]? AsDoubleArray()
             => IsNull ? null
-            : IsEmpty ? Array.Empty<double>()
+            : IsEmpty ? []
             : Array.ConvertAll(_value!, x => x.AsDouble());
 
         internal override int AsInt32()
         {
-            if (IsSingleton) return _value![0].AsInt32();
+            if (IsSingleton)
+            {
+                return _value![0].AsInt32();
+            }
+
             throw new InvalidCastException();
         }
 
         internal override int[]? AsInt32Array()
             => IsNull ? null
-            : IsEmpty ? Array.Empty<int>()
+            : IsEmpty ? []
             : Array.ConvertAll(_value!, x => x.AsInt32());
 
         internal override long AsInt64()
         {
-            if (IsSingleton) return _value![0].AsInt64();
+            if (IsSingleton)
+            {
+                return _value![0].AsInt64();
+            }
+
             throw new InvalidCastException();
         }
 
         internal override ulong AsUInt64()
         {
-            if (IsSingleton) return _value![0].AsUInt64();
+            if (IsSingleton)
+            {
+                return _value![0].AsUInt64();
+            }
+
             throw new InvalidCastException();
         }
 
         internal override long[]? AsInt64Array()
             => IsNull ? null
-            : IsEmpty ? Array.Empty<long>()
+            : IsEmpty ? []
             : Array.ConvertAll(_value!, x => x.AsInt64());
 
         internal override ulong[]? AsUInt64Array()
             => IsNull ? null
-            : IsEmpty ? Array.Empty<ulong>()
+            : IsEmpty ? []
             : Array.ConvertAll(_value!, x => x.AsUInt64());
 
         internal override bool? AsNullableBoolean()
         {
-            if (IsSingleton) return _value![0].AsNullableBoolean();
+            if (IsSingleton)
+            {
+                return _value![0].AsNullableBoolean();
+            }
+
             throw new InvalidCastException();
         }
 
         internal override double? AsNullableDouble()
         {
-            if (IsSingleton) return _value![0].AsNullableDouble();
+            if (IsSingleton)
+            {
+                return _value![0].AsNullableDouble();
+            }
+
             throw new InvalidCastException();
         }
 
         internal override int? AsNullableInt32()
         {
-            if (IsSingleton) return _value![0].AsNullableInt32();
+            if (IsSingleton)
+            {
+                return _value![0].AsNullableInt32();
+            }
+
             throw new InvalidCastException();
         }
 
         internal override long? AsNullableInt64()
         {
-            if (IsSingleton) return _value![0].AsNullableInt64();
+            if (IsSingleton)
+            {
+                return _value![0].AsNullableInt64();
+            }
+
             throw new InvalidCastException();
         }
 
         internal override ulong? AsNullableUInt64()
         {
-            if (IsSingleton) return _value![0].AsNullableUInt64();
+            if (IsSingleton)
+            {
+                return _value![0].AsNullableUInt64();
+            }
+
             throw new InvalidCastException();
         }
 
         internal override ValkeyKey AsValkeyKey()
         {
-            if (IsSingleton) return _value![0].AsValkeyKey();
+            if (IsSingleton)
+            {
+                return _value![0].AsValkeyKey();
+            }
+
             throw new InvalidCastException();
         }
 
         internal override ValkeyKey[]? AsValkeyKeyArray()
             => IsNull ? null
-            : IsEmpty ? Array.Empty<ValkeyKey>()
+            : IsEmpty ? []
             : Array.ConvertAll(_value!, x => x.AsValkeyKey());
 
         internal override ValkeyResult[]? AsValkeyResultArray() => _value;
 
         internal override ValkeyValue AsValkeyValue()
         {
-            if (IsSingleton) return _value![0].AsValkeyValue();
+            if (IsSingleton)
+            {
+                return _value![0].AsValkeyValue();
+            }
+
             throw new InvalidCastException();
         }
 
         internal override ValkeyValue[]? AsValkeyValueArray()
             => IsNull ? null
-            : IsEmpty ? Array.Empty<ValkeyValue>()
+            : IsEmpty ? []
             : Array.ConvertAll(_value!, x => x.AsValkeyValue());
 
         internal override string? AsString()
         {
-            if (IsSingleton) return _value![0].AsString();
+            if (IsSingleton)
+            {
+                return _value![0].AsString();
+            }
+
             throw new InvalidCastException();
         }
 
         internal override string?[]? AsStringArray()
             => IsNull ? null
-            : IsEmpty ? Array.Empty<string>()
+            : IsEmpty ? []
             : Array.ConvertAll(_value!, x => x.AsString());
     }
 
@@ -501,14 +563,9 @@ public abstract class ValkeyResult
     /// <param name="key">The <see cref="ValkeyKey"/> to create a <see cref="ValkeyResult"/> from.</param>
     public static ValkeyResult Create(ValkeyKey key) => Create(key.AsValkeyValue(), ResultType.BulkString);
 
-    private sealed class SingleResult : ValkeyResult, IConvertible
+    private sealed class SingleResult(ValkeyValue value, ResultType? resultType) : ValkeyResult(value.IsNull ? ResultType.Null : resultType ?? (value.IsInteger ? ResultType.Integer : ResultType.BulkString)), IConvertible
     {
-        private readonly ValkeyValue _value;
-
-        public SingleResult(ValkeyValue value, ResultType? resultType) : base(value.IsNull ? ResultType.Null : resultType ?? (value.IsInteger ? ResultType.Integer : ResultType.BulkString))
-        {
-            _value = value;
-        }
+        private readonly ValkeyValue _value = value;
 
         public override bool IsNull => Resp3Type == ResultType.Null || _value.IsNull;
 
@@ -519,8 +576,8 @@ public abstract class ValkeyResult
             if (Resp3Type == ResultType.VerbatimString && s is not null && s.Length >= 4 && s[3] == ':')
             {
                 // remove the prefix
-                type = s.Substring(0, 3);
-                s = s.Substring(4);
+                type = s[..3];
+                s = s[4..];
             }
 
             return s;
@@ -598,7 +655,11 @@ public abstract class ValkeyResult
         decimal IConvertible.ToDecimal(IFormatProvider? provider)
         {
             // we can do this safely *sometimes*
-            if (Resp2Type == ResultType.Integer) return AsInt64();
+            if (Resp2Type == ResultType.Integer)
+            {
+                return AsInt64();
+            }
+
             // but not always
             ThrowNotSupported();
             return default;
@@ -630,6 +691,11 @@ public abstract class ValkeyResult
                 case TypeCode.Double: return AsDouble();
                 case TypeCode.Decimal when Resp2Type == ResultType.Integer: return AsInt64();
                 case TypeCode.String: return AsString()!;
+                case TypeCode.Empty:
+                case TypeCode.Object:
+                case TypeCode.DBNull:
+                case TypeCode.Decimal:
+                case TypeCode.DateTime:
                 default:
                     ThrowNotSupported();
                     return default;

@@ -1,4 +1,6 @@
-﻿namespace Valkey.Glide;
+﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
+
+namespace Valkey.Glide;
 
 /// <summary>
 /// Indicates the flavor of a particular server.
@@ -40,7 +42,11 @@ internal static class ServerTypeExtensions
     internal static bool HasSinglePrimary(this ServerType type) => type switch
     {
         ServerType.Envoyproxy => false,
-        _ => true,
+        ServerType.Standalone
+            or ServerType.Sentinel
+            or ServerType.Cluster
+            or ServerType.Twemproxy
+            or _ => true,
     };
 
     /// <summary>
@@ -51,6 +57,9 @@ internal static class ServerTypeExtensions
     {
         ServerType.Twemproxy => false,
         ServerType.Envoyproxy => false,
-        _ => true,
+        ServerType.Standalone
+            or ServerType.Sentinel
+            or ServerType.Cluster
+            or _ => true,
     };
 }

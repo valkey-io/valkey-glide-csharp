@@ -1,83 +1,80 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 namespace Valkey.Glide;
 
 /// <summary>
 /// Describes a value contained in a stream (a name/value pair).
 /// </summary>
-public readonly struct NameValueEntry : IEquatable<NameValueEntry>
+/// <remarks>
+/// Initializes a <see cref="NameValueEntry"/> value.
+/// </remarks>
+/// <param name="name">The name for this entry.</param>
+/// <param name="value">The value for this entry.</param>
+public readonly struct NameValueEntry(ValkeyValue name, ValkeyValue value) : IEquatable<NameValueEntry>
 {
-    internal readonly ValkeyValue name, value;
-
-    /// <summary>
-    /// Initializes a <see cref="NameValueEntry"/> value.
-    /// </summary>
-    /// <param name="name">The name for this entry.</param>
-    /// <param name="value">The value for this entry.</param>
-    public NameValueEntry(ValkeyValue name, ValkeyValue value)
-    {
-        this.name = name;
-        this.value = value;
-    }
-
     /// <summary>
     /// The name of the field.
     /// </summary>
-    public ValkeyValue Name => name;
+    public ValkeyValue Name { get; } = name;
 
     /// <summary>
     /// The value of the field.
     /// </summary>
-    public ValkeyValue Value => value;
+    public ValkeyValue Value { get; } = value;
 
     /// <summary>
     /// Converts to a key/value pair.
     /// </summary>
     /// <param name="value">The <see cref="NameValueEntry"/> to create a <see cref="KeyValuePair{TKey, TValue}"/> from.</param>
-    public static implicit operator KeyValuePair<ValkeyValue, ValkeyValue>(NameValueEntry value) =>
-        new KeyValuePair<ValkeyValue, ValkeyValue>(value.name, value.value);
+    public static implicit operator KeyValuePair<ValkeyValue, ValkeyValue>(NameValueEntry value)
+        => new(value.Name, value.Value);
 
     /// <summary>
     /// Converts from a key/value pair.
     /// </summary>
     /// <param name="value">The <see cref="KeyValuePair{TKey, TValue}"/> to get a <see cref="NameValueEntry"/> from.</param>
-    public static implicit operator NameValueEntry(KeyValuePair<ValkeyValue, ValkeyValue> value) =>
-        new NameValueEntry(value.Key, value.Value);
+    public static implicit operator NameValueEntry(KeyValuePair<ValkeyValue, ValkeyValue> value)
+        => new(value.Key, value.Value);
 
     /// <summary>
     /// The "{name}: {value}" string representation.
     /// </summary>
-    public override string ToString() => name + ": " + value;
+    public override string ToString()
+        => Name + ": " + Value;
 
     /// <inheritdoc/>
-    public override int GetHashCode() => name.GetHashCode() ^ value.GetHashCode();
+    public override int GetHashCode()
+        => Name.GetHashCode() ^ Value.GetHashCode();
 
     /// <summary>
     /// Compares two values for equality.
     /// </summary>
     /// <param name="obj">The <see cref="NameValueEntry"/> to compare to.</param>
-    public override bool Equals(object? obj) => obj is NameValueEntry heObj && Equals(heObj);
+    public override bool Equals(object? obj)
+        => obj is NameValueEntry heObj && Equals(heObj);
 
     /// <summary>
     /// Compares two values for equality.
     /// </summary>
     /// <param name="other">The <see cref="NameValueEntry"/> to compare to.</param>
-    public bool Equals(NameValueEntry other) => name == other.name && value == other.value;
+    public bool Equals(NameValueEntry other)
+        => Name == other.Name && Value == other.Value;
 
     /// <summary>
     /// Compares two values for equality.
     /// </summary>
     /// <param name="x">The first <see cref="NameValueEntry"/> to compare.</param>
     /// <param name="y">The second <see cref="NameValueEntry"/> to compare.</param>
-    public static bool operator ==(NameValueEntry x, NameValueEntry y) => x.name == y.name && x.value == y.value;
+    public static bool operator ==(NameValueEntry x, NameValueEntry y)
+        => x.Name == y.Name && x.Value == y.Value;
 
     /// <summary>
     /// Compares two values for non-equality.
     /// </summary>
     /// <param name="x">The first <see cref="NameValueEntry"/> to compare.</param>
     /// <param name="y">The second <see cref="NameValueEntry"/> to compare.</param>
-    public static bool operator !=(NameValueEntry x, NameValueEntry y) => x.name != y.name || x.value != y.value;
+    public static bool operator !=(NameValueEntry x, NameValueEntry y)
+        => x.Name != y.Name || x.Value != y.Value;
 
     #region Internal Methods
 
@@ -85,7 +82,7 @@ public readonly struct NameValueEntry : IEquatable<NameValueEntry>
     /// Builds the command arguments for this entry.
     /// </summary>
     internal GlideString[] ToArgs()
-        => [name, value];
+        => [Name, Value];
 
     #endregion
 }
