@@ -182,11 +182,7 @@ task lint:rust      # Run Rust linter
 task lint:yaml      # Run YAML linter
 ```
 
-C# style and analysis rules are defined in the project `.editorconfig` files:
-
-- [`.editorconfig`](.editorconfig) — repository-wide defaults.
-- [`sources/Valkey.Glide/abstract_Enums/.editorconfig`](sources/Valkey.Glide/abstract_Enums/.editorconfig)
-- [`sources/Valkey.Glide/abstract_APITypes/.editorconfig`](sources/Valkey.Glide/abstract_APITypes/.editorconfig)
+C# style and analysis rules are defined in the repository [`.editorconfig`](.editorconfig).
 
 ### Tests
 
