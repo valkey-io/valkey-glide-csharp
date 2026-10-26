@@ -34,8 +34,8 @@ internal static class GeoUnitExtensions
     {
         GeoUnit.Meters => ValkeyLiterals.m,
         GeoUnit.Kilometers => ValkeyLiterals.km,
-        GeoUnit.Miles => ValkeyLiterals.mi,
         GeoUnit.Feet => ValkeyLiterals.ft,
+        GeoUnit.Miles => ValkeyLiterals.mi,
         _ => throw new ArgumentOutOfRangeException(nameof(unit)),
     };
 }

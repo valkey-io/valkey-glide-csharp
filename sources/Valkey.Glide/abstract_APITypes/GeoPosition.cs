@@ -11,8 +11,8 @@ public readonly struct GeoPosition : IEquatable<GeoPosition>
     {
         GeoUnit.Meters => "m",
         GeoUnit.Kilometers => "km",
-        GeoUnit.Miles => "mi",
         GeoUnit.Feet => "ft",
+        GeoUnit.Miles => "mi",
         _ => throw new ArgumentOutOfRangeException(nameof(unit)),
     };
 
