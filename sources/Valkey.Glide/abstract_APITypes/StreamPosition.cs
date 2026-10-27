@@ -6,7 +6,12 @@ namespace Valkey.Glide;
 /// A stream key and starting position for the <c>XREAD</c> command.
 /// </summary>
 /// <seealso href="https://valkey.io/commands/xread/"/>
-public readonly struct StreamPosition
+/// <remarks>
+/// Initializes a <see cref="StreamPosition"/> value.
+/// </remarks>
+/// <param name="key">The key for the stream.</param>
+/// <param name="position">The position from which to begin reading the stream.</param>
+public readonly struct StreamPosition(ValkeyKey key, ValkeyValue position)
 {
     #region Constants
 
@@ -34,26 +39,12 @@ public readonly struct StreamPosition
     /// <summary>
     /// The stream key.
     /// </summary>
-    public ValkeyKey Key { get; }
+    public ValkeyKey Key { get; } = key;
 
     /// <summary>
     /// The offset at which to begin reading the stream.
     /// </summary>
-    public ValkeyValue Position { get; }
-
-    #endregion
-    #region Constructors
-
-    /// <summary>
-    /// Initializes a <see cref="StreamPosition"/> value.
-    /// </summary>
-    /// <param name="key">The key for the stream.</param>
-    /// <param name="position">The position from which to begin reading the stream.</param>
-    public StreamPosition(ValkeyKey key, ValkeyValue position)
-    {
-        Key = key;
-        Position = position;
-    }
+    public ValkeyValue Position { get; } = position;
 
     #endregion
 }

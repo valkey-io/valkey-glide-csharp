@@ -1,4 +1,4 @@
-﻿using System;
+﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 namespace Valkey.Glide;
 
@@ -6,29 +6,23 @@ namespace Valkey.Glide;
 /// Describes a GeoEntry element with the corresponding value.
 /// GeoEntries are stored as SortedSetEntries.
 /// </summary>
-public readonly struct GeoEntry : IEquatable<GeoEntry>
+/// <remarks>
+/// Initializes a GeoEntry value.
+/// </remarks>
+/// <param name="longitude">The longitude position to use.</param>
+/// <param name="latitude">The latitude position to use.</param>
+/// <param name="member">The value to store for this position.</param>
+public readonly struct GeoEntry(double longitude, double latitude, ValkeyValue member) : IEquatable<GeoEntry>
 {
     /// <summary>
     /// The name of the GeoEntry.
     /// </summary>
-    public ValkeyValue Member { get; }
+    public ValkeyValue Member { get; } = member;
 
     /// <summary>
     /// Describes the longitude and latitude of a GeoEntry.
     /// </summary>
-    public GeoPosition Position { get; }
-
-    /// <summary>
-    /// Initializes a GeoEntry value.
-    /// </summary>
-    /// <param name="longitude">The longitude position to use.</param>
-    /// <param name="latitude">The latitude position to use.</param>
-    /// <param name="member">The value to store for this position.</param>
-    public GeoEntry(double longitude, double latitude, ValkeyValue member)
-    {
-        Member = member;
-        Position = new GeoPosition(longitude, latitude);
-    }
+    public GeoPosition Position { get; } = new GeoPosition(longitude, latitude);
 
     /// <summary>
     /// The longitude of the GeoEntry.

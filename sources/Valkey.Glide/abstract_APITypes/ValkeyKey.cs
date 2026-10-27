@@ -1,13 +1,9 @@
 ﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Valkey.Glide;
 
@@ -28,7 +24,7 @@ public readonly struct ValkeyKey : IEquatable<ValkeyKey>
     /// <param name="key">The string to create the key from.</param>
     public ValkeyKey(string? key) : this(null, key) { }
 
-    internal ValkeyKey AsPrefix() => new ValkeyKey((byte[]?)this, null);
+    internal ValkeyKey AsPrefix() => new((byte[]?)this, null);
 
     internal bool IsNull => KeyPrefix == null && KeyValue == null;
 
@@ -38,9 +34,21 @@ public readonly struct ValkeyKey : IEquatable<ValkeyKey>
     {
         get
         {
-            if (KeyPrefix != null) return false;
-            if (KeyValue == null) return true;
-            if (KeyValue is string s) return s.Length == 0;
+            if (KeyPrefix != null)
+            {
+                return false;
+            }
+
+            if (KeyValue == null)
+            {
+                return true;
+            }
+
+            if (KeyValue is string s)
+            {
+                return s.Length == 0;
+            }
+
             return ((byte[])KeyValue).Length == 0;
         }
     }
@@ -151,10 +159,20 @@ public readonly struct ValkeyKey : IEquatable<ValkeyKey>
         // if there's no prefix, we might be able to do a simple compare
         if (ValkeyValue.Equals(KeyPrefix, other.KeyPrefix))
         {
-            if ((object?)KeyValue == (object?)other.KeyValue) return true; // ref equal
+            if (KeyValue == other.KeyValue)
+            {
+                return true; // ref equal
+            }
 
-            if (KeyValue is string keyString1 && other.KeyValue is string keyString2) return keyString1 == keyString2;
-            if (KeyValue is byte[] keyBytes1 && other.KeyValue is byte[] keyBytes2) return ValkeyValue.Equals(keyBytes1, keyBytes2);
+            if (KeyValue is string keyString1 && other.KeyValue is string keyString2)
+            {
+                return keyString1 == keyString2;
+            }
+
+            if (KeyValue is byte[] keyBytes1 && other.KeyValue is byte[] keyBytes2)
+            {
+                return ValkeyValue.Equals(keyBytes1, keyBytes2);
+            }
         }
 
         int len = TotalLength();
@@ -181,7 +199,7 @@ public readonly struct ValkeyKey : IEquatable<ValkeyKey>
 
         static bool CopyCompare(in ValkeyKey x, in ValkeyKey y, int length, Span<byte> span)
         {
-            Span<byte> span1 = span.Slice(0, length), span2 = span.Slice(length, length);
+            Span<byte> span1 = span[..length], span2 = span.Slice(length, length);
             var written = x.CopyTo(span1);
             Debug.Assert(written == length, "length error (1)");
             written = y.CopyTo(span2);
@@ -197,10 +215,21 @@ public readonly struct ValkeyKey : IEquatable<ValkeyKey>
         // parts look like bytes or strings, and with/without prefix
 
         // the simplest way to do this is to use the CopyTo version, which normalizes that
-        if (IsNull) return -1;
-        if (TryGetSimpleBuffer(out var buffer)) return ValkeyValue.GetHashCode(buffer);
+        if (IsNull)
+        {
+            return -1;
+        }
+
+        if (TryGetSimpleBuffer(out var buffer))
+        {
+            return ValkeyValue.GetHashCode(buffer);
+        }
+
         var len = TotalLength();
-        if (len == 0) return 0;
+        if (len == 0)
+        {
+            return 0;
+        }
 
         if (len <= 256)
         {
@@ -228,13 +257,20 @@ public readonly struct ValkeyKey : IEquatable<ValkeyKey>
 
     internal ValkeyValue AsValkeyValue()
     {
-        if (KeyPrefix == null && KeyValue is string keyString) return keyString;
+        if (KeyPrefix == null && KeyValue is string keyString)
+        {
+            return keyString;
+        }
+
         return (byte[]?)this;
     }
 
     internal void AssertNotNull()
     {
-        if (IsNull) throw new ArgumentException("A null key is not valid in this context");
+        if (IsNull)
+        {
+            throw new ArgumentException("A null key is not valid in this context");
+        }
     }
 
     /// <summary>
@@ -243,7 +279,11 @@ public readonly struct ValkeyKey : IEquatable<ValkeyKey>
     /// <param name="key">The string to get a key from.</param>
     public static implicit operator ValkeyKey(string? key)
     {
-        if (key == null) return default;
+        if (key == null)
+        {
+            return default;
+        }
+
         return new ValkeyKey(null, key);
     }
 
@@ -253,7 +293,11 @@ public readonly struct ValkeyKey : IEquatable<ValkeyKey>
     /// <param name="key">The byte array to get a key from.</param>
     public static implicit operator ValkeyKey(byte[]? key)
     {
-        if (key == null) return default;
+        if (key == null)
+        {
+            return default;
+        }
+
         return new ValkeyKey(null, key);
     }
 
@@ -263,11 +307,22 @@ public readonly struct ValkeyKey : IEquatable<ValkeyKey>
     /// <param name="key">The key to get a byte array for.</param>
     public static implicit operator byte[]?(ValkeyKey key)
     {
-        if (key.IsNull) return null;
-        if (key.TryGetSimpleBuffer(out var arr)) return arr;
+        if (key.IsNull)
+        {
+            return null;
+        }
+
+        if (key.TryGetSimpleBuffer(out var arr))
+        {
+            return arr;
+        }
 
         var len = key.TotalLength();
-        if (len == 0) return Array.Empty<byte>();
+        if (len == 0)
+        {
+            return [];
+        }
+
         arr = new byte[len];
         var written = key.CopyTo(arr);
         Debug.Assert(written == len, "length/copyto error");
@@ -300,8 +355,16 @@ public readonly struct ValkeyKey : IEquatable<ValkeyKey>
 
         static string? Get(byte[] arr, int length)
         {
-            if (length == -1) length = arr.Length;
-            if (length == 0) return "";
+            if (length == -1)
+            {
+                length = arr.Length;
+            }
+
+            if (length == 0)
+            {
+                return "";
+            }
+
             try
             {
                 return Encoding.UTF8.GetString(arr, 0, length);
@@ -320,13 +383,24 @@ public readonly struct ValkeyKey : IEquatable<ValkeyKey>
     /// <param name="y">The second <see cref="ValkeyKey"/> to add.</param>
     [Obsolete("Prefer WithPrefix")]
     public static ValkeyKey operator +(ValkeyKey x, ValkeyKey y) =>
-        new ValkeyKey(ConcatenateBytes(x.KeyPrefix, x.KeyValue, y.KeyPrefix), y.KeyValue);
+        new(ConcatenateBytes(x.KeyPrefix, x.KeyValue, y.KeyPrefix), y.KeyValue);
 
     internal static ValkeyKey WithPrefix(byte[]? prefix, ValkeyKey value)
     {
-        if (prefix == null || prefix.Length == 0) return value;
-        if (value.KeyPrefix == null) return new ValkeyKey(prefix, value.KeyValue);
-        if (value.KeyValue == null) return new ValkeyKey(prefix, value.KeyPrefix);
+        if (prefix == null || prefix.Length == 0)
+        {
+            return value;
+        }
+
+        if (value.KeyPrefix == null)
+        {
+            return new ValkeyKey(prefix, value.KeyValue);
+        }
+
+        if (value.KeyValue == null)
+        {
+            return new ValkeyKey(prefix, value.KeyPrefix);
+        }
 
         // two prefixes; darn
         byte[] copy = new byte[prefix.Length + value.KeyPrefix.Length];
@@ -339,8 +413,16 @@ public readonly struct ValkeyKey : IEquatable<ValkeyKey>
     {
         if ((a == null || a.Length == 0) && (c == null || c.Length == 0))
         {
-            if (b == null) return null;
-            if (b is string s) return Encoding.UTF8.GetBytes(s);
+            if (b == null)
+            {
+                return null;
+            }
+
+            if (b is string s)
+            {
+                return Encoding.UTF8.GetBytes(s);
+            }
+
             return (byte[])b;
         }
 
@@ -351,12 +433,16 @@ public readonly struct ValkeyKey : IEquatable<ValkeyKey>
             cLen = c?.Length ?? 0;
 
         var result = new byte[aLen + bLen + cLen];
-        if (aLen != 0) Buffer.BlockCopy(a!, 0, result, 0, aLen);
+        if (aLen != 0)
+        {
+            Buffer.BlockCopy(a!, 0, result, 0, aLen);
+        }
+
         if (bLen != 0)
         {
             if (b is string s)
             {
-                Encoding.UTF8.GetBytes(s, 0, s.Length, result, aLen);
+                _ = Encoding.UTF8.GetBytes(s, 0, s.Length, result, aLen);
             }
             else
             {
@@ -364,7 +450,11 @@ public readonly struct ValkeyKey : IEquatable<ValkeyKey>
             }
         }
 
-        if (cLen != 0) Buffer.BlockCopy(c!, 0, result, aLen + bLen, cLen);
+        if (cLen != 0)
+        {
+            Buffer.BlockCopy(c!, 0, result, aLen + bLen, cLen);
+        }
+
         return result;
     }
 
@@ -388,7 +478,7 @@ public readonly struct ValkeyKey : IEquatable<ValkeyKey>
 
     internal bool TryGetSimpleBuffer([NotNullWhen(true)] out byte[]? arr)
     {
-        arr = KeyValue is null ? Array.Empty<byte>() : KeyValue as byte[];
+        arr = KeyValue is null ? [] : KeyValue as byte[];
         return arr is not null && (KeyPrefix is null || KeyPrefix.Length == 0);
     }
 
@@ -408,7 +498,7 @@ public readonly struct ValkeyKey : IEquatable<ValkeyKey>
         {
             KeyPrefix.CopyTo(destination);
             written += KeyPrefix.Length;
-            destination = destination.Slice(KeyPrefix.Length);
+            destination = destination[KeyPrefix.Length..];
         }
 
         switch (KeyValue)

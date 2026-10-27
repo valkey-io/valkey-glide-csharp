@@ -1,7 +1,5 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using System;
-
 namespace Valkey.Glide;
 
 /// <summary>
@@ -16,7 +14,7 @@ public readonly struct StreamAutoClaimJustIdResult
     /// A null <see cref="StreamAutoClaimJustIdResult"/>, indicating no results.
     /// </summary>
     public static StreamAutoClaimJustIdResult Null { get; }
-        = new StreamAutoClaimJustIdResult(ValkeyValue.Null, Array.Empty<ValkeyValue>(), Array.Empty<ValkeyValue>());
+        = new StreamAutoClaimJustIdResult(ValkeyValue.Null, [], []);
 
     #endregion
     #region Public Properties

@@ -1,4 +1,4 @@
-﻿using System;
+﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 namespace Valkey.Glide;
 
@@ -32,10 +32,10 @@ internal static class GeoUnitExtensions
 {
     internal static ValkeyValue ToLiteral(this GeoUnit unit) => unit switch
     {
-        GeoUnit.Feet => ValkeyLiterals.ft,
-        GeoUnit.Kilometers => ValkeyLiterals.km,
-        GeoUnit.Meters => ValkeyLiterals.m,
-        GeoUnit.Miles => ValkeyLiterals.mi,
+        GeoUnit.Feet => ValkeyLiterals.Feet,
+        GeoUnit.Kilometers => ValkeyLiterals.Kilometers,
+        GeoUnit.Meters => ValkeyLiterals.Meters,
+        GeoUnit.Miles => ValkeyLiterals.Miles,
         _ => throw new ArgumentOutOfRangeException(nameof(unit)),
     };
 }

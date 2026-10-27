@@ -1,4 +1,4 @@
-﻿using System;
+﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 namespace Valkey.Glide;
 
@@ -8,7 +8,7 @@ namespace Valkey.Glide;
 /// </summary>
 public readonly struct LCSMatchResult
 {
-    internal static LCSMatchResult Null { get; } = new LCSMatchResult(Array.Empty<LCSMatch>(), 0);
+    internal static LCSMatchResult Null { get; } = new LCSMatchResult([], 0);
 
     /// <summary>
     /// Whether this match result contains any matches.

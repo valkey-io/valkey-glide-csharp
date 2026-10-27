@@ -1,4 +1,4 @@
-﻿using System;
+﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 namespace Valkey.Glide;
 
@@ -10,7 +10,7 @@ public readonly struct ListPopResult
     /// <summary>
     /// A null ListPopResult, indicating no results.
     /// </summary>
-    public static ListPopResult Null { get; } = new ListPopResult(ValkeyKey.Null, Array.Empty<ValkeyValue>());
+    public static ListPopResult Null { get; } = new ListPopResult(ValkeyKey.Null, []);
 
     /// <summary>
     /// Whether this object is null/empty.

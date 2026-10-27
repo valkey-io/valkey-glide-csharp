@@ -1,6 +1,5 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
-using System;
 using System.Text;
 
 namespace Valkey.Glide;
@@ -45,11 +44,11 @@ public readonly struct ValkeyChannel : IEquatable<ValkeyChannel>
     /// </summary>
     public static bool UseImplicitAutoPattern
     {
-        get => s_DefaultPatternMode == PatternMode.Auto;
-        set => s_DefaultPatternMode = value ? PatternMode.Auto : PatternMode.Literal;
+        get => s_defaultPatternMode == PatternMode.Auto;
+        set => s_defaultPatternMode = value ? PatternMode.Auto : PatternMode.Literal;
     }
 
-    private static PatternMode s_DefaultPatternMode = PatternMode.Auto;
+    private static PatternMode s_defaultPatternMode = PatternMode.Auto;
 
     /// <summary>
     /// Creates a new <see cref="ValkeyChannel"/> that does not act as a wildcard subscription.
@@ -344,12 +343,15 @@ public readonly struct ValkeyChannel : IEquatable<ValkeyChannel>
         byte[] arr = new byte[11 + dbBytes.Length + 3 + keyLen + (appendStar ? 1 : 0)];
         var span = arr.AsSpan();
 
-        "__keyspace@"u8.CopyTo(span); span = span.Slice(11);
-        dbBytes.CopyTo(span); span = span.Slice(dbBytes.Length);
-        "__:"u8.CopyTo(span); span = span.Slice(3);
-        if (keyLen > 0) { key.CopyTo(span); span = span.Slice(keyLen); }
+        "__keyspace@"u8.CopyTo(span); span = span[11..];
+        dbBytes.CopyTo(span); span = span[dbBytes.Length..];
+        "__:"u8.CopyTo(span); span = span[3..];
+        if (keyLen > 0) { _ = key.CopyTo(span); span = span[keyLen..]; }
 
-        if (appendStar) span[0] = (byte)'*';
+        if (appendStar)
+        {
+            span[0] = (byte)'*';
+        }
 
         return new ValkeyChannel(arr, isPattern ? ValkeyChannelOptions.Pattern : ValkeyChannelOptions.None);
     }
@@ -364,11 +366,14 @@ public readonly struct ValkeyChannel : IEquatable<ValkeyChannel>
         byte[] arr = new byte[header.Length + dbBytes.Length + 3 + payload.Length + (appendStar ? 1 : 0)];
         var span = arr.AsSpan();
 
-        header.CopyTo(span); span = span.Slice(header.Length);
-        dbBytes.CopyTo(span); span = span.Slice(dbBytes.Length);
-        "__:"u8.CopyTo(span); span = span.Slice(3);
-        payload.CopyTo(span); span = span.Slice(payload.Length);
-        if (appendStar) span[0] = (byte)'*';
+        header.CopyTo(span); span = span[header.Length..];
+        dbBytes.CopyTo(span); span = span[dbBytes.Length..];
+        "__:"u8.CopyTo(span); span = span[3..];
+        payload.CopyTo(span); span = span[payload.Length..];
+        if (appendStar)
+        {
+            span[0] = (byte)'*';
+        }
 
         return new ValkeyChannel(arr, ValkeyChannelOptions.Pattern);
     }
@@ -379,9 +384,9 @@ public readonly struct ValkeyChannel : IEquatable<ValkeyChannel>
         byte[] arr = new byte[11 + dbBytes.Length + 3 + type.Length];
         var span = arr.AsSpan();
 
-        "__keyevent@"u8.CopyTo(span); span = span.Slice(11);
-        dbBytes.CopyTo(span); span = span.Slice(dbBytes.Length);
-        "__:"u8.CopyTo(span); span = span.Slice(3);
+        "__keyevent@"u8.CopyTo(span); span = span[11..];
+        dbBytes.CopyTo(span); span = span[dbBytes.Length..];
+        "__:"u8.CopyTo(span); span = span[3..];
         type.CopyTo(span);
 
         return new ValkeyChannel(arr, database is null ? ValkeyChannelOptions.Pattern : ValkeyChannelOptions.None);

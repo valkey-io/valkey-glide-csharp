@@ -6,9 +6,7 @@ using static Valkey.Glide.TestUtils.Assertions;
 
 namespace Valkey.Glide.IntegrationTests;
 
-// IAM auth requires TLS (an IAM token must never traverse plaintext), so these
-// success-path tests run against the TLS-enabled fixture. CreateConfigBuilder()
-// already enables TLS + the trusted cert when the server is TLS-enabled.
+// IAM authentication requires TLS (valkey-io/valkey-glide#7023).
 public class IamAuthTests(TlsServerFixture tlsServerFixture) : IClassFixture<TlsServerFixture>
 {
     private const string TestClusterName = "test-cluster";
