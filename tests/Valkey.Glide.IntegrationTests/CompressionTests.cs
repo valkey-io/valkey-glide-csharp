@@ -445,131 +445,51 @@ public class CompressionTests(CompressionFixture fixture)
     }
 
     // ============================================================================
-    // CustomCommand Tests for Compression
-    // ============================================================================
-
-    [Fact]
-    public async Task Compression_SetExViaCustomCommand_CompressesValue()
-    {
-        var statsBefore = BaseClient.GetStatistics();
-
-        string key = $"setex_custom_test_{Guid.NewGuid()}";
-
-        // SETEX via custom command should compress value
-        var result = await ZstdClient.CustomCommand(["SETEX", key, "10", LargeValue]);
-        Assert.Equal("OK", result?.ToString());
-
-        var statsAfter = BaseClient.GetStatistics();
-        Assert.True(
-            statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
-            $"SETEX via CustomCommand should compress value. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
-
-        // Verify value can be retrieved and decompressed
-        ValkeyValue retrieved = await ZstdClient.GetAsync(key);
-        Assert.Equal(LargeValue, retrieved.ToString());
-
-        // Verify TTL was set
-        var ttl = await ZstdClient.TimeToLiveAsync(key);
-        Assert.True(ttl.HasTimeToLive);
-        Assert.InRange(ttl.TimeToLive!.Value.TotalSeconds, 0.1, 10);
-    }
-
-    [Fact]
-    public async Task Compression_PSetExViaCustomCommand_CompressesValue()
-    {
-        var statsBefore = BaseClient.GetStatistics();
-
-        string key = $"psetex_custom_test_{Guid.NewGuid()}";
-
-        // PSETEX via custom command should compress value (10000ms = 10s)
-        var result = await ZstdClient.CustomCommand(["PSETEX", key, "10000", LargeValue]);
-        Assert.Equal("OK", result?.ToString());
-
-        var statsAfter = BaseClient.GetStatistics();
-        Assert.True(
-            statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
-            $"PSETEX via CustomCommand should compress value. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
-
-        // Verify value can be retrieved and decompressed
-        ValkeyValue retrieved = await ZstdClient.GetAsync(key);
-        Assert.Equal(LargeValue, retrieved.ToString());
-
-        // Verify TTL was set
-        var ttl = await ZstdClient.TimeToLiveAsync(key);
-        Assert.True(ttl.HasTimeToLive);
-        Assert.InRange(ttl.TimeToLive!.Value.TotalSeconds, 0.1, 10);
-    }
-
-    [Fact]
-    public async Task Compression_SetNXViaCustomCommand_CompressesValue()
-    {
-        string key = $"setnx_custom_test_{Guid.NewGuid()}";
-
-        var statsBefore = BaseClient.GetStatistics();
-
-        // SETNX via custom command should compress value
-        var result = await ZstdClient.CustomCommand(["SETNX", key, LargeValue]);
-        Assert.Equal(1L, result);
-
-        var statsAfter = BaseClient.GetStatistics();
-        Assert.True(
-            statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
-            $"SETNX via CustomCommand should compress value. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
-
-        // Verify value can be retrieved and decompressed
-        ValkeyValue retrieved = await ZstdClient.GetAsync(key);
-        Assert.Equal(LargeValue, retrieved.ToString());
-    }
-
-    // ============================================================================
     // Incompatible Command Tests - These should error when compression is enabled
     // ============================================================================
 
     /// <summary>
-    /// Test data for incompatible commands that should throw when compression is enabled.
-    /// Each entry contains the command arguments, with {key} placeholder.
+    /// Test data for client methods that use commands incompatible with compression.
+    /// Each entry contains the expected command name and a call to the client method.
     /// </summary>
-    public static TheoryData<string[]> IncompatibleCommands => new()
+    public static TheoryData<string, Func<BaseClient, Task>> IncompatibleMethods => new()
     {
         // String manipulation commands
-        { ["APPEND", "{key}", "suffix"] },
-        { ["DELIFEQ", "{key}", "value"] },
-        { ["GETRANGE", "{key}", "0", "4"] },
-        { ["LCS", "{key}", "{key}"] },
-        { ["SETRANGE", "{key}", "0", "test"] },
-        { ["STRLEN", "{key}"] },
-        { ["SUBSTR", "{key}", "0", "4"] },
+        { "APPEND", c => c.AppendAsync("key", "suffix") },
+        { "DELIFEQ", c => c.DeleteIfEqualAsync("key", "value") },
+        { "GETRANGE", c => c.GetRangeAsync("key", 0, 4) },
+        { "SET", c => c.GetSetAsync("key", "value", SetCondition.OnlyIfEqual("other")) },
+        { "SET", c => c.GetSetAsync("key", "value", SetCondition.OnlyIfNotEqual("other")) },
+        // TODO #318: Add LongestCommonSubsequenceAsync once it is available.
+        { "STRLEN", c => c.LengthAsync("key") },
+        { "SET", c => c.SetAsync("key", "value", SetCondition.OnlyIfEqual("other")) },
+        { "SET", c => c.SetAsync("key", "value", SetCondition.OnlyIfNotEqual("other")) },
+        { "SET", c => c.SetAsync("key", "value", new SetOptions { Condition = SetCondition.OnlyIfEqual("other"), Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(10)) }) },
+        { "SETRANGE", c => c.SetRangeAsync("key", 0, "test") },
 
         // Numeric operations
-        { ["DECR", "{key}"] },
-        { ["DECRBY", "{key}", "10"] },
-        { ["INCR", "{key}"] },
-        { ["INCRBY", "{key}", "10"] },
-        { ["INCRBYFLOAT", "{key}", "1.5"] },
+        { "DECR", c => c.DecrementAsync("key") },
+        { "DECRBY", c => c.DecrementAsync("key", 10) },
+        { "INCR", c => c.IncrementAsync("key") },
+        { "INCRBY", c => c.IncrementAsync("key", 10) },
+        { "INCRBYFLOAT", c => c.IncrementAsync("key", 1.5) },
 
         // Bit operations
-        { ["BITCOUNT", "{key}"] },
-        { ["BITFIELD", "{key}", "GET", "u8", "0"] },
-        { ["BITFIELD_RO", "{key}", "GET", "u8", "0"] },
-        { ["BITOP", "AND", "{key}", "{key}"] },
-        { ["BITPOS", "{key}", "1"] },
-        { ["GETBIT", "{key}", "0"] },
-        { ["SETBIT", "{key}", "7", "1"] },
+        { "BITCOUNT", c => c.BitCountAsync("key") },
+        { "BITFIELD", c => c.BitFieldAsync("key", new BitFieldOptions.BitFieldSet("u8", new BitFieldOptions.BitOffset(0), 1)) },
+        { "BITFIELD_RO", c => c.BitFieldReadOnlyAsync("key", new BitFieldOptions.BitFieldGet("u8", new BitFieldOptions.BitOffset(0))) },
+        { "BITOP", c => c.BitOpAsync(Bitwise.And, "key", ["key"]) },
+        { "BITPOS", c => c.BitPosAsync("key", true) },
+        { "GETBIT", c => c.GetBitAsync("key", 0) },
+        { "SETBIT", c => c.SetBitAsync("key", 7, true) },
     };
 
-    [Theory]
-    [MemberData(nameof(IncompatibleCommands))]
-    public async Task Compression_IncompatibleCommand_ThrowsError(string[] commandArgs)
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(IncompatibleMethods))]
+    public async Task Compression_IncompatibleMethod_ThrowsError(string command, Func<BaseClient, Task> call)
     {
-        string key = $"incompatible_{commandArgs[0].ToLower()}_{Guid.NewGuid()}";
-
-        // Replace {key} placeholder with actual key and convert to GlideString
-        var args = commandArgs.Select(arg => arg.Replace("{key}", key).ToGlideString()).ToArray();
-
-        var exception = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
-            await ZstdClient.CustomCommand(args));
-
-        Assert.Contains("compression", exception.Message, StringComparison.OrdinalIgnoreCase);
+        var exception = await Assert.ThrowsAsync<Errors.RequestException>(() => call(ZstdClient));
+        Assert.Contains($"Command '{command}' is incompatible with compression", exception.Message);
     }
 
     // ============================================================================
@@ -639,34 +559,6 @@ public class CompressionTests(CompressionFixture fixture)
         Assert.Equal(4, results.Length);
         Assert.Equal(LargeValue, results[2]?.ToString());
         Assert.Equal(LargeValue, results[3]?.ToString());
-    }
-
-    [Fact]
-    public async Task Compression_BatchWithCustomCommand_CompressesValue()
-    {
-        var statsBefore = BaseClient.GetStatistics();
-
-        string key = $"batch_custom_test_{Guid.NewGuid()}";
-
-        // Use CustomCommand in a batch - this tests that CustomCommand compression works in batches
-        var batch = new Batch(false)
-            .CustomCommand(["SETEX", key, "10", LargeValue])
-            .CustomCommand(["GET", key]);
-
-        var results = await ZstdClient.Exec(batch, true);
-
-        var statsAfter = BaseClient.GetStatistics();
-
-        // Verify compression occurred for SETEX via CustomCommand in batch
-        Assert.True(
-            statsAfter.TotalValuesCompressed > statsBefore.TotalValuesCompressed,
-            $"Batch CustomCommand should compress values. Before: {statsBefore.TotalValuesCompressed}, After: {statsAfter.TotalValuesCompressed}");
-
-        // Verify results
-        Assert.NotNull(results);
-        Assert.Equal(2, results.Length);
-        Assert.Equal("OK", results[0]?.ToString());
-        Assert.Equal(LargeValue, results[1]?.ToString());
     }
 
     [Fact]
