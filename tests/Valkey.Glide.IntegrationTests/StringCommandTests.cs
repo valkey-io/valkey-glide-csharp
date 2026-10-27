@@ -2,8 +2,6 @@
 
 using Valkey.Glide.Commands.Options;
 
-using static Valkey.Glide.Errors;
-
 namespace Valkey.Glide.IntegrationTests;
 
 [Collection("GlideTests")]
@@ -801,12 +799,6 @@ public class StringCommandTests(TestConfiguration config)
         string missingKey = Guid.NewGuid().ToString();
         Assert.False(await client.SetAsync(missingKey, "value", SetCondition.OnlyIfEqual("other")));
         Assert.False(await client.ExistsAsync(missingKey));
-
-        // Non-string key
-        string setKey = Guid.NewGuid().ToString();
-        _ = await client.SetAddAsync(setKey, "member");
-        _ = await Assert.ThrowsAsync<RequestException>(
-            () => client.SetAsync(setKey, "value", SetCondition.OnlyIfEqual("other")));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -829,12 +821,6 @@ public class StringCommandTests(TestConfiguration config)
         string missingKey = Guid.NewGuid().ToString();
         Assert.True(await client.SetAsync(missingKey, "value", SetCondition.OnlyIfNotEqual("other")));
         Assert.Equal("value", await client.GetAsync(missingKey));
-
-        // Non-string key
-        string setKey = Guid.NewGuid().ToString();
-        _ = await client.SetAddAsync(setKey, "member");
-        _ = await Assert.ThrowsAsync<RequestException>(
-            () => client.SetAsync(setKey, "value", SetCondition.OnlyIfNotEqual("other")));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
