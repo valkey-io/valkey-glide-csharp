@@ -299,11 +299,14 @@ internal partial class BatchTestUtils
             _ = batch.Set(setIfNotEqualKey, "value", SetCondition.OnlyIfNotEqual("other"));
             testData.Add(new(true, "Set(setIfNotEqualKey, value, OnlyIfNotEqual(other)) non-existent key"));
 
+            _ = batch.Set(setIfNotEqualKey, "value");
+            testData.Add(new(true, "Set(setIfNotEqualKey, value)"));
+
+            _ = batch.Set(setIfNotEqualKey, "new_value", SetCondition.OnlyIfNotEqual("value"));
+            testData.Add(new(false, "Set(setIfNotEqualKey, new_value, OnlyIfNotEqual(value)) value equal"));
+
             _ = batch.Set(setIfNotEqualKey, "new_value", SetCondition.OnlyIfNotEqual("other"));
             testData.Add(new(true, "Set(setIfNotEqualKey, new_value, OnlyIfNotEqual(other)) value not equal"));
-
-            _ = batch.Set(setIfNotEqualKey, "other_value", SetCondition.OnlyIfNotEqual("new_value"));
-            testData.Add(new(false, "Set(setIfNotEqualKey, other_value, OnlyIfNotEqual(new_value)) value equal"));
 
             _ = batch.GetSet(setIfNotEqualKey, "other_value", SetCondition.OnlyIfNotEqual("other"));
             testData.Add(new(new ValkeyValue("new_value"), "GetSet(setIfNotEqualKey, other_value, OnlyIfNotEqual(other))"));

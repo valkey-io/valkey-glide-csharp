@@ -447,12 +447,12 @@ public class StringCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
         await client.SetAsync(key, "old_value");
 
+        // Value equal
+        Assert.Equal("old_value", await client.GetSetAsync(key, "new_value", SetCondition.OnlyIfNotEqual("old_value")));
+        Assert.Equal("old_value", await client.GetAsync(key));
+
         // Value not equal
         Assert.Equal("old_value", await client.GetSetAsync(key, "new_value", SetCondition.OnlyIfNotEqual("other")));
-        Assert.Equal("new_value", await client.GetAsync(key));
-
-        // Value equal
-        Assert.Equal("new_value", await client.GetSetAsync(key, "other_value", SetCondition.OnlyIfNotEqual("new_value")));
         Assert.Equal("new_value", await client.GetAsync(key));
 
         // Non-existent key
@@ -809,12 +809,12 @@ public class StringCommandTests(TestConfiguration config)
         string key = Guid.NewGuid().ToString();
         await client.SetAsync(key, "value");
 
+        // Value equal
+        Assert.False(await client.SetAsync(key, "new_value", SetCondition.OnlyIfNotEqual("value")));
+        Assert.Equal("value", await client.GetAsync(key));
+
         // Value not equal
         Assert.True(await client.SetAsync(key, "new_value", SetCondition.OnlyIfNotEqual("other")));
-        Assert.Equal("new_value", await client.GetAsync(key));
-
-        // Value equal
-        Assert.False(await client.SetAsync(key, "other_value", SetCondition.OnlyIfNotEqual("new_value")));
         Assert.Equal("new_value", await client.GetAsync(key));
 
         // Non-existent key
