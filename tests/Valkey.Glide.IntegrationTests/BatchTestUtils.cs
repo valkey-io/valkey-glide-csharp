@@ -256,17 +256,17 @@ internal partial class BatchTestUtils
             _ = batch.Set(setIfEqualKey, "value");
             testData.Add(new(true, "Set(setIfEqualKey, value)"));
 
-            _ = batch.Set(setIfEqualKey, "new_value", SetCondition.OnlyIfEqual("other"));
-            testData.Add(new(false, "Set(setIfEqualKey, new_value, OnlyIfEqual(other)) value not equal"));
+            _ = batch.Set(setIfEqualKey, "other", SetCondition.OnlyIfEqual("other"));
+            testData.Add(new(false, "Set(setIfEqualKey, other, OnlyIfEqual(other)) value not equal"));
 
-            _ = batch.Set(setIfEqualKey, "new_value", SetCondition.OnlyIfEqual("value"));
-            testData.Add(new(true, "Set(setIfEqualKey, new_value, OnlyIfEqual(value)) value equal"));
+            _ = batch.Set(setIfEqualKey, "other", SetCondition.OnlyIfEqual("value"));
+            testData.Add(new(true, "Set(setIfEqualKey, other, OnlyIfEqual(value)) value equal"));
 
-            _ = batch.GetSet(setIfEqualKey, "other_value", SetCondition.OnlyIfEqual("new_value"));
-            testData.Add(new(new ValkeyValue("new_value"), "GetSet(setIfEqualKey, other_value, OnlyIfEqual(new_value))"));
+            _ = batch.GetSet(setIfEqualKey, "value", SetCondition.OnlyIfEqual("other"));
+            testData.Add(new(new ValkeyValue("other"), "GetSet(setIfEqualKey, value, OnlyIfEqual(other))"));
 
             _ = batch.Get(setIfEqualKey);
-            testData.Add(new(new ValkeyValue("other_value"), "Get(setIfEqualKey)"));
+            testData.Add(new(new ValkeyValue("value"), "Get(setIfEqualKey)"));
         }
 
         // Valkey 9.0+ string commands
@@ -302,17 +302,17 @@ internal partial class BatchTestUtils
             _ = batch.Set(setIfNotEqualKey, "value");
             testData.Add(new(true, "Set(setIfNotEqualKey, value)"));
 
-            _ = batch.Set(setIfNotEqualKey, "new_value", SetCondition.OnlyIfNotEqual("value"));
-            testData.Add(new(false, "Set(setIfNotEqualKey, new_value, OnlyIfNotEqual(value)) value equal"));
+            _ = batch.Set(setIfNotEqualKey, "other", SetCondition.OnlyIfNotEqual("value"));
+            testData.Add(new(false, "Set(setIfNotEqualKey, other, OnlyIfNotEqual(value)) value equal"));
 
-            _ = batch.Set(setIfNotEqualKey, "new_value", SetCondition.OnlyIfNotEqual("other"));
-            testData.Add(new(true, "Set(setIfNotEqualKey, new_value, OnlyIfNotEqual(other)) value not equal"));
+            _ = batch.Set(setIfNotEqualKey, "other", SetCondition.OnlyIfNotEqual("other"));
+            testData.Add(new(true, "Set(setIfNotEqualKey, other, OnlyIfNotEqual(other)) value not equal"));
 
-            _ = batch.GetSet(setIfNotEqualKey, "other_value", SetCondition.OnlyIfNotEqual("other"));
-            testData.Add(new(new ValkeyValue("new_value"), "GetSet(setIfNotEqualKey, other_value, OnlyIfNotEqual(other))"));
+            _ = batch.GetSet(setIfNotEqualKey, "value", SetCondition.OnlyIfNotEqual("value"));
+            testData.Add(new(new ValkeyValue("other"), "GetSet(setIfNotEqualKey, value, OnlyIfNotEqual(value))"));
 
             _ = batch.Get(setIfNotEqualKey);
-            testData.Add(new(new ValkeyValue("other_value"), "Get(setIfNotEqualKey)"));
+            testData.Add(new(new ValkeyValue("value"), "Get(setIfNotEqualKey)"));
         }
 
         return testData;

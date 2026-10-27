@@ -284,7 +284,7 @@ public partial interface IBaseClient
     Task<bool> SetAsync(ValkeyKey key, ValkeyValue value, SetCondition condition);
 
     /// <summary>
-    /// Sets the value of a key with options including condition and expiry.
+    /// Sets the value of a key with the given options.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/set/">Valkey commands – SET</seealso>
     /// <param name="key">The key to store.</param>
@@ -345,7 +345,7 @@ public partial interface IBaseClient
     Task<ValkeyValue> GetSetAsync(ValkeyKey key, ValkeyValue value, SetCondition condition);
 
     /// <summary>
-    /// Gets the old value of a key and sets it to a new value with options including condition and expiry.
+    /// Returns the value of a key and sets it to a new value with the given options.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/set/">Valkey commands – SET</seealso>
     /// <param name="key">The key to get and set.</param>
