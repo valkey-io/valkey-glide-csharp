@@ -1,4 +1,4 @@
-﻿using System;
+﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 namespace Valkey.Glide;
 
@@ -7,7 +7,6 @@ internal static class ValkeyLiterals
     // unlike primary commands, these do not get altered by the command-map; we may as
     // well compute the bytes once and share them
     public static readonly ValkeyValue
-        @default = "default",
         ABORT = "ABORT",
         ABSTTL = "ABSTTL",
         ACLCAT = "ACLCAT",
@@ -174,14 +173,6 @@ internal static class ValkeyLiterals
         SENTINELS = "SENTINELS",
         SLAVES = "SLAVES",
 
-        // replication states
-        connect = "connect",
-        connected = "connected",
-        connecting = "connecting",
-        handshake = "handshake",
-        none = "none",
-        sync = "sync",
-
         MinusSymbol = "-",
         PlusSymbol = "+",
         Wildcard = "*",
@@ -220,10 +211,10 @@ internal static class ValkeyLiterals
         WITHHASH = "WITHHASH",
 
         // geo units
-        ft = "ft",
-        km = "km",
-        m = "m",
-        mi = "mi",
+        Feet = "ft",
+        Kilometers = "km",
+        Meters = "m",
+        Miles = "mi",
 
         // Vector Search (FT.*) command literals
         ALLSHARDS = "ALLSHARDS",
@@ -290,21 +281,15 @@ internal static class ValkeyLiterals
         WITHSORTKEYS = "WITHSORTKEYS",
         WITHSUFFIXTRIE = "WITHSUFFIXTRIE",
 
+        // client types
+        ClientTypeNormal = "normal",
+        ClientTypePrimary = "master",
+        ClientTypeReplica = "replica",
+        ClientTypePubSub = "pubsub",
+
         // misc (config, etc)
-        databases = "databases",
-        master = "master",
-        no = "no",
-        normal = "normal",
-        pubsub = "pubsub",
-        replica = "replica",
-        replica_read_only = "replica-read-only",
-        replication = "replication",
-        sentinel = "sentinel",
-        server = "server",
-        slave = "slave",
-        slave_read_only = "slave-read-only",
-        timeout = "timeout",
-        yes = "yes";
+        No = "no",
+        Yes = "yes";
 
     internal static ValkeyValue Get(Bitwise operation) => operation switch
     {
@@ -317,13 +302,10 @@ internal static class ValkeyLiterals
 
     internal static ValkeyValue Get(ClientType clientType) => clientType switch
     {
-        ClientType.Normal => normal,
-        ClientType.Primary => master,
-        ClientType.Replica => replica,
-        ClientType.PubSub => pubsub,
+        ClientType.Normal => ClientTypeNormal,
+        ClientType.Primary => ClientTypePrimary,
+        ClientType.Replica => ClientTypeReplica,
+        ClientType.PubSub => ClientTypePubSub,
         _ => throw new ArgumentOutOfRangeException(nameof(clientType)),
     };
 }
-#pragma warning restore SA1310 // Field names should not contain underscore
-#pragma warning restore SA1311 // Static readonly fields should begin with upper-case letter
-

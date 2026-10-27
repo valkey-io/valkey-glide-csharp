@@ -1,4 +1,6 @@
-﻿namespace Valkey.Glide;
+﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
+
+namespace Valkey.Glide;
 
 /// <summary>
 /// Indicates when this operation should be performed (only some variations are legal in a given context).

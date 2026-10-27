@@ -1,11 +1,16 @@
-﻿using System;
+﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 namespace Valkey.Glide;
 
 /// <summary>
 /// Describes the longitude and latitude of a GeoEntry.
 /// </summary>
-public readonly struct GeoPosition : IEquatable<GeoPosition>
+/// <remarks>
+/// Creates a new GeoPosition.
+/// </remarks>
+/// <param name="longitude">The longitude of the position.</param>
+/// <param name="latitude">The latitude of the position.</param>
+public readonly struct GeoPosition(double longitude, double latitude) : IEquatable<GeoPosition>
 {
     internal static string GetValkeyUnit(GeoUnit unit) => unit switch
     {
@@ -19,23 +24,12 @@ public readonly struct GeoPosition : IEquatable<GeoPosition>
     /// <summary>
     /// The Latitude of the GeoPosition.
     /// </summary>
-    public double Latitude { get; }
+    public double Latitude { get; } = latitude;
 
     /// <summary>
     /// The Longitude of the GeoPosition.
     /// </summary>
-    public double Longitude { get; }
-
-    /// <summary>
-    /// Creates a new GeoPosition.
-    /// </summary>
-    /// <param name="longitude">The longitude of the position.</param>
-    /// <param name="latitude">The latitude of the position.</param>
-    public GeoPosition(double longitude, double latitude)
-    {
-        Longitude = longitude;
-        Latitude = latitude;
-    }
+    public double Longitude { get; } = longitude;
 
     /// <summary>
     /// A "{long} {lat}" string representation of this position.

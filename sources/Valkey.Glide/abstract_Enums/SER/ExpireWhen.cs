@@ -1,4 +1,4 @@
-﻿using System;
+﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using Valkey.Glide.Commands.Options;
 
@@ -43,7 +43,7 @@ internal static class ExpiryOptionExtensions
         ExpireWhen.HasExpiry => ValkeyLiterals.XX,
         ExpireWhen.GreaterThanCurrentExpiry => ValkeyLiterals.GT,
         ExpireWhen.LessThanCurrentExpiry => ValkeyLiterals.LT,
-        _ => throw new ArgumentOutOfRangeException(nameof(op)),
+        ExpireWhen.Always or _ => throw new ArgumentOutOfRangeException(nameof(op)),
     };
 
     internal static ExpireCondition ToExpireCondition(this ExpireWhen op) => op switch
