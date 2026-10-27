@@ -9,239 +9,7 @@ public class StringCommandTests(TestConfiguration config)
 {
     public TestConfiguration Config { get; } = config;
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task SetAsync_GetAsync_SingleKey(BaseClient client)
-    {
-        string key = Guid.NewGuid().ToString();
-        string value = Guid.NewGuid().ToString();
-
-        await client.SetAsync(key, value);
-
-        ValkeyValue retrievedValue = await client.GetAsync(key);
-        Assert.Equal(value, retrievedValue.ToString());
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task GetAsync_NonExistentKey(BaseClient client)
-    {
-        string key = Guid.NewGuid().ToString();
-        ValkeyValue value = await client.GetAsync(key);
-        Assert.True(value.IsNull);
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task GetAsync_MultipleKeys(BaseClient client)
-    {
-        string key1 = Guid.NewGuid().ToString();
-        string key2 = Guid.NewGuid().ToString();
-        string key3 = Guid.NewGuid().ToString();
-        string value1 = Guid.NewGuid().ToString();
-        string value2 = Guid.NewGuid().ToString();
-
-        // Set key1 and key2, leave key3 unset
-        await client.SetAsync(key1, value1);
-        await client.SetAsync(key2, value2);
-
-        ValkeyKey[] keys = [key1, key2, key3];
-        ValkeyValue[] values = await client.GetAsync(keys);
-
-        Assert.Equal(3, values.Length);
-        Assert.Equal(value1, values[0].ToString());
-        Assert.Equal(value2, values[1].ToString());
-        Assert.True(values[2].IsNull);
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task GetAsync_NonExistentKeys(BaseClient client)
-    {
-        string key1 = Guid.NewGuid().ToString();
-        string key2 = Guid.NewGuid().ToString();
-
-        ValkeyKey[] keys = [key1, key2];
-        ValkeyValue[] values = await client.GetAsync(keys);
-
-        Assert.Equal(2, values.Length);
-        Assert.True(values[0].IsNull);
-        Assert.True(values[1].IsNull);
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task SetAsync_MultipleKeyValuePairs(BaseClient client)
-    {
-        string key1 = Guid.NewGuid().ToString();
-        string key2 = Guid.NewGuid().ToString();
-        string value1 = Guid.NewGuid().ToString();
-        string value2 = Guid.NewGuid().ToString();
-
-        KeyValuePair<ValkeyKey, ValkeyValue>[] keyValuePairs =
-        [
-            new(key1, value1),
-            new(key2, value2)
-        ];
-
-        await client.SetAsync(keyValuePairs);
-
-        ValkeyValue retrievedValue1 = await client.GetAsync(key1);
-        ValkeyValue retrievedValue2 = await client.GetAsync(key2);
-
-        Assert.Equal(value1, retrievedValue1.ToString());
-        Assert.Equal(value2, retrievedValue2.ToString());
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task SetAsync_KeyValuePairs_WithUnicodeValues(BaseClient client)
-    {
-        string key1 = Guid.NewGuid().ToString();
-        string key2 = Guid.NewGuid().ToString();
-        string unicodeValue1 = "שלום hello 汉字";
-        string unicodeValue2 = "مرحبا world 🌍";
-
-        KeyValuePair<ValkeyKey, ValkeyValue>[] values =
-        [
-            new(key1, unicodeValue1),
-            new(key2, unicodeValue2)
-        ];
-
-        await client.SetAsync(values);
-
-        ValkeyKey[] keys = [key1, key2];
-        ValkeyValue[] retrievedValues = await client.GetAsync(keys);
-
-        Assert.Equal(2, retrievedValues.Length);
-        Assert.Equal(unicodeValue1, retrievedValues[0].ToString());
-        Assert.Equal(unicodeValue2, retrievedValues[1].ToString());
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task SetAsync_KeyValuePairs_WithEmptyValues(BaseClient client)
-    {
-        string key1 = Guid.NewGuid().ToString();
-        string key2 = Guid.NewGuid().ToString();
-
-        KeyValuePair<ValkeyKey, ValkeyValue>[] values =
-        [
-            new(key1, ""),
-            new(key2, "non-empty")
-        ];
-
-        await client.SetAsync(values);
-
-        ValkeyKey[] keys = [key1, key2];
-        ValkeyValue[] retrievedValues = await client.GetAsync(keys);
-
-        Assert.Equal(2, retrievedValues.Length);
-        Assert.Equal("", retrievedValues[0].ToString());
-        Assert.Equal("non-empty", retrievedValues[1].ToString());
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task SetAsync_KeyValuePairs_OverwriteExistingKeys(BaseClient client)
-    {
-        string key1 = Guid.NewGuid().ToString();
-        string key2 = Guid.NewGuid().ToString();
-        string initialValue1 = "initial1";
-        string initialValue2 = "initial2";
-        string newValue1 = "new1";
-        string newValue2 = "new2";
-
-        // Set initial values
-        await client.SetAsync(key1, initialValue1);
-        await client.SetAsync(key2, initialValue2);
-
-        // Overwrite with SetAsync
-        KeyValuePair<ValkeyKey, ValkeyValue>[] values =
-        [
-            new(key1, newValue1),
-            new(key2, newValue2)
-        ];
-
-        await client.SetAsync(values);
-
-        // Verify values were overwritten
-        ValkeyKey[] keys = [key1, key2];
-        ValkeyValue[] retrievedValues = await client.GetAsync(keys);
-
-        Assert.Equal(2, retrievedValues.Length);
-        Assert.Equal(newValue1, retrievedValues[0].ToString());
-        Assert.Equal(newValue2, retrievedValues[1].ToString());
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task LengthAsync_ReturnsStringLength(BaseClient client)
-    {
-        string key = Guid.NewGuid().ToString();
-        string value = "Hello World";
-
-        await client.SetAsync(key, value);
-        long length = await client.LengthAsync(key);
-        Assert.Equal(value.Length, length);
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task LengthAsync_NonExistentKey_ReturnsZero(BaseClient client)
-    {
-        string key = Guid.NewGuid().ToString();
-        long length = await client.LengthAsync(key);
-        Assert.Equal(0, length);
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task StringGetRangeAsync_ExistingKey(BaseClient client)
-    {
-        string key = Guid.NewGuid().ToString();
-        string value = "Hello World";
-
-        await client.SetAsync(key, value);
-        ValkeyValue result = await client.GetRangeAsync(key, 0, 4);
-        Assert.Equal("Hello", result.ToString());
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task StringGetRangeAsync_NonExistentKey(BaseClient client)
-    {
-        string key = Guid.NewGuid().ToString();
-        ValkeyValue result = await client.GetRangeAsync(key, 0, 4);
-        Assert.Equal("", result.ToString());
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task SetRangeAsync_OverwritesPartOfString(BaseClient client)
-    {
-        string key = Guid.NewGuid().ToString();
-        string initialValue = "Hello World";
-
-        await client.SetAsync(key, initialValue);
-        ValkeyValue newLength = await client.SetRangeAsync(key, 6, "Valkey");
-        Assert.Equal(12, (long)newLength);
-
-        ValkeyValue value = await client.GetAsync(key);
-        Assert.Equal("Hello Valkey", value.ToString());
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task SetRangeAsync_NonExistentKey_CreatesWithZeroPadding(BaseClient client)
-    {
-        string key = Guid.NewGuid().ToString();
-        ValkeyValue newLength = await client.SetRangeAsync(key, 0, "Hello");
-        Assert.Equal(5, (long)newLength);
-
-        ValkeyValue value = await client.GetAsync(key);
-        Assert.Equal("Hello", value.ToString());
-    }
+    #region AppendAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
@@ -328,22 +96,8 @@ public class StringCommandTests(TestConfiguration config)
         // So we don't test the exact length here
     }
 
-    // Utility methods for other tests
-    internal static async Task GetAndSetValuesAsync(BaseClient client, string key, string value)
-    {
-        await client.SetAsync(key, value);
-
-        ValkeyValue retrievedValue = await client.GetAsync(key);
-        Assert.Equal(value, retrievedValue.ToString());
-    }
-
-    internal static async Task GetAndSetRandomValuesAsync(BaseClient client)
-    {
-        string key = Guid.NewGuid().ToString();
-        string value = Guid.NewGuid().ToString();
-
-        await GetAndSetValuesAsync(client, key, value);
-    }
+    #endregion
+    #region DecrementAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
@@ -429,6 +183,9 @@ public class StringCommandTests(TestConfiguration config)
         Assert.Equal("15", value.ToString());
     }
 
+    #endregion
+    #region DeleteIfEqualAsync
+
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task DeleteIfEqualAsync(BaseClient client)
@@ -450,6 +207,299 @@ public class StringCommandTests(TestConfiguration config)
         // Non-existent key
         Assert.False(await client.DeleteIfEqualAsync(key, value));
     }
+
+    #endregion
+    #region GetAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task GetAsync_NonExistentKey(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        ValkeyValue value = await client.GetAsync(key);
+        Assert.True(value.IsNull);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task GetAsync_MultipleKeys(BaseClient client)
+    {
+        string key1 = Guid.NewGuid().ToString();
+        string key2 = Guid.NewGuid().ToString();
+        string key3 = Guid.NewGuid().ToString();
+        string value1 = Guid.NewGuid().ToString();
+        string value2 = Guid.NewGuid().ToString();
+
+        // Set key1 and key2, leave key3 unset
+        await client.SetAsync(key1, value1);
+        await client.SetAsync(key2, value2);
+
+        ValkeyKey[] keys = [key1, key2, key3];
+        ValkeyValue[] values = await client.GetAsync(keys);
+
+        Assert.Equal(3, values.Length);
+        Assert.Equal(value1, values[0].ToString());
+        Assert.Equal(value2, values[1].ToString());
+        Assert.True(values[2].IsNull);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task GetAsync_NonExistentKeys(BaseClient client)
+    {
+        string key1 = Guid.NewGuid().ToString();
+        string key2 = Guid.NewGuid().ToString();
+
+        ValkeyKey[] keys = [key1, key2];
+        ValkeyValue[] values = await client.GetAsync(keys);
+
+        Assert.Equal(2, values.Length);
+        Assert.True(values[0].IsNull);
+        Assert.True(values[1].IsNull);
+    }
+
+    #endregion
+    #region GetDeleteAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task GetDeleteAsync_ReturnsValueAndDeletesKey(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        string value = Guid.NewGuid().ToString();
+
+        await client.SetAsync(key, value);
+
+        ValkeyValue result = await client.GetDeleteAsync(key);
+        Assert.Equal(value, result.ToString());
+
+        // Verify key was deleted
+        ValkeyValue deletedValue = await client.GetAsync(key);
+        Assert.True(deletedValue.IsNull);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task GetDeleteAsync_NonExistentKey_ReturnsNull(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+
+        ValkeyValue result = await client.GetDeleteAsync(key);
+        Assert.True(result.IsNull);
+    }
+
+    #endregion
+    #region GetExpiryAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task GetExpiryAsync_WithTimeSpan_SetsExpiry(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        string value = Guid.NewGuid().ToString();
+
+        await client.SetAsync(key, value);
+
+        ValkeyValue result = await client.GetExpiryAsync(key, GetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(10)));
+        Assert.Equal(value, result.ToString());
+
+        // Verify key still exists and has expiry
+        ValkeyValue retrievedValue = await client.GetAsync(key);
+        Assert.Equal(value, retrievedValue.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task GetExpiryAsync_NonExistentKey_ReturnsNull(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+
+        ValkeyValue result = await client.GetExpiryAsync(key, GetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(10)));
+        Assert.True(result.IsNull);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task GetExpiryAsync_WithPersist_RemovesExpiry(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        string value = Guid.NewGuid().ToString();
+
+        await client.SetAsync(key, value);
+
+        ValkeyValue result = await client.GetExpiryAsync(key, GetExpiryOptions.Persist());
+        Assert.Equal(value, result.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task GetExpiryAsync_DateTime_ExistingKey(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        string value = Guid.NewGuid().ToString();
+
+        await client.SetAsync(key, value);
+
+        DateTimeOffset expiry = DateTimeOffset.UtcNow.AddMinutes(5);
+        ValkeyValue result = await client.GetExpiryAsync(key, GetExpiryOptions.ExpireAt(expiry));
+        Assert.Equal(value, result.ToString());
+
+        // Verify key still exists
+        ValkeyValue retrievedValue = await client.GetAsync(key);
+        Assert.Equal(value, retrievedValue.ToString());
+    }
+
+    #endregion
+    #region GetRangeAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StringGetRangeAsync_ExistingKey(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        string value = "Hello World";
+
+        await client.SetAsync(key, value);
+        ValkeyValue result = await client.GetRangeAsync(key, 0, 4);
+        Assert.Equal("Hello", result.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task StringGetRangeAsync_NonExistentKey(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        ValkeyValue result = await client.GetRangeAsync(key, 0, 4);
+        Assert.Equal("", result.ToString());
+    }
+
+    #endregion
+    #region GetSetAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task GetSetAsync_ReturnsOldValue(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        await client.SetAsync(key, "old_value");
+
+        ValkeyValue result = await client.GetSetAsync(key, "new_value");
+        Assert.Equal("old_value", result.ToString());
+
+        ValkeyValue retrieved = await client.GetAsync(key);
+        Assert.Equal("new_value", retrieved.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task GetSetAsync_NonExistentKey_ReturnsNull(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+
+        ValkeyValue result = await client.GetSetAsync(key, "value");
+        Assert.True(result.IsNull);
+
+        ValkeyValue retrieved = await client.GetAsync(key);
+        Assert.Equal("value", retrieved.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task GetSetAsync_WithCondition_ReturnsOldValue(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        await client.SetAsync(key, "old_value");
+
+        ValkeyValue result = await client.GetSetAsync(key, "new_value", SetCondition.OnlyIfExists);
+        Assert.Equal("old_value", result.ToString());
+
+        ValkeyValue retrieved = await client.GetAsync(key);
+        Assert.Equal("new_value", retrieved.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task GetSetAsync_WithCondition_OnlyIfEqual(BaseClient client)
+    {
+        Version.SkipIfLessThan(Version.Valkey8_1);
+        string key = Guid.NewGuid().ToString();
+        await client.SetAsync(key, "value");
+
+        // Value not equal
+        Assert.Equal("value", await client.GetSetAsync(key, "other", SetCondition.OnlyIfEqual("other")));
+        Assert.Equal("value", await client.GetAsync(key));
+
+        // Value equal
+        Assert.Equal("value", await client.GetSetAsync(key, "other", SetCondition.OnlyIfEqual("value")));
+        Assert.Equal("other", await client.GetAsync(key));
+
+        // Non-existent key
+        string missingKey = Guid.NewGuid().ToString();
+        Assert.True((await client.GetSetAsync(missingKey, "value", SetCondition.OnlyIfEqual("other"))).IsNull);
+        Assert.False(await client.ExistsAsync(missingKey));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task GetSetAsync_WithCondition_OnlyIfNotEqual(BaseClient client)
+    {
+        Version.SkipIfLessThan(Version.Valkey9_2);
+        string key = Guid.NewGuid().ToString();
+        await client.SetAsync(key, "value");
+
+        // Value equal
+        Assert.Equal("value", await client.GetSetAsync(key, "other", SetCondition.OnlyIfNotEqual("value")));
+        Assert.Equal("value", await client.GetAsync(key));
+
+        // Value not equal
+        Assert.Equal("value", await client.GetSetAsync(key, "other", SetCondition.OnlyIfNotEqual("other")));
+        Assert.Equal("other", await client.GetAsync(key));
+
+        // Non-existent key
+        string missingKey = Guid.NewGuid().ToString();
+        Assert.True((await client.GetSetAsync(missingKey, "value", SetCondition.OnlyIfNotEqual("other"))).IsNull);
+        Assert.Equal("value", await client.GetAsync(missingKey));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task GetSetAsync_WithOptions_ReturnsOldValue(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        await client.SetAsync(key, "old_value");
+
+        var options = new SetOptions
+        {
+            Condition = SetCondition.OnlyIfExists,
+            Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60))
+        };
+
+        ValkeyValue result = await client.GetSetAsync(key, "new_value", options);
+        Assert.Equal("old_value", result.ToString());
+
+        ValkeyValue retrieved = await client.GetAsync(key);
+        Assert.Equal("new_value", retrieved.ToString());
+    }
+
+    #endregion
+    #region GetSetExpiryAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task GetSetExpiryAsync_ReturnsOldValueAndSetsExpiry(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        await client.SetAsync(key, "old_value");
+
+        ValkeyValue result = await client.GetSetExpiryAsync(key, "new_value", SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60)));
+        Assert.Equal("old_value", result.ToString());
+
+        ValkeyValue retrieved = await client.GetAsync(key);
+        Assert.Equal("new_value", retrieved.ToString());
+    }
+
+    #endregion
+    #region IncrementAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
@@ -586,6 +636,332 @@ public class StringCommandTests(TestConfiguration config)
         Assert.Equal("10", value.ToString());
     }
 
+    #endregion
+    #region LengthAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task LengthAsync_ReturnsStringLength(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        string value = "Hello World";
+
+        await client.SetAsync(key, value);
+        long length = await client.LengthAsync(key);
+        Assert.Equal(value.Length, length);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task LengthAsync_NonExistentKey_ReturnsZero(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        long length = await client.LengthAsync(key);
+        Assert.Equal(0, length);
+    }
+
+    #endregion
+    #region SetAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task SetAsync_GetAsync_SingleKey(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        string value = Guid.NewGuid().ToString();
+
+        await client.SetAsync(key, value);
+
+        ValkeyValue retrievedValue = await client.GetAsync(key);
+        Assert.Equal(value, retrievedValue.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task SetAsync_SingleKey_WhenAlways_KeyDoesNotExist(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        bool result = await client.SetAsync(key, "value", SetCondition.Always);
+        Assert.True(result);
+        ValkeyValue retrieved = await client.GetAsync(key);
+        Assert.Equal("value", retrieved.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task SetAsync_SingleKey_WhenAlways_KeyExists(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        await client.SetAsync(key, "existing");
+        bool result = await client.SetAsync(key, "new_value", SetCondition.Always);
+        Assert.True(result);
+        ValkeyValue retrieved = await client.GetAsync(key);
+        Assert.Equal("new_value", retrieved.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task SetAsync_WithCondition_OnlyIfDoesNotExist_SetsNewKey(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+
+        bool result = await client.SetAsync(key, "value", SetCondition.OnlyIfDoesNotExist);
+        Assert.True(result);
+
+        ValkeyValue retrieved = await client.GetAsync(key);
+        Assert.Equal("value", retrieved.ToString());
+
+        // Second call should fail since key now exists
+        bool result2 = await client.SetAsync(key, "new_value", SetCondition.OnlyIfDoesNotExist);
+        Assert.False(result2);
+
+        ValkeyValue retrieved2 = await client.GetAsync(key);
+        Assert.Equal("value", retrieved2.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task SetAsync_SingleKey_WhenNotExists_KeyDoesNotExist(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        bool result = await client.SetAsync(key, "value", SetCondition.OnlyIfDoesNotExist);
+        Assert.True(result);
+        ValkeyValue retrieved = await client.GetAsync(key);
+        Assert.Equal("value", retrieved.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task SetAsync_SingleKey_WhenNotExists_KeyExists(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        await client.SetAsync(key, "existing");
+        bool result = await client.SetAsync(key, "new_value", SetCondition.OnlyIfDoesNotExist);
+        Assert.False(result);
+        ValkeyValue retrieved = await client.GetAsync(key);
+        Assert.Equal("existing", retrieved.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task SetAsync_WithCondition_OnlyIfExists_SetsExistingKey(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        await client.SetAsync(key, "existing");
+
+        bool result = await client.SetAsync(key, "new_value", SetCondition.OnlyIfExists);
+        Assert.True(result);
+
+        ValkeyValue retrieved = await client.GetAsync(key);
+        Assert.Equal("new_value", retrieved.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task SetAsync_SingleKey_WhenExists_KeyExists(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        await client.SetAsync(key, "existing");
+        bool result = await client.SetAsync(key, "new_value", SetCondition.OnlyIfExists);
+        Assert.True(result);
+        ValkeyValue retrieved = await client.GetAsync(key);
+        Assert.Equal("new_value", retrieved.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task SetAsync_SingleKey_WhenExists_KeyDoesNotExist(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        bool result = await client.SetAsync(key, "value", SetCondition.OnlyIfExists);
+        Assert.False(result);
+        ValkeyValue retrieved = await client.GetAsync(key);
+        Assert.True(retrieved.IsNull);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task SetAsync_WithCondition_OnlyIfEqual(BaseClient client)
+    {
+        Version.SkipIfLessThan(Version.Valkey8_1);
+        string key = Guid.NewGuid().ToString();
+        await client.SetAsync(key, "value");
+
+        // Value not equal
+        Assert.False(await client.SetAsync(key, "other", SetCondition.OnlyIfEqual("other")));
+        Assert.Equal("value", await client.GetAsync(key));
+
+        // Value equal
+        Assert.True(await client.SetAsync(key, "other", SetCondition.OnlyIfEqual("value")));
+        Assert.Equal("other", await client.GetAsync(key));
+
+        // Non-existent key
+        string missingKey = Guid.NewGuid().ToString();
+        Assert.False(await client.SetAsync(missingKey, "value", SetCondition.OnlyIfEqual("other")));
+        Assert.False(await client.ExistsAsync(missingKey));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task SetAsync_WithCondition_OnlyIfNotEqual(BaseClient client)
+    {
+        Version.SkipIfLessThan(Version.Valkey9_2);
+        string key = Guid.NewGuid().ToString();
+        await client.SetAsync(key, "value");
+
+        // Value equal
+        Assert.False(await client.SetAsync(key, "other", SetCondition.OnlyIfNotEqual("value")));
+        Assert.Equal("value", await client.GetAsync(key));
+
+        // Value not equal
+        Assert.True(await client.SetAsync(key, "other", SetCondition.OnlyIfNotEqual("other")));
+        Assert.Equal("other", await client.GetAsync(key));
+
+        // Non-existent key
+        string missingKey = Guid.NewGuid().ToString();
+        Assert.True(await client.SetAsync(missingKey, "value", SetCondition.OnlyIfNotEqual("other")));
+        Assert.Equal("value", await client.GetAsync(missingKey));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task SetAsync_SetsValueWithExpiry(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+
+        await client.SetAsync(key, "value", SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60)));
+
+        ValkeyValue retrieved = await client.GetAsync(key);
+        Assert.Equal("value", retrieved.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task SetAsync_WithOptions_ConditionAndExpiry(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+
+        var options = new SetOptions
+        {
+            Condition = SetCondition.OnlyIfDoesNotExist,
+            Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60))
+        };
+
+        bool result = await client.SetAsync(key, "value", options);
+        Assert.True(result);
+
+        ValkeyValue retrieved = await client.GetAsync(key);
+        Assert.Equal("value", retrieved.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task SetAsync_MultipleKeyValuePairs(BaseClient client)
+    {
+        string key1 = Guid.NewGuid().ToString();
+        string key2 = Guid.NewGuid().ToString();
+        string value1 = Guid.NewGuid().ToString();
+        string value2 = Guid.NewGuid().ToString();
+
+        KeyValuePair<ValkeyKey, ValkeyValue>[] keyValuePairs =
+        [
+            new(key1, value1),
+            new(key2, value2)
+        ];
+
+        await client.SetAsync(keyValuePairs);
+
+        ValkeyValue retrievedValue1 = await client.GetAsync(key1);
+        ValkeyValue retrievedValue2 = await client.GetAsync(key2);
+
+        Assert.Equal(value1, retrievedValue1.ToString());
+        Assert.Equal(value2, retrievedValue2.ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task SetAsync_KeyValuePairs_WithUnicodeValues(BaseClient client)
+    {
+        string key1 = Guid.NewGuid().ToString();
+        string key2 = Guid.NewGuid().ToString();
+        string unicodeValue1 = "שלום hello 汉字";
+        string unicodeValue2 = "مرحبا world 🌍";
+
+        KeyValuePair<ValkeyKey, ValkeyValue>[] values =
+        [
+            new(key1, unicodeValue1),
+            new(key2, unicodeValue2)
+        ];
+
+        await client.SetAsync(values);
+
+        ValkeyKey[] keys = [key1, key2];
+        ValkeyValue[] retrievedValues = await client.GetAsync(keys);
+
+        Assert.Equal(2, retrievedValues.Length);
+        Assert.Equal(unicodeValue1, retrievedValues[0].ToString());
+        Assert.Equal(unicodeValue2, retrievedValues[1].ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task SetAsync_KeyValuePairs_WithEmptyValues(BaseClient client)
+    {
+        string key1 = Guid.NewGuid().ToString();
+        string key2 = Guid.NewGuid().ToString();
+
+        KeyValuePair<ValkeyKey, ValkeyValue>[] values =
+        [
+            new(key1, ""),
+            new(key2, "non-empty")
+        ];
+
+        await client.SetAsync(values);
+
+        ValkeyKey[] keys = [key1, key2];
+        ValkeyValue[] retrievedValues = await client.GetAsync(keys);
+
+        Assert.Equal(2, retrievedValues.Length);
+        Assert.Equal("", retrievedValues[0].ToString());
+        Assert.Equal("non-empty", retrievedValues[1].ToString());
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task SetAsync_KeyValuePairs_OverwriteExistingKeys(BaseClient client)
+    {
+        string key1 = Guid.NewGuid().ToString();
+        string key2 = Guid.NewGuid().ToString();
+        string initialValue1 = "initial1";
+        string initialValue2 = "initial2";
+        string newValue1 = "new1";
+        string newValue2 = "new2";
+
+        // Set initial values
+        await client.SetAsync(key1, initialValue1);
+        await client.SetAsync(key2, initialValue2);
+
+        // Overwrite with SetAsync
+        KeyValuePair<ValkeyKey, ValkeyValue>[] values =
+        [
+            new(key1, newValue1),
+            new(key2, newValue2)
+        ];
+
+        await client.SetAsync(values);
+
+        // Verify values were overwritten
+        ValkeyKey[] keys = [key1, key2];
+        ValkeyValue[] retrievedValues = await client.GetAsync(keys);
+
+        Assert.Equal(2, retrievedValues.Length);
+        Assert.Equal(newValue1, retrievedValues[0].ToString());
+        Assert.Equal(newValue2, retrievedValues[1].ToString());
+    }
+
+    #endregion
+    #region SetIfNotExistsAsync
+
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task SetIfNotExistsAsync_MultipleKeyValuePairs_Success(BaseClient client)
@@ -647,73 +1023,6 @@ public class StringCommandTests(TestConfiguration config)
         Assert.True(retrievedValue2.IsNull);
     }
 
-    #region SET with SetCondition/SetOptions
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task SetAsync_WithCondition_OnlyIfExists_SetsExistingKey(BaseClient client)
-    {
-        string key = Guid.NewGuid().ToString();
-        await client.SetAsync(key, "existing");
-
-        bool result = await client.SetAsync(key, "new_value", SetCondition.OnlyIfExists);
-        Assert.True(result);
-
-        ValkeyValue retrieved = await client.GetAsync(key);
-        Assert.Equal("new_value", retrieved.ToString());
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task SetAsync_WithCondition_OnlyIfDoesNotExist_SetsNewKey(BaseClient client)
-    {
-        string key = Guid.NewGuid().ToString();
-
-        bool result = await client.SetAsync(key, "value", SetCondition.OnlyIfDoesNotExist);
-        Assert.True(result);
-
-        ValkeyValue retrieved = await client.GetAsync(key);
-        Assert.Equal("value", retrieved.ToString());
-
-        // Second call should fail since key now exists
-        bool result2 = await client.SetAsync(key, "new_value", SetCondition.OnlyIfDoesNotExist);
-        Assert.False(result2);
-
-        ValkeyValue retrieved2 = await client.GetAsync(key);
-        Assert.Equal("value", retrieved2.ToString());
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task SetAsync_WithOptions_ConditionAndExpiry(BaseClient client)
-    {
-        string key = Guid.NewGuid().ToString();
-
-        var options = new SetOptions
-        {
-            Condition = SetCondition.OnlyIfDoesNotExist,
-            Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60))
-        };
-
-        bool result = await client.SetAsync(key, "value", options);
-        Assert.True(result);
-
-        ValkeyValue retrieved = await client.GetAsync(key);
-        Assert.Equal("value", retrieved.ToString());
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task SetAsync_SetsValueWithExpiry(BaseClient client)
-    {
-        string key = Guid.NewGuid().ToString();
-
-        await client.SetAsync(key, "value", SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60)));
-
-        ValkeyValue retrieved = await client.GetAsync(key);
-        Assert.Equal("value", retrieved.ToString());
-    }
-
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task SetIfNotExistsAsync_AllOrNothing(BaseClient client)
@@ -747,234 +1056,35 @@ public class StringCommandTests(TestConfiguration config)
         Assert.Equal("value1", retrieved1.ToString());
     }
 
+    #endregion
+    #region SetRangeAsync
+
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task GetSetAsync_ReturnsOldValue(BaseClient client)
+    public async Task SetRangeAsync_OverwritesPartOfString(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
-        await client.SetAsync(key, "old_value");
+        string initialValue = "Hello World";
 
-        ValkeyValue result = await client.GetSetAsync(key, "new_value");
-        Assert.Equal("old_value", result.ToString());
+        await client.SetAsync(key, initialValue);
+        ValkeyValue newLength = await client.SetRangeAsync(key, 6, "Valkey");
+        Assert.Equal(12, (long)newLength);
 
-        ValkeyValue retrieved = await client.GetAsync(key);
-        Assert.Equal("new_value", retrieved.ToString());
+        ValkeyValue value = await client.GetAsync(key);
+        Assert.Equal("Hello Valkey", value.ToString());
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task GetSetAsync_NonExistentKey_ReturnsNull(BaseClient client)
+    public async Task SetRangeAsync_NonExistentKey_CreatesWithZeroPadding(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
+        ValkeyValue newLength = await client.SetRangeAsync(key, 0, "Hello");
+        Assert.Equal(5, (long)newLength);
 
-        ValkeyValue result = await client.GetSetAsync(key, "value");
-        Assert.True(result.IsNull);
-
-        ValkeyValue retrieved = await client.GetAsync(key);
-        Assert.Equal("value", retrieved.ToString());
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task GetSetAsync_WithCondition_ReturnsOldValue(BaseClient client)
-    {
-        string key = Guid.NewGuid().ToString();
-        await client.SetAsync(key, "old_value");
-
-        ValkeyValue result = await client.GetSetAsync(key, "new_value", SetCondition.OnlyIfExists);
-        Assert.Equal("old_value", result.ToString());
-
-        ValkeyValue retrieved = await client.GetAsync(key);
-        Assert.Equal("new_value", retrieved.ToString());
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task GetSetAsync_WithOptions_ReturnsOldValue(BaseClient client)
-    {
-        string key = Guid.NewGuid().ToString();
-        await client.SetAsync(key, "old_value");
-
-        var options = new SetOptions
-        {
-            Condition = SetCondition.OnlyIfExists,
-            Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60))
-        };
-
-        ValkeyValue result = await client.GetSetAsync(key, "new_value", options);
-        Assert.Equal("old_value", result.ToString());
-
-        ValkeyValue retrieved = await client.GetAsync(key);
-        Assert.Equal("new_value", retrieved.ToString());
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task GetSetExpiryAsync_ReturnsOldValueAndSetsExpiry(BaseClient client)
-    {
-        string key = Guid.NewGuid().ToString();
-        await client.SetAsync(key, "old_value");
-
-        ValkeyValue result = await client.GetSetExpiryAsync(key, "new_value", SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60)));
-        Assert.Equal("old_value", result.ToString());
-
-        ValkeyValue retrieved = await client.GetAsync(key);
-        Assert.Equal("new_value", retrieved.ToString());
+        ValkeyValue value = await client.GetAsync(key);
+        Assert.Equal("Hello", value.ToString());
     }
 
     #endregion
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task GetDeleteAsync_ReturnsValueAndDeletesKey(BaseClient client)
-    {
-        string key = Guid.NewGuid().ToString();
-        string value = Guid.NewGuid().ToString();
-
-        await client.SetAsync(key, value);
-
-        ValkeyValue result = await client.GetDeleteAsync(key);
-        Assert.Equal(value, result.ToString());
-
-        // Verify key was deleted
-        ValkeyValue deletedValue = await client.GetAsync(key);
-        Assert.True(deletedValue.IsNull);
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task GetDeleteAsync_NonExistentKey_ReturnsNull(BaseClient client)
-    {
-        string key = Guid.NewGuid().ToString();
-
-        ValkeyValue result = await client.GetDeleteAsync(key);
-        Assert.True(result.IsNull);
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task GetExpiryAsync_WithTimeSpan_SetsExpiry(BaseClient client)
-    {
-        string key = Guid.NewGuid().ToString();
-        string value = Guid.NewGuid().ToString();
-
-        await client.SetAsync(key, value);
-
-        ValkeyValue result = await client.GetExpiryAsync(key, GetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(10)));
-        Assert.Equal(value, result.ToString());
-
-        // Verify key still exists and has expiry
-        ValkeyValue retrievedValue = await client.GetAsync(key);
-        Assert.Equal(value, retrievedValue.ToString());
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task GetExpiryAsync_NonExistentKey_ReturnsNull(BaseClient client)
-    {
-        string key = Guid.NewGuid().ToString();
-
-        ValkeyValue result = await client.GetExpiryAsync(key, GetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(10)));
-        Assert.True(result.IsNull);
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task GetExpiryAsync_WithPersist_RemovesExpiry(BaseClient client)
-    {
-        string key = Guid.NewGuid().ToString();
-        string value = Guid.NewGuid().ToString();
-
-        await client.SetAsync(key, value);
-
-        ValkeyValue result = await client.GetExpiryAsync(key, GetExpiryOptions.Persist());
-        Assert.Equal(value, result.ToString());
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task GetExpiryAsync_DateTime_ExistingKey(BaseClient client)
-    {
-        string key = Guid.NewGuid().ToString();
-        string value = Guid.NewGuid().ToString();
-
-        await client.SetAsync(key, value);
-
-        DateTimeOffset expiry = DateTimeOffset.UtcNow.AddMinutes(5);
-        ValkeyValue result = await client.GetExpiryAsync(key, GetExpiryOptions.ExpireAt(expiry));
-        Assert.Equal(value, result.ToString());
-
-        // Verify key still exists
-        ValkeyValue retrievedValue = await client.GetAsync(key);
-        Assert.Equal(value, retrievedValue.ToString());
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task SetAsync_SingleKey_WhenNotExists_KeyDoesNotExist(BaseClient client)
-    {
-        string key = Guid.NewGuid().ToString();
-        bool result = await client.SetAsync(key, "value", SetCondition.OnlyIfDoesNotExist);
-        Assert.True(result);
-        ValkeyValue retrieved = await client.GetAsync(key);
-        Assert.Equal("value", retrieved.ToString());
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task SetAsync_SingleKey_WhenNotExists_KeyExists(BaseClient client)
-    {
-        string key = Guid.NewGuid().ToString();
-        await client.SetAsync(key, "existing");
-        bool result = await client.SetAsync(key, "new_value", SetCondition.OnlyIfDoesNotExist);
-        Assert.False(result);
-        ValkeyValue retrieved = await client.GetAsync(key);
-        Assert.Equal("existing", retrieved.ToString());
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task SetAsync_SingleKey_WhenExists_KeyExists(BaseClient client)
-    {
-        string key = Guid.NewGuid().ToString();
-        await client.SetAsync(key, "existing");
-        bool result = await client.SetAsync(key, "new_value", SetCondition.OnlyIfExists);
-        Assert.True(result);
-        ValkeyValue retrieved = await client.GetAsync(key);
-        Assert.Equal("new_value", retrieved.ToString());
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task SetAsync_SingleKey_WhenExists_KeyDoesNotExist(BaseClient client)
-    {
-        string key = Guid.NewGuid().ToString();
-        bool result = await client.SetAsync(key, "value", SetCondition.OnlyIfExists);
-        Assert.False(result);
-        ValkeyValue retrieved = await client.GetAsync(key);
-        Assert.True(retrieved.IsNull);
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task SetAsync_SingleKey_WhenAlways_KeyDoesNotExist(BaseClient client)
-    {
-        string key = Guid.NewGuid().ToString();
-        bool result = await client.SetAsync(key, "value", SetCondition.Always);
-        Assert.True(result);
-        ValkeyValue retrieved = await client.GetAsync(key);
-        Assert.Equal("value", retrieved.ToString());
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task SetAsync_SingleKey_WhenAlways_KeyExists(BaseClient client)
-    {
-        string key = Guid.NewGuid().ToString();
-        await client.SetAsync(key, "existing");
-        bool result = await client.SetAsync(key, "new_value", SetCondition.Always);
-        Assert.True(result);
-        ValkeyValue retrieved = await client.GetAsync(key);
-        Assert.Equal("new_value", retrieved.ToString());
-    }
 }

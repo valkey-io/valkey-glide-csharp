@@ -284,7 +284,7 @@ public partial interface IBaseClient
     Task<bool> SetAsync(ValkeyKey key, ValkeyValue value, SetCondition condition);
 
     /// <summary>
-    /// Sets the value of a key with options including condition and expiry.
+    /// Sets the value of a key with the given options.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/set/">Valkey commands – SET</seealso>
     /// <param name="key">The key to store.</param>
@@ -335,7 +335,7 @@ public partial interface IBaseClient
     /// <param name="key">The key to get and set.</param>
     /// <param name="value">The new value to store.</param>
     /// <param name="condition">The condition under which the key should be set.</param>
-    /// <returns>The old value stored at <paramref name="key"/>, or <see cref="ValkeyValue.Null"/> when <paramref name="key"/> did not exist or the condition was not met.</returns>
+    /// <returns>The old value stored at <paramref name="key"/>, or <see cref="ValkeyValue.Null"/> if <paramref name="key"/> did not exist.</returns>
     /// <example>
     /// <code>
     /// await client.SetAsync("key", "oldValue");
@@ -345,13 +345,13 @@ public partial interface IBaseClient
     Task<ValkeyValue> GetSetAsync(ValkeyKey key, ValkeyValue value, SetCondition condition);
 
     /// <summary>
-    /// Gets the old value of a key and sets it to a new value with options including condition and expiry.
+    /// Returns the value of a key and sets it to a new value with the given options.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/set/">Valkey commands – SET</seealso>
     /// <param name="key">The key to get and set.</param>
     /// <param name="value">The new value to store.</param>
     /// <param name="options">The options for the SET command, including condition and expiry.</param>
-    /// <returns>The old value stored at <paramref name="key"/>, or <see cref="ValkeyValue.Null"/> when <paramref name="key"/> did not exist or the condition was not met.</returns>
+    /// <returns>The old value stored at <paramref name="key"/>, or <see cref="ValkeyValue.Null"/> if <paramref name="key"/> did not exist.</returns>
     /// <example>
     /// <code>
     /// await client.SetAsync("key", "oldValue");

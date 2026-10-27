@@ -15,17 +15,17 @@ public class SharedClientTests(TestConfiguration config)
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task CommandsWithLargeKey(BaseClient client)
-        => await StringCommandTests.GetAndSetValuesAsync(client, LargeString, SmallString);
+        => await GetAndSetValuesAsync(client, LargeString, SmallString);
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task CommandsWithLargeValue(BaseClient client)
-        => await StringCommandTests.GetAndSetValuesAsync(client, SmallString, LargeString);
+        => await GetAndSetValuesAsync(client, SmallString, LargeString);
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task CommandsWithLargeKeyAndValue(BaseClient client)
-        => await StringCommandTests.GetAndSetValuesAsync(client, LargeString, LargeString);
+        => await GetAndSetValuesAsync(client, LargeString, LargeString);
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
@@ -84,7 +84,7 @@ public class SharedClientTests(TestConfiguration config)
                     {
                         if ((i + index) % 2 == 0)
                         {
-                            await StringCommandTests.GetAndSetRandomValuesAsync(client);
+                            await GetAndSetRandomValuesAsync(client);
                         }
                         else
                         {
@@ -97,5 +97,21 @@ public class SharedClientTests(TestConfiguration config)
         }
 
         await Task.WhenAll(operations);
+    }
+
+    private static async Task GetAndSetValuesAsync(BaseClient client, string key, string value)
+    {
+        await client.SetAsync(key, value);
+
+        ValkeyValue retrievedValue = await client.GetAsync(key);
+        Assert.Equal(value, retrievedValue.ToString());
+    }
+
+    private static async Task GetAndSetRandomValuesAsync(BaseClient client)
+    {
+        string key = Guid.NewGuid().ToString();
+        string value = Guid.NewGuid().ToString();
+
+        await GetAndSetValuesAsync(client, key, value);
     }
 }

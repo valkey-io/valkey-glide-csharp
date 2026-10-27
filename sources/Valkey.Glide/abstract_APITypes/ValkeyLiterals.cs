@@ -63,6 +63,7 @@ internal static class ValkeyLiterals
         IDLETIME = "IDLETIME",
         IDX = "IDX",
         IFEQ = "IFEQ",
+        IFNE = "IFNE",
         INCR = "INCR",
         INDENT = "INDENT",
         JUSTID = "JUSTID",

@@ -243,6 +243,32 @@ internal partial class BatchTestUtils
         _ = batch.GetExpiry(getSetExpiryKey2, GetExpiryOptions.ExpireAt(new DateTimeOffset(futureTime)));
         testData.Add(new(new ValkeyValue("expire-me-abs"), "GetExpiry(getSetExpiryKey2, futureTime)"));
 
+        // Valkey 8.1+ string commands
+        // ---------------------------
+
+        if (Version.IsAtLeast(Version.Valkey8_1))
+        {
+            // Set with OnlyIfEqual tests
+            string setIfEqualKey = $"{atomicPrefix}setifequal-{Guid.NewGuid()}";
+            _ = batch.Set(setIfEqualKey, "value", SetCondition.OnlyIfEqual("other"));
+            testData.Add(new(false, "Set(setIfEqualKey, value, OnlyIfEqual(other)) non-existent key"));
+
+            _ = batch.Set(setIfEqualKey, "value");
+            testData.Add(new(true, "Set(setIfEqualKey, value)"));
+
+            _ = batch.Set(setIfEqualKey, "other", SetCondition.OnlyIfEqual("other"));
+            testData.Add(new(false, "Set(setIfEqualKey, other, OnlyIfEqual(other)) value not equal"));
+
+            _ = batch.Set(setIfEqualKey, "other", SetCondition.OnlyIfEqual("value"));
+            testData.Add(new(true, "Set(setIfEqualKey, other, OnlyIfEqual(value)) value equal"));
+
+            _ = batch.GetSet(setIfEqualKey, "value", SetCondition.OnlyIfEqual("other"));
+            testData.Add(new(new ValkeyValue("other"), "GetSet(setIfEqualKey, value, OnlyIfEqual(other))"));
+
+            _ = batch.Get(setIfEqualKey);
+            testData.Add(new(new ValkeyValue("value"), "Get(setIfEqualKey)"));
+        }
+
         // Valkey 9.0+ string commands
         // ---------------------------
 
@@ -261,6 +287,32 @@ internal partial class BatchTestUtils
 
             _ = batch.DeleteIfEqual(deleteIfEqualKey, "value");
             testData.Add(new(false, "DeleteIfEqual(deleteIfEqualKey, value) non-existent key"));
+        }
+
+        // Valkey 9.2+ string commands
+        // ---------------------------
+
+        if (Version.IsAtLeast(Version.Valkey9_2))
+        {
+            // Set with OnlyIfNotEqual tests
+            string setIfNotEqualKey = $"{atomicPrefix}setifnotequal-{Guid.NewGuid()}";
+            _ = batch.Set(setIfNotEqualKey, "value", SetCondition.OnlyIfNotEqual("other"));
+            testData.Add(new(true, "Set(setIfNotEqualKey, value, OnlyIfNotEqual(other)) non-existent key"));
+
+            _ = batch.Set(setIfNotEqualKey, "value");
+            testData.Add(new(true, "Set(setIfNotEqualKey, value)"));
+
+            _ = batch.Set(setIfNotEqualKey, "other", SetCondition.OnlyIfNotEqual("value"));
+            testData.Add(new(false, "Set(setIfNotEqualKey, other, OnlyIfNotEqual(value)) value equal"));
+
+            _ = batch.Set(setIfNotEqualKey, "other", SetCondition.OnlyIfNotEqual("other"));
+            testData.Add(new(true, "Set(setIfNotEqualKey, other, OnlyIfNotEqual(other)) value not equal"));
+
+            _ = batch.GetSet(setIfNotEqualKey, "value", SetCondition.OnlyIfNotEqual("value"));
+            testData.Add(new(new ValkeyValue("other"), "GetSet(setIfNotEqualKey, value, OnlyIfNotEqual(value))"));
+
+            _ = batch.Get(setIfNotEqualKey);
+            testData.Add(new(new ValkeyValue("value"), "Get(setIfNotEqualKey)"));
         }
 
         return testData;

@@ -44,12 +44,32 @@ public sealed class SetCondition
     #region Public Methods
 
     /// <summary>
-    /// Only set the value if the current value equals <paramref name="comparisonValue"/> (IFEQ).
+    /// Only set the value if the key exists and its value equals <paramref name="comparisonValue"/> (IFEQ).
     /// </summary>
     /// <param name="comparisonValue">The value to compare the current value against.</param>
-    /// <remarks>Since Valkey 8.1.0.</remarks>
+    /// <remarks>
+    /// <para>Since Valkey 8.1.0.</para>
+    /// <para>
+    /// Not supported when compression is enabled.
+    /// See <see href="https://glide.valkey.io/concepts/client-features/compression/#incompatible-commands">Valkey GLIDE – Data Compression</see>.
+    /// </para>
+    /// </remarks>
     public static SetCondition OnlyIfEqual(ValkeyValue comparisonValue)
         => new(SetConditionType.OnlyIfEqual, comparisonValue);
+
+    /// <summary>
+    /// Only set the value if the key does not exist or if its value does not equal <paramref name="comparisonValue"/> (IFNE).
+    /// </summary>
+    /// <param name="comparisonValue">The value to compare the current value against.</param>
+    /// <remarks>
+    /// <para>Since Valkey 9.2.0.</para>
+    /// <para>
+    /// Not supported when compression is enabled.
+    /// See <see href="https://glide.valkey.io/concepts/client-features/compression/#incompatible-commands">Valkey GLIDE – Data Compression</see>.
+    /// </para>
+    /// </remarks>
+    public static SetCondition OnlyIfNotEqual(ValkeyValue comparisonValue)
+        => new(SetConditionType.OnlyIfNotEqual, comparisonValue);
 
     #endregion
     #region Internal Methods
@@ -63,7 +83,8 @@ public sealed class SetCondition
         SetConditionType.Always => [],
         SetConditionType.OnlyIfExists => [ValkeyLiterals.XX],
         SetConditionType.OnlyIfDoesNotExist => [ValkeyLiterals.NX],
-        SetConditionType.OnlyIfEqual => [ValkeyLiterals.IFEQ, ComparisonValue!.Value.ToGlideString()],
+        SetConditionType.OnlyIfEqual => [ValkeyLiterals.IFEQ, ComparisonValue!.Value],
+        SetConditionType.OnlyIfNotEqual => [ValkeyLiterals.IFNE, ComparisonValue!.Value],
         _ => throw new InvalidOperationException($"Unknown condition type: {Type}"),
     };
 
@@ -78,5 +99,6 @@ public sealed class SetCondition
         OnlyIfExists,
         OnlyIfDoesNotExist,
         OnlyIfEqual,
+        OnlyIfNotEqual,
     }
 }

@@ -57,8 +57,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support new Valkey 9.1 commands:
   - `HSETEX` with `NX` and `XX` options (#582)
 - Support new Valkey 9.2 commands:
-  - `SISMEMBER` with `XX` option (#581)
   - `INFO` with `cluster_info` section (#590)
+  - `SET` with `IFNE` option (#579)
+  - `SISMEMBER` with `XX` option (#581)
 - Single-field batch overloads for hash field expiry commands (#285):
   - `HGETEX`
   - `HPERSIST`
@@ -79,6 +80,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Update `StreamClaimOptions` to use factory and fluent methods instead of an object initializer
 - `Logger`, `InfoOptions`, and `Options` are now `static` classes.
 - The Availability Zone (`ReadFrom.Az`) is trimmed of surrounding whitespace before it is used, so an AZ-affinity strategy configured with a padded value now engages AZ affinity instead of silently spreading reads across all nodes (#533)
+- `SET` with `IFEQ` or `IFNE` now throws a `RequestException` when compression is enabled (#579)
 
 ### Fixed
 
@@ -96,6 +98,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ClusterValue<T>.HasSingleData` returns expected result for value-type `T` (#547)
 - Culture-invariant parsing of numeric string responses (#557)
 - `ISubscriber` corrupting binary (non-UTF-8) channel names and messages (#594)
+- `GETSET` custom command compresses its value when compression is enabled (#579)
 
 ### Security
 
