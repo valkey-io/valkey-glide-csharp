@@ -458,14 +458,14 @@ public class CompressionTests(CompressionFixture fixture)
         { "APPEND", c => c.AppendAsync("key", "suffix") },
         { "DELIFEQ", c => c.DeleteIfEqualAsync("key", "value") },
         { "GETRANGE", c => c.GetRangeAsync("key", 0, 4) },
+        // TODO #318: Add LongestCommonSubsequenceAsync once it is available.
         { "SET", c => c.GetSetAsync("key", "value", SetCondition.OnlyIfEqual("other")) },
         { "SET", c => c.GetSetAsync("key", "value", SetCondition.OnlyIfNotEqual("other")) },
-        // TODO #318: Add LongestCommonSubsequenceAsync once it is available.
-        { "STRLEN", c => c.LengthAsync("key") },
         { "SET", c => c.SetAsync("key", "value", SetCondition.OnlyIfEqual("other")) },
         { "SET", c => c.SetAsync("key", "value", SetCondition.OnlyIfNotEqual("other")) },
         { "SET", c => c.SetAsync("key", "value", new SetOptions { Condition = SetCondition.OnlyIfEqual("other"), Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(10)) }) },
         { "SETRANGE", c => c.SetRangeAsync("key", 0, "test") },
+        { "STRLEN", c => c.LengthAsync("key") },
 
         // Numeric operations
         { "DECR", c => c.DecrementAsync("key") },
