@@ -1,4 +1,5 @@
-using System;
+// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
+
 using System.Net;
 
 namespace Valkey.Glide;

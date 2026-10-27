@@ -586,7 +586,7 @@ public class ClientFilterOptions
         if (SkipMe is not null)
         {
             args.Add(ValkeyLiterals.SKIPME);
-            args.Add(SkipMe.Value ? ValkeyLiterals.yes : ValkeyLiterals.no);
+            args.Add(SkipMe.Value ? ValkeyLiterals.Yes : ValkeyLiterals.No);
         }
 
         if (_maxAgeSecs.HasValue)

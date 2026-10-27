@@ -5,21 +5,16 @@ namespace Valkey.Glide;
 /// <summary>
 /// A shape that defines the search area for geospatial commands.
 /// </summary>
-public abstract class GeoSearchShape
+/// <remarks>
+/// Constructs a <see cref="GeoSearchShape"/>.
+/// </remarks>
+/// <param name="unit">The geography unit to use.</param>
+public abstract class GeoSearchShape(GeoUnit unit)
 {
     /// <summary>
     /// The unit to use for the shape dimensions.
     /// </summary>
-    protected GeoUnit Unit { get; }
-
-    /// <summary>
-    /// Constructs a <see cref="GeoSearchShape"/>.
-    /// </summary>
-    /// <param name="unit">The geography unit to use.</param>
-    protected GeoSearchShape(GeoUnit unit)
-    {
-        Unit = unit;
-    }
+    protected GeoUnit Unit { get; } = unit;
 
     /// <summary>
     /// Converts to command arguments.
@@ -30,19 +25,14 @@ public abstract class GeoSearchShape
 /// <summary>
 /// A circular search area for geospatial commands.
 /// </summary>
-public class GeoSearchCircle : GeoSearchShape
+/// <remarks>
+/// Creates a <see cref="GeoSearchCircle"/>.
+/// </remarks>
+/// <param name="radius">The radius of the circle.</param>
+/// <param name="unit">The distance unit.</param>
+public class GeoSearchCircle(double radius, GeoUnit unit = GeoUnit.Meters) : GeoSearchShape(unit)
 {
-    private readonly double _radius;
-
-    /// <summary>
-    /// Creates a <see cref="GeoSearchCircle"/>.
-    /// </summary>
-    /// <param name="radius">The radius of the circle.</param>
-    /// <param name="unit">The distance unit.</param>
-    public GeoSearchCircle(double radius, GeoUnit unit = GeoUnit.Meters) : base(unit)
-    {
-        _radius = radius;
-    }
+    private readonly double _radius = radius;
 
     /// <inheritdoc/>
     internal override GlideString[] ToArgs() =>
@@ -56,22 +46,16 @@ public class GeoSearchCircle : GeoSearchShape
 /// <summary>
 /// A rectangular search area for geospatial commands.
 /// </summary>
-public class GeoSearchBox : GeoSearchShape
+/// <remarks>
+/// Creates a <see cref="GeoSearchBox"/>.
+/// </remarks>
+/// <param name="height">The height of the box.</param>
+/// <param name="width">The width of the box.</param>
+/// <param name="unit">The distance unit.</param>
+public class GeoSearchBox(double height, double width, GeoUnit unit = GeoUnit.Meters) : GeoSearchShape(unit)
 {
-    private readonly double _height;
-    private readonly double _width;
-
-    /// <summary>
-    /// Creates a <see cref="GeoSearchBox"/>.
-    /// </summary>
-    /// <param name="height">The height of the box.</param>
-    /// <param name="width">The width of the box.</param>
-    /// <param name="unit">The distance unit.</param>
-    public GeoSearchBox(double height, double width, GeoUnit unit = GeoUnit.Meters) : base(unit)
-    {
-        _height = height;
-        _width = width;
-    }
+    private readonly double _height = height;
+    private readonly double _width = width;
 
     /// <inheritdoc/>
     internal override GlideString[] ToArgs() =>

@@ -74,7 +74,7 @@ public sealed class LexBound
     /// Converts a <see cref="ValkeyValue"/> to an inclusive lexicographic bound.
     /// </summary>
     /// <param name="value">The value to convert.</param>
-    public static implicit operator LexBound(ValkeyValue value) => Inclusive((ValkeyValue)value);
+    public static implicit operator LexBound(ValkeyValue value) => Inclusive(value);
 
     #endregion
     #region Internal Methods

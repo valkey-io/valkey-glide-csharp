@@ -1,4 +1,6 @@
-﻿namespace Valkey.Glide;
+﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
+
+namespace Valkey.Glide;
 
 /// <summary>
 /// Specifies the proxy that is being used to communicate to server.
@@ -31,7 +33,7 @@ internal static class ProxyExtensions
     {
         Proxy.Twemproxy => false,
         Proxy.Envoyproxy => false,
-        _ => true,
+        Proxy.None or _ => true,
     };
 
     /// <summary>
@@ -42,7 +44,7 @@ internal static class ProxyExtensions
     {
         Proxy.Twemproxy => false,
         Proxy.Envoyproxy => false,
-        _ => true,
+        Proxy.None or _ => true,
     };
 
     /// <summary>
@@ -53,6 +55,6 @@ internal static class ProxyExtensions
     {
         Proxy.Twemproxy => false,
         Proxy.Envoyproxy => false,
-        _ => true,
+        Proxy.None or _ => true,
     };
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
+
 using System.Buffers;
 using System.Buffers.Text;
 using System.Diagnostics.CodeAnalysis;
@@ -27,7 +28,10 @@ internal static class Format
 
     public static bool TryParseBoolean(string s, out bool value)
     {
-        if (bool.TryParse(s, out value)) return true;
+        if (bool.TryParse(s, out value))
+        {
+            return true;
+        }
 
         if (s == "1" || string.Equals(s, "yes", StringComparison.OrdinalIgnoreCase) || string.Equals(s, "on", StringComparison.OrdinalIgnoreCase))
         {
@@ -50,7 +54,11 @@ internal static class Format
 
     internal static EndPoint ParseEndPoint(string host, int port)
     {
-        if (IPAddress.TryParse(host, out IPAddress? ip)) return new IPEndPoint(ip, port);
+        if (IPAddress.TryParse(host, out IPAddress? ip))
+        {
+            return new IPEndPoint(ip, port);
+        }
+
         return new DnsEndPoint(host, port);
     }
 
@@ -74,14 +82,21 @@ internal static class Format
     {
         if (double.IsInfinity(value))
         {
-            if (double.IsPositiveInfinity(value)) return "+inf";
-            if (double.IsNegativeInfinity(value)) return "-inf";
+            if (double.IsPositiveInfinity(value))
+            {
+                return "+inf";
+            }
+
+            if (double.IsNegativeInfinity(value))
+            {
+                return "-inf";
+            }
         }
 
         return value.ToString("G17", NumberFormatInfo.InvariantInfo);
     }
 
-    [return: NotNullIfNotNull("value")]
+    [return: NotNullIfNotNull(nameof(value))]
     internal static string? ToString(object? value) => value switch
     {
         null => "",
@@ -98,7 +113,11 @@ internal static class Format
         switch (endpoint)
         {
             case DnsEndPoint dns:
-                if (dns.Port == 0) return dns.Host;
+                if (dns.Port == 0)
+                {
+                    return dns.Host;
+                }
+
                 return dns.Host + ":" + Format.ToString(dns.Port);
             case IPEndPoint ip:
                 var addr = ip.Address.ToString();
@@ -172,7 +191,7 @@ internal static class Format
                 value = 0;
                 return false;
             // single-digits
-            case 1 when s[0] >= '0' && s[0] <= '9':
+            case 1 when s[0] is >= '0' and <= '9':
                 value = s[0] - '0';
                 return true;
             // RESP3 spec demands inf/nan handling
@@ -192,6 +211,8 @@ internal static class Format
             case 4 when CaseInsensitiveASCIIEqual("-nan", s):
                 value = double.NaN;
                 return true;
+            default:
+                break;
         }
 
         return double.TryParse(s, NumberStyles.Any, NumberFormatInfo.InvariantInfo, out value);
@@ -208,24 +229,38 @@ internal static class Format
 
     internal static bool CouldBeInteger(string s)
     {
-        if (string.IsNullOrEmpty(s) || s.Length > Format.MaxInt64TextLen) return false;
+        if (string.IsNullOrEmpty(s) || s.Length > Format.MaxInt64TextLen)
+        {
+            return false;
+        }
+
         bool isSigned = s[0] == '-';
         for (int i = isSigned ? 1 : 0; i < s.Length; i++)
         {
             char c = s[i];
-            if (c < '0' || c > '9') return false;
+            if (c is < '0' or > '9')
+            {
+                return false;
+            }
         }
 
         return true;
     }
     internal static bool CouldBeInteger(ReadOnlySpan<byte> s)
     {
-        if (s.IsEmpty || s.Length > Format.MaxInt64TextLen) return false;
+        if (s.IsEmpty || s.Length > Format.MaxInt64TextLen)
+        {
+            return false;
+        }
+
         bool isSigned = s[0] == '-';
         for (int i = isSigned ? 1 : 0; i < s.Length; i++)
         {
             byte c = s[i];
-            if (c < (byte)'0' || c > (byte)'9') return false;
+            if (c is < ((byte)'0') or > ((byte)'9'))
+            {
+                return false;
+            }
         }
 
         return true;
@@ -242,7 +277,7 @@ internal static class Format
                 value = 0;
                 return false;
             // single-digits
-            case 1 when s[0] >= '0' && s[0] <= '9':
+            case 1 when s[0] is >= (byte)'0' and <= (byte)'9':
                 value = s[0] - '0';
                 return true;
             // RESP3 spec demands inf/nan handling
@@ -262,6 +297,8 @@ internal static class Format
             case 4 when CaseInsensitiveASCIIEqual("-nan", s):
                 value = double.NaN;
                 return true;
+            default:
+                break;
         }
 
         return Utf8Parser.TryParse(s, out value, out int bytes) && bytes == s.Length;
@@ -272,10 +309,17 @@ internal static class Format
 
     private static bool CaseInsensitiveASCIIEqual(string xLowerCase, ReadOnlySpan<byte> y)
     {
-        if (y.Length != xLowerCase.Length) return false;
+        if (y.Length != xLowerCase.Length)
+        {
+            return false;
+        }
+
         for (int i = 0; i < y.Length; i++)
         {
-            if (char.ToLower((char)y[i]) != xLowerCase[i]) return false;
+            if (char.ToLower((char)y[i]) != xLowerCase[i])
+            {
+                return false;
+            }
         }
 
         return true;
@@ -328,11 +372,11 @@ internal static class Format
             if (closingIndex > 0)
             {
                 // IPv6 with brackets
-                addressPart = addressWithPort.Substring(1, closingIndex - 1);
+                addressPart = addressWithPort[1..closingIndex];
                 if (closingIndex < lastColonIndex)
                 {
                     // IPv6 with port [::1]:80
-                    portPart = addressWithPort.Substring(lastColonIndex + 1);
+                    portPart = addressWithPort[(lastColonIndex + 1)..];
                 }
             }
             else
@@ -347,8 +391,8 @@ internal static class Format
                 else
                 {
                     // IPv4 with port 127.0.0.1:123
-                    addressPart = addressWithPort.Substring(0, firstColonIndex);
-                    portPart = addressWithPort.Substring(firstColonIndex + 1);
+                    addressPart = addressWithPort[..firstColonIndex];
+                    portPart = addressWithPort[(firstColonIndex + 1)..];
                 }
             }
         }
@@ -385,7 +429,10 @@ internal static class Format
 
     internal static string GetString(ReadOnlySequence<byte> buffer)
     {
-        if (buffer.IsSingleSegment) return GetString(buffer.First.Span);
+        if (buffer.IsSingleSegment)
+        {
+            return GetString(buffer.First.Span);
+        }
 
         var arr = ArrayPool<byte>.Shared.Rent(checked((int)buffer.Length));
         var span = new Span<byte>(arr, 0, (int)buffer.Length);
@@ -397,7 +444,10 @@ internal static class Format
 
     internal static string GetString(ReadOnlySpan<byte> span)
     {
-        if (span.IsEmpty) return "";
+        if (span.IsEmpty)
+        {
+            return "";
+        }
 #if NETCOREAPP3_1_OR_GREATER
         return Encoding.UTF8.GetString(span);
 #else
@@ -417,7 +467,11 @@ internal static class Format
 
     internal static int MeasureDouble(double value)
     {
-        if (double.IsInfinity(value)) return 4; // +inf / -inf
+        if (double.IsInfinity(value))
+        {
+            return 4; // +inf / -inf
+        }
+
         var s = value.ToString("G17", NumberFormatInfo.InvariantInfo); // this looks inefficient, but is how Utf8Formatter works too, just: more direct
         return s.Length;
     }
@@ -428,7 +482,10 @@ internal static class Format
         {
             if (double.IsPositiveInfinity(value))
             {
-                if (!"+inf"u8.TryCopyTo(destination)) ThrowFormatFailed();
+                if (!"+inf"u8.TryCopyTo(destination))
+                {
+                    ThrowFormatFailed();
+                }
             }
             else if (!"-inf"u8.TryCopyTo(destination))
             {
@@ -439,7 +496,10 @@ internal static class Format
         }
 
         var s = value.ToString("G17", NumberFormatInfo.InvariantInfo); // this looks inefficient, but is how Utf8Formatter works too, just: more direct
-        if (s.Length > destination.Length) ThrowFormatFailed();
+        if (s.Length > destination.Length)
+        {
+            ThrowFormatFailed();
+        }
 
         var chars = s.AsSpan();
         for (int i = 0; i < chars.Length; i++)
@@ -459,7 +519,9 @@ internal static class Format
     internal static int FormatInt64(long value, Span<byte> destination)
     {
         if (!Utf8Formatter.TryFormat(value, destination, out var len))
+        {
             ThrowFormatFailed();
+        }
 
         return len;
     }
@@ -473,7 +535,9 @@ internal static class Format
     internal static int FormatUInt64(ulong value, Span<byte> destination)
     {
         if (!Utf8Formatter.TryFormat(value, destination, out var len))
+        {
             ThrowFormatFailed();
+        }
 
         return len;
     }
@@ -481,7 +545,9 @@ internal static class Format
     internal static int FormatInt32(int value, Span<byte> destination)
     {
         if (!Utf8Formatter.TryFormat(value, destination, out var len))
+        {
             ThrowFormatFailed();
+        }
 
         return len;
     }
@@ -489,7 +555,11 @@ internal static class Format
     internal static bool TryParseVersion(ReadOnlySpan<char> input, [NotNullWhen(true)] out Version? version)
     {
 #if NETCOREAPP3_1_OR_GREATER
-        if (Version.TryParse(input, out version)) return true;
+        if (Version.TryParse(input, out version))
+        {
+            return true;
+        }
+
         // allow major-only (Version doesn't do this, because... reasons?)
         if (TryParseInt32(input, out int i32))
         {
@@ -520,7 +590,11 @@ internal static class Format
     {
         if (input is not null)
         {
-            if (Version.TryParse(input, out version)) return true;
+            if (Version.TryParse(input, out version))
+            {
+                return true;
+            }
+
             // allow major-only (Version doesn't do this, because... reasons?)
             if (TryParseInt32(input, out int i32))
             {
