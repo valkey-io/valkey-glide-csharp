@@ -519,11 +519,14 @@ public sealed class ConfigurationOptions : ICloneable
 
                 switch (OptionKeys.TryNormalize(key))
                 {
-                    case OptionKeys.ClientName:
-                        ClientName = value;
-                        break;
                     case OptionKeys.ConnectTimeout:
                         ConnectTimeout = OptionKeys.ParseInt32(key, value);
+                        break;
+                    case OptionKeys.DefaultDatabase:
+                        DefaultDatabase = OptionKeys.ParseInt32(key, value);
+                        break;
+                    case OptionKeys.ClientName:
+                        ClientName = value;
                         break;
                     case OptionKeys.User:
                         User = value;
@@ -531,17 +534,14 @@ public sealed class ConfigurationOptions : ICloneable
                     case OptionKeys.Password:
                         Password = value;
                         break;
-                    case OptionKeys.DefaultDatabase:
-                        DefaultDatabase = OptionKeys.ParseInt32(key, value);
+                    case OptionKeys.ResponseTimeout:
+                        ResponseTimeout = OptionKeys.ParseInt32(key, value);
                         break;
                     case OptionKeys.Ssl:
                         Ssl = OptionKeys.ParseBoolean(key, value);
                         break;
                     case OptionKeys.Protocol:
                         Protocol = OptionKeys.ParseProtocol(key, value);
-                        break;
-                    case OptionKeys.ResponseTimeout:
-                        ResponseTimeout = OptionKeys.ParseInt32(key, value);
                         break;
                     case OptionKeys.ReadFrom:
                         tempReadFromStrategy = CheckReadFromValue(value);

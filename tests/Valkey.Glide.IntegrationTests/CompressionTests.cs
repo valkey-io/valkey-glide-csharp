@@ -458,14 +458,14 @@ public class CompressionTests(CompressionFixture fixture)
         { "APPEND", c => c.AppendAsync("key", "suffix") },
         { "DELIFEQ", c => c.DeleteIfEqualAsync("key", "value") },
         { "GETRANGE", c => c.GetRangeAsync("key", 0, 4) },
+        // TODO #318: Add LongestCommonSubsequenceAsync once it is available.
         { "SET", c => c.GetSetAsync("key", "value", SetCondition.OnlyIfEqual("other")) },
         { "SET", c => c.GetSetAsync("key", "value", SetCondition.OnlyIfNotEqual("other")) },
-        // TODO #318: Add LongestCommonSubsequenceAsync once it is available.
-        { "STRLEN", c => c.LengthAsync("key") },
         { "SET", c => c.SetAsync("key", "value", SetCondition.OnlyIfEqual("other")) },
         { "SET", c => c.SetAsync("key", "value", SetCondition.OnlyIfNotEqual("other")) },
         { "SET", c => c.SetAsync("key", "value", new SetOptions { Condition = SetCondition.OnlyIfEqual("other"), Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(10)) }) },
         { "SETRANGE", c => c.SetRangeAsync("key", 0, "test") },
+        { "STRLEN", c => c.LengthAsync("key") },
 
         // Numeric operations
         { "DECR", c => c.DecrementAsync("key") },
@@ -475,13 +475,13 @@ public class CompressionTests(CompressionFixture fixture)
         { "INCRBYFLOAT", c => c.IncrementAsync("key", 1.5) },
 
         // Bit operations
-        { "GETBIT", c => c.GetBitAsync("key", 0) },
-        { "SETBIT", c => c.SetBitAsync("key", 7, true) },
         { "BITCOUNT", c => c.BitCountAsync("key") },
-        { "BITPOS", c => c.BitPosAsync("key", true) },
         { "BITFIELD", c => c.BitFieldAsync("key", new BitFieldOptions.BitFieldSet("u8", new BitFieldOptions.BitOffset(0), 1)) },
         { "BITFIELD_RO", c => c.BitFieldReadOnlyAsync("key", new BitFieldOptions.BitFieldGet("u8", new BitFieldOptions.BitOffset(0))) },
         { "BITOP", c => c.BitOpAsync(Bitwise.And, "key", ["key"]) },
+        { "BITPOS", c => c.BitPosAsync("key", true) },
+        { "GETBIT", c => c.GetBitAsync("key", 0) },
+        { "SETBIT", c => c.SetBitAsync("key", 7, true) },
     };
 
     [Theory(DisableDiscoveryEnumeration = true)]

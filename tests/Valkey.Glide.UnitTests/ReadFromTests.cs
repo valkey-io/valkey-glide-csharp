@@ -562,12 +562,12 @@ public class ReadFromTests
     [InlineData("PrimaryAndSecondary", "", "is not supported")]
     [InlineData("", "", "cannot be empty")]
     [InlineData("AzAffinity", "", "Availability zone cannot be empty or whitespace")]
-    [InlineData("AzAffinityReplicasAndPrimary", "", "Availability zone cannot be empty or whitespace")]
-    [InlineData("AzAffinityAllNodes", "", "Availability zone cannot be empty or whitespace")]
     [InlineData("AzAffinity", "   ", "Availability zone cannot be empty or whitespace")]
     [InlineData("AzAffinity", "\t", "Availability zone cannot be empty or whitespace")]
     [InlineData("AzAffinity", "\n", "Availability zone cannot be empty or whitespace")]
+    [InlineData("AzAffinityReplicasAndPrimary", "", "Availability zone cannot be empty or whitespace")]
     [InlineData("AzAffinityReplicasAndPrimary", "   ", "Availability zone cannot be empty or whitespace")]
+    [InlineData("AzAffinityAllNodes", "", "Availability zone cannot be empty or whitespace")]
     [InlineData("AzAffinityAllNodes", "   ", "Availability zone cannot be empty or whitespace")]
     public async Task ConnectionString_ArgumentExceptionScenarios(string readFromStrategy, string azValue, string expectedErrorSubstring)
     {

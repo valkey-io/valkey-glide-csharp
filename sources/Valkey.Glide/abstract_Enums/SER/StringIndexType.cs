@@ -22,8 +22,8 @@ internal static class StringIndexTypeExtensions
 {
     internal static ValkeyValue ToLiteral(this StringIndexType indexType) => indexType switch
     {
-        StringIndexType.Bit => ValkeyLiterals.BIT,
         StringIndexType.Byte => ValkeyLiterals.BYTE,
+        StringIndexType.Bit => ValkeyLiterals.BIT,
         _ => throw new ArgumentOutOfRangeException(nameof(indexType)),
     };
 
@@ -34,8 +34,8 @@ internal static class StringIndexTypeExtensions
     /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="indexType"/> is not a supported <see cref="StringIndexType"/> value.</exception>
     internal static BitmapIndexType ToBitmapIndexType(this StringIndexType indexType) => indexType switch
     {
-        StringIndexType.Bit => BitmapIndexType.Bit,
         StringIndexType.Byte => BitmapIndexType.Byte,
+        StringIndexType.Bit => BitmapIndexType.Bit,
         _ => throw new ArgumentOutOfRangeException(nameof(indexType)),
     };
 }
