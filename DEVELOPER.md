@@ -249,6 +249,8 @@ export AWS_SESSION_TOKEN=test_session_token
 
 If any of these environment variables are not set, IAM authentication tests will be skipped.
 
+IAM auth requires TLS, so these tests run against the TLS-enabled fixture (`TlsServerFixture`), which starts the TLS test servers and trusts the harness CA automatically. No extra setup or `tls=true` flag is needed.
+
 **Note:** The credential values shown above (`test_access_key`, etc.) are arbitrary placeholder strings. The AWS SDK uses them to generate an authentication token, but the local test server doesn't validate the token. These tests verify that the IAM authentication flow works correctly (token generation, connection establishment, and token refresh), not that the credentials are valid.
 
 #### DNS Tests

@@ -97,6 +97,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Culture-invariant parsing of numeric string responses (#557)
 - `ISubscriber` corrupting binary (non-UTF-8) channel names and messages (#594)
 
+### Security
+
+- IAM authentication now requires TLS: configuring IAM auth without TLS is rejected at client creation instead of sending the IAM token over a plaintext connection (#611)
+
 ## 1.1.0
 
 ### Added
