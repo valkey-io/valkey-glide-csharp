@@ -19,9 +19,12 @@ public sealed class FailoverOptions
     private ulong? _timeoutMs;
 
     #endregion
-    #region Constructors & Builders
+    #region Constructors
 
     private FailoverOptions() { }
+
+    #endregion
+    #region Public Methods
 
     /// <summary>
     /// Creates options for an abort failover command.

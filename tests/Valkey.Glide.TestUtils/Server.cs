@@ -12,7 +12,17 @@ namespace Valkey.Glide.TestUtils;
 /// </summary>
 public abstract class Server : IDisposable
 {
-    #region Constants
+    #region Fields
+
+    /// <summary>
+    /// Username for the server.
+    /// </summary>
+    protected string? _username;
+
+    /// <summary>
+    /// Password for the server.
+    /// </summary>
+    protected string? _password;
 
     /// <summary>
     /// Maximum time to wait for the initial client connection to succeed.
@@ -28,9 +38,6 @@ public abstract class Server : IDisposable
     /// </summary>
     private static readonly TimeSpan ConnectionRetryDelay = TimeSpan.FromMilliseconds(500);
 
-    #endregion
-    #region Fields
-
     /// <summary>
     /// Name of the server.
     /// </summary>
@@ -41,39 +48,6 @@ public abstract class Server : IDisposable
     /// See <see cref="Dispose" />.
     /// </summary>
     private bool _disposed = false;
-
-    /// <summary>
-    /// Username for the server.
-    /// </summary>
-    protected string? _username;
-
-    /// <summary>
-    /// Password for the server.
-    /// </summary>
-    protected string? _password;
-
-    #endregion
-    #region Public Properties
-
-    /// <summary>
-    /// Address of the server.
-    /// </summary>
-    public Address Address { get; init; }
-
-    /// <summary>
-    /// Indicates whether the server uses TLS.
-    /// </summary>
-    public bool UseTls { get; init; }
-
-    /// <summary>
-    /// Certificate data path for the server.
-    /// </summary>
-    public string? CertificatePath { get; }
-
-    /// <summary>
-    /// Certificate data for the server.
-    /// </summary>
-    public byte[]? CertificateData { get; }
 
     #endregion
     #region Constructors
@@ -111,6 +85,29 @@ public abstract class Server : IDisposable
     /// Finalizer.
     /// </summary>
     ~Server() => Dispose();
+
+    #endregion
+    #region Public Properties
+
+    /// <summary>
+    /// Address of the server.
+    /// </summary>
+    public Address Address { get; init; }
+
+    /// <summary>
+    /// Indicates whether the server uses TLS.
+    /// </summary>
+    public bool UseTls { get; init; }
+
+    /// <summary>
+    /// Certificate data path for the server.
+    /// </summary>
+    public string? CertificatePath { get; }
+
+    /// <summary>
+    /// Certificate data for the server.
+    /// </summary>
+    public byte[]? CertificateData { get; }
 
     #endregion
     #region Public Methods

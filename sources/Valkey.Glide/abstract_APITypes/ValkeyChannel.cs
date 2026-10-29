@@ -10,81 +10,18 @@ namespace Valkey.Glide;
 /// </summary>
 public readonly struct ValkeyChannel : IEquatable<ValkeyChannel>
 {
+    #region Internal Fields
+
     internal readonly byte[]? Value;
     internal readonly ValkeyChannelOptions Options;
 
-    [Flags]
-    internal enum ValkeyChannelOptions
-    {
-        None = 0,
-        Pattern = 1 << 0,
-        Sharded = 1 << 1,
-    }
-
-    /// <summary>
-    /// Indicates whether the channel-name is either null or a zero-length value.
-    /// </summary>
-    public bool IsNullOrEmpty => Value == null || Value.Length == 0;
-
-    /// <summary>
-    /// Indicates whether this channel represents a wildcard pattern (see <c>PSUBSCRIBE</c>).
-    /// </summary>
-    public bool IsPattern => (Options & ValkeyChannelOptions.Pattern) != 0;
-
-    /// <summary>
-    /// Indicates whether this channel represents a sharded channel (see <c>SSUBSCRIBE</c>).
-    /// </summary>
-    public bool IsSharded => (Options & ValkeyChannelOptions.Sharded) != 0;
-
-    internal bool IsNull => Value == null;
-
-    /// <summary>
-    /// Indicates whether channels should use <see cref="PatternMode.Auto"/> when no <see cref="PatternMode"/>
-    /// is specified; this is enabled by default, but can be disabled to avoid unexpected wildcard scenarios.
-    /// </summary>
-    public static bool UseImplicitAutoPattern
-    {
-        get => s_defaultPatternMode == PatternMode.Auto;
-        set => s_defaultPatternMode = value ? PatternMode.Auto : PatternMode.Literal;
-    }
+    #endregion
+    #region Private Fields
 
     private static PatternMode s_defaultPatternMode = PatternMode.Auto;
 
-    /// <summary>
-    /// Creates a new <see cref="ValkeyChannel"/> that does not act as a wildcard subscription.
-    /// </summary>
-    /// <param name="value">The channel name.</param>
-    public static ValkeyChannel Literal(string value) => new(value, ValkeyChannelOptions.None);
-
-    /// <summary>
-    /// Creates a new <see cref="ValkeyChannel"/> that does not act as a wildcard subscription.
-    /// </summary>
-    /// <param name="value">The channel name bytes.</param>
-    public static ValkeyChannel Literal(byte[] value) => new(value, ValkeyChannelOptions.None);
-
-    /// <summary>
-    /// Creates a new <see cref="ValkeyChannel"/> that does not act as a wildcard subscription.
-    /// </summary>
-    /// <param name="value">The channel name.</param>
-    internal static ValkeyChannel Literal(ValkeyKey value) => new((byte[]?)value, ValkeyChannelOptions.None);
-
-    /// <summary>
-    /// Creates a new <see cref="ValkeyChannel"/> that acts as a wildcard subscription.
-    /// </summary>
-    /// <param name="value">The channel name pattern.</param>
-    public static ValkeyChannel Pattern(string value) => new(value, ValkeyChannelOptions.Pattern);
-
-    /// <summary>
-    /// Creates a new <see cref="ValkeyChannel"/> that acts as a wildcard subscription.
-    /// </summary>
-    /// <param name="value">The channel name pattern bytes.</param>
-    public static ValkeyChannel Pattern(byte[] value) => new(value, ValkeyChannelOptions.Pattern);
-
-    /// <summary>
-    /// Creates a new <see cref="ValkeyChannel"/> that acts as a wildcard subscription.
-    /// </summary>
-    /// <param name="value">The channel name pattern.</param>
-    internal static ValkeyChannel Pattern(ValkeyKey value) => new((byte[]?)value, ValkeyChannelOptions.Pattern);
+    #endregion
+    #region Constructors
 
     /// <summary>
     /// Create a new channel from a buffer, explicitly controlling the pattern mode.
@@ -104,24 +41,6 @@ public readonly struct ValkeyChannel : IEquatable<ValkeyChannel>
     {
     }
 
-    /// <summary>
-    /// Create a new channel from a buffer, representing a sharded channel.
-    /// </summary>
-    /// <param name="value">The channel name bytes.</param>
-    public static ValkeyChannel Sharded(byte[]? value) => new(value, ValkeyChannelOptions.Sharded);
-
-    /// <summary>
-    /// Create a new channel from a string, representing a sharded channel.
-    /// </summary>
-    /// <param name="value">The channel name.</param>
-    public static ValkeyChannel Sharded(string value) => new(value, ValkeyChannelOptions.Sharded);
-
-    /// <summary>
-    /// Create a new channel from a <see cref="ValkeyKey"/>, representing a sharded channel.
-    /// </summary>
-    /// <param name="value">The channel name.</param>
-    internal static ValkeyChannel Sharded(ValkeyKey value) => new((byte[]?)value, ValkeyChannelOptions.Sharded);
-
     internal ValkeyChannel(byte[]? value, ValkeyChannelOptions options)
     {
         Value = value;
@@ -134,13 +53,104 @@ public readonly struct ValkeyChannel : IEquatable<ValkeyChannel>
         Options = options;
     }
 
-    private static bool DeterminePatternBased(byte[]? value, PatternMode mode) => mode switch
+    #endregion
+    #region Public Enums
+
+    /// <summary>
+    /// The matching pattern for this channel.
+    /// </summary>
+    public enum PatternMode
     {
-        PatternMode.Auto => value != null && Array.IndexOf(value, (byte)'*') >= 0,
-        PatternMode.Literal => false,
-        PatternMode.Pattern => true,
-        _ => throw new ArgumentOutOfRangeException(nameof(mode)),
-    };
+        /// <summary>
+        /// Will be treated as a pattern if it includes *.
+        /// </summary>
+        Auto = 0,
+
+        /// <summary>
+        /// Never a pattern.
+        /// </summary>
+        Literal = 1,
+
+        /// <summary>
+        /// Always a pattern.
+        /// </summary>
+        Pattern = 2,
+    }
+
+    #endregion
+    #region Internal Enums
+
+    [Flags]
+    internal enum ValkeyChannelOptions
+    {
+        None = 0,
+        Pattern = 1 << 0,
+        Sharded = 1 << 1,
+    }
+
+    #endregion
+    #region Public Properties
+
+    /// <summary>
+    /// Indicates whether channels should use <see cref="PatternMode.Auto"/> when no <see cref="PatternMode"/>
+    /// is specified; this is enabled by default, but can be disabled to avoid unexpected wildcard scenarios.
+    /// </summary>
+    public static bool UseImplicitAutoPattern
+    {
+        get => s_defaultPatternMode == PatternMode.Auto;
+        set => s_defaultPatternMode = value ? PatternMode.Auto : PatternMode.Literal;
+    }
+
+    /// <summary>
+    /// Indicates whether the channel-name is either null or a zero-length value.
+    /// </summary>
+    public bool IsNullOrEmpty => Value == null || Value.Length == 0;
+
+    /// <summary>
+    /// Indicates whether this channel represents a wildcard pattern (see <c>PSUBSCRIBE</c>).
+    /// </summary>
+    public bool IsPattern => (Options & ValkeyChannelOptions.Pattern) != 0;
+
+    /// <summary>
+    /// Indicates whether this channel represents a sharded channel (see <c>SSUBSCRIBE</c>).
+    /// </summary>
+    public bool IsSharded => (Options & ValkeyChannelOptions.Sharded) != 0;
+
+    #endregion
+    #region Internal Properties
+
+    internal bool IsNull => Value == null;
+
+    #endregion
+    #region Operators
+
+    /// <summary>
+    /// Obtain the channel name as a <c>byte[]</c>.
+    /// </summary>
+    /// <param name="key">The channel to convert.</param>
+    public static implicit operator byte[]?(ValkeyChannel key) => key.Value;
+
+    /// <summary>
+    /// Obtain the channel name as a <see cref="string"/>.
+    /// </summary>
+    /// <param name="key">The channel to convert.</param>
+    public static implicit operator string?(ValkeyChannel key)
+    {
+        var arr = key.Value;
+        if (arr is null)
+        {
+            return null;
+        }
+
+        try
+        {
+            return Encoding.UTF8.GetString(arr);
+        }
+        catch (Exception e) when (e is DecoderFallbackException or ArgumentException or ArgumentNullException)
+        {
+            return BitConverter.ToString(arr);
+        }
+    }
 
     /// <summary>
     /// Indicate whether two channel names are not equal.
@@ -216,32 +226,44 @@ public readonly struct ValkeyChannel : IEquatable<ValkeyChannel>
     /// <param name="y">The second channel name bytes.</param>
     public static bool operator ==(ValkeyChannel x, byte[] y) => ValkeyValue.Equals(x.Value, y);
 
-    /// <inheritdoc/>
-    public override bool Equals(object? obj) => obj switch
-    {
-        ValkeyChannel rcObj => ValkeyValue.Equals(Value, rcObj.Value),
-        string sObj => ValkeyValue.Equals(Value, Encoding.UTF8.GetBytes(sObj)),
-        byte[] bObj => ValkeyValue.Equals(Value, bObj),
-        _ => false,
-    };
+    #endregion
+    #region Public Methods
 
     /// <summary>
-    /// Indicate whether two channel names are equal.
+    /// Creates a new <see cref="ValkeyChannel"/> that does not act as a wildcard subscription.
     /// </summary>
-    /// <param name="other">The channel name to compare.</param>
-    public bool Equals(ValkeyChannel other) =>
-        (Options == other.Options)
-            && ValkeyValue.Equals(Value, other.Value);
-
-    /// <inheritdoc/>
-    public override int GetHashCode() => ValkeyValue.GetHashCode(Value) ^ (int)Options;
+    /// <param name="value">The channel name.</param>
+    public static ValkeyChannel Literal(string value) => new(value, ValkeyChannelOptions.None);
 
     /// <summary>
-    /// Obtains a string representation of the channel name.
+    /// Creates a new <see cref="ValkeyChannel"/> that does not act as a wildcard subscription.
     /// </summary>
-    public override string ToString() => ((string?)this) ?? "(null)";
+    /// <param name="value">The channel name bytes.</param>
+    public static ValkeyChannel Literal(byte[] value) => new(value, ValkeyChannelOptions.None);
 
-    #region Keyspace
+    /// <summary>
+    /// Creates a new <see cref="ValkeyChannel"/> that acts as a wildcard subscription.
+    /// </summary>
+    /// <param name="value">The channel name pattern.</param>
+    public static ValkeyChannel Pattern(string value) => new(value, ValkeyChannelOptions.Pattern);
+
+    /// <summary>
+    /// Creates a new <see cref="ValkeyChannel"/> that acts as a wildcard subscription.
+    /// </summary>
+    /// <param name="value">The channel name pattern bytes.</param>
+    public static ValkeyChannel Pattern(byte[] value) => new(value, ValkeyChannelOptions.Pattern);
+
+    /// <summary>
+    /// Create a new channel from a buffer, representing a sharded channel.
+    /// </summary>
+    /// <param name="value">The channel name bytes.</param>
+    public static ValkeyChannel Sharded(byte[]? value) => new(value, ValkeyChannelOptions.Sharded);
+
+    /// <summary>
+    /// Create a new channel from a string, representing a sharded channel.
+    /// </summary>
+    /// <param name="value">The channel name.</param>
+    public static ValkeyChannel Sharded(string value) => new(value, ValkeyChannelOptions.Sharded);
 
     /// <summary>
     /// Create a key-notification channel for a single key in a single database.
@@ -335,6 +357,69 @@ public readonly struct ValkeyChannel : IEquatable<ValkeyChannel>
 
         return BuildKeyEventChannel(type, database);
     }
+
+    /// <inheritdoc/>
+    public override bool Equals(object? obj) => obj switch
+    {
+        ValkeyChannel rcObj => ValkeyValue.Equals(Value, rcObj.Value),
+        string sObj => ValkeyValue.Equals(Value, Encoding.UTF8.GetBytes(sObj)),
+        byte[] bObj => ValkeyValue.Equals(Value, bObj),
+        _ => false,
+    };
+
+    /// <summary>
+    /// Indicate whether two channel names are equal.
+    /// </summary>
+    /// <param name="other">The channel name to compare.</param>
+    public bool Equals(ValkeyChannel other) =>
+        (Options == other.Options)
+            && ValkeyValue.Equals(Value, other.Value);
+
+    /// <inheritdoc/>
+    public override int GetHashCode() => ValkeyValue.GetHashCode(Value) ^ (int)Options;
+
+    /// <summary>
+    /// Obtains a string representation of the channel name.
+    /// </summary>
+    public override string ToString() => ((string?)this) ?? "(null)";
+
+    #endregion
+    #region Internal Methods
+
+    /// <summary>
+    /// Creates a new <see cref="ValkeyChannel"/> that does not act as a wildcard subscription.
+    /// </summary>
+    /// <param name="value">The channel name.</param>
+    internal static ValkeyChannel Literal(ValkeyKey value) => new((byte[]?)value, ValkeyChannelOptions.None);
+
+    /// <summary>
+    /// Creates a new <see cref="ValkeyChannel"/> that acts as a wildcard subscription.
+    /// </summary>
+    /// <param name="value">The channel name pattern.</param>
+    internal static ValkeyChannel Pattern(ValkeyKey value) => new((byte[]?)value, ValkeyChannelOptions.Pattern);
+
+    /// <summary>
+    /// Create a new channel from a <see cref="ValkeyKey"/>, representing a sharded channel.
+    /// </summary>
+    /// <param name="value">The channel name.</param>
+    internal static ValkeyChannel Sharded(ValkeyKey value) => new((byte[]?)value, ValkeyChannelOptions.Sharded);
+
+    /// <summary>
+    /// Converts this channel to a <see cref="ValkeyKey"/>.
+    /// </summary>
+    internal ValkeyKey ToValkeyKey()
+        => Value is null ? ValkeyKey.Null : (ValkeyKey)Value;
+
+    #endregion
+    #region Private Methods
+
+    private static bool DeterminePatternBased(byte[]? value, PatternMode mode) => mode switch
+    {
+        PatternMode.Auto => value != null && Array.IndexOf(value, (byte)'*') >= 0,
+        PatternMode.Literal => false,
+        PatternMode.Pattern => true,
+        _ => throw new ArgumentOutOfRangeException(nameof(mode)),
+    };
 
     private static ValkeyChannel BuildKeySpaceChannel(in ValkeyKey key, int? database, bool isPattern, bool appendStar)
     {
@@ -451,65 +536,6 @@ public readonly struct ValkeyChannel : IEquatable<ValkeyChannel>
         KeyNotificationType.TypeChanged => "type_changed"u8,
         _ => throw new ArgumentOutOfRangeException(nameof(type)),
     };
-
-    #endregion
-
-    /// <summary>
-    /// The matching pattern for this channel.
-    /// </summary>
-    public enum PatternMode
-    {
-        /// <summary>
-        /// Will be treated as a pattern if it includes *.
-        /// </summary>
-        Auto = 0,
-
-        /// <summary>
-        /// Never a pattern.
-        /// </summary>
-        Literal = 1,
-
-        /// <summary>
-        /// Always a pattern.
-        /// </summary>
-        Pattern = 2,
-    }
-
-    /// <summary>
-    /// Obtain the channel name as a <c>byte[]</c>.
-    /// </summary>
-    /// <param name="key">The channel to convert.</param>
-    public static implicit operator byte[]?(ValkeyChannel key) => key.Value;
-
-    /// <summary>
-    /// Obtain the channel name as a <see cref="string"/>.
-    /// </summary>
-    /// <param name="key">The channel to convert.</param>
-    public static implicit operator string?(ValkeyChannel key)
-    {
-        var arr = key.Value;
-        if (arr is null)
-        {
-            return null;
-        }
-
-        try
-        {
-            return Encoding.UTF8.GetString(arr);
-        }
-        catch (Exception e) when (e is DecoderFallbackException or ArgumentException or ArgumentNullException)
-        {
-            return BitConverter.ToString(arr);
-        }
-    }
-
-    #region Internal Methods
-
-    /// <summary>
-    /// Converts this channel to a <see cref="ValkeyKey"/>.
-    /// </summary>
-    internal ValkeyKey ToValkeyKey()
-        => Value is null ? ValkeyKey.Null : (ValkeyKey)Value;
 
     #endregion
 }

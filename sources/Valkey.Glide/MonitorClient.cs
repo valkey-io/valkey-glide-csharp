@@ -43,7 +43,17 @@ public sealed class MonitorClient : IAsyncDisposable, IDisposable
     private readonly MonitorMessageCallback _callbackDelegate;
 
     #endregion
-    #region Constructors & Builders
+    #region Constructors
+
+    private MonitorClient(IntPtr clientPtr)
+    {
+        _clientPtr = clientPtr;
+        _channel = Channel.CreateUnbounded<MonitorMessage>(new UnboundedChannelOptions { SingleWriter = true });
+        _callbackDelegate = OnMonitorMessage;
+    }
+
+    #endregion
+    #region Public Methods
 
     /// <summary>
     /// Creates a new <see cref="MonitorClient"/> instance.
@@ -104,16 +114,6 @@ public sealed class MonitorClient : IAsyncDisposable, IDisposable
             Marshal.FreeHGlobal(configPtr);
         }
     }
-
-    private MonitorClient(IntPtr clientPtr)
-    {
-        _clientPtr = clientPtr;
-        _channel = Channel.CreateUnbounded<MonitorMessage>(new UnboundedChannelOptions { SingleWriter = true });
-        _callbackDelegate = OnMonitorMessage;
-    }
-
-    #endregion
-    #region Public Methods
 
     /// <summary>
     /// Returns an async stream of monitor messages.

@@ -201,10 +201,10 @@ public class PubSubFFIIntegrationTests
     // Mock class for testing
     private class MockBaseClient : BaseClient
     {
-        protected override Task<Version> GetServerVersionAsync()
-            => Task.FromResult(new Version(7, 2, 0));
-
         // Mock implementations
         internal override void HandlePubSubMessage(PubSubMessage message) { }
+
+        protected override Task<Version> GetServerVersionAsync()
+            => Task.FromResult(new Version(7, 2, 0));
     }
 }

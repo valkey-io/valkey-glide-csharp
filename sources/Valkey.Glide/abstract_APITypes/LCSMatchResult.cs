@@ -8,7 +8,16 @@ namespace Valkey.Glide;
 /// </summary>
 public readonly struct LCSMatchResult
 {
-    internal static LCSMatchResult Null { get; } = new LCSMatchResult([], 0);
+    /// <summary>
+    /// Returns a new <see cref="LCSMatchResult"/>.
+    /// </summary>
+    /// <param name="matches">The matched positions in each string.</param>
+    /// <param name="matchLength">The length of the match.</param>
+    internal LCSMatchResult(LCSMatch[] matches, long matchLength)
+    {
+        Matches = matches;
+        LongestMatchLength = matchLength;
+    }
 
     /// <summary>
     /// Whether this match result contains any matches.
@@ -25,22 +34,26 @@ public readonly struct LCSMatchResult
     /// </summary>
     public long LongestMatchLength { get; }
 
-    /// <summary>
-    /// Returns a new <see cref="LCSMatchResult"/>.
-    /// </summary>
-    /// <param name="matches">The matched positions in each string.</param>
-    /// <param name="matchLength">The length of the match.</param>
-    internal LCSMatchResult(LCSMatch[] matches, long matchLength)
-    {
-        Matches = matches;
-        LongestMatchLength = matchLength;
-    }
+    internal static LCSMatchResult Null { get; } = new LCSMatchResult([], 0);
 
     /// <summary>
     /// Represents a sub-match of the longest match. i.e first indexes the matched substring in each string.
     /// </summary>
     public readonly struct LCSMatch
     {
+        /// <summary>
+        /// Returns a new Match.
+        /// </summary>
+        /// <param name="firstStringIndex">The first index of the matched substring in the first string.</param>
+        /// <param name="secondStringIndex">The first index of the matched substring in the second string.</param>
+        /// <param name="length">The length of the match.</param>
+        internal LCSMatch(long firstStringIndex, long secondStringIndex, long length)
+        {
+            FirstStringIndex = firstStringIndex;
+            SecondStringIndex = secondStringIndex;
+            Length = length;
+        }
+
         /// <summary>
         /// The first index of the matched substring in the first string.
         /// </summary>
@@ -55,18 +68,5 @@ public readonly struct LCSMatchResult
         /// The length of the match.
         /// </summary>
         public long Length { get; }
-
-        /// <summary>
-        /// Returns a new Match.
-        /// </summary>
-        /// <param name="firstStringIndex">The first index of the matched substring in the first string.</param>
-        /// <param name="secondStringIndex">The first index of the matched substring in the second string.</param>
-        /// <param name="length">The length of the match.</param>
-        internal LCSMatch(long firstStringIndex, long secondStringIndex, long length)
-        {
-            FirstStringIndex = firstStringIndex;
-            SecondStringIndex = secondStringIndex;
-            Length = length;
-        }
     }
 }

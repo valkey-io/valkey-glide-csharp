@@ -8,7 +8,7 @@ namespace Valkey.Glide.Commands.Options;
 /// <seealso href="https://valkey.io/commands/set/"/>
 public sealed class SetCondition
 {
-    #region Public Properties
+    #region Public Fields
 
     /// <summary>
     /// Always set the value for the key.
@@ -26,12 +26,6 @@ public sealed class SetCondition
     public static readonly SetCondition OnlyIfDoesNotExist = new(SetConditionType.OnlyIfDoesNotExist);
 
     #endregion
-    #region Internal Properties
-
-    internal SetConditionType Type { get; }
-    internal ValkeyValue? ComparisonValue { get; }
-
-    #endregion
     #region Constructors
 
     private SetCondition(SetConditionType type, ValkeyValue? comparisonValue = null)
@@ -39,6 +33,27 @@ public sealed class SetCondition
         Type = type;
         ComparisonValue = comparisonValue;
     }
+
+    #endregion
+    #region Nested Types
+
+    /// <summary>
+    /// The set condition options.
+    /// </summary>
+    internal enum SetConditionType
+    {
+        Always,
+        OnlyIfExists,
+        OnlyIfDoesNotExist,
+        OnlyIfEqual,
+        OnlyIfNotEqual,
+    }
+
+    #endregion
+    #region Internal Properties
+
+    internal SetConditionType Type { get; }
+    internal ValkeyValue? ComparisonValue { get; }
 
     #endregion
     #region Public Methods
@@ -89,16 +104,4 @@ public sealed class SetCondition
     };
 
     #endregion
-
-    /// <summary>
-    /// The set condition options.
-    /// </summary>
-    internal enum SetConditionType
-    {
-        Always,
-        OnlyIfExists,
-        OnlyIfDoesNotExist,
-        OnlyIfEqual,
-        OnlyIfNotEqual,
-    }
 }

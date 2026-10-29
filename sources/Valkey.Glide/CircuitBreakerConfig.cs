@@ -13,11 +13,6 @@ public sealed class CircuitBreakerConfig
     #region Public Constants
 
     /// <summary>
-    /// Default sliding window duration for error rate calculation (10 seconds).
-    /// </summary>
-    public static readonly TimeSpan DefaultWindowSize = TimeSpan.FromMilliseconds(DefaultWindowSizeMs);
-
-    /// <summary>
     /// Default failure rate threshold within the window to trip the breaker (50%).
     /// </summary>
     public const float DefaultFailureRateThreshold = 0.5f;
@@ -28,14 +23,19 @@ public sealed class CircuitBreakerConfig
     public const uint DefaultMinErrors = 50;
 
     /// <summary>
-    /// Default time in Open state before allowing a probe request (5 seconds).
-    /// </summary>
-    public static readonly TimeSpan DefaultOpenTimeout = TimeSpan.FromMilliseconds(DefaultOpenTimeoutMs);
-
-    /// <summary>
     /// Default number of consecutive successful probe requests needed before closing the breaker (3).
     /// </summary>
     public const uint DefaultConsecutiveSuccesses = 3;
+
+    /// <summary>
+    /// Default sliding window duration for error rate calculation (10 seconds).
+    /// </summary>
+    public static readonly TimeSpan DefaultWindowSize = TimeSpan.FromMilliseconds(DefaultWindowSizeMs);
+
+    /// <summary>
+    /// Default time in Open state before allowing a probe request (5 seconds).
+    /// </summary>
+    public static readonly TimeSpan DefaultOpenTimeout = TimeSpan.FromMilliseconds(DefaultOpenTimeoutMs);
 
     #endregion
     #region Private Constants

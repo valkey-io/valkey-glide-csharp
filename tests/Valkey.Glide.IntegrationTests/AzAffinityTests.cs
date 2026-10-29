@@ -14,57 +14,13 @@ namespace Valkey.Glide.IntegrationTests;
 [CollectionDefinition(DisableParallelization = true)]
 public class AzAffinityTests(TestConfiguration config)
 {
-    public TestConfiguration Config { get; } = config;
-
     private const string Az = "us-east-1a";
     private const string OtherAz = "us-east-1b";
     private const string NonExistingAz = "non-existing-Az";
 
     private static readonly Regex GetCallsRegex = new(@"cmdstat_get:calls=(\d+)", RegexOptions.Compiled);
 
-    private static async Task<GlideClusterClient> CreateAzTestClient(ReadFromStrategy strategy, string az, ConnectionConfiguration.Protocol protocol)
-    {
-        ClusterClientConfiguration config = TestConfiguration.DefaultClusterClientConfig()
-            .WithReadFrom(new(strategy, az))
-            .WithRequestTimeout(TimeSpan.FromSeconds(2))
-            .WithProtocolVersion(protocol)
-            .Build();
-        return await GlideClusterClient.CreateClient(config);
-    }
-
-    private static async Task<GlideClusterClient> CreateConfigClient(ConnectionConfiguration.Protocol protocol)
-        => await GlideClusterClient.CreateClient(
-            TestConfiguration.DefaultClusterClientConfig().WithProtocolVersion(protocol).Build());
-
-    /// <summary>Sets the <c>availability-zone</c> config on the nodes selected by <paramref name="route"/>.</summary>
-    private static async Task SetAvailabilityZone(GlideClusterClient client, string az, Route route)
-        => _ = await client.CustomCommand(["config", "set", "availability-zone", az], route);
-
-    /// <summary>Resets command stats on all nodes.</summary>
-    private static async Task ResetStats(GlideClusterClient client)
-        => _ = await client.CustomCommand(["config", "resetstat"], AllNodes);
-
-    private static async Task<int> GetReplicaCountInCluster(GlideClusterClient client)
-    {
-        ClusterValue<string> clusterInfo = await client.InfoAsync([Section.REPLICATION], new SlotKeyRoute("_", SlotType.Primary));
-        foreach (string line in clusterInfo.SingleValue.Split('\n'))
-        {
-            string[] parts = line.Split(':', 2);
-            if (parts.Length == 2 && parts[0].Trim() == "connected_slaves")
-            {
-                return int.Parse(parts[1].Trim());
-            }
-        }
-
-        throw new Exception("Can't get replica count");
-    }
-
-    /// <summary>Parses the <c>cmdstat_get:calls</c> value from a node's INFO output, or 0 if absent.</summary>
-    private static int GetCalls(string infoValue)
-    {
-        Match m = GetCallsRegex.Match(infoValue);
-        return m.Success ? int.Parse(m.Groups[1].Value) : 0;
-    }
+    public TestConfiguration Config { get; } = config;
 
     [Theory]
     [MemberData(nameof(Data.Protocols), MemberType = typeof(Data))]
@@ -371,5 +327,49 @@ public class AzAffinityTests(TestConfiguration config)
         Assert.True(primaryReceivedGets, "primary must receive GET calls");
         Assert.True(replicaReceivedGets, "at least one replica must receive GET calls");
         Assert.Equal(nGetCalls, totalGetCalls);
+    }
+
+    private static async Task<GlideClusterClient> CreateAzTestClient(ReadFromStrategy strategy, string az, ConnectionConfiguration.Protocol protocol)
+    {
+        ClusterClientConfiguration config = TestConfiguration.DefaultClusterClientConfig()
+            .WithReadFrom(new(strategy, az))
+            .WithRequestTimeout(TimeSpan.FromSeconds(2))
+            .WithProtocolVersion(protocol)
+            .Build();
+        return await GlideClusterClient.CreateClient(config);
+    }
+
+    private static async Task<GlideClusterClient> CreateConfigClient(ConnectionConfiguration.Protocol protocol)
+        => await GlideClusterClient.CreateClient(
+            TestConfiguration.DefaultClusterClientConfig().WithProtocolVersion(protocol).Build());
+
+    /// <summary>Sets the <c>availability-zone</c> config on the nodes selected by <paramref name="route"/>.</summary>
+    private static async Task SetAvailabilityZone(GlideClusterClient client, string az, Route route)
+        => _ = await client.CustomCommand(["config", "set", "availability-zone", az], route);
+
+    /// <summary>Resets command stats on all nodes.</summary>
+    private static async Task ResetStats(GlideClusterClient client)
+        => _ = await client.CustomCommand(["config", "resetstat"], AllNodes);
+
+    private static async Task<int> GetReplicaCountInCluster(GlideClusterClient client)
+    {
+        ClusterValue<string> clusterInfo = await client.InfoAsync([Section.REPLICATION], new SlotKeyRoute("_", SlotType.Primary));
+        foreach (string line in clusterInfo.SingleValue.Split('\n'))
+        {
+            string[] parts = line.Split(':', 2);
+            if (parts.Length == 2 && parts[0].Trim() == "connected_slaves")
+            {
+                return int.Parse(parts[1].Trim());
+            }
+        }
+
+        throw new Exception("Can't get replica count");
+    }
+
+    /// <summary>Parses the <c>cmdstat_get:calls</c> value from a node's INFO output, or 0 if absent.</summary>
+    private static int GetCalls(string infoValue)
+    {
+        Match m = GetCallsRegex.Match(infoValue);
+        return m.Success ? int.Parse(m.Groups[1].Value) : 0;
     }
 }

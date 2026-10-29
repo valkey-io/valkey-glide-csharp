@@ -33,6 +33,33 @@ internal sealed class PubSubMessageHandler : IDisposable
     }
 
     /// <summary>
+    /// Releases all resources used by the <see cref="PubSubMessageHandler"/>.
+    /// </summary>
+    public void Dispose()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+
+        // Dispose the message queue if it was created
+        if (_queue.IsValueCreated)
+        {
+            try
+            {
+                _queue.Value.Dispose();
+            }
+            catch (Exception ex)
+            {
+                // Log disposal errors but don't throw to ensure cleanup completes
+                Logger.Log(Level.Warn, "PubSubMessageHandler", "Error during PubSub message queue disposal", ex);
+            }
+        }
+    }
+
+    /// <summary>
     /// Process an incoming PubSub message by routing it to callback or queue.
     /// </summary>
     /// <param name="message">The message to process.</param>
@@ -114,33 +141,6 @@ internal sealed class PubSubMessageHandler : IDisposable
             // Log the error and continue processing subsequent messages
             // This ensures that callback exceptions don't break the message processing pipeline
             Logger.Log(Level.Error, "PubSubMessageHandler", $"Error in PubSub message callback for channel {message.Channel}. Message processing will continue.", ex);
-        }
-    }
-
-    /// <summary>
-    /// Releases all resources used by the <see cref="PubSubMessageHandler"/>.
-    /// </summary>
-    public void Dispose()
-    {
-        if (_disposed)
-        {
-            return;
-        }
-
-        _disposed = true;
-
-        // Dispose the message queue if it was created
-        if (_queue.IsValueCreated)
-        {
-            try
-            {
-                _queue.Value.Dispose();
-            }
-            catch (Exception ex)
-            {
-                // Log disposal errors but don't throw to ensure cleanup completes
-                Logger.Log(Level.Warn, "PubSubMessageHandler", "Error during PubSub message queue disposal", ex);
-            }
         }
     }
 

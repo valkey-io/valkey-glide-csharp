@@ -44,6 +44,14 @@ public sealed class Script : IDisposable
     }
 
     /// <summary>
+    /// Finalizer to ensure cleanup if Dispose is not called.
+    /// </summary>
+    ~Script()
+    {
+        Dispose();
+    }
+
+    /// <summary>
     /// Gets the SHA1 hash of the script.
     /// </summary>
     /// <exception cref="ObjectDisposedException">Thrown if accessing the hash after the script has been disposed.</exception>
@@ -97,14 +105,6 @@ public sealed class Script : IDisposable
                 GC.SuppressFinalize(this);
             }
         }
-    }
-
-    /// <summary>
-    /// Finalizer to ensure cleanup if Dispose is not called.
-    /// </summary>
-    ~Script()
-    {
-        Dispose();
     }
 
     /// <summary>

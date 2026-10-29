@@ -9,6 +9,12 @@ namespace Valkey.Glide.Internals;
 
 internal static partial class Request
 {
+    #region Private Fields
+
+    private static readonly Func<Dictionary<GlideString, object>, SortedSetEntry[]> ToScoreResults =
+        dict => [.. dict.Select(kvp => new SortedSetEntry((ValkeyValue)kvp.Key, (double)kvp.Value))];
+
+    #endregion
     #region Command Builders
 
     public static Cmd<long, bool> SortedSetAdd(ValkeyKey key, ValkeyValue member, double score, SortedSetAddOptions options = default)
@@ -207,9 +213,6 @@ internal static partial class Request
 
     #endregion
     #region Response Converters
-
-    private static readonly Func<Dictionary<GlideString, object>, SortedSetEntry[]> ToScoreResults =
-        dict => [.. dict.Select(kvp => new SortedSetEntry((ValkeyValue)kvp.Key, (double)kvp.Value))];
 
     private static (long Rank, double Score)? ToRankAndScore(object[] response)
         => response is { Length: 2 } ? ((long)response[0], (double)response[1]) : null;

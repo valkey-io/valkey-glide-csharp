@@ -14,18 +14,11 @@ namespace Valkey.Glide.Internals;
 /// <param name="container">The container that owns this message.</param>
 internal class Message(int index, MessageContainer container) : INotifyCompletion
 {
-    /// <summary>
-    /// This is the index of the message in an external array, that allows the user to
-    /// know how to find the message and set its result.
-    /// </summary>
-    public int Index { get; } = index;
-    private MessageContainer Container { get; } = container;
-
-    private Action? _continuation = () => { };
-
     private const int COMPLETION_STAGE_STARTED = 0;
     private const int COMPLETION_STAGE_NEXT_SHOULD_EXECUTE_CONTINUATION = 1;
     private const int COMPLETION_STAGE_CONTINUATION_EXECUTED = 2;
+
+    private Action? _continuation = () => { };
 
     private int _completionState;
     private IntPtr _result = default;
@@ -34,6 +27,16 @@ internal class Message(int index, MessageContainer container) : INotifyCompletio
 #pragma warning disable IDE0052 // Remove unread private members
     private object? _client;
 #pragma warning restore IDE0052 // Remove unread private members
+
+    /// <summary>
+    /// This is the index of the message in an external array, that allows the user to
+    /// know how to find the message and set its result.
+    /// </summary>
+    public int Index { get; } = index;
+
+    public bool IsCompleted => _completionState == COMPLETION_STAGE_CONTINUATION_EXECUTED;
+
+    private MessageContainer Container { get; } = container;
 
     /// <summary>
     /// Triggers a succesful completion of the task returned from the latest call
@@ -56,6 +59,31 @@ internal class Message(int index, MessageContainer container) : INotifyCompletio
         _exception = exc;
         FinishSet();
     }
+
+    public Message GetAwaiter() => this;
+
+    /// <summary>
+    /// This returns a task that will complete once SetException / SetResult are called,
+    /// and ensures that the internal state of the message is set-up before the task is created,
+    /// and cleaned once it is complete.
+    /// </summary>
+    /// <param name="client">The client to associate with the operation; held to prevent it being garbage collected.</param>
+    public void SetupTask(object client)
+    {
+        _continuation = null;
+        _completionState = COMPLETION_STAGE_STARTED;
+        _result = default;
+        _exception = null;
+        _client = client;
+    }
+
+    public void OnCompleted(Action continuation)
+    {
+        _continuation = continuation;
+        CheckRaceAndCallContinuation();
+    }
+
+    public IntPtr GetResult() => _exception is null ? _result : throw _exception;
 
     private void FinishSet()
     {
@@ -81,32 +109,5 @@ internal class Message(int index, MessageContainer container) : INotifyCompletio
         }
     }
 
-    public Message GetAwaiter() => this;
-
-    /// <summary>
-    /// This returns a task that will complete once SetException / SetResult are called,
-    /// and ensures that the internal state of the message is set-up before the task is created,
-    /// and cleaned once it is complete.
-    /// </summary>
-    /// <param name="client">The client to associate with the operation; held to prevent it being garbage collected.</param>
-    public void SetupTask(object client)
-    {
-        _continuation = null;
-        _completionState = COMPLETION_STAGE_STARTED;
-        _result = default;
-        _exception = null;
-        _client = client;
-    }
-
     private void CleanUp() => _client = null;
-
-    public void OnCompleted(Action continuation)
-    {
-        _continuation = continuation;
-        CheckRaceAndCallContinuation();
-    }
-
-    public bool IsCompleted => _completionState == COMPLETION_STAGE_CONTINUATION_EXECUTED;
-
-    public IntPtr GetResult() => _exception is null ? _result : throw _exception;
 }

@@ -57,12 +57,12 @@ public enum Level
 /// <seealso href="https://glide.valkey.io/how-to/monitoring/logging/">Valkey GLIDE – Logging</seealso>
 public static class Logger
 {
-    #region private fields
+    #region Private Fields
 
     private static Level? s_loggerLevel = null;
 
     #endregion
-    #region public methods
+    #region Public Methods
 
     /// <summary>
     /// Initialize a logger if it wasn't initialized before - this method is meant to be used when there is no intention to
@@ -136,7 +136,7 @@ public static class Logger
     }
 
     #endregion
-    #region FFI function declaration
+    #region FFI Function Declarations
 
     [DllImport("libglide_rs", CallingConvention = CallingConvention.Cdecl, EntryPoint = "log")]
     private static extern void log(

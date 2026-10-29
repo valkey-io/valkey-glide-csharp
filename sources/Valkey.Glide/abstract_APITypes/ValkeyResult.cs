@@ -11,6 +11,13 @@ namespace Valkey.Glide;
 /// </summary>
 public abstract class ValkeyResult
 {
+    #region Private Fields
+
+    private static ValkeyResult? s_emptyArray, s_emptySet, s_emptyMap;
+
+    #endregion
+    #region Constructors
+
     // Public parameterless constructor retained purely for binary compatibility.
 #pragma warning disable RCS1160
     /// <summary>
@@ -25,108 +32,13 @@ public abstract class ValkeyResult
         Resp3Type = resultType;
     }
 
-    /// <summary>
-    /// Create a new ValkeyResult representing a single value.
-    /// </summary>
-    /// <param name="value">The <see cref="ValkeyValue"/> to create a result from.</param>
-    /// <param name="resultType">The type of result being represented.</param>
-    /// <returns> new <see cref="ValkeyResult"/>.</returns>
-    [SuppressMessage("ApiDesign", "RS0027:Public API with optional parameter(s) should have the most parameters amongst its public overloads", Justification = "Legacy compat.")]
-    public static ValkeyResult Create(ValkeyValue value, ResultType? resultType = null) => new SingleResult(value, resultType);
-
-    /// <summary>
-    /// Create a new ValkeyResult representing an array of values.
-    /// </summary>
-    /// <param name="values">The <see cref="ValkeyValue"/>s to create a result from.</param>
-    /// <returns> new <see cref="ValkeyResult"/>.</returns>
-    public static ValkeyResult Create(ValkeyValue[] values)
-        => Create(values, ResultType.Array);
-
-    /// <summary>
-    /// Create a new ValkeyResult representing an array of values.
-    /// </summary>
-    /// <param name="values">The <see cref="ValkeyValue"/>s to create a result from.</param>
-    /// <param name="resultType">The explicit data type.</param>
-    /// <returns> new <see cref="ValkeyResult"/>.</returns>
-    public static ValkeyResult Create(ValkeyValue[] values, ResultType resultType) =>
-        values == null ? NullArray : values.Length == 0 ? EmptyArray(resultType) :
-            new ArrayResult(Array.ConvertAll(values, value => new SingleResult(value, null)), resultType);
-
-    /// <summary>
-    /// Create a new ValkeyResult representing an array of values.
-    /// </summary>
-    /// <param name="values">The <see cref="ValkeyResult"/>s to create a result from.</param>
-    /// <returns> new <see cref="ValkeyResult"/>.</returns>
-    public static ValkeyResult Create(ValkeyResult[] values)
-        => Create(values, ResultType.Array);
-
-    /// <summary>
-    /// Create a new ValkeyResult representing an array of values.
-    /// </summary>
-    /// <param name="values">The <see cref="ValkeyResult"/>s to create a result from.</param>
-    /// <param name="resultType">The explicit data type.</param>
-    /// <returns> new <see cref="ValkeyResult"/>.</returns>
-    public static ValkeyResult Create(ValkeyResult[] values, ResultType resultType)
-        => values == null ? NullArray : values.Length == 0 ? EmptyArray(resultType) : new ArrayResult(values, resultType);
-
-    internal static ValkeyResult Create(object? obj) => obj switch
-    {
-        IEnumerable<object?> arr => Create(arr.Select(Create).ToArray()),
-        IDictionary<GlideString, object?> dict => Create(dict.SelectMany(p => new ValkeyResult[] { Create(p.Key), Create(p.Value) }).ToArray()),
-        _ => Create(ValkeyValue.Unbox(obj)),
-    };
-
-    /// <summary>
-    /// An empty array result.
-    /// </summary>
-    /// <param name="type">The result type of the empty array.</param>
-    internal static ValkeyResult EmptyArray(ResultType type) => type switch
-    {
-        ResultType.Array => s_emptyArray ??= new ArrayResult([], type),
-        ResultType.Set => s_emptySet ??= new ArrayResult([], type),
-        ResultType.Map => s_emptyMap ??= new ArrayResult([], type),
-        ResultType.None
-            or ResultType.SimpleString
-            or ResultType.Error
-            or ResultType.Integer
-            or ResultType.BulkString
-            or ResultType.Null
-            or ResultType.Boolean
-            or ResultType.Double
-            or ResultType.BigInteger
-            or ResultType.BlobError
-            or ResultType.VerbatimString
-            or ResultType.Attribute
-            or ResultType.Push
-            or _ => new ArrayResult([], type),
-    };
-
-    private static ValkeyResult? s_emptyArray, s_emptySet, s_emptyMap;
-
-    /// <summary>
-    /// A null array result.
-    /// </summary>
-    internal static ValkeyResult NullArray { get; } = new ArrayResult(null, ResultType.Null);
-
-    /// <summary>
-    /// A null single result, to use as a default for invalid returns.
-    /// </summary>
-    internal static ValkeyResult NullSingle { get; } = new SingleResult(ValkeyValue.Null, ResultType.Null);
+    #endregion
+    #region Public Properties
 
     /// <summary>
     /// Gets the number of elements in this item if it is a valid array, or <c>-1</c> otherwise.
     /// </summary>
     public virtual int Length => -1;
-
-    /// <inheritdoc/>
-    public sealed override string ToString() => ToString(out _) ?? "";
-
-    /// <summary>
-    /// Gets the string content as per <see cref="ToString()"/>, but also obtains the declared type from verbatim strings (for example <c>LATENCY DOCTOR</c>).
-    /// </summary>
-    /// <param name="type">The type of the returned string.</param>
-    /// <returns>The content.</returns>
-    public abstract string? ToString(out string? type);
 
     /// <summary>
     /// Indicate the type of result that was received from server, in RESP2 terms.
@@ -145,12 +57,38 @@ public abstract class ValkeyResult
     /// </summary>
     public ResultType Resp2Type => Resp3Type == ResultType.Null ? Resp2NullType : Resp3Type.ToResp2();
 
-    internal virtual ResultType Resp2NullType => ResultType.BulkString;
-
     /// <summary>
     /// Indicates whether this result was a null result.
     /// </summary>
     public abstract bool IsNull { get; }
+
+    #endregion
+    #region Internal Properties
+
+    /// <summary>
+    /// A null array result.
+    /// </summary>
+    internal static ValkeyResult NullArray { get; } = new ArrayResult(null, ResultType.Null);
+
+    /// <summary>
+    /// A null single result, to use as a default for invalid returns.
+    /// </summary>
+    internal static ValkeyResult NullSingle { get; } = new SingleResult(ValkeyValue.Null, ResultType.Null);
+
+    internal virtual ResultType Resp2NullType => ResultType.BulkString;
+
+    #endregion
+    #region Indexers
+
+    /// <summary>
+    /// Get a sub-item by index.
+    /// </summary>
+    /// <param name="index">The zero-based index of the sub-item to retrieve.</param>
+    /// <exception cref="InvalidOperationException">Thrown if the result is not an array.</exception>
+    public virtual ValkeyResult this[int index] => throw new InvalidOperationException("Indexers can only be used on array results");
+
+    #endregion
+    #region Operators
 
     /// <summary>
     /// Interprets the result as a <see cref="string"/>.
@@ -296,6 +234,69 @@ public abstract class ValkeyResult
     /// <param name="result">The result to convert to a <see cref="T:ValkeyResult[]"/>.</param>
     public static explicit operator ValkeyResult[]?(ValkeyResult? result) => result?.AsValkeyResultArray();
 
+    #endregion
+    #region Public Methods
+
+    /// <summary>
+    /// Create a new ValkeyResult representing a single value.
+    /// </summary>
+    /// <param name="value">The <see cref="ValkeyValue"/> to create a result from.</param>
+    /// <param name="resultType">The type of result being represented.</param>
+    /// <returns> new <see cref="ValkeyResult"/>.</returns>
+    [SuppressMessage("ApiDesign", "RS0027:Public API with optional parameter(s) should have the most parameters amongst its public overloads", Justification = "Legacy compat.")]
+    public static ValkeyResult Create(ValkeyValue value, ResultType? resultType = null) => new SingleResult(value, resultType);
+
+    /// <summary>
+    /// Create a <see cref="ValkeyResult"/> from a key.
+    /// </summary>
+    /// <param name="key">The <see cref="ValkeyKey"/> to create a <see cref="ValkeyResult"/> from.</param>
+    public static ValkeyResult Create(ValkeyKey key) => Create(key.AsValkeyValue(), ResultType.BulkString);
+
+    /// <summary>
+    /// Create a new ValkeyResult representing an array of values.
+    /// </summary>
+    /// <param name="values">The <see cref="ValkeyValue"/>s to create a result from.</param>
+    /// <returns> new <see cref="ValkeyResult"/>.</returns>
+    public static ValkeyResult Create(ValkeyValue[] values)
+        => Create(values, ResultType.Array);
+
+    /// <summary>
+    /// Create a new ValkeyResult representing an array of values.
+    /// </summary>
+    /// <param name="values">The <see cref="ValkeyValue"/>s to create a result from.</param>
+    /// <param name="resultType">The explicit data type.</param>
+    /// <returns> new <see cref="ValkeyResult"/>.</returns>
+    public static ValkeyResult Create(ValkeyValue[] values, ResultType resultType) =>
+        values == null ? NullArray : values.Length == 0 ? EmptyArray(resultType) :
+            new ArrayResult(Array.ConvertAll(values, value => new SingleResult(value, null)), resultType);
+
+    /// <summary>
+    /// Create a new ValkeyResult representing an array of values.
+    /// </summary>
+    /// <param name="values">The <see cref="ValkeyResult"/>s to create a result from.</param>
+    /// <returns> new <see cref="ValkeyResult"/>.</returns>
+    public static ValkeyResult Create(ValkeyResult[] values)
+        => Create(values, ResultType.Array);
+
+    /// <summary>
+    /// Create a new ValkeyResult representing an array of values.
+    /// </summary>
+    /// <param name="values">The <see cref="ValkeyResult"/>s to create a result from.</param>
+    /// <param name="resultType">The explicit data type.</param>
+    /// <returns> new <see cref="ValkeyResult"/>.</returns>
+    public static ValkeyResult Create(ValkeyResult[] values, ResultType resultType)
+        => values == null ? NullArray : values.Length == 0 ? EmptyArray(resultType) : new ArrayResult(values, resultType);
+
+    /// <inheritdoc/>
+    public sealed override string ToString() => ToString(out _) ?? "";
+
+    /// <summary>
+    /// Gets the string content as per <see cref="ToString()"/>, but also obtains the declared type from verbatim strings (for example <c>LATENCY DOCTOR</c>).
+    /// </summary>
+    /// <param name="type">The type of the returned string.</param>
+    /// <returns>The content.</returns>
+    public abstract string? ToString(out string? type);
+
     /// <summary>
     /// Interprets a multi-bulk result with successive key/name values as a dictionary keyed by name.
     /// </summary>
@@ -318,12 +319,40 @@ public abstract class ValkeyResult
         return result;
     }
 
+    #endregion
+    #region Internal Methods
+
+    internal static ValkeyResult Create(object? obj) => obj switch
+    {
+        IEnumerable<object?> arr => Create(arr.Select(Create).ToArray()),
+        IDictionary<GlideString, object?> dict => Create(dict.SelectMany(p => new ValkeyResult[] { Create(p.Key), Create(p.Value) }).ToArray()),
+        _ => Create(ValkeyValue.Unbox(obj)),
+    };
+
     /// <summary>
-    /// Get a sub-item by index.
+    /// An empty array result.
     /// </summary>
-    /// <param name="index">The zero-based index of the sub-item to retrieve.</param>
-    /// <exception cref="InvalidOperationException">Thrown if the result is not an array.</exception>
-    public virtual ValkeyResult this[int index] => throw new InvalidOperationException("Indexers can only be used on array results");
+    /// <param name="type">The result type of the empty array.</param>
+    internal static ValkeyResult EmptyArray(ResultType type) => type switch
+    {
+        ResultType.Array => s_emptyArray ??= new ArrayResult([], type),
+        ResultType.Set => s_emptySet ??= new ArrayResult([], type),
+        ResultType.Map => s_emptyMap ??= new ArrayResult([], type),
+        ResultType.None
+            or ResultType.SimpleString
+            or ResultType.Error
+            or ResultType.Integer
+            or ResultType.BulkString
+            or ResultType.Null
+            or ResultType.Boolean
+            or ResultType.Double
+            or ResultType.BigInteger
+            or ResultType.BlobError
+            or ResultType.VerbatimString
+            or ResultType.Attribute
+            or ResultType.Push
+            or _ => new ArrayResult([], type),
+    };
 
     internal abstract bool AsBoolean();
     internal abstract bool[]? AsBooleanArray();
@@ -350,15 +379,23 @@ public abstract class ValkeyResult
     internal abstract string? AsString();
     internal abstract string?[]? AsStringArray();
 
+    #endregion
+    #region Nested Types
+
     private sealed class ArrayResult(ValkeyResult[]? value, ResultType resultType) : ValkeyResult(value is null ? ResultType.Null : resultType)
     {
+        private readonly ValkeyResult[]? _value = value;
+
         public override bool IsNull => _value is null;
 
-        private readonly ValkeyResult[]? _value = value;
+        public override int Length => _value is null ? -1 : _value.Length;
 
         internal override ResultType Resp2NullType => ResultType.Array;
 
-        public override int Length => _value is null ? -1 : _value.Length;
+        private bool IsSingleton => _value?.Length == 1;
+        private bool IsEmpty => _value?.Length == 0;
+
+        public override ValkeyResult this[int index] => _value![index];
 
         public override string? ToString(out string? type)
         {
@@ -375,8 +412,6 @@ public abstract class ValkeyResult
 
             throw new InvalidCastException();
         }
-
-        public override ValkeyResult this[int index] => _value![index];
 
         internal override bool[]? AsBooleanArray() => IsNull ? null : Array.ConvertAll(_value!, x => x.AsBoolean());
 
@@ -395,9 +430,6 @@ public abstract class ValkeyResult
             : _value!.Length == 0
                 ? []
                 : Array.ConvertAll(_value, x => x.AsByteArray()!);
-
-        private bool IsSingleton => _value?.Length == 1;
-        private bool IsEmpty => _value?.Length == 0;
 
         internal override double AsDouble()
         {
@@ -557,12 +589,6 @@ public abstract class ValkeyResult
             : Array.ConvertAll(_value!, x => x.AsString());
     }
 
-    /// <summary>
-    /// Create a <see cref="ValkeyResult"/> from a key.
-    /// </summary>
-    /// <param name="key">The <see cref="ValkeyKey"/> to create a <see cref="ValkeyResult"/> from.</param>
-    public static ValkeyResult Create(ValkeyKey key) => Create(key.AsValkeyValue(), ResultType.BulkString);
-
     private sealed class SingleResult(ValkeyValue value, ResultType? resultType) : ValkeyResult(value.IsNull ? ResultType.Null : resultType ?? (value.IsInteger ? ResultType.Integer : ResultType.BulkString)), IConvertible
     {
         private readonly ValkeyValue _value = value;
@@ -583,30 +609,6 @@ public abstract class ValkeyResult
             return s;
         }
 
-        internal override bool AsBoolean() => (bool)_value;
-        internal override bool[] AsBooleanArray() => [AsBoolean()];
-        internal override byte[]? AsByteArray() => (byte[]?)_value;
-        internal override byte[][] AsByteArrayArray() => [AsByteArray()!];
-        internal override double AsDouble() => (double)_value;
-        internal override double[] AsDoubleArray() => [AsDouble()];
-        internal override int AsInt32() => (int)_value;
-        internal override int[] AsInt32Array() => [AsInt32()];
-        internal override long AsInt64() => (long)_value;
-        internal override ulong AsUInt64() => (ulong)_value;
-        internal override long[] AsInt64Array() => [AsInt64()];
-        internal override ulong[] AsUInt64Array() => [AsUInt64()];
-        internal override bool? AsNullableBoolean() => (bool?)_value;
-        internal override double? AsNullableDouble() => (double?)_value;
-        internal override int? AsNullableInt32() => (int?)_value;
-        internal override long? AsNullableInt64() => (long?)_value;
-        internal override ulong? AsNullableUInt64() => (ulong?)_value;
-        internal override ValkeyKey AsValkeyKey() => (byte[]?)_value;
-        internal override ValkeyKey[] AsValkeyKeyArray() => [AsValkeyKey()];
-        internal override ValkeyResult[] AsValkeyResultArray() => throw new InvalidCastException();
-        internal override ValkeyValue AsValkeyValue() => _value;
-        internal override ValkeyValue[] AsValkeyValueArray() => [AsValkeyValue()];
-        internal override string? AsString() => (string?)_value;
-        internal override string?[]? AsStringArray() => [AsString()];
         TypeCode IConvertible.GetTypeCode() => TypeCode.Object;
         bool IConvertible.ToBoolean(IFormatProvider? provider) => AsBoolean();
 
@@ -702,8 +704,35 @@ public abstract class ValkeyResult
             }
         }
 
+        internal override bool AsBoolean() => (bool)_value;
+        internal override bool[] AsBooleanArray() => [AsBoolean()];
+        internal override byte[]? AsByteArray() => (byte[]?)_value;
+        internal override byte[][] AsByteArrayArray() => [AsByteArray()!];
+        internal override double AsDouble() => (double)_value;
+        internal override double[] AsDoubleArray() => [AsDouble()];
+        internal override int AsInt32() => (int)_value;
+        internal override int[] AsInt32Array() => [AsInt32()];
+        internal override long AsInt64() => (long)_value;
+        internal override ulong AsUInt64() => (ulong)_value;
+        internal override long[] AsInt64Array() => [AsInt64()];
+        internal override ulong[] AsUInt64Array() => [AsUInt64()];
+        internal override bool? AsNullableBoolean() => (bool?)_value;
+        internal override double? AsNullableDouble() => (double?)_value;
+        internal override int? AsNullableInt32() => (int?)_value;
+        internal override long? AsNullableInt64() => (long?)_value;
+        internal override ulong? AsNullableUInt64() => (ulong?)_value;
+        internal override ValkeyKey AsValkeyKey() => (byte[]?)_value;
+        internal override ValkeyKey[] AsValkeyKeyArray() => [AsValkeyKey()];
+        internal override ValkeyResult[] AsValkeyResultArray() => throw new InvalidCastException();
+        internal override ValkeyValue AsValkeyValue() => _value;
+        internal override ValkeyValue[] AsValkeyValueArray() => [AsValkeyValue()];
+        internal override string? AsString() => (string?)_value;
+        internal override string?[]? AsStringArray() => [AsString()];
+
         [DoesNotReturn]
         private void ThrowNotSupported([CallerMemberName] string? caller = null)
             => throw new NotSupportedException($"{typeof(SingleResult).FullName} does not support {nameof(IConvertible)}.{caller} with value '{AsString()}'");
     }
+
+    #endregion
 }

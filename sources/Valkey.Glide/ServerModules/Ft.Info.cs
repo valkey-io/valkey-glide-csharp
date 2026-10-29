@@ -6,6 +6,31 @@ namespace Valkey.Glide.ServerModules;
 
 public static partial class Ft
 {
+    #region Nested Enums
+
+    /// <summary>
+    /// The state of a search index.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/ft.info/">Valkey commands – FT.INFO</seealso>
+    public enum InfoState
+    {
+        /// <summary>
+        /// The index is ready (<c>ready</c>).
+        /// </summary>
+        Ready,
+
+        /// <summary>
+        /// The index is backfilling existing data (<c>backfill_in_progress</c>).
+        /// </summary>
+        BackfillInProgress,
+
+        /// <summary>
+        /// The index backfill has been paused due to an out-of-memory condition (<c>backfill_paused_by_oom</c>).
+        /// </summary>
+        BackfillPausedByOom,
+    }
+
+    #endregion
     #region Public Methods
 
     /// <summary>
@@ -47,7 +72,7 @@ public static partial class Ft
         => client.Command(Request.FtInfoLocal(index, options));
 
     #endregion
-    #region Nested Types
+    #region Nested Classes
 
     /// <summary>
     /// The options for an operation to retrieve information about a search index.
@@ -67,38 +92,16 @@ public static partial class Ft
     }
 
     /// <summary>
-    /// The state of a search index.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/ft.info/">Valkey commands – FT.INFO</seealso>
-    public enum InfoState
-    {
-        /// <summary>
-        /// The index is ready (<c>ready</c>).
-        /// </summary>
-        Ready,
-
-        /// <summary>
-        /// The index is backfilling existing data (<c>backfill_in_progress</c>).
-        /// </summary>
-        BackfillInProgress,
-
-        /// <summary>
-        /// The index backfill has been paused due to an out-of-memory condition (<c>backfill_paused_by_oom</c>).
-        /// </summary>
-        BackfillPausedByOom,
-    }
-
-    /// <summary>
     /// Abstract base class for search index information returned by <c>FT.INFO</c>.
     /// </summary>
     public abstract class InfoResult
     {
+        internal InfoResult() { }
+
         /// <summary>
         /// The name of the index (<c>index_name</c>)
         /// </summary>
         public required string IndexName { get; init; }
-
-        internal InfoResult() { }
     }
 
     /// <summary>
@@ -106,6 +109,8 @@ public static partial class Ft
     /// </summary>
     public sealed class InfoLocalResult : InfoResult
     {
+        internal InfoLocalResult() { }
+
         /// <summary>
         /// The data structure type for the index (<c>index_definition.key_type</c>).
         /// </summary>
@@ -194,8 +199,6 @@ public static partial class Ft
         /// or <see langword="null"/> if not specified (<c>min_stem_size</c>).
         /// </summary>
         public long? MinStemSize { get; init; }
-
-        internal InfoLocalResult() { }
     }
 
     /// <summary>
@@ -203,6 +206,8 @@ public static partial class Ft
     /// </summary>
     public abstract class InfoField
     {
+        internal InfoField() { }
+
         /// <summary>
         /// The field identifier: hash field name or JSON path (<c>identifier</c>).
         /// </summary>
@@ -217,8 +222,6 @@ public static partial class Ft
         /// The memory used by user-indexed data for this field in bytes (<c>user_indexed_memory</c>).
         /// </summary>
         public required long UserIndexedMemory { get; init; }
-
-        internal InfoField() { }
     }
 
     /// <summary>
@@ -226,6 +229,8 @@ public static partial class Ft
     /// </summary>
     public sealed class InfoTextField : InfoField
     {
+        internal InfoTextField() { }
+
         /// <summary>
         /// Whether the suffix trie optimization is enabled for this field (<c>WITH_SUFFIX_TRIE</c>).
         /// </summary>
@@ -235,8 +240,6 @@ public static partial class Ft
         /// Whether stemming is disabled for this field (<c>NO_STEM</c>).
         /// </summary>
         public required bool NoStem { get; init; }
-
-        internal InfoTextField() { }
     }
 
     /// <summary>
@@ -244,6 +247,8 @@ public static partial class Ft
     /// </summary>
     public sealed class InfoTagField : InfoField
     {
+        internal InfoTagField() { }
+
         /// <summary>
         /// The separator character used for splitting tag values (<c>SEPARATOR</c>).
         /// </summary>
@@ -258,8 +263,6 @@ public static partial class Ft
         /// The number of keys that have this tag attribute present (<c>SIZE</c>).
         /// </summary>
         public required long Size { get; init; }
-
-        internal InfoTagField() { }
     }
 
     /// <summary>
@@ -275,6 +278,8 @@ public static partial class Ft
     /// </summary>
     public abstract class InfoVectorField : InfoField
     {
+        internal InfoVectorField() { }
+
         /// <summary>
         /// The current capacity of the vector index (<c>index.capacity</c>).
         /// </summary>
@@ -294,8 +299,6 @@ public static partial class Ft
         /// The number of vectors currently stored in the index (<c>index.size</c>).
         /// </summary>
         public required long Size { get; init; }
-
-        internal InfoVectorField() { }
     }
 
     /// <summary>
@@ -303,12 +306,12 @@ public static partial class Ft
     /// </summary>
     public sealed class InfoVectorFieldFlat : InfoVectorField
     {
+        internal InfoVectorFieldFlat() { }
+
         /// <summary>
         /// The block size for the FLAT index (<c>index.algorithm.block_size</c>).
         /// </summary>
         public required long BlockSize { get; init; }
-
-        internal InfoVectorFieldFlat() { }
     }
 
     /// <summary>
@@ -316,6 +319,8 @@ public static partial class Ft
     /// </summary>
     public sealed class InfoVectorFieldHnsw : InfoVectorField
     {
+        internal InfoVectorFieldHnsw() { }
+
         /// <summary>
         /// The maximum number of outgoing edges per graph node (<c>index.algorithm.m</c>).
         /// </summary>
@@ -330,8 +335,6 @@ public static partial class Ft
         /// The number of vectors examined during queries (<c>index.algorithm.ef_runtime</c>).
         /// </summary>
         public required long EfRuntime { get; init; }
-
-        internal InfoVectorFieldHnsw() { }
     }
 
     #endregion

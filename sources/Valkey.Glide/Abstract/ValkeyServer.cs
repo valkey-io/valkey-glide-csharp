@@ -37,12 +37,6 @@ internal partial class ValkeyServer(Database conn, EndPoint endpoint) : IServer
     #endregion
     #region Public Methods
 
-    /// <summary>
-    /// Run <c>HELLO</c> command.
-    /// </summary>
-    private Dictionary<GlideString, object> Hello()
-        => (Dictionary<GlideString, object>)_conn.CustomCommand(["hello"]).GetAwaiter().GetResult()!;
-
     /// <inheritdoc/>
     public async Task<ValkeyResult> ExecuteAsync(string command, params object[] args)
         => await ExecuteAsync(command, args.ToList());
@@ -390,6 +384,12 @@ internal partial class ValkeyServer(Database conn, EndPoint endpoint) : IServer
 
     #endregion
     #region Private Methods
+
+    /// <summary>
+    /// Run <c>HELLO</c> command.
+    /// </summary>
+    private Dictionary<GlideString, object> Hello()
+        => (Dictionary<GlideString, object>)_conn.CustomCommand(["hello"]).GetAwaiter().GetResult()!;
 
     private Route MakeRoute()
     {

@@ -225,6 +225,12 @@ public static partial class Ft
     /// <seealso href="https://valkey.io/commands/ft.search/">Valkey commands – FT.SEARCH</seealso>
     public sealed class SearchResult
     {
+        internal SearchResult(long totalResults, SearchDocument[] documents)
+        {
+            TotalResults = totalResults;
+            Documents = documents;
+        }
+
         /// <summary>
         /// The total number of documents matching the query across the entire index.
         /// </summary>
@@ -234,12 +240,6 @@ public static partial class Ft
         /// Search result documents.
         /// </summary>
         public SearchDocument[] Documents { get; }
-
-        internal SearchResult(long totalResults, SearchDocument[] documents)
-        {
-            TotalResults = totalResults;
-            Documents = documents;
-        }
     }
 
     /// <summary>
@@ -248,6 +248,16 @@ public static partial class Ft
     /// <seealso href="https://valkey.io/commands/ft.search/">Valkey commands – FT.SEARCH</seealso>
     public sealed class SearchDocument
     {
+        internal SearchDocument(
+            ValkeyKey key,
+            IDictionary<ValkeyValue, ValkeyValue> fields,
+            ValkeyValue sortKey = default)
+        {
+            Key = key;
+            Fields = fields;
+            SortKey = sortKey;
+        }
+
         /// <summary>
         /// The document key (e.g. the Valkey key name).
         /// </summary>
@@ -263,16 +273,6 @@ public static partial class Ft
         /// or <see cref="ValkeyValue.Null"/>.
         /// </summary>
         public ValkeyValue SortKey { get; }
-
-        internal SearchDocument(
-            ValkeyKey key,
-            IDictionary<ValkeyValue, ValkeyValue> fields,
-            ValkeyValue sortKey = default)
-        {
-            Key = key;
-            Fields = fields;
-            SortKey = sortKey;
-        }
     }
 
     #endregion

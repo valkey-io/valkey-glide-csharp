@@ -8,16 +8,23 @@ namespace Valkey.Glide;
 /// <seealso href="https://valkey.io/commands/xautoclaim/"/>
 public readonly struct StreamAutoClaimJustIdResult
 {
-    #region Constants
+    #region Constructors
+
+    internal StreamAutoClaimJustIdResult(ValkeyValue nextStartId, ValkeyValue[] claimedIds, ValkeyValue[] deletedIds)
+    {
+        NextStartId = nextStartId;
+        ClaimedIds = claimedIds;
+        DeletedIds = deletedIds;
+    }
+
+    #endregion
+    #region Public Properties
 
     /// <summary>
     /// A null <see cref="StreamAutoClaimJustIdResult"/>, indicating no results.
     /// </summary>
     public static StreamAutoClaimJustIdResult Null { get; }
         = new StreamAutoClaimJustIdResult(ValkeyValue.Null, [], []);
-
-    #endregion
-    #region Public Properties
 
     /// <summary>
     /// Whether this object is null/empty.
@@ -40,16 +47,6 @@ public readonly struct StreamAutoClaimJustIdResult
     /// Array of message IDs deleted from the stream.
     /// </summary>
     public ValkeyValue[] DeletedIds { get; }
-
-    #endregion
-    #region Constructors
-
-    internal StreamAutoClaimJustIdResult(ValkeyValue nextStartId, ValkeyValue[] claimedIds, ValkeyValue[] deletedIds)
-    {
-        NextStartId = nextStartId;
-        ClaimedIds = claimedIds;
-        DeletedIds = deletedIds;
-    }
 
     #endregion
 }

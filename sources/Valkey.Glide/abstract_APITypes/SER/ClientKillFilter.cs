@@ -10,11 +10,14 @@ namespace Valkey.Glide;
 /// <seealso href="https://valkey.io/commands/client-kill/" />
 public class ClientKillFilter
 {
+    #region Constructors
+
     /// <summary>
     /// Filter arguments builder for `CLIENT KILL`.
     /// </summary>
     public ClientKillFilter() { }
 
+    #endregion
     #region Public Properties
 
     /// <summary>

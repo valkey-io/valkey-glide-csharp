@@ -10,6 +10,13 @@ namespace Valkey.Glide;
 public sealed class ClusterScriptOptions
 {
     /// <summary>
+    /// Creates a new ClusterScriptOptions instance.
+    /// </summary>
+    public ClusterScriptOptions()
+    {
+    }
+
+    /// <summary>
     /// Gets or sets the arguments to pass to the script (ARGV array).
     /// </summary>
     public string[]? Args { get; set; }
@@ -18,13 +25,6 @@ public sealed class ClusterScriptOptions
     /// Gets or sets the routing configuration for cluster execution.
     /// </summary>
     public Route? Route { get; set; }
-
-    /// <summary>
-    /// Creates a new ClusterScriptOptions instance.
-    /// </summary>
-    public ClusterScriptOptions()
-    {
-    }
 
     /// <summary>
     /// Sets the arguments for the script.

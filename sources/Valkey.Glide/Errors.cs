@@ -2,11 +2,30 @@
 
 namespace Valkey.Glide;
 
+internal enum RequestErrorType : uint
+{
+    Unspecified = 0,
+    ExecAbort = 1,
+    Timeout = 2,
+    Disconnect = 3,
+    CircuitBreakerOpen = 4,
+}
+
 /// <summary>
 /// Exception types for the Valkey GLIDE client.
 /// </summary>
 public static class Errors
 {
+    internal static GlideException Create(RequestErrorType type, string message) => type switch
+    {
+        RequestErrorType.Unspecified => new RequestException(message),
+        RequestErrorType.ExecAbort => new ExecAbortException(message),
+        RequestErrorType.Timeout => new TimeoutException(message),
+        RequestErrorType.Disconnect => new ConnectionException(message),
+        RequestErrorType.CircuitBreakerOpen => new CircuitBreakerException(message),
+        _ => new RequestException(message),
+    };
+
     /// <summary>
     /// Base class for errors.
     /// </summary>
@@ -208,23 +227,4 @@ public static class Errors
         /// <param name="innerException">The exception that is the cause of the current exception.</param>
         public CircuitBreakerException(string message, Exception innerException) : base(message, innerException) { }
     }
-
-    internal static GlideException Create(RequestErrorType type, string message) => type switch
-    {
-        RequestErrorType.Unspecified => new RequestException(message),
-        RequestErrorType.ExecAbort => new ExecAbortException(message),
-        RequestErrorType.Timeout => new TimeoutException(message),
-        RequestErrorType.Disconnect => new ConnectionException(message),
-        RequestErrorType.CircuitBreakerOpen => new CircuitBreakerException(message),
-        _ => new RequestException(message),
-    };
-}
-
-internal enum RequestErrorType : uint
-{
-    Unspecified = 0,
-    ExecAbort = 1,
-    Timeout = 2,
-    Disconnect = 3,
-    CircuitBreakerOpen = 4,
 }

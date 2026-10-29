@@ -8,6 +8,48 @@ namespace Valkey.Glide.ServerModules;
 
 public static partial class Ft
 {
+    #region Nested Enums
+
+    /// <summary>
+    /// The distance metric used to measure similarity in a vector search index.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/ft.create/">Valkey commands – FT.CREATE</seealso>
+    public enum DistanceMetric
+    {
+        /// <summary>
+        /// Cosine distance.
+        /// </summary>
+        Cosine,
+
+        /// <summary>
+        /// Euclidean (L2) distance.
+        /// </summary>
+        Euclidean,
+
+        /// <summary>
+        /// Inner product distance.
+        /// </summary>
+        InnerProduct,
+    }
+
+    /// <summary>
+    /// The data type used to store documents in a search index.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/ft.create/">Valkey commands – FT.CREATE</seealso>
+    public enum DataType
+    {
+        /// <summary>
+        /// Data stored in hashes. Field identifiers are hash field names.
+        /// </summary>
+        Hash,
+
+        /// <summary>
+        /// Data stored as JSON. Field identifiers are JSON paths.
+        /// </summary>
+        Json,
+    }
+
+    #endregion
     #region Public Methods
 
     /// <summary>
@@ -93,7 +135,23 @@ public static partial class Ft
         => client.Command(Request.FtCreate(index, schema, options));
 
     #endregion
-    #region Nested Types
+    #region Internal Methods
+
+    /// <summary>
+    /// Converts to command arguments.
+    /// </summary>
+    /// <param name="metric">The distance metric to convert.</param>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="metric"/> is not a supported <see cref="DistanceMetric"/> value.</exception>
+    internal static GlideString[] ToArgs(this DistanceMetric metric) => metric switch
+    {
+        DistanceMetric.Cosine => [ValkeyLiterals.COSINE],
+        DistanceMetric.Euclidean => [ValkeyLiterals.L2],
+        DistanceMetric.InnerProduct => [ValkeyLiterals.IP],
+        _ => throw new ArgumentOutOfRangeException(nameof(metric)),
+    };
+
+    #endregion
+    #region Nested Classes
 
     /// <summary>
     /// The options for an operation to create a new search index.
@@ -298,58 +356,6 @@ public static partial class Ft
         /// or <see langword="null"/> for server default (<c>EF_RUNTIME number</c>).
         /// </summary>
         public long? VectorsExaminedOnRuntime { get; init; }
-    }
-
-    /// <summary>
-    /// The distance metric used to measure similarity in a vector search index.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/ft.create/">Valkey commands – FT.CREATE</seealso>
-    public enum DistanceMetric
-    {
-        /// <summary>
-        /// Cosine distance.
-        /// </summary>
-        Cosine,
-
-        /// <summary>
-        /// Euclidean (L2) distance.
-        /// </summary>
-        Euclidean,
-
-        /// <summary>
-        /// Inner product distance.
-        /// </summary>
-        InnerProduct,
-    }
-
-    /// <summary>
-    /// Converts to command arguments.
-    /// </summary>
-    /// <param name="metric">The distance metric to convert.</param>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="metric"/> is not a supported <see cref="DistanceMetric"/> value.</exception>
-    internal static GlideString[] ToArgs(this DistanceMetric metric) => metric switch
-    {
-        DistanceMetric.Cosine => [ValkeyLiterals.COSINE],
-        DistanceMetric.Euclidean => [ValkeyLiterals.L2],
-        DistanceMetric.InnerProduct => [ValkeyLiterals.IP],
-        _ => throw new ArgumentOutOfRangeException(nameof(metric)),
-    };
-
-    /// <summary>
-    /// The data type used to store documents in a search index.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/ft.create/">Valkey commands – FT.CREATE</seealso>
-    public enum DataType
-    {
-        /// <summary>
-        /// Data stored in hashes. Field identifiers are hash field names.
-        /// </summary>
-        Hash,
-
-        /// <summary>
-        /// Data stored as JSON. Field identifiers are JSON paths.
-        /// </summary>
-        Json,
     }
 
     #endregion

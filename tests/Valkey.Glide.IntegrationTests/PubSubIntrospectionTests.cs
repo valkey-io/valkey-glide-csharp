@@ -193,12 +193,6 @@ public class PubSubIntrospectionTests(PubSubIntrospectionFixture fixture) : ICla
 /// </summary>
 public class PubSubIntrospectionFixture : IAsyncLifetime
 {
-    // Empty and populated servers.
-    private StandaloneServer? _emptyStandaloneServer;
-    private ClusterServer? _emptyClusterServer;
-    private StandaloneServer? _standaloneServer;
-    private ClusterServer? _clusterServer;
-
     // Empty and populated clients.
     public GlideClient? EmptyStandaloneClient;
     public GlideClusterClient? EmptyClusterClient;
@@ -212,6 +206,12 @@ public class PubSubIntrospectionFixture : IAsyncLifetime
 
     public readonly ValkeyKey MatchChannel = "CHANNEL*";
     public readonly ValkeyKey MatchShardedChannel = "SHARDED_CHANNEL*";
+
+    // Empty and populated servers.
+    private StandaloneServer? _emptyStandaloneServer;
+    private ClusterServer? _emptyClusterServer;
+    private StandaloneServer? _standaloneServer;
+    private ClusterServer? _clusterServer;
 
     public async ValueTask InitializeAsync()
     {

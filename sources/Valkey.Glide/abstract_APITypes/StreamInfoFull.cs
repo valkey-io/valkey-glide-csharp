@@ -8,6 +8,31 @@ namespace Valkey.Glide;
 /// <seealso href="https://valkey.io/commands/xinfo-stream/"/>
 public readonly struct StreamInfoFull
 {
+    #region Constructors
+
+    internal StreamInfoFull(
+        int length,
+        int radixTreeKeys,
+        int radixTreeNodes,
+        ValkeyValue lastGeneratedId,
+        ValkeyValue maxDeletedEntryId,
+        long? entriesAdded,
+        ValkeyValue recordedFirstEntryId,
+        StreamEntry[] entries,
+        StreamGroupInfoFull[] groups)
+    {
+        Length = length;
+        RadixTreeKeys = radixTreeKeys;
+        RadixTreeNodes = radixTreeNodes;
+        LastGeneratedId = lastGeneratedId;
+        MaxDeletedEntryId = maxDeletedEntryId;
+        EntriesAdded = entriesAdded;
+        RecordedFirstEntryId = recordedFirstEntryId;
+        Entries = entries;
+        Groups = groups;
+    }
+
+    #endregion
     #region Public Properties
 
     /// <summary>
@@ -61,31 +86,6 @@ public readonly struct StreamInfoFull
     /// The consumer groups defined for the stream (<c>groups</c>).
     /// </summary>
     public StreamGroupInfoFull[] Groups { get; }
-
-    #endregion
-    #region Constructors
-
-    internal StreamInfoFull(
-        int length,
-        int radixTreeKeys,
-        int radixTreeNodes,
-        ValkeyValue lastGeneratedId,
-        ValkeyValue maxDeletedEntryId,
-        long? entriesAdded,
-        ValkeyValue recordedFirstEntryId,
-        StreamEntry[] entries,
-        StreamGroupInfoFull[] groups)
-    {
-        Length = length;
-        RadixTreeKeys = radixTreeKeys;
-        RadixTreeNodes = radixTreeNodes;
-        LastGeneratedId = lastGeneratedId;
-        MaxDeletedEntryId = maxDeletedEntryId;
-        EntriesAdded = entriesAdded;
-        RecordedFirstEntryId = recordedFirstEntryId;
-        Entries = entries;
-        Groups = groups;
-    }
 
     #endregion
 }

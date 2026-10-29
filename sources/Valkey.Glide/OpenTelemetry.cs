@@ -13,15 +13,15 @@ namespace Valkey.Glide;
 /// <seealso href="https://glide.valkey.io/how-to/monitoring/open-telemetry/">Valkey GLIDE – Configure OpenTelemetry</seealso>
 public static class OpenTelemetry
 {
-    private static readonly object Lock = new();
-    private static OpenTelemetryConfig? s_config;
-
     /// <summary>
     /// Internal delegate for FFI initialization.
     /// For testing purposes only.
     /// See <see cref="T:Valkey.Glide.Tests.OpenTelemetryTests"/>.
     /// </summary>
     internal static Func<IntPtr, IntPtr> InitOpenTelemetryFfi = FFI.InitOpenTelemetryFfi;
+
+    private static readonly object Lock = new();
+    private static OpenTelemetryConfig? s_config;
 
     /// <summary>
     /// Initialize OpenTelemetry with the provided configuration.

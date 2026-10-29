@@ -7,6 +7,11 @@ namespace Valkey.Glide.Internals;
 
 internal static class Utils
 {
+    /// <summary>
+    /// The default library name reported via <c>CLIENT SETINFO LIB-NAME</c> when no override is supplied.
+    /// </summary>
+    public const string DefaultLibraryName = "GlideC#";
+
     public static (string host, ushort port) SplitEndpoint(EndPoint ep)
         => ep switch
         {
@@ -68,11 +73,6 @@ internal static class Utils
 
         return list;
     }
-
-    /// <summary>
-    /// The default library name reported via <c>CLIENT SETINFO LIB-NAME</c> when no override is supplied.
-    /// </summary>
-    public const string DefaultLibraryName = "GlideC#";
 
     /// <summary>
     /// Composes the value reported via <c>CLIENT SETINFO LIB-NAME</c> from an optional library-name

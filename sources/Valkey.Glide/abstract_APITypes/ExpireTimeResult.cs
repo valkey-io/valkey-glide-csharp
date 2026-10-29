@@ -11,11 +11,20 @@ namespace Valkey.Glide;
 /// <seealso href="https://valkey.io/commands/hpexpiretime/"/>
 public readonly struct ExpireTimeResult
 {
-    internal readonly long ExpireTimeMs;
-
     // Special expire time values.
     internal const long DoesNotExist = -2;
     internal const long NoExpiry = -1;
+
+    internal readonly long ExpireTimeMs;
+
+    /// <summary>
+    /// Creates an <see cref="ExpireTimeResult"/> from the given value.
+    /// </summary>
+    /// <param name="expireTimeMs">The expiry timestamp in Unix milliseconds.</param>
+    internal ExpireTimeResult(long expireTimeMs)
+    {
+        ExpireTimeMs = expireTimeMs;
+    }
 
     /// <summary>
     /// Whether the key or hash field exists.
@@ -33,13 +42,4 @@ public readonly struct ExpireTimeResult
     /// </summary>
     public DateTimeOffset? Expiry
         => HasExpiry ? DateTimeOffset.FromUnixTimeMilliseconds(ExpireTimeMs) : null;
-
-    /// <summary>
-    /// Creates an <see cref="ExpireTimeResult"/> from the given value.
-    /// </summary>
-    /// <param name="expireTimeMs">The expiry timestamp in Unix milliseconds.</param>
-    internal ExpireTimeResult(long expireTimeMs)
-    {
-        ExpireTimeMs = expireTimeMs;
-    }
 }

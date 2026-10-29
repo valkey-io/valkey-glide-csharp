@@ -11,6 +11,15 @@ internal class ClusterScanCursor
     private const string FinishedCursorId = "finished";
 
     /// <summary>
+    /// Creates a new cursor with the specified cursor ID.
+    /// </summary>
+    /// <param name="cursorId">The cursor ID.</param>
+    internal ClusterScanCursor(string cursorId)
+    {
+        CursorId = cursorId;
+    }
+
+    /// <summary>
     /// The cursor ID for this scan iteration.
     /// </summary>
     public string CursorId { get; }
@@ -25,13 +34,4 @@ internal class ClusterScanCursor
     /// </summary>
     /// <returns>A cursor to start a new cluster scan.</returns>
     public static ClusterScanCursor InitialCursor() => new(InitialCursorId);
-
-    /// <summary>
-    /// Creates a new cursor with the specified cursor ID.
-    /// </summary>
-    /// <param name="cursorId">The cursor ID.</param>
-    internal ClusterScanCursor(string cursorId)
-    {
-        CursorId = cursorId;
-    }
 }

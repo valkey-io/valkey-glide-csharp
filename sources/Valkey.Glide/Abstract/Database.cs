@@ -9,6 +9,13 @@ namespace Valkey.Glide;
 
 internal partial class Database : GlideClient, IDatabase
 {
+    internal readonly bool IsCluster;
+
+    protected Database(bool isCluster) { IsCluster = isCluster; }
+
+    public static async Task<Database> Create(BaseClientConfiguration config)
+        => await CreateClient(config, () => new Database(config is ClusterClientConfiguration));
+
     public new async Task<string> InfoAsync() => await InfoAsync([]);
 
     public new async Task<string> InfoAsync(IEnumerable<InfoOptions.Section> sections)
@@ -21,13 +28,6 @@ internal partial class Database : GlideClient, IDatabase
 
     public ITransaction CreateTransaction()
         => new ValkeyTransaction(this);
-
-    internal readonly bool IsCluster;
-
-    protected Database(bool isCluster) { IsCluster = isCluster; }
-
-    public static async Task<Database> Create(BaseClientConfiguration config)
-        => await CreateClient(config, () => new Database(config is ClusterClientConfiguration));
 
     public async Task<ValkeyResult> ExecuteAsync(string command, params object[] args)
         => await ExecuteAsync(command, args.ToList());

@@ -8,6 +8,11 @@ namespace Valkey.Glide;
 public sealed class ScriptOptions
 {
     /// <summary>
+    /// Creates a new ScriptOptions instance.
+    /// </summary>
+    public ScriptOptions() { }
+
+    /// <summary>
     /// Gets or sets the keys to pass to the script (KEYS array).
     /// </summary>
     public string[]? Keys { get; set; }
@@ -16,13 +21,6 @@ public sealed class ScriptOptions
     /// Gets or sets the arguments to pass to the script (ARGV array).
     /// </summary>
     public string[]? Args { get; set; }
-
-    /// <summary>
-    /// Creates a new ScriptOptions instance.
-    /// </summary>
-    public ScriptOptions()
-    {
-    }
 
     /// <summary>
     /// Sets the keys for the script.

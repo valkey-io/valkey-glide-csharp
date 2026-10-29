@@ -9,26 +9,6 @@ public sealed class TempFile : IDisposable
 {
     private bool _disposed;
 
-    public string Path { get; }
-
-    public byte[] Bytes
-    {
-        get => File.ReadAllBytes(Path);
-        set => File.WriteAllBytes(Path, value);
-    }
-
-    public string Text
-    {
-        get => File.ReadAllText(Path);
-        set => File.WriteAllText(Path, value);
-    }
-
-    public string[] Lines
-    {
-        get => File.ReadAllLines(Path);
-        set => File.WriteAllLines(Path, value);
-    }
-
     public TempFile()
     {
         Path = System.IO.Path.GetTempFileName();
@@ -47,6 +27,26 @@ public sealed class TempFile : IDisposable
     ~TempFile()
     {
         Dispose();
+    }
+
+    public string Path { get; }
+
+    public byte[] Bytes
+    {
+        get => File.ReadAllBytes(Path);
+        set => File.WriteAllBytes(Path, value);
+    }
+
+    public string Text
+    {
+        get => File.ReadAllText(Path);
+        set => File.WriteAllText(Path, value);
+    }
+
+    public string[] Lines
+    {
+        get => File.ReadAllLines(Path);
+        set => File.WriteAllLines(Path, value);
     }
 
     public void Dispose()
