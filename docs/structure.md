@@ -55,3 +55,41 @@ string[] readOnlyCommands =
     "STRLEN",
 ];
 ```
+
+## Members
+
+Order the members of a type by: kind, access level, and modifier.
+This is enforced by [StyleCop.Analyzers](https://github.com/DotNetAnalyzers/StyleCopAnalyzers) rules.
+
+1. Kind
+
+    - Fields
+    - Constructors
+    - Finalizers
+    - Delegates
+    - Events
+    - Enums
+    - Interfaces
+    - Properties
+    - Indexers
+    - Methods
+    - Structs
+    - Classes
+
+2. Access Level
+
+    - `public`
+    - `internal`
+    - `protected internal`
+    - `protected`
+    - `private protected`
+    - `private`
+
+3. Modifiers
+
+    - Constants
+    - Static members
+    - Instance members
+
+Within the groups defined above, order methods following the [Lists](#lists) guidelines.
+Keep overloads of the same method together, ordered from fewest to most parameters.
