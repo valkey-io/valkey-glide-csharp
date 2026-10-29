@@ -8,6 +8,11 @@ namespace Valkey.Glide;
 /// <seealso href="https://valkey.io/commands/client-trackinginfo/"/>
 public sealed record ClientTrackingInfo
 {
+    #region Constructors
+
+    internal ClientTrackingInfo() { }
+
+    #endregion
     #region Public Properties
 
     /// <summary>
@@ -24,11 +29,6 @@ public sealed record ClientTrackingInfo
     /// The set of key prefixes monitored for invalidation.
     /// </summary>
     public required IReadOnlySet<string> Prefixes { get; init; }
-
-    #endregion
-    #region Constructors & Builders
-
-    internal ClientTrackingInfo() { }
 
     #endregion
 }

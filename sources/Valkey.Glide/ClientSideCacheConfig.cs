@@ -43,10 +43,35 @@ namespace Valkey.Glide;
 /// <seealso cref="EvictionPolicy"/>
 public sealed class ClientSideCacheConfig
 {
-    #region Internal Properties
+    #region Constructors
 
-    internal string CacheId { get; } = Guid.NewGuid().ToString("N");
-    internal ulong EntryTtlMs { get; } = 0;
+    /// <summary>
+    /// Creates a new <see cref="ClientSideCacheConfig"/> with an auto-generated unique cache ID.
+    /// </summary>
+    /// <param name="maxCacheKb">Maximum size of the cache in kilobytes (KB).</param>
+    /// <param name="entryTtl">Time-To-Live for cached entries. Use <see cref="TimeSpan.Zero"/> to disable expiration.</param>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="maxCacheKb"/> is zero.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="entryTtl"/> is negative.</exception>
+    /// <example>
+    /// <code>
+    /// var cache = new ClientSideCacheConfig(1024, TimeSpan.FromMinutes(1))
+    ///     .WithEvictionPolicy(EvictionPolicy.LRU)
+    ///     .WithMetrics(true);
+    ///
+    /// var config = new ConnectionConfiguration.StandaloneClientConfigurationBuilder()
+    ///     .WithAddress("localhost", 6379)
+    ///     .WithClientSideCache(cache)
+    ///     .Build();
+    /// </code>
+    /// </example>
+    public ClientSideCacheConfig(ulong maxCacheKb, TimeSpan entryTtl)
+    {
+        ArgumentOutOfRangeException.ThrowIfEqual(maxCacheKb, 0u, nameof(maxCacheKb));
+        ArgumentOutOfRangeException.ThrowIfLessThan(entryTtl, TimeSpan.Zero, nameof(entryTtl));
+
+        MaxCacheKb = maxCacheKb;
+        EntryTtlMs = ToULongMs(entryTtl, nameof(entryTtl));
+    }
 
     #endregion
     #region Public Properties
@@ -85,35 +110,10 @@ public sealed class ClientSideCacheConfig
     public bool ServerAssisted { get; private set; }
 
     #endregion
-    #region Constructors & Builders
+    #region Internal Properties
 
-    /// <summary>
-    /// Creates a new <see cref="ClientSideCacheConfig"/> with an auto-generated unique cache ID.
-    /// </summary>
-    /// <param name="maxCacheKb">Maximum size of the cache in kilobytes (KB).</param>
-    /// <param name="entryTtl">Time-To-Live for cached entries. Use <see cref="TimeSpan.Zero"/> to disable expiration.</param>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="maxCacheKb"/> is zero.</exception>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="entryTtl"/> is negative.</exception>
-    /// <example>
-    /// <code>
-    /// var cache = new ClientSideCacheConfig(1024, TimeSpan.FromMinutes(1))
-    ///     .WithEvictionPolicy(EvictionPolicy.LRU)
-    ///     .WithMetrics(true);
-    ///
-    /// var config = new ConnectionConfiguration.StandaloneClientConfigurationBuilder()
-    ///     .WithAddress("localhost", 6379)
-    ///     .WithClientSideCache(cache)
-    ///     .Build();
-    /// </code>
-    /// </example>
-    public ClientSideCacheConfig(ulong maxCacheKb, TimeSpan entryTtl)
-    {
-        ArgumentOutOfRangeException.ThrowIfEqual(maxCacheKb, 0u, nameof(maxCacheKb));
-        ArgumentOutOfRangeException.ThrowIfLessThan(entryTtl, TimeSpan.Zero, nameof(entryTtl));
-
-        MaxCacheKb = maxCacheKb;
-        EntryTtlMs = ToULongMs(entryTtl, nameof(entryTtl));
-    }
+    internal string CacheId { get; } = Guid.NewGuid().ToString("N");
+    internal ulong EntryTtlMs { get; } = 0;
 
     #endregion
     #region Public Methods

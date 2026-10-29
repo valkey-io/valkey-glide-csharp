@@ -780,9 +780,6 @@ public class GenericCommandsFixture : IDisposable
     private readonly StandaloneServer _standaloneServer;
     private readonly ConnectionMultiplexer _connection;
 
-    public IDatabase Database { get; }
-    public GlideClient Client { get; }
-
     public GenericCommandsFixture()
     {
         _standaloneServer = new();
@@ -800,6 +797,9 @@ public class GenericCommandsFixture : IDisposable
             .Build();
         Client = GlideClient.CreateClient(glideConfig).GetAwaiter().GetResult();
     }
+
+    public IDatabase Database { get; }
+    public GlideClient Client { get; }
 
     public void Dispose()
     {

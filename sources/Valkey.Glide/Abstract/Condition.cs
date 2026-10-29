@@ -601,9 +601,6 @@ public abstract class Condition
         public override string ToString()
             => ((string?)key) + " " + type + " length" + GetComparisonString() + expectedLength;
 
-        private string GetComparisonString()
-            => compareToResult == 0 ? " == " : (compareToResult < 0 ? " > " : " < ");
-
         internal sealed override List<ICmd> CreateCommands()
             => [
                 Request.Watch([key]),
@@ -614,6 +611,9 @@ public abstract class Condition
         {
             return expectedLength.CompareTo((long)result!) == compareToResult;
         }
+
+        private string GetComparisonString()
+            => compareToResult == 0 ? " == " : (compareToResult < 0 ? " > " : " < ");
     }
 
     internal class SortedSetRangeLengthCondition : Condition
@@ -637,9 +637,6 @@ public abstract class Condition
         public override string ToString()
             => ((string?)key) + " " + ValkeyType.SortedSet + " range[" + min + ", " + max + "] length" + GetComparisonString() + expectedLength;
 
-        private string GetComparisonString()
-        => compareToResult == 0 ? " == " : (compareToResult < 0 ? " > " : " < ");
-
         internal sealed override List<ICmd> CreateCommands()
             => [
                 Request.Watch([key]),
@@ -650,6 +647,9 @@ public abstract class Condition
         {
             return expectedLength.CompareTo((long)result!) == compareToResult;
         }
+
+        private string GetComparisonString()
+        => compareToResult == 0 ? " == " : (compareToResult < 0 ? " > " : " < ");
     }
 
     internal class SortedSetScoreCondition : Condition

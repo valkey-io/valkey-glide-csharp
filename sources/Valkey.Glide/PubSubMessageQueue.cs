@@ -125,22 +125,6 @@ public sealed class PubSubMessageQueue : IDisposable
     }
 
     /// <summary>
-    /// Enqueue a message to the queue.
-    /// This method is intended for internal use by the PubSub message handler.
-    /// </summary>
-    /// <param name="message">The message to enqueue.</param>
-    /// <exception cref="ArgumentNullException">Thrown if message is null.</exception>
-    /// <exception cref="ObjectDisposedException">Thrown if the queue has been disposed.</exception>
-    internal void EnqueueMessage(PubSubMessage message)
-    {
-        ArgumentNullException.ThrowIfNull(message);
-        ThrowIfDisposed();
-
-        _messages.Enqueue(message);
-        _ = _messageAvailable.Release();
-    }
-
-    /// <summary>
     /// Releases all resources used by the <see cref="PubSubMessageQueue"/>.
     /// </summary>
     public void Dispose()
@@ -177,6 +161,22 @@ public sealed class PubSubMessageQueue : IDisposable
         // Dispose resources
         _messageAvailable.Dispose();
         _disposalCts.Dispose();
+    }
+
+    /// <summary>
+    /// Enqueue a message to the queue.
+    /// This method is intended for internal use by the PubSub message handler.
+    /// </summary>
+    /// <param name="message">The message to enqueue.</param>
+    /// <exception cref="ArgumentNullException">Thrown if message is null.</exception>
+    /// <exception cref="ObjectDisposedException">Thrown if the queue has been disposed.</exception>
+    internal void EnqueueMessage(PubSubMessage message)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+        ThrowIfDisposed();
+
+        _messages.Enqueue(message);
+        _ = _messageAvailable.Release();
     }
 
     /// <summary>

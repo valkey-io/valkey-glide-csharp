@@ -8,6 +8,23 @@ namespace Valkey.Glide;
 /// <seealso href="https://valkey.io/commands/xinfo-stream/"/>
 public readonly struct StreamConsumerInfoFull
 {
+    #region Constructors
+
+    internal StreamConsumerInfoFull(
+        string name,
+        DateTimeOffset seenTime,
+        DateTimeOffset? activeTime,
+        long pelCount,
+        StreamPendingEntry[] pendingEntries)
+    {
+        Name = name;
+        SeenTime = seenTime;
+        ActiveTime = activeTime;
+        PelCount = pelCount;
+        PendingEntries = pendingEntries;
+    }
+
+    #endregion
     #region Public Properties
 
     /// <summary>
@@ -36,23 +53,6 @@ public readonly struct StreamConsumerInfoFull
     /// The consumer's pending entries list (<c>pending</c>).
     /// </summary>
     public StreamPendingEntry[] PendingEntries { get; }
-
-    #endregion
-    #region Constructors
-
-    internal StreamConsumerInfoFull(
-        string name,
-        DateTimeOffset seenTime,
-        DateTimeOffset? activeTime,
-        long pelCount,
-        StreamPendingEntry[] pendingEntries)
-    {
-        Name = name;
-        SeenTime = seenTime;
-        ActiveTime = activeTime;
-        PelCount = pelCount;
-        PendingEntries = pendingEntries;
-    }
 
     #endregion
 }

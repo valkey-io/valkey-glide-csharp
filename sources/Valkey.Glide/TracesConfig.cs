@@ -13,6 +13,15 @@ public sealed class TracesConfig
     private const uint MaxSamplePercentage = 100u;
 
     #endregion
+    #region Constructors
+
+    private TracesConfig(string endpoint, uint samplePercentage)
+    {
+        Endpoint = endpoint;
+        SamplePercentage = samplePercentage;
+    }
+
+    #endregion
     #region Public Properties
 
     /// <summary>
@@ -38,18 +47,31 @@ public sealed class TracesConfig
     }
 
     #endregion
-    #region Constructors & Builders
-
-    private TracesConfig(string endpoint, uint samplePercentage)
-    {
-        Endpoint = endpoint;
-        SamplePercentage = samplePercentage;
-    }
+    #region Public Methods
 
     /// <summary>
     /// Creates a new TracesConfig builder.
     /// </summary>
     public static Builder CreateBuilder() => new();
+
+    #endregion
+    #region Private Methods
+
+    /// <summary>
+    /// Validates the specified sample percentage.
+    /// </summary>
+    /// <param name="samplePercentage">The sample percentage to validate.</param>
+    /// <inheritdoc cref="Builder.WithSamplePercentage" path="/exception" />
+    private static void ValidateSamplePercentage(uint samplePercentage)
+    {
+        if (samplePercentage > MaxSamplePercentage)
+        {
+            throw new ArgumentException($"Sample percentage cannot be greater than {MaxSamplePercentage}", nameof(samplePercentage));
+        }
+    }
+
+    #endregion
+    #region Nested Types
 
     /// <summary>
     /// Builder for TracesConfig.
@@ -101,22 +123,6 @@ public sealed class TracesConfig
             => _endpoint == null
                 ? throw new InvalidOperationException("Endpoint must be specified")
                 : new TracesConfig(_endpoint, _samplePercentage);
-    }
-
-    #endregion
-    #region Private Methods
-
-    /// <summary>
-    /// Validates the specified sample percentage.
-    /// </summary>
-    /// <param name="samplePercentage">The sample percentage to validate.</param>
-    /// <inheritdoc cref="Builder.WithSamplePercentage" path="/exception" />
-    private static void ValidateSamplePercentage(uint samplePercentage)
-    {
-        if (samplePercentage > MaxSamplePercentage)
-        {
-            throw new ArgumentException($"Sample percentage cannot be greater than {MaxSamplePercentage}", nameof(samplePercentage));
-        }
     }
 
     #endregion

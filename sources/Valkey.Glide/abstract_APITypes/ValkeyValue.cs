@@ -15,18 +15,36 @@ namespace Valkey.Glide;
 /// </summary>
 public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<ValkeyValue>, IComparable, IConvertible
 {
+    #region Internal Fields
+
     internal static readonly ValkeyValue[] EmptyArray = [];
+
+    #endregion
+    #region Private Fields
+
+    private static readonly object Sentinel_SignedInteger = new();
+    private static readonly object Sentinel_UnsignedInteger = new();
+    private static readonly object Sentinel_Raw = new();
+    private static readonly object Sentinel_Double = new();
+
+    private static readonly object[] CommonInt32 = [.. Enumerable.Range(-1, 22).Select(i => (object)i)]; // [-1,20] = 22 values
+
+    private static readonly FieldInfo?
+        MemoryStreamOrigin = typeof(MemoryStream).GetField("_origin", BindingFlags.NonPublic | BindingFlags.Instance),
+        MemoryStreamBuffer = typeof(MemoryStream).GetField("_buffer", BindingFlags.NonPublic | BindingFlags.Instance);
 
     private readonly object? _objectOrSentinel;
     private readonly ReadOnlyMemory<byte> _memory;
     private readonly long _overlappedBits64;
 
-    private ValkeyValue(long overlappedValue64, ReadOnlyMemory<byte> memory, object? objectOrSentinel)
-    {
-        _overlappedBits64 = overlappedValue64;
-        _memory = memory;
-        _objectOrSentinel = objectOrSentinel;
-    }
+    #endregion
+    #region Constructors
+
+    /// <summary>
+    /// Creates a <see cref="ValkeyValue"/> from a string.
+    /// </summary>
+    /// <param name="value">The string to create the value from.</param>
+    public ValkeyValue(string value) : this(0, default, value) { }
 
     internal ValkeyValue(object obj, long overlappedBits)
     {
@@ -37,88 +55,28 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
         _memory = default;
     }
 
-    /// <summary>
-    /// Creates a <see cref="ValkeyValue"/> from a string.
-    /// </summary>
-    /// <param name="value">The string to create the value from.</param>
-    public ValkeyValue(string value) : this(0, default, value) { }
-
-    private static readonly object Sentinel_SignedInteger = new();
-    private static readonly object Sentinel_UnsignedInteger = new();
-    private static readonly object Sentinel_Raw = new();
-    private static readonly object Sentinel_Double = new();
-
-    /// <summary>
-    /// Obtain this value as an object - to be used alongside Unbox.
-    /// </summary>
-    public object? Box()
+    private ValkeyValue(long overlappedValue64, ReadOnlyMemory<byte> memory, object? objectOrSentinel)
     {
-        var obj = _objectOrSentinel;
-        if (obj is null || obj is string || obj is byte[])
-        {
-            return obj;
-        }
-
-        if (obj == Sentinel_SignedInteger)
-        {
-            var l = _overlappedBits64;
-            if (l is >= -1 and <= 20)
-            {
-                return CommonInt32[((int)l) + 1];
-            }
-
-            return l;
-        }
-
-        if (obj == Sentinel_UnsignedInteger)
-        {
-            return OverlappedValueUInt64;
-        }
-
-        if (obj == Sentinel_Double)
-        {
-            var d = OverlappedValueDouble;
-            if (double.IsPositiveInfinity(d))
-            {
-                return BoxedDoublePosInf;
-            }
-
-            if (double.IsNegativeInfinity(d))
-            {
-                return BoxedDoubleNegInf;
-            }
-
-            if (double.IsNaN(d))
-            {
-                return BoxedDoubleNaN;
-            }
-
-            return d;
-        }
-
-        if (obj == Sentinel_Raw && _memory.IsEmpty)
-        {
-            return BoxedEmptyString;
-        }
-
-        return this;
+        _overlappedBits64 = overlappedValue64;
+        _memory = memory;
+        _objectOrSentinel = objectOrSentinel;
     }
 
-    /// <summary>
-    /// Parse this object as a value - to be used alongside Box.
-    /// </summary>
-    /// <param name="value">The value to unbox.</param>
-    /// <exception cref="ArgumentException">Thrown if <paramref name="value"/> cannot be converted into a <see cref="ValkeyValue"/>.</exception>
-    public static ValkeyValue Unbox(object? value)
-    {
-        var val = TryParse(value, out var valid);
-        if (!valid)
-        {
-            throw new ArgumentException("Could not parse value", nameof(value));
-        }
+    #endregion
+    #region Internal Enums
 
-        return val;
+    internal enum StorageType
+    {
+        Null,
+        Int64,
+        UInt64,
+        Double,
+        Raw,
+        String,
     }
+
+    #endregion
+    #region Public Properties
 
     /// <summary>
     /// Represents the string <c>""</c>.
@@ -126,10 +84,10 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
     public static ValkeyValue EmptyString { get; } = new ValkeyValue(0, default, Sentinel_Raw);
 
     // note: it is *really important* that this BoxedEmptyString assignment happens *after* the EmptyString initializer above!
+#pragma warning disable SA1201 // Must be initialized after EmptyString (static initializers run in textual order)
     private static readonly object BoxedDoubleNaN = double.NaN, BoxedDoublePosInf = double.PositiveInfinity, BoxedDoubleNegInf = double.NegativeInfinity,
         BoxedEmptyString = EmptyString;
-
-    private static readonly object[] CommonInt32 = [.. Enumerable.Range(-1, 22).Select(i => (object)i)]; // [-1,20] = 22 values
+#pragma warning restore SA1201
 
     /// <summary>
     /// A null value.
@@ -190,215 +148,13 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
     /// </summary>
     public bool HasValue => !IsNullOrEmpty;
 
-    /// <summary>
-    /// Indicates whether two ValkeyValue values are equivalent.
-    /// </summary>
-    /// <param name="x">The first <see cref="ValkeyValue"/> to compare.</param>
-    /// <param name="y">The second <see cref="ValkeyValue"/> to compare.</param>
-    public static bool operator !=(ValkeyValue x, ValkeyValue y) => !(x == y);
-
-    private double OverlappedValueDouble
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => BitConverter.Int64BitsToDouble(_overlappedBits64);
-    }
+    #endregion
+    #region Internal Properties
 
     internal ulong OverlappedValueUInt64
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => unchecked((ulong)_overlappedBits64);
-    }
-
-    /// <summary>
-    /// Indicates whether two ValkeyValue values are equivalent.
-    /// </summary>
-    /// <param name="x">The first <see cref="ValkeyValue"/> to compare.</param>
-    /// <param name="y">The second <see cref="ValkeyValue"/> to compare.</param>
-    public static bool operator ==(ValkeyValue x, ValkeyValue y)
-    {
-        x = x.Simplify();
-        y = y.Simplify();
-        StorageType xType = x.Type, yType = y.Type;
-
-        if (xType == StorageType.Null)
-        {
-            return yType == StorageType.Null;
-        }
-
-        if (yType == StorageType.Null)
-        {
-            return false;
-        }
-
-        if (xType == yType)
-        {
-            switch (xType)
-            {
-                case StorageType.Double: // make sure we use double equality rules
-                    return x.OverlappedValueDouble == y.OverlappedValueDouble;
-                case StorageType.Int64:
-                case StorageType.UInt64: // as long as xType == yType, only need to check the bits
-                    return x._overlappedBits64 == y._overlappedBits64;
-                case StorageType.String:
-                    return (string?)x._objectOrSentinel == (string?)y._objectOrSentinel;
-                case StorageType.Raw:
-                    return x._memory.Span.SequenceEqual(y._memory.Span);
-                case StorageType.Null:
-                default:
-                    break;
-            }
-        }
-
-        // if either is a numeric type, and the other isn't the *same* type (above), then:
-        // it can't be equal
-        return xType switch
-        {
-            StorageType.UInt64 or StorageType.Int64 or StorageType.Double => false,
-            StorageType.Null or StorageType.Raw or StorageType.String or _ => yType switch
-            {
-                StorageType.UInt64 or StorageType.Int64 or StorageType.Double => false,
-                // otherwise, compare as strings
-                StorageType.Null or StorageType.Raw or StorageType.String or _ => (string?)x == (string?)y,
-            },
-        };
-    }
-
-    /// <summary>
-    /// See <see cref="object.Equals(object)"/>.
-    /// </summary>
-    /// <param name="obj">The other <see cref="ValkeyValue"/> to compare.</param>
-    public override bool Equals(object? obj)
-    {
-        if (obj == null)
-        {
-            return IsNull;
-        }
-
-        if (obj is ValkeyValue typed)
-        {
-            return Equals(typed);
-        }
-
-        var other = TryParse(obj, out var valid);
-        return valid && this == other; // can't be equal if parse fail
-    }
-
-    /// <summary>
-    /// Indicates whether two ValkeyValue values are equivalent.
-    /// </summary>
-    /// <param name="other">The <see cref="ValkeyValue"/> to compare to.</param>
-    public bool Equals(ValkeyValue other) => this == other;
-
-    /// <inheritdoc/>
-    public override int GetHashCode() => GetHashCode(this);
-
-    private static int GetHashCode(ValkeyValue x)
-    {
-        x = x.Simplify();
-        return x.Type switch
-        {
-            StorageType.Null => -1,
-            StorageType.Double => x.OverlappedValueDouble.GetHashCode(),
-            StorageType.Int64 or StorageType.UInt64 => x._overlappedBits64.GetHashCode(),
-            StorageType.Raw => ((string)x!).GetHashCode(), // to match equality
-            StorageType.String or _ => x._objectOrSentinel!.GetHashCode(),
-        };
-    }
-
-    /// <summary>
-    /// Returns a string representation of the value.
-    /// </summary>
-    public override string ToString() => (string?)this ?? string.Empty;
-
-    internal static unsafe bool Equals(byte[]? x, byte[]? y)
-    {
-        if (x == y)
-        {
-            return true; // ref equals
-        }
-
-        if (x == null || y == null)
-        {
-            return false;
-        }
-
-        int len = x.Length;
-        if (len != y.Length)
-        {
-            return false;
-        }
-
-        int octets = len / 8, spare = len % 8;
-        fixed (byte* x8 = x, y8 = y)
-        {
-            long* x64 = (long*)x8, y64 = (long*)y8;
-            for (int i = 0; i < octets; i++)
-            {
-                if (x64[i] != y64[i])
-                {
-                    return false;
-                }
-            }
-
-            int offset = len - spare;
-            while (spare-- != 0)
-            {
-                if (x8[offset] != y8[offset++])
-                {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-    internal static int GetHashCode(ReadOnlySpan<byte> span)
-    {
-        unchecked
-        {
-            int len = span.Length;
-            if (len == 0)
-            {
-                return 0;
-            }
-
-            int acc = 728271210;
-
-            var span64 = MemoryMarshal.Cast<byte, long>(span);
-            for (int i = 0; i < span64.Length; i++)
-            {
-                var val = span64[i];
-                int valHash = ((int)val) ^ ((int)(val >> 32));
-                acc = ((acc << 5) + acc) ^ valHash;
-            }
-
-            int spare = len % 8, offset = len - spare;
-            while (spare-- != 0)
-            {
-                acc = ((acc << 5) + acc) ^ span[offset++];
-            }
-
-            return acc;
-        }
-    }
-
-    internal void AssertNotNull()
-    {
-        if (IsNull)
-        {
-            throw new ArgumentException("A null value is not valid in this context");
-        }
-    }
-
-    internal enum StorageType
-    {
-        Null,
-        Int64,
-        UInt64,
-        Double,
-        Raw,
-        String,
     }
 
     internal StorageType Type
@@ -445,152 +201,17 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
         }
     }
 
-    /// <summary>
-    /// Get the size of this value in bytes.
-    /// </summary>
-    /// <exception cref="InvalidOperationException">Thrown if the storage type is not a supported <see cref="StorageType"/> value.</exception>
-    public long Length() => Type switch
+    #endregion
+    #region Private Properties
+
+    private double OverlappedValueDouble
     {
-        StorageType.Null => 0,
-        StorageType.Raw => _memory.Length,
-        StorageType.String => Encoding.UTF8.GetByteCount((string)_objectOrSentinel!),
-        StorageType.Int64 => Format.MeasureInt64(_overlappedBits64),
-        StorageType.UInt64 => Format.MeasureUInt64(OverlappedValueUInt64),
-        StorageType.Double => Format.MeasureDouble(OverlappedValueDouble),
-        _ => throw new InvalidOperationException("Unable to compute length of type: " + Type),
-    };
-
-    /// <summary>
-    /// Compare against a ValkeyValue for relative order.
-    /// </summary>
-    /// <param name="other">The other <see cref="ValkeyValue"/> to compare.</param>
-    public int CompareTo(ValkeyValue other) => CompareTo(this, other);
-
-    private static int CompareTo(ValkeyValue x, ValkeyValue y)
-    {
-        x = x.Simplify();
-        y = y.Simplify();
-        StorageType xType = x.Type, yType = y.Type;
-
-        if (xType == StorageType.Null)
-        {
-            return yType == StorageType.Null ? 0 : -1;
-        }
-
-        if (yType == StorageType.Null)
-        {
-            return 1;
-        }
-
-        if (xType == yType)
-        {
-            switch (xType)
-            {
-                case StorageType.Double:
-                    return x.OverlappedValueDouble.CompareTo(y.OverlappedValueDouble);
-                case StorageType.Int64:
-                    return x._overlappedBits64.CompareTo(y._overlappedBits64);
-                case StorageType.UInt64:
-                    return x.OverlappedValueUInt64.CompareTo(y.OverlappedValueUInt64);
-                case StorageType.String:
-                    return string.CompareOrdinal((string)x._objectOrSentinel!, (string)y._objectOrSentinel!);
-                case StorageType.Raw:
-                    return x._memory.Span.SequenceCompareTo(y._memory.Span);
-                case StorageType.Null:
-                default:
-                    break;
-            }
-        }
-
-        switch (xType)
-        { // numbers can be still be compared between types
-            case StorageType.Double:
-                if (yType == StorageType.Int64)
-                {
-                    return x.OverlappedValueDouble.CompareTo(y._overlappedBits64);
-                }
-
-                if (yType == StorageType.UInt64)
-                {
-                    return x.OverlappedValueDouble.CompareTo(y.OverlappedValueUInt64);
-                }
-
-                break;
-            case StorageType.Int64:
-                if (yType == StorageType.Double)
-                {
-                    return ((double)x._overlappedBits64).CompareTo(y.OverlappedValueDouble);
-                }
-
-                if (yType == StorageType.UInt64)
-                {
-                    return 1; // we only use unsigned if > int64, so: y is bigger
-                }
-
-                break;
-            case StorageType.UInt64:
-                if (yType == StorageType.Double)
-                {
-                    return ((double)x.OverlappedValueUInt64).CompareTo(y.OverlappedValueDouble);
-                }
-
-                if (yType == StorageType.Int64)
-                {
-                    return -1; // we only use unsigned if > int64, so: x is bigger
-                }
-
-                break;
-            case StorageType.Null:
-            case StorageType.Raw:
-            case StorageType.String:
-            default:
-                break;
-        }
-
-        // otherwise, compare as strings
-        return string.CompareOrdinal((string?)x, (string?)y);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => BitConverter.Int64BitsToDouble(_overlappedBits64);
     }
 
-    int IComparable.CompareTo(object? obj)
-    {
-        if (obj == null)
-        {
-            return CompareTo(Null);
-        }
-
-        var val = TryParse(obj, out var valid);
-        if (!valid)
-        {
-            return -1; // parse fail
-        }
-
-        return CompareTo(val);
-    }
-
-    internal static ValkeyValue TryParse(object? obj, out bool valid)
-    {
-        valid = true;
-        switch (obj)
-        {
-            case null: return Null;
-            case string v: return v;
-            case GlideString gs: return gs.Bytes;
-            case int v: return v;
-            case uint v: return v;
-            case double v: return v;
-            case byte[] v: return v;
-            case bool v: return v;
-            case long v: return v;
-            case ulong v: return v;
-            case float v: return v;
-            case ReadOnlyMemory<byte> v: return v;
-            case Memory<byte> v: return v;
-            case ValkeyValue v: return v;
-            default:
-                valid = false;
-                return Null;
-        }
-    }
+    #endregion
+    #region Operators
 
     /// <summary>
     /// Creates a new <see cref="ValkeyValue"/> from an <see cref="int"/>.
@@ -899,18 +520,6 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
         };
     }
 
-    private static bool TryParseDouble(ReadOnlySpan<byte> blob, out double value)
-    {
-        // simple integer?
-        if (Format.CouldBeInteger(blob) && Format.TryParseInt64(blob, out var i64))
-        {
-            value = i64;
-            return true;
-        }
-
-        return Format.TryParseDouble(blob, out value);
-    }
-
     /// <summary>
     /// Converts the <see cref="ValkeyValue"/> to a <see cref="T:Nullable{double}"/>.
     /// </summary>
@@ -1005,36 +614,6 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
         }
     }
 
-    private static string ToHex(ReadOnlySpan<byte> src)
-    {
-        const string hexValues = "0123456789ABCDEF";
-
-        if (src.IsEmpty)
-        {
-            return "";
-        }
-
-        var s = new string((char)0, (src.Length * 3) - 1);
-        var dst = MemoryMarshal.AsMemory(s.AsMemory()).Span;
-
-        int i = 0;
-        int j = 0;
-
-        byte b = src[i++];
-        dst[j++] = hexValues[b >> 4];
-        dst[j++] = hexValues[b & 0xF];
-
-        while (i < src.Length)
-        {
-            b = src[i++];
-            dst[j++] = '-';
-            dst[j++] = hexValues[b >> 4];
-            dst[j++] = hexValues[b & 0xF];
-        }
-
-        return s;
-    }
-
     /// <summary>
     /// Converts a <see cref="ValkeyValue"/> to a <see cref="T:byte[]"/>.
     /// </summary>
@@ -1087,6 +666,239 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
     /// <param name="value">The <see cref="ValkeyValue"/> to convert.</param>
     public static implicit operator ReadOnlyMemory<byte>(ValkeyValue value)
         => value.Type == StorageType.Raw ? value._memory : (byte[]?)value;
+
+    /// <summary>
+    /// Indicates whether two ValkeyValue values are equivalent.
+    /// </summary>
+    /// <param name="x">The first <see cref="ValkeyValue"/> to compare.</param>
+    /// <param name="y">The second <see cref="ValkeyValue"/> to compare.</param>
+    public static bool operator !=(ValkeyValue x, ValkeyValue y) => !(x == y);
+
+    /// <summary>
+    /// Indicates whether two ValkeyValue values are equivalent.
+    /// </summary>
+    /// <param name="x">The first <see cref="ValkeyValue"/> to compare.</param>
+    /// <param name="y">The second <see cref="ValkeyValue"/> to compare.</param>
+    public static bool operator ==(ValkeyValue x, ValkeyValue y)
+    {
+        x = x.Simplify();
+        y = y.Simplify();
+        StorageType xType = x.Type, yType = y.Type;
+
+        if (xType == StorageType.Null)
+        {
+            return yType == StorageType.Null;
+        }
+
+        if (yType == StorageType.Null)
+        {
+            return false;
+        }
+
+        if (xType == yType)
+        {
+            switch (xType)
+            {
+                case StorageType.Double: // make sure we use double equality rules
+                    return x.OverlappedValueDouble == y.OverlappedValueDouble;
+                case StorageType.Int64:
+                case StorageType.UInt64: // as long as xType == yType, only need to check the bits
+                    return x._overlappedBits64 == y._overlappedBits64;
+                case StorageType.String:
+                    return (string?)x._objectOrSentinel == (string?)y._objectOrSentinel;
+                case StorageType.Raw:
+                    return x._memory.Span.SequenceEqual(y._memory.Span);
+                case StorageType.Null:
+                default:
+                    break;
+            }
+        }
+
+        // if either is a numeric type, and the other isn't the *same* type (above), then:
+        // it can't be equal
+        return xType switch
+        {
+            StorageType.UInt64 or StorageType.Int64 or StorageType.Double => false,
+            StorageType.Null or StorageType.Raw or StorageType.String or _ => yType switch
+            {
+                StorageType.UInt64 or StorageType.Int64 or StorageType.Double => false,
+                // otherwise, compare as strings
+                StorageType.Null or StorageType.Raw or StorageType.String or _ => (string?)x == (string?)y,
+            },
+        };
+    }
+
+    #endregion
+    #region Public Methods
+
+    /// <summary>
+    /// Parse this object as a value - to be used alongside Box.
+    /// </summary>
+    /// <param name="value">The value to unbox.</param>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="value"/> cannot be converted into a <see cref="ValkeyValue"/>.</exception>
+    public static ValkeyValue Unbox(object? value)
+    {
+        var val = TryParse(value, out var valid);
+        if (!valid)
+        {
+            throw new ArgumentException("Could not parse value", nameof(value));
+        }
+
+        return val;
+    }
+
+    /// <summary>
+    /// Create a <see cref="ValkeyValue"/> from a <see cref="MemoryStream"/>.
+    /// It will *attempt* to use the internal buffer directly, but if this isn't possible it will fallback to <see cref="MemoryStream.ToArray"/>.
+    /// </summary>
+    /// <param name="stream">The <see cref="MemoryStream"/> to create a value from.</param>
+    public static ValkeyValue CreateFrom(MemoryStream stream)
+    {
+        if (stream == null)
+        {
+            return Null;
+        }
+
+        if (stream.Length == 0)
+        {
+            return Array.Empty<byte>();
+        }
+
+        if (stream.TryGetBuffer(out var segment) || ReflectionTryGetBuffer(stream, out segment))
+        {
+            return new Memory<byte>(segment.Array, segment.Offset, segment.Count);
+        }
+
+        // nowhere near as efficient, but...
+        return stream.ToArray();
+    }
+
+    /// <summary>
+    /// Obtain this value as an object - to be used alongside Unbox.
+    /// </summary>
+    public object? Box()
+    {
+        var obj = _objectOrSentinel;
+        if (obj is null || obj is string || obj is byte[])
+        {
+            return obj;
+        }
+
+        if (obj == Sentinel_SignedInteger)
+        {
+            var l = _overlappedBits64;
+            if (l is >= -1 and <= 20)
+            {
+                return CommonInt32[((int)l) + 1];
+            }
+
+            return l;
+        }
+
+        if (obj == Sentinel_UnsignedInteger)
+        {
+            return OverlappedValueUInt64;
+        }
+
+        if (obj == Sentinel_Double)
+        {
+            var d = OverlappedValueDouble;
+            if (double.IsPositiveInfinity(d))
+            {
+                return BoxedDoublePosInf;
+            }
+
+            if (double.IsNegativeInfinity(d))
+            {
+                return BoxedDoubleNegInf;
+            }
+
+            if (double.IsNaN(d))
+            {
+                return BoxedDoubleNaN;
+            }
+
+            return d;
+        }
+
+        if (obj == Sentinel_Raw && _memory.IsEmpty)
+        {
+            return BoxedEmptyString;
+        }
+
+        return this;
+    }
+
+    /// <summary>
+    /// See <see cref="object.Equals(object)"/>.
+    /// </summary>
+    /// <param name="obj">The other <see cref="ValkeyValue"/> to compare.</param>
+    public override bool Equals(object? obj)
+    {
+        if (obj == null)
+        {
+            return IsNull;
+        }
+
+        if (obj is ValkeyValue typed)
+        {
+            return Equals(typed);
+        }
+
+        var other = TryParse(obj, out var valid);
+        return valid && this == other; // can't be equal if parse fail
+    }
+
+    /// <summary>
+    /// Indicates whether two ValkeyValue values are equivalent.
+    /// </summary>
+    /// <param name="other">The <see cref="ValkeyValue"/> to compare to.</param>
+    public bool Equals(ValkeyValue other) => this == other;
+
+    /// <inheritdoc/>
+    public override int GetHashCode() => GetHashCode(this);
+
+    /// <summary>
+    /// Returns a string representation of the value.
+    /// </summary>
+    public override string ToString() => (string?)this ?? string.Empty;
+
+    /// <summary>
+    /// Get the size of this value in bytes.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown if the storage type is not a supported <see cref="StorageType"/> value.</exception>
+    public long Length() => Type switch
+    {
+        StorageType.Null => 0,
+        StorageType.Raw => _memory.Length,
+        StorageType.String => Encoding.UTF8.GetByteCount((string)_objectOrSentinel!),
+        StorageType.Int64 => Format.MeasureInt64(_overlappedBits64),
+        StorageType.UInt64 => Format.MeasureUInt64(OverlappedValueUInt64),
+        StorageType.Double => Format.MeasureDouble(OverlappedValueDouble),
+        _ => throw new InvalidOperationException("Unable to compute length of type: " + Type),
+    };
+
+    /// <summary>
+    /// Compare against a ValkeyValue for relative order.
+    /// </summary>
+    /// <param name="other">The other <see cref="ValkeyValue"/> to compare.</param>
+    public int CompareTo(ValkeyValue other) => CompareTo(this, other);
+
+    int IComparable.CompareTo(object? obj)
+    {
+        if (obj == null)
+        {
+            return CompareTo(Null);
+        }
+
+        var val = TryParse(obj, out var valid);
+        if (!valid)
+        {
+            return -1; // parse fail
+        }
+
+        return CompareTo(val);
+    }
 
     TypeCode IConvertible.GetTypeCode() => TypeCode.Object;
 
@@ -1152,81 +964,6 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
     ushort IConvertible.ToUInt16(IFormatProvider? provider) => checked((ushort)(uint)this);
     uint IConvertible.ToUInt32(IFormatProvider? provider) => (uint)this;
     ulong IConvertible.ToUInt64(IFormatProvider? provider) => (ulong)this;
-
-    /// <summary>
-    /// Attempt to reduce to canonical terms ahead of time; parses integers, floats, etc
-    /// Note: we don't use this aggressively ahead of time, a: because of extra CPU,
-    /// but more importantly b: because it can change values - for example, if they start
-    /// with "123.000", it should **stay** as "123.000", not become 123L; this could be
-    /// a hash key or similar - we don't want to break it; ValkeyConnection uses
-    /// the storage type, not the "does it look like a long?" - for this reason.
-    /// </summary>
-    internal ValkeyValue Simplify()
-    {
-        long i64;
-        ulong u64;
-        switch (Type)
-        {
-            case StorageType.String:
-                string s = (string)_objectOrSentinel!;
-                if (Format.CouldBeInteger(s))
-                {
-                    if (Format.TryParseInt64(s, out i64))
-                    {
-                        return i64;
-                    }
-
-                    if (Format.TryParseUInt64(s, out u64))
-                    {
-                        return u64;
-                    }
-                }
-
-                if (Format.TryParseDouble(s, out var f64))
-                {
-                    return f64;
-                }
-
-                break;
-            case StorageType.Raw:
-                var b = _memory.Span;
-                if (Format.CouldBeInteger(b))
-                {
-                    if (Format.TryParseInt64(b, out i64))
-                    {
-                        return i64;
-                    }
-
-                    if (Format.TryParseUInt64(b, out u64))
-                    {
-                        return u64;
-                    }
-                }
-
-                if (TryParseDouble(b, out f64))
-                {
-                    return f64;
-                }
-
-                break;
-            case StorageType.Double:
-                // is the double actually an integer?
-                f64 = OverlappedValueDouble;
-                if (f64 >= long.MinValue && f64 <= long.MaxValue && (i64 = (long)f64) == f64)
-                {
-                    return i64;
-                }
-
-                break;
-            case StorageType.Null:
-            case StorageType.Int64:
-            case StorageType.UInt64:
-            default:
-                break;
-        }
-
-        return this;
-    }
 
     /// <summary>
     /// Convert to a signed <see cref="long"/> if possible.
@@ -1325,54 +1062,6 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
     }
 
     /// <summary>
-    /// Create a <see cref="ValkeyValue"/> from a <see cref="MemoryStream"/>.
-    /// It will *attempt* to use the internal buffer directly, but if this isn't possible it will fallback to <see cref="MemoryStream.ToArray"/>.
-    /// </summary>
-    /// <param name="stream">The <see cref="MemoryStream"/> to create a value from.</param>
-    public static ValkeyValue CreateFrom(MemoryStream stream)
-    {
-        if (stream == null)
-        {
-            return Null;
-        }
-
-        if (stream.Length == 0)
-        {
-            return Array.Empty<byte>();
-        }
-
-        if (stream.TryGetBuffer(out var segment) || ReflectionTryGetBuffer(stream, out segment))
-        {
-            return new Memory<byte>(segment.Array, segment.Offset, segment.Count);
-        }
-
-        // nowhere near as efficient, but...
-        return stream.ToArray();
-    }
-
-    private static readonly FieldInfo?
-        MemoryStreamOrigin = typeof(MemoryStream).GetField("_origin", BindingFlags.NonPublic | BindingFlags.Instance),
-        MemoryStreamBuffer = typeof(MemoryStream).GetField("_buffer", BindingFlags.NonPublic | BindingFlags.Instance);
-
-    private static bool ReflectionTryGetBuffer(MemoryStream ms, out ArraySegment<byte> buffer)
-    {
-        if (MemoryStreamOrigin != null && MemoryStreamBuffer != null)
-        {
-            try
-            {
-                int offset = (int)MemoryStreamOrigin.GetValue(ms)!;
-                byte[] arr = (byte[])MemoryStreamBuffer.GetValue(ms)!;
-                buffer = new ArraySegment<byte>(arr, offset, checked((int)ms.Length));
-                return true;
-            }
-            catch { }
-        }
-
-        buffer = default;
-        return false;
-    }
-
-    /// <summary>
     /// Indicates whether the current value has the supplied value as a prefix.
     /// </summary>
     /// <param name="value">The <see cref="ValkeyValue"/> to check.</param>
@@ -1438,6 +1127,351 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
         }
     }
 
+    #endregion
+    #region Internal Methods
+
+    internal static unsafe bool Equals(byte[]? x, byte[]? y)
+    {
+        if (x == y)
+        {
+            return true; // ref equals
+        }
+
+        if (x == null || y == null)
+        {
+            return false;
+        }
+
+        int len = x.Length;
+        if (len != y.Length)
+        {
+            return false;
+        }
+
+        int octets = len / 8, spare = len % 8;
+        fixed (byte* x8 = x, y8 = y)
+        {
+            long* x64 = (long*)x8, y64 = (long*)y8;
+            for (int i = 0; i < octets; i++)
+            {
+                if (x64[i] != y64[i])
+                {
+                    return false;
+                }
+            }
+
+            int offset = len - spare;
+            while (spare-- != 0)
+            {
+                if (x8[offset] != y8[offset++])
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    internal static int GetHashCode(ReadOnlySpan<byte> span)
+    {
+        unchecked
+        {
+            int len = span.Length;
+            if (len == 0)
+            {
+                return 0;
+            }
+
+            int acc = 728271210;
+
+            var span64 = MemoryMarshal.Cast<byte, long>(span);
+            for (int i = 0; i < span64.Length; i++)
+            {
+                var val = span64[i];
+                int valHash = ((int)val) ^ ((int)(val >> 32));
+                acc = ((acc << 5) + acc) ^ valHash;
+            }
+
+            int spare = len % 8, offset = len - spare;
+            while (spare-- != 0)
+            {
+                acc = ((acc << 5) + acc) ^ span[offset++];
+            }
+
+            return acc;
+        }
+    }
+
+    internal static ValkeyValue TryParse(object? obj, out bool valid)
+    {
+        valid = true;
+        switch (obj)
+        {
+            case null: return Null;
+            case string v: return v;
+            case GlideString gs: return gs.Bytes;
+            case int v: return v;
+            case uint v: return v;
+            case double v: return v;
+            case byte[] v: return v;
+            case bool v: return v;
+            case long v: return v;
+            case ulong v: return v;
+            case float v: return v;
+            case ReadOnlyMemory<byte> v: return v;
+            case Memory<byte> v: return v;
+            case ValkeyValue v: return v;
+            default:
+                valid = false;
+                return Null;
+        }
+    }
+
+    internal void AssertNotNull()
+    {
+        if (IsNull)
+        {
+            throw new ArgumentException("A null value is not valid in this context");
+        }
+    }
+
+    /// <summary>
+    /// Attempt to reduce to canonical terms ahead of time; parses integers, floats, etc
+    /// Note: we don't use this aggressively ahead of time, a: because of extra CPU,
+    /// but more importantly b: because it can change values - for example, if they start
+    /// with "123.000", it should **stay** as "123.000", not become 123L; this could be
+    /// a hash key or similar - we don't want to break it; ValkeyConnection uses
+    /// the storage type, not the "does it look like a long?" - for this reason.
+    /// </summary>
+    internal ValkeyValue Simplify()
+    {
+        long i64;
+        ulong u64;
+        switch (Type)
+        {
+            case StorageType.String:
+                string s = (string)_objectOrSentinel!;
+                if (Format.CouldBeInteger(s))
+                {
+                    if (Format.TryParseInt64(s, out i64))
+                    {
+                        return i64;
+                    }
+
+                    if (Format.TryParseUInt64(s, out u64))
+                    {
+                        return u64;
+                    }
+                }
+
+                if (Format.TryParseDouble(s, out var f64))
+                {
+                    return f64;
+                }
+
+                break;
+            case StorageType.Raw:
+                var b = _memory.Span;
+                if (Format.CouldBeInteger(b))
+                {
+                    if (Format.TryParseInt64(b, out i64))
+                    {
+                        return i64;
+                    }
+
+                    if (Format.TryParseUInt64(b, out u64))
+                    {
+                        return u64;
+                    }
+                }
+
+                if (TryParseDouble(b, out f64))
+                {
+                    return f64;
+                }
+
+                break;
+            case StorageType.Double:
+                // is the double actually an integer?
+                f64 = OverlappedValueDouble;
+                if (f64 >= long.MinValue && f64 <= long.MaxValue && (i64 = (long)f64) == f64)
+                {
+                    return i64;
+                }
+
+                break;
+            case StorageType.Null:
+            case StorageType.Int64:
+            case StorageType.UInt64:
+            default:
+                break;
+        }
+
+        return this;
+    }
+
+    #endregion
+    #region Private Methods
+
+    private static int GetHashCode(ValkeyValue x)
+    {
+        x = x.Simplify();
+        return x.Type switch
+        {
+            StorageType.Null => -1,
+            StorageType.Double => x.OverlappedValueDouble.GetHashCode(),
+            StorageType.Int64 or StorageType.UInt64 => x._overlappedBits64.GetHashCode(),
+            StorageType.Raw => ((string)x!).GetHashCode(), // to match equality
+            StorageType.String or _ => x._objectOrSentinel!.GetHashCode(),
+        };
+    }
+
+    private static int CompareTo(ValkeyValue x, ValkeyValue y)
+    {
+        x = x.Simplify();
+        y = y.Simplify();
+        StorageType xType = x.Type, yType = y.Type;
+
+        if (xType == StorageType.Null)
+        {
+            return yType == StorageType.Null ? 0 : -1;
+        }
+
+        if (yType == StorageType.Null)
+        {
+            return 1;
+        }
+
+        if (xType == yType)
+        {
+            switch (xType)
+            {
+                case StorageType.Double:
+                    return x.OverlappedValueDouble.CompareTo(y.OverlappedValueDouble);
+                case StorageType.Int64:
+                    return x._overlappedBits64.CompareTo(y._overlappedBits64);
+                case StorageType.UInt64:
+                    return x.OverlappedValueUInt64.CompareTo(y.OverlappedValueUInt64);
+                case StorageType.String:
+                    return string.CompareOrdinal((string)x._objectOrSentinel!, (string)y._objectOrSentinel!);
+                case StorageType.Raw:
+                    return x._memory.Span.SequenceCompareTo(y._memory.Span);
+                case StorageType.Null:
+                default:
+                    break;
+            }
+        }
+
+        switch (xType)
+        { // numbers can be still be compared between types
+            case StorageType.Double:
+                if (yType == StorageType.Int64)
+                {
+                    return x.OverlappedValueDouble.CompareTo(y._overlappedBits64);
+                }
+
+                if (yType == StorageType.UInt64)
+                {
+                    return x.OverlappedValueDouble.CompareTo(y.OverlappedValueUInt64);
+                }
+
+                break;
+            case StorageType.Int64:
+                if (yType == StorageType.Double)
+                {
+                    return ((double)x._overlappedBits64).CompareTo(y.OverlappedValueDouble);
+                }
+
+                if (yType == StorageType.UInt64)
+                {
+                    return 1; // we only use unsigned if > int64, so: y is bigger
+                }
+
+                break;
+            case StorageType.UInt64:
+                if (yType == StorageType.Double)
+                {
+                    return ((double)x.OverlappedValueUInt64).CompareTo(y.OverlappedValueDouble);
+                }
+
+                if (yType == StorageType.Int64)
+                {
+                    return -1; // we only use unsigned if > int64, so: x is bigger
+                }
+
+                break;
+            case StorageType.Null:
+            case StorageType.Raw:
+            case StorageType.String:
+            default:
+                break;
+        }
+
+        // otherwise, compare as strings
+        return string.CompareOrdinal((string?)x, (string?)y);
+    }
+
+    private static bool TryParseDouble(ReadOnlySpan<byte> blob, out double value)
+    {
+        // simple integer?
+        if (Format.CouldBeInteger(blob) && Format.TryParseInt64(blob, out var i64))
+        {
+            value = i64;
+            return true;
+        }
+
+        return Format.TryParseDouble(blob, out value);
+    }
+
+    private static string ToHex(ReadOnlySpan<byte> src)
+    {
+        const string hexValues = "0123456789ABCDEF";
+
+        if (src.IsEmpty)
+        {
+            return "";
+        }
+
+        var s = new string((char)0, (src.Length * 3) - 1);
+        var dst = MemoryMarshal.AsMemory(s.AsMemory()).Span;
+
+        int i = 0;
+        int j = 0;
+
+        byte b = src[i++];
+        dst[j++] = hexValues[b >> 4];
+        dst[j++] = hexValues[b & 0xF];
+
+        while (i < src.Length)
+        {
+            b = src[i++];
+            dst[j++] = '-';
+            dst[j++] = hexValues[b >> 4];
+            dst[j++] = hexValues[b & 0xF];
+        }
+
+        return s;
+    }
+
+    private static bool ReflectionTryGetBuffer(MemoryStream ms, out ArraySegment<byte> buffer)
+    {
+        if (MemoryStreamOrigin != null && MemoryStreamBuffer != null)
+        {
+            try
+            {
+                int offset = (int)MemoryStreamOrigin.GetValue(ms)!;
+                byte[] arr = (byte[])MemoryStreamBuffer.GetValue(ms)!;
+                buffer = new ArraySegment<byte>(arr, offset, checked((int)ms.Length));
+                return true;
+            }
+            catch { }
+        }
+
+        buffer = default;
+        return false;
+    }
+
     private ReadOnlyMemory<byte> AsMemory(out byte[]? leased)
     {
         switch (Type)
@@ -1480,4 +1514,6 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
         leased = null;
         return default;
     }
+
+    #endregion
 }

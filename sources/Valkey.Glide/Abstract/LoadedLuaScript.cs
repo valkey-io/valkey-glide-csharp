@@ -34,11 +34,6 @@ public sealed class LoadedLuaScript
     }
 
     /// <summary>
-    /// Gets the LuaScript that was loaded.
-    /// </summary>
-    internal LuaScript Script { get; }
-
-    /// <summary>
     /// Gets the original script text with @parameter syntax.
     /// </summary>
     public string OriginalScript => Script.OriginalScript;
@@ -52,6 +47,11 @@ public sealed class LoadedLuaScript
     /// Gets the SHA1 hash of the script.
     /// </summary>
     public byte[] Hash { get; }
+
+    /// <summary>
+    /// Gets the LuaScript that was loaded.
+    /// </summary>
+    internal LuaScript Script { get; }
 
     /// <summary>
     /// Gets the actual executable script that was loaded on the server (with placeholders replaced).

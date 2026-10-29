@@ -7,6 +7,21 @@ namespace Valkey.Glide;
 /// </summary>
 public sealed class OpenTelemetryConfig
 {
+    #region Internal Fields
+
+    internal readonly uint? FlushIntervalMs;
+
+    #endregion
+    #region Constructors
+
+    private OpenTelemetryConfig(TracesConfig? traces, MetricsConfig? metrics, uint? flushIntervalMs)
+    {
+        Traces = traces;
+        Metrics = metrics;
+        FlushIntervalMs = flushIntervalMs;
+    }
+
+    #endregion
     #region Public Properties
 
     /// <summary>
@@ -27,27 +42,12 @@ public sealed class OpenTelemetryConfig
         : null;
 
     #endregion
-    #region Constructors & Builders
-
-    private OpenTelemetryConfig(TracesConfig? traces, MetricsConfig? metrics, uint? flushIntervalMs)
-    {
-        Traces = traces;
-        Metrics = metrics;
-        FlushIntervalMs = flushIntervalMs;
-    }
-
-    #endregion
     #region Public Methods
 
     /// <summary>
     /// Creates a new OpenTelemetryConfig builder.
     /// </summary>
     public static Builder CreateBuilder() => new();
-
-    #endregion
-    #region Internal Fields
-
-    internal readonly uint? FlushIntervalMs;
 
     #endregion
 

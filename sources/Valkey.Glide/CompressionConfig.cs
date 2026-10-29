@@ -20,30 +20,6 @@ public sealed class CompressionConfig
     public const nuint DefaultMinCompressionSize = 64;
 
     /// <summary>
-    /// Minimum value size in bytes to compress.
-    /// Values smaller than this will not be compressed.
-    /// </summary>
-    public nuint MinCompressionSize { get; }
-
-    /// <summary>
-    /// Compression level for the backend.
-    /// Null means use backend default.
-    /// </summary>
-    public int? CompressionLevel { get; }
-
-    /// <summary>
-    /// The compression backend to use.
-    /// </summary>
-    public CompressionBackend Backend { get; }
-
-    /// <summary>
-    /// Maximum allowed size for decompressed data in bytes.
-    /// This prevents decompression bombs by limiting the maximum decompressed size.
-    /// Null means use the default (512 MB).
-    /// </summary>
-    public ulong? MaxDecompressedSize { get; }
-
-    /// <summary>
     /// Creates a new compression configuration.
     /// </summary>
     /// <param name="backend">The compression backend to use.</param>
@@ -69,6 +45,30 @@ public sealed class CompressionConfig
         Backend = backend;
         MaxDecompressedSize = maxDecompressedSize;
     }
+
+    /// <summary>
+    /// Minimum value size in bytes to compress.
+    /// Values smaller than this will not be compressed.
+    /// </summary>
+    public nuint MinCompressionSize { get; }
+
+    /// <summary>
+    /// Compression level for the backend.
+    /// Null means use backend default.
+    /// </summary>
+    public int? CompressionLevel { get; }
+
+    /// <summary>
+    /// The compression backend to use.
+    /// </summary>
+    public CompressionBackend Backend { get; }
+
+    /// <summary>
+    /// Maximum allowed size for decompressed data in bytes.
+    /// This prevents decompression bombs by limiting the maximum decompressed size.
+    /// Null means use the default (512 MB).
+    /// </summary>
+    public ulong? MaxDecompressedSize { get; }
 
     /// <summary>
     /// Creates a compression configuration with Zstd backend.

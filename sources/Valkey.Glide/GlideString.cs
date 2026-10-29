@@ -197,6 +197,12 @@ public static class GlideStringExtensions
 [ImmutableObject(true)]
 public sealed class GlideString : IComparable, IComparable<GlideString>
 {
+    internal string Str;
+
+    private bool? _canConvertToString;
+
+    private readonly object _lock = new();
+
     /// <summary>
     /// Create a <see cref="GlideString" /> initiated by a <see langword="byte[]" />.<br />
     /// <paramref name="bytes"/> can store any arbirtrary binary data.
@@ -221,85 +227,12 @@ public sealed class GlideString : IComparable, IComparable<GlideString>
         Bytes = @string is null ? [] : Encoding.UTF8.GetBytes(@string);
     }
 
-    /// <inheritdoc cref="GlideString(byte[])" />
-    public static GlideString Of(byte[] bytes) => new(bytes);
-
-    /// <inheritdoc cref="GlideString(string)" />
-    public static GlideString Of(string @string) => new(@string);
-
-    /// <summary>
-    /// Get a reference to a <see langword="byte[]" /> stored in this <see cref="GlideString" />.
-    /// </summary>
-    /// <returns>A <see langword="byte[]" /> of that <see cref="GlideString" />.</returns>
-    public ReadOnlySpan<byte> GetBytes() => Bytes;
-
     /// <summary>
     /// Get a length of a <see langword="byte[]" /> stored in this <see cref="GlideString" />.
     /// </summary>
     public int Length => Bytes.Length;
 
-    /// <summary>
-    /// Convert this <see cref="GlideString" /> to a <see langword="string" /> if possible.<br />
-    /// <b>Note:</b> a resulting <see langword="string" /> may be incorrect if original <see cref="GlideString" />
-    /// stores a non-UTF8 compatible sequence of bytes. It is <b>highly recommended</b> to call to
-    /// <see cref="CanConvertToString()" /> prior to do a conversion.
-    /// </summary>
-    /// <example>
-    /// <code>
-    /// GlideString gs = new byte[] { 0, 42, 255, 243, 0, 253, 15 };
-    /// if (gs.CanConvertToString())
-    /// {
-    ///     string str = gs; // Conversion without data loss is impossible, so str is incorrect.
-    /// }
-    /// </code>
-    /// </example>
-    /// <returns>A <see langword="string" /> representation of this <see cref="GlideString" />.</returns>
-    public string GetString()
-    {
-        if (_canConvertToString ?? false)
-        {
-            return Str;
-        }
-
-        _ = CanConvertToString();
-        return Str;
-    }
-
-    /// <inheritdoc cref="GetString()" />
-    public override string ToString() => GetString();
-
-    /// <summary>
-    /// Check whether <see cref="GlideString" /> could be converted to a <see langword="string" /> without data loss.<br />
-    /// Use this method prior to converting a <see cref="GlideString" /> to a <see langword="string" />.
-    /// </summary>
-    /// <returns><see langword="true" /> if <see cref="GlideString" /> could be safely converted to a <see langword="string" />.</returns>
-    public bool CanConvertToString()
-    {
-        if (_canConvertToString is not null)
-        {
-            return (bool)_canConvertToString;
-        }
-
-        // double-checked locking
-        lock (_lock)
-        {
-            if (_canConvertToString is not null)
-            {
-                return (bool)_canConvertToString;
-            }
-
-            if (System.Text.Unicode.Utf8.IsValid(Bytes))
-            {
-                Str = Encoding.UTF8.GetString(Bytes);
-                _canConvertToString = true;
-                return true;
-            }
-
-            _canConvertToString = false;
-            Str = $"Value isn't convertible to string: [{string.Join(' ', [.. Bytes.Select(b => $"{b:X2}")])}]";
-            return false;
-        }
-    }
+    internal byte[] Bytes { get; }
 
     /// <inheritdoc cref="GetString()" />
     public static implicit operator string?(GlideString? gs) => gs?.ToString();
@@ -336,61 +269,6 @@ public sealed class GlideString : IComparable, IComparable<GlideString>
     {
         byte[]? keyBytes = key;
         return keyBytes == null ? new GlideString([]) : new GlideString(keyBytes);
-    }
-
-    /// <inheritdoc/>
-    int IComparable.CompareTo(object? obj) => obj switch
-    {
-        null => CompareTo(null),
-        GlideString other => CompareTo(other),
-        _ => throw new ArgumentException($"Object must be of type {nameof(GlideString)}.", nameof(obj)),
-    };
-
-    /// <inheritdoc/>
-    public int CompareTo(GlideString? other)
-    {
-        if (other is null)
-        {
-            return 1;
-        }
-
-        if (other == this)
-        {
-            return 0;
-        }
-
-        if (Length != other.Length)
-        {
-            return Length - other.Length;
-        }
-
-        for (int i = 0; i < Length; i++)
-        {
-            if (Bytes[i] != other.Bytes[i])
-            {
-                return Bytes[i] - other.Bytes[i];
-            }
-        }
-
-        return 0;
-    }
-
-    /// <inheritdoc/>
-    public override bool Equals(object? obj)
-    {
-        if (ReferenceEquals(this, obj))
-        {
-            return true;
-        }
-
-#pragma warning disable IDE0046 // Convert to conditional expression
-        if (obj is null || obj.GetType() != typeof(GlideString))
-        {
-            return false;
-        }
-#pragma warning restore IDE0046 // Convert to conditional expression
-
-        return this == (GlideString)obj;
     }
 
     /// <summary>
@@ -463,14 +341,136 @@ public sealed class GlideString : IComparable, IComparable<GlideString>
         return new([.. left.Bytes, .. right.Bytes]);
     }
 
+    /// <inheritdoc cref="GlideString(byte[])" />
+    public static GlideString Of(byte[] bytes) => new(bytes);
+
+    /// <inheritdoc cref="GlideString(string)" />
+    public static GlideString Of(string @string) => new(@string);
+
+    /// <summary>
+    /// Get a reference to a <see langword="byte[]" /> stored in this <see cref="GlideString" />.
+    /// </summary>
+    /// <returns>A <see langword="byte[]" /> of that <see cref="GlideString" />.</returns>
+    public ReadOnlySpan<byte> GetBytes() => Bytes;
+
+    /// <summary>
+    /// Convert this <see cref="GlideString" /> to a <see langword="string" /> if possible.<br />
+    /// <b>Note:</b> a resulting <see langword="string" /> may be incorrect if original <see cref="GlideString" />
+    /// stores a non-UTF8 compatible sequence of bytes. It is <b>highly recommended</b> to call to
+    /// <see cref="CanConvertToString()" /> prior to do a conversion.
+    /// </summary>
+    /// <example>
+    /// <code>
+    /// GlideString gs = new byte[] { 0, 42, 255, 243, 0, 253, 15 };
+    /// if (gs.CanConvertToString())
+    /// {
+    ///     string str = gs; // Conversion without data loss is impossible, so str is incorrect.
+    /// }
+    /// </code>
+    /// </example>
+    /// <returns>A <see langword="string" /> representation of this <see cref="GlideString" />.</returns>
+    public string GetString()
+    {
+        if (_canConvertToString ?? false)
+        {
+            return Str;
+        }
+
+        _ = CanConvertToString();
+        return Str;
+    }
+
+    /// <inheritdoc cref="GetString()" />
+    public override string ToString() => GetString();
+
+    /// <summary>
+    /// Check whether <see cref="GlideString" /> could be converted to a <see langword="string" /> without data loss.<br />
+    /// Use this method prior to converting a <see cref="GlideString" /> to a <see langword="string" />.
+    /// </summary>
+    /// <returns><see langword="true" /> if <see cref="GlideString" /> could be safely converted to a <see langword="string" />.</returns>
+    public bool CanConvertToString()
+    {
+        if (_canConvertToString is not null)
+        {
+            return (bool)_canConvertToString;
+        }
+
+        // double-checked locking
+        lock (_lock)
+        {
+            if (_canConvertToString is not null)
+            {
+                return (bool)_canConvertToString;
+            }
+
+            if (System.Text.Unicode.Utf8.IsValid(Bytes))
+            {
+                Str = Encoding.UTF8.GetString(Bytes);
+                _canConvertToString = true;
+                return true;
+            }
+
+            _canConvertToString = false;
+            Str = $"Value isn't convertible to string: [{string.Join(' ', [.. Bytes.Select(b => $"{b:X2}")])}]";
+            return false;
+        }
+    }
+
+    /// <inheritdoc/>
+    int IComparable.CompareTo(object? obj) => obj switch
+    {
+        null => CompareTo(null),
+        GlideString other => CompareTo(other),
+        _ => throw new ArgumentException($"Object must be of type {nameof(GlideString)}.", nameof(obj)),
+    };
+
+    /// <inheritdoc/>
+    public int CompareTo(GlideString? other)
+    {
+        if (other is null)
+        {
+            return 1;
+        }
+
+        if (other == this)
+        {
+            return 0;
+        }
+
+        if (Length != other.Length)
+        {
+            return Length - other.Length;
+        }
+
+        for (int i = 0; i < Length; i++)
+        {
+            if (Bytes[i] != other.Bytes[i])
+            {
+                return Bytes[i] - other.Bytes[i];
+            }
+        }
+
+        return 0;
+    }
+
+    /// <inheritdoc/>
+    public override bool Equals(object? obj)
+    {
+        if (ReferenceEquals(this, obj))
+        {
+            return true;
+        }
+
+#pragma warning disable IDE0046 // Convert to conditional expression
+        if (obj is null || obj.GetType() != typeof(GlideString))
+        {
+            return false;
+        }
+#pragma warning restore IDE0046 // Convert to conditional expression
+
+        return this == (GlideString)obj;
+    }
+
     /// <inheritdoc/>
     public override int GetHashCode() => ((IStructuralEquatable)Bytes).GetHashCode(EqualityComparer<byte>.Default);
-
-    internal byte[] Bytes { get; }
-
-    internal string Str;
-
-    private bool? _canConvertToString;
-
-    private readonly object _lock = new();
 }

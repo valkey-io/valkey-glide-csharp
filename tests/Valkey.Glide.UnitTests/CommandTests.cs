@@ -6,6 +6,10 @@ namespace Valkey.Glide.UnitTests;
 
 public class CommandTests
 {
+    // Reponse values for testing converters.
+    private const long ConvertLong = 100L;
+    private const double ConvertDouble = 1.5;
+
     private static readonly TimeSpan OneSecond = TimeSpan.FromSeconds(1);
 
     [Fact]
@@ -1230,10 +1234,6 @@ public class CommandTests
 
     #endregion
     #region MemoryStats Converter Tests
-
-    // Reponse values for testing converters.
-    private const long ConvertLong = 100L;
-    private const double ConvertDouble = 1.5;
 
     [Fact]
     public void MemoryStatsConverter_WithAllFields()

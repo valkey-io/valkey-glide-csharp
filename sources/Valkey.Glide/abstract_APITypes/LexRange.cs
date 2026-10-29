@@ -23,7 +23,7 @@ public sealed class LexRange : Range
     public static readonly LexRange MaxToMin = new(LexBound.Max, LexBound.Min);
 
     #endregion
-    #region Fields
+    #region Private Fields
 
     private readonly LexBound _start;
     private readonly LexBound _stop;

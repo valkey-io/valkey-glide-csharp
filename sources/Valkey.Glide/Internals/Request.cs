@@ -9,6 +9,8 @@ namespace Valkey.Glide.Internals;
 
 internal static partial class Request
 {
+    private static readonly Func<string, ValkeyValue> ToOkConverter = _ => ValkeyValue.Ok;
+
     public static Cmd<object?, object?> CustomCommand(GlideString[] args)
         => new(RequestType.CustomCommand, args, true, o => o);
 
@@ -52,8 +54,6 @@ internal static partial class Request
                     0 => false,
                     _ => null,
                 });
-
-    private static readonly Func<string, ValkeyValue> ToOkConverter = _ => ValkeyValue.Ok;
 
     /// <summary>
     /// Create a Cmd which returns a Boolean value based on the response being OK or not, allowing null responses.

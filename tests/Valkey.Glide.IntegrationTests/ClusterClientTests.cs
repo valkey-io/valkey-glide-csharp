@@ -15,12 +15,12 @@ namespace Valkey.Glide.IntegrationTests;
 
 public class ClusterClientTests(TestConfiguration config)
 {
-    public TestConfiguration Config { get; } = config;
-
 #pragma warning disable xUnit1046 // Avoid using TheoryDataRow arguments that are not serializable
     public static IEnumerable<TheoryDataRow<GlideClusterClient, bool>> ClusterClientWithAtomic =>
         TestConfiguration.TestClusterClients.SelectMany(r => new TheoryDataRow<GlideClusterClient, bool>[] { new(r.Data, true), new(r.Data, false) });
 #pragma warning restore xUnit1046 // Avoid using TheoryDataRow arguments that are not serializable
+
+    public TestConfiguration Config { get; } = config;
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]

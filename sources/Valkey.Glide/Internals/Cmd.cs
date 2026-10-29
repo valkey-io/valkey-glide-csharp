@@ -20,6 +20,19 @@ internal interface ICmd
     Func<object?, object?> GetConverter();
 }
 
+internal static class CmdExtensions
+{
+    /// <summary>
+    /// Convert a command that returns an array to one which returns only its first element.
+    /// Used to build single-field variants of multi-field commands.
+    /// </summary>
+    /// <typeparam name="R">The raw response type.</typeparam>
+    /// <typeparam name="T">The converted element type.</typeparam>
+    /// <param name="cmd">The multi-field command to convert.</param>
+    public static Cmd<R, T> ToFirstValue<R, T>(this Cmd<R, T[]> cmd)
+        => new(cmd.Request, cmd.ArgsArray.Args, cmd.IsNullable, response => cmd.Converter(response)[0], cmd.AllowConverterToHandleNull);
+}
+
 internal class Cmd<R, T> : ICmd
 {
     public readonly bool IsNullable;
@@ -27,6 +40,15 @@ internal class Cmd<R, T> : ICmd
     public readonly Func<R, T> Converter;
     public readonly RequestType Request;
     public readonly ArgsArray ArgsArray;
+
+    public Cmd(RequestType request, GlideString[] args, bool isNullable, Func<R, T> converter, bool allowConverterToHandleNull = false)
+    {
+        Request = request;
+        ArgsArray = new() { Args = args };
+        IsNullable = isNullable;
+        AllowConverterToHandleNull = allowConverterToHandleNull;
+        Converter = converter;
+    }
 
 #pragma warning disable IDE0046 // Convert to conditional expression
     public Func<object?, object?> GetConverter() => value =>
@@ -62,15 +84,6 @@ internal class Cmd<R, T> : ICmd
     public Cmd ToFfi() => new(Request, ArgsArray.Args);
 
     public new string ToString() => $"{Request} [{string.Join(' ', ArgsArray.Args?.ToStrings() ?? [])}]";
-
-    public Cmd(RequestType request, GlideString[] args, bool isNullable, Func<R, T> converter, bool allowConverterToHandleNull = false)
-    {
-        Request = request;
-        ArgsArray = new() { Args = args };
-        IsNullable = isNullable;
-        AllowConverterToHandleNull = allowConverterToHandleNull;
-        Converter = converter;
-    }
 
     /// <summary>
     /// Convert a command to one which handles a multi-node cluster value.
@@ -139,19 +152,6 @@ internal class Cmd<R, T> : ICmd
         _ => [requestType.ToString().ToUpper()]
     };
 #pragma warning restore IDE0072 // Populate switch
-}
-
-internal static class CmdExtensions
-{
-    /// <summary>
-    /// Convert a command that returns an array to one which returns only its first element.
-    /// Used to build single-field variants of multi-field commands.
-    /// </summary>
-    /// <typeparam name="R">The raw response type.</typeparam>
-    /// <typeparam name="T">The converted element type.</typeparam>
-    /// <param name="cmd">The multi-field command to convert.</param>
-    public static Cmd<R, T> ToFirstValue<R, T>(this Cmd<R, T[]> cmd)
-        => new(cmd.Request, cmd.ArgsArray.Args, cmd.IsNullable, response => cmd.Converter(response)[0], cmd.AllowConverterToHandleNull);
 }
 
 internal record ArgsArray

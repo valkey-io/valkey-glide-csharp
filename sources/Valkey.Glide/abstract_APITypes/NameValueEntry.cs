@@ -37,6 +37,22 @@ public readonly struct NameValueEntry(ValkeyValue name, ValkeyValue value) : IEq
         => new(value.Key, value.Value);
 
     /// <summary>
+    /// Compares two values for equality.
+    /// </summary>
+    /// <param name="x">The first <see cref="NameValueEntry"/> to compare.</param>
+    /// <param name="y">The second <see cref="NameValueEntry"/> to compare.</param>
+    public static bool operator ==(NameValueEntry x, NameValueEntry y)
+        => x.Name == y.Name && x.Value == y.Value;
+
+    /// <summary>
+    /// Compares two values for non-equality.
+    /// </summary>
+    /// <param name="x">The first <see cref="NameValueEntry"/> to compare.</param>
+    /// <param name="y">The second <see cref="NameValueEntry"/> to compare.</param>
+    public static bool operator !=(NameValueEntry x, NameValueEntry y)
+        => x.Name != y.Name || x.Value != y.Value;
+
+    /// <summary>
     /// The "{name}: {value}" string representation.
     /// </summary>
     public override string ToString()
@@ -59,22 +75,6 @@ public readonly struct NameValueEntry(ValkeyValue name, ValkeyValue value) : IEq
     /// <param name="other">The <see cref="NameValueEntry"/> to compare to.</param>
     public bool Equals(NameValueEntry other)
         => Name == other.Name && Value == other.Value;
-
-    /// <summary>
-    /// Compares two values for equality.
-    /// </summary>
-    /// <param name="x">The first <see cref="NameValueEntry"/> to compare.</param>
-    /// <param name="y">The second <see cref="NameValueEntry"/> to compare.</param>
-    public static bool operator ==(NameValueEntry x, NameValueEntry y)
-        => x.Name == y.Name && x.Value == y.Value;
-
-    /// <summary>
-    /// Compares two values for non-equality.
-    /// </summary>
-    /// <param name="x">The first <see cref="NameValueEntry"/> to compare.</param>
-    /// <param name="y">The second <see cref="NameValueEntry"/> to compare.</param>
-    public static bool operator !=(NameValueEntry x, NameValueEntry y)
-        => x.Name != y.Name || x.Value != y.Value;
 
     #region Internal Methods
 

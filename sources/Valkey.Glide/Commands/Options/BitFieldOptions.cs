@@ -8,6 +8,27 @@ namespace Valkey.Glide.Commands.Options;
 public static class BitFieldOptions
 {
     /// <summary>
+    /// Overflow behavior types for BitField operations.
+    /// </summary>
+    public enum OverflowType
+    {
+        /// <summary>
+        /// Wrap around on overflow (modulo arithmetic).
+        /// </summary>
+        Wrap,
+
+        /// <summary>
+        /// Saturate at min/max values on overflow.
+        /// </summary>
+        Sat,
+
+        /// <summary>
+        /// Return null on overflow.
+        /// </summary>
+        Fail
+    }
+
+    /// <summary>
     /// Base interface for BitField subcommands.
     /// </summary>
     public interface IBitFieldSubCommand
@@ -34,6 +55,26 @@ public static class BitFieldOptions
         /// </summary>
         /// <returns>The offset as a string.</returns>
         string GetOffset();
+    }
+
+    /// <summary>
+    /// Helper methods for creating common encodings.
+    /// </summary>
+    public static class Encoding
+    {
+        /// <summary>
+        /// Creates an unsigned encoding string.
+        /// </summary>
+        /// <param name="bits">Number of bits (1-63).</param>
+        /// <returns>Unsigned encoding string (e.g., "u8").</returns>
+        public static string Unsigned(int bits) => $"u{bits}";
+
+        /// <summary>
+        /// Creates a signed encoding string.
+        /// </summary>
+        /// <param name="bits">Number of bits (1-64).</param>
+        /// <returns>Signed encoding string (e.g., "i8").</returns>
+        public static string Signed(int bits) => $"i{bits}";
     }
 
     /// <summary>
@@ -99,46 +140,5 @@ public static class BitFieldOptions
     {
         /// <inheritdoc/>
         public string[] ToArgs() => ["OVERFLOW", overflowType.ToString().ToUpper()];
-    }
-
-    /// <summary>
-    /// Overflow behavior types for BitField operations.
-    /// </summary>
-    public enum OverflowType
-    {
-        /// <summary>
-        /// Wrap around on overflow (modulo arithmetic).
-        /// </summary>
-        Wrap,
-
-        /// <summary>
-        /// Saturate at min/max values on overflow.
-        /// </summary>
-        Sat,
-
-        /// <summary>
-        /// Return null on overflow.
-        /// </summary>
-        Fail
-    }
-
-    /// <summary>
-    /// Helper methods for creating common encodings.
-    /// </summary>
-    public static class Encoding
-    {
-        /// <summary>
-        /// Creates an unsigned encoding string.
-        /// </summary>
-        /// <param name="bits">Number of bits (1-63).</param>
-        /// <returns>Unsigned encoding string (e.g., "u8").</returns>
-        public static string Unsigned(int bits) => $"u{bits}";
-
-        /// <summary>
-        /// Creates a signed encoding string.
-        /// </summary>
-        /// <param name="bits">Number of bits (1-64).</param>
-        /// <returns>Signed encoding string (e.g., "i8").</returns>
-        public static string Signed(int bits) => $"i{bits}";
     }
 }

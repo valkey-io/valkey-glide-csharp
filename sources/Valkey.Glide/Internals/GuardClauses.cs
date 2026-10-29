@@ -10,28 +10,6 @@ internal static class GuardClauses
     #region Public Methods
 
     /// <summary>
-    /// Throws if the certificate byte array is null, empty, or exceeds <see cref="ConnectionConfiguration.CertificateMaxSize"/>.
-    /// </summary>
-    /// <param name="data">The certificate or key byte array to validate.</param>
-    /// <param name="paramName">The parameter name for the exception.</param>
-    internal static void ThrowIfCertificateNotSupported(byte[] data, string paramName)
-    {
-        ArgumentNullException.ThrowIfNull(data, paramName);
-        ThrowIfCertificateLengthNotSupported(data.Length, paramName);
-    }
-
-    /// <summary>
-    /// Throws if the certificate file at the given path is null, empty or exceeds <see cref="ConnectionConfiguration.CertificateMaxSize"/>.
-    /// </summary>
-    /// <param name="path">The certificate or key file path to check.</param>
-    /// <param name="paramName">The parameter name for the exception.</param>
-    internal static void ThrowIfCertificateNotSupported(string path, string paramName)
-    {
-        ArgumentNullException.ThrowIfNull(path, paramName);
-        ThrowIfCertificateLengthNotSupported(new FileInfo(path).Length, paramName);
-    }
-
-    /// <summary>
     /// Throws a <see cref="NotImplementedException"/> if command flags are specified.
     /// </summary>
     /// <param name="flags">The command flags to validate.</param>
@@ -58,9 +36,34 @@ internal static class GuardClauses
     }
 
     #endregion
+    #region Internal Methods
+
+    /// <summary>
+    /// Throws if the certificate byte array is null, empty, or exceeds <see cref="ConnectionConfiguration.CertificateMaxSize"/>.
+    /// </summary>
+    /// <param name="data">The certificate or key byte array to validate.</param>
+    /// <param name="paramName">The parameter name for the exception.</param>
+    internal static void ThrowIfCertificateNotSupported(byte[] data, string paramName)
+    {
+        ArgumentNullException.ThrowIfNull(data, paramName);
+        ThrowIfCertificateLengthNotSupported(data.Length, paramName);
+    }
+
+    /// <summary>
+    /// Throws if the certificate file at the given path is null, empty or exceeds <see cref="ConnectionConfiguration.CertificateMaxSize"/>.
+    /// </summary>
+    /// <param name="path">The certificate or key file path to check.</param>
+    /// <param name="paramName">The parameter name for the exception.</param>
+    internal static void ThrowIfCertificateNotSupported(string path, string paramName)
+    {
+        ArgumentNullException.ThrowIfNull(path, paramName);
+        ThrowIfCertificateLengthNotSupported(new FileInfo(path).Length, paramName);
+    }
+
+    #endregion
     #region Private Methods
 
-    internal static void ThrowIfCertificateLengthNotSupported(long length, string paramName)
+    private static void ThrowIfCertificateLengthNotSupported(long length, string paramName)
     {
         ArgumentOutOfRangeException.ThrowIfZero(length, paramName);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(length, ConnectionConfiguration.CertificateMaxSize, paramName);

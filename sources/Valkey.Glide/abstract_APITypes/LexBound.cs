@@ -23,7 +23,7 @@ public sealed class LexBound
     public static readonly LexBound Max = new(ValkeyLiterals.LexRangeMax, isInclusive: false);
 
     #endregion
-    #region Fields
+    #region Private Fields
 
     private readonly ValkeyValue _value;
     private readonly bool _isInclusive;
@@ -42,21 +42,7 @@ public sealed class LexBound
     }
 
     #endregion
-    #region Public Methods
-
-    /// <summary>
-    /// Creates an inclusive lexicographic bound.
-    /// </summary>
-    /// <param name="value">The lexicographic value.</param>
-    /// <returns>An inclusive <see cref="LexBound"/>.</returns>
-    public static LexBound Inclusive(ValkeyValue value) => new(value, isInclusive: true);
-
-    /// <summary>
-    /// Creates an exclusive lexicographic bound.
-    /// </summary>
-    /// <param name="value">The lexicographic value.</param>
-    /// <returns>An exclusive <see cref="LexBound"/>.</returns>
-    public static LexBound Exclusive(ValkeyValue value) => new(value, isInclusive: false);
+    #region Operators
 
     /// <summary>
     /// Converts a string to an inclusive lexicographic bound.
@@ -75,6 +61,23 @@ public sealed class LexBound
     /// </summary>
     /// <param name="value">The value to convert.</param>
     public static implicit operator LexBound(ValkeyValue value) => Inclusive(value);
+
+    #endregion
+    #region Public Methods
+
+    /// <summary>
+    /// Creates an inclusive lexicographic bound.
+    /// </summary>
+    /// <param name="value">The lexicographic value.</param>
+    /// <returns>An inclusive <see cref="LexBound"/>.</returns>
+    public static LexBound Inclusive(ValkeyValue value) => new(value, isInclusive: true);
+
+    /// <summary>
+    /// Creates an exclusive lexicographic bound.
+    /// </summary>
+    /// <param name="value">The lexicographic value.</param>
+    /// <returns>An exclusive <see cref="LexBound"/>.</returns>
+    public static LexBound Exclusive(ValkeyValue value) => new(value, isInclusive: false);
 
     #endregion
     #region Internal Methods

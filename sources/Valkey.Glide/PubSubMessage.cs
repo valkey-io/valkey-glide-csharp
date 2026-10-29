@@ -10,6 +10,33 @@ namespace Valkey.Glide;
 public sealed class PubSubMessage
 {
     /// <summary>
+    /// Initializes a new instance of the <see cref="PubSubMessage"/> class.
+    /// </summary>
+    /// <param name="channelMode">The channel mode the message was received on.</param>
+    /// <param name="message">The message received.</param>
+    /// <param name="channel">The channel the message was received on.</param>
+    /// <param name="pattern">The pattern the message matched, or <see langword="null"/> if not pattern-based.</param>
+    private PubSubMessage(
+        PubSubChannelMode channelMode,
+        ValkeyValue message,
+        ValkeyKey channel,
+        ValkeyKey? pattern)
+    {
+        message.AssertNotNull();
+        channel.AssertNotNull();
+
+        if (pattern.HasValue)
+        {
+            pattern.Value.AssertNotNull();
+        }
+
+        ChannelMode = channelMode;
+        Message = message;
+        Channel = channel;
+        Pattern = pattern;
+    }
+
+    /// <summary>
     /// The channel subscription mode for this message.
     /// </summary>
     public PubSubChannelMode ChannelMode { get; }
@@ -92,31 +119,4 @@ public sealed class PubSubMessage
     /// </summary>
     /// <returns>A hash code for the current PubSubMessage.</returns>
     public override int GetHashCode() => HashCode.Combine(ChannelMode, Message, Channel, Pattern);
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="PubSubMessage"/> class.
-    /// </summary>
-    /// <param name="channelMode">The channel mode the message was received on.</param>
-    /// <param name="message">The message received.</param>
-    /// <param name="channel">The channel the message was received on.</param>
-    /// <param name="pattern">The pattern the message matched, or <see langword="null"/> if not pattern-based.</param>
-    private PubSubMessage(
-        PubSubChannelMode channelMode,
-        ValkeyValue message,
-        ValkeyKey channel,
-        ValkeyKey? pattern)
-    {
-        message.AssertNotNull();
-        channel.AssertNotNull();
-
-        if (pattern.HasValue)
-        {
-            pattern.Value.AssertNotNull();
-        }
-
-        ChannelMode = channelMode;
-        Message = message;
-        Channel = channel;
-        Pattern = pattern;
-    }
 }

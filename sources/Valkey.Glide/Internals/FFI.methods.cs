@@ -27,6 +27,30 @@ internal partial class FFI
         IntPtr patternPtr,
         ulong patternLen);
 
+    /// <summary>
+    /// FFI callback delegate for monitor message reception matching the Rust FFI signature.
+    /// </summary>
+    /// <param name="timestamp">Unix timestamp when the command was processed.</param>
+    /// <param name="database">Database number the command was issued against.</param>
+    /// <param name="clientAddrPtr">Pointer to the client address that issued the command.</param>
+    /// <param name="clientAddrLen">Length of the client address in bytes.</param>
+    /// <param name="commandPtr">Pointer to the command name.</param>
+    /// <param name="commandLen">Length of the command name in bytes.</param>
+    /// <param name="argsCount">Number of command arguments.</param>
+    /// <param name="argsPtrs">Pointer to an array of pointers to argument bytes.</param>
+    /// <param name="argsLens">Pointer to an array of argument lengths.</param>
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    internal delegate void MonitorMessageCallback(
+        double timestamp,
+        ushort database,
+        IntPtr clientAddrPtr,
+        long clientAddrLen,
+        IntPtr commandPtr,
+        long commandLen,
+        long argsCount,
+        IntPtr argsPtrs,
+        IntPtr argsLens);
+
     [LibraryImport("libglide_rs", EntryPoint = "command")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial void CommandFfi(IntPtr client, ulong index, IntPtr cmdInfo, IntPtr routeInfo);
@@ -122,30 +146,6 @@ internal partial class FFI
 
     #endregion
     #region Monitor
-
-    /// <summary>
-    /// FFI callback delegate for monitor message reception matching the Rust FFI signature.
-    /// </summary>
-    /// <param name="timestamp">Unix timestamp when the command was processed.</param>
-    /// <param name="database">Database number the command was issued against.</param>
-    /// <param name="clientAddrPtr">Pointer to the client address that issued the command.</param>
-    /// <param name="clientAddrLen">Length of the client address in bytes.</param>
-    /// <param name="commandPtr">Pointer to the command name.</param>
-    /// <param name="commandLen">Length of the command name in bytes.</param>
-    /// <param name="argsCount">Number of command arguments.</param>
-    /// <param name="argsPtrs">Pointer to an array of pointers to argument bytes.</param>
-    /// <param name="argsLens">Pointer to an array of argument lengths.</param>
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    internal delegate void MonitorMessageCallback(
-        double timestamp,
-        ushort database,
-        IntPtr clientAddrPtr,
-        long clientAddrLen,
-        IntPtr commandPtr,
-        long commandLen,
-        long argsCount,
-        IntPtr argsPtrs,
-        IntPtr argsLens);
 
     [LibraryImport("libglide_rs", EntryPoint = "create_monitor_client")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]

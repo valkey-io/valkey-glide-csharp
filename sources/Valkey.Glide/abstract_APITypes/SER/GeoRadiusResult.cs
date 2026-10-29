@@ -15,11 +15,6 @@ namespace Valkey.Glide;
 public readonly struct GeoRadiusResult(in ValkeyValue member, double? distance, long? hash, GeoPosition? position)
 {
     /// <summary>
-    /// Indicate the member being represented.
-    /// </summary>
-    public override string ToString() => Member.ToString();
-
-    /// <summary>
     /// The matched member.
     /// </summary>
     public ValkeyValue Member { get; } = member;
@@ -39,4 +34,9 @@ public readonly struct GeoRadiusResult(in ValkeyValue member, double? distance, 
     /// The coordinates of the matched member.
     /// </summary>
     public GeoPosition? Position { get; } = position;
+
+    /// <summary>
+    /// Indicate the member being represented.
+    /// </summary>
+    public override string ToString() => Member.ToString();
 }

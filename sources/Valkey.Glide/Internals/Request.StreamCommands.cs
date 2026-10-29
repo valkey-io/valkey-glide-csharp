@@ -139,6 +139,24 @@ internal static partial class Request
     #endregion
     #region Response Converters
 
+    internal static ValkeyStream[] ConvertValkeyStreamResponse(Dictionary<GlideString, object>? response)
+    {
+        if (response is null)
+        {
+            return [];
+        }
+
+        var result = new List<ValkeyStream>();
+        foreach (var kvp in response)
+        {
+            var key = new ValkeyKey(kvp.Key);
+            var entries = ConvertStreamEntriesResponse((Dictionary<GlideString, object>)kvp.Value);
+            result.Add(new ValkeyStream(key, entries));
+        }
+
+        return [.. result];
+    }
+
     private static NameValueEntry ConvertNameValueEntryResponse(object response)
     {
         var pair = (object[])response;
@@ -359,24 +377,6 @@ internal static partial class Request
         }
 
         return ConvertStreamEntriesResponse((Dictionary<GlideString, object>)response.Values.First());
-    }
-
-    internal static ValkeyStream[] ConvertValkeyStreamResponse(Dictionary<GlideString, object>? response)
-    {
-        if (response is null)
-        {
-            return [];
-        }
-
-        var result = new List<ValkeyStream>();
-        foreach (var kvp in response)
-        {
-            var key = new ValkeyKey(kvp.Key);
-            var entries = ConvertStreamEntriesResponse((Dictionary<GlideString, object>)kvp.Value);
-            result.Add(new ValkeyStream(key, entries));
-        }
-
-        return [.. result];
     }
 
     #endregion

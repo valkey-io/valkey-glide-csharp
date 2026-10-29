@@ -17,16 +17,6 @@ namespace Valkey.Glide;
 public class PubSubState
 {
     /// <summary>
-    /// The desired subscriptions, indexed by channel mode.
-    /// </summary>
-    public IReadOnlyDictionary<PubSubChannelMode, IReadOnlySet<ValkeyKey>> Desired { get; }
-
-    /// <summary>
-    /// The actual subscriptions, indexed by channel mode.
-    /// </summary>
-    public IReadOnlyDictionary<PubSubChannelMode, IReadOnlySet<ValkeyKey>> Actual { get; }
-
-    /// <summary>
     /// Initializes a new instance of the <see cref="PubSubState"/> class
     /// with the specified desired and actual subscription states.
     /// </summary>
@@ -38,4 +28,14 @@ public class PubSubState
     {
         (Desired, Actual) = (desired, actual);
     }
+
+    /// <summary>
+    /// The desired subscriptions, indexed by channel mode.
+    /// </summary>
+    public IReadOnlyDictionary<PubSubChannelMode, IReadOnlySet<ValkeyKey>> Desired { get; }
+
+    /// <summary>
+    /// The actual subscriptions, indexed by channel mode.
+    /// </summary>
+    public IReadOnlyDictionary<PubSubChannelMode, IReadOnlySet<ValkeyKey>> Actual { get; }
 }

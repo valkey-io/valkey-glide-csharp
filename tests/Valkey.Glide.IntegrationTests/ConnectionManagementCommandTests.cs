@@ -294,20 +294,6 @@ public class ConnectionManagementCommandTests(ServerFixture fixture) : IClassFix
         }
     }
 
-    private static void AssertTrackingInfoOff(ClientTrackingInfo info)
-    {
-        Assert.Equal(new HashSet<string> { "off" }, info.Flags);
-        Assert.Equal(-1, info.Redirect);
-        Assert.Empty(info.Prefixes);
-    }
-
-    private static void AssertTrackingInfoOn(ClientTrackingInfo info)
-    {
-        Assert.Equal(new HashSet<string> { "on", "bcast" }, info.Flags);
-        Assert.Equal(0, info.Redirect);
-        Assert.Equal(new HashSet<string> { "" }, info.Prefixes);
-    }
-
     #endregion
     #region ResetAsync
 
@@ -336,6 +322,23 @@ public class ConnectionManagementCommandTests(ServerFixture fixture) : IClassFix
         // Verify tracking is disabled after reset.
         var infoAfter = await client.ClientTrackingInfoAsync();
         Assert.Contains("off", infoAfter.Flags);
+    }
+
+    #endregion
+    #region Helpers
+
+    private static void AssertTrackingInfoOff(ClientTrackingInfo info)
+    {
+        Assert.Equal(new HashSet<string> { "off" }, info.Flags);
+        Assert.Equal(-1, info.Redirect);
+        Assert.Empty(info.Prefixes);
+    }
+
+    private static void AssertTrackingInfoOn(ClientTrackingInfo info)
+    {
+        Assert.Equal(new HashSet<string> { "on", "bcast" }, info.Flags);
+        Assert.Equal(0, info.Redirect);
+        Assert.Equal(new HashSet<string> { "" }, info.Prefixes);
     }
 
     #endregion

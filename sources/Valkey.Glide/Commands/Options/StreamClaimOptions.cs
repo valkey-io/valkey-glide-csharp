@@ -10,7 +10,51 @@ namespace Valkey.Glide.Commands.Options;
 /// <seealso href="https://valkey.io/commands/xclaim/"/>
 public sealed class StreamClaimOptions
 {
+    #region Constructors
+
+    private StreamClaimOptions(TimeSpan minIdleTime)
+    {
+        MinIdleTime = minIdleTime;
+    }
+
+    #endregion
+    #region Public Properties
+
+    /// <summary>
+    /// The minimum idle time an entry must have to be claimed.
+    /// </summary>
+    public TimeSpan MinIdleTime { get; }
+
+    /// <summary>
+    /// The idle time for the message (IDLE).
+    /// </summary>
+    public TimeSpan? Idle { get; private set; }
+
+    /// <summary>
+    /// The idle time for the message as a timestamp (TIME).
+    /// </summary>
+    public DateTimeOffset? IdleUnix { get; private set; }
+
+    /// <summary>
+    /// The retry counter value (RETRYCOUNT).
+    /// </summary>
+    public int? RetryCount { get; private set; }
+
+    /// <summary>
+    /// Whether to create a PEL entry even if the message is not already assigned to a consumer (FORCE).
+    /// </summary>
+    public bool Force { get; private set; }
+
+    #endregion
     #region Public Methods
+
+    /// <summary>
+    /// Creates options that claim entries idle for at least the given time.
+    /// </summary>
+    /// <param name="minIdleTime">The minimum idle time.</param>
+    /// <returns>Options that claim entries idle for at least the given time.</returns>
+    public static StreamClaimOptions From(TimeSpan minIdleTime)
+        => new(minIdleTime);
 
     /// <summary>
     /// Sets the idle time of the claimed message to the specified interval (IDLE).
@@ -58,53 +102,6 @@ public sealed class StreamClaimOptions
         Force = true;
         return this;
     }
-
-    #endregion
-    #region Public Properties
-
-    /// <summary>
-    /// The minimum idle time an entry must have to be claimed.
-    /// </summary>
-    public TimeSpan MinIdleTime { get; }
-
-    /// <summary>
-    /// The idle time for the message (IDLE).
-    /// </summary>
-    public TimeSpan? Idle { get; private set; }
-
-    /// <summary>
-    /// The idle time for the message as a timestamp (TIME).
-    /// </summary>
-    public DateTimeOffset? IdleUnix { get; private set; }
-
-    /// <summary>
-    /// The retry counter value (RETRYCOUNT).
-    /// </summary>
-    public int? RetryCount { get; private set; }
-
-    /// <summary>
-    /// Whether to create a PEL entry even if the message is not already assigned to a consumer (FORCE).
-    /// </summary>
-    public bool Force { get; private set; }
-
-    #endregion
-    #region Constructors
-
-    private StreamClaimOptions(TimeSpan minIdleTime)
-    {
-        MinIdleTime = minIdleTime;
-    }
-
-    #endregion
-    #region Builders
-
-    /// <summary>
-    /// Creates options that claim entries idle for at least the given time.
-    /// </summary>
-    /// <param name="minIdleTime">The minimum idle time.</param>
-    /// <returns>Options that claim entries idle for at least the given time.</returns>
-    public static StreamClaimOptions From(TimeSpan minIdleTime)
-        => new(minIdleTime);
 
     #endregion
     #region Internal Methods
