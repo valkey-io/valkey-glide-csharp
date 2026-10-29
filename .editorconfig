@@ -799,6 +799,27 @@ dotnet_diagnostic.RCS1268.severity = error
 # RCS1266: Use raw string literal
 # RCS1267: Use string interpolation instead of 'string.Concat'
 
+# StyleCop Analyzers
+# ==================
+
+# See https://github.com/DotNetAnalyzers/StyleCopAnalyzers/tree/master/documentation
+
+# Disable all rules by default and opt in only to the ones we want.
+dotnet_analyzer_diagnostic.category-StyleCop.CSharp.DocumentationRules.severity = none
+dotnet_analyzer_diagnostic.category-StyleCop.CSharp.LayoutRules.severity = none
+dotnet_analyzer_diagnostic.category-StyleCop.CSharp.MaintainabilityRules.severity = none
+dotnet_analyzer_diagnostic.category-StyleCop.CSharp.NamingRules.severity = none
+dotnet_analyzer_diagnostic.category-StyleCop.CSharp.OrderingRules.severity = none
+dotnet_analyzer_diagnostic.category-StyleCop.CSharp.ReadabilityRules.severity = none
+dotnet_analyzer_diagnostic.category-StyleCop.CSharp.SpacingRules.severity = none
+dotnet_analyzer_diagnostic.category-StyleCop.CSharp.SpecialRules.severity = none
+
+# Ordering Rules (SA12)
+dotnet_diagnostic.SA1201.severity = error
+dotnet_diagnostic.SA1202.severity = error
+dotnet_diagnostic.SA1203.severity = error
+dotnet_diagnostic.SA1204.severity = error
+
 # IDE0130: Namespace does not match folder structure
 [sources/Valkey.Glide/**.cs]
 dotnet_style_namespace_match_folder = false
