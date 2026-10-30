@@ -138,7 +138,7 @@ public static partial class Ft
     #region Internal Methods
 
     /// <summary>
-    /// Converts to command arguments.
+    /// Converts the given <see cref="DistanceMetric"/> to the corresponding command arguments.
     /// </summary>
     /// <param name="metric">The distance metric to convert.</param>
     /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="metric"/> is not a supported <see cref="DistanceMetric"/> value.</exception>
@@ -148,6 +148,18 @@ public static partial class Ft
         DistanceMetric.Euclidean => [ValkeyLiterals.L2],
         DistanceMetric.InnerProduct => [ValkeyLiterals.IP],
         _ => throw new ArgumentOutOfRangeException(nameof(metric)),
+    };
+
+    /// <summary>
+    /// Converts the given <see cref="DataType"/> to the corresponding command arguments.
+    /// </summary>
+    /// <param name="dataType">The data type to convert.</param>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="dataType"/> is not a supported <see cref="DataType"/> value.</exception>
+    internal static GlideString[] ToArgs(this DataType dataType) => dataType switch
+    {
+        DataType.Hash => [ValkeyLiterals.HASH],
+        DataType.Json => [ValkeyLiterals.JSON],
+        _ => throw new ArgumentOutOfRangeException(nameof(dataType)),
     };
 
     #endregion
@@ -359,22 +371,4 @@ public static partial class Ft
     }
 
     #endregion
-}
-
-/// <summary>
-/// Extension methods for <see cref="Ft.DataType"/>.
-/// </summary>
-internal static class FtDataTypeExtensions
-{
-    /// <summary>
-    /// Converts the <see cref="Ft.DataType"/> to its literal value.
-    /// </summary>
-    /// <param name="dataType">The data type to convert.</param>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="dataType"/> is not a supported <see cref="Ft.DataType"/> value.</exception>
-    internal static ValkeyValue ToLiteral(this Ft.DataType dataType) => dataType switch
-    {
-        Ft.DataType.Hash => ValkeyLiterals.HASH,
-        Ft.DataType.Json => ValkeyLiterals.JSON,
-        _ => throw new ArgumentOutOfRangeException(nameof(dataType)),
-    };
 }

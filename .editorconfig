@@ -834,3 +834,7 @@ dotnet_diagnostic.IDE0130.severity = none
 dotnet_diagnostic.RCS1140.severity = none
 dotnet_diagnostic.RCS1141.severity = none
 dotnet_diagnostic.RCS1142.severity = none
+
+# Allow multiple types per file in tests
+# (e.g. test classes with their fixtures).
+dotnet_diagnostic.SA1402.severity = none

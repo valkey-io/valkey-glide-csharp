@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using static Valkey.Glide.Internals.FFI;
+
 namespace Valkey.Glide.UnitTests;
 
 /// <summary>
@@ -23,17 +25,17 @@ public class PubSubCommandTests
     [Fact]
     public void Publish_BuildsCorrectCommand()
     {
-        Assert.Equal(["PUBLISH", Channel2, Message], Request.Publish(Channel2, Message).GetArgs());
-        Assert.Equal(["PUBLISH", Channel2, ""], Request.Publish(Channel2, "").GetArgs());
-        Assert.Equal(["PUBLISH", "", Message], Request.Publish("", Message).GetArgs());
+        CmdAssert.Equal(RequestType.Publish, [Channel2, Message], Request.Publish(Channel2, Message));
+        CmdAssert.Equal(RequestType.Publish, [Channel2, ""], Request.Publish(Channel2, ""));
+        CmdAssert.Equal(RequestType.Publish, ["", Message], Request.Publish("", Message));
     }
 
     [Fact]
     public void SPublish_BuildsCorrectCommand()
     {
-        Assert.Equal(["SPUBLISH", Channel1, Message], Request.SPublish(Channel1, Message).GetArgs());
-        Assert.Equal(["SPUBLISH", Channel1, ""], Request.SPublish(Channel1, "").GetArgs());
-        Assert.Equal(["SPUBLISH", "", Message], Request.SPublish("", Message).GetArgs());
+        CmdAssert.Equal(RequestType.SPublish, [Channel1, Message], Request.SPublish(Channel1, Message));
+        CmdAssert.Equal(RequestType.SPublish, [Channel1, ""], Request.SPublish(Channel1, ""));
+        CmdAssert.Equal(RequestType.SPublish, ["", Message], Request.SPublish("", Message));
     }
 
     #endregion
@@ -42,43 +44,43 @@ public class PubSubCommandTests
     [Fact]
     public void Subscribe_BuildsCorrectCommand()
     {
-        Assert.Equal(["SUBSCRIBEBLOCKING", Channel1, TimeoutExpected], Request.SubscribeBlocking([Channel1], Timeout).GetArgs());
-        Assert.Equal(["SUBSCRIBEBLOCKING", Channel1, Channel2, TimeoutExpected], Request.SubscribeBlocking([Channel1, Channel2], Timeout).GetArgs());
+        CmdAssert.Equal(RequestType.SubscribeBlocking, [Channel1, TimeoutExpected], Request.SubscribeBlocking([Channel1], Timeout));
+        CmdAssert.Equal(RequestType.SubscribeBlocking, [Channel1, Channel2, TimeoutExpected], Request.SubscribeBlocking([Channel1, Channel2], Timeout));
     }
 
     [Fact]
     public void SubscribeLazy_BuildsCorrectCommand()
     {
-        Assert.Equal(["SUBSCRIBE", Channel1], Request.Subscribe([Channel1]).GetArgs());
-        Assert.Equal(["SUBSCRIBE", Channel1, Channel2], Request.Subscribe([Channel1, Channel2]).GetArgs());
+        CmdAssert.Equal(RequestType.Subscribe, [Channel1], Request.Subscribe([Channel1]));
+        CmdAssert.Equal(RequestType.Subscribe, [Channel1, Channel2], Request.Subscribe([Channel1, Channel2]));
     }
 
     [Fact]
     public void PSubscribe_BuildsCorrectCommand()
     {
-        Assert.Equal(["PSUBSCRIBEBLOCKING", Pattern1, TimeoutExpected], Request.PSubscribeBlocking([Pattern1], Timeout).GetArgs());
-        Assert.Equal(["PSUBSCRIBEBLOCKING", Pattern1, Pattern2, TimeoutExpected], Request.PSubscribeBlocking([Pattern1, Pattern2], Timeout).GetArgs());
+        CmdAssert.Equal(RequestType.PSubscribeBlocking, [Pattern1, TimeoutExpected], Request.PSubscribeBlocking([Pattern1], Timeout));
+        CmdAssert.Equal(RequestType.PSubscribeBlocking, [Pattern1, Pattern2, TimeoutExpected], Request.PSubscribeBlocking([Pattern1, Pattern2], Timeout));
     }
 
     [Fact]
     public void PSubscribeLazy_BuildsCorrectCommand()
     {
-        Assert.Equal(["PSUBSCRIBE", Pattern1], Request.PSubscribe([Pattern1]).GetArgs());
-        Assert.Equal(["PSUBSCRIBE", Pattern1, Pattern2], Request.PSubscribe([Pattern1, Pattern2]).GetArgs());
+        CmdAssert.Equal(RequestType.PSubscribe, [Pattern1], Request.PSubscribe([Pattern1]));
+        CmdAssert.Equal(RequestType.PSubscribe, [Pattern1, Pattern2], Request.PSubscribe([Pattern1, Pattern2]));
     }
 
     [Fact]
     public void SSubscribe_BuildsCorrectCommand()
     {
-        Assert.Equal(["SSUBSCRIBEBLOCKING", Channel1, TimeoutExpected], Request.SSubscribeBlocking([Channel1], Timeout).GetArgs());
-        Assert.Equal(["SSUBSCRIBEBLOCKING", Channel1, Channel2, TimeoutExpected], Request.SSubscribeBlocking([Channel1, Channel2], Timeout).GetArgs());
+        CmdAssert.Equal(RequestType.SSubscribeBlocking, [Channel1, TimeoutExpected], Request.SSubscribeBlocking([Channel1], Timeout));
+        CmdAssert.Equal(RequestType.SSubscribeBlocking, [Channel1, Channel2, TimeoutExpected], Request.SSubscribeBlocking([Channel1, Channel2], Timeout));
     }
 
     [Fact]
     public void SSubscribeLazy_BuildsCorrectCommand()
     {
-        Assert.Equal(["SSUBSCRIBE", Channel1], Request.SSubscribe([Channel1]).GetArgs());
-        Assert.Equal(["SSUBSCRIBE", Channel1, Channel2], Request.SSubscribe([Channel1, Channel2]).GetArgs());
+        CmdAssert.Equal(RequestType.SSubscribe, [Channel1], Request.SSubscribe([Channel1]));
+        CmdAssert.Equal(RequestType.SSubscribe, [Channel1, Channel2], Request.SSubscribe([Channel1, Channel2]));
     }
 
     #endregion
@@ -87,49 +89,49 @@ public class PubSubCommandTests
     [Fact]
     public void Unsubscribe_BuildsCorrectCommand()
     {
-        Assert.Equal(["UNSUBSCRIBEBLOCKING", TimeoutExpected], Request.UnsubscribeBlocking([], Timeout).GetArgs());
-        Assert.Equal(["UNSUBSCRIBEBLOCKING", Channel1, TimeoutExpected], Request.UnsubscribeBlocking([Channel1], Timeout).GetArgs());
-        Assert.Equal(["UNSUBSCRIBEBLOCKING", Channel1, Channel2, TimeoutExpected], Request.UnsubscribeBlocking([Channel1, Channel2], Timeout).GetArgs());
+        CmdAssert.Equal(RequestType.UnsubscribeBlocking, [TimeoutExpected], Request.UnsubscribeBlocking([], Timeout));
+        CmdAssert.Equal(RequestType.UnsubscribeBlocking, [Channel1, TimeoutExpected], Request.UnsubscribeBlocking([Channel1], Timeout));
+        CmdAssert.Equal(RequestType.UnsubscribeBlocking, [Channel1, Channel2, TimeoutExpected], Request.UnsubscribeBlocking([Channel1, Channel2], Timeout));
     }
 
     [Fact]
     public void UnsubscribeLazy_BuildsCorrectCommand()
     {
-        Assert.Equal(["UNSUBSCRIBE"], Request.Unsubscribe([]).GetArgs());
-        Assert.Equal(["UNSUBSCRIBE", Channel1], Request.Unsubscribe([Channel1]).GetArgs());
-        Assert.Equal(["UNSUBSCRIBE", Channel1, Channel2], Request.Unsubscribe([Channel1, Channel2]).GetArgs());
+        CmdAssert.Equal(RequestType.Unsubscribe, [], Request.Unsubscribe([]));
+        CmdAssert.Equal(RequestType.Unsubscribe, [Channel1], Request.Unsubscribe([Channel1]));
+        CmdAssert.Equal(RequestType.Unsubscribe, [Channel1, Channel2], Request.Unsubscribe([Channel1, Channel2]));
     }
 
     [Fact]
     public void PUnsubscribe_BuildsCorrectCommand()
     {
-        Assert.Equal(["PUNSUBSCRIBEBLOCKING", TimeoutExpected], Request.PUnsubscribeBlocking([], Timeout).GetArgs());
-        Assert.Equal(["PUNSUBSCRIBEBLOCKING", Pattern1, TimeoutExpected], Request.PUnsubscribeBlocking([Pattern1], Timeout).GetArgs());
-        Assert.Equal(["PUNSUBSCRIBEBLOCKING", Pattern1, Pattern2, TimeoutExpected], Request.PUnsubscribeBlocking([Pattern1, Pattern2], Timeout).GetArgs());
+        CmdAssert.Equal(RequestType.PUnsubscribeBlocking, [TimeoutExpected], Request.PUnsubscribeBlocking([], Timeout));
+        CmdAssert.Equal(RequestType.PUnsubscribeBlocking, [Pattern1, TimeoutExpected], Request.PUnsubscribeBlocking([Pattern1], Timeout));
+        CmdAssert.Equal(RequestType.PUnsubscribeBlocking, [Pattern1, Pattern2, TimeoutExpected], Request.PUnsubscribeBlocking([Pattern1, Pattern2], Timeout));
     }
 
     [Fact]
     public void PUnsubscribeLazy_BuildsCorrectCommand()
     {
-        Assert.Equal(["PUNSUBSCRIBE"], Request.PUnsubscribe([]).GetArgs());
-        Assert.Equal(["PUNSUBSCRIBE", Pattern1], Request.PUnsubscribe([Pattern1]).GetArgs());
-        Assert.Equal(["PUNSUBSCRIBE", Pattern1, Pattern2], Request.PUnsubscribe([Pattern1, Pattern2]).GetArgs());
+        CmdAssert.Equal(RequestType.PUnsubscribe, [], Request.PUnsubscribe([]));
+        CmdAssert.Equal(RequestType.PUnsubscribe, [Pattern1], Request.PUnsubscribe([Pattern1]));
+        CmdAssert.Equal(RequestType.PUnsubscribe, [Pattern1, Pattern2], Request.PUnsubscribe([Pattern1, Pattern2]));
     }
 
     [Fact]
     public void SUnsubscribe_BuildsCorrectCommand()
     {
-        Assert.Equal(["SUNSUBSCRIBEBLOCKING", TimeoutExpected], Request.SUnsubscribeBlocking([], Timeout).GetArgs());
-        Assert.Equal(["SUNSUBSCRIBEBLOCKING", Channel1, TimeoutExpected], Request.SUnsubscribeBlocking([Channel1], Timeout).GetArgs());
-        Assert.Equal(["SUNSUBSCRIBEBLOCKING", Channel1, Channel2, TimeoutExpected], Request.SUnsubscribeBlocking([Channel1, Channel2], Timeout).GetArgs());
+        CmdAssert.Equal(RequestType.SUnsubscribeBlocking, [TimeoutExpected], Request.SUnsubscribeBlocking([], Timeout));
+        CmdAssert.Equal(RequestType.SUnsubscribeBlocking, [Channel1, TimeoutExpected], Request.SUnsubscribeBlocking([Channel1], Timeout));
+        CmdAssert.Equal(RequestType.SUnsubscribeBlocking, [Channel1, Channel2, TimeoutExpected], Request.SUnsubscribeBlocking([Channel1, Channel2], Timeout));
     }
 
     [Fact]
     public void SUnsubscribeLazy_BuildsCorrectCommand()
     {
-        Assert.Equal(["SUNSUBSCRIBE"], Request.SUnsubscribe([]).GetArgs());
-        Assert.Equal(["SUNSUBSCRIBE", Channel1], Request.SUnsubscribe([Channel1]).GetArgs());
-        Assert.Equal(["SUNSUBSCRIBE", Channel1, Channel2], Request.SUnsubscribe([Channel1, Channel2]).GetArgs());
+        CmdAssert.Equal(RequestType.SUnsubscribe, [], Request.SUnsubscribe([]));
+        CmdAssert.Equal(RequestType.SUnsubscribe, [Channel1], Request.SUnsubscribe([Channel1]));
+        CmdAssert.Equal(RequestType.SUnsubscribe, [Channel1, Channel2], Request.SUnsubscribe([Channel1, Channel2]));
     }
 
     #endregion
@@ -138,9 +140,9 @@ public class PubSubCommandTests
     [Fact]
     public void PubSubChannels_BuildsCorrectCommand()
     {
-        Assert.Equal(["PUBSUB", "CHANNELS"], Request.PubSubChannels().GetArgs());
-        Assert.Equal(["PUBSUB", "CHANNELS", Pattern1], Request.PubSubChannels(Pattern1).GetArgs());
-        Assert.Equal(["PUBSUB", "CHANNELS", "*"], Request.PubSubChannels("*").GetArgs());
+        CmdAssert.Equal(RequestType.PubSubChannels, [], Request.PubSubChannels());
+        CmdAssert.Equal(RequestType.PubSubChannels, [Pattern1], Request.PubSubChannels(Pattern1));
+        CmdAssert.Equal(RequestType.PubSubChannels, ["*"], Request.PubSubChannels("*"));
     }
 
     [Fact]
@@ -158,9 +160,9 @@ public class PubSubCommandTests
     [Fact]
     public void PubSubNumSub_BuildsCorrectCommand()
     {
-        Assert.Equal(["PUBSUB", "NUMSUB"], Request.PubSubNumSub([]).GetArgs());
-        Assert.Equal(["PUBSUB", "NUMSUB", Channel1], Request.PubSubNumSub([Channel1]).GetArgs());
-        Assert.Equal(["PUBSUB", "NUMSUB", Channel1, Channel2], Request.PubSubNumSub([Channel1, Channel2]).GetArgs());
+        CmdAssert.Equal(RequestType.PubSubNumSub, [], Request.PubSubNumSub([]));
+        CmdAssert.Equal(RequestType.PubSubNumSub, [Channel1], Request.PubSubNumSub([Channel1]));
+        CmdAssert.Equal(RequestType.PubSubNumSub, [Channel1, Channel2], Request.PubSubNumSub([Channel1, Channel2]));
     }
 
     [Fact]
@@ -186,21 +188,21 @@ public class PubSubCommandTests
 
     [Fact]
     public void PubSubNumPat_BuildsCorrectCommand()
-        => Assert.Equal(["PUBSUB", "NUMPAT"], Request.PubSubNumPat().GetArgs());
+        => CmdAssert.Equal(RequestType.PubSubNumPat, [], Request.PubSubNumPat());
 
     [Fact]
     public void PubSubShardChannels_BuildsCorrectCommand()
     {
-        Assert.Equal(["PUBSUB", "SHARDCHANNELS"], Request.PubSubShardChannels().GetArgs());
-        Assert.Equal(["PUBSUB", "SHARDCHANNELS", Pattern1], Request.PubSubShardChannels(Pattern1).GetArgs());
+        CmdAssert.Equal(RequestType.PubSubShardChannels, [], Request.PubSubShardChannels());
+        CmdAssert.Equal(RequestType.PubSubShardChannels, [Pattern1], Request.PubSubShardChannels(Pattern1));
     }
 
     [Fact]
     public void PubSubShardNumSub_BuildsCorrectCommand()
     {
-        Assert.Equal(["PUBSUB", "SHARDNUMSUB"], Request.PubSubShardNumSub([]).GetArgs());
-        Assert.Equal(["PUBSUB", "SHARDNUMSUB", Channel1], Request.PubSubShardNumSub([Channel1]).GetArgs());
-        Assert.Equal(["PUBSUB", "SHARDNUMSUB", Channel1, Channel2], Request.PubSubShardNumSub([Channel1, Channel2]).GetArgs());
+        CmdAssert.Equal(RequestType.PubSubShardNumSub, [], Request.PubSubShardNumSub([]));
+        CmdAssert.Equal(RequestType.PubSubShardNumSub, [Channel1], Request.PubSubShardNumSub([Channel1]));
+        CmdAssert.Equal(RequestType.PubSubShardNumSub, [Channel1, Channel2], Request.PubSubShardNumSub([Channel1, Channel2]));
     }
 
     [Fact]
@@ -251,19 +253,19 @@ public class PubSubCommandTests
     [Fact]
     public void PubSubCommands_HandleSpecialCharacters()
     {
-        Assert.Equal(["PUBLISH", "channel:with:colons", Message], Request.Publish("channel:with:colons", Message).GetArgs());
-        Assert.Equal(["PUBLISH", "channel-with-dashes", Message], Request.Publish("channel-with-dashes", Message).GetArgs());
-        Assert.Equal(["PUBLISH", "channel_with_underscores", Message], Request.Publish("channel_with_underscores", Message).GetArgs());
-        Assert.Equal(["PUBLISH", "channel.with.dots", Message], Request.Publish("channel.with.dots", Message).GetArgs());
-        Assert.Equal(["PUBLISH", Channel1, "message:with:special:chars"], Request.Publish(Channel1, "message:with:special:chars").GetArgs());
+        CmdAssert.Equal(RequestType.Publish, ["channel:with:colons", Message], Request.Publish("channel:with:colons", Message));
+        CmdAssert.Equal(RequestType.Publish, ["channel-with-dashes", Message], Request.Publish("channel-with-dashes", Message));
+        CmdAssert.Equal(RequestType.Publish, ["channel_with_underscores", Message], Request.Publish("channel_with_underscores", Message));
+        CmdAssert.Equal(RequestType.Publish, ["channel.with.dots", Message], Request.Publish("channel.with.dots", Message));
+        CmdAssert.Equal(RequestType.Publish, [Channel1, "message:with:special:chars"], Request.Publish(Channel1, "message:with:special:chars"));
     }
 
     [Fact]
     public void PubSubCommands_HandleUnicodeCharacters()
     {
-        Assert.Equal(["PUBLISH", "频道", "消息"], Request.Publish("频道", "消息").GetArgs());
-        Assert.Equal(["PUBLISH", "канал", "сообщение"], Request.Publish("канал", "сообщение").GetArgs());
-        Assert.Equal(["PUBLISH", "チャンネル", "メッセージ"], Request.Publish("チャンネル", "メッセージ").GetArgs());
+        CmdAssert.Equal(RequestType.Publish, ["频道", "消息"], Request.Publish("频道", "消息"));
+        CmdAssert.Equal(RequestType.Publish, ["канал", "сообщение"], Request.Publish("канал", "сообщение"));
+        CmdAssert.Equal(RequestType.Publish, ["チャンネル", "メッセージ"], Request.Publish("チャンネル", "メッセージ"));
     }
 
     #endregion

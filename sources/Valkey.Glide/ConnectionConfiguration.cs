@@ -109,6 +109,18 @@ public abstract class ConnectionConfiguration
     }
 
     #endregion
+    #region Internal Methods
+
+    /// <summary>
+    /// Returns <see langword="true"/> if the strategy requires an Availability Zone (AZ).
+    /// </summary>
+    /// <param name="strategy">The read-from strategy to check.</param>
+    internal static bool IsAzReadFromStrategy(ReadFromStrategy strategy) =>
+        strategy is ReadFromStrategy.AzAffinity
+            or ReadFromStrategy.AzAffinityReplicasAndPrimary
+            or ReadFromStrategy.AzAffinityAllNodes;
+
+    #endregion
     #region Structs
 
     /// <summary>
@@ -182,7 +194,7 @@ public abstract class ConnectionConfiguration
         /// <exception cref="ArgumentException">Thrown if <paramref name="strategy"/> requires an Availability Zone.</exception>
         public ReadFrom(ReadFromStrategy strategy)
         {
-            if (strategy.IsAzReadFromStrategy())
+            if (IsAzReadFromStrategy(strategy))
             {
                 throw new ArgumentException($"Availability zone must be specified for strategy '{strategy}'.");
             }
@@ -200,7 +212,7 @@ public abstract class ConnectionConfiguration
         /// <exception cref="ArgumentException">Thrown if <paramref name="az"/> is empty or whitespace.</exception>
         public ReadFrom(ReadFromStrategy strategy, string az)
         {
-            if (!strategy.IsAzReadFromStrategy())
+            if (!IsAzReadFromStrategy(strategy))
             {
                 throw new ArgumentException($"Availability zone cannot be specified for strategy '{strategy}'.");
             }
@@ -1286,19 +1298,4 @@ public abstract class ConnectionConfiguration
     }
 
     #endregion
-}
-
-/// <summary>
-/// Internal helpers for <see cref="ConnectionConfiguration.ReadFromStrategy"/>.
-/// </summary>
-internal static class ReadFromStrategyExtensions
-{
-    /// <summary>
-    /// Returns <see langword="true"/> if the strategy requires an Availability Zone (AZ).
-    /// </summary>
-    /// <param name="strategy">The read-from strategy to check.</param>
-    internal static bool IsAzReadFromStrategy(this ConnectionConfiguration.ReadFromStrategy strategy) =>
-        strategy is ConnectionConfiguration.ReadFromStrategy.AzAffinity
-            or ConnectionConfiguration.ReadFromStrategy.AzAffinityReplicasAndPrimary
-            or ConnectionConfiguration.ReadFromStrategy.AzAffinityAllNodes;
 }

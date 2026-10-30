@@ -571,7 +571,7 @@ public sealed class ConfigurationOptions : ICloneable
         if (strategy.HasValue)
         {
             // Use ReadFrom constructors based on strategy type - the constructors contain the validation logic
-            return strategy.Value.IsAzReadFromStrategy()
+            return IsAzReadFromStrategy(strategy.Value)
                 ? new ReadFrom(strategy.Value, az!)
                 : new ReadFrom(strategy.Value);
         }
