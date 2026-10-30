@@ -670,6 +670,7 @@ dotnet_diagnostic.RCS1225.severity = error
 dotnet_diagnostic.RCS1227.severity = error
 dotnet_diagnostic.RCS1228.severity = error
 dotnet_diagnostic.RCS1230.severity = error
+dotnet_diagnostic.RCS1232.severity = error
 dotnet_diagnostic.RCS1233.severity = error
 dotnet_diagnostic.RCS1234.severity = error
 dotnet_diagnostic.RCS1235.severity = error
@@ -780,7 +781,6 @@ dotnet_diagnostic.RCS1268.severity = error
 # RCS1226: Add paragraph to documentation comment
 # RCS1229: Use async/await when necessary
 # RCS1231: Make parameter ref read-only
-# RCS1232: Order elements in documentation comment
 # RCS1236: Use exception filter
 # RCS1238: Avoid nested ?: operators
 # RCS1239: Use 'for' statement instead of 'while' statement
