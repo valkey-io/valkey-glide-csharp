@@ -10,10 +10,10 @@ Order lists and other sequences of items to maximize readability.
 
 Within a list:
 
-1. Group related items together, and separate groups with a blank line or comment.
+1. Group related items together and separate groups with a blank line.
 2. Order items using a logical order when one exists. For example:
-   - Reference: match the order of a related definition (e.g. glide-core, an interface, or StackExchange.Redis).
-   - Lifecycle: order items in the sequence they occur (e.g. create, use, then dispose).
+   - Reference: match the order of a related definition (e.g. glide-core or StackExchange.Redis).
+   - Lifecycle: order items in the sequence they occur (e.g. create, use, dispose).
    - Magnitude: order items by numeric value, size, or severity.
    - Dependency: place items before the items that depend on them.
 3. If there is no other logical order, consider ordering items alphabetically (e.g. a set of command names).
@@ -27,23 +27,25 @@ Within a list:
 
 Order the members of a type consistently to make it easier for developers to find what they're looking for.
 
-Members should be ordered first by kind, next by access level, and finally by modifier. This is enforced automatically by [StyleCop.Analyzers](https://github.com/DotNetAnalyzers/StyleCopAnalyzers) rules. Within these groups, order methods following the [Lists](#lists) guidelines.
+Members should be ordered first by kind, next by access level, and finally by modifier.
+This is enforced automatically by [StyleCop.Analyzers](https://github.com/DotNetAnalyzers/StyleCopAnalyzers) rules.
+Within these groups, order methods following the [Lists](#lists) guidelines.
 
 ## Regions
 
-Use region directives (`#region`) to make large types easier to read and maintain by breaking them into manageable sections.
+Use region directives (`#region`) to make types easier to read and maintain by breaking them into manageable sections.
 
 Guidelines for using regions:
 
-- Regions are an organizational aid, not a requirement. They should only be used when
-  they make the type easier to read and/or maintain. Small types usually don't need regions.
+- Regions are an organizational aid, not a requirement.
+  They should only be used when they make the type easier to read and/or maintain.
 - Name each region after what its members have in common (e.g. `Public Methods` or `Subscriber Commands`).
 - Leave a blank line after `#region` ([RCS0002](https://josefpihrt.github.io/docs/roslynator/analyzers/RCS0002))
   and before `#endregion` ([RCS0005](https://josefpihrt.github.io/docs/roslynator/analyzers/RCS0005)).
 
 Some common patterns:
 
-- **Public types** (e.g. `CircuitBreakerConfig.cs`): match regions to the kind and access level groups in [Members](#members) (e.g. `Public Methods`).
+- **Public types** (e.g. `CircuitBreakerConfig.cs`): Match regions to the kind and access level groups in [Members](#members) (e.g. `Public Methods`).
 - **Command partials** (e.g. `BaseClient.*.cs`): one region per command or related commands (e.g. `SubscribeCommands`).
 - **Builders and converters** (e.g. `Request.*.cs`): one region per purpose (e.g. `Command Builders`, `Argument Builders`, `Response Converters`).
 - **Tests** (e.g. `HashCommandTests.cs`): regions for the parts of a test class (e.g. `Constants`, `Test Data`, `Tests`, `Helpers`), or separate regions for each command or feature under test (e.g. `HashSetAsync`).
