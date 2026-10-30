@@ -4,9 +4,27 @@ using Valkey.Glide.Commands.Options;
 
 namespace Valkey.Glide.IntegrationTests;
 
+internal delegate List<TestInfo> BatchTestDataProvider(Pipeline.IBatch batch, bool isAtomic);
+
 internal partial class BatchTestUtils
 {
     private static readonly TimeSpan BlockingTimeout = TimeSpan.FromSeconds(2);
+
+    public static TheoryData<BatchTestData> GetTestClientWithAtomic =>
+        [.. TestConfiguration.TestClients.SelectMany(r => new[] { true, false }.SelectMany(isAtomic =>
+            new BatchTestData[] {
+                new("String commands", r.Data, CreateStringTest, isAtomic),
+                new("Set commands", r.Data, CreateSetTest, isAtomic),
+                new("Generic commands", r.Data, CreateGenericTest, isAtomic),
+                new("Hash commands", r.Data, CreateHashTest, isAtomic),
+                new("List commands", r.Data, CreateListTest, isAtomic),
+                new("Sorted Set commands", r.Data, CreateSortedSetTest, isAtomic),
+                new("Geospatial commands", r.Data, CreateGeospatialTest, isAtomic),
+                new("Bitmap commands", r.Data, CreateBitmapTest, isAtomic),
+                new("Stream commands", r.Data, CreateStreamTest, isAtomic),
+                new("Connection Management commands", r.Data, CreateConnectionManagementTest, isAtomic),
+                new("Server Management commands", r.Data, CreateServerManagementTest, isAtomic)
+            }))];
 
     public static List<TestInfo> CreateStringTest(Pipeline.IBatch batch, bool isAtomic)
     {
@@ -1654,25 +1672,7 @@ internal partial class BatchTestUtils
 
         return testData;
     }
-
-    public static TheoryData<BatchTestData> GetTestClientWithAtomic =>
-        [.. TestConfiguration.TestClients.SelectMany(r => new[] { true, false }.SelectMany(isAtomic =>
-            new BatchTestData[] {
-                new("String commands", r.Data, CreateStringTest, isAtomic),
-                new("Set commands", r.Data, CreateSetTest, isAtomic),
-                new("Generic commands", r.Data, CreateGenericTest, isAtomic),
-                new("Hash commands", r.Data, CreateHashTest, isAtomic),
-                new("List commands", r.Data, CreateListTest, isAtomic),
-                new("Sorted Set commands", r.Data, CreateSortedSetTest, isAtomic),
-                new("Geospatial commands", r.Data, CreateGeospatialTest, isAtomic),
-                new("Bitmap commands", r.Data, CreateBitmapTest, isAtomic),
-                new("Stream commands", r.Data, CreateStreamTest, isAtomic),
-                new("Connection Management commands", r.Data, CreateConnectionManagementTest, isAtomic),
-                new("Server Management commands", r.Data, CreateServerManagementTest, isAtomic)
-            }))];
 }
-
-internal delegate List<TestInfo> BatchTestDataProvider(Pipeline.IBatch batch, bool isAtomic);
 
 internal record BatchTestData(string TestName, BaseClient Client, BatchTestDataProvider TestDataProvider, bool IsAtomic)
 {

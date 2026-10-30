@@ -14,6 +14,51 @@ public sealed class ServerCredentials : IDisposable
     private bool _disposed;
 
     #endregion
+    #region Constructors
+
+    /// <summary>
+    /// Creates server credentials for password-based authentication.
+    /// </summary>
+    /// <param name="password"><inheritdoc cref="Password" path="/summary" /></param>
+    public ServerCredentials(string password)
+    {
+        ArgumentNullException.ThrowIfNull(password, nameof(password));
+
+        Username = null;
+        Password = password.ToCharArray();
+        IamAuthConfig = null;
+    }
+
+    /// <summary>
+    /// Creates server credentials for password-based authentication.
+    /// </summary>
+    /// <param name="username"><inheritdoc cref="Username" path="/summary" /></param>
+    /// <param name="password"><inheritdoc cref="Password" path="/summary" /></param>
+    public ServerCredentials(string? username, string password)
+    {
+        ArgumentNullException.ThrowIfNull(password, nameof(password));
+
+        Username = username;
+        Password = password.ToCharArray();
+        IamAuthConfig = null;
+    }
+
+    /// <summary>
+    /// Creates server credentials for IAM authentication.
+    /// </summary>
+    /// <param name="username"><inheritdoc cref="Username" path="/summary" /></param>
+    /// <param name="iamConfig"><inheritdoc cref="IamAuthConfig" path="/summary" /></param>
+    public ServerCredentials(string username, IamAuthConfig iamConfig)
+    {
+        ArgumentNullException.ThrowIfNull(username, nameof(username));
+        ArgumentNullException.ThrowIfNull(iamConfig, nameof(iamConfig));
+
+        Username = username;
+        Password = null;
+        IamAuthConfig = iamConfig;
+    }
+
+    #endregion
     #region Public Properties
 
     /// <summary>
@@ -46,51 +91,6 @@ public sealed class ServerCredentials : IDisposable
     {
         get { ThrowIfDisposed(); return field; }
         private set;
-    }
-
-    #endregion
-    #region Constructors & Builders
-
-    /// <summary>
-    /// Creates server credentials for password-based authentication.
-    /// </summary>
-    /// <param name="username"><inheritdoc cref="Username" path="/summary" /></param>
-    /// <param name="password"><inheritdoc cref="Password" path="/summary" /></param>
-    public ServerCredentials(string? username, string password)
-    {
-        ArgumentNullException.ThrowIfNull(password, nameof(password));
-
-        Username = username;
-        Password = password.ToCharArray();
-        IamAuthConfig = null;
-    }
-
-    /// <summary>
-    /// Creates server credentials for password-based authentication.
-    /// </summary>
-    /// <param name="password"><inheritdoc cref="Password" path="/summary" /></param>
-    public ServerCredentials(string password)
-    {
-        ArgumentNullException.ThrowIfNull(password, nameof(password));
-
-        Username = null;
-        Password = password.ToCharArray();
-        IamAuthConfig = null;
-    }
-
-    /// <summary>
-    /// Creates server credentials for IAM authentication.
-    /// </summary>
-    /// <param name="username"><inheritdoc cref="Username" path="/summary" /></param>
-    /// <param name="iamConfig"><inheritdoc cref="IamAuthConfig" path="/summary" /></param>
-    public ServerCredentials(string username, IamAuthConfig iamConfig)
-    {
-        ArgumentNullException.ThrowIfNull(username, nameof(username));
-        ArgumentNullException.ThrowIfNull(iamConfig, nameof(iamConfig));
-
-        Username = username;
-        Password = null;
-        IamAuthConfig = iamConfig;
     }
 
     #endregion

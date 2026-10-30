@@ -8,6 +8,17 @@ namespace Valkey.Glide;
 /// <seealso href="https://valkey.io/commands/xpending/"/>
 public readonly struct StreamPendingInfo
 {
+    #region Constructors
+
+    internal StreamPendingInfo(int pendingMessageCount, ValkeyValue lowestId, ValkeyValue highestId, StreamConsumer[] consumers)
+    {
+        PendingMessageCount = pendingMessageCount;
+        LowestPendingMessageId = lowestId;
+        HighestPendingMessageId = highestId;
+        Consumers = consumers;
+    }
+
+    #endregion
     #region Public Properties
 
     /// <summary>
@@ -29,17 +40,6 @@ public readonly struct StreamPendingInfo
     /// An array of consumers within the consumer group that have pending messages.
     /// </summary>
     public StreamConsumer[] Consumers { get; }
-
-    #endregion
-    #region Constructors
-
-    internal StreamPendingInfo(int pendingMessageCount, ValkeyValue lowestId, ValkeyValue highestId, StreamConsumer[] consumers)
-    {
-        PendingMessageCount = pendingMessageCount;
-        LowestPendingMessageId = lowestId;
-        HighestPendingMessageId = highestId;
-        Consumers = consumers;
-    }
 
     #endregion
 }

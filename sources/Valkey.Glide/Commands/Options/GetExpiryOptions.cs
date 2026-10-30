@@ -11,6 +11,15 @@ namespace Valkey.Glide.Commands.Options;
 /// <seealso href="https://valkey.io/commands/hgetex/"/>
 public sealed class GetExpiryOptions
 {
+    #region Constructors
+
+    private GetExpiryOptions(ulong? durationMs = null, DateTimeOffset? timestamp = null)
+    {
+        DurationMs = durationMs;
+        Timestamp = timestamp;
+    }
+
+    #endregion
     #region Internal Properties
 
     /// <summary>
@@ -22,15 +31,6 @@ public sealed class GetExpiryOptions
     /// The expiry timestamp.
     /// </summary>
     internal DateTimeOffset? Timestamp { get; }
-
-    #endregion
-    #region Constructors
-
-    private GetExpiryOptions(ulong? durationMs = null, DateTimeOffset? timestamp = null)
-    {
-        DurationMs = durationMs;
-        Timestamp = timestamp;
-    }
 
     #endregion
     #region Public Methods

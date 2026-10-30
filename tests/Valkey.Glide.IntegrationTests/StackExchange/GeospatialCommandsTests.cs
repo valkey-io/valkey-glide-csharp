@@ -7,8 +7,6 @@ namespace Valkey.Glide.IntegrationTests.StackExchange;
 /// </summary>
 public class GeospatialCommandsTests(TestConfiguration config)
 {
-    public TestConfiguration Config { get; } = config;
-
     #region Constants
 
     private const string PalermoName = "Palermo";
@@ -27,15 +25,15 @@ public class GeospatialCommandsTests(TestConfiguration config)
 
     private const double PalermoCataniaDistanceKm = 166.27;
 
-    private static readonly GeoEntry Palermo = new(PalermoLng, PalermoLat, PalermoName);
-    private static readonly GeoEntry Catania = new(CataniaLng, CataniaLat, CataniaName);
-    private static readonly GeoEntry Trapani = new(TrapaniLng, TrapaniLat, TrapaniName);
-    private static readonly GeoEntry Enna = new(EnnaLng, EnnaLat, EnnaName);
-
     // Tolerances for floating-point comparisons.
     private const double CoordinateTolerance = 0.001;
     private const double UnitConversionTolerance = 0.01;
     private const double DistanceTolerance = 1.0;
+
+    private static readonly GeoEntry Palermo = new(PalermoLng, PalermoLat, PalermoName);
+    private static readonly GeoEntry Catania = new(CataniaLng, CataniaLat, CataniaName);
+    private static readonly GeoEntry Trapani = new(TrapaniLng, TrapaniLat, TrapaniName);
+    private static readonly GeoEntry Enna = new(EnnaLng, EnnaLat, EnnaName);
 
     // Common search shapes.
     private static readonly GeoSearchCircle Circle200Km = new(200, GeoUnit.Kilometers);
@@ -51,6 +49,11 @@ public class GeospatialCommandsTests(TestConfiguration config)
         PalermoResult,
         CataniaResult,
     ];
+
+    #endregion
+    #region Properties
+
+    public TestConfiguration Config { get; } = config;
 
     #endregion
     #region GeoAddAsync

@@ -15,16 +15,6 @@ public class JsonCommandTests(TestConfiguration config)
 {
     public TestConfiguration Config { get; } = config;
 
-    /// <summary>
-    /// Generates a unique key with an optional prefix for test isolation.
-    /// </summary>
-    private static string GetUniqueKey(string prefix = "json") => $"{prefix}:{Guid.NewGuid()}";
-
-    /// <summary>
-    /// Generates a unique key with hash tags for cluster mode compatibility.
-    /// </summary>
-    private static string GetUniqueClusterKey(string prefix = "json") => $"{{{prefix}}}:{Guid.NewGuid()}";
-
     #region JSON.SET Tests
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -2073,6 +2063,19 @@ public class JsonCommandTests(TestConfiguration config)
         Assert.Equal(2L, result[1]); // "bb" has 2 characters
         Assert.Equal(3L, result[2]); // "ccc" has 3 characters
     }
+
+    #endregion
+    #region Helpers
+
+    /// <summary>
+    /// Generates a unique key with an optional prefix for test isolation.
+    /// </summary>
+    private static string GetUniqueKey(string prefix = "json") => $"{prefix}:{Guid.NewGuid()}";
+
+    /// <summary>
+    /// Generates a unique key with hash tags for cluster mode compatibility.
+    /// </summary>
+    private static string GetUniqueClusterKey(string prefix = "json") => $"{{{prefix}}}:{Guid.NewGuid()}";
 
     #endregion
 }

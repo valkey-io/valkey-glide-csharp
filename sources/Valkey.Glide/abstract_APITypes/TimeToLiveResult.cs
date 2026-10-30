@@ -11,11 +11,20 @@ namespace Valkey.Glide;
 /// <seealso href="https://valkey.io/commands/hpttl/"/>
 public readonly struct TimeToLiveResult
 {
-    internal readonly long TimeToLiveMs;
-
     // Special time to live values.
     internal const long DoesNotExist = -2;
     internal const long NoExpiry = -1;
+
+    internal readonly long TimeToLiveMs;
+
+    /// <summary>
+    /// Creates a <see cref="TimeToLiveResult"/> from given value.
+    /// </summary>
+    /// <param name="timeToLiveMs">The remaining time to live, in milliseconds.</param>
+    internal TimeToLiveResult(long timeToLiveMs)
+    {
+        TimeToLiveMs = timeToLiveMs;
+    }
 
     /// <summary>
     /// Whether the key or hash field exists.
@@ -33,13 +42,4 @@ public readonly struct TimeToLiveResult
     /// </summary>
     public TimeSpan? TimeToLive
         => HasTimeToLive ? TimeSpan.FromMilliseconds(TimeToLiveMs) : null;
-
-    /// <summary>
-    /// Creates a <see cref="TimeToLiveResult"/> from given value.
-    /// </summary>
-    /// <param name="timeToLiveMs">The remaining time to live, in milliseconds.</param>
-    internal TimeToLiveResult(long timeToLiveMs)
-    {
-        TimeToLiveMs = timeToLiveMs;
-    }
 }

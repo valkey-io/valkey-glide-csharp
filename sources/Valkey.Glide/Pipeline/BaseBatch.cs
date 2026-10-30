@@ -28,37 +28,6 @@ public abstract partial class BaseBatch<T>(bool isAtomic) : IBatch where T : Bas
 
     internal bool IsAtomic { get; private set; } = isAtomic;
 
-    internal FFI.Batch ToFFI() => new([.. Commands.Select(c => c.ToFfi())], IsAtomic);
-
-    /// <summary>
-    /// Convert a response received from the server.
-    /// </summary>
-    /// <param name="response">The batch response.</param>
-    internal object?[]? ConvertResponse(object?[]? response)
-    {
-        if (response is null)
-        {
-            return null;
-        }
-
-        Debug.Assert(
-            response.Length == Commands.Count,
-            $"Response misaligned: received {response.Length} responses but submitted {Commands.Count} commands");
-
-        for (int i = 0; i < response?.Length; i++)
-        {
-            response[i] = Commands[i].GetConverter()(response[i]);
-        }
-
-        return response;
-    }
-
-    internal T AddCmd(ICmd cmd)
-    {
-        Commands.Add(cmd);
-        return (T)this;
-    }
-
     /// <inheritdoc cref="IBatch.CustomCommand(IEnumerable{GlideString})" />
     public T CustomCommand(IEnumerable<GlideString> args) => AddCmd(Request.CustomCommand([.. args]));
 
@@ -95,4 +64,35 @@ public abstract partial class BaseBatch<T>(bool isAtomic) : IBatch where T : Bas
     IBatch IBatchHyperLogLogCommands.HyperLogLogLength(IEnumerable<ValkeyKey> keys) => HyperLogLogLength(keys);
     IBatch IBatchHyperLogLogCommands.HyperLogLogMerge(ValkeyKey destination, ValkeyKey first, ValkeyKey second) => HyperLogLogMerge(destination, first, second);
     IBatch IBatchHyperLogLogCommands.HyperLogLogMerge(ValkeyKey destination, IEnumerable<ValkeyKey> sourceKeys) => HyperLogLogMerge(destination, sourceKeys);
+
+    internal FFI.Batch ToFFI() => new([.. Commands.Select(c => c.ToFfi())], IsAtomic);
+
+    /// <summary>
+    /// Convert a response received from the server.
+    /// </summary>
+    /// <param name="response">The batch response.</param>
+    internal object?[]? ConvertResponse(object?[]? response)
+    {
+        if (response is null)
+        {
+            return null;
+        }
+
+        Debug.Assert(
+            response.Length == Commands.Count,
+            $"Response misaligned: received {response.Length} responses but submitted {Commands.Count} commands");
+
+        for (int i = 0; i < response?.Length; i++)
+        {
+            response[i] = Commands[i].GetConverter()(response[i]);
+        }
+
+        return response;
+    }
+
+    internal T AddCmd(ICmd cmd)
+    {
+        Commands.Add(cmd);
+        return (T)this;
+    }
 }

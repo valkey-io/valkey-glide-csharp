@@ -23,6 +23,11 @@ public readonly record struct MemoryStatsDb
 /// </summary>
 public sealed record MemoryStats
 {
+    #region Constructors
+
+    internal MemoryStats() { }
+
+    #endregion
     #region Public Properties
 
     /// <summary>
@@ -190,11 +195,6 @@ public sealed record MemoryStats
     /// </summary>
     /// <remarks>Since Valkey 8.0.0.</remarks>
     public long? OverheadDbHashtableRehashing { get; init; }
-
-    #endregion
-    #region Constructors & Builders
-
-    internal MemoryStats() { }
 
     #endregion
 }

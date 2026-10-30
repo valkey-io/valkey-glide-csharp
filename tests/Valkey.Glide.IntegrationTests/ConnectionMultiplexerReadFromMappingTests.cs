@@ -15,13 +15,10 @@ namespace Valkey.Glide.IntegrationTests;
 [CollectionDefinition(DisableParallelization = true)]
 public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
 {
-    public TestConfiguration Config { get; } = config;
-
     /// <summary>Standalone and cluster server addresses, so mapping tests run against both.</summary>
     public static TheoryData<bool> UseStandalone => [true, false];
 
-    private static Address AddressFor(bool useStandalone)
-        => useStandalone ? TestConfiguration.STANDALONE_ADDRESS : TestConfiguration.CLUSTER_ADDRESS;
+    public TestConfiguration Config { get; } = config;
 
     [Theory]
     [InlineData(true, ReadFromStrategy.Primary, null)]
@@ -134,4 +131,7 @@ public class ConnectionMultiplexerReadFromMappingTests(TestConfiguration config)
         Assert.NotNull(connectionMultiplexer.RawConfig);
         Assert.False(connectionMultiplexer.RawConfig.ReadFrom.HasValue);
     }
+
+    private static Address AddressFor(bool useStandalone)
+        => useStandalone ? TestConfiguration.STANDALONE_ADDRESS : TestConfiguration.CLUSTER_ADDRESS;
 }

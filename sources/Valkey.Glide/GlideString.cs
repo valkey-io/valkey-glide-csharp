@@ -4,174 +4,7 @@ using System.Collections;
 using System.ComponentModel;
 using System.Text;
 
-using static Valkey.Glide.Commands.Options.InfoOptions;
-
 namespace Valkey.Glide;
-
-/// <summary>
-/// Fancy extensions for different types, which help working with <see cref="GlideString" />.
-/// </summary>
-public static class GlideStringExtensions
-{
-    /// <summary>
-    /// Convert a <paramref name="string"/> to a <see cref="GlideString" />.
-    /// </summary>
-    /// <param name="string">A <see langword="string" /> to convert.</param>
-    /// <returns>A <see cref="GlideString" />.</returns>
-    public static GlideString ToGlideString(this string @string) => new(@string);
-
-    /// <summary>
-    /// Convert a <paramref name="int"/> to a <see cref="GlideString" />.
-    /// </summary>
-    /// <param name="int">A <see langword="int" /> to convert.</param>
-    /// <returns>A <see cref="GlideString" />.</returns>
-    public static GlideString ToGlideString(this int @int) => new(@int.ToString());
-
-    /// <summary>
-    /// Convert a <paramref name="ushort"/> to a <see cref="GlideString" />.
-    /// </summary>
-    /// <param name="ushort">A <see langword="ushort" /> to convert.</param>
-    /// <returns>A <see cref="GlideString" />.</returns>
-    public static GlideString ToGlideString(this ushort @ushort) => new(@ushort.ToString());
-
-    /// <summary>
-    /// Convert a <paramref name="long"/> to a <see cref="GlideString" />.
-    /// </summary>
-    /// <param name="long">A <see langword="long" /> to convert.</param>
-    /// <returns>A <see cref="GlideString" />.</returns>
-    public static GlideString ToGlideString(this long @long) => new(@long.ToString());
-
-    /// <summary>
-    /// Convert a <paramref name="ulong"/> to a <see cref="GlideString" />.
-    /// </summary>
-    /// <param name="ulong">A <see langword="ulong" /> to convert.</param>
-    /// <returns>A <see cref="GlideString" />.</returns>
-    public static GlideString ToGlideString(this ulong @ulong) => new(@ulong.ToString());
-
-    /// <summary>
-    /// Convert a <paramref name="double"/> to a <see cref="GlideString" />.
-    /// </summary>
-    /// <param name="double">A <see langword="double" /> to convert.</param>
-    /// <returns>A <see cref="GlideString" />.</returns>
-    public static GlideString ToGlideString(this double @double)
-        => double.IsPositiveInfinity(@double) ? new("+inf")
-            : double.IsNegativeInfinity(@double) ? new("-inf")
-            : double.IsNaN(@double) ? new("nan")
-            : new(@double.ToString("G17", System.Globalization.CultureInfo.InvariantCulture));
-
-    /// <summary>
-    /// Convert a <paramref name="bool"/> to a <see cref="GlideString" /> ("1" for true, "0" for false).
-    /// </summary>
-    /// <param name="bool">A <see langword="bool" /> to convert.</param>
-    /// <returns>A <see cref="GlideString" />.</returns>
-    public static GlideString ToGlideString(this bool @bool) => new(@bool ? "1" : "0");
-
-    /// <summary>
-    /// Convert a <paramref name="bytes"/> to a <see cref="GlideString" />.
-    /// </summary>
-    /// <param name="bytes">A <see langword="byte[]" /> to convert.</param>
-    /// <returns>A <see cref="GlideString" />.</returns>
-    public static GlideString ToGlideString(this byte[] bytes) => new(bytes);
-
-    /// <summary>
-    /// Convert a <paramref name="key"/> to a <see cref="GlideString" />.
-    /// </summary>
-    /// <param name="key">A <see langword="ValkeyKey" /> to convert.</param>
-    /// <returns>A <see cref="GlideString" />.</returns>
-    public static GlideString ToGlideString(this ValkeyKey key) => (GlideString)key;
-
-    /// <summary>
-    /// Convert a <paramref name="value"/> to a <see cref="GlideString" />.
-    /// </summary>
-    /// <param name="value">A <see langword="ValkeyValue" /> to convert.</param>
-    /// <returns>A <see cref="GlideString" />.</returns>
-    public static GlideString ToGlideString(this ValkeyValue value) => (GlideString)value;
-
-    /// <summary>
-    /// Convert an <see langword="GlideString[]" /> to an <see langword="string[]" />.<br />
-    /// <b>Note:</b> a resulting <see langword="string" /> may be incorrect if original <see cref="GlideString" />
-    /// stores a non-UTF8 compatible sequence of bytes.
-    /// </summary>
-    /// <param name="strings">An array of <see cref="GlideString" />s to convert.</param>
-    /// <returns>An array of <see langword="string" />s.</returns>
-    public static string[] ToStrings(this GlideString[]? strings) => strings is null ? [] : [.. strings.Select(s => s.ToString())];
-
-    /// <summary>
-    /// Convert an <see langword="GlideString[]" /> to an array of <see langword="byte[]" />.<br />
-    /// </summary>
-    /// <param name="strings">An array of <see cref="GlideString" />s to convert.</param>
-    /// <returns>An array of <see langword="byte[]" />.</returns>
-    public static byte[][] ToByteArrays(this GlideString[]? strings) => strings is null ? [] : [.. strings.Select(s => s.Bytes)];
-
-    #region ToGlideStrings
-
-    /// <summary>
-    /// Convert a <see langword="byte[][]"/> to a <see langword="GlideString[]"/>.
-    /// </summary>
-    /// <param name="strings">A <see langword="byte[][]"/> to convert.</param>
-    /// <returns>A <see cref="GlideString"/> array.</returns>
-    public static GlideString[] ToGlideStrings(this byte[][]? strings)
-        => strings is null ? [] : [.. strings.Select(s => new GlideString(s))];
-
-    /// <summary>
-    /// Convert an <see cref="IEnumerable{Double}"/> to a <see langword="GlideString[]"/>.
-    /// </summary>
-    /// <param name="values">A <see langword="double"/> collection to convert.</param>
-    /// <returns>A <see cref="GlideString"/> array.</returns>
-    public static GlideString[] ToGlideStrings(this IEnumerable<double> values)
-        => [.. values.Select(v => v.ToGlideString())];
-
-    /// <summary>
-    /// Convert an <see cref="IEnumerable{String}"/> to a <see langword="GlideString[]"/>.
-    /// </summary>
-    /// <param name="strings">A <see langword="string"/> collection to convert.</param>
-    /// <returns>A <see cref="GlideString"/> array.</returns>
-    public static GlideString[] ToGlideStrings(this IEnumerable<string> strings)
-        => [.. strings.Select(s => new GlideString(s))];
-
-    /// <summary>
-    /// Convert an <see cref="IEnumerable{ValkeyKey}"/> to a <see langword="GlideString[]"/>.
-    /// </summary>
-    /// <param name="keys">A <see cref="ValkeyKey"/> collection to convert.</param>
-    /// <returns>A <see cref="GlideString"/> array.</returns>
-    public static GlideString[] ToGlideStrings(this IEnumerable<ValkeyKey> keys)
-        => [.. keys.Select(k => (GlideString)k)];
-
-    /// <summary>
-    /// Convert an <see cref="IEnumerable{ValkeyValue}"/> to a <see langword="GlideString[]"/>.
-    /// </summary>
-    /// <param name="values">A <see cref="ValkeyValue"/> collection to convert.</param>
-    /// <returns>A <see cref="GlideString"/> array.</returns>
-    public static GlideString[] ToGlideStrings(this IEnumerable<ValkeyValue> values)
-        => [.. values.Select(v => v.ToGlideString())];
-
-    /// <summary>
-    /// Convert a <see cref="Section"/>[] to a <see langword="GlideString[]"/>.
-    /// </summary>
-    /// <param name="sections">A <see cref="Section"/>[] to convert.</param>
-    /// <returns>A <see cref="GlideString"/> array.</returns>
-    public static GlideString[] ToGlideStrings(this Section[]? sections)
-        => sections is null ? [] : [.. sections.Select(s => new GlideString(s.ToString()))];
-
-    /// <summary>
-    /// Convert a <see langword="KeyValuePair{ValkeyKey, ValkeyValue}"/> collection to an interleaved <see langword="GlideString[]" /> array.
-    /// </summary>
-    /// <param name="pairs">An <see langword="KeyValuePair{ValkeyKey, ValkeyValue}"/> array to convert.</param>
-    /// <returns>A <see cref="GlideString"/> array.</returns>
-    public static GlideString[] ToGlideStrings(this KeyValuePair<ValkeyKey, ValkeyValue>[] pairs)
-    {
-        GlideString[] args = new GlideString[pairs.Length * 2];
-        for (int i = 0; i < pairs.Length; i++)
-        {
-            args[i * 2] = pairs[i].Key.ToGlideString();
-            args[(i * 2) + 1] = pairs[i].Value.ToGlideString();
-        }
-
-        return args;
-    }
-
-    #endregion
-}
 
 /// <summary>
 /// Represents a Valkey string type. Since Valkey stores strings as <see langword="byte[]" />,
@@ -197,6 +30,12 @@ public static class GlideStringExtensions
 [ImmutableObject(true)]
 public sealed class GlideString : IComparable, IComparable<GlideString>
 {
+    internal string Str;
+
+    private bool? _canConvertToString;
+
+    private readonly object _lock = new();
+
     /// <summary>
     /// Create a <see cref="GlideString" /> initiated by a <see langword="byte[]" />.<br />
     /// <paramref name="bytes"/> can store any arbirtrary binary data.
@@ -221,85 +60,12 @@ public sealed class GlideString : IComparable, IComparable<GlideString>
         Bytes = @string is null ? [] : Encoding.UTF8.GetBytes(@string);
     }
 
-    /// <inheritdoc cref="GlideString(byte[])" />
-    public static GlideString Of(byte[] bytes) => new(bytes);
-
-    /// <inheritdoc cref="GlideString(string)" />
-    public static GlideString Of(string @string) => new(@string);
-
-    /// <summary>
-    /// Get a reference to a <see langword="byte[]" /> stored in this <see cref="GlideString" />.
-    /// </summary>
-    /// <returns>A <see langword="byte[]" /> of that <see cref="GlideString" />.</returns>
-    public ReadOnlySpan<byte> GetBytes() => Bytes;
-
     /// <summary>
     /// Get a length of a <see langword="byte[]" /> stored in this <see cref="GlideString" />.
     /// </summary>
     public int Length => Bytes.Length;
 
-    /// <summary>
-    /// Convert this <see cref="GlideString" /> to a <see langword="string" /> if possible.<br />
-    /// <b>Note:</b> a resulting <see langword="string" /> may be incorrect if original <see cref="GlideString" />
-    /// stores a non-UTF8 compatible sequence of bytes. It is <b>highly recommended</b> to call to
-    /// <see cref="CanConvertToString()" /> prior to do a conversion.
-    /// </summary>
-    /// <example>
-    /// <code>
-    /// GlideString gs = new byte[] { 0, 42, 255, 243, 0, 253, 15 };
-    /// if (gs.CanConvertToString())
-    /// {
-    ///     string str = gs; // Conversion without data loss is impossible, so str is incorrect.
-    /// }
-    /// </code>
-    /// </example>
-    /// <returns>A <see langword="string" /> representation of this <see cref="GlideString" />.</returns>
-    public string GetString()
-    {
-        if (_canConvertToString ?? false)
-        {
-            return Str;
-        }
-
-        _ = CanConvertToString();
-        return Str;
-    }
-
-    /// <inheritdoc cref="GetString()" />
-    public override string ToString() => GetString();
-
-    /// <summary>
-    /// Check whether <see cref="GlideString" /> could be converted to a <see langword="string" /> without data loss.<br />
-    /// Use this method prior to converting a <see cref="GlideString" /> to a <see langword="string" />.
-    /// </summary>
-    /// <returns><see langword="true" /> if <see cref="GlideString" /> could be safely converted to a <see langword="string" />.</returns>
-    public bool CanConvertToString()
-    {
-        if (_canConvertToString is not null)
-        {
-            return (bool)_canConvertToString;
-        }
-
-        // double-checked locking
-        lock (_lock)
-        {
-            if (_canConvertToString is not null)
-            {
-                return (bool)_canConvertToString;
-            }
-
-            if (System.Text.Unicode.Utf8.IsValid(Bytes))
-            {
-                Str = Encoding.UTF8.GetString(Bytes);
-                _canConvertToString = true;
-                return true;
-            }
-
-            _canConvertToString = false;
-            Str = $"Value isn't convertible to string: [{string.Join(' ', [.. Bytes.Select(b => $"{b:X2}")])}]";
-            return false;
-        }
-    }
+    internal byte[] Bytes { get; }
 
     /// <inheritdoc cref="GetString()" />
     public static implicit operator string?(GlideString? gs) => gs?.ToString();
@@ -336,61 +102,6 @@ public sealed class GlideString : IComparable, IComparable<GlideString>
     {
         byte[]? keyBytes = key;
         return keyBytes == null ? new GlideString([]) : new GlideString(keyBytes);
-    }
-
-    /// <inheritdoc/>
-    int IComparable.CompareTo(object? obj) => obj switch
-    {
-        null => CompareTo(null),
-        GlideString other => CompareTo(other),
-        _ => throw new ArgumentException($"Object must be of type {nameof(GlideString)}.", nameof(obj)),
-    };
-
-    /// <inheritdoc/>
-    public int CompareTo(GlideString? other)
-    {
-        if (other is null)
-        {
-            return 1;
-        }
-
-        if (other == this)
-        {
-            return 0;
-        }
-
-        if (Length != other.Length)
-        {
-            return Length - other.Length;
-        }
-
-        for (int i = 0; i < Length; i++)
-        {
-            if (Bytes[i] != other.Bytes[i])
-            {
-                return Bytes[i] - other.Bytes[i];
-            }
-        }
-
-        return 0;
-    }
-
-    /// <inheritdoc/>
-    public override bool Equals(object? obj)
-    {
-        if (ReferenceEquals(this, obj))
-        {
-            return true;
-        }
-
-#pragma warning disable IDE0046 // Convert to conditional expression
-        if (obj is null || obj.GetType() != typeof(GlideString))
-        {
-            return false;
-        }
-#pragma warning restore IDE0046 // Convert to conditional expression
-
-        return this == (GlideString)obj;
     }
 
     /// <summary>
@@ -463,14 +174,136 @@ public sealed class GlideString : IComparable, IComparable<GlideString>
         return new([.. left.Bytes, .. right.Bytes]);
     }
 
+    /// <inheritdoc cref="GlideString(byte[])" />
+    public static GlideString Of(byte[] bytes) => new(bytes);
+
+    /// <inheritdoc cref="GlideString(string)" />
+    public static GlideString Of(string @string) => new(@string);
+
+    /// <summary>
+    /// Get a reference to a <see langword="byte[]" /> stored in this <see cref="GlideString" />.
+    /// </summary>
+    /// <returns>A <see langword="byte[]" /> of that <see cref="GlideString" />.</returns>
+    public ReadOnlySpan<byte> GetBytes() => Bytes;
+
+    /// <summary>
+    /// Convert this <see cref="GlideString" /> to a <see langword="string" /> if possible.<br />
+    /// <b>Note:</b> a resulting <see langword="string" /> may be incorrect if original <see cref="GlideString" />
+    /// stores a non-UTF8 compatible sequence of bytes. It is <b>highly recommended</b> to call to
+    /// <see cref="CanConvertToString()" /> prior to do a conversion.
+    /// </summary>
+    /// <example>
+    /// <code>
+    /// GlideString gs = new byte[] { 0, 42, 255, 243, 0, 253, 15 };
+    /// if (gs.CanConvertToString())
+    /// {
+    ///     string str = gs; // Conversion without data loss is impossible, so str is incorrect.
+    /// }
+    /// </code>
+    /// </example>
+    /// <returns>A <see langword="string" /> representation of this <see cref="GlideString" />.</returns>
+    public string GetString()
+    {
+        if (_canConvertToString ?? false)
+        {
+            return Str;
+        }
+
+        _ = CanConvertToString();
+        return Str;
+    }
+
+    /// <inheritdoc cref="GetString()" />
+    public override string ToString() => GetString();
+
+    /// <summary>
+    /// Check whether <see cref="GlideString" /> could be converted to a <see langword="string" /> without data loss.<br />
+    /// Use this method prior to converting a <see cref="GlideString" /> to a <see langword="string" />.
+    /// </summary>
+    /// <returns><see langword="true" /> if <see cref="GlideString" /> could be safely converted to a <see langword="string" />.</returns>
+    public bool CanConvertToString()
+    {
+        if (_canConvertToString is not null)
+        {
+            return (bool)_canConvertToString;
+        }
+
+        // double-checked locking
+        lock (_lock)
+        {
+            if (_canConvertToString is not null)
+            {
+                return (bool)_canConvertToString;
+            }
+
+            if (System.Text.Unicode.Utf8.IsValid(Bytes))
+            {
+                Str = Encoding.UTF8.GetString(Bytes);
+                _canConvertToString = true;
+                return true;
+            }
+
+            _canConvertToString = false;
+            Str = $"Value isn't convertible to string: [{string.Join(' ', [.. Bytes.Select(b => $"{b:X2}")])}]";
+            return false;
+        }
+    }
+
+    /// <inheritdoc/>
+    int IComparable.CompareTo(object? obj) => obj switch
+    {
+        null => CompareTo(null),
+        GlideString other => CompareTo(other),
+        _ => throw new ArgumentException($"Object must be of type {nameof(GlideString)}.", nameof(obj)),
+    };
+
+    /// <inheritdoc/>
+    public int CompareTo(GlideString? other)
+    {
+        if (other is null)
+        {
+            return 1;
+        }
+
+        if (other == this)
+        {
+            return 0;
+        }
+
+        if (Length != other.Length)
+        {
+            return Length - other.Length;
+        }
+
+        for (int i = 0; i < Length; i++)
+        {
+            if (Bytes[i] != other.Bytes[i])
+            {
+                return Bytes[i] - other.Bytes[i];
+            }
+        }
+
+        return 0;
+    }
+
+    /// <inheritdoc/>
+    public override bool Equals(object? obj)
+    {
+        if (ReferenceEquals(this, obj))
+        {
+            return true;
+        }
+
+#pragma warning disable IDE0046 // Convert to conditional expression
+        if (obj is null || obj.GetType() != typeof(GlideString))
+        {
+            return false;
+        }
+#pragma warning restore IDE0046 // Convert to conditional expression
+
+        return this == (GlideString)obj;
+    }
+
     /// <inheritdoc/>
     public override int GetHashCode() => ((IStructuralEquatable)Bytes).GetHashCode(EqualityComparer<byte>.Default);
-
-    internal byte[] Bytes { get; }
-
-    internal string Str;
-
-    private bool? _canConvertToString;
-
-    private readonly object _lock = new();
 }

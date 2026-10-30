@@ -12,11 +12,7 @@ namespace Valkey.Glide;
 /// </summary>
 public readonly struct ValkeyKey : IEquatable<ValkeyKey>
 {
-    internal ValkeyKey(byte[]? keyPrefix, object? keyValue)
-    {
-        KeyPrefix = keyPrefix?.Length == 0 ? null : keyPrefix;
-        KeyValue = keyValue;
-    }
+    #region Constructors
 
     /// <summary>
     /// Creates a <see cref="ValkeyKey"/> from a string.
@@ -24,11 +20,18 @@ public readonly struct ValkeyKey : IEquatable<ValkeyKey>
     /// <param name="key">The string to create the key from.</param>
     public ValkeyKey(string? key) : this(null, key) { }
 
-    internal ValkeyKey AsPrefix() => new((byte[]?)this, null);
+    internal ValkeyKey(byte[]? keyPrefix, object? keyValue)
+    {
+        KeyPrefix = keyPrefix?.Length == 0 ? null : keyPrefix;
+        KeyValue = keyValue;
+    }
 
-    internal bool IsNull => KeyPrefix == null && KeyValue == null;
+    #endregion
+    #region Internal Properties
 
     internal static ValkeyKey Null { get; } = new ValkeyKey(null, null);
+
+    internal bool IsNull => KeyPrefix == null && KeyValue == null;
 
     internal bool IsEmpty
     {
@@ -56,222 +59,8 @@ public readonly struct ValkeyKey : IEquatable<ValkeyKey>
     internal byte[]? KeyPrefix { get; }
     internal object? KeyValue { get; }
 
-    /// <summary>
-    /// Indicate whether two keys are not equal.
-    /// </summary>
-    /// <param name="x">The first ValkeyChannel to compare.</param>
-    /// <param name="y">The second ValkeyChannel to compare.</param>
-    public static bool operator !=(ValkeyKey x, ValkeyKey y) => !x.EqualsImpl(in y);
-
-    /// <summary>
-    /// Indicate whether two keys are not equal.
-    /// </summary>
-    /// <param name="x">The first ValkeyChannel to compare.</param>
-    /// <param name="y">The second ValkeyChannel to compare.</param>
-    public static bool operator !=(string x, ValkeyKey y) => !y.EqualsImpl(new ValkeyKey(x));
-
-    /// <summary>
-    /// Indicate whether two keys are not equal.
-    /// </summary>
-    /// <param name="x">The first ValkeyChannel to compare.</param>
-    /// <param name="y">The second ValkeyChannel to compare.</param>
-    public static bool operator !=(byte[] x, ValkeyKey y) => !y.EqualsImpl(new ValkeyKey(null, x));
-
-    /// <summary>
-    /// Indicate whether two keys are not equal.
-    /// </summary>
-    /// <param name="x">The first ValkeyChannel to compare.</param>
-    /// <param name="y">The second ValkeyChannel to compare.</param>
-    public static bool operator !=(ValkeyKey x, string y) => !x.EqualsImpl(new ValkeyKey(y));
-
-    /// <summary>
-    /// Indicate whether two keys are not equal.
-    /// </summary>
-    /// <param name="x">The first ValkeyChannel to compare.</param>
-    /// <param name="y">The second ValkeyChannel to compare.</param>
-    public static bool operator !=(ValkeyKey x, byte[] y) => !x.EqualsImpl(new ValkeyKey(null, y));
-
-    /// <summary>
-    /// Indicate whether two keys are equal.
-    /// </summary>
-    /// <param name="x">The first ValkeyChannel to compare.</param>
-    /// <param name="y">The second ValkeyChannel to compare.</param>
-    public static bool operator ==(ValkeyKey x, ValkeyKey y) => x.EqualsImpl(in y);
-
-    /// <summary>
-    /// Indicate whether two keys are equal.
-    /// </summary>
-    /// <param name="x">The first ValkeyChannel to compare.</param>
-    /// <param name="y">The second ValkeyChannel to compare.</param>
-    public static bool operator ==(string x, ValkeyKey y) => y.EqualsImpl(new ValkeyKey(x));
-
-    /// <summary>
-    /// Indicate whether two keys are equal.
-    /// </summary>
-    /// <param name="x">The first ValkeyChannel to compare.</param>
-    /// <param name="y">The second ValkeyChannel to compare.</param>
-    public static bool operator ==(byte[] x, ValkeyKey y) => y.EqualsImpl(new ValkeyKey(null, x));
-
-    /// <summary>
-    /// Indicate whether two keys are equal.
-    /// </summary>
-    /// <param name="x">The first ValkeyChannel to compare.</param>
-    /// <param name="y">The second ValkeyChannel to compare.</param>
-    public static bool operator ==(ValkeyKey x, string y) => x.EqualsImpl(new ValkeyKey(y));
-
-    /// <summary>
-    /// Indicate whether two keys are equal.
-    /// </summary>
-    /// <param name="x">The first ValkeyChannel to compare.</param>
-    /// <param name="y">The second ValkeyChannel to compare.</param>
-    public static bool operator ==(ValkeyKey x, byte[] y) => x.EqualsImpl(new ValkeyKey(null, y));
-
-    /// <summary>
-    /// See <see cref="object.Equals(object?)"/>.
-    /// </summary>
-    /// <param name="obj">The <see cref="ValkeyKey"/> to compare to.</param>
-    public override bool Equals(object? obj) => obj switch
-    {
-        null => IsNull,
-        ValkeyKey key => EqualsImpl(in key),
-        string s => EqualsImpl(new ValkeyKey(s)),
-        byte[] b => EqualsImpl(new ValkeyKey(null, b)),
-        _ => false,
-    };
-
-    /// <summary>
-    /// Indicate whether two keys are equal.
-    /// </summary>
-    /// <param name="other">The <see cref="ValkeyKey"/> to compare to.</param>
-    public bool Equals(ValkeyKey other) => EqualsImpl(in other);
-
-    private bool EqualsImpl(in ValkeyKey other)
-    {
-        if (IsNull)
-        {
-            return other.IsNull;
-        }
-        else if (other.IsNull)
-        {
-            return false;
-        }
-
-        // if there's no prefix, we might be able to do a simple compare
-        if (ValkeyValue.Equals(KeyPrefix, other.KeyPrefix))
-        {
-            if (KeyValue == other.KeyValue)
-            {
-                return true; // ref equal
-            }
-
-            if (KeyValue is string keyString1 && other.KeyValue is string keyString2)
-            {
-                return keyString1 == keyString2;
-            }
-
-            if (KeyValue is byte[] keyBytes1 && other.KeyValue is byte[] keyBytes2)
-            {
-                return ValkeyValue.Equals(keyBytes1, keyBytes2);
-            }
-        }
-
-        int len = TotalLength();
-        if (len != other.TotalLength())
-        {
-            return false; // different length; can't be equal
-        }
-
-        if (len == 0)
-        {
-            return true; // both empty
-        }
-
-        if (len <= 128)
-        {
-            return CopyCompare(in this, in other, len, stackalloc byte[len * 2]);
-        }
-
-        byte[] arr = ArrayPool<byte>.Shared.Rent(len * 2);
-        var result = CopyCompare(in this, in other, len, arr);
-        ArrayPool<byte>.Shared.Return(arr);
-
-        return result;
-
-        static bool CopyCompare(in ValkeyKey x, in ValkeyKey y, int length, Span<byte> span)
-        {
-            Span<byte> span1 = span[..length], span2 = span.Slice(length, length);
-            var written = x.CopyTo(span1);
-            Debug.Assert(written == length, "length error (1)");
-            written = y.CopyTo(span2);
-            Debug.Assert(written == length, "length error (2)");
-            return span1.SequenceEqual(span2);
-        }
-    }
-
-    /// <inheritdoc/>
-    public override int GetHashCode()
-    {
-        // note that we need need eaulity-like behavior, regardless of whether the
-        // parts look like bytes or strings, and with/without prefix
-
-        // the simplest way to do this is to use the CopyTo version, which normalizes that
-        if (IsNull)
-        {
-            return -1;
-        }
-
-        if (TryGetSimpleBuffer(out var buffer))
-        {
-            return ValkeyValue.GetHashCode(buffer);
-        }
-
-        var len = TotalLength();
-        if (len == 0)
-        {
-            return 0;
-        }
-
-        if (len <= 256)
-        {
-            Span<byte> span = stackalloc byte[len];
-            var written = CopyTo(span);
-            Debug.Assert(written == len);
-            return ValkeyValue.GetHashCode(span);
-        }
-        else
-        {
-            var arr = ArrayPool<byte>.Shared.Rent(len);
-            var span = new Span<byte>(arr, 0, len);
-            var written = CopyTo(span);
-            Debug.Assert(written == len);
-            var result = ValkeyValue.GetHashCode(span);
-            ArrayPool<byte>.Shared.Return(arr);
-            return result;
-        }
-    }
-
-    /// <summary>
-    /// Obtains a string representation of the key.
-    /// </summary>
-    public override string ToString() => ((string?)this) ?? "(null)";
-
-    internal ValkeyValue AsValkeyValue()
-    {
-        if (KeyPrefix == null && KeyValue is string keyString)
-        {
-            return keyString;
-        }
-
-        return (byte[]?)this;
-    }
-
-    internal void AssertNotNull()
-    {
-        if (IsNull)
-        {
-            throw new ArgumentException("A null key is not valid in this context");
-        }
-    }
+    #endregion
+    #region Operators
 
     /// <summary>
     /// Create a <see cref="ValkeyKey"/> from a <see cref="string"/>.
@@ -377,6 +166,76 @@ public readonly struct ValkeyKey : IEquatable<ValkeyKey>
     }
 
     /// <summary>
+    /// Indicate whether two keys are not equal.
+    /// </summary>
+    /// <param name="x">The first ValkeyChannel to compare.</param>
+    /// <param name="y">The second ValkeyChannel to compare.</param>
+    public static bool operator !=(ValkeyKey x, ValkeyKey y) => !x.EqualsImpl(in y);
+
+    /// <summary>
+    /// Indicate whether two keys are not equal.
+    /// </summary>
+    /// <param name="x">The first ValkeyChannel to compare.</param>
+    /// <param name="y">The second ValkeyChannel to compare.</param>
+    public static bool operator !=(string x, ValkeyKey y) => !y.EqualsImpl(new ValkeyKey(x));
+
+    /// <summary>
+    /// Indicate whether two keys are not equal.
+    /// </summary>
+    /// <param name="x">The first ValkeyChannel to compare.</param>
+    /// <param name="y">The second ValkeyChannel to compare.</param>
+    public static bool operator !=(byte[] x, ValkeyKey y) => !y.EqualsImpl(new ValkeyKey(null, x));
+
+    /// <summary>
+    /// Indicate whether two keys are not equal.
+    /// </summary>
+    /// <param name="x">The first ValkeyChannel to compare.</param>
+    /// <param name="y">The second ValkeyChannel to compare.</param>
+    public static bool operator !=(ValkeyKey x, string y) => !x.EqualsImpl(new ValkeyKey(y));
+
+    /// <summary>
+    /// Indicate whether two keys are not equal.
+    /// </summary>
+    /// <param name="x">The first ValkeyChannel to compare.</param>
+    /// <param name="y">The second ValkeyChannel to compare.</param>
+    public static bool operator !=(ValkeyKey x, byte[] y) => !x.EqualsImpl(new ValkeyKey(null, y));
+
+    /// <summary>
+    /// Indicate whether two keys are equal.
+    /// </summary>
+    /// <param name="x">The first ValkeyChannel to compare.</param>
+    /// <param name="y">The second ValkeyChannel to compare.</param>
+    public static bool operator ==(ValkeyKey x, ValkeyKey y) => x.EqualsImpl(in y);
+
+    /// <summary>
+    /// Indicate whether two keys are equal.
+    /// </summary>
+    /// <param name="x">The first ValkeyChannel to compare.</param>
+    /// <param name="y">The second ValkeyChannel to compare.</param>
+    public static bool operator ==(string x, ValkeyKey y) => y.EqualsImpl(new ValkeyKey(x));
+
+    /// <summary>
+    /// Indicate whether two keys are equal.
+    /// </summary>
+    /// <param name="x">The first ValkeyChannel to compare.</param>
+    /// <param name="y">The second ValkeyChannel to compare.</param>
+    public static bool operator ==(byte[] x, ValkeyKey y) => y.EqualsImpl(new ValkeyKey(null, x));
+
+    /// <summary>
+    /// Indicate whether two keys are equal.
+    /// </summary>
+    /// <param name="x">The first ValkeyChannel to compare.</param>
+    /// <param name="y">The second ValkeyChannel to compare.</param>
+    public static bool operator ==(ValkeyKey x, string y) => x.EqualsImpl(new ValkeyKey(y));
+
+    /// <summary>
+    /// Indicate whether two keys are equal.
+    /// </summary>
+    /// <param name="x">The first ValkeyChannel to compare.</param>
+    /// <param name="y">The second ValkeyChannel to compare.</param>
+    public static bool operator ==(ValkeyKey x, byte[] y) => x.EqualsImpl(new ValkeyKey(null, y));
+
+    /// <summary>
     /// Concatenate two keys.
     /// </summary>
     /// <param name="x">The first <see cref="ValkeyKey"/> to add.</param>
@@ -384,6 +243,96 @@ public readonly struct ValkeyKey : IEquatable<ValkeyKey>
     [Obsolete("Prefer WithPrefix")]
     public static ValkeyKey operator +(ValkeyKey x, ValkeyKey y) =>
         new(ConcatenateBytes(x.KeyPrefix, x.KeyValue, y.KeyPrefix), y.KeyValue);
+
+    #endregion
+    #region Public Methods
+
+    /// <summary>
+    /// See <see cref="object.Equals(object?)"/>.
+    /// </summary>
+    /// <param name="obj">The <see cref="ValkeyKey"/> to compare to.</param>
+    public override bool Equals(object? obj) => obj switch
+    {
+        null => IsNull,
+        ValkeyKey key => EqualsImpl(in key),
+        string s => EqualsImpl(new ValkeyKey(s)),
+        byte[] b => EqualsImpl(new ValkeyKey(null, b)),
+        _ => false,
+    };
+
+    /// <summary>
+    /// Indicate whether two keys are equal.
+    /// </summary>
+    /// <param name="other">The <see cref="ValkeyKey"/> to compare to.</param>
+    public bool Equals(ValkeyKey other) => EqualsImpl(in other);
+
+    /// <inheritdoc/>
+    public override int GetHashCode()
+    {
+        // note that we need need eaulity-like behavior, regardless of whether the
+        // parts look like bytes or strings, and with/without prefix
+
+        // the simplest way to do this is to use the CopyTo version, which normalizes that
+        if (IsNull)
+        {
+            return -1;
+        }
+
+        if (TryGetSimpleBuffer(out var buffer))
+        {
+            return ValkeyValue.GetHashCode(buffer);
+        }
+
+        var len = TotalLength();
+        if (len == 0)
+        {
+            return 0;
+        }
+
+        if (len <= 256)
+        {
+            Span<byte> span = stackalloc byte[len];
+            var written = CopyTo(span);
+            Debug.Assert(written == len);
+            return ValkeyValue.GetHashCode(span);
+        }
+        else
+        {
+            var arr = ArrayPool<byte>.Shared.Rent(len);
+            var span = new Span<byte>(arr, 0, len);
+            var written = CopyTo(span);
+            Debug.Assert(written == len);
+            var result = ValkeyValue.GetHashCode(span);
+            ArrayPool<byte>.Shared.Return(arr);
+            return result;
+        }
+    }
+
+    /// <summary>
+    /// Obtains a string representation of the key.
+    /// </summary>
+    public override string ToString() => ((string?)this) ?? "(null)";
+
+    /// <summary>
+    /// <para>Prepends p to this ValkeyKey, returning a new ValkeyKey.</para>
+    /// <para>
+    /// Avoids some allocations if possible, repeated Prepend/Appends make it less possible.
+    /// </para>
+    /// </summary>
+    /// <param name="prefix">The prefix to prepend.</param>
+    public ValkeyKey Prepend(ValkeyKey prefix) => WithPrefix(prefix, this);
+
+    /// <summary>
+    /// <para>Appends p to this ValkeyKey, returning a new ValkeyKey.</para>
+    /// <para>
+    /// Avoids some allocations if possible, repeated Prepend/Appends make it less possible.
+    /// </para>
+    /// </summary>
+    /// <param name="suffix">The suffix to append.</param>
+    public ValkeyKey Append(ValkeyKey suffix) => WithPrefix(this, suffix);
+
+    #endregion
+    #region Internal Methods
 
     internal static ValkeyKey WithPrefix(byte[]? prefix, ValkeyKey value)
     {
@@ -458,23 +407,25 @@ public readonly struct ValkeyKey : IEquatable<ValkeyKey>
         return result;
     }
 
-    /// <summary>
-    /// <para>Prepends p to this ValkeyKey, returning a new ValkeyKey.</para>
-    /// <para>
-    /// Avoids some allocations if possible, repeated Prepend/Appends make it less possible.
-    /// </para>
-    /// </summary>
-    /// <param name="prefix">The prefix to prepend.</param>
-    public ValkeyKey Prepend(ValkeyKey prefix) => WithPrefix(prefix, this);
+    internal ValkeyKey AsPrefix() => new((byte[]?)this, null);
 
-    /// <summary>
-    /// <para>Appends p to this ValkeyKey, returning a new ValkeyKey.</para>
-    /// <para>
-    /// Avoids some allocations if possible, repeated Prepend/Appends make it less possible.
-    /// </para>
-    /// </summary>
-    /// <param name="suffix">The suffix to append.</param>
-    public ValkeyKey Append(ValkeyKey suffix) => WithPrefix(this, suffix);
+    internal ValkeyValue AsValkeyValue()
+    {
+        if (KeyPrefix == null && KeyValue is string keyString)
+        {
+            return keyString;
+        }
+
+        return (byte[]?)this;
+    }
+
+    internal void AssertNotNull()
+    {
+        if (IsNull)
+        {
+            throw new ArgumentException("A null key is not valid in this context");
+        }
+    }
 
     internal bool TryGetSimpleBuffer([NotNullWhen(true)] out byte[]? arr)
     {
@@ -534,4 +485,72 @@ public readonly struct ValkeyKey : IEquatable<ValkeyKey>
 
         return written;
     }
+
+    #endregion
+    #region Private Methods
+
+    private bool EqualsImpl(in ValkeyKey other)
+    {
+        if (IsNull)
+        {
+            return other.IsNull;
+        }
+        else if (other.IsNull)
+        {
+            return false;
+        }
+
+        // if there's no prefix, we might be able to do a simple compare
+        if (ValkeyValue.Equals(KeyPrefix, other.KeyPrefix))
+        {
+            if (KeyValue == other.KeyValue)
+            {
+                return true; // ref equal
+            }
+
+            if (KeyValue is string keyString1 && other.KeyValue is string keyString2)
+            {
+                return keyString1 == keyString2;
+            }
+
+            if (KeyValue is byte[] keyBytes1 && other.KeyValue is byte[] keyBytes2)
+            {
+                return ValkeyValue.Equals(keyBytes1, keyBytes2);
+            }
+        }
+
+        int len = TotalLength();
+        if (len != other.TotalLength())
+        {
+            return false; // different length; can't be equal
+        }
+
+        if (len == 0)
+        {
+            return true; // both empty
+        }
+
+        if (len <= 128)
+        {
+            return CopyCompare(in this, in other, len, stackalloc byte[len * 2]);
+        }
+
+        byte[] arr = ArrayPool<byte>.Shared.Rent(len * 2);
+        var result = CopyCompare(in this, in other, len, arr);
+        ArrayPool<byte>.Shared.Return(arr);
+
+        return result;
+
+        static bool CopyCompare(in ValkeyKey x, in ValkeyKey y, int length, Span<byte> span)
+        {
+            Span<byte> span1 = span[..length], span2 = span.Slice(length, length);
+            var written = x.CopyTo(span1);
+            Debug.Assert(written == length, "length error (1)");
+            written = y.CopyTo(span2);
+            Debug.Assert(written == length, "length error (2)");
+            return span1.SequenceEqual(span2);
+        }
+    }
+
+    #endregion
 }

@@ -7,6 +7,14 @@ namespace Valkey.Glide;
 /// </summary>
 public sealed class MetricsConfig
 {
+    #region Constructors
+
+    private MetricsConfig(string endpoint)
+    {
+        Endpoint = endpoint;
+    }
+
+    #endregion
     #region Public Properties
 
     /// <summary>
@@ -15,12 +23,7 @@ public sealed class MetricsConfig
     public string Endpoint { get; }
 
     #endregion
-    #region Constructors & Builders
-
-    private MetricsConfig(string endpoint)
-    {
-        Endpoint = endpoint;
-    }
+    #region Public Methods
 
     /// <summary>
     /// Creates a new MetricsConfig builder.

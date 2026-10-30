@@ -9,6 +9,19 @@ namespace Valkey.Glide.IntegrationTests;
 /// </summary>
 public static class PubSubUtils
 {
+    #region TimeSpans
+
+    /// <summary>
+    /// Maximum duration for pub/sub assertions.
+    /// </summary>
+    public static readonly TimeSpan MaxDuration = TimeSpan.FromSeconds(30);
+
+    /// <summary>
+    /// Retry interval for pub/sub assertions.
+    /// </summary>
+    public static readonly TimeSpan RetryInterval = TimeSpan.FromSeconds(0.5);
+
+    #endregion
     #region Enums
 
     /// <summary>
@@ -186,19 +199,6 @@ public static class PubSubUtils
     }
 
     #endregion
-    #region TimeSpans
-
-    /// <summary>
-    /// Maximum duration for pub/sub assertions.
-    /// </summary>
-    public static readonly TimeSpan MaxDuration = TimeSpan.FromSeconds(30);
-
-    /// <summary>
-    /// Retry interval for pub/sub assertions.
-    /// </summary>
-    public static readonly TimeSpan RetryInterval = TimeSpan.FromSeconds(0.5);
-
-    #endregion
     #region Helpers
 
     /// <summary>
@@ -212,12 +212,6 @@ public static class PubSubUtils
     /// </summary>
     public static bool IsShardedSupported(bool isCluster)
         => isCluster && IsShardedSupported();
-
-    /// <summary>
-    /// Returns true if the given cluster mode and channel mode combination is supported.
-    /// </summary>
-    private static bool IsClusterAndChannelModeSupported(bool isCluster, PubSubChannelMode channelMode)
-        => channelMode != PubSubChannelMode.Sharded || IsShardedSupported(isCluster);
 
     /// <summary>
     /// Skips the current test unless sharded pub/sub is supported.
@@ -240,22 +234,10 @@ public static class PubSubUtils
         => BuildChannel(Guid.NewGuid().ToString());
 
     /// <summary>
-    /// Builds and returns a unique channel for testing from the given ID.
-    /// </summary>
-    private static ValkeyKey BuildChannel(string id)
-        => (ValkeyKey)$"test:{{{id}}}:channel";
-
-    /// <summary>
     /// Builds and returns a unique pattern for testing.
     /// </summary>
     public static ValkeyKey BuildPattern()
         => BuildPattern(Guid.NewGuid().ToString());
-
-    /// <summary>
-    /// Builds and returns a unique pattern for testing from the given ID.
-    /// </summary>
-    private static ValkeyKey BuildPattern(string id)
-        => (ValkeyKey)$"test:{{{id}}}:*";
 
     /// <summary>
     /// Returns a message appropriate for the given channel mode.
@@ -432,89 +414,6 @@ public static class PubSubUtils
             if (shardedChannels.Count > 0)
             {
                 await client.SSubscribeAsync(shardedChannels, timeout.Value);
-            }
-        }
-
-        return client;
-    }
-
-    /// <summary>
-    /// Builds and returns a standalone subscriber client with the specified subscriptions.
-    /// </summary>
-    private static async Task<GlideClient> BuildStandaloneSubscriber(
-        IEnumerable<PubSubMessage> messages,
-        SubscribeMode subscribeMode = SubscribeMode.Config,
-        MessageCallback? callback = null,
-        TimeSpan? timeout = null)
-    {
-        // Get channels and patterns.
-        var targets = BuildSubscriptions(messages);
-
-        if (targets[PubSubChannelMode.Sharded].Count > 0)
-        {
-            throw new ArgumentException("Standalone clients do not support sharded channel subscriptions.");
-        }
-
-        var channels = targets[PubSubChannelMode.Exact];
-        var patterns = targets[PubSubChannelMode.Pattern];
-
-        // Build configuration.
-        ConnectionConfiguration.StandaloneClientConfigurationBuilder configBuilder = TestConfiguration.DefaultClientConfig();
-
-        if (subscribeMode == SubscribeMode.Config)
-        {
-            StandalonePubSubSubscriptionConfig pubSubConfig = new();
-
-            foreach (var ch in channels)
-            {
-                _ = pubSubConfig.WithChannel(ch);
-            }
-
-            foreach (var p in patterns)
-            {
-                _ = pubSubConfig.WithPattern(p);
-            }
-
-            if (callback != null)
-            {
-                _ = pubSubConfig.WithCallback(callback);
-            }
-
-            _ = configBuilder.WithPubSubSubscriptions(pubSubConfig);
-        }
-        else if (callback != null)
-        {
-            StandalonePubSubSubscriptionConfig pubSubConfig = new StandalonePubSubSubscriptionConfig().WithCallback(callback);
-            _ = configBuilder.WithPubSubSubscriptions(pubSubConfig);
-        }
-
-        // Build client.
-        GlideClient client = await GlideClient.CreateClient(configBuilder.Build());
-
-        // Dynamically subscribe.
-        if (subscribeMode == SubscribeMode.Lazy)
-        {
-            if (channels.Count > 0)
-            {
-                await client.SubscribeLazyAsync(channels);
-            }
-
-            if (patterns.Count > 0)
-            {
-                await client.PSubscribeLazyAsync(patterns);
-            }
-        }
-        else if (subscribeMode == SubscribeMode.Blocking)
-        {
-            timeout ??= MaxDuration;
-            if (channels.Count > 0)
-            {
-                await client.SubscribeAsync(channels, timeout.Value);
-            }
-
-            if (patterns.Count > 0)
-            {
-                await client.PSubscribeAsync(patterns, timeout.Value);
             }
         }
 
@@ -794,6 +693,110 @@ public static class PubSubUtils
         }
 
         return Task.CompletedTask;
+    }
+
+    #endregion
+    #region Private Methods
+
+    /// <summary>
+    /// Returns true if the given cluster mode and channel mode combination is supported.
+    /// </summary>
+    private static bool IsClusterAndChannelModeSupported(bool isCluster, PubSubChannelMode channelMode)
+        => channelMode != PubSubChannelMode.Sharded || IsShardedSupported(isCluster);
+
+    /// <summary>
+    /// Builds and returns a unique channel for testing from the given ID.
+    /// </summary>
+    private static ValkeyKey BuildChannel(string id)
+        => (ValkeyKey)$"test:{{{id}}}:channel";
+
+    /// <summary>
+    /// Builds and returns a unique pattern for testing from the given ID.
+    /// </summary>
+    private static ValkeyKey BuildPattern(string id)
+        => (ValkeyKey)$"test:{{{id}}}:*";
+
+    /// <summary>
+    /// Builds and returns a standalone subscriber client with the specified subscriptions.
+    /// </summary>
+    private static async Task<GlideClient> BuildStandaloneSubscriber(
+        IEnumerable<PubSubMessage> messages,
+        SubscribeMode subscribeMode = SubscribeMode.Config,
+        MessageCallback? callback = null,
+        TimeSpan? timeout = null)
+    {
+        // Get channels and patterns.
+        var targets = BuildSubscriptions(messages);
+
+        if (targets[PubSubChannelMode.Sharded].Count > 0)
+        {
+            throw new ArgumentException("Standalone clients do not support sharded channel subscriptions.");
+        }
+
+        var channels = targets[PubSubChannelMode.Exact];
+        var patterns = targets[PubSubChannelMode.Pattern];
+
+        // Build configuration.
+        ConnectionConfiguration.StandaloneClientConfigurationBuilder configBuilder = TestConfiguration.DefaultClientConfig();
+
+        if (subscribeMode == SubscribeMode.Config)
+        {
+            StandalonePubSubSubscriptionConfig pubSubConfig = new();
+
+            foreach (var ch in channels)
+            {
+                _ = pubSubConfig.WithChannel(ch);
+            }
+
+            foreach (var p in patterns)
+            {
+                _ = pubSubConfig.WithPattern(p);
+            }
+
+            if (callback != null)
+            {
+                _ = pubSubConfig.WithCallback(callback);
+            }
+
+            _ = configBuilder.WithPubSubSubscriptions(pubSubConfig);
+        }
+        else if (callback != null)
+        {
+            StandalonePubSubSubscriptionConfig pubSubConfig = new StandalonePubSubSubscriptionConfig().WithCallback(callback);
+            _ = configBuilder.WithPubSubSubscriptions(pubSubConfig);
+        }
+
+        // Build client.
+        GlideClient client = await GlideClient.CreateClient(configBuilder.Build());
+
+        // Dynamically subscribe.
+        if (subscribeMode == SubscribeMode.Lazy)
+        {
+            if (channels.Count > 0)
+            {
+                await client.SubscribeLazyAsync(channels);
+            }
+
+            if (patterns.Count > 0)
+            {
+                await client.PSubscribeLazyAsync(patterns);
+            }
+        }
+        else if (subscribeMode == SubscribeMode.Blocking)
+        {
+            timeout ??= MaxDuration;
+            if (channels.Count > 0)
+            {
+                await client.SubscribeAsync(channels, timeout.Value);
+            }
+
+            if (patterns.Count > 0)
+            {
+                await client.PSubscribeAsync(patterns, timeout.Value);
+            }
+        }
+
+        return client;
     }
 
     /// <summary>

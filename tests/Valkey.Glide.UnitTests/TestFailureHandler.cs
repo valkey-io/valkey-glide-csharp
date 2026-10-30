@@ -7,11 +7,11 @@ namespace Valkey.Glide.UnitTests;
 
 public static class TestFailureHandler
 {
+    private const string GitHubUrl = "https://github.com";
+
     private static readonly object Lock = new();
     private static bool s_initialized = false;
     private static bool s_firstFailure = true;
-
-    private const string GitHubUrl = "https://github.com";
 
     [ModuleInitializer]
     public static void Initialize()

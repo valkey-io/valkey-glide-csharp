@@ -14,8 +14,6 @@ public class JsonBatchTests(TestConfiguration config)
 {
     public TestConfiguration Config { get; } = config;
 
-    private static string GetUniqueKey(string prefix = "json_batch") => $"{prefix}:{Guid.NewGuid()}";
-
     #region Standalone Batch Tests
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -675,6 +673,11 @@ public class JsonBatchTests(TestConfiguration config)
             _ = await client.DeleteAsync(key);
         }
     }
+
+    #endregion
+    #region Helpers
+
+    private static string GetUniqueKey(string prefix = "json_batch") => $"{prefix}:{Guid.NewGuid()}";
 
     #endregion
 }

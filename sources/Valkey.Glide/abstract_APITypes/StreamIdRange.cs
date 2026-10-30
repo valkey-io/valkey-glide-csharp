@@ -17,6 +17,15 @@ public sealed class StreamIdRange
     public static readonly StreamIdRange All = new(StreamIdBound.Min, StreamIdBound.Max);
 
     #endregion
+    #region Constructors
+
+    private StreamIdRange(StreamIdBound start, StreamIdBound end)
+    {
+        Start = start;
+        End = end;
+    }
+
+    #endregion
     #region Public Properties
 
     /// <summary>
@@ -30,16 +39,7 @@ public sealed class StreamIdRange
     public StreamIdBound End { get; }
 
     #endregion
-    #region Constructors
-
-    private StreamIdRange(StreamIdBound start, StreamIdBound end)
-    {
-        Start = start;
-        End = end;
-    }
-
-    #endregion
-    #region StreamIdBound Builders
+    #region Public Methods
 
     /// <summary>
     /// Creates a range from the given start ID to the maximum stream ID.
@@ -48,12 +48,24 @@ public sealed class StreamIdRange
     /// <returns>A <see cref="StreamIdRange"/> from <paramref name="start"/> to the maximum stream ID.</returns>
     public static StreamIdRange From(StreamIdBound start) => new(start, StreamIdBound.Max);
 
+    /// <inheritdoc cref="From(StreamIdBound)"/>
+    public static StreamIdRange From(ValkeyValue start) => new(start, StreamIdBound.Max);
+
+    /// <inheritdoc cref="From(StreamIdBound)"/>
+    public static StreamIdRange From(string start) => new(start, StreamIdBound.Max);
+
     /// <summary>
     /// Creates a range from the minimum stream ID to the given end ID.
     /// </summary>
     /// <param name="end">The end stream ID bound.</param>
     /// <returns>A <see cref="StreamIdRange"/> from the minimum stream ID to <paramref name="end"/>.</returns>
     public static StreamIdRange To(StreamIdBound end) => new(StreamIdBound.Min, end);
+
+    /// <inheritdoc cref="To(StreamIdBound)"/>
+    public static StreamIdRange To(ValkeyValue end) => new(StreamIdBound.Min, end);
+
+    /// <inheritdoc cref="To(StreamIdBound)"/>
+    public static StreamIdRange To(string end) => new(StreamIdBound.Min, end);
 
     /// <summary>
     /// Creates a range between two stream ID bounds.
@@ -63,26 +75,8 @@ public sealed class StreamIdRange
     /// <returns>A <see cref="StreamIdRange"/> from <paramref name="start"/> to <paramref name="end"/>.</returns>
     public static StreamIdRange Between(StreamIdBound start, StreamIdBound end) => new(start, end);
 
-    #endregion
-    #region ValkeyValue Builders
-
-    /// <inheritdoc cref="From(StreamIdBound)"/>
-    public static StreamIdRange From(ValkeyValue start) => new(start, StreamIdBound.Max);
-
-    /// <inheritdoc cref="To(StreamIdBound)"/>
-    public static StreamIdRange To(ValkeyValue end) => new(StreamIdBound.Min, end);
-
     /// <inheritdoc cref="Between(StreamIdBound, StreamIdBound)"/>
     public static StreamIdRange Between(ValkeyValue start, ValkeyValue end) => new(start, end);
-
-    #endregion
-    #region String Builders
-
-    /// <inheritdoc cref="From(StreamIdBound)"/>
-    public static StreamIdRange From(string start) => new(start, StreamIdBound.Max);
-
-    /// <inheritdoc cref="To(StreamIdBound)"/>
-    public static StreamIdRange To(string end) => new(StreamIdBound.Min, end);
 
     /// <inheritdoc cref="Between(StreamIdBound, StreamIdBound)"/>
     public static StreamIdRange Between(string start, string end) => new(start, end);

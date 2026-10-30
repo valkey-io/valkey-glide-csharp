@@ -13,8 +13,6 @@ public class JsonObjectCommandTests(TestConfiguration config)
 {
     public TestConfiguration Config { get; } = config;
 
-    private static string GetUniqueKey(string prefix = "json") => $"{prefix}:{Guid.NewGuid()}";
-
     #region JSON.OBJLEN Tests
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -167,6 +165,11 @@ public class JsonObjectCommandTests(TestConfiguration config)
         ValkeyResult[] arr = (ValkeyResult[])result!;
         Assert.NotNull(arr);
     }
+
+    #endregion
+    #region Helpers
+
+    private static string GetUniqueKey(string prefix = "json") => $"{prefix}:{Guid.NewGuid()}";
 
     #endregion
 }

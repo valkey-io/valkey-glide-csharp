@@ -19,92 +19,20 @@ namespace Valkey.Glide;
 /// </summary>
 public sealed class ConfigurationOptions : ICloneable
 {
-    private static class OptionKeys
-    {
-        public static int ParseInt32(string key, string value, int minValue = int.MinValue, int maxValue = int.MaxValue)
-        {
-            if (!Format.TryParseInt32(value, out int tmp)) throw new ArgumentOutOfRangeException(key, $"Keyword '{key}' requires an integer value; the value '{value}' is not recognised.");
-            if (tmp < minValue) throw new ArgumentOutOfRangeException(key, $"Keyword '{key}' has a minimum value of '{minValue}'; the value '{tmp}' is not permitted.");
-            if (tmp > maxValue) throw new ArgumentOutOfRangeException(key, $"Keyword '{key}' has a maximum value of '{maxValue}'; the value '{tmp}' is not permitted.");
-            return tmp;
-        }
-
-        internal static bool ParseBoolean(string key, string value)
-        {
-            if (!Format.TryParseBoolean(value, out bool tmp)) throw new ArgumentOutOfRangeException(key, $"Keyword '{key}' requires a boolean value; the value '{value}' is not recognised.");
-            return tmp;
-        }
-
-        internal static Protocol ParseProtocol(string key, string value)
-        {
-            if (TryParseProtocol(value, out Protocol protocol)) return protocol;
-            throw new ArgumentOutOfRangeException(key, $"Keyword '{key}' requires a Protocol value or a known protocol version number; the value '{value}' is not recognised.");
-        }
-
-        internal const string
-            AbortOnConnectFail = "abortConnect",
-            AllowAdmin = "allowAdmin",
-            ConnectTimeout = "connectTimeout",
-            DefaultDatabase = "defaultDatabase",
-            KeepAlive = "keepAlive",
-            ClientName = "name",
-            User = "user",
-            Password = "password",
-            Proxy = "proxy",
-            ResponseTimeout = "responseTimeout",
-            Ssl = "ssl",
-            Version = "version",
-            SetClientLibrary = "setlib",
-            Protocol = "protocol",
-            ReadFrom = "readFrom",
-            Az = "az"
-            ;
-
-        private static readonly Dictionary<string, string> normalizedOptions = new[]
-        {
-            AbortOnConnectFail,
-            AllowAdmin,
-            ClientName,
-            ConnectTimeout,
-            DefaultDatabase,
-            KeepAlive,
-            User,
-            Password,
-            Proxy,
-            ResponseTimeout,
-            Ssl,
-            Version,
-            SetClientLibrary,
-            Protocol,
-            ReadFrom,
-            Az
-        }
-            .ToDictionary(x => x, StringComparer.OrdinalIgnoreCase);
-
-        public static string TryNormalize(string value)
-        {
-            if (value != null && normalizedOptions.TryGetValue(value, out string? tmp))
-            {
-                return tmp ?? "";
-            }
-
-            return value ?? "";
-        }
-    }
-
-    #region Private fields
-
-    private bool? _ssl;
-    private Proxy? _proxy;
-
-    #endregion
-    #region Internal fields
+    #region Internal Fields
 
     internal readonly List<byte[]> _trustedIssuers = [];
     internal byte[]? _clientCertificate;
     internal byte[]? _clientKey;
 
     #endregion
+    #region Private Fields
+
+    private bool? _ssl;
+    private Proxy? _proxy;
+
+    #endregion
+    #region Public Properties
 
     /// <summary>
     /// Gets or sets whether connect/configuration timeouts should be explicitly notified via a TimeoutException.
@@ -239,6 +167,11 @@ public sealed class ConfigurationOptions : ICloneable
     public string? Password { get; set; }
 
     /// <summary>
+    /// Specify the connection protocol type.
+    /// </summary>
+    public Protocol? Protocol { get; set; }
+
+    /// <summary>
     /// Type of proxy to use (if any).
     /// </summary>
     public Proxy Proxy => Proxy.None;
@@ -272,6 +205,35 @@ public sealed class ConfigurationOptions : ICloneable
         get => _ssl ?? false;
         set => _ssl = value;
     }
+
+    /// <summary>
+    /// Specifies the time in milliseconds that the system should allow for synchronous operations (defaults to 250 milliseconds).
+    /// </summary>
+    /// <remarks>
+    /// Please use <see cref="ResponseTimeout" /> instead.
+    /// </remarks>
+    public int? SyncTimeout => ResponseTimeout;
+
+    #endregion
+    #region Public Methods
+
+    /// <summary>
+    /// Parse the configuration from a comma-delimited configuration string.
+    /// </summary>
+    /// <param name="configuration">The configuration string to parse.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="configuration"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="configuration"/> is empty.</exception>
+    public static ConfigurationOptions Parse(string configuration) => Parse(configuration, false);
+
+    /// <summary>
+    /// Parse the configuration from a comma-delimited configuration string.
+    /// </summary>
+    /// <param name="configuration">The configuration string to parse.</param>
+    /// <param name="ignoreUnknown">Whether to ignore unknown elements in <paramref name="configuration"/>.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="configuration"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="configuration"/> is empty.</exception>
+    public static ConfigurationOptions Parse(string configuration, bool ignoreUnknown) =>
+        new ConfigurationOptions().DoParse(configuration, ignoreUnknown);
 
     /// <summary>
     /// Adds an additional trusted certificate for TLS connections.
@@ -326,32 +288,6 @@ public sealed class ConfigurationOptions : ICloneable
     }
 
     /// <summary>
-    /// Specifies the time in milliseconds that the system should allow for synchronous operations (defaults to 250 milliseconds).
-    /// </summary>
-    /// <remarks>
-    /// Please use <see cref="ResponseTimeout" /> instead.
-    /// </remarks>
-    public int? SyncTimeout => ResponseTimeout;
-
-    /// <summary>
-    /// Parse the configuration from a comma-delimited configuration string.
-    /// </summary>
-    /// <param name="configuration">The configuration string to parse.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="configuration"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentException"><paramref name="configuration"/> is empty.</exception>
-    public static ConfigurationOptions Parse(string configuration) => Parse(configuration, false);
-
-    /// <summary>
-    /// Parse the configuration from a comma-delimited configuration string.
-    /// </summary>
-    /// <param name="configuration">The configuration string to parse.</param>
-    /// <param name="ignoreUnknown">Whether to ignore unknown elements in <paramref name="configuration"/>.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="configuration"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentException"><paramref name="configuration"/> is empty.</exception>
-    public static ConfigurationOptions Parse(string configuration, bool ignoreUnknown) =>
-        new ConfigurationOptions().DoParse(configuration, ignoreUnknown);
-
-    /// <summary>
     /// Create a copy of the configuration.
     /// </summary>
     public ConfigurationOptions Clone()
@@ -378,6 +314,8 @@ public sealed class ConfigurationOptions : ICloneable
 
         return clone;
     }
+
+    object ICloneable.Clone() => Clone();
 
     /// <summary>
     /// Apply settings to configure this instance of <see cref="ConfigurationOptions"/>, e.g. for a specific scenario.
@@ -444,6 +382,43 @@ public sealed class ConfigurationOptions : ICloneable
         }
     }
 
+    #endregion
+    #region Internal Methods
+
+    internal static bool TryParseProtocol(string? value, out Protocol protocol)
+    {
+        // accept raw integers too, but only trust them if we recognize them
+        // (note we need to do this before enums, because Enum.TryParse will
+        // accept integers as the raw value, which is not what we want here)
+        if (value is not null)
+        {
+            if (Format.TryParseInt32(value, out int i32))
+            {
+                switch (i32)
+                {
+                    case 2:
+                        protocol = Glide.Protocol.Resp2;
+                        return true;
+                    case 3:
+                        protocol = Glide.Protocol.Resp3;
+                        return true;
+                    default:
+                        break;
+                }
+            }
+            else if (Enum.TryParse(value, true, out protocol))
+            {
+                return true;
+            }
+        }
+
+        protocol = default;
+        return false;
+    }
+
+    #endregion
+    #region Private Methods
+
     private static void Append(StringBuilder sb, object value)
     {
         if (value == null) return;
@@ -470,6 +445,20 @@ public sealed class ConfigurationOptions : ICloneable
         }
     }
 
+    /// <summary>
+    /// Formats a ReadFrom struct to its string representation and appends it to the StringBuilder.
+    /// </summary>
+    /// <param name="sb">The StringBuilder to append to.</param>
+    /// <param name="readFromConfig">The ReadFrom configuration to format.</param>
+    private static void FormatReadFrom(StringBuilder sb, ReadFrom readFromConfig)
+    {
+        Append(sb, OptionKeys.ReadFrom, readFromConfig.Strategy.ToString());
+        if (!string.IsNullOrWhiteSpace(readFromConfig.Az))
+        {
+            Append(sb, OptionKeys.Az, readFromConfig.Az);
+        }
+    }
+
     private void Clear()
     {
         ClientName = User = Password = null;
@@ -482,8 +471,6 @@ public sealed class ConfigurationOptions : ICloneable
         _clientKey = null;
         EndPoints.Clear();
     }
-
-    object ICloneable.Clone() => Clone();
 
     private ConfigurationOptions DoParse(string configuration, bool ignoreUnknown = true)
     {
@@ -584,7 +571,7 @@ public sealed class ConfigurationOptions : ICloneable
         if (strategy.HasValue)
         {
             // Use ReadFrom constructors based on strategy type - the constructors contain the validation logic
-            return strategy.Value.IsAzReadFromStrategy()
+            return IsAzReadFromStrategy(strategy.Value)
                 ? new ReadFrom(strategy.Value, az!)
                 : new ReadFrom(strategy.Value);
         }
@@ -609,54 +596,82 @@ public sealed class ConfigurationOptions : ICloneable
         }
     }
 
-    /// <summary>
-    /// Formats a ReadFrom struct to its string representation and appends it to the StringBuilder.
-    /// </summary>
-    /// <param name="sb">The StringBuilder to append to.</param>
-    /// <param name="readFromConfig">The ReadFrom configuration to format.</param>
-    private static void FormatReadFrom(StringBuilder sb, ReadFrom readFromConfig)
+    #endregion
+    #region Nested Types
+
+    private static class OptionKeys
     {
-        Append(sb, OptionKeys.ReadFrom, readFromConfig.Strategy.ToString());
-        if (!string.IsNullOrWhiteSpace(readFromConfig.Az))
+        internal const string
+            AbortOnConnectFail = "abortConnect",
+            AllowAdmin = "allowAdmin",
+            ConnectTimeout = "connectTimeout",
+            DefaultDatabase = "defaultDatabase",
+            KeepAlive = "keepAlive",
+            ClientName = "name",
+            User = "user",
+            Password = "password",
+            Proxy = "proxy",
+            ResponseTimeout = "responseTimeout",
+            Ssl = "ssl",
+            Version = "version",
+            SetClientLibrary = "setlib",
+            Protocol = "protocol",
+            ReadFrom = "readFrom",
+            Az = "az"
+            ;
+
+        private static readonly Dictionary<string, string> normalizedOptions = new[]
         {
-            Append(sb, OptionKeys.Az, readFromConfig.Az);
+            AbortOnConnectFail,
+            AllowAdmin,
+            ClientName,
+            ConnectTimeout,
+            DefaultDatabase,
+            KeepAlive,
+            User,
+            Password,
+            Proxy,
+            ResponseTimeout,
+            Ssl,
+            Version,
+            SetClientLibrary,
+            Protocol,
+            ReadFrom,
+            Az
+        }
+            .ToDictionary(x => x, StringComparer.OrdinalIgnoreCase);
+
+        public static int ParseInt32(string key, string value, int minValue = int.MinValue, int maxValue = int.MaxValue)
+        {
+            if (!Format.TryParseInt32(value, out int tmp)) throw new ArgumentOutOfRangeException(key, $"Keyword '{key}' requires an integer value; the value '{value}' is not recognised.");
+            if (tmp < minValue) throw new ArgumentOutOfRangeException(key, $"Keyword '{key}' has a minimum value of '{minValue}'; the value '{tmp}' is not permitted.");
+            if (tmp > maxValue) throw new ArgumentOutOfRangeException(key, $"Keyword '{key}' has a maximum value of '{maxValue}'; the value '{tmp}' is not permitted.");
+            return tmp;
+        }
+
+        public static string TryNormalize(string value)
+        {
+            if (value != null && normalizedOptions.TryGetValue(value, out string? tmp))
+            {
+                return tmp ?? "";
+            }
+
+            return value ?? "";
+        }
+
+        internal static bool ParseBoolean(string key, string value)
+        {
+            if (!Format.TryParseBoolean(value, out bool tmp)) throw new ArgumentOutOfRangeException(key, $"Keyword '{key}' requires a boolean value; the value '{value}' is not recognised.");
+            return tmp;
+        }
+
+        internal static Protocol ParseProtocol(string key, string value)
+        {
+            if (TryParseProtocol(value, out Protocol protocol)) return protocol;
+            throw new ArgumentOutOfRangeException(key, $"Keyword '{key}' requires a Protocol value or a known protocol version number; the value '{value}' is not recognised.");
         }
     }
 
-    /// <summary>
-    /// Specify the connection protocol type.
-    /// </summary>
-    public Protocol? Protocol { get; set; }
-
-    internal static bool TryParseProtocol(string? value, out Protocol protocol)
-    {
-        // accept raw integers too, but only trust them if we recognize them
-        // (note we need to do this before enums, because Enum.TryParse will
-        // accept integers as the raw value, which is not what we want here)
-        if (value is not null)
-        {
-            if (Format.TryParseInt32(value, out int i32))
-            {
-                switch (i32)
-                {
-                    case 2:
-                        protocol = Glide.Protocol.Resp2;
-                        return true;
-                    case 3:
-                        protocol = Glide.Protocol.Resp3;
-                        return true;
-                    default:
-                        break;
-                }
-            }
-            else if (Enum.TryParse(value, true, out protocol))
-            {
-                return true;
-            }
-        }
-
-        protocol = default;
-        return false;
-    }
+    #endregion
 }
 #pragma warning restore IDE0011, IDE0046, IDE1006

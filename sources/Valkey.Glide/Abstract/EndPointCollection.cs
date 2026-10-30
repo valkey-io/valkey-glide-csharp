@@ -11,13 +11,6 @@ namespace Valkey.Glide;
 /// </summary>
 public sealed class EndPointCollection : Collection<EndPoint>, IEnumerable<EndPoint>
 {
-    private static class DefaultPorts
-    {
-        public static int Standard => 6379;
-        public static int Ssl => 6380;
-        public static int Sentinel => 26379;
-    }
-
     /// <summary>
     /// Create a new <see cref="EndPointCollection" />.
     /// </summary>
@@ -89,6 +82,57 @@ public sealed class EndPointCollection : Collection<EndPoint>, IEnumerable<EndPo
         return false;
     }
 
+    /// <inheritdoc cref="Collection{EndPoint}.GetEnumerator" />
+    public new IEnumerator<EndPoint> GetEnumerator()
+    {
+        // this does *not* need to handle all threading scenarios; but we do
+        // want it to at least allow overwrites of existing endpoints without
+        // breaking the enumerator; in particular, this avoids a problem where
+        // ResolveEndPointsAsync swaps the addresses on us
+        for (int i = 0; i < Count; i++)
+        {
+            yield return this[i];
+        }
+    }
+
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    IEnumerator<EndPoint> IEnumerable<EndPoint>.GetEnumerator() => GetEnumerator();
+
+    internal void SetDefaultPorts(bool ssl = false)
+    {
+        int defaultPort = ssl ? DefaultPorts.Ssl : DefaultPorts.Standard;
+
+        for (int i = 0; i < Count; i++)
+        {
+            switch (this[i])
+            {
+                case DnsEndPoint dns when dns.Port == 0:
+                    this[i] = new DnsEndPoint(dns.Host, defaultPort, dns.AddressFamily);
+                    break;
+                case IPEndPoint ip when ip.Port == 0:
+                    this[i] = new IPEndPoint(ip.Address, defaultPort);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    internal bool HasDnsEndPoints()
+    {
+        foreach (EndPoint endpoint in this)
+        {
+            if (endpoint is DnsEndPoint)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    internal EndPointCollection Clone() => [.. Items];
+
     /// <summary>
     /// See <see cref="Collection{T}.InsertItem(int, T)" />.
     /// </summary>
@@ -138,54 +182,10 @@ public sealed class EndPointCollection : Collection<EndPoint>, IEnumerable<EndPo
         base.SetItem(index, item);
     }
 
-    internal void SetDefaultPorts(bool ssl = false)
+    private static class DefaultPorts
     {
-        int defaultPort = ssl ? DefaultPorts.Ssl : DefaultPorts.Standard;
-
-        for (int i = 0; i < Count; i++)
-        {
-            switch (this[i])
-            {
-                case DnsEndPoint dns when dns.Port == 0:
-                    this[i] = new DnsEndPoint(dns.Host, defaultPort, dns.AddressFamily);
-                    break;
-                case IPEndPoint ip when ip.Port == 0:
-                    this[i] = new IPEndPoint(ip.Address, defaultPort);
-                    break;
-                default:
-                    break;
-            }
-        }
+        public static int Standard => 6379;
+        public static int Ssl => 6380;
+        public static int Sentinel => 26379;
     }
-
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-    IEnumerator<EndPoint> IEnumerable<EndPoint>.GetEnumerator() => GetEnumerator();
-
-    /// <inheritdoc cref="Collection{EndPoint}.GetEnumerator" />
-    public new IEnumerator<EndPoint> GetEnumerator()
-    {
-        // this does *not* need to handle all threading scenarios; but we do
-        // want it to at least allow overwrites of existing endpoints without
-        // breaking the enumerator; in particular, this avoids a problem where
-        // ResolveEndPointsAsync swaps the addresses on us
-        for (int i = 0; i < Count; i++)
-        {
-            yield return this[i];
-        }
-    }
-
-    internal bool HasDnsEndPoints()
-    {
-        foreach (EndPoint endpoint in this)
-        {
-            if (endpoint is DnsEndPoint)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    internal EndPointCollection Clone() => [.. Items];
 }

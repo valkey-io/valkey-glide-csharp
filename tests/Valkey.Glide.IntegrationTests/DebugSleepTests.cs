@@ -14,6 +14,11 @@ namespace Valkey.Glide.IntegrationTests;
 [CollectionDefinition(DisableParallelization = true)]
 public class DebugSleepTests
 {
+#pragma warning disable xUnit1047 // Avoid using TheoryDataRow arguments that might not be serializable
+    public static IEnumerable<TheoryDataRow<BaseClient, bool>> GetTestClientWithAtomic =>
+        TestConfiguration.TestClients.SelectMany(r => new TheoryDataRow<BaseClient, bool>[] { new(r.Data, true), new(r.Data, false) });
+#pragma warning restore xUnit1047 // Avoid using TheoryDataRow arguments that might not be serializable
+
     [Fact]
     public async Task ErrorIfTimedOut()
     {
@@ -22,11 +27,6 @@ public class DebugSleepTests
             client.CustomCommand(["debug", "sleep", "0.5"])
         );
     }
-
-#pragma warning disable xUnit1047 // Avoid using TheoryDataRow arguments that might not be serializable
-    public static IEnumerable<TheoryDataRow<BaseClient, bool>> GetTestClientWithAtomic =>
-        TestConfiguration.TestClients.SelectMany(r => new TheoryDataRow<BaseClient, bool>[] { new(r.Data, true), new(r.Data, false) });
-#pragma warning restore xUnit1047 // Avoid using TheoryDataRow arguments that might not be serializable
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(GetTestClientWithAtomic))]

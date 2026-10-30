@@ -9,8 +9,6 @@ public abstract class ConsoleCapturingTestBase : IDisposable
 {
     private readonly ConsoleOutputInterceptor _interceptor;
 
-    protected ITestOutputHelper Output { get; }
-
 #pragma warning disable IDE0290
     protected ConsoleCapturingTestBase(ITestOutputHelper output)
     {
@@ -18,6 +16,8 @@ public abstract class ConsoleCapturingTestBase : IDisposable
         _interceptor = new ConsoleOutputInterceptor(output);
     }
 #pragma warning restore IDE0290
+
+    protected ITestOutputHelper Output { get; }
 
     public void Dispose()
         => _interceptor.Dispose();

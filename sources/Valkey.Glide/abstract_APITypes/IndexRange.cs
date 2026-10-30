@@ -32,7 +32,7 @@ public sealed class IndexRange : Range
     public static readonly IndexRange LastToFirst = new(Last, First);
 
     #endregion
-    #region Fields
+    #region Private Fields
 
     private readonly long _start;
     private readonly long _stop;

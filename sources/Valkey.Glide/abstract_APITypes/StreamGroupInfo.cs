@@ -8,6 +8,19 @@ namespace Valkey.Glide;
 /// <seealso href="https://valkey.io/commands/xinfo-groups/"/>
 public readonly struct StreamGroupInfo
 {
+    #region Constructors
+
+    internal StreamGroupInfo(string name, int consumerCount, int pendingMessageCount, string? lastDeliveredId, long? entriesRead, long? lag)
+    {
+        Name = name;
+        ConsumerCount = consumerCount;
+        PendingMessageCount = pendingMessageCount;
+        LastDeliveredId = lastDeliveredId;
+        EntriesRead = entriesRead;
+        Lag = lag;
+    }
+
+    #endregion
     #region Public Properties
 
     /// <summary>
@@ -44,19 +57,6 @@ public readonly struct StreamGroupInfo
     /// </summary>
     /// <remarks>Since Valkey 7.0.0.</remarks>
     public long? Lag { get; }
-
-    #endregion
-    #region Constructors
-
-    internal StreamGroupInfo(string name, int consumerCount, int pendingMessageCount, string? lastDeliveredId, long? entriesRead, long? lag)
-    {
-        Name = name;
-        ConsumerCount = consumerCount;
-        PendingMessageCount = pendingMessageCount;
-        LastDeliveredId = lastDeliveredId;
-        EntriesRead = entriesRead;
-        Lag = lag;
-    }
 
     #endregion
 }

@@ -23,13 +23,13 @@ public sealed class ScoreBound
     public static readonly ScoreBound Max = new(double.PositiveInfinity, isExclusive: false);
 
     #endregion
-    #region Fields
+    #region Private Fields
 
     private readonly double _score;
     private readonly bool _isExclusive;
 
     #endregion
-    #region Constructors & Builders
+    #region Constructors
 
     private ScoreBound(double score, bool isExclusive)
     {
@@ -38,6 +38,30 @@ public sealed class ScoreBound
         // Infinity values are not inclusive.
         _isExclusive = isExclusive && !double.IsInfinity(_score);
     }
+
+    #endregion
+    #region Operators
+
+    /// <summary>
+    /// Implicitly converts a <see langword="double"/> to an inclusive <see cref="ScoreBound"/>.
+    /// </summary>
+    /// <param name="value">The value to convert.</param>
+    public static implicit operator ScoreBound(double value) => new(value, isExclusive: false);
+
+    /// <inheritdoc/>
+    public static bool operator <(ScoreBound left, ScoreBound right) => left.CompareTo(right) < 0;
+
+    /// <inheritdoc/>
+    public static bool operator <=(ScoreBound left, ScoreBound right) => left.CompareTo(right) <= 0;
+
+    /// <inheritdoc/>
+    public static bool operator >(ScoreBound left, ScoreBound right) => left.CompareTo(right) > 0;
+
+    /// <inheritdoc/>
+    public static bool operator >=(ScoreBound left, ScoreBound right) => left.CompareTo(right) >= 0;
+
+    #endregion
+    #region Public Methods
 
     /// <summary>
     /// Creates an inclusive score bound.
@@ -53,15 +77,6 @@ public sealed class ScoreBound
     /// <returns>An exclusive <see cref="ScoreBound"/>.</returns>
     public static ScoreBound Exclusive(double value) => new(value, isExclusive: true);
 
-    /// <summary>
-    /// Implicitly converts a <see langword="double"/> to an inclusive <see cref="ScoreBound"/>.
-    /// </summary>
-    /// <param name="value">The value to convert.</param>
-    public static implicit operator ScoreBound(double value) => new(value, isExclusive: false);
-
-    #endregion
-    #region Public Methods
-
     /// <inheritdoc/>
     public bool Equals(ScoreBound? other)
         => other is not null
@@ -76,18 +91,6 @@ public sealed class ScoreBound
 
     /// <inheritdoc/>
     public int CompareTo(ScoreBound? other) => other is null ? 1 : _score.CompareTo(other._score);
-
-    /// <inheritdoc/>
-    public static bool operator <(ScoreBound left, ScoreBound right) => left.CompareTo(right) < 0;
-
-    /// <inheritdoc/>
-    public static bool operator <=(ScoreBound left, ScoreBound right) => left.CompareTo(right) <= 0;
-
-    /// <inheritdoc/>
-    public static bool operator >(ScoreBound left, ScoreBound right) => left.CompareTo(right) > 0;
-
-    /// <inheritdoc/>
-    public static bool operator >=(ScoreBound left, ScoreBound right) => left.CompareTo(right) >= 0;
 
     #endregion
     #region Internal Methods

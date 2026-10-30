@@ -98,20 +98,6 @@ public class ServerManagementTests(ServerManagementFixture fixture) : IClassFixt
     }
 
     #endregion
-    #region Helpers
-
-    private Task WaitForSaveNotInProgressAsync()
-        => Polling.WaitForAsync(
-            async () =>
-            {
-                string? info = await fixture.Server.InfoRawAsync("persistence");
-                return info is not null
-                    && !info.Contains("rdb_bgsave_in_progress:1")
-                    && !info.Contains("aof_rewrite_in_progress:1");
-            },
-            "Timed out waiting for save to complete");
-
-    #endregion
     #region ReplicaOf Tests
 
     [Fact]
@@ -140,6 +126,9 @@ public class ServerManagementTests(ServerManagementFixture fixture) : IClassFixt
         await WaitForRoleAsync(server, "master");
     }
 
+    #endregion
+    #region Helpers
+
     private static Task WaitForRoleAsync(IServer server, string expectedRole)
         => Polling.WaitForAsync(
             async () =>
@@ -148,6 +137,17 @@ public class ServerManagementTests(ServerManagementFixture fixture) : IClassFixt
                 return info?.Contains($"role:{expectedRole}") == true;
             },
             $"Timed out waiting for role to become '{expectedRole}'");
+
+    private Task WaitForSaveNotInProgressAsync()
+        => Polling.WaitForAsync(
+            async () =>
+            {
+                string? info = await fixture.Server.InfoRawAsync("persistence");
+                return info is not null
+                    && !info.Contains("rdb_bgsave_in_progress:1")
+                    && !info.Contains("aof_rewrite_in_progress:1");
+            },
+            "Timed out waiting for save to complete");
 
     #endregion
 }
@@ -159,8 +159,6 @@ public class ServerManagementFixture : IDisposable
 {
     private readonly StandaloneServer _standaloneServer = new();
 
-    public IServer Server { get; }
-
     public ServerManagementFixture()
     {
         ConfigurationOptions config = new();
@@ -169,6 +167,8 @@ public class ServerManagementFixture : IDisposable
         ConnectionMultiplexer conn = ConnectionMultiplexer.Connect(config);
         Server = conn.GetServers().First();
     }
+
+    public IServer Server { get; }
 
     public void Dispose() => _standaloneServer.Dispose();
 }

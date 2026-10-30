@@ -23,7 +23,7 @@ public sealed class ScoreRange : Range
     public static readonly ScoreRange MaxToMin = new(ScoreBound.Max, ScoreBound.Min);
 
     #endregion
-    #region Fields
+    #region Private Fields
 
     private readonly ScoreBound _start;
     private readonly ScoreBound _stop;

@@ -8,6 +8,17 @@ namespace Valkey.Glide;
 /// <seealso href="https://valkey.io/commands/xinfo-consumers/"/>
 public readonly struct StreamConsumerInfo
 {
+    #region Constructors
+
+    internal StreamConsumerInfo(string name, int pendingMessageCount, TimeSpan idle, TimeSpan? inactive)
+    {
+        Name = name;
+        PendingMessageCount = pendingMessageCount;
+        Idle = idle;
+        Inactive = inactive;
+    }
+
+    #endregion
     #region Public Properties
 
     /// <summary>
@@ -40,17 +51,6 @@ public readonly struct StreamConsumerInfo
     /// The number of milliseconds that has passed since the consumer's last interaction (<c>idle</c>).
     /// </summary>
     public long IdleTimeInMilliseconds => (long)Idle.TotalMilliseconds;
-
-    #endregion
-    #region Constructors
-
-    internal StreamConsumerInfo(string name, int pendingMessageCount, TimeSpan idle, TimeSpan? inactive)
-    {
-        Name = name;
-        PendingMessageCount = pendingMessageCount;
-        Idle = idle;
-        Inactive = inactive;
-    }
 
     #endregion
 }

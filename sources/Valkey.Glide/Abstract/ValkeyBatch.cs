@@ -12,6 +12,8 @@ internal class ValkeyBatch(BaseClient client) : Database(false), IBatch
     protected readonly BaseClient _client = client;
     protected bool _isAtomic = false;
 
+    public void Execute() => ExecuteImpl().GetAwaiter().GetResult();
+
     internal override async Task<T> Command<R, T>(Cmd<R, T> command, Route? route = null)
     {
         int idx = _commands.Count;
@@ -50,6 +52,4 @@ internal class ValkeyBatch(BaseClient client) : Database(false), IBatch
         object?[]? res = await _client.Batch(b, false);
         _tcs.SetResult(res);
     }
-
-    public void Execute() => ExecuteImpl().GetAwaiter().GetResult();
 }

@@ -8,6 +8,27 @@ namespace Valkey.Glide;
 /// <seealso href="https://valkey.io/commands/xinfo-stream/"/>
 public readonly struct StreamGroupInfoFull
 {
+    #region Constructors
+
+    internal StreamGroupInfoFull(
+        string name,
+        ValkeyValue lastDeliveredId,
+        long? entriesRead,
+        long? lag,
+        long pelCount,
+        StreamPendingEntry[] pendingEntries,
+        StreamConsumerInfoFull[] consumers)
+    {
+        Name = name;
+        LastDeliveredId = lastDeliveredId;
+        EntriesRead = entriesRead;
+        Lag = lag;
+        PelCount = pelCount;
+        PendingEntries = pendingEntries;
+        Consumers = consumers;
+    }
+
+    #endregion
     #region Public Properties
 
     /// <summary>
@@ -48,27 +69,6 @@ public readonly struct StreamGroupInfoFull
     /// The consumers in the group (<c>consumers</c>).
     /// </summary>
     public StreamConsumerInfoFull[] Consumers { get; }
-
-    #endregion
-    #region Constructors
-
-    internal StreamGroupInfoFull(
-        string name,
-        ValkeyValue lastDeliveredId,
-        long? entriesRead,
-        long? lag,
-        long pelCount,
-        StreamPendingEntry[] pendingEntries,
-        StreamConsumerInfoFull[] consumers)
-    {
-        Name = name;
-        LastDeliveredId = lastDeliveredId;
-        EntriesRead = entriesRead;
-        Lag = lag;
-        PelCount = pelCount;
-        PendingEntries = pendingEntries;
-        Consumers = consumers;
-    }
 
     #endregion
 }

@@ -58,6 +58,9 @@ public class ScanOptions
         return [.. args];
     }
 
+    #endregion
+    #region Private Methods
+
     /// <summary>
     /// Converts the ValkeyType enum to a string.
     /// </summary>

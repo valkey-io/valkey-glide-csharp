@@ -8,6 +8,66 @@ namespace Valkey.Glide.ServerModules;
 
 public static partial class Ft
 {
+    #region Nested Enums
+
+    /// <summary>
+    /// Reducer functions for an aggregate command.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/ft.aggregate/">Valkey commands – FT.AGGREGATE</seealso>
+    public enum ReducerFunction
+    {
+        /// <summary>
+        /// Counts the number of records in each group (<c>COUNT</c>).
+        /// </summary>
+        Count,
+
+        /// <summary>
+        /// Counts the number of distinct values of an expression (<c>COUNT_DISTINCT</c>).
+        /// </summary>
+        CountDistinct,
+
+        /// <summary>
+        /// Sums the values of an expression (<c>SUM</c>).
+        /// </summary>
+        Sum,
+
+        /// <summary>
+        /// Returns the minimum value of an expression (<c>MIN</c>).
+        /// </summary>
+        Min,
+
+        /// <summary>
+        /// Returns the maximum value of an expression (<c>MAX</c>).
+        /// </summary>
+        Max,
+
+        /// <summary>
+        /// Returns the average value of an expression (<c>AVG</c>).
+        /// </summary>
+        Avg,
+
+        /// <summary>
+        /// Returns the standard deviation of the values of an expression (<c>STDDEV</c>).
+        /// </summary>
+        Stddev,
+    }
+
+    #endregion
+    #region Nested Interfaces
+
+    /// <summary>
+    /// Base interface for all aggregate command clauses.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/ft.aggregate/">Valkey commands – FT.AGGREGATE</seealso>
+    public interface IAggregateClause
+    {
+        /// <summary>
+        /// Converts to command arguments.
+        /// </summary>
+        internal GlideString[] ToArgs();
+    }
+
+    #endregion
     #region Public Methods
 
     /// <summary>
@@ -78,19 +138,23 @@ public static partial class Ft
         => client.Command(Request.FtAggregate(index, query, options));
 
     #endregion
-    #region Nested Types
+    #region Private Methods
 
-    /// <summary>
-    /// Base interface for all aggregate command clauses.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/ft.aggregate/">Valkey commands – FT.AGGREGATE</seealso>
-    public interface IAggregateClause
-    {
-        /// <summary>
-        /// Converts to command arguments.
-        /// </summary>
-        internal GlideString[] ToArgs();
-    }
+    private static GlideString ToLiteral(ReducerFunction function)
+        => function switch
+        {
+            ReducerFunction.Count => ValkeyLiterals.COUNT,
+            ReducerFunction.CountDistinct => ValkeyLiterals.COUNT_DISTINCT,
+            ReducerFunction.Sum => ValkeyLiterals.SUM,
+            ReducerFunction.Min => ValkeyLiterals.MIN,
+            ReducerFunction.Max => ValkeyLiterals.MAX,
+            ReducerFunction.Avg => ValkeyLiterals.AVG,
+            ReducerFunction.Stddev => ValkeyLiterals.STDDEV,
+            _ => throw new ArgumentOutOfRangeException(nameof(function)),
+        };
+
+    #endregion
+    #region Nested Classes
 
     /// <summary>
     /// Limit results for an aggregate command (<c>LIMIT</c>).
@@ -191,48 +255,6 @@ public static partial class Ft
 
             return [.. args];
         }
-    }
-
-    /// <summary>
-    /// Reducer functions for an aggregate command.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/ft.aggregate/">Valkey commands – FT.AGGREGATE</seealso>
-    public enum ReducerFunction
-    {
-        /// <summary>
-        /// Counts the number of records in each group (<c>COUNT</c>).
-        /// </summary>
-        Count,
-
-        /// <summary>
-        /// Counts the number of distinct values of an expression (<c>COUNT_DISTINCT</c>).
-        /// </summary>
-        CountDistinct,
-
-        /// <summary>
-        /// Sums the values of an expression (<c>SUM</c>).
-        /// </summary>
-        Sum,
-
-        /// <summary>
-        /// Returns the minimum value of an expression (<c>MIN</c>).
-        /// </summary>
-        Min,
-
-        /// <summary>
-        /// Returns the maximum value of an expression (<c>MAX</c>).
-        /// </summary>
-        Max,
-
-        /// <summary>
-        /// Returns the average value of an expression (<c>AVG</c>).
-        /// </summary>
-        Avg,
-
-        /// <summary>
-        /// Returns the standard deviation of the values of an expression (<c>STDDEV</c>).
-        /// </summary>
-        Stddev,
     }
 
     /// <summary>
@@ -415,22 +437,6 @@ public static partial class Ft
 
         #endregion
     }
-
-    #endregion
-    #region Private Methods
-
-    private static GlideString ToLiteral(ReducerFunction function)
-        => function switch
-        {
-            ReducerFunction.Count => ValkeyLiterals.COUNT,
-            ReducerFunction.CountDistinct => ValkeyLiterals.COUNT_DISTINCT,
-            ReducerFunction.Sum => ValkeyLiterals.SUM,
-            ReducerFunction.Min => ValkeyLiterals.MIN,
-            ReducerFunction.Max => ValkeyLiterals.MAX,
-            ReducerFunction.Avg => ValkeyLiterals.AVG,
-            ReducerFunction.Stddev => ValkeyLiterals.STDDEV,
-            _ => throw new ArgumentOutOfRangeException(nameof(function)),
-        };
 
     #endregion
 }

@@ -20,6 +20,35 @@ namespace Valkey.Glide;
 /// </summary>
 public abstract class Route
 {
+    /// <inheritdoc cref="RandomRoute"/>
+    public static readonly RandomRoute Random = new();
+
+    /// <inheritdoc cref="AllNodesRoute"/>
+    public static readonly AllNodesRoute AllNodes = new();
+
+    /// <inheritdoc cref="AllPrimariesRoute"/>
+    public static readonly AllPrimariesRoute AllPrimaries = new();
+
+    internal Route() { }
+
+    /// <summary>
+    /// Defines type of the node being addressed.
+    /// </summary>
+    public enum SlotType : uint
+    {
+        /// <summary>
+        /// Address a primary node.
+        /// </summary>
+        Primary,
+
+        /// <summary>
+        /// Address a replica node.
+        /// </summary>
+        Replica,
+    }
+
+    internal abstract FFI.Route ToFfi();
+
     /// <summary>
     /// Base class for routes that target a single node.
     /// </summary>
@@ -54,31 +83,6 @@ public abstract class Route
     public sealed class AllPrimariesRoute : MultiNodeRoute
     {
         internal override FFI.Route ToFfi() => new(RouteType.AllPrimaries);
-    }
-
-    /// <inheritdoc cref="RandomRoute"/>
-    public static readonly RandomRoute Random = new();
-
-    /// <inheritdoc cref="AllNodesRoute"/>
-    public static readonly AllNodesRoute AllNodes = new();
-
-    /// <inheritdoc cref="AllPrimariesRoute"/>
-    public static readonly AllPrimariesRoute AllPrimaries = new();
-
-    /// <summary>
-    /// Defines type of the node being addressed.
-    /// </summary>
-    public enum SlotType : uint
-    {
-        /// <summary>
-        /// Address a primary node.
-        /// </summary>
-        Primary,
-
-        /// <summary>
-        /// Address a replica node.
-        /// </summary>
-        Replica,
     }
 
     /// <summary>
@@ -140,18 +144,6 @@ public abstract class Route
         public readonly int Port;
 
         /// <summary>
-        /// Create a route using hostname/address and port.<br />
-        /// <paramref name="host"/> is the preferred endpoint as shown in the output of the <c>CLUSTER SLOTS</c> command.
-        /// </summary>
-        /// <param name="host">A hostname or IP address.</param>
-        /// <param name="port">A port.</param>
-        public ByAddressRoute(string host, int port)
-        {
-            Host = host;
-            Port = port;
-        }
-
-        /// <summary>
         /// Create a route using address string formatted as <c>"address:port"</c>.
         /// <paramref name="host"/> is the preferred endpoint as shown in the output of the <c>CLUSTER SLOTS</c> command.
         /// </summary>
@@ -169,10 +161,18 @@ public abstract class Route
             Port = int.Parse(parts[1]);
         }
 
+        /// <summary>
+        /// Create a route using hostname/address and port.<br />
+        /// <paramref name="host"/> is the preferred endpoint as shown in the output of the <c>CLUSTER SLOTS</c> command.
+        /// </summary>
+        /// <param name="host">A hostname or IP address.</param>
+        /// <param name="port">A port.</param>
+        public ByAddressRoute(string host, int port)
+        {
+            Host = host;
+            Port = port;
+        }
+
         internal override FFI.Route ToFfi() => new(RouteType.ByAddress, address: (Host, Port));
     }
-
-    internal Route() { }
-
-    internal abstract FFI.Route ToFfi();
 }

@@ -8,6 +8,17 @@ namespace Valkey.Glide;
 /// <seealso href="https://valkey.io/commands/xpending/"/>
 public readonly struct StreamPendingMessageInfo
 {
+    #region Constructors
+
+    internal StreamPendingMessageInfo(ValkeyValue messageId, ValkeyValue consumerName, TimeSpan idle, int deliveryCount)
+    {
+        MessageId = messageId;
+        ConsumerName = consumerName;
+        Idle = idle;
+        DeliveryCount = deliveryCount;
+    }
+
+    #endregion
     #region Public Properties
 
     /// <summary>
@@ -35,17 +46,6 @@ public readonly struct StreamPendingMessageInfo
     /// The number of milliseconds that has passed since the message was last delivered to a consumer.
     /// </summary>
     public long IdleTimeInMilliseconds => (long)Idle.TotalMilliseconds;
-
-    #endregion
-    #region Constructors
-
-    internal StreamPendingMessageInfo(ValkeyValue messageId, ValkeyValue consumerName, TimeSpan idle, int deliveryCount)
-    {
-        MessageId = messageId;
-        ConsumerName = consumerName;
-        Idle = idle;
-        DeliveryCount = deliveryCount;
-    }
 
     #endregion
 }

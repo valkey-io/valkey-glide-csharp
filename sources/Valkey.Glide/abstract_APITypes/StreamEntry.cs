@@ -13,15 +13,12 @@ namespace Valkey.Glide;
 /// <param name="values">The values contained within the message.</param>
 public readonly struct StreamEntry(ValkeyValue id, NameValueEntry[] values)
 {
-    #region Constants
+    #region Public Properties
 
     /// <summary>
     /// A null stream entry.
     /// </summary>
     public static StreamEntry Null { get; } = new StreamEntry(ValkeyValue.Null, []);
-
-    #endregion
-    #region Public Properties
 
     /// <summary>
     /// The ID assigned to the message.
@@ -32,6 +29,12 @@ public readonly struct StreamEntry(ValkeyValue id, NameValueEntry[] values)
     /// The values contained within the message.
     /// </summary>
     public NameValueEntry[] Values { get; } = values;
+
+    /// <summary>
+    /// Indicates that the entry is null.
+    /// </summary>
+    public bool IsNull
+        => Id == ValkeyValue.Null && Values == Array.Empty<NameValueEntry>();
 
     /// <summary>
     /// Search for a specific field by name, returning the value.
@@ -56,12 +59,6 @@ public readonly struct StreamEntry(ValkeyValue id, NameValueEntry[] values)
             return ValkeyValue.Null;
         }
     }
-
-    /// <summary>
-    /// Indicates that the entry is null.
-    /// </summary>
-    public bool IsNull
-        => Id == ValkeyValue.Null && Values == Array.Empty<NameValueEntry>();
 
     #endregion
 }

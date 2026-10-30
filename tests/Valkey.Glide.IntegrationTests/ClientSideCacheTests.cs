@@ -11,14 +11,6 @@ namespace Valkey.Glide.IntegrationTests;
 /// </summary>
 public class ClientSideCacheTests
 {
-    #region Helpers
-
-    private static async Task<BaseClient> CreateClientWithCache(ClientSideCacheConfig cache, bool clusterMode)
-        => clusterMode
-            ? await GlideClusterClient.CreateClient(TestConfiguration.DefaultClusterClientConfig().WithClientSideCache(cache).Build())
-            : await GlideClient.CreateClient(TestConfiguration.DefaultClientConfig().WithClientSideCache(cache).Build());
-
-    #endregion
     #region Basic Cache Hit With Metrics
 
     [Theory]
@@ -397,6 +389,14 @@ public class ClientSideCacheTests
             async () => await clientA.GetCacheEntryCountAsync() == 0,
             "Cache entry should be invalidated by server notification");
     }
+
+    #endregion
+    #region Helpers
+
+    private static async Task<BaseClient> CreateClientWithCache(ClientSideCacheConfig cache, bool clusterMode)
+        => clusterMode
+            ? await GlideClusterClient.CreateClient(TestConfiguration.DefaultClusterClientConfig().WithClientSideCache(cache).Build())
+            : await GlideClient.CreateClient(TestConfiguration.DefaultClientConfig().WithClientSideCache(cache).Build());
 
     #endregion
 }
