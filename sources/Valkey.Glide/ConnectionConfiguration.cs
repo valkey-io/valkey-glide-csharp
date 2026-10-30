@@ -155,6 +155,7 @@ public abstract class ConnectionConfiguration
         /// </summary>
         public uint ExponentBase = exponentBase;
 
+        // TODO #246: Remove this suppression once RetryStrategy is separated from its FFI struct.
 #pragma warning disable SA1202 // Field order must match the native layout
         [MarshalAs(UnmanagedType.U1)]
         internal bool HasJitterPercent = jitterPercent is not null;
