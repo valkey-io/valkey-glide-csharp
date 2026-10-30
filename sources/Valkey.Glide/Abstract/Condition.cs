@@ -694,17 +694,3 @@ public abstract class Condition
 #pragma warning restore IDE0022 // Use expression body for method
 #pragma warning restore IDE0047 // Remove unnecessary parentheses
 }
-
-/// <summary>
-/// Indicates the status of a condition as part of a transaction.
-/// </summary>
-/// <param name="condition">The condition to track.</param>
-public sealed class ConditionResult(Condition condition)
-{
-    internal readonly Condition Condition = condition;
-
-    /// <summary>
-    /// Indicates whether the condition was satisfied.
-    /// </summary>
-    public bool WasSatisfied { internal set; get; }
-}

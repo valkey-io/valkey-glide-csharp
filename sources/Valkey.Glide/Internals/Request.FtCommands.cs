@@ -46,7 +46,7 @@ internal static partial class Request
 
         List<GlideString> args = [
             ValkeyLiterals.ON,
-            options.DataType.ToLiteral()];
+            .. options.DataType.ToArgs()];
 
         var prefixes = options.Prefixes;
         if (prefixes.Any())

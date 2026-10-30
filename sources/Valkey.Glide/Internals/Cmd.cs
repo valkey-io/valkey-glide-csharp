@@ -20,37 +20,19 @@ internal interface ICmd
     Func<object?, object?> GetConverter();
 }
 
-internal static class CmdExtensions
+internal class Cmd<R, T>(
+    RequestType request,
+    GlideString[] args,
+    bool isNullable,
+    Func<R, T> converter,
+    bool allowConverterToHandleNull = false) : ICmd
 {
-    /// <summary>
-    /// Convert a command that returns an array to one which returns only its first element.
-    /// Used to build single-field variants of multi-field commands.
-    /// </summary>
-    /// <typeparam name="R">The raw response type.</typeparam>
-    /// <typeparam name="T">The converted element type.</typeparam>
-    /// <param name="cmd">The multi-field command to convert.</param>
-    public static Cmd<R, T> ToFirstValue<R, T>(this Cmd<R, T[]> cmd)
-        => new(cmd.Request, cmd.ArgsArray.Args, cmd.IsNullable, response => cmd.Converter(response)[0], cmd.AllowConverterToHandleNull);
-}
+    public readonly bool IsNullable = isNullable;
+    public readonly bool AllowConverterToHandleNull = allowConverterToHandleNull;
+    public readonly Func<R, T> Converter = converter;
+    public readonly RequestType Request = request;
+    public readonly GlideString[] Args = args;
 
-internal class Cmd<R, T> : ICmd
-{
-    public readonly bool IsNullable;
-    public readonly bool AllowConverterToHandleNull;
-    public readonly Func<R, T> Converter;
-    public readonly RequestType Request;
-    public readonly ArgsArray ArgsArray;
-
-    public Cmd(RequestType request, GlideString[] args, bool isNullable, Func<R, T> converter, bool allowConverterToHandleNull = false)
-    {
-        Request = request;
-        ArgsArray = new() { Args = args };
-        IsNullable = isNullable;
-        AllowConverterToHandleNull = allowConverterToHandleNull;
-        Converter = converter;
-    }
-
-#pragma warning disable IDE0046 // Convert to conditional expression
     public Func<object?, object?> GetConverter() => value =>
     {
         if (value is null)
@@ -79,17 +61,18 @@ internal class Cmd<R, T> : ICmd
 
         return Converter((R)value!);
     };
-#pragma warning restore IDE0046 // Convert to conditional expression
 
-    public Cmd ToFfi() => new(Request, ArgsArray.Args);
+    public Cmd ToFfi()
+        => new(Request, Args);
 
-    public new string ToString() => $"{Request} [{string.Join(' ', ArgsArray.Args?.ToStrings() ?? [])}]";
+    public new string ToString()
+        => $"{Request} [{string.Join(' ', Args?.ToStrings() ?? [])}]";
 
     /// <summary>
     /// Convert a command to one which handles a multi-node cluster value.
     /// </summary>
     public Cmd<Dictionary<GlideString, object>, Dictionary<string, T>> ToMultiNodeValue()
-        => new(Request, ArgsArray.Args, IsNullable, map => ResponseConverters.HandleMultiNodeValue(map, Converter));
+        => new(Request, Args, IsNullable, map => ResponseConverters.HandleMultiNodeValue(map, Converter));
 
     /// <summary>
     /// Convert a command to one which handles a <see cref="ClusterValue{T}" />.
@@ -97,7 +80,7 @@ internal class Cmd<R, T> : ICmd
     public Cmd<object, ClusterValue<T>> ToClusterValue()
         => new(
             Request,
-            ArgsArray.Args,
+            Args,
             IsNullable,
             value => value is Dictionary<GlideString, object> dict
                 ? ClusterValue<T>.OfMultiValue(dict.ConvertValues(Converter))
@@ -112,49 +95,6 @@ internal class Cmd<R, T> : ICmd
     /// <param name="route">The route for the command.</param>
     public Cmd<object, ClusterValue<T>> ToClusterValue(Route route)
         => route is Route.SingleNodeRoute
-            ? new(Request, ArgsArray.Args, IsNullable, value => ClusterValue<T>.OfSingleValue(Converter((R)value)), AllowConverterToHandleNull)
+            ? new(Request, Args, IsNullable, value => ClusterValue<T>.OfSingleValue(Converter((R)value)), AllowConverterToHandleNull)
             : ToClusterValue();
-
-    /// <summary>
-    /// Get full command line including command name.
-    /// </summary>
-    public string[] GetArgs() => Request == RequestType.CustomCommand
-        ? ArgsArray.Args.ToStrings()
-        : [.. GetCommandParts(Request).Concat(ArgsArray.Args.ToStrings())];
-
-#pragma warning disable IDE0072 // Populate switch
-    private static string[] GetCommandParts(RequestType requestType) => requestType switch
-    {
-        RequestType.Command_ => ["COMMAND"],
-        RequestType.FtAggregate => ["FT.AGGREGATE"],
-        RequestType.FtCreate => ["FT.CREATE"],
-        RequestType.FtDropIndex => ["FT.DROPINDEX"],
-        RequestType.FtInfo => ["FT.INFO"],
-        RequestType.FtList => ["FT._LIST"],
-        RequestType.FtSearch => ["FT.SEARCH"],
-        RequestType.GetSubscriptions => ["GET_SUBSCRIPTIONS"],
-        RequestType.LatencyHistory => ["LATENCY", "HISTORY"],
-        RequestType.LatencyLatest => ["LATENCY", "LATEST"],
-        RequestType.LatencyReset => ["LATENCY", "RESET"],
-        RequestType.MemoryDoctor => ["MEMORY", "DOCTOR"],
-        RequestType.MemoryMallocStats => ["MEMORY", "MALLOC-STATS"],
-        RequestType.MemoryPurge => ["MEMORY", "PURGE"],
-        RequestType.MemoryStats => ["MEMORY", "STATS"],
-        RequestType.ObjectEncoding => ["OBJECT", "ENCODING"],
-        RequestType.ObjectFreq => ["OBJECT", "FREQ"],
-        RequestType.ObjectIdleTime => ["OBJECT", "IDLETIME"],
-        RequestType.ObjectRefCount => ["OBJECT", "REFCOUNT"],
-        RequestType.PubSubChannels => ["PUBSUB", "CHANNELS"],
-        RequestType.PubSubNumPat => ["PUBSUB", "NUMPAT"],
-        RequestType.PubSubNumSub => ["PUBSUB", "NUMSUB"],
-        RequestType.PubSubShardChannels => ["PUBSUB", "SHARDCHANNELS"],
-        RequestType.PubSubShardNumSub => ["PUBSUB", "SHARDNUMSUB"],
-        _ => [requestType.ToString().ToUpper()]
-    };
-#pragma warning restore IDE0072 // Populate switch
-}
-
-internal record ArgsArray
-{
-    public GlideString[] Args = [];
 }

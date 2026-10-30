@@ -18,6 +18,16 @@ internal static partial class Request
         => new(RequestType.CustomCommand, args, true, converter);
 
     /// <summary>
+    /// Convert a command that returns an array to one which returns only its first element.
+    /// Used to build single-field variants of multi-field commands.
+    /// </summary>
+    /// <typeparam name="R">The raw response type.</typeparam>
+    /// <typeparam name="T">The converted element type.</typeparam>
+    /// <param name="cmd">The multi-field command to convert.</param>
+    public static Cmd<R, T> ToFirstValue<R, T>(this Cmd<R, T[]> cmd)
+        => new(cmd.Request, cmd.Args, cmd.IsNullable, response => cmd.Converter(response)[0], cmd.AllowConverterToHandleNull);
+
+    /// <summary>
     /// Create a Cmd which does not need type conversion
     /// </summary>
     /// <typeparam name="T">The command response type.</typeparam>
