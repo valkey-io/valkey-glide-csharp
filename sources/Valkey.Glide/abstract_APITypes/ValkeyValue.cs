@@ -29,6 +29,12 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
 
     private static readonly object[] CommonInt32 = [.. Enumerable.Range(-1, 22).Select(i => (object)i)]; // [-1,20] = 22 values
 
+    // Boxed values returned by Box().
+    private static readonly object BoxedDoubleNaN = double.NaN;
+    private static readonly object BoxedDoublePosInf = double.PositiveInfinity;
+    private static readonly object BoxedDoubleNegInf = double.NegativeInfinity;
+    private static readonly object BoxedEmptyString = new ValkeyValue(0, default, Sentinel_Raw); // Must be initialized after Sentinel_Raw
+
     private static readonly FieldInfo?
         MemoryStreamOrigin = typeof(MemoryStream).GetField("_origin", BindingFlags.NonPublic | BindingFlags.Instance),
         MemoryStreamBuffer = typeof(MemoryStream).GetField("_buffer", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -82,12 +88,6 @@ public readonly struct ValkeyValue : IEquatable<ValkeyValue>, IComparable<Valkey
     /// Represents the string <c>""</c>.
     /// </summary>
     public static ValkeyValue EmptyString { get; } = new ValkeyValue(0, default, Sentinel_Raw);
-
-    // note: it is *really important* that this BoxedEmptyString assignment happens *after* the EmptyString initializer above!
-#pragma warning disable SA1201 // Must be initialized after EmptyString (static initializers run in textual order)
-    private static readonly object BoxedDoubleNaN = double.NaN, BoxedDoublePosInf = double.PositiveInfinity, BoxedDoubleNegInf = double.NegativeInfinity,
-        BoxedEmptyString = EmptyString;
-#pragma warning restore SA1201
 
     /// <summary>
     /// A null value.
