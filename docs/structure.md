@@ -31,6 +31,13 @@ Members should be ordered first by kind, next by access level, and finally by mo
 This is enforced automatically by [StyleCop.Analyzers](https://github.com/DotNetAnalyzers/StyleCopAnalyzers) rules.
 Within these groups, order methods following the [Lists](#lists) guidelines.
 
+<!-- TODO #246: Remove this note once RetryStrategy is separated from its FFI struct. -->
+> [!NOTE]
+> `RetryStrategy` currently suppresses [SA1202](https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1202.md)
+> because its fields must match the field order of the glide-core FFI struct, which requires an internal
+> field between public fields. Do not reorder these fields. This will be resolved by separating the public
+> API type from its FFI struct ([#246](https://github.com/valkey-io/valkey-glide-csharp/issues/246)).
+
 ## Regions
 
 Use region directives (`#region`) to make types easier to read and maintain by breaking them into manageable sections.
