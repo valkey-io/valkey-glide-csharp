@@ -11,7 +11,7 @@ public enum CompressionBackend : uint
     /// <summary>
     /// Zstandard (zstd) compression backend.
     /// </summary>
-    /// <seealso href="https://facebook.github.io/zstd/"/>
+    /// <seealso href="https://meta.github.io/zstd/"/>
     Zstd = 0,
 
     /// <summary>
