@@ -478,6 +478,7 @@ pub(crate) unsafe fn create_connection_request(
         // -----------------------------------
         tcp_nodelay: false, // TODO #490: Expose TCP_NODELAY.
         recovery_requests_queue_size: None,
+        rdma: glide_core::rdma::RdmaSetting::Absent,
     })
 }
 
