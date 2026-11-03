@@ -8,14 +8,6 @@ namespace Valkey.Glide.Internals;
 
 internal static class ResponseHandler
 {
-    [StructLayout(LayoutKind.Sequential)]
-    private struct GlideValue
-    {
-        public ValueType Type;
-        public nuint Value;
-        public uint Size;
-    }
-
     public enum ValueType : int
     {
         Null = 0,
@@ -83,4 +75,12 @@ internal static class ResponseHandler
         ValueType.Error => new RequestException(CreateString(value)!),
         _ => throw new NotImplementedException(),
     };
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct GlideValue
+    {
+        public ValueType Type;
+        public nuint Value;
+        public uint Size;
+    }
 }

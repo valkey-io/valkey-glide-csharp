@@ -7,6 +7,12 @@ namespace Valkey.Glide;
 /// </summary>
 public readonly struct ListPopResult
 {
+    internal ListPopResult(ValkeyKey key, ValkeyValue[] values)
+    {
+        Key = key;
+        Values = values;
+    }
+
     /// <summary>
     /// A null ListPopResult, indicating no results.
     /// </summary>
@@ -27,10 +33,4 @@ public readonly struct ListPopResult
     /// The values from the list.
     /// </summary>
     public ValkeyValue[] Values { get; }
-
-    internal ListPopResult(ValkeyKey key, ValkeyValue[] values)
-    {
-        Key = key;
-        Values = values;
-    }
 }

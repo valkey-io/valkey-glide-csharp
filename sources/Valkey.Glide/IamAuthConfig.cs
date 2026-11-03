@@ -13,6 +13,31 @@ public sealed class IamAuthConfig : IDisposable
     private bool _disposed;
 
     #endregion
+    #region Constructors
+
+    /// <summary>
+    /// Creates a new <see cref="IamAuthConfig"/> instance.
+    /// </summary>
+    /// <param name="clusterName"><inheritdoc cref="ClusterName" path="/summary" /></param>
+    /// <param name="serviceType"><inheritdoc cref="ServiceType" path="/summary" /></param>
+    /// <param name="region"><inheritdoc cref="Region" path="/summary" /></param>
+    /// <param name="refreshIntervalSeconds"><inheritdoc cref="RefreshIntervalSeconds" path="/summary" /></param>
+    public IamAuthConfig(
+        string clusterName,
+        ServiceType serviceType,
+        string region,
+        uint? refreshIntervalSeconds = null)
+    {
+        ArgumentNullException.ThrowIfNull(clusterName, nameof(clusterName));
+        ArgumentNullException.ThrowIfNull(region, nameof(region));
+
+        ClusterName = clusterName;
+        ServiceType = serviceType;
+        Region = region;
+        RefreshIntervalSeconds = refreshIntervalSeconds;
+    }
+
+    #endregion
     #region Public Properties
 
     /// <summary>
@@ -45,31 +70,6 @@ public sealed class IamAuthConfig : IDisposable
     {
         get { ThrowIfDisposed(); return field; }
         private set;
-    }
-
-    #endregion
-    #region Constructors & Builders
-
-    /// <summary>
-    /// Creates a new <see cref="IamAuthConfig"/> instance.
-    /// </summary>
-    /// <param name="clusterName"><inheritdoc cref="ClusterName" path="/summary" /></param>
-    /// <param name="serviceType"><inheritdoc cref="ServiceType" path="/summary" /></param>
-    /// <param name="region"><inheritdoc cref="Region" path="/summary" /></param>
-    /// <param name="refreshIntervalSeconds"><inheritdoc cref="RefreshIntervalSeconds" path="/summary" /></param>
-    public IamAuthConfig(
-        string clusterName,
-        ServiceType serviceType,
-        string region,
-        uint? refreshIntervalSeconds = null)
-    {
-        ArgumentNullException.ThrowIfNull(clusterName, nameof(clusterName));
-        ArgumentNullException.ThrowIfNull(region, nameof(region));
-
-        ClusterName = clusterName;
-        ServiceType = serviceType;
-        Region = region;
-        RefreshIntervalSeconds = refreshIntervalSeconds;
     }
 
     #endregion

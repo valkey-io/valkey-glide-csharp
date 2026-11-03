@@ -25,8 +25,6 @@ namespace Valkey.Glide.IntegrationTests.StackExchange;
 [CollectionDefinition(DisableParallelization = true)]
 public class PubSubCommandTests(TestConfiguration config)
 {
-    public TestConfiguration Config { get; } = config;
-
     #region Constants
 
     private static readonly ValkeyValue Message1 = "message1";
@@ -34,6 +32,11 @@ public class PubSubCommandTests(TestConfiguration config)
 
     private static readonly TimeSpan AssertRetryInterval = TimeSpan.FromMilliseconds(100);
     private static readonly TimeSpan AssertTimeout = TimeSpan.FromSeconds(5);
+
+    #endregion
+    #region Properties
+
+    public TestConfiguration Config { get; } = config;
 
     #endregion
     #region PublishAsync

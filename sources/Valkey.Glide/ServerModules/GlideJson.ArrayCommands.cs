@@ -36,13 +36,6 @@ public static partial class GlideJson
         return ConvertToNullableLongArrayNonNull(result);
     }
 
-    private static GlideString[] BuildArrAppendArgs(GlideString key, GlideString path, GlideString[] values)
-    {
-        List<GlideString> args = [JsonArrAppend, key, path];
-        args.AddRange(values);
-        return [.. args];
-    }
-
     #endregion
     #region JSON.ARRINSERT
 
@@ -72,13 +65,6 @@ public static partial class GlideJson
         GlideString[] args = BuildArrInsertArgs(ToGlideString(key), ToGlideString(path), index, [.. values.Select(v => ToGlideString(v))]);
         object? result = await ExecuteCommandAsync(client, args);
         return ConvertToNullableLongArrayNonNull(result);
-    }
-
-    private static GlideString[] BuildArrInsertArgs(GlideString key, GlideString path, long index, GlideString[] values)
-    {
-        List<GlideString> args = [JsonArrInsert, key, path, index.ToString()];
-        args.AddRange(values);
-        return [.. args];
     }
 
     #endregion
@@ -140,15 +126,28 @@ public static partial class GlideJson
         return ConvertToNullableLongArray(result);
     }
 
-    private static GlideString[] BuildArrIndexArgs(GlideString key, GlideString path, GlideString value, ArrIndexRange range)
-    {
-        List<GlideString> args = [JsonArrIndex, key, path, value];
-        args.AddRange(range.ToArgs());
-        return [.. args];
-    }
-
     #endregion
     #region JSON.ARRLEN
+
+    /// <summary>
+    /// Gets the length of the array at the root path in the JSON document stored at the key.
+    /// </summary>
+    /// <param name="client">The Glide client to use for the command.</param>
+    /// <param name="key">The key where the JSON document is stored.</param>
+    /// <returns>The array length at the root path, or <see langword="null"/> if the key does not exist or root is not an array.</returns>
+    /// <seealso href="https://valkey.io/commands/json.arrlen/">Valkey commands – JSON.ARRLEN</seealso>
+    /// <example>
+    /// <code>
+    /// await GlideJson.SetAsync(client, "mykey", "$", "[1,2,3]");
+    /// var length = await GlideJson.ArrLenAsync(client, "mykey");  // 3
+    /// </code>
+    /// </example>
+    public static async Task<long?> ArrLenAsync(BaseClient client, ValkeyKey key)
+    {
+        GlideString[] args = [JsonArrLen, ToGlideString(key)];
+        object? result = await ExecuteCommandAsync(client, args);
+        return result is null ? null : (long)result;
+    }
 
     /// <summary>
     /// Gets the length of the array at the specified path in the JSON document stored at the key.
@@ -178,28 +177,28 @@ public static partial class GlideJson
         return ConvertToNullableLongArray(result);
     }
 
+    #endregion
+    #region JSON.ARRPOP
+
     /// <summary>
-    /// Gets the length of the array at the root path in the JSON document stored at the key.
+    /// Pops the last element from the array at the root path in the JSON document stored at the key.
     /// </summary>
     /// <param name="client">The Glide client to use for the command.</param>
     /// <param name="key">The key where the JSON document is stored.</param>
-    /// <returns>The array length at the root path, or <see langword="null"/> if the key does not exist or root is not an array.</returns>
-    /// <seealso href="https://valkey.io/commands/json.arrlen/">Valkey commands – JSON.ARRLEN</seealso>
+    /// <returns>The popped element as a JSON string, or <see cref="ValkeyValue.Null"/> if the array is empty or key does not exist.</returns>
+    /// <seealso href="https://valkey.io/commands/json.arrpop/">Valkey commands – JSON.ARRPOP</seealso>
     /// <example>
     /// <code>
     /// await GlideJson.SetAsync(client, "mykey", "$", "[1,2,3]");
-    /// var length = await GlideJson.ArrLenAsync(client, "mykey");  // 3
+    /// var popped = await GlideJson.ArrPopAsync(client, "mykey");  // "3"
     /// </code>
     /// </example>
-    public static async Task<long?> ArrLenAsync(BaseClient client, ValkeyKey key)
+    public static async Task<ValkeyValue> ArrPopAsync(BaseClient client, ValkeyKey key)
     {
-        GlideString[] args = [JsonArrLen, ToGlideString(key)];
+        GlideString[] args = [JsonArrPop, ToGlideString(key)];
         object? result = await ExecuteCommandAsync(client, args);
-        return result is null ? null : (long)result;
+        return ToValkeyValue(result);
     }
-
-    #endregion
-    #region JSON.ARRPOP
 
     /// <summary>
     /// Pops an element from the array at the specified path and index in the JSON document stored at the key.
@@ -223,42 +222,6 @@ public static partial class GlideJson
         GlideString[] args = [JsonArrPop, ToGlideString(key), ToGlideString(path), index.ToString()];
         object? result = await ExecuteCommandAsync(client, args);
         return ConvertToNullableValkeyValueArray(result);
-    }
-
-    private static ValkeyValue?[]? ConvertToNullableValkeyValueArray(object? result)
-    {
-        if (result is null)
-        {
-            return null;
-        }
-
-        if (result is object?[] arr)
-        {
-            return [.. arr.Select(o => o is null ? (ValkeyValue?)null : ToValkeyValue(o))];
-        }
-
-        // Single value (legacy path) - wrap in array for consistent return type
-        return [ToValkeyValue(result)];
-    }
-
-    /// <summary>
-    /// Pops the last element from the array at the root path in the JSON document stored at the key.
-    /// </summary>
-    /// <param name="client">The Glide client to use for the command.</param>
-    /// <param name="key">The key where the JSON document is stored.</param>
-    /// <returns>The popped element as a JSON string, or <see cref="ValkeyValue.Null"/> if the array is empty or key does not exist.</returns>
-    /// <seealso href="https://valkey.io/commands/json.arrpop/">Valkey commands – JSON.ARRPOP</seealso>
-    /// <example>
-    /// <code>
-    /// await GlideJson.SetAsync(client, "mykey", "$", "[1,2,3]");
-    /// var popped = await GlideJson.ArrPopAsync(client, "mykey");  // "3"
-    /// </code>
-    /// </example>
-    public static async Task<ValkeyValue> ArrPopAsync(BaseClient client, ValkeyKey key)
-    {
-        GlideString[] args = [JsonArrPop, ToGlideString(key)];
-        object? result = await ExecuteCommandAsync(client, args);
-        return ToValkeyValue(result);
     }
 
     #endregion
@@ -290,6 +253,46 @@ public static partial class GlideJson
         GlideString[] args = [JsonArrTrim, ToGlideString(key), ToGlideString(path), start.ToString(), end.ToString()];
         object? result = await ExecuteCommandAsync(client, args);
         return ConvertToNullableLongArrayNonNull(result);
+    }
+
+    #endregion
+    #region Private Methods
+
+    private static GlideString[] BuildArrAppendArgs(GlideString key, GlideString path, GlideString[] values)
+    {
+        List<GlideString> args = [JsonArrAppend, key, path];
+        args.AddRange(values);
+        return [.. args];
+    }
+
+    private static GlideString[] BuildArrInsertArgs(GlideString key, GlideString path, long index, GlideString[] values)
+    {
+        List<GlideString> args = [JsonArrInsert, key, path, index.ToString()];
+        args.AddRange(values);
+        return [.. args];
+    }
+
+    private static GlideString[] BuildArrIndexArgs(GlideString key, GlideString path, GlideString value, ArrIndexRange range)
+    {
+        List<GlideString> args = [JsonArrIndex, key, path, value];
+        args.AddRange(range.ToArgs());
+        return [.. args];
+    }
+
+    private static ValkeyValue?[]? ConvertToNullableValkeyValueArray(object? result)
+    {
+        if (result is null)
+        {
+            return null;
+        }
+
+        if (result is object?[] arr)
+        {
+            return [.. arr.Select(o => o is null ? (ValkeyValue?)null : ToValkeyValue(o))];
+        }
+
+        // Single value (legacy path) - wrap in array for consistent return type
+        return [ToValkeyValue(result)];
     }
 
     #endregion

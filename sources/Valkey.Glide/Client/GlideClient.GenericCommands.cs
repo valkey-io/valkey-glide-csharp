@@ -8,6 +8,8 @@ namespace Valkey.Glide;
 
 public partial class GlideClient
 {
+    #region Public Methods
+
     /// <inheritdoc cref="IGlideClient.MigrateAsync(IEnumerable{ValkeyKey}, MigrateOptions)"/>
     public async Task<bool> MigrateAsync(IEnumerable<ValkeyKey> keys, MigrateOptions options)
         => await Command(Request.Migrate(keys, options));
@@ -19,6 +21,17 @@ public partial class GlideClient
     /// <inheritdoc cref="IGlideClient.ScanAsync(ScanOptions?)"/>
     public IAsyncEnumerable<ValkeyKey> ScanAsync(ScanOptions? options = null)
         => ScanKeysAsync("0", options);
+
+    /// <inheritdoc cref="ITransactionCommands.UnwatchAsync()"/>
+    public async Task UnwatchAsync()
+        => _ = await Command(Request.Unwatch());
+
+    /// <inheritdoc cref="ITransactionBaseCommands.WatchAsync(IEnumerable{ValkeyKey})"/>
+    public async Task WatchAsync(IEnumerable<ValkeyKey> keys)
+        => _ = await Command(Request.Watch(keys));
+
+    #endregion
+    #region Internal Methods
 
     /// <inheritdoc cref="IGlideClient.ScanAsync(ScanOptions?)"/>
     internal async IAsyncEnumerable<ValkeyKey> ScanKeysAsync(string cursor, ScanOptions? options)
@@ -33,11 +46,5 @@ public partial class GlideClient
         } while (cursor != "0");
     }
 
-    /// <inheritdoc cref="ITransactionCommands.UnwatchAsync()"/>
-    public async Task UnwatchAsync()
-        => _ = await Command(Request.Unwatch());
-
-    /// <inheritdoc cref="ITransactionBaseCommands.WatchAsync(IEnumerable{ValkeyKey})"/>
-    public async Task WatchAsync(IEnumerable<ValkeyKey> keys)
-        => _ = await Command(Request.Watch(keys));
+    #endregion
 }

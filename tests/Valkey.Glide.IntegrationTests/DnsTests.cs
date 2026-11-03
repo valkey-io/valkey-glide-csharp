@@ -26,6 +26,16 @@ public class DnsTests(DnsTestsFixture fixture) : IClassFixture<DnsTestsFixture>
     internal const string DnsEnabledEnvVar = "VALKEY_GLIDE_DNS_TESTS_ENABLED";
 
     #endregion
+    #region Constructor
+
+    static DnsTests()
+    {
+        Assert.SkipWhen(
+            string.IsNullOrEmpty(Environment.GetEnvironmentVariable(DnsEnabledEnvVar)),
+            "DNS tests are disabled. See DEVELOPER.md for setup instructions.");
+    }
+
+    #endregion
     #region Test Data
 
     public static TheoryData<bool> TlsMode => [true, false];
@@ -37,16 +47,6 @@ public class DnsTests(DnsTestsFixture fixture) : IClassFixture<DnsTestsFixture>
         { false, true },
         { false, false },
     };
-
-    #endregion
-    #region Constructor
-
-    static DnsTests()
-    {
-        Assert.SkipWhen(
-            string.IsNullOrEmpty(Environment.GetEnvironmentVariable(DnsEnabledEnvVar)),
-            "DNS tests are disabled. See DEVELOPER.md for setup instructions.");
-    }
 
     #endregion
     #region Tests

@@ -21,13 +21,183 @@ namespace Valkey.Glide;
 /// </summary>
 public abstract partial class BaseClient : IBaseClient
 {
-    #region Constants
+    #region Internal Fields
 
-    [GeneratedRegex(@"(?:valkey_version|redis_version):([\d\.]+)")]
-    private static partial Regex ServerVersionRegex();
+    /// <summary>
+    /// Raw pointer to the underlying native client.
+    /// </summary>
+    internal IntPtr ClientPointer;
+    internal readonly MessageContainer MessageContainer;
+
+    #endregion
+    #region Protected Fields
+
+    /// <summary>
+    /// The default server version assumed when the actual version cannot be determined.
+    /// </summary>
+    protected static readonly Version DefaultServerVersion = new(8, 0, 0);
+
+    /// <summary>
+    /// Cached server version retrieved from the connected server.
+    /// </summary>
+    protected Version? _serverVersion;
+
+    #endregion
+    #region Private Fields
+
+    /// <summary>
+    /// Held as a measure to prevent the delegate being garbage collected. These are delegated once
+    /// and held in order to prevent the cost of marshalling on each function call.
+    /// </summary>
+    private readonly FailureAction _failureCallbackDelegate;
+
+    /// <summary>
+    /// Held as a measure to prevent the delegate being garbage collected. These are delegated once
+    /// and held in order to prevent the cost of marshalling on each function call.
+    /// </summary>
+    private readonly SuccessAction _successCallbackDelegate;
+
+    /// <summary>
+    /// Held as a measure to prevent the delegate being garbage collected. These are delegated once
+    /// and held in order to prevent the cost of marshalling on each function call.
+    /// </summary>
+    private readonly PubSubAction _pubsubCallbackDelegate;
+
+    /// <summary>
+    /// Held to prevent the delegate being garbage collected.
+    /// </summary>
+    private AddressResolverAction? _addressResolverDelegate;
+
+    private readonly object _lock = new();
+    private string _clientInfo = ""; // used to distinguish and identify clients during tests
+
+    /// <summary>
+    /// PubSub message handler for routing messages to callbacks or queues.
+    /// Uses volatile to ensure visibility across threads without locking on every read.
+    /// </summary>
+    private volatile PubSubMessageHandler? _pubSubHandler;
+
+    /// <summary>
+    /// Lock object for coordinating PubSub handler access and disposal.
+    /// </summary>
+    private readonly object _pubSubLock = new();
+
+    /// <summary>
+    /// Channel for bounded message queuing with backpressure support.
+    /// </summary>
+    private Channel<PubSubMessage>? _messageChannel;
+
+    /// <summary>
+    /// Dedicated background task for processing PubSub messages.
+    /// </summary>
+    private Task? _messageProcessingTask;
+
+    /// <summary>
+    /// Cancellation token source for graceful shutdown of message processing.
+    /// </summary>
+    private CancellationTokenSource? _processingCancellation;
+
+    /// <summary>
+    /// Timeout for graceful shutdown of PubSub processing.
+    /// </summary>
+    private TimeSpan _shutdownTimeout = TimeSpan.FromSeconds(PubSubPerformanceConfig.DefaultShutdownTimeoutSeconds);
+
+    #endregion
+    #region Constructors
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="BaseClient"/> class.
+    /// </summary>
+    protected BaseClient()
+    {
+        _successCallbackDelegate = SuccessCallback;
+        _failureCallbackDelegate = FailureCallback;
+        _pubsubCallbackDelegate = PubSubCallback;
+        MessageContainer = new(this);
+    }
+
+    /// <summary>
+    /// Closes the connection to the client.
+    /// </summary>
+    ~BaseClient() => Dispose();
+
+    #endregion
+    #region Delegates
+
+    /// <summary>
+    /// Delegate for handling responses from the native client.
+    /// </summary>
+    /// <typeparam name="T">The type of the response value.</typeparam>
+    /// <param name="response">A pointer to the native response data.</param>
+    /// <returns>The converted response value.</returns>
+    protected internal delegate T ResponseHandler<T>(IntPtr response);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate void SuccessAction(ulong index, IntPtr ptr);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate void FailureAction(ulong index, IntPtr strPtr, RequestErrorType err);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate void PubSubAction(
+        uint pushKind,
+        IntPtr messagePtr,
+        ulong messageLen,
+        IntPtr channelPtr,
+        ulong channelLen,
+        IntPtr patternPtr,
+        ulong patternLen);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate ushort AddressResolverAction(
+        IntPtr host,
+        UIntPtr hostLen,
+        ushort port,
+        IntPtr resolvedHostBuf,
+        UIntPtr resolvedHostBufLen,
+        UIntPtr resolvedHostLen);
+
+    #endregion
+    #region Public Properties
+
+    /// <summary>
+    /// Get the PubSub message queue for manual message retrieval.
+    /// Returns null if no PubSub subscriptions are configured.
+    /// Uses thread-safe access to prevent race conditions.
+    /// </summary>
+    public PubSubMessageQueue? PubSubQueue
+    {
+        get
+        {
+            lock (_pubSubLock)
+            {
+                return _pubSubHandler?.GetQueue();
+            }
+        }
+    }
 
     #endregion
     #region Public Methods
+
+    /// <summary>
+    /// Gets statistics for the client.
+    /// </summary>
+    /// <returns>Statistics for the client.</returns>
+    public static Statistics GetStatistics()
+    {
+        var stats = GetStatisticsFfi();
+        return new Statistics(
+            stats.TotalConnections,
+            stats.TotalClients,
+            stats.TotalValuesCompressed,
+            stats.TotalValuesDecompressed,
+            stats.TotalOriginalBytes,
+            stats.TotalBytesCompressed,
+            stats.TotalBytesDecompressed,
+            stats.CompressionSkippedCount,
+            stats.SubscriptionOutOfSyncCount,
+            stats.SubscriptionLastSyncTimestamp);
+    }
 
     /// <inheritdoc/>
     public void Dispose()
@@ -139,40 +309,133 @@ public abstract partial class BaseClient : IBaseClient
         }
     }
 
-    /// <summary>
-    /// Get the PubSub message queue for manual message retrieval.
-    /// Returns null if no PubSub subscriptions are configured.
-    /// Uses thread-safe access to prevent race conditions.
-    /// </summary>
-    public PubSubMessageQueue? PubSubQueue
-    {
-        get
-        {
-            lock (_pubSubLock)
-            {
-                return _pubSubHandler?.GetQueue();
-            }
-        }
-    }
+    #endregion
+    #region Internal Methods
 
     /// <summary>
-    /// Gets statistics for the client.
+    /// Executes a command against the server and converts the response.
     /// </summary>
-    /// <returns>Statistics for the client.</returns>
-    public static Statistics GetStatistics()
+    /// <typeparam name="R">Type received from server.</typeparam>
+    /// <typeparam name="T">Type we return to the user.</typeparam>
+    /// <param name="command">The command to execute.</param>
+    /// <param name="route">Optional routing for the command in cluster mode.</param>
+    internal virtual async Task<T> Command<R, T>(Cmd<R, T> command, Route? route = null)
     {
-        var stats = GetStatisticsFfi();
-        return new Statistics(
-            stats.TotalConnections,
-            stats.TotalClients,
-            stats.TotalValuesCompressed,
-            stats.TotalValuesDecompressed,
-            stats.TotalOriginalBytes,
-            stats.TotalBytesCompressed,
-            stats.TotalBytesDecompressed,
-            stats.CompressionSkippedCount,
-            stats.SubscriptionOutOfSyncCount,
-            stats.SubscriptionLastSyncTimestamp);
+        // 1. Create Cmd which wraps CmdInfo and manages all memory allocations
+        using Cmd cmd = command.ToFfi();
+
+        // 2. Allocate memory for route
+        using FFI.Route? ffiRoute = route?.ToFfi();
+
+        // 3. Create OpenTelemetry span if sampling
+        IntPtr span = IntPtr.Zero;
+        if (OpenTelemetry.ShouldSample())
+        {
+            uint requestType = (uint)command.Request;
+            span = CreateOpenTelemetrySpanFfi(requestType);
+        }
+
+        IntPtr response = IntPtr.Zero;
+        try
+        {
+            // 4. Submit request to the rust part
+            Message message = MessageContainer.GetMessageForCall();
+            CommandFfi(ClientPointer, (ulong)message.Index, cmd.ToPtr(), ffiRoute?.ToPtr() ?? IntPtr.Zero);
+
+            // 5. Get a response and Handle it
+            response = await message;
+            return HandleServerValue(HandleResponse(response), command.IsNullable, command.Converter, command.AllowConverterToHandleNull);
+        }
+        finally
+        {
+            // 7. Drop span if created
+            if (span != IntPtr.Zero)
+            {
+                DropOpenTelemetrySpanFfi(span);
+            }
+
+            // 8. Free response if created
+            if (response != IntPtr.Zero)
+            {
+                FreeResponse(response);
+            }
+        }
+
+        // All memory allocated is auto-freed by `using` operator
+    }
+
+    internal async Task<object?[]?> Batch<T>(BaseBatch<T> batch, bool raiseOnError, BaseBatchOptions? options = null) where T : BaseBatch<T>
+    {
+        // 1. Allocate memory for batch, which allocates all nested Cmds
+        using FFI.Batch ffiBatch = batch.ToFFI();
+
+        // 2. Allocate memory for options
+        using FFI.BatchOptions? ffiOptions = options?.ToFfi();
+
+        // 3. Create OpenTelemetry span if sampling
+        IntPtr span = IntPtr.Zero;
+        if (OpenTelemetry.ShouldSample())
+        {
+            span = CreateBatchOpenTelemetrySpanFfi();
+        }
+
+        IntPtr response = IntPtr.Zero;
+        try
+        {
+            // 4. Submit request to the rust part
+            Message message = MessageContainer.GetMessageForCall();
+            BatchFfi(ClientPointer, (ulong)message.Index, ffiBatch.ToPtr(), raiseOnError, ffiOptions?.ToPtr() ?? IntPtr.Zero);
+
+            // 5. Get a response and Handle it
+            response = await message;
+            return batch.ConvertResponse(HandleServerValue(HandleResponse(response), true, (object?[]? o) => o));
+        }
+        finally
+        {
+            // 6. Drop span if created
+            if (span != IntPtr.Zero)
+            {
+                DropOpenTelemetrySpanFfi(span);
+            }
+
+            // 7. Free response if created
+            if (response != IntPtr.Zero)
+            {
+                FreeResponse(response);
+            }
+        }
+
+        // All memory allocated is auto-freed by `using` operator
+    }
+
+    internal void SetInfo(string info) => _clientInfo = info;
+
+    /// <summary>
+    /// Handles incoming PubSub messages from the FFI layer.
+    /// This method is called directly by the FFI callback and uses thread-safe access to the handler.
+    /// </summary>
+    /// <param name="message">The PubSub message to handle.</param>
+    internal virtual void HandlePubSubMessage(PubSubMessage message)
+    {
+        // Thread-safe access to handler - use local copy to avoid race conditions
+        PubSubMessageHandler? handler;
+        lock (_pubSubLock)
+        {
+            handler = _pubSubHandler;
+        }
+
+        if (handler != null)
+        {
+            try
+            {
+                handler.HandleMessage(message);
+            }
+            catch (Exception ex)
+            {
+                // Log the error but don't let exceptions escape
+                Logger.Log(Level.Error, "BaseClient", $"Error handling PubSub message: {ex.Message}", ex);
+            }
+        }
     }
 
     #endregion
@@ -271,121 +534,6 @@ public abstract partial class BaseClient : IBaseClient
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="BaseClient"/> class.
-    /// </summary>
-    protected BaseClient()
-    {
-        _successCallbackDelegate = SuccessCallback;
-        _failureCallbackDelegate = FailureCallback;
-        _pubsubCallbackDelegate = PubSubCallback;
-        MessageContainer = new(this);
-    }
-
-    /// <summary>
-    /// Delegate for handling responses from the native client.
-    /// </summary>
-    /// <typeparam name="T">The type of the response value.</typeparam>
-    /// <param name="response">A pointer to the native response data.</param>
-    /// <returns>The converted response value.</returns>
-    protected internal delegate T ResponseHandler<T>(IntPtr response);
-
-    /// <summary>
-    /// Executes a command against the server and converts the response.
-    /// </summary>
-    /// <typeparam name="R">Type received from server.</typeparam>
-    /// <typeparam name="T">Type we return to the user.</typeparam>
-    /// <param name="command">The command to execute.</param>
-    /// <param name="route">Optional routing for the command in cluster mode.</param>
-    internal virtual async Task<T> Command<R, T>(Cmd<R, T> command, Route? route = null)
-    {
-        // 1. Create Cmd which wraps CmdInfo and manages all memory allocations
-        using Cmd cmd = command.ToFfi();
-
-        // 2. Allocate memory for route
-        using FFI.Route? ffiRoute = route?.ToFfi();
-
-        // 3. Create OpenTelemetry span if sampling
-        IntPtr span = IntPtr.Zero;
-        if (OpenTelemetry.ShouldSample())
-        {
-            uint requestType = (uint)command.Request;
-            span = CreateOpenTelemetrySpanFfi(requestType);
-        }
-
-        IntPtr response = IntPtr.Zero;
-        try
-        {
-            // 4. Submit request to the rust part
-            Message message = MessageContainer.GetMessageForCall();
-            CommandFfi(ClientPointer, (ulong)message.Index, cmd.ToPtr(), ffiRoute?.ToPtr() ?? IntPtr.Zero);
-
-            // 5. Get a response and Handle it
-            response = await message;
-            return HandleServerValue(HandleResponse(response), command.IsNullable, command.Converter, command.AllowConverterToHandleNull);
-        }
-        finally
-        {
-            // 7. Drop span if created
-            if (span != IntPtr.Zero)
-            {
-                DropOpenTelemetrySpanFfi(span);
-            }
-
-            // 8. Free response if created
-            if (response != IntPtr.Zero)
-            {
-                FreeResponse(response);
-            }
-        }
-
-        // All memory allocated is auto-freed by `using` operator
-    }
-
-    internal async Task<object?[]?> Batch<T>(BaseBatch<T> batch, bool raiseOnError, BaseBatchOptions? options = null) where T : BaseBatch<T>
-    {
-        // 1. Allocate memory for batch, which allocates all nested Cmds
-        using FFI.Batch ffiBatch = batch.ToFFI();
-
-        // 2. Allocate memory for options
-        using FFI.BatchOptions? ffiOptions = options?.ToFfi();
-
-        // 3. Create OpenTelemetry span if sampling
-        IntPtr span = IntPtr.Zero;
-        if (OpenTelemetry.ShouldSample())
-        {
-            span = CreateBatchOpenTelemetrySpanFfi();
-        }
-
-        IntPtr response = IntPtr.Zero;
-        try
-        {
-            // 4. Submit request to the rust part
-            Message message = MessageContainer.GetMessageForCall();
-            BatchFfi(ClientPointer, (ulong)message.Index, ffiBatch.ToPtr(), raiseOnError, ffiOptions?.ToPtr() ?? IntPtr.Zero);
-
-            // 5. Get a response and Handle it
-            response = await message;
-            return batch.ConvertResponse(HandleServerValue(HandleResponse(response), true, (object?[]? o) => o));
-        }
-        finally
-        {
-            // 6. Drop span if created
-            if (span != IntPtr.Zero)
-            {
-                DropOpenTelemetrySpanFfi(span);
-            }
-
-            // 7. Free response if created
-            if (response != IntPtr.Zero)
-            {
-                FreeResponse(response);
-            }
-        }
-
-        // All memory allocated is auto-freed by `using` operator
-    }
-
-    /// <summary>
     /// Parses the server version from an INFO command response string.
     /// </summary>
     /// <param name="response">The INFO command response containing version information.</param>
@@ -396,30 +544,36 @@ public abstract partial class BaseClient : IBaseClient
         return versionMatch.Success ? new(versionMatch.Groups[1].Value) : null;
     }
 
-    #endregion
-    #region Protected Fields
-
     /// <summary>
-    /// Cached server version retrieved from the connected server.
+    /// Gets the server version from the connected server.
     /// </summary>
-    protected Version? _serverVersion;
-
-    /// <summary>
-    /// The default server version assumed when the actual version cannot be determined.
-    /// </summary>
-    protected static readonly Version DefaultServerVersion = new(8, 0, 0);
-
-    #endregion
-    #region Internal Fields
-
-    /// <summary>
-    /// Raw pointer to the underlying native client.
-    /// </summary>
-    internal IntPtr ClientPointer;
-    internal readonly MessageContainer MessageContainer;
+    /// <returns>The server version.</returns>
+    protected abstract Task<Version> GetServerVersionAsync();
 
     #endregion
     #region Private Methods
+
+    [GeneratedRegex(@"(?:valkey_version|redis_version):([\d\.]+)")]
+    private static partial Regex ServerVersionRegex();
+
+    private static bool IsMessageNotification(PushKind pushKind) =>
+        pushKind switch
+        {
+            PushKind.PushMessage => true,       // Regular channel message
+            PushKind.PushPMessage => true,      // Pattern-based message
+            PushKind.PushSMessage => true,      // Shard channel message
+
+            PushKind.PushDisconnection => false,
+            PushKind.PushOther => false,
+            PushKind.PushInvalidate => false,
+            PushKind.PushUnsubscribe => false,
+            PushKind.PushPUnsubscribe => false,
+            PushKind.PushSUnsubscribe => false,
+            PushKind.PushSubscribe => false,
+            PushKind.PushPSubscribe => false,
+            PushKind.PushSSubscribe => false,
+            _ => false
+        };
 
     private void SuccessCallback(ulong index, IntPtr ptr) =>
         ThreadPool.UnsafeQueueUserWorkItem(_ => MessageContainer.GetMessage((int)index).SetResult(ptr), null);
@@ -477,38 +631,6 @@ public abstract partial class BaseClient : IBaseClient
                 ex);
         }
     }
-
-    private static bool IsMessageNotification(PushKind pushKind) =>
-        pushKind switch
-        {
-            PushKind.PushMessage => true,       // Regular channel message
-            PushKind.PushPMessage => true,      // Pattern-based message
-            PushKind.PushSMessage => true,      // Shard channel message
-
-            PushKind.PushDisconnection => false,
-            PushKind.PushOther => false,
-            PushKind.PushInvalidate => false,
-            PushKind.PushUnsubscribe => false,
-            PushKind.PushPUnsubscribe => false,
-            PushKind.PushSUnsubscribe => false,
-            PushKind.PushSubscribe => false,
-            PushKind.PushPSubscribe => false,
-            PushKind.PushSSubscribe => false,
-            _ => false
-        };
-
-    /// <summary>
-    /// Closes the connection to the client.
-    /// </summary>
-    ~BaseClient() => Dispose();
-
-    internal void SetInfo(string info) => _clientInfo = info;
-
-    /// <summary>
-    /// Gets the server version from the connected server.
-    /// </summary>
-    /// <returns>The server version.</returns>
-    protected abstract Task<Version> GetServerVersionAsync();
 
     /// <summary>
     /// Initializes PubSub message handling.
@@ -584,34 +706,6 @@ public abstract partial class BaseClient : IBaseClient
                     }
                 },
                 _processingCancellation.Token);
-        }
-    }
-
-    /// <summary>
-    /// Handles incoming PubSub messages from the FFI layer.
-    /// This method is called directly by the FFI callback and uses thread-safe access to the handler.
-    /// </summary>
-    /// <param name="message">The PubSub message to handle.</param>
-    internal virtual void HandlePubSubMessage(PubSubMessage message)
-    {
-        // Thread-safe access to handler - use local copy to avoid race conditions
-        PubSubMessageHandler? handler;
-        lock (_pubSubLock)
-        {
-            handler = _pubSubHandler;
-        }
-
-        if (handler != null)
-        {
-            try
-            {
-                handler.HandleMessage(message);
-            }
-            catch (Exception ex)
-            {
-                // Log the error but don't let exceptions escape
-                Logger.Log(Level.Error, "BaseClient", $"Error handling PubSub message: {ex.Message}", ex);
-            }
         }
     }
 
@@ -694,91 +788,6 @@ public abstract partial class BaseClient : IBaseClient
                 ex);
         }
     }
-
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    private delegate void SuccessAction(ulong index, IntPtr ptr);
-
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    private delegate void FailureAction(ulong index, IntPtr strPtr, RequestErrorType err);
-
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    private delegate void PubSubAction(
-        uint pushKind,
-        IntPtr messagePtr,
-        ulong messageLen,
-        IntPtr channelPtr,
-        ulong channelLen,
-        IntPtr patternPtr,
-        ulong patternLen);
-
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    private delegate ushort AddressResolverAction(
-        IntPtr host,
-        UIntPtr hostLen,
-        ushort port,
-        IntPtr resolvedHostBuf,
-        UIntPtr resolvedHostBufLen,
-        UIntPtr resolvedHostLen);
-
-    #endregion
-    #region private fields
-
-    /// <summary>
-    /// Held as a measure to prevent the delegate being garbage collected. These are delegated once
-    /// and held in order to prevent the cost of marshalling on each function call.
-    /// </summary>
-    private readonly FailureAction _failureCallbackDelegate;
-
-    /// <summary>
-    /// Held as a measure to prevent the delegate being garbage collected. These are delegated once
-    /// and held in order to prevent the cost of marshalling on each function call.
-    /// </summary>
-    private readonly SuccessAction _successCallbackDelegate;
-
-    /// <summary>
-    /// Held as a measure to prevent the delegate being garbage collected. These are delegated once
-    /// and held in order to prevent the cost of marshalling on each function call.
-    /// </summary>
-    private readonly PubSubAction _pubsubCallbackDelegate;
-
-    /// <summary>
-    /// Held to prevent the delegate being garbage collected.
-    /// </summary>
-    private AddressResolverAction? _addressResolverDelegate;
-
-    private readonly object _lock = new();
-    private string _clientInfo = ""; // used to distinguish and identify clients during tests
-
-    /// <summary>
-    /// PubSub message handler for routing messages to callbacks or queues.
-    /// Uses volatile to ensure visibility across threads without locking on every read.
-    /// </summary>
-    private volatile PubSubMessageHandler? _pubSubHandler;
-
-    /// <summary>
-    /// Lock object for coordinating PubSub handler access and disposal.
-    /// </summary>
-    private readonly object _pubSubLock = new();
-
-    /// <summary>
-    /// Channel for bounded message queuing with backpressure support.
-    /// </summary>
-    private Channel<PubSubMessage>? _messageChannel;
-
-    /// <summary>
-    /// Dedicated background task for processing PubSub messages.
-    /// </summary>
-    private Task? _messageProcessingTask;
-
-    /// <summary>
-    /// Cancellation token source for graceful shutdown of message processing.
-    /// </summary>
-    private CancellationTokenSource? _processingCancellation;
-
-    /// <summary>
-    /// Timeout for graceful shutdown of PubSub processing.
-    /// </summary>
-    private TimeSpan _shutdownTimeout = TimeSpan.FromSeconds(PubSubPerformanceConfig.DefaultShutdownTimeoutSeconds);
 
     #endregion
 }

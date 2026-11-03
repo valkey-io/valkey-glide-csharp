@@ -8,6 +8,11 @@ namespace Valkey.Glide;
 /// <seealso href="https://valkey.io/commands/monitor/"/>
 public sealed record MonitorMessage
 {
+    #region Constructors
+
+    internal MonitorMessage() { }
+
+    #endregion
     #region Public Properties
 
     /// <summary>
@@ -34,11 +39,6 @@ public sealed record MonitorMessage
     /// The command arguments.
     /// </summary>
     public required IReadOnlyList<string> Args { get; init; }
-
-    #endregion
-    #region Constructors & Builders
-
-    internal MonitorMessage() { }
 
     #endregion
 }

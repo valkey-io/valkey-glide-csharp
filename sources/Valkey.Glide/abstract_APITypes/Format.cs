@@ -15,6 +15,10 @@ namespace Valkey.Glide;
 
 internal static class Format
 {
+    internal const int
+        MaxInt32TextLen = 11, // -2,147,483,648 (not including the commas)
+        MaxInt64TextLen = 20; // -9,223,372,036,854,775,808 (not including the commas)
+
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
     public static int ParseInt32(ReadOnlySpan<char> s) => int.Parse(s, NumberStyles.Integer, NumberFormatInfo.InvariantInfo);
     public static bool TryParseInt32(ReadOnlySpan<char> s, out int value) => int.TryParse(s, NumberStyles.Integer, NumberFormatInfo.InvariantInfo, out value);
@@ -304,27 +308,6 @@ internal static class Format
         return Utf8Parser.TryParse(s, out value, out int bytes) && bytes == s.Length;
     }
 
-    private static bool CaseInsensitiveASCIIEqual(string xLowerCase, string y)
-        => string.Equals(xLowerCase, y, StringComparison.OrdinalIgnoreCase);
-
-    private static bool CaseInsensitiveASCIIEqual(string xLowerCase, ReadOnlySpan<byte> y)
-    {
-        if (y.Length != xLowerCase.Length)
-        {
-            return false;
-        }
-
-        for (int i = 0; i < y.Length; i++)
-        {
-            if (char.ToLower((char)y[i]) != xLowerCase[i])
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     /// <summary>
     /// <para>
     /// Adapted from IPEndPointParser in Microsoft.AspNetCore
@@ -457,13 +440,6 @@ internal static class Format
         }
 #endif
     }
-
-    [DoesNotReturn]
-    private static void ThrowFormatFailed() => throw new InvalidOperationException("TryFormat failed");
-
-    internal const int
-        MaxInt32TextLen = 11, // -2,147,483,648 (not including the commas)
-        MaxInt64TextLen = 20; // -9,223,372,036,854,775,808 (not including the commas)
 
     internal static int MeasureDouble(double value)
     {
@@ -606,4 +582,28 @@ internal static class Format
         version = null;
         return false;
     }
+
+    private static bool CaseInsensitiveASCIIEqual(string xLowerCase, string y)
+        => string.Equals(xLowerCase, y, StringComparison.OrdinalIgnoreCase);
+
+    private static bool CaseInsensitiveASCIIEqual(string xLowerCase, ReadOnlySpan<byte> y)
+    {
+        if (y.Length != xLowerCase.Length)
+        {
+            return false;
+        }
+
+        for (int i = 0; i < y.Length; i++)
+        {
+            if (char.ToLower((char)y[i]) != xLowerCase[i])
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    [DoesNotReturn]
+    private static void ThrowFormatFailed() => throw new InvalidOperationException("TryFormat failed");
 }

@@ -601,9 +601,6 @@ public abstract class Condition
         public override string ToString()
             => ((string?)key) + " " + type + " length" + GetComparisonString() + expectedLength;
 
-        private string GetComparisonString()
-            => compareToResult == 0 ? " == " : (compareToResult < 0 ? " > " : " < ");
-
         internal sealed override List<ICmd> CreateCommands()
             => [
                 Request.Watch([key]),
@@ -614,6 +611,9 @@ public abstract class Condition
         {
             return expectedLength.CompareTo((long)result!) == compareToResult;
         }
+
+        private string GetComparisonString()
+            => compareToResult == 0 ? " == " : (compareToResult < 0 ? " > " : " < ");
     }
 
     internal class SortedSetRangeLengthCondition : Condition
@@ -637,9 +637,6 @@ public abstract class Condition
         public override string ToString()
             => ((string?)key) + " " + ValkeyType.SortedSet + " range[" + min + ", " + max + "] length" + GetComparisonString() + expectedLength;
 
-        private string GetComparisonString()
-        => compareToResult == 0 ? " == " : (compareToResult < 0 ? " > " : " < ");
-
         internal sealed override List<ICmd> CreateCommands()
             => [
                 Request.Watch([key]),
@@ -650,6 +647,9 @@ public abstract class Condition
         {
             return expectedLength.CompareTo((long)result!) == compareToResult;
         }
+
+        private string GetComparisonString()
+        => compareToResult == 0 ? " == " : (compareToResult < 0 ? " > " : " < ");
     }
 
     internal class SortedSetScoreCondition : Condition
@@ -693,18 +693,4 @@ public abstract class Condition
 #pragma warning restore IDE0045 // Convert to conditional expression
 #pragma warning restore IDE0022 // Use expression body for method
 #pragma warning restore IDE0047 // Remove unnecessary parentheses
-}
-
-/// <summary>
-/// Indicates the status of a condition as part of a transaction.
-/// </summary>
-/// <param name="condition">The condition to track.</param>
-public sealed class ConditionResult(Condition condition)
-{
-    internal readonly Condition Condition = condition;
-
-    /// <summary>
-    /// Indicates whether the condition was satisfied.
-    /// </summary>
-    public bool WasSatisfied { internal set; get; }
 }

@@ -10,12 +10,6 @@ namespace Valkey.Glide.IntegrationTests;
 [CollectionDefinition(DisableParallelization = true)]
 public class StreamCommandTests
 {
-    private static void AssertIsValidMessageId(ValkeyValue messageId)
-    {
-        Assert.False(messageId.IsNull);
-        Assert.Contains("-", messageId.ToString());
-    }
-
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StreamAddAsync_SingleFieldValue(BaseClient client)
@@ -929,5 +923,11 @@ public class StreamCommandTests
         string key = "{StreamInfoFull}" + Guid.NewGuid();
         await client.SetAsync(key, "not a stream");
         _ = await Assert.ThrowsAsync<RequestException>(async () => await client.StreamInfoFullAsync(key));
+    }
+
+    private static void AssertIsValidMessageId(ValkeyValue messageId)
+    {
+        Assert.False(messageId.IsNull);
+        Assert.Contains("-", messageId.ToString());
     }
 }

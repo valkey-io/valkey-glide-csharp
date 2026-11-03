@@ -9,11 +9,23 @@ namespace Valkey.Glide.Internals;
 
 internal static partial class Request
 {
+    private static readonly Func<string, ValkeyValue> ToOkConverter = _ => ValkeyValue.Ok;
+
     public static Cmd<object?, object?> CustomCommand(GlideString[] args)
         => new(RequestType.CustomCommand, args, true, o => o);
 
     public static Cmd<object?, T> CustomCommand<T>(GlideString[] args, Func<object?, T> converter) where T : class?
         => new(RequestType.CustomCommand, args, true, converter);
+
+    /// <summary>
+    /// Convert a command that returns an array to one which returns only its first element.
+    /// Used to build single-field variants of multi-field commands.
+    /// </summary>
+    /// <typeparam name="R">The raw response type.</typeparam>
+    /// <typeparam name="T">The converted element type.</typeparam>
+    /// <param name="cmd">The multi-field command to convert.</param>
+    public static Cmd<R, T> ToFirstValue<R, T>(this Cmd<R, T[]> cmd)
+        => new(cmd.Request, cmd.Args, cmd.IsNullable, response => cmd.Converter(response)[0], cmd.AllowConverterToHandleNull);
 
     /// <summary>
     /// Create a Cmd which does not need type conversion
@@ -52,8 +64,6 @@ internal static partial class Request
                     0 => false,
                     _ => null,
                 });
-
-    private static readonly Func<string, ValkeyValue> ToOkConverter = _ => ValkeyValue.Ok;
 
     /// <summary>
     /// Create a Cmd which returns a Boolean value based on the response being OK or not, allowing null responses.

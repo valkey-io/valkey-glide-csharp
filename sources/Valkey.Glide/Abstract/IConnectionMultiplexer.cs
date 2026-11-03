@@ -10,6 +10,16 @@ namespace Valkey.Glide;
 public interface IConnectionMultiplexer : IDisposable, IAsyncDisposable
 {
     /// <summary>
+    /// Indicates whether any servers are connected.
+    /// </summary>
+    bool IsConnected { get; }
+
+    /// <summary>
+    /// Indicates whether any servers are connecting.
+    /// </summary>
+    bool IsConnecting { get; }
+
+    /// <summary>
     /// Gets all endpoints defined on the multiplexer.
     /// </summary>
     /// <param name="configuredOnly">Whether to return only the explicitly configured endpoints.</param>
@@ -49,16 +59,6 @@ public interface IConnectionMultiplexer : IDisposable, IAsyncDisposable
     /// Obtain configuration APIs for all servers in this multiplexer.
     /// </summary>
     IServer[] GetServers();
-
-    /// <summary>
-    /// Indicates whether any servers are connected.
-    /// </summary>
-    bool IsConnected { get; }
-
-    /// <summary>
-    /// Indicates whether any servers are connecting.
-    /// </summary>
-    bool IsConnecting { get; }
 
     /// <summary>
     /// Obtain a pub/sub subscriber connection to the specified server.

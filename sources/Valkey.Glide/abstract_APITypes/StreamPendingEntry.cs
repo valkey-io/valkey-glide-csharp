@@ -8,6 +8,21 @@ namespace Valkey.Glide;
 /// <seealso href="https://valkey.io/commands/xinfo-stream/"/>
 public readonly struct StreamPendingEntry
 {
+    #region Constructors
+
+    internal StreamPendingEntry(
+        ValkeyValue entryId,
+        string consumer,
+        DateTimeOffset deliveryTime,
+        int deliveryCount)
+    {
+        EntryId = entryId;
+        Consumer = consumer;
+        DeliveryTime = deliveryTime;
+        DeliveryCount = deliveryCount;
+    }
+
+    #endregion
     #region Public Properties
 
     /// <summary>
@@ -32,21 +47,6 @@ public readonly struct StreamPendingEntry
     /// The number of times this entry has been delivered to a consumer.
     /// </summary>
     public int DeliveryCount { get; }
-
-    #endregion
-    #region Constructors
-
-    internal StreamPendingEntry(
-        ValkeyValue entryId,
-        string consumer,
-        DateTimeOffset deliveryTime,
-        int deliveryCount)
-    {
-        EntryId = entryId;
-        Consumer = consumer;
-        DeliveryTime = deliveryTime;
-        DeliveryCount = deliveryCount;
-    }
 
     #endregion
 }

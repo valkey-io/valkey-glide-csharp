@@ -7,90 +7,12 @@ using Valkey.Glide.Internals;
 namespace Valkey.Glide;
 
 /// <summary>
-/// Represents a message that is broadcast via publish/subscribe.
-/// Compatible with StackExchange.Redis <c>ChannelMessage</c>.
-/// </summary>
-public readonly struct ChannelMessage
-{
-    private readonly ChannelMessageQueue _queue;
-
-    /// <inheritdoc/>
-    public override string ToString() => ((string?)Channel) + ":" + ((string?)Message);
-
-    /// <inheritdoc/>
-    public override int GetHashCode() => Channel.GetHashCode() ^ Message.GetHashCode();
-
-    /// <inheritdoc/>
-    public override bool Equals(object? obj) => obj is ChannelMessage cm
-        && cm.Channel == Channel
-        && cm.Message == Message;
-
-    internal ChannelMessage(ChannelMessageQueue queue, in ValkeyChannel channel, in ValkeyValue value)
-    {
-        _queue = queue;
-        Channel = channel;
-        Message = value;
-    }
-
-    /// <summary>
-    /// The channel that the subscription was created from.
-    /// </summary>
-    public ValkeyChannel SubscriptionChannel => _queue.Channel;
-
-    /// <summary>
-    /// The channel that the message was broadcast to.
-    /// </summary>
-    public ValkeyChannel Channel { get; }
-
-    /// <summary>
-    /// The value that was broadcast.
-    /// </summary>
-    public ValkeyValue Message { get; }
-
-    /// <summary>
-    /// Returns whether the given messages are equal.
-    /// </summary>
-    /// <param name="left">The first message to compare.</param>
-    /// <param name="right">The second message to compare.</param>
-    public static bool operator ==(ChannelMessage left, ChannelMessage right) => left.Equals(right);
-
-    /// <summary>
-    /// Returns whether the given messages are not equal.
-    /// </summary>
-    /// <param name="left">The first message to compare.</param>
-    /// <param name="right">The second message to compare.</param>
-    public static bool operator !=(ChannelMessage left, ChannelMessage right) => !left.Equals(right);
-}
-
-/// <summary>
 /// Represents a message queue of ordered pub/sub notifications.
 /// Compatible with StackExchange.Redis <c>ChannelMessageQueue</c>.
 /// </summary>
 public sealed class ChannelMessageQueue : IAsyncEnumerable<ChannelMessage>
 {
-    private readonly Channel<ChannelMessage> _queue;
-
-    /// <summary>
-    /// The Channel that was subscribed for this queue.
-    /// </summary>
-    public ValkeyChannel Channel { get; }
-
-    private Subscriber? _parent;
-
-    /// <inheritdoc/>
-    public override string? ToString() => (string?)Channel;
-
-    /// <summary>
-    /// An awaitable task the indicates completion of the queue (including drain of data).
-    /// </summary>
-    public Task Completion => _queue.Reader.Completion;
-
-    internal ChannelMessageQueue(in ValkeyChannel channel, Subscriber parent)
-    {
-        Channel = channel;
-        _parent = parent;
-        _queue = System.Threading.Channels.Channel.CreateUnbounded<ChannelMessage>(UnboundedOptions);
-    }
+    #region Private Fields
 
     private static readonly UnboundedChannelOptions UnboundedOptions = new()
     {
@@ -99,11 +21,39 @@ public sealed class ChannelMessageQueue : IAsyncEnumerable<ChannelMessage>
         AllowSynchronousContinuations = false,
     };
 
-    internal void Write(in ValkeyChannel channel, in ValkeyValue value)
+    private readonly Channel<ChannelMessage> _queue;
+    private Subscriber? _parent;
+    private Delegate? _onMessageHandler;
+    private ChannelMessageQueue? _next;
+
+    #endregion
+    #region Constructors
+
+    internal ChannelMessageQueue(in ValkeyChannel channel, Subscriber parent)
     {
-        var writer = _queue.Writer;
-        _ = writer.TryWrite(new ChannelMessage(this, channel, value));
+        Channel = channel;
+        _parent = parent;
+        _queue = System.Threading.Channels.Channel.CreateUnbounded<ChannelMessage>(UnboundedOptions);
     }
+
+    #endregion
+    #region Public Properties
+
+    /// <summary>
+    /// The Channel that was subscribed for this queue.
+    /// </summary>
+    public ValkeyChannel Channel { get; }
+
+    /// <summary>
+    /// An awaitable task the indicates completion of the queue (including drain of data).
+    /// </summary>
+    public Task Completion => _queue.Reader.Completion;
+
+    #endregion
+    #region Public Methods
+
+    /// <inheritdoc/>
+    public override string? ToString() => (string?)Channel;
 
     /// <summary>
     /// Consume a message from the channel.
@@ -135,21 +85,6 @@ public sealed class ChannelMessageQueue : IAsyncEnumerable<ChannelMessage>
         return false;
     }
 
-    private Delegate? _onMessageHandler;
-
-    private void AssertOnMessage(Delegate handler)
-    {
-        if (handler == null)
-        {
-            throw new ArgumentNullException(nameof(handler));
-        }
-
-        if (Interlocked.CompareExchange(ref _onMessageHandler, handler, null) != null)
-        {
-            throw new InvalidOperationException("Only a single " + nameof(OnMessage) + " is allowed");
-        }
-    }
-
     /// <summary>
     /// Create a message loop that processes messages sequentially.
     /// </summary>
@@ -160,26 +95,58 @@ public sealed class ChannelMessageQueue : IAsyncEnumerable<ChannelMessage>
         _ = ThreadPool.QueueUserWorkItem(state => _ = ((ChannelMessageQueue)state!).OnMessageSyncImpl(), this);
     }
 
-    private async Task OnMessageSyncImpl()
+    /// <summary>
+    /// Create a message loop that processes messages sequentially.
+    /// </summary>
+    /// <param name="handler">The asynchronous handler invoked for each message.</param>
+    public void OnMessage(Func<ChannelMessage, Task> handler)
     {
-        var handler = (Action<ChannelMessage>?)_onMessageHandler;
-        while (!Completion.IsCompleted)
-        {
-            ChannelMessage next;
-            try
-            {
-                if (!TryRead(out next))
-                {
-                    next = await ReadAsync().ConfigureAwait(false);
-                }
-            }
-            catch (ChannelClosedException) { break; }
-            catch { break; }
+        AssertOnMessage(handler);
+        _ = ThreadPool.QueueUserWorkItem(state => _ = ((ChannelMessageQueue)state!).OnMessageAsyncImpl(), this);
+    }
 
-            try { handler?.Invoke(next); }
-            catch { }
+    /// <summary>
+    /// Stop receiving messages on this channel.
+    /// </summary>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    public void Unsubscribe(CommandFlags flags = CommandFlags.None)
+        => UnsubscribeAsync(flags).GetAwaiter().GetResult();
+
+    /// <summary>
+    /// Stop receiving messages on this channel.
+    /// </summary>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    public async Task UnsubscribeAsync(CommandFlags flags = CommandFlags.None)
+    {
+        GuardClauses.ThrowIfCommandFlags(flags);
+
+        var parent = _parent;
+        _parent = null;
+
+        if (parent != null)
+        {
+            await parent.UnsubscribeAsync(this);
+        }
+
+        _ = _queue.Writer.TryComplete();
+    }
+
+    /// <inheritdoc/>
+    public async IAsyncEnumerator<ChannelMessage> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+    {
+        while (await _queue.Reader.WaitToReadAsync(cancellationToken).ConfigureAwait(false))
+        {
+            while (_queue.Reader.TryRead(out var item))
+            {
+                yield return item;
+            }
         }
     }
+
+    #endregion
+    #region Internal Methods
 
     internal static void Combine(ref ChannelMessageQueue? head, ChannelMessageQueue queue)
     {
@@ -193,16 +160,6 @@ public sealed class ChannelMessageQueue : IAsyncEnumerable<ChannelMessage>
             }
             while (Interlocked.CompareExchange(ref head, queue, old) != old);
         }
-    }
-
-    /// <summary>
-    /// Create a message loop that processes messages sequentially.
-    /// </summary>
-    /// <param name="handler">The asynchronous handler invoked for each message.</param>
-    public void OnMessage(Func<ChannelMessage, Task> handler)
-    {
-        AssertOnMessage(handler);
-        _ = ThreadPool.QueueUserWorkItem(state => _ = ((ChannelMessageQueue)state!).OnMessageAsyncImpl(), this);
     }
 
     internal static void Remove(ref ChannelMessageQueue? head, ChannelMessageQueue queue)
@@ -279,7 +236,59 @@ public sealed class ChannelMessageQueue : IAsyncEnumerable<ChannelMessage>
         }
     }
 
-    private ChannelMessageQueue? _next;
+    internal static void MarkAllCompleted(ref ChannelMessageQueue? head)
+    {
+        var current = Interlocked.Exchange(ref head, null);
+        while (current != null)
+        {
+            current._parent = null;
+            _ = current._queue.Writer.TryComplete();
+            current = Volatile.Read(ref current._next);
+        }
+    }
+
+    internal void Write(in ValkeyChannel channel, in ValkeyValue value)
+    {
+        var writer = _queue.Writer;
+        _ = writer.TryWrite(new ChannelMessage(this, channel, value));
+    }
+
+    #endregion
+    #region Private Methods
+
+    private void AssertOnMessage(Delegate handler)
+    {
+        if (handler == null)
+        {
+            throw new ArgumentNullException(nameof(handler));
+        }
+
+        if (Interlocked.CompareExchange(ref _onMessageHandler, handler, null) != null)
+        {
+            throw new InvalidOperationException("Only a single " + nameof(OnMessage) + " is allowed");
+        }
+    }
+
+    private async Task OnMessageSyncImpl()
+    {
+        var handler = (Action<ChannelMessage>?)_onMessageHandler;
+        while (!Completion.IsCompleted)
+        {
+            ChannelMessage next;
+            try
+            {
+                if (!TryRead(out next))
+                {
+                    next = await ReadAsync().ConfigureAwait(false);
+                }
+            }
+            catch (ChannelClosedException) { break; }
+            catch { break; }
+
+            try { handler?.Invoke(next); }
+            catch { }
+        }
+    }
 
     private async Task OnMessageAsyncImpl()
     {
@@ -309,54 +318,5 @@ public sealed class ChannelMessageQueue : IAsyncEnumerable<ChannelMessage>
         }
     }
 
-    internal static void MarkAllCompleted(ref ChannelMessageQueue? head)
-    {
-        var current = Interlocked.Exchange(ref head, null);
-        while (current != null)
-        {
-            current._parent = null;
-            _ = current._queue.Writer.TryComplete();
-            current = Volatile.Read(ref current._next);
-        }
-    }
-
-    /// <summary>
-    /// Stop receiving messages on this channel.
-    /// </summary>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    public void Unsubscribe(CommandFlags flags = CommandFlags.None)
-        => UnsubscribeAsync(flags).GetAwaiter().GetResult();
-
-    /// <summary>
-    /// Stop receiving messages on this channel.
-    /// </summary>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    public async Task UnsubscribeAsync(CommandFlags flags = CommandFlags.None)
-    {
-        GuardClauses.ThrowIfCommandFlags(flags);
-
-        var parent = _parent;
-        _parent = null;
-
-        if (parent != null)
-        {
-            await parent.UnsubscribeAsync(this);
-        }
-
-        _ = _queue.Writer.TryComplete();
-    }
-
-    /// <inheritdoc/>
-    public async IAsyncEnumerator<ChannelMessage> GetAsyncEnumerator(CancellationToken cancellationToken = default)
-    {
-        while (await _queue.Reader.WaitToReadAsync(cancellationToken).ConfigureAwait(false))
-        {
-            while (_queue.Reader.TryRead(out var item))
-            {
-                yield return item;
-            }
-        }
-    }
+    #endregion
 }

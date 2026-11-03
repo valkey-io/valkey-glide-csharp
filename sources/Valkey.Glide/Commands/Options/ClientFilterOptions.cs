@@ -11,6 +11,20 @@ namespace Valkey.Glide.Commands.Options;
 /// <seealso href="https://valkey.io/commands/client-list/" />
 public class ClientFilterOptions
 {
+    #region Private Fields
+
+    // Use sorted sets to ensure deterministic behaviour.
+    private readonly SortedSet<long> _ids = [];
+    private readonly SortedSet<long> _notIds = [];
+    private readonly SortedSet<ClientFlag> _flags = [];
+    private readonly SortedSet<ClientFlag> _notFlags = [];
+    private readonly SortedSet<ClientCapability> _capabilities = [];
+    private readonly SortedSet<ClientCapability> _notCapabilities = [];
+
+    private ulong? _maxAgeSecs;
+    private ulong? _idleSecs;
+
+    #endregion
     #region Public Properties
 
     /// <summary>
@@ -687,20 +701,6 @@ public class ClientFilterOptions
 
         return [.. args];
     }
-
-    #endregion
-    #region Private Fields
-
-    // Use sorted sets to ensure deterministic behaviour.
-    private readonly SortedSet<long> _ids = [];
-    private readonly SortedSet<long> _notIds = [];
-    private readonly SortedSet<ClientFlag> _flags = [];
-    private readonly SortedSet<ClientFlag> _notFlags = [];
-    private readonly SortedSet<ClientCapability> _capabilities = [];
-    private readonly SortedSet<ClientCapability> _notCapabilities = [];
-
-    private ulong? _maxAgeSecs;
-    private ulong? _idleSecs;
 
     #endregion
 }

@@ -10,7 +10,7 @@ namespace Valkey.Glide.Internals;
 
 internal static partial class Request
 {
-    #region Public Methods
+    #region Command Builders
 
     public static Cmd<string, string> FtCreate(ValkeyKey indexName, IEnumerable<Ft.CreateField> schema, Ft.CreateOptions? options = null)
         => Simple<string>(RequestType.FtCreate, [indexName, .. ToArgs(options), .. ToArgs(schema)]);
@@ -31,7 +31,7 @@ internal static partial class Request
         => new(RequestType.FtInfo, [indexName, ValkeyLiterals.LOCAL, .. ToArgs(options)], false, ParseFtInfoLocalResponse);
 
     #endregion
-    #region Private Methods
+    #region Argument Builders
 
     /// <summary>
     /// Converts the given <see cref="Ft.CreateOptions"/> to command arguments.
@@ -46,7 +46,7 @@ internal static partial class Request
 
         List<GlideString> args = [
             ValkeyLiterals.ON,
-            options.DataType.ToLiteral()];
+            .. options.DataType.ToArgs()];
 
         var prefixes = options.Prefixes;
         if (prefixes.Any())
@@ -421,6 +421,9 @@ internal static partial class Request
         ValkeyValue[] values = ToValkeyValues(pairs);
         return [ValkeyLiterals.PARAMS, values.Length.ToGlideString(), .. values];
     }
+
+    #endregion
+    #region Response Converters
 
     private static Ft.SearchResult ParseFtSearchResponse(object[] data)
     {
