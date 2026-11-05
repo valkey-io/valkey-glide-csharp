@@ -50,6 +50,27 @@ public static partial class Ft
         /// Returns the standard deviation of the values of an expression (<c>STDDEV</c>).
         /// </summary>
         Stddev,
+
+        /// <summary>
+        /// Collects all values into a single array (<c>TOLIST</c>) (valkey-search 1.3.0). Produced
+        /// by <see cref="AggregateReducer.ToList"/>; not constructible via the public
+        /// <see cref="AggregateReducer"/> object initializer directly, since the factory also sets
+        /// <see cref="AggregateReducer.Expressions"/> to the shape TOLIST requires.
+        /// </summary>
+        ToList,
+
+        /// <summary>
+        /// Returns a single record's value, optionally chosen by another property
+        /// (<c>FIRST_VALUE</c>) (valkey-search 1.3.0). Produced by
+        /// <see cref="AggregateReducer.FirstValue"/>.
+        /// </summary>
+        FirstValue,
+
+        /// <summary>
+        /// Returns a uniform random sample of values (<c>RANDOM_SAMPLE</c>) (valkey-search 1.3.0).
+        /// Produced by <see cref="AggregateReducer.RandomSample"/>.
+        /// </summary>
+        RandomSample,
     }
 
     #endregion
@@ -150,6 +171,9 @@ public static partial class Ft
             ReducerFunction.Max => ValkeyLiterals.MAX,
             ReducerFunction.Avg => ValkeyLiterals.AVG,
             ReducerFunction.Stddev => ValkeyLiterals.STDDEV,
+            ReducerFunction.ToList => ValkeyLiterals.TOLIST,
+            ReducerFunction.FirstValue => ValkeyLiterals.FIRST_VALUE,
+            ReducerFunction.RandomSample => ValkeyLiterals.RANDOM_SAMPLE,
             _ => throw new ArgumentOutOfRangeException(nameof(function)),
         };
 
@@ -233,6 +257,86 @@ public static partial class Ft
         /// An optional output property name (<c>AS</c>).
         /// </summary>
         public ValkeyValue Name { get; init; }
+
+        /// <summary>
+        /// Creates a <c>TOLIST</c> reducer, which collects all values for <paramref name="field"/>
+        /// across the records in a group into a single array, removing duplicates and nil values.
+        /// If a value is itself an array, it is flattened one level before being added. Values are
+        /// returned in the order they were first encountered.
+        /// </summary>
+        /// <param name="field">The property whose values are collected into a list.</param>
+        /// <param name="name">
+        /// A user defined property name for the reducer. If not provided, the server generates a default name.
+        /// </param>
+        public static AggregateReducer ToList(ValkeyValue field, ValkeyValue name = default)
+            => new() { Function = ReducerFunction.ToList, Expressions = [field], Name = name };
+
+        /// <summary>
+        /// Creates a <c>FIRST_VALUE</c> reducer, which returns the value of <paramref name="field"/>
+        /// from a single record in the group. Without <paramref name="by"/>, the first record
+        /// encountered wins. With <paramref name="by"/>, the record whose <paramref name="by"/>
+        /// property is smallest (<see cref="SortOrder.Ascending"/>, the default) or largest
+        /// (<see cref="SortOrder.Descending"/>) wins; ties keep the first-encountered record.
+        /// </summary>
+        /// <param name="field">The property whose value is returned.</param>
+        /// <param name="by">The property used to choose which record's value of <paramref name="field"/> is returned.</param>
+        /// <param name="order">The direction used to pick the winning record when <paramref name="by"/> is set.</param>
+        /// <param name="name">
+        /// A user defined property name for the reducer. If not provided, the server generates a default name.
+        /// </param>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="order"/> is specified without <paramref name="by"/>.</exception>
+        public static AggregateReducer FirstValue(ValkeyValue field, ValkeyValue by = default, SortOrder order = SortOrder.Default, ValkeyValue name = default)
+        {
+            if (by.IsNull && order != SortOrder.Default)
+            {
+                throw new ArgumentException($"{nameof(order)} requires {nameof(by)} to be set.");
+            }
+
+            List<ValkeyValue> expressions = [field];
+            if (!by.IsNull)
+            {
+                expressions.Add(ValkeyLiterals.BY);
+                expressions.Add(by);
+                switch (order)
+                {
+                    case SortOrder.Ascending:
+                        expressions.Add(ValkeyLiterals.ASC);
+                        break;
+                    case SortOrder.Descending:
+                        expressions.Add(ValkeyLiterals.DESC);
+                        break;
+                    case SortOrder.Default:
+                    default:
+                        break;
+                }
+            }
+
+            return new() { Function = ReducerFunction.FirstValue, Expressions = expressions, Name = name };
+        }
+
+        /// <summary>
+        /// Creates a <c>RANDOM_SAMPLE</c> reducer, which returns a uniform random sample of up to
+        /// <paramref name="size"/> values of <paramref name="field"/> from the records in a group,
+        /// using reservoir sampling.
+        /// </summary>
+        /// <param name="field">The property to sample values from.</param>
+        /// <param name="size">
+        /// The maximum number of values to sample. Must be a non-negative integer no greater than
+        /// 1000; the server rejects values outside this range.
+        /// </param>
+        /// <param name="name">
+        /// A user defined property name for the reducer. If not provided, the server generates a default name.
+        /// </param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="size"/> is negative or greater than 1000.</exception>
+        public static AggregateReducer RandomSample(ValkeyValue field, long size, ValkeyValue name = default)
+        {
+            if (size is < 0 or > 1000)
+            {
+                throw new ArgumentOutOfRangeException(nameof(size), size, "RANDOM_SAMPLE's size must be a non-negative integer no greater than 1000; the server rejects values outside this range.");
+            }
+
+            return new() { Function = ReducerFunction.RandomSample, Expressions = [field, size.ToGlideString()], Name = name };
+        }
 
         /// <summary>
         /// Converts to command arguments.
@@ -342,6 +446,12 @@ public static partial class Ft
     /// A filter expression for an aggregate command.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ft.aggregate/">Valkey commands – FT.AGGREGATE</seealso>
+    /// <remarks>
+    /// For FT.HYBRID, a <see cref="AggregateFilter"/> placed as the first clause after the VSIM arm
+    /// is claimed by the server's VSIM parser as a VSIM pre-filter instead of an aggregate FILTER
+    /// clause -- use <see cref="HybridOptions.Clauses"/> only after at least one other clause,
+    /// or see <see cref="HybridVsimFilter"/> for an explicit VSIM pre-filter.
+    /// </remarks>
     /// <param name="expression">The filter expression.</param>
     [method: SetsRequiredMembers]
     public sealed class AggregateFilter(ValkeyValue expression) : IAggregateClause
@@ -378,6 +488,124 @@ public static partial class Ft
     }
 
     /// <summary>
+    /// A single entry in the <c>LOAD</c> clause of FT.AGGREGATE (or FT.HYBRID), optionally renaming
+    /// the loaded field via <c>AS</c>. Modelled on <see cref="SearchReturnField"/> (the equivalent
+    /// concept for FT.SEARCH's <c>RETURN</c> option).
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/ft.aggregate/">Valkey commands – FT.AGGREGATE</seealso>
+    /// <remarks>
+    /// <c>AS alias</c> in the <c>LOAD</c> clause is a compatibility fix introduced in valkey-search 1.3.0,
+    /// gated by the <c>ft_aggregate_load_as</c> compatibility flag. Below
+    /// <c>search.emulate-release 1.3.0</c>, the legacy branch does not recognize <c>AS</c> as a rename
+    /// keyword at all: it is consumed as just another LOAD field token (i.e. treated as the
+    /// identifier of a field literally named <c>AS</c>) rather than a rename directive. Since no
+    /// schema ever has a field actually named <c>AS</c>, this mechanism is what causes the server
+    /// to reject the whole command outright ("field AS does not exist") rather than silently
+    /// ignoring the alias. Requires <c>search.emulate-release</c> &gt;= 1.3.0 to take effect.
+    /// </remarks>
+    /// <remarks>
+    /// Creates a new <see cref="LoadField"/> with the specified field identifier and optional alias.
+    /// </remarks>
+    /// <param name="fieldIdentifier">The identifier for the field to load.</param>
+    /// <param name="alias">An optional alias to emit the field's column under.</param>
+    [method: SetsRequiredMembers]
+    /// <summary>
+    /// A single entry in the <c>LOAD</c> clause of FT.AGGREGATE (or FT.HYBRID), optionally renaming
+    /// the loaded field via <c>AS</c>. Modelled on <see cref="SearchReturnField"/> (the equivalent
+    /// concept for FT.SEARCH's <c>RETURN</c> option).
+    /// </summary>
+    /// <param name="fieldIdentifier">The identifier for the field to load.</param>
+    /// <param name="alias">The alias to emit the field's column under. Requires <c>search.emulate-release</c> &gt;= 1.3.0 to take effect.</param>
+    /// <seealso href="https://valkey.io/commands/ft.aggregate/">Valkey commands – FT.AGGREGATE</seealso>
+    /// <remarks>
+    /// <c>AS alias</c> in the <c>LOAD</c> clause is a compatibility fix introduced in valkey-search 1.3.0,
+    /// gated by the <c>ft_aggregate_load_as</c> compatibility flag. Below
+    /// <c>search.emulate-release 1.3.0</c>, the legacy branch does not recognize <c>AS</c> as a rename
+    /// keyword at all: it is consumed as just another LOAD field token (i.e. treated as the
+    /// identifier of a field literally named <c>AS</c>) rather than a rename directive. Since no
+    /// schema ever has a field actually named <c>AS</c>, this mechanism is what causes the server
+    /// to reject the whole command outright ("field AS does not exist") rather than silently
+    /// ignoring the alias. Requires <c>search.emulate-release</c> &gt;= 1.3.0 to take effect.
+    /// </remarks>
+    public sealed class LoadField(ValkeyValue fieldIdentifier, ValkeyValue alias = default)
+    {
+        /// <summary>
+        /// The identifier for the field to load.
+        /// </summary>
+        public required ValkeyValue FieldIdentifier { get; init; } = fieldIdentifier;
+
+        /// <summary>
+        /// The alias to emit the field's column under. Requires <c>search.emulate-release</c> &gt;= 1.3.0 to take effect.
+        /// </summary>
+        public ValkeyValue Alias { get; init; } = alias;
+
+        /// <summary>
+        /// Converts a <see cref="string"/> to a <see cref="LoadField"/>.
+        /// </summary>
+        /// <param name="fieldIdentifier">The field identifier.</param>
+        public static implicit operator LoadField(string fieldIdentifier)
+            => new(fieldIdentifier);
+
+        /// <summary>
+        /// Converts a <see cref="ValkeyValue"/> to a <see cref="LoadField"/>.
+        /// </summary>
+        /// <param name="fieldIdentifier">The field identifier.</param>
+        public static implicit operator LoadField(ValkeyValue fieldIdentifier)
+            => new(fieldIdentifier);
+
+        /// <summary>
+        /// Converts to command arguments for this LOAD clause entry.
+        /// </summary>
+        internal GlideString[] ToArgs()
+            => Alias.IsNull ? [FieldIdentifier] : [FieldIdentifier, ValkeyLiterals.AS, Alias];
+    }
+
+    /// <summary>
+    /// The <c>WITHCURSOR</c> option, requesting a paged reply instead of the whole result set at once.
+    /// Shared between FT.AGGREGATE and FT.HYBRID -- the option's grammar (<code>WITHCURSOR [COUNT n]
+    /// [MAXIDLE ms]</code>) and reply shape are identical regardless of which command opened the cursor.
+    /// A paged query, and every subsequent <see cref="CursorReadAsync"/>/<see cref="CursorDelAsync"/>
+    /// against the cursor it opens, is pinned to the PRIMARY of the index's slot regardless of the
+    /// client's read-from configuration -- a cursor is a per-process, node-local resource, and this
+    /// is a deliberate, documented exception to GLIDE's normal read routing.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/ft.cursor/">Valkey commands – FT.CURSOR</seealso>
+    public sealed class WithCursor
+    {
+        /// <summary>
+        /// The number of rows to return per page, or <see langword="null"/> for server default.
+        /// </summary>
+        public long? Count { get; init; }
+
+        /// <summary>
+        /// How long (in milliseconds) the cursor may sit idle between reads before the server
+        /// discards it, or <see langword="null"/> for server default.
+        /// </summary>
+        public long? MaxIdle { get; init; }
+
+        /// <summary>
+        /// Converts to command arguments for the WITHCURSOR option.
+        /// </summary>
+        internal GlideString[] ToArgs()
+        {
+            List<GlideString> args = [ValkeyLiterals.WITHCURSOR];
+            if (Count.HasValue)
+            {
+                args.Add(ValkeyLiterals.COUNT);
+                args.Add(Count.Value.ToGlideString());
+            }
+
+            if (MaxIdle.HasValue)
+            {
+                args.Add(ValkeyLiterals.MAXIDLE);
+                args.Add(MaxIdle.Value.ToGlideString());
+            }
+
+            return [.. args];
+        }
+    }
+
+    /// <summary>
     /// Options for an aggregate command.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ft.aggregate/">Valkey commands – FT.AGGREGATE</seealso>
@@ -409,6 +637,12 @@ public static partial class Ft
         public IEnumerable<ValkeyValue>? LoadFields { get; init; } = LoadNone;
 
         /// <summary>
+        /// Fields to load from the document hash, optionally renamed via <see cref="LoadField.Alias"/>
+        /// (valkey-search 1.3.0). Takes priority over <see cref="LoadFields"/> when set.
+        /// </summary>
+        public IEnumerable<LoadField>? LoadFieldEntries { get; init; }
+
+        /// <summary>
         /// Key/value pairs referenced from within the query expression (<c>PARAMS</c>).
         /// </summary>
         public IDictionary<ValkeyValue, ValkeyValue> Params { get; init; }
@@ -434,6 +668,36 @@ public static partial class Ft
         /// The aggregate clauses to apply.
         /// </summary>
         public IEnumerable<IAggregateClause> Clauses { get; init; } = [];
+
+        /// <summary>
+        /// The query dialect version to use, or <see langword="null"/> for server default.
+        /// The only supported dialect is <c>2</c>.
+        /// </summary>
+        public int? Dialect { get; init; }
+
+        /// <summary>
+        /// Whether to expose the relevance score as a pipeline field named <c>__score</c>
+        /// (<c>ADDSCORES</c>) (valkey-search 1.3.0). <c>__score</c> can then be referenced like any
+        /// other pipeline field in a <see cref="LoadField"/>, <see cref="AggregateApply"/> expression,
+        /// or an <see cref="AggregateSortExpression"/>.
+        /// </summary>
+        public bool AddScores { get; init; }
+
+        /// <summary>
+        /// The scoring function used to compute <c>__score</c> and rank results, or
+        /// <see langword="null"/> for server default (valkey-search 1.3.0). <c>"BM25STD"</c> is the
+        /// only value currently registered and selectable; any other value is rejected by the server.
+        /// Has no visible effect unless combined with <see cref="AddScores"/>.
+        /// </summary>
+        public ValkeyValue Scorer { get; init; }
+
+        /// <summary>
+        /// Requests a paged reply instead of the whole result set at once. See <see cref="WithCursor"/>.
+        /// A paged query, and every subsequent FT.CURSOR READ/DEL against the cursor it opens, always
+        /// reads from the PRIMARY of the index's slot, regardless of the client's read-from
+        /// configuration.
+        /// </summary>
+        public WithCursor? WithCursorOptions { get; init; }
 
         #endregion
     }

@@ -321,3 +321,18 @@ jobs:
                   task test:integration
                   filter=ServerModules
                   verbosity=detailed
+
+            - name: Run valkey-search 1.3 module test harness against Docker servers (M6)
+              # M6: Valkey.Glide.ModuleTests was never wired into any CI workflow before this
+              # fix, so the claim that "CI skips the 1.3 tests with a stated reason on 9.1.3"
+              # never actually happened in CI -- only locally, via utils/run-modules-ci-locally.sh.
+              # This step doesn't prove 1.3 behaviour (the pinned image here is 9.1.3 / search
+              # 1.2.1 -- the 1.3-level proof is local-only, against a source-built 1.3 module), but
+              # it does prove the probe/skip path itself runs for real in CI: every 1.3-gated
+              # test here must report "skipped", not error or silently pass, against this image.
+              env:
+                  MODULES_STANDALONE_ENDPOINT: ${{ env.MODULES_STANDALONE_ENDPOINT }}
+                  MODULES_CLUSTER_ENDPOINTS: ${{ env.MODULES_CLUSTER_ENDPOINTS }}
+              run: >-
+                  dotnet test tests/Valkey.Glide.ModuleTests/Valkey.Glide.ModuleTests.csproj
+                  -c Debug --verbosity detailed

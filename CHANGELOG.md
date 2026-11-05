@@ -5,6 +5,123 @@ All notable changes to the Valkey GLIDE C# client will be documented in this fil
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
+## Unreleased
+
+### Added
+
+- Valkey Search 1.3 typed API, covering valkey-search 1.3's full parity surface against
+  RediSearch (wave 1 and wave 2):
+  - `Ft.HybridAsync`/`Ft.HybridWithCursorAsync` (FT.HYBRID): combines a SEARCH arm with a VSIM arm
+    and fuses their results, via `HybridSearchArm`, `HybridVsimArm`, `HybridVsimFilter` (with
+    `HybridFilterPolicy.Adhoc`/`Batches`), and `HybridCombine` (`HybridRrf`, `HybridLinear`,
+    `HybridFunction`); the vector may be given as raw bytes or as an explicit `$name` parameter
+    reference; `HybridOptions.LocalOnly` and `HybridOptions.Combine`'s `FUNCTION` kind are
+    valkey-search extensions beyond RediSearch's own FT.HYBRID
+  - `Ft.AggregateWithCursorAsync`/`Ft.CursorReadAsync`/`Ft.CursorDelAsync` (FT.AGGREGATE
+    WITHCURSOR, FT.CURSOR READ/DEL): paged aggregate replies via `Ft.WithCursor`; cursors (and
+    FT.HYBRID's own `WITHCURSOR`) are pinned to the PRIMARY of the index's slot in cluster mode,
+    regardless of the client's read-from configuration, since a cursor is a per-process,
+    node-local resource on the server
+  - `Ft.SearchOptions.WithScores`/`Scorer`, `Ft.AggregateOptions.AddScores`/`Scorer`
+    (WITHSCORES/SCORER/ADDSCORES): per-document relevance scores, exposed as `SearchDocument.Score`
+    or the `__score` pipeline field; `"BM25STD"` is the only registered scorer
+  - `Ft.SearchOptions.InKeys` (INKEYS): restricts FT.SEARCH to a given key set
+  - `Ft.SearchOptions.Count` (`LIMIT 0 0`): returns only `SearchResult.TotalResults`, no document
+    rows
+  - `AggregateReducer.ToList`/`FirstValue`/`RandomSample` (TOLIST/FIRST_VALUE/RANDOM_SAMPLE
+    reducers)
+  - `Ft.CreateVectorField.Type` `Float16`/`Bfloat16` (FLOAT16/BFLOAT16 vector element types)
+  - `Ft.CreateOptions.Filter` (FILTER): excludes non-matching documents from the index even if
+    their key matches a configured prefix
+  - `Ft.CreateField.Unf` (SORTABLE UNF): preserves a sortable field's original, un-normalized value
+  - `Ft.LoadField`/`Ft.AggregateOptions.LoadFieldEntries` (`LOAD ... AS alias`): renames a loaded
+    field's output column; requires `search.emulate-release >= 1.3.0` to take effect (see
+    Limitations)
+  - `Ft.CreateOptions.ScoreField` and `Ft.InfoLocalResult.ScoreField`/`DefaultScore`
+    (SCORE_FIELD, `index_definition.score_field`/`default_score`): a document field whose value
+    multiplies into the final relevance score; `InfoLocalResult` only reports `ScoreField` at
+    `search.emulate-release >= 1.3.0` (see Limitations)
+  - `Ft.CreateOptions.NoHighlight` (NOHL): wire-compatible no-op, since valkey-search does not
+    implement highlighting
+  - Vector Range queries in FT.SEARCH/FT.AGGREGATE: `@field:[VECTOR_RANGE radius $blob]`, with
+    `$YIELD_DISTANCE_AS`
+  - An adjacent `LIMIT` widening a `SORTBY`'s own default/`MAX` row cap, at
+    `search.emulate-release >= 1.3.0` (see Limitations)
+  - A bare `*` query as match-all in FT.SEARCH/FT.AGGREGATE (previously required the
+    `@field:[-inf +inf]` workaround)
+- Local module-test harness (`tests/Valkey.Glide.ModuleTests`, `utils/start-valkey-docker-modules.sh`,
+  `utils/run-modules-ci-locally.sh`): runs the valkey-search 1.3 surface against real Docker-based
+  valkey-search modules, gated by a capability probe and a `search.emulate-release` level fixture.
+  The suite's feature-coverage tests run against the standalone client; two tests
+  (`LevelFixture_ClusterBranch_ReadsSameLevelAsStandalone`, `Cursor_RoutesToIndexSlotPrimaryInClusterMode`)
+  and the multi-shard placement test (`Search_MultiShardNoHashtag_AggregatesAcrossShards`) run
+  against the cluster deployment directly when cluster endpoints are provided -- see Limitations
+  for why generic feature tests are not duplicated across both topologies
+- 40 module tests covering FT.CREATE (FLOAT16/BFLOAT16 vector types with live KNN queries,
+  FILTER exclusion, SORTABLE UNF case preservation, SCORE_FIELD ranking and FT.INFO reporting,
+  NOHL), FT.SEARCH (WITHSCORES ranking, SCORER rejection of unregistered scorers, INKEYS, COUNT,
+  LIMIT pagination, bare `*`, Vector Range, the combined WITHSCORES+WITHSORTKEYS reply shape),
+  FT.AGGREGATE (TOLIST/RANDOM_SAMPLE array-valued reducers, ADDSCORES/SCORER ranking, `LoadField`
+  alias branched on the `search.emulate-release` level, SORTBY widened by an adjacent LIMIT,
+  WITHCURSOR paged to exhaustion), FT.CURSOR READ/DEL error paths, FT.HYBRID (SEARCH+VSIM arms,
+  RRF/LINEAR/FUNCTION combine verified to actually change ranking, the FILTER-immediately-after-
+  VSIM-arm-with-no-LOAD regression case, LOCALONLY, VSIM FILTER with POLICY, the `$name` parameter
+  reference path, omitted `K` defaulting to 10, VSIM RANGE and in-transaction rejection), and
+  cluster-mode cursor routing to the index slot's primary
+
+### Fixed
+
+- `Ft.InfoLocalAsync`: the nested `index_definition` and `attributes` (and each vector attribute's
+  own `index`/`algorithm`) sub-structures in a real valkey-search 1.3 `FT.INFO ... LOCAL` reply
+  arrive from glide-core as flat key/value arrays rather than maps, since glide-core's generic
+  FT.INFO reshape was written against the older RediSearch-style flat shape and only recurses into
+  that shape's own `fields`/`vector_params` keys. `Ft.InfoLocalAsync` now normalizes these
+  sub-structures itself instead of assuming glide-core already reshaped them, fixing a cast
+  exception that only reproduces against a real module (not the mocked unit tests)
+- `Ft.AggregateAsync`/`Ft.HybridAsync`/cursor reads threw `RequestException` on any row containing
+  an array-valued reducer result (TOLIST, RANDOM_SAMPLE), since the response parser only handled
+  scalar cell values. Array-valued cells are now reported as a JSON-array-shaped string (e.g.
+  `["10","30"]`)
+- The main integration-test suite's `ServerModules` FT tests (680 test cases, across standalone
+  and cluster and both RESP2/RESP3 protocol parametrizations, in
+  `FtCreateTests`/`FtSearchTests`/`FtAggregateTests`/`FtInfoTests`/`FtDropIndexTests`/`FtListTests`)
+  never ran against a real search module in any CI or local configuration: `TestConfiguration`
+  only read `standalone-endpoints`/`cluster-endpoints`, not the module-test harness's
+  `MODULES_STANDALONE_ENDPOINT`/`MODULES_CLUSTER_ENDPOINTS`, so they always skipped via
+  `ModuleUtils.SkipIfSearchModuleNotAvailableAsync`. `TestConfiguration` now falls back to the
+  module-test harness's variable names, and `utils/run-modules-ci-locally.sh` now runs this suite
+  (filtered to `ServerModules`) alongside `Valkey.Glide.ModuleTests`. Confirmed live in all three
+  required configurations: all 680 pass against the 1.3-shaped `FT.INFO`/`FT.SEARCH` replies
+
+### Limitations
+
+- `search.emulate-release` defaults to the module's current major version (`1.0.0` on a stock 1.3
+  module) rather than `1.3.0`; GLIDE stays a pass-through and does not set it. Four observed
+  behaviours change below `search.emulate-release 1.3.0` even on a 1.3-capable binary:
+  `Ft.LoadField.Alias` (the legacy branch treats `AS` as a literal field name, so the command is
+  rejected outright rather than renaming the column), an adjacent `LIMIT` widening a `SORTBY`'s
+  row cap (stays capped at `SORTBY`'s own default/`MAX`), `Ft.InfoLocalResult.ScoreField`
+  (absent entirely below 1.3.0, with `DefaultScore` always reporting the legacy literal `1.0`),
+  and the wire-level prefix byte on a `WITHSORTKEYS` sort key (`SearchDocument.SortKey`): `'$'` at
+  >= 1.3.0, `'#'` below it, confirmed live against the same rc2 binary at both levels. GLIDE
+  reports the sort key verbatim either way; nothing strips or reinterprets the prefix
+- FT.HYBRID and FT.CURSOR READ/DEL dispatch via `RequestType.CustomCommand`, not a dedicated
+  `RequestType`, since glide-core's reply reshaping keys on the literal command text rather than
+  the `RequestType` tag -- no behavioural difference, but a future glide-core release adding
+  dedicated `RequestType`s for these commands may be adopted in a follow-up
+- Cursor affinity (FT.AGGREGATE/FT.HYBRID `WITHCURSOR`, and every subsequent FT.CURSOR READ/DEL)
+  pins to the PRIMARY of the index's slot in cluster mode, regardless of the client's read-from
+  configuration, matching RediSearch clients' behaviour via a different mechanism (a cursor is a
+  per-process, node-local resource; redis-py instead remembers the node of the last FT.AGGREGATE
+  call)
+- `FT.CREATE` is not broadcast cluster-wide on valkey-search 1.3.0-rc1: an index lands on exactly
+  the one primary GLIDE's cluster client happens to route the command to (by the index name's key
+  hash), and `FT.SEARCH`/`FT.AGGREGATE` only see documents that are both present and indexed on
+  that same primary -- confirmed live against a real 6-node cluster deployment. This is a
+  server/engine behaviour, not a GLIDE routing bug; a caller running this port's cluster client
+  against a multi-primary deployment should either co-locate the index and its documents with a
+  shared hashtag, or confirm on their own valkey-search version whether this still holds
+
 ## 1.2.0
 
 ### Added
