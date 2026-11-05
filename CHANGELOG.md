@@ -45,6 +45,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `DELIFEQ` (#575)
   - `FAILOVER` (#446)
   - `HGETDEL` (#285)
+  - `LATENCY HISTORY` (#438)
+  - `LATENCY LATEST` (#438)
+  - `LATENCY RESET` (#438)
   - `MEMORY DOCTOR` (#443)
   - `MEMORY MALLOC-STATS` (#443)
   - `MEMORY PURGE` (#443)
@@ -54,9 +57,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `REPLICAOF` (#446)
   - `RESET` (#435)
   - `SAVE` (#440)
-- Support new Valkey 9.1 commands:
+- Support new Valkey 9.x commands:
   - `HSETEX` with `NX` and `XX` options (#582)
-- Support new Valkey 9.2 commands:
   - `INFO` with `cluster_info` section (#590)
   - `SET` with `IFNE` option (#579)
   - `SISMEMBER` with `XX` option (#581)
@@ -81,6 +83,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Logger`, `InfoOptions`, and `Options` are now `static` classes.
 - The Availability Zone (`ReadFrom.Az`) is trimmed of surrounding whitespace before it is used, so an AZ-affinity strategy configured with a padded value now engages AZ affinity instead of silently spreading reads across all nodes (#533)
 - `SET` with `IFEQ` or `IFNE` now throws a `RequestException` when compression is enabled (#579)
+- `CLIENT INFO` now reports `lib-name` and `lib-ver` correctly (#415)
 
 ### Fixed
 
@@ -99,6 +102,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Culture-invariant parsing of numeric string responses (#557)
 - `ISubscriber` corrupting binary (non-UTF-8) channel names and messages (#594)
 - `GETSET` custom command compresses its value when compression is enabled (#579)
+- `ConnectionMultiplexer.GetServers()` throwing `FormatException` when cluster nodes are addressed by DNS hostname (#419)
+- Race condition that could throw `ArgumentOutOfRangeException` on the thread pool when a response arrived after the client was disposed (#466)
 
 ### Security
 
