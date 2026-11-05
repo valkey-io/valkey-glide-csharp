@@ -594,12 +594,14 @@ public static partial class Ft
         public TimeSpan? Timeout { get; init; }
 
         /// <summary>
-        /// Param key/value pairs referenced from within the SEARCH query, a VSIM arm's <c>$name</c>
-        /// vector reference, or any clause's expression text. If <see cref="HybridVsimArm.Vector"/>
-        /// in the same call is given raw vector bytes rather than an explicit <c>$name</c> string,
-        /// an internally generated entry is merged into this mapping automatically -- a name
-        /// collision with a caller-supplied entry here throws <see cref="ArgumentException"/>
-        /// rather than silently overwriting either one.
+        /// Param key/value pairs supplying a VSIM arm's <c>$name</c> vector reference, or any
+        /// aggregate clause's (FILTER, APPLY) expression text. The SEARCH arm's query text is not
+        /// substituted -- same as FT.SEARCH's own non-vector predicates, a bare <c>$name</c> there
+        /// either fails to parse or matches the literal text, never a param value. If
+        /// <see cref="HybridVsimArm.Vector"/> in the same call is given raw vector bytes rather
+        /// than an explicit <c>$name</c> string, an internally generated entry is merged into this
+        /// mapping automatically -- a name collision with a caller-supplied entry here throws
+        /// <see cref="ArgumentException"/> rather than silently overwriting either one.
         /// </summary>
         public IDictionary<ValkeyValue, ValkeyValue> Params { get; init; } = new Dictionary<ValkeyValue, ValkeyValue>();
 
