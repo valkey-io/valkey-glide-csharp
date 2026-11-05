@@ -16,6 +16,37 @@ namespace Valkey.Glide;
 /// </summary>
 public sealed class ConnectionMultiplexer : IConnectionMultiplexer
 {
+    #region Private Fields
+
+    private readonly object _lock = new();
+    private Database? _db;
+    private readonly ConcurrentDictionary<ValkeyChannel, Subscription> _subscriptions = new();
+
+    #endregion
+    #region Constructors
+
+    private ConnectionMultiplexer(ConfigurationOptions configuration)
+    {
+        RawConfig = configuration;
+    }
+
+    #endregion
+    #region Public Properties
+
+    /// <inheritdoc/>
+    public bool IsConnected => true;
+
+    /// <inheritdoc/>
+    public bool IsConnecting => false;
+
+    #endregion
+    #region Internal Properties
+
+    internal ConfigurationOptions RawConfig { get; }
+
+    #endregion
+    #region Public Methods
+
     /// <inheritdoc cref="ConnectAsync(string, TextWriter?)" />
     public static ConnectionMultiplexer Connect(string configuration, TextWriter? log = null)
         => Connect(ConfigurationOptions.Parse(configuration), log);
@@ -158,12 +189,6 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer
     }
 
     /// <inheritdoc/>
-    public bool IsConnected => true;
-
-    /// <inheritdoc/>
-    public bool IsConnecting => false;
-
-    /// <inheritdoc/>
     public ISubscriber GetSubscriber() => new Subscriber(this, _db!);
 
     /// <inheritdoc/>
@@ -202,17 +227,16 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer
     public async ValueTask DisposeAsync() => await Task.Run(Dispose);
 
     /// <inheritdoc/>
+    void IConnectionMultiplexer.Close() => Dispose();
+
+    /// <inheritdoc/>
+    Task IConnectionMultiplexer.CloseAsync() => DisposeAsync().AsTask();
+
+    /// <inheritdoc/>
     public override string ToString() => _db!.ToString();
 
-    internal ConfigurationOptions RawConfig { get; }
-
-    private readonly object _lock = new();
-    private Database? _db;
-
-    private ConnectionMultiplexer(ConfigurationOptions configuration)
-    {
-        RawConfig = configuration;
-    }
+    #endregion
+    #region Internal Methods
 
     internal static T CreateClientConfigBuilder<T>(ConfigurationOptions configuration)
         where T : ClientConfigurationBuilder<T>, new()
@@ -259,16 +283,6 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer
 
         return config;
     }
-
-    /// <inheritdoc/>
-    void IConnectionMultiplexer.Close() => Dispose();
-
-    /// <inheritdoc/>
-    Task IConnectionMultiplexer.CloseAsync() => DisposeAsync().AsTask();
-
-    #region Subscriptions
-
-    private readonly ConcurrentDictionary<ValkeyChannel, Subscription> _subscriptions = new();
 
     /// <summary>
     /// Adds a subscription handler for the specified channel.
@@ -413,6 +427,9 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer
         }
     }
 
+    #endregion
+    #region Private Methods
+
     /// <summary>
     /// Converts a <see cref="PubSubMessage"/> to a <see cref="ValkeyChannel"/>.
     /// </summary>
@@ -431,8 +448,6 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer
         };
     }
 
-    #endregion
-
     /// <summary>
     /// Determines whether the given configuration corresponds to a cluster server.
     /// </summary>
@@ -448,4 +463,6 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer
         string info = await standalone.InfoAsync([Section.CLUSTER]);
         return info.Contains("cluster_enabled:1");
     }
+
+    #endregion
 }

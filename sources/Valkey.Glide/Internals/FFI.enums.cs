@@ -316,7 +316,7 @@ internal partial class FFI
         AclWhoami = 1112,
         BgRewriteAof = 1113,
         BgSave = 1114,
-        Command_ = 1115, // Command - renamed to avoid collisions
+        Command = 1115,
         CommandCount = 1116,
         CommandDocs = 1117,
         CommandGetKeys = 1118,

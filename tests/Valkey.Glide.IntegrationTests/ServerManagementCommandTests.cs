@@ -16,13 +16,18 @@ namespace Valkey.Glide.IntegrationTests;
 [CollectionDefinition(DisableParallelization = true)]
 public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture<ClientFixture>
 {
-    #region Private Fields
+    #region Constants
 
-    private GlideClient StandaloneClient => fixture.StandaloneClient;
-    private GlideClusterClient ClusterClient => fixture.ClusterClient;
+    /// <summary>
+    /// Expected server error response for <c>BGSAVE CANCEL</c> when no save is in progress.
+    /// </summary>
+    private const string BgSaveNotCancelledResponse = "Background saving is currently not in progress or scheduled";
+
+    private const string FailoverErrorMessageExpected = "FAILOVER requires connected replicas.";
+    private const string FailoverAbortErrorMessageExpected = "No failover in progress.";
 
     #endregion
-    #region Constants
+    #region Private Fields
 
     /// <summary>
     /// Expected valid responses for a <c>BGREWRITEAOF</c> command.
@@ -37,6 +42,43 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     /// Route to a primary node.
     /// </summary>
     private static readonly SlotKeyRoute PrimaryRoute = new("1", SlotType.Primary);
+
+    /// <summary>
+    /// Expected valid responses for <c>BGSAVE</c> and <c>BGSAVE SCHEDULE</c> commands.
+    /// </summary>
+    private static readonly string[] BgSaveResponses =
+    [
+        "Background saving started",
+        "Background saving scheduled",
+    ];
+
+    /// <summary>
+    /// One field from each <c>INFO</c> section that is always populated.
+    /// Excludes sections that may be empty or depend on the server version or mode.
+    /// </summary>
+    private static readonly string[] InfoFields =
+    [
+        "redis_version",                // server
+        "connected_clients",            // clients
+        "used_memory",                  // memory
+        "rdb_changes_since_last_save",  // persistence
+        "total_commands_processed",     // stats
+        "role",                         // replication
+        "used_cpu_sys",                 // cpu
+        "cluster_enabled",              // cluster
+    ];
+
+    /// <summary>
+    /// Valid values for the <c>rdb_current_bgsave_type</c> and <c>rdb_last_bgsave_type</c> fields.
+    /// Since Valkey 9.2.
+    /// </summary>
+    private static readonly string[] BgSaveTypes = ["fork", "forkless", "none"];
+
+    #endregion
+    #region Private Properties
+
+    private GlideClient StandaloneClient => fixture.StandaloneClient;
+    private GlideClusterClient ClusterClient => fixture.ClusterClient;
 
     #endregion
     #region SaveAsync Tests
@@ -358,20 +400,6 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     #endregion
     #region BackgroundSaveAsync Tests
 
-    /// <summary>
-    /// Expected valid responses for <c>BGSAVE</c> and <c>BGSAVE SCHEDULE</c> commands.
-    /// </summary>
-    private static readonly string[] BgSaveResponses =
-    [
-        "Background saving started",
-        "Background saving scheduled",
-    ];
-
-    /// <summary>
-    /// Expected server error response for <c>BGSAVE CANCEL</c> when no save is in progress.
-    /// </summary>
-    private const string BgSaveNotCancelledResponse = "Background saving is currently not in progress or scheduled";
-
     [Theory]
     [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
     public async Task BackgroundSaveAsync_ReturnsExpectedResponse(bool clusterMode)
@@ -469,28 +497,6 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
 
     #endregion
     #region InfoAsync Tests
-
-    /// <summary>
-    /// One field from each <c>INFO</c> section that is always populated.
-    /// Excludes sections that may be empty or depend on the server version or mode.
-    /// </summary>
-    private static readonly string[] InfoFields =
-    [
-        "redis_version",                // server
-        "connected_clients",            // clients
-        "used_memory",                  // memory
-        "rdb_changes_since_last_save",  // persistence
-        "total_commands_processed",     // stats
-        "role",                         // replication
-        "used_cpu_sys",                 // cpu
-        "cluster_enabled",              // cluster
-    ];
-
-    /// <summary>
-    /// Valid values for the <c>rdb_current_bgsave_type</c> and <c>rdb_last_bgsave_type</c> fields.
-    /// Since Valkey 9.2.
-    /// </summary>
-    private static readonly string[] BgSaveTypes = ["fork", "forkless", "none"];
 
     [Theory]
     [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
@@ -748,6 +754,60 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     }
 
     #endregion
+    #region Failover Tests
+
+    [Fact]
+    public async Task FailoverAsync_NoReplicas_ThrowsRequestException()
+    {
+        using var server = new StandaloneServer(replicaCount: 0);
+        await using GlideClient client = await server.CreateStandaloneClientAsync();
+
+        var ex = await Assert.ThrowsAsync<RequestException>(client.FailoverAsync);
+        Assert.Contains(FailoverErrorMessageExpected, ex.Message);
+    }
+
+    [Fact]
+    public async Task FailoverAsync_AbortNoFailoverInProgress_ThrowsRequestException()
+    {
+        var ex = await Assert.ThrowsAsync<RequestException>(
+            () => StandaloneClient.FailoverAsync(FailoverOptions.Abort()));
+        Assert.Contains(FailoverAbortErrorMessageExpected, ex.Message);
+    }
+
+    [Fact]
+    public async Task FailoverAsync_Succeeds()
+    {
+        using var server = new StandaloneServer(replicaCount: 1);
+        await using GlideClient client = await server.CreateStandaloneClientAsync();
+
+        await client.FailoverAsync();
+        await WaitForSlaveAsync(client);
+    }
+
+    #endregion
+    #region ReplicaOf Tests
+
+    [Fact]
+    public async Task ReplicaOfAsync_AndReplicaOfNoOneAsync()
+    {
+        // Start primary and secondary servers with no replicas.
+        using var primaryServer = new StandaloneServer(replicaCount: 0);
+        using var secondaryServer = new StandaloneServer(replicaCount: 0);
+
+        await using GlideClient client = await secondaryServer.CreateStandaloneClientAsync();
+        await WaitForMasterAsync(client);
+
+        // Verify that secondary server becomes a replica of the primary server.
+        var (host, port) = primaryServer.Address;
+        await client.ReplicaOfAsync(host, port);
+        await WaitForSlaveAsync(client);
+
+        // Verify that secondary server becomes a primary server.
+        await client.ReplicaOfNoOneAsync();
+        await WaitForMasterAsync(client);
+    }
+
+    #endregion
     #region Helpers
 
     /// <summary>
@@ -844,6 +904,21 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
             ? [.. clusterValue.MultiValue.Values.SelectMany(v => v)]
             : clusterValue.SingleValue;
 
+    private static Task WaitForMasterAsync(GlideClient client)
+        => WaitForRoleAsync(client, "master");
+
+    private static Task WaitForSlaveAsync(GlideClient client)
+        => WaitForRoleAsync(client, "slave");
+
+    private static Task WaitForRoleAsync(GlideClient client, string expectedRole)
+        => Polling.WaitForAsync(
+            async () =>
+            {
+                string info = await client.InfoAsync([Section.REPLICATION]);
+                return info.Contains($"role:{expectedRole}");
+            },
+            $"Timed out waiting for role to become '{expectedRole}'");
+
     /// <summary>
     /// Gets the current server time.
     /// </summary>
@@ -938,81 +1013,6 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
                         && !info.Contains("aof_rewrite_in_progress:1"));
             },
             "Timed out waiting for save to complete");
-
-    #endregion
-    #region Failover Tests
-
-    private const string FailoverErrorMessageExpected = "FAILOVER requires connected replicas.";
-    private const string FailoverAbortErrorMessageExpected = "No failover in progress.";
-
-    [Fact]
-    public async Task FailoverAsync_NoReplicas_ThrowsRequestException()
-    {
-        using var server = new StandaloneServer(replicaCount: 0);
-        await using GlideClient client = await server.CreateStandaloneClientAsync();
-
-        var ex = await Assert.ThrowsAsync<RequestException>(client.FailoverAsync);
-        Assert.Contains(FailoverErrorMessageExpected, ex.Message);
-    }
-
-    [Fact]
-    public async Task FailoverAsync_AbortNoFailoverInProgress_ThrowsRequestException()
-    {
-        var ex = await Assert.ThrowsAsync<RequestException>(
-            () => StandaloneClient.FailoverAsync(FailoverOptions.Abort()));
-        Assert.Contains(FailoverAbortErrorMessageExpected, ex.Message);
-    }
-
-    [Fact]
-    public async Task FailoverAsync_Succeeds()
-    {
-        using var server = new StandaloneServer(replicaCount: 1);
-        await using GlideClient client = await server.CreateStandaloneClientAsync();
-
-        await client.FailoverAsync();
-        await WaitForSlaveAsync(client);
-    }
-
-    #endregion
-    #region ReplicaOf Tests
-
-    [Fact]
-    public async Task ReplicaOfAsync_AndReplicaOfNoOneAsync()
-    {
-        // Start primary and secondary servers with no replicas.
-        using var primaryServer = new StandaloneServer(replicaCount: 0);
-        using var secondaryServer = new StandaloneServer(replicaCount: 0);
-
-        await using GlideClient client = await secondaryServer.CreateStandaloneClientAsync();
-        await WaitForMasterAsync(client);
-
-        // Verify that secondary server becomes a replica of the primary server.
-        var (host, port) = primaryServer.Address;
-        await client.ReplicaOfAsync(host, port);
-        await WaitForSlaveAsync(client);
-
-        // Verify that secondary server becomes a primary server.
-        await client.ReplicaOfNoOneAsync();
-        await WaitForMasterAsync(client);
-    }
-
-    #endregion
-    #region Helpers
-
-    private static Task WaitForMasterAsync(GlideClient client)
-        => WaitForRoleAsync(client, "master");
-
-    private static Task WaitForSlaveAsync(GlideClient client)
-        => WaitForRoleAsync(client, "slave");
-
-    private static Task WaitForRoleAsync(GlideClient client, string expectedRole)
-        => Polling.WaitForAsync(
-            async () =>
-            {
-                string info = await client.InfoAsync([Section.REPLICATION]);
-                return info.Contains($"role:{expectedRole}");
-            },
-            $"Timed out waiting for role to become '{expectedRole}'");
 
     #endregion
 }

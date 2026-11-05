@@ -7,11 +7,14 @@ namespace Valkey.Glide.IntegrationTests.StackExchange;
 /// </summary>
 public class CommandFlagsTests(TestConfiguration config)
 {
-    public TestConfiguration Config { get; } = config;
-
     #region Constants
 
     private const CommandFlags UnsupportedFlag = CommandFlags.DemandMaster;
+
+    #endregion
+    #region Properties
+
+    public TestConfiguration Config { get; } = config;
 
     #endregion
     #region Bitmap Commands

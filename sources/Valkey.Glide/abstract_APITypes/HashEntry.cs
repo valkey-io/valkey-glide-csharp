@@ -37,6 +37,22 @@ public readonly struct HashEntry(ValkeyValue name, ValkeyValue value) : IEquatab
         => new(value.Key, value.Value);
 
     /// <summary>
+    /// Compares two values for equality.
+    /// </summary>
+    /// <param name="x">The first <see cref="HashEntry"/> to compare.</param>
+    /// <param name="y">The second <see cref="HashEntry"/> to compare.</param>
+    public static bool operator ==(HashEntry x, HashEntry y)
+        => x.Name == y.Name && x.Value == y.Value;
+
+    /// <summary>
+    /// Compares two values for non-equality.
+    /// </summary>
+    /// <param name="x">The first <see cref="HashEntry"/> to compare.</param>
+    /// <param name="y">The second <see cref="HashEntry"/> to compare.</param>
+    public static bool operator !=(HashEntry x, HashEntry y)
+        => x.Name != y.Name || x.Value != y.Value;
+
+    /// <summary>
     /// A "{name}: {value}" string representation of this entry.
     /// </summary>
     public override string ToString()
@@ -59,20 +75,4 @@ public readonly struct HashEntry(ValkeyValue name, ValkeyValue value) : IEquatab
     /// <param name="other">The <see cref="HashEntry"/> to compare to.</param>
     public bool Equals(HashEntry other)
         => Name == other.Name && Value == other.Value;
-
-    /// <summary>
-    /// Compares two values for equality.
-    /// </summary>
-    /// <param name="x">The first <see cref="HashEntry"/> to compare.</param>
-    /// <param name="y">The second <see cref="HashEntry"/> to compare.</param>
-    public static bool operator ==(HashEntry x, HashEntry y)
-        => x.Name == y.Name && x.Value == y.Value;
-
-    /// <summary>
-    /// Compares two values for non-equality.
-    /// </summary>
-    /// <param name="x">The first <see cref="HashEntry"/> to compare.</param>
-    /// <param name="y">The second <see cref="HashEntry"/> to compare.</param>
-    public static bool operator !=(HashEntry x, HashEntry y)
-        => x.Name != y.Name || x.Value != y.Value;
 }

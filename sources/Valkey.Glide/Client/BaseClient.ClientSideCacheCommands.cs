@@ -9,21 +9,6 @@ namespace Valkey.Glide;
 
 public abstract partial class BaseClient
 {
-    private async Task<T> GetCacheMetricAsync<T>(CacheMetricsType type, Func<object?, T> convert)
-    {
-        Message message = MessageContainer.GetMessageForCall();
-        GetCacheMetricsFfi(ClientPointer, (ulong)message.Index, (uint)type);
-        IntPtr response = await message;
-        try
-        {
-            return convert(HandleResponse(response));
-        }
-        finally
-        {
-            FreeResponse(response);
-        }
-    }
-
     /// <inheritdoc/>
     public Task<double> GetCacheHitRateAsync()
         => GetCacheMetricAsync(CacheMetricsType.HitRate, Convert.ToDouble);
@@ -47,4 +32,19 @@ public abstract partial class BaseClient
     /// <inheritdoc/>
     public Task<long> GetCacheTotalLookupsAsync()
         => GetCacheMetricAsync(CacheMetricsType.TotalLookups, Convert.ToInt64);
+
+    private async Task<T> GetCacheMetricAsync<T>(CacheMetricsType type, Func<object?, T> convert)
+    {
+        Message message = MessageContainer.GetMessageForCall();
+        GetCacheMetricsFfi(ClientPointer, (ulong)message.Index, (uint)type);
+        IntPtr response = await message;
+        try
+        {
+            return convert(HandleResponse(response));
+        }
+        finally
+        {
+            FreeResponse(response);
+        }
+    }
 }

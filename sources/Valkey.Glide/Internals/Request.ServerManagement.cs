@@ -142,6 +142,63 @@ internal static partial class Request
     #endregion
     #region Response Converters
 
+    internal static MemoryStats ParseMemoryStats(Dictionary<GlideString, object> map)
+    {
+        Dictionary<int, MemoryStatsDb> db = [];
+        foreach (KeyValuePair<GlideString, object> kvp in map)
+        {
+            string key = kvp.Key.ToString();
+            if (key.StartsWith(MemoryStatsDbPrefix) && key != "db.dict.rehashing.count")
+            {
+                string suffix = key[MemoryStatsDbPrefix.Length..];
+                if (int.TryParse(suffix, out int dbIndex))
+                {
+                    db[dbIndex] = ParseMemoryStatsDb((Dictionary<GlideString, object>)kvp.Value);
+                }
+            }
+        }
+
+        return new MemoryStats
+        {
+            Db = db,
+            AllocatorActive = GetLong(map, "allocator.active"),
+            AllocatorAllocated = GetLong(map, "allocator.allocated"),
+            AllocatorFragmentationBytes = GetLong(map, "allocator-fragmentation.bytes"),
+            AllocatorResident = GetLong(map, "allocator.resident"),
+            AllocatorRssBytes = GetLong(map, "allocator-rss.bytes"),
+            AofBuffer = GetLong(map, "aof.buffer"),
+            ClientsNormal = GetLong(map, "clients.normal"),
+            ClientsSlaves = GetLong(map, "clients.slaves"),
+            DatasetBytes = GetLong(map, "dataset.bytes"),
+            FragmentationBytes = GetLong(map, "fragmentation.bytes"),
+            KeysBytesPerKey = GetLong(map, "keys.bytes-per-key"),
+            KeysCount = GetLong(map, "keys.count"),
+            LuaCaches = GetLong(map, "lua.caches"),
+            OverheadTotal = GetLong(map, "overhead.total"),
+            PeakAllocated = GetLong(map, "peak.allocated"),
+            ReplicationBacklog = GetLong(map, "replication.backlog"),
+            RssOverheadBytes = GetLong(map, "rss-overhead.bytes"),
+            StartupAllocated = GetLong(map, "startup.allocated"),
+            TotalAllocated = GetLong(map, "total.allocated"),
+            AllocatorFragmentationRatio = GetDouble(map, "allocator-fragmentation.ratio"),
+            AllocatorRssRatio = GetDouble(map, "allocator-rss.ratio"),
+            DatasetPercentage = GetDouble(map, "dataset.percentage"),
+            Fragmentation = GetDouble(map, "fragmentation"),
+            PeakPercentage = GetDouble(map, "peak.percentage"),
+            RssOverheadRatio = GetDouble(map, "rss-overhead.ratio"),
+
+            // Optional Valkey 7.0+ fields
+            ClusterLinks = TryGetLong(map, "cluster.links"),
+            FunctionsCaches = TryGetLong(map, "functions.caches"),
+
+            // Optional Valkey 8.0+ fields
+            AllocatorMuzzy = TryGetLong(map, "allocator.muzzy"),
+            DbDictRehashingCount = TryGetLong(map, "db.dict.rehashing.count"),
+            OverheadDbHashtableLut = TryGetLong(map, "overhead.db.hashtable.lut"),
+            OverheadDbHashtableRehashing = TryGetLong(map, "overhead.db.hashtable.rehashing"),
+        };
+    }
+
     private static Cmd<object, KeyValuePair<string, string>[]> ConfigGetAsyncInternal(GlideString[] args)
         => new(
             RequestType.ConfigGet,
@@ -238,63 +295,6 @@ internal static partial class Request
         }
 
         return entries;
-    }
-
-    internal static MemoryStats ParseMemoryStats(Dictionary<GlideString, object> map)
-    {
-        Dictionary<int, MemoryStatsDb> db = [];
-        foreach (KeyValuePair<GlideString, object> kvp in map)
-        {
-            string key = kvp.Key.ToString();
-            if (key.StartsWith(MemoryStatsDbPrefix) && key != "db.dict.rehashing.count")
-            {
-                string suffix = key[MemoryStatsDbPrefix.Length..];
-                if (int.TryParse(suffix, out int dbIndex))
-                {
-                    db[dbIndex] = ParseMemoryStatsDb((Dictionary<GlideString, object>)kvp.Value);
-                }
-            }
-        }
-
-        return new MemoryStats
-        {
-            Db = db,
-            AllocatorActive = GetLong(map, "allocator.active"),
-            AllocatorAllocated = GetLong(map, "allocator.allocated"),
-            AllocatorFragmentationBytes = GetLong(map, "allocator-fragmentation.bytes"),
-            AllocatorResident = GetLong(map, "allocator.resident"),
-            AllocatorRssBytes = GetLong(map, "allocator-rss.bytes"),
-            AofBuffer = GetLong(map, "aof.buffer"),
-            ClientsNormal = GetLong(map, "clients.normal"),
-            ClientsSlaves = GetLong(map, "clients.slaves"),
-            DatasetBytes = GetLong(map, "dataset.bytes"),
-            FragmentationBytes = GetLong(map, "fragmentation.bytes"),
-            KeysBytesPerKey = GetLong(map, "keys.bytes-per-key"),
-            KeysCount = GetLong(map, "keys.count"),
-            LuaCaches = GetLong(map, "lua.caches"),
-            OverheadTotal = GetLong(map, "overhead.total"),
-            PeakAllocated = GetLong(map, "peak.allocated"),
-            ReplicationBacklog = GetLong(map, "replication.backlog"),
-            RssOverheadBytes = GetLong(map, "rss-overhead.bytes"),
-            StartupAllocated = GetLong(map, "startup.allocated"),
-            TotalAllocated = GetLong(map, "total.allocated"),
-            AllocatorFragmentationRatio = GetDouble(map, "allocator-fragmentation.ratio"),
-            AllocatorRssRatio = GetDouble(map, "allocator-rss.ratio"),
-            DatasetPercentage = GetDouble(map, "dataset.percentage"),
-            Fragmentation = GetDouble(map, "fragmentation"),
-            PeakPercentage = GetDouble(map, "peak.percentage"),
-            RssOverheadRatio = GetDouble(map, "rss-overhead.ratio"),
-
-            // Optional Valkey 7.0+ fields
-            ClusterLinks = TryGetLong(map, "cluster.links"),
-            FunctionsCaches = TryGetLong(map, "functions.caches"),
-
-            // Optional Valkey 8.0+ fields
-            AllocatorMuzzy = TryGetLong(map, "allocator.muzzy"),
-            DbDictRehashingCount = TryGetLong(map, "db.dict.rehashing.count"),
-            OverheadDbHashtableLut = TryGetLong(map, "overhead.db.hashtable.lut"),
-            OverheadDbHashtableRehashing = TryGetLong(map, "overhead.db.hashtable.rehashing"),
-        };
     }
 
     private static MemoryStatsDb ParseMemoryStatsDb(Dictionary<GlideString, object> map)

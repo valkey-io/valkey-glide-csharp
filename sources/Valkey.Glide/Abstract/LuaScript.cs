@@ -24,6 +24,19 @@ public sealed class LuaScript
     private static readonly ConcurrentDictionary<string, WeakReference<LuaScript>> Cache = new();
 
     /// <summary>
+    /// Initializes a new instance of the LuaScript class.
+    /// </summary>
+    /// <param name="originalScript">The original script with @parameter syntax.</param>
+    /// <param name="executableScript">The executable script with placeholders.</param>
+    /// <param name="arguments">The parameter names.</param>
+    internal LuaScript(string originalScript, string executableScript, string[] arguments)
+    {
+        OriginalScript = originalScript;
+        ExecutableScript = executableScript;
+        Arguments = arguments;
+    }
+
+    /// <summary>
     /// Gets the original script with @parameter syntax.
     /// </summary>
     public string OriginalScript { get; }
@@ -37,19 +50,6 @@ public sealed class LuaScript
     /// Gets the parameter names in order of first appearance.
     /// </summary>
     internal string[] Arguments { get; }
-
-    /// <summary>
-    /// Initializes a new instance of the LuaScript class.
-    /// </summary>
-    /// <param name="originalScript">The original script with @parameter syntax.</param>
-    /// <param name="executableScript">The executable script with placeholders.</param>
-    /// <param name="arguments">The parameter names.</param>
-    internal LuaScript(string originalScript, string executableScript, string[] arguments)
-    {
-        OriginalScript = originalScript;
-        ExecutableScript = executableScript;
-        Arguments = arguments;
-    }
 
     /// <summary>
     /// Prepares a script with named parameters for execution.
@@ -152,6 +152,42 @@ public sealed class LuaScript
     }
 
     /// <summary>
+    /// Asynchronously loads the script on the server and returns a LoadedLuaScript.
+    /// </summary>
+    /// <param name="server">The server to load the script on.</param>
+    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
+    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <returns>A task representing the asynchronous operation, containing a LoadedLuaScript instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if server is null.</exception>
+    /// <remarks>
+    /// This method loads the script onto the server using the SCRIPT LOAD command.
+    /// The returned LoadedLuaScript contains the SHA1 hash and can be used to execute
+    /// the script more efficiently using EVALSHA.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var script = LuaScript.Prepare("return redis.call('GET', @key)");
+    /// var loaded = await script.LoadAsync(server);
+    /// var result = await loaded.EvaluateAsync(db, new { key = "mykey" });
+    /// </code>
+    /// </example>
+    public async Task<LoadedLuaScript> LoadAsync(IServer server, CommandFlags flags = CommandFlags.None)
+    {
+        if (server == null)
+        {
+            throw new ArgumentNullException(nameof(server));
+        }
+
+        // Replace placeholders in the executable script using a heuristic
+        // We assume parameters named "key", "keys", or starting with "key" are keys
+        string scriptToLoad = ScriptParameterMapper.ReplacePlaceholdersWithHeuristic(ExecutableScript, Arguments);
+
+        // Load the script and get its hash
+        byte[] hash = await server.ScriptLoadAsync(scriptToLoad, flags).ConfigureAwait(false);
+        return new LoadedLuaScript(this, hash, scriptToLoad);
+    }
+
+    /// <summary>
     /// Extracts parameters from an object and converts them to keys and arguments.
     /// </summary>
     /// <param name="parameters">The parameter object.</param>
@@ -194,42 +230,6 @@ public sealed class LuaScript
             ScriptParameterMapper.GetParameterExtractor(paramType, Arguments);
 
         return extractor(parameters, keyPrefix);
-    }
-
-    /// <summary>
-    /// Asynchronously loads the script on the server and returns a LoadedLuaScript.
-    /// </summary>
-    /// <param name="server">The server to load the script on.</param>
-    /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
-    /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    /// <returns>A task representing the asynchronous operation, containing a LoadedLuaScript instance.</returns>
-    /// <exception cref="ArgumentNullException">Thrown if server is null.</exception>
-    /// <remarks>
-    /// This method loads the script onto the server using the SCRIPT LOAD command.
-    /// The returned LoadedLuaScript contains the SHA1 hash and can be used to execute
-    /// the script more efficiently using EVALSHA.
-    /// </remarks>
-    /// <example>
-    /// <code>
-    /// var script = LuaScript.Prepare("return redis.call('GET', @key)");
-    /// var loaded = await script.LoadAsync(server);
-    /// var result = await loaded.EvaluateAsync(db, new { key = "mykey" });
-    /// </code>
-    /// </example>
-    public async Task<LoadedLuaScript> LoadAsync(IServer server, CommandFlags flags = CommandFlags.None)
-    {
-        if (server == null)
-        {
-            throw new ArgumentNullException(nameof(server));
-        }
-
-        // Replace placeholders in the executable script using a heuristic
-        // We assume parameters named "key", "keys", or starting with "key" are keys
-        string scriptToLoad = ScriptParameterMapper.ReplacePlaceholdersWithHeuristic(ExecutableScript, Arguments);
-
-        // Load the script and get its hash
-        byte[] hash = await server.ScriptLoadAsync(scriptToLoad, flags).ConfigureAwait(false);
-        return new LoadedLuaScript(this, hash, scriptToLoad);
     }
 }
 ///

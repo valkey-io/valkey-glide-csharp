@@ -8,6 +8,21 @@ namespace Valkey.Glide.ServerModules;
 
 public static partial class Ft
 {
+    #region Nested Interfaces
+
+    /// <summary>
+    /// Base interface for all aggregate command clauses.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/ft.aggregate/">Valkey commands – FT.AGGREGATE</seealso>
+    public interface IAggregateClause
+    {
+        /// <summary>
+        /// Converts to command arguments.
+        /// </summary>
+        internal GlideString[] ToArgs();
+    }
+
+    #endregion
     #region Public Methods
 
     /// <summary>
@@ -78,19 +93,7 @@ public static partial class Ft
         => client.Command(Request.FtAggregate(index, query, options));
 
     #endregion
-    #region Nested Types
-
-    /// <summary>
-    /// Base interface for all aggregate command clauses.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/ft.aggregate/">Valkey commands – FT.AGGREGATE</seealso>
-    public interface IAggregateClause
-    {
-        /// <summary>
-        /// Converts to command arguments.
-        /// </summary>
-        internal GlideString[] ToArgs();
-    }
+    #region Nested Classes
 
     /// <summary>
     /// Limit results for an aggregate command (<c>LIMIT</c>).

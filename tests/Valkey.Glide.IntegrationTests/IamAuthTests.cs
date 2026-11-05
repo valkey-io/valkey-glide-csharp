@@ -13,24 +13,6 @@ public class IamAuthTests(TlsServerFixture tlsServerFixture) : IClassFixture<Tls
     private const string TestRegion = "us-east-1";
     private const string DefaultUsername = "default";
 
-    private static IamAuthConfig CreateIamConfig(uint refreshIntervalSeconds) =>
-        new(TestClusterName, ServiceType.ElastiCache, TestRegion, refreshIntervalSeconds);
-
-    private static ServerCredentials CreateCredentials(uint refreshIntervalSeconds) =>
-        new(DefaultUsername, CreateIamConfig(refreshIntervalSeconds));
-
-    private static ConnectionConfiguration.StandaloneClientConfiguration CreateStandaloneConfig(
-        StandaloneServer server, ServerCredentials credentials) =>
-        server.CreateConfigBuilder()
-            .WithCredentials(credentials)
-            .Build();
-
-    private static ConnectionConfiguration.ClusterClientConfiguration CreateClusterConfig(
-        ClusterServer server, ServerCredentials credentials) =>
-        server.CreateConfigBuilder()
-            .WithCredentials(credentials)
-            .Build();
-
     [Fact]
     public async Task IamAuthenticationWithMockCredentials_Standalone()
     {
@@ -121,4 +103,22 @@ public class IamAuthTests(TlsServerFixture tlsServerFixture) : IClassFixture<Tls
         var value = await client.GetAsync("iam_auto_refresh_key");
         Assert.Equal("iam_auto_refresh_value", value.ToString());
     }
+
+    private static IamAuthConfig CreateIamConfig(uint refreshIntervalSeconds) =>
+        new(TestClusterName, ServiceType.ElastiCache, TestRegion, refreshIntervalSeconds);
+
+    private static ServerCredentials CreateCredentials(uint refreshIntervalSeconds) =>
+        new(DefaultUsername, CreateIamConfig(refreshIntervalSeconds));
+
+    private static ConnectionConfiguration.StandaloneClientConfiguration CreateStandaloneConfig(
+        StandaloneServer server, ServerCredentials credentials) =>
+        server.CreateConfigBuilder()
+            .WithCredentials(credentials)
+            .Build();
+
+    private static ConnectionConfiguration.ClusterClientConfiguration CreateClusterConfig(
+        ClusterServer server, ServerCredentials credentials) =>
+        server.CreateConfigBuilder()
+            .WithCredentials(credentials)
+            .Build();
 }

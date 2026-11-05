@@ -7,6 +7,12 @@ namespace Valkey.Glide;
 /// </summary>
 public readonly struct SortedSetPopResult
 {
+    internal SortedSetPopResult(ValkeyKey key, SortedSetEntry[] entries)
+    {
+        Key = key;
+        Entries = entries;
+    }
+
     /// <summary>
     /// A null SortedSetPopResult, indicating no results.
     /// </summary>
@@ -26,10 +32,4 @@ public readonly struct SortedSetPopResult
     /// The provided entries of the sorted set.
     /// </summary>
     public SortedSetEntry[] Entries { get; }
-
-    internal SortedSetPopResult(ValkeyKey key, SortedSetEntry[] entries)
-    {
-        Key = key;
-        Entries = entries;
-    }
 }

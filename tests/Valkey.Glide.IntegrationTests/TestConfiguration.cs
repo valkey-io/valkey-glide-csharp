@@ -11,6 +11,8 @@ namespace Valkey.Glide.IntegrationTests;
 
 public class TestConfiguration : IDisposable
 {
+    #region Public Fields
+
     // Default test timeout
     public static readonly TimeSpan DEFAULT_TIMEOUT = TimeSpan.FromMinutes(2);
     public static readonly int DEFAULT_TIMEOUT_MS = (int)DEFAULT_TIMEOUT.TotalMilliseconds;
@@ -19,10 +21,8 @@ public class TestConfiguration : IDisposable
     public static IList<Address> STANDALONE_ADDRESSES = [];
     public static IList<Address> CLUSTER_ADDRESSES = [];
 
-    // First address for standalone and cluster servers, for convenience.
-    // These throw if no addresses are available - use HasStandalone/HasCluster to check first.
-    public static Address STANDALONE_ADDRESS => STANDALONE_ADDRESSES.First();
-    public static Address CLUSTER_ADDRESS => CLUSTER_ADDRESSES.First();
+    #endregion
+    #region Constants
 
     // Environment variable names for providing server endpoints. The module-test harness
     // (utils/run-modules-ci-locally.sh / utils/start-valkey-docker-modules.sh) exports
@@ -37,9 +37,70 @@ public class TestConfiguration : IDisposable
     private const string ModulesStandaloneEndpointEnvVar = "MODULES_STANDALONE_ENDPOINT";
     private const string ModulesClusterEndpointsEnvVar = "MODULES_CLUSTER_ENDPOINTS";
 
+    private const string DefaultServerGroupName = "cluster";
+
+    #endregion
+    #region Private Fields
+
     private static readonly object LockObject = new();
 
-    private const string DefaultServerGroupName = "cluster";
+    private readonly bool _startedServer;
+
+    #endregion
+    #region Constructors
+
+    public TestConfiguration()
+    {
+        TLS = Environment.GetEnvironmentVariable("tls") == "true";
+
+        var standaloneEndpoints = Environment.GetEnvironmentVariable(StandaloneEndpointsEnvVar)
+            ?? Environment.GetEnvironmentVariable(ModulesStandaloneEndpointEnvVar);
+        var clusterEndpoints = Environment.GetEnvironmentVariable(ClusterEndpointsEnvVar)
+            ?? Environment.GetEnvironmentVariable(ModulesClusterEndpointsEnvVar);
+
+        if (standaloneEndpoints is not null || clusterEndpoints is not null)
+        {
+            _startedServer = false;
+
+            if (standaloneEndpoints is not null)
+            {
+                STANDALONE_ADDRESSES = Address.FromHosts(standaloneEndpoints);
+            }
+
+            if (clusterEndpoints is not null)
+            {
+                CLUSTER_ADDRESSES = Address.FromHosts(clusterEndpoints);
+            }
+        }
+        else
+        {
+            _startedServer = true;
+
+            // Stop all if weren't stopped on previous test run
+            ServerManager.StopServer(DefaultServerGroupName, keepLogs: false);
+
+            // Start standalone and cluster servers.
+            CLUSTER_ADDRESSES = ServerManager.StartServer(DefaultServerGroupName, useClusterMode: true, useTls: TLS);
+            STANDALONE_ADDRESSES = ServerManager.StartServer(DefaultServerGroupName, useClusterMode: false, useTls: TLS);
+        }
+
+        // Get server version
+        SERVER_VERSION = GetServerVersion();
+
+        TestConsoleWriteLine($"Cluster hosts = {string.Join(", ", CLUSTER_ADDRESSES)}");
+        TestConsoleWriteLine($"Standalone hosts = {string.Join(", ", STANDALONE_ADDRESSES)}");
+        TestConsoleWriteLine($"Server version = {SERVER_VERSION}");
+    }
+
+    ~TestConfiguration() => Dispose();
+
+    #endregion
+    #region Public Properties
+
+    // First address for standalone and cluster servers, for convenience.
+    // These throw if no addresses are available - use HasStandalone/HasCluster to check first.
+    public static Address STANDALONE_ADDRESS => STANDALONE_ADDRESSES.First();
+    public static Address CLUSTER_ADDRESS => CLUSTER_ADDRESSES.First();
 
     public static System.Version SERVER_VERSION { get; internal set; } = new();
     public static bool TLS { get; internal set; } = false;
@@ -55,36 +116,6 @@ public class TestConfiguration : IDisposable
     /// this will be false and cluster tests will be skipped gracefully.
     /// </summary>
     public static bool HasCluster => CLUSTER_ADDRESSES.Count > 0;
-
-    public static StandaloneClientConfigurationBuilder DefaultClientConfig() =>
-        new StandaloneClientConfigurationBuilder()
-            .WithAddress(STANDALONE_ADDRESS.Host, STANDALONE_ADDRESS.Port)
-            .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
-            .WithRequestTimeout(DEFAULT_TIMEOUT)
-            .WithTls(TLS);
-
-    public static ClusterClientConfigurationBuilder DefaultClusterClientConfig() =>
-        new ClusterClientConfigurationBuilder()
-            .WithAddress(CLUSTER_ADDRESS.Host, CLUSTER_ADDRESS.Port)
-            .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
-            .WithRequestTimeout(DEFAULT_TIMEOUT)
-            .WithTls(TLS);
-
-    public static StandaloneClientConfigurationBuilder DefaultClientConfigLowTimeout() =>
-        new StandaloneClientConfigurationBuilder()
-            .WithAddress(STANDALONE_ADDRESS.Host, STANDALONE_ADDRESS.Port)
-            .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
-            .WithRequestTimeout(TimeSpan.FromMilliseconds(250))
-            .WithTls(TLS);
-
-    public static GlideClient DefaultStandaloneClient()
-        => GlideClient.CreateClient(DefaultClientConfig().Build()).GetAwaiter().GetResult();
-
-    public static GlideClient LowTimeoutStandaloneClient()
-        => GlideClient.CreateClient(DefaultClientConfigLowTimeout().Build()).GetAwaiter().GetResult();
-
-    public static GlideClusterClient DefaultClusterClient()
-        => GlideClusterClient.CreateClient(DefaultClusterClientConfig().Build()).GetAwaiter().GetResult();
 
     public static TheoryData<BaseClient> TestClients
     {
@@ -187,43 +218,8 @@ public class TestConfiguration : IDisposable
         private set;
     } = [];
 
-    public static void ResetTestClients()
-    {
-        foreach (TheoryDataRow<BaseClient> data in TestClients)
-        {
-            data.Data.Dispose();
-        }
-
-        TestClients = [];
-        TestClusterClients = [];
-        TestStandaloneClients = [];
-    }
-
-    #region SER COMPAT
-
-    public static ConfigurationOptions DefaultCompatibleConfig()
-    {
-        ConfigurationOptions config = new();
-        config.EndPoints.Add(STANDALONE_ADDRESS.Host, STANDALONE_ADDRESS.Port);
-        config.Ssl = TLS;
-        config.ResponseTimeout = DEFAULT_TIMEOUT_MS;
-        return config;
-    }
-
-    public static ConfigurationOptions DefaultCompatibleClusterConfig()
-    {
-        ConfigurationOptions config = new();
-        config.EndPoints.Add(CLUSTER_ADDRESS.Host, CLUSTER_ADDRESS.Port);
-        config.Ssl = TLS;
-        config.ResponseTimeout = DEFAULT_TIMEOUT_MS;
-        return config;
-    }
-
-    public static ConnectionMultiplexer DefaultCompatibleConnection()
-        => ConnectionMultiplexer.Connect(DefaultCompatibleConfig());
-
-    public static ConnectionMultiplexer DefaultCompatibleClusterConnection()
-        => ConnectionMultiplexer.Connect(DefaultCompatibleClusterConfig());
+    #endregion
+    #region SER COMPAT Properties
 
     public static TheoryData<ConnectionMultiplexer> TestStandaloneConnections
     {
@@ -314,16 +310,6 @@ public class TestConfiguration : IDisposable
         private set;
     } = [];
 
-    public static void ResetTestConnections()
-    {
-        TestConnections.ForEach(test => test.Data.Item1.Dispose());
-        TestConnections = [];
-        TestDatabases = [];
-        TestServers = [];
-        TestClusterConnections = [];
-        TestStandaloneConnections = [];
-    }
-
     public static TheoryData<IDatabaseAsync> TestDatabases
     {
         get
@@ -365,51 +351,89 @@ public class TestConfiguration : IDisposable
     } = [];
 
     #endregion
+    #region Public Methods
 
-    public TestConfiguration()
+    public static StandaloneClientConfigurationBuilder DefaultClientConfig() =>
+        new StandaloneClientConfigurationBuilder()
+            .WithAddress(STANDALONE_ADDRESS.Host, STANDALONE_ADDRESS.Port)
+            .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
+            .WithRequestTimeout(DEFAULT_TIMEOUT)
+            .WithTls(TLS);
+
+    public static ClusterClientConfigurationBuilder DefaultClusterClientConfig() =>
+        new ClusterClientConfigurationBuilder()
+            .WithAddress(CLUSTER_ADDRESS.Host, CLUSTER_ADDRESS.Port)
+            .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
+            .WithRequestTimeout(DEFAULT_TIMEOUT)
+            .WithTls(TLS);
+
+    public static StandaloneClientConfigurationBuilder DefaultClientConfigLowTimeout() =>
+        new StandaloneClientConfigurationBuilder()
+            .WithAddress(STANDALONE_ADDRESS.Host, STANDALONE_ADDRESS.Port)
+            .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
+            .WithRequestTimeout(TimeSpan.FromMilliseconds(250))
+            .WithTls(TLS);
+
+    public static GlideClient DefaultStandaloneClient()
+        => GlideClient.CreateClient(DefaultClientConfig().Build()).GetAwaiter().GetResult();
+
+    public static GlideClient LowTimeoutStandaloneClient()
+        => GlideClient.CreateClient(DefaultClientConfigLowTimeout().Build()).GetAwaiter().GetResult();
+
+    public static GlideClusterClient DefaultClusterClient()
+        => GlideClusterClient.CreateClient(DefaultClusterClientConfig().Build()).GetAwaiter().GetResult();
+
+    public static void ResetTestClients()
     {
-        TLS = Environment.GetEnvironmentVariable("tls") == "true";
-
-        var standaloneEndpoints = Environment.GetEnvironmentVariable(StandaloneEndpointsEnvVar)
-            ?? Environment.GetEnvironmentVariable(ModulesStandaloneEndpointEnvVar);
-        var clusterEndpoints = Environment.GetEnvironmentVariable(ClusterEndpointsEnvVar)
-            ?? Environment.GetEnvironmentVariable(ModulesClusterEndpointsEnvVar);
-
-        if (standaloneEndpoints is not null || clusterEndpoints is not null)
+        foreach (TheoryDataRow<BaseClient> data in TestClients)
         {
-            _startedServer = false;
-
-            if (standaloneEndpoints is not null)
-            {
-                STANDALONE_ADDRESSES = Address.FromHosts(standaloneEndpoints);
-            }
-
-            if (clusterEndpoints is not null)
-            {
-                CLUSTER_ADDRESSES = Address.FromHosts(clusterEndpoints);
-            }
-        }
-        else
-        {
-            _startedServer = true;
-
-            // Stop all if weren't stopped on previous test run
-            ServerManager.StopServer(DefaultServerGroupName, keepLogs: false);
-
-            // Start standalone and cluster servers.
-            CLUSTER_ADDRESSES = ServerManager.StartServer(DefaultServerGroupName, useClusterMode: true, useTls: TLS);
-            STANDALONE_ADDRESSES = ServerManager.StartServer(DefaultServerGroupName, useClusterMode: false, useTls: TLS);
+            data.Data.Dispose();
         }
 
-        // Get server version
-        SERVER_VERSION = GetServerVersion();
-
-        TestConsoleWriteLine($"Cluster hosts = {string.Join(", ", CLUSTER_ADDRESSES)}");
-        TestConsoleWriteLine($"Standalone hosts = {string.Join(", ", STANDALONE_ADDRESSES)}");
-        TestConsoleWriteLine($"Server version = {SERVER_VERSION}");
+        TestClients = [];
+        TestClusterClients = [];
+        TestStandaloneClients = [];
     }
 
-    ~TestConfiguration() => Dispose();
+    #endregion
+    #region SER COMPAT Methods
+
+    public static ConfigurationOptions DefaultCompatibleConfig()
+    {
+        ConfigurationOptions config = new();
+        config.EndPoints.Add(STANDALONE_ADDRESS.Host, STANDALONE_ADDRESS.Port);
+        config.Ssl = TLS;
+        config.ResponseTimeout = DEFAULT_TIMEOUT_MS;
+        return config;
+    }
+
+    public static ConfigurationOptions DefaultCompatibleClusterConfig()
+    {
+        ConfigurationOptions config = new();
+        config.EndPoints.Add(CLUSTER_ADDRESS.Host, CLUSTER_ADDRESS.Port);
+        config.Ssl = TLS;
+        config.ResponseTimeout = DEFAULT_TIMEOUT_MS;
+        return config;
+    }
+
+    public static ConnectionMultiplexer DefaultCompatibleConnection()
+        => ConnectionMultiplexer.Connect(DefaultCompatibleConfig());
+
+    public static ConnectionMultiplexer DefaultCompatibleClusterConnection()
+        => ConnectionMultiplexer.Connect(DefaultCompatibleClusterConfig());
+
+    public static void ResetTestConnections()
+    {
+        TestConnections.ForEach(test => test.Data.Item1.Dispose());
+        TestConnections = [];
+        TestDatabases = [];
+        TestServers = [];
+        TestClusterConnections = [];
+        TestStandaloneConnections = [];
+    }
+
+    #endregion
+    #region IDisposable Implementation
 
     public void Dispose()
     {
@@ -421,7 +445,8 @@ public class TestConfiguration : IDisposable
         }
     }
 
-    private readonly bool _startedServer;
+    #endregion
+    #region Private Methods
 
     private static void TestConsoleWriteLine(string message) =>
         TestContext.Current.SendDiagnosticMessage(message);
@@ -463,4 +488,6 @@ public class TestConfiguration : IDisposable
 
         throw new Exception("No servers are given");
     }
+
+    #endregion
 }

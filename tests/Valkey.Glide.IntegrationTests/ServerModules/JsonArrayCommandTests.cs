@@ -13,8 +13,6 @@ public class JsonArrayCommandTests(TestConfiguration config)
 {
     public TestConfiguration Config { get; } = config;
 
-    private static string GetUniqueKey(string prefix = "json") => $"{prefix}:{Guid.NewGuid()}";
-
     #region JSON.ARRAPPEND Tests
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -252,6 +250,11 @@ public class JsonArrayCommandTests(TestConfiguration config)
         _ = Assert.Single(result);
         Assert.Equal(0L, result[0]);
     }
+
+    #endregion
+    #region Helpers
+
+    private static string GetUniqueKey(string prefix = "json") => $"{prefix}:{Guid.NewGuid()}";
 
     #endregion
 }

@@ -37,6 +37,14 @@ public readonly struct SortedSetEntry(ValkeyValue element, double score) : IEqua
         => new(value.Key, value.Value);
 
     /// <inheritdoc/>
+    public static bool operator ==(SortedSetEntry x, SortedSetEntry y)
+        => x.Score == y.Score && x.Element == y.Element;
+
+    /// <inheritdoc/>
+    public static bool operator !=(SortedSetEntry x, SortedSetEntry y)
+        => x.Score != y.Score || x.Element != y.Element;
+
+    /// <inheritdoc/>
     public override string ToString()
         => Element.ToString() + ": " + Score.ToString();
 
@@ -59,14 +67,6 @@ public readonly struct SortedSetEntry(ValkeyValue element, double score) : IEqua
     /// <inheritdoc/>
     public int CompareTo(object? obj)
         => obj is SortedSetEntry ssObj ? CompareTo(ssObj) : -1;
-
-    /// <inheritdoc/>
-    public static bool operator ==(SortedSetEntry x, SortedSetEntry y)
-        => x.Score == y.Score && x.Element == y.Element;
-
-    /// <inheritdoc/>
-    public static bool operator !=(SortedSetEntry x, SortedSetEntry y)
-        => x.Score != y.Score || x.Element != y.Element;
 
     /// <summary>
     /// Converts to command arguments.

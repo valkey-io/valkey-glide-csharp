@@ -151,18 +151,6 @@ public sealed class MigrateOptions(string host, ushort port, ushort destinationD
     }
 
     #endregion
-    #region Private Methods
-
-    private void ClearPassword()
-    {
-        if (Password is not null)
-        {
-            Array.Clear(Password);
-            Password = null;
-        }
-    }
-
-    #endregion
     #region Internal Methods
 
     /// <summary>
@@ -220,6 +208,18 @@ public sealed class MigrateOptions(string host, ushort port, ushort destinationD
         }
 
         return [.. args];
+    }
+
+    #endregion
+    #region Private Methods
+
+    private void ClearPassword()
+    {
+        if (Password is not null)
+        {
+            Array.Clear(Password);
+            Password = null;
+        }
     }
 
     #endregion

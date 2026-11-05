@@ -9,11 +9,19 @@ namespace Valkey.Glide;
 /// </summary>
 internal sealed class Subscriber : ISubscriber
 {
+    #region Constants
+
     // Default async timeout for StackExchange.Redis compabitility.
     private const int DefaultTimeoutMs = 5000;
 
+    #endregion
+    #region Private Fields
+
     private readonly ConnectionMultiplexer _multiplexer;
     private readonly Database _client;
+
+    #endregion
+    #region Constructors
 
     internal Subscriber(ConnectionMultiplexer multiplexer, Database client)
     {
@@ -21,7 +29,8 @@ internal sealed class Subscriber : ISubscriber
         _client = client;
     }
 
-    #region AsyncMethods
+    #endregion
+    #region Public Methods
 
     public async Task<long> PublishAsync(ValkeyChannel channel, ValkeyValue message, CommandFlags flags = CommandFlags.None)
     {
@@ -93,26 +102,6 @@ internal sealed class Subscriber : ISubscriber
         }
     }
 
-    /// <summary>
-    /// Unsubscribes from the specified channel queue.
-    /// </summary>
-    /// <param name="queue">The channel message queue to unsubscribe.</param>
-    internal async Task UnsubscribeAsync(ChannelMessageQueue queue)
-    {
-        // Validate arguments.
-        var channel = queue.Channel;
-        ThrowIfChannelNullOrEmpty(channel);
-
-        // Remove queue from multiplexer.
-        bool removed = _multiplexer.RemoveSubscriptionQueue(queue);
-
-        // Send unsubscribe command if subscription was removed.
-        if (removed)
-        {
-            await SendUnsubscribeCommand(channel);
-        }
-    }
-
     public async Task UnsubscribeAllAsync(CommandFlags flags = CommandFlags.None)
     {
         // Validate arguments.
@@ -134,7 +123,43 @@ internal sealed class Subscriber : ISubscriber
     }
 
     #endregion
-    #region HelperMethods
+    #region Internal Methods
+
+    /// <summary>
+    /// Unsubscribes from the specified channel queue.
+    /// </summary>
+    /// <param name="queue">The channel message queue to unsubscribe.</param>
+    internal async Task UnsubscribeAsync(ChannelMessageQueue queue)
+    {
+        // Validate arguments.
+        var channel = queue.Channel;
+        ThrowIfChannelNullOrEmpty(channel);
+
+        // Remove queue from multiplexer.
+        bool removed = _multiplexer.RemoveSubscriptionQueue(queue);
+
+        // Send unsubscribe command if subscription was removed.
+        if (removed)
+        {
+            await SendUnsubscribeCommand(channel);
+        }
+    }
+
+    #endregion
+    #region Private Methods
+
+    /// <summary>
+    /// Throws if the specified channel is null or empty.
+    /// </summary>
+    /// <param name="channel">The channel to check.</param>
+    /// <exception cref="ArgumentException"></exception>
+    private static void ThrowIfChannelNullOrEmpty(ValkeyChannel channel)
+    {
+        if (channel.IsNullOrEmpty)
+        {
+            throw new ArgumentException("Channel cannot be null or empty");
+        }
+    }
 
     /// <summary>
     /// Sends a PUBLISH command to the server with the specified channel and message.
@@ -221,19 +246,6 @@ internal sealed class Subscriber : ISubscriber
         if (!_client.IsCluster)
         {
             throw new InvalidOperationException("Sharded pub/sub is only supported in cluster mode.");
-        }
-    }
-
-    /// <summary>
-    /// Throws if the specified channel is null or empty.
-    /// </summary>
-    /// <param name="channel">The channel to check.</param>
-    /// <exception cref="ArgumentException"></exception>
-    private static void ThrowIfChannelNullOrEmpty(ValkeyChannel channel)
-    {
-        if (channel.IsNullOrEmpty)
-        {
-            throw new ArgumentException("Channel cannot be null or empty");
         }
     }
 

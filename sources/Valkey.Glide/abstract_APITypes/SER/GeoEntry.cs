@@ -35,6 +35,20 @@ public readonly struct GeoEntry(double longitude, double latitude, ValkeyValue m
     public double Latitude => Position.Latitude;
 
     /// <summary>
+    /// Compares two values for equality.
+    /// </summary>
+    /// <param name="x">The first entry to compare.</param>
+    /// <param name="y">The second entry to compare.</param>
+    public static bool operator ==(GeoEntry x, GeoEntry y) => x.Position == y.Position && x.Member == y.Member;
+
+    /// <summary>
+    /// Compares two values for non-equality.
+    /// </summary>
+    /// <param name="x">The first entry to compare.</param>
+    /// <param name="y">The second entry to compare.</param>
+    public static bool operator !=(GeoEntry x, GeoEntry y) => x.Position != y.Position || x.Member != y.Member;
+
+    /// <summary>
     /// A "({Longitude},{Latitude})={Member}" string representation of this entry.
     /// </summary>
     public override string ToString() => $"({Longitude},{Latitude})={Member}";
@@ -53,18 +67,4 @@ public readonly struct GeoEntry(double longitude, double latitude, ValkeyValue m
     /// </summary>
     /// <param name="other">The <see cref="GeoEntry"/> to compare to.</param>
     public bool Equals(GeoEntry other) => this == other;
-
-    /// <summary>
-    /// Compares two values for equality.
-    /// </summary>
-    /// <param name="x">The first entry to compare.</param>
-    /// <param name="y">The second entry to compare.</param>
-    public static bool operator ==(GeoEntry x, GeoEntry y) => x.Position == y.Position && x.Member == y.Member;
-
-    /// <summary>
-    /// Compares two values for non-equality.
-    /// </summary>
-    /// <param name="x">The first entry to compare.</param>
-    /// <param name="y">The second entry to compare.</param>
-    public static bool operator !=(GeoEntry x, GeoEntry y) => x.Position != y.Position || x.Member != y.Member;
 }

@@ -9,15 +9,15 @@ namespace Valkey.Glide.TestUtils;
 /// </summary>
 public static class ServerManager
 {
-    // File and directory paths.
-    private static readonly string ScriptsDirectoryPath;
-    private static readonly string ScriptFilePath;
-    private static readonly string ServerDirectoryPath;
-
     private const string WslFileName = "wsl";
     private const string PythonFileName = "python3";
 
     private const int DefaultReplicaCount = 3;
+
+    // File and directory paths.
+    private static readonly string ScriptsDirectoryPath;
+    private static readonly string ScriptFilePath;
+    private static readonly string ServerDirectoryPath;
 
     static ServerManager()
     {

@@ -16,9 +16,6 @@ public class ConnectionConfigurationTests
     private const uint RefreshInterval = 300;
 
     // Certificate constants
-    private static readonly byte[] CertData1 = [0x30, 0x82, 0x01, 0x00];
-    private static readonly byte[] CertData2 = [0x30, 0x82, 0x02, 0x00];
-
     private const string CertPath = "/path/cert.pem";
     private const string KeyPath = "/path/key.pem";
 
@@ -27,6 +24,10 @@ public class ConnectionConfigurationTests
     private const uint Factor = 50u;
     private const uint ExponentBase = 2u;
     private const uint JitterPercent = 10u;
+
+    // Certificate data constants
+    private static readonly byte[] CertData1 = [0x30, 0x82, 0x01, 0x00];
+    private static readonly byte[] CertData2 = [0x30, 0x82, 0x02, 0x00];
 
     // Address resolver constants.
     private static readonly (string, ushort) Resolved = ("resolved-host", 9999);

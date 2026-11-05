@@ -65,6 +65,42 @@ public class CompressionTests(CompressionFixture fixture)
 
     private static readonly string LargeValue = new('y', LargeValueSize);
 
+    /// <summary>
+    /// Test data for client methods that use commands incompatible with compression.
+    /// Each entry contains the expected command name and a call to the client method.
+    /// </summary>
+    public static TheoryData<string, Func<BaseClient, Task>> IncompatibleMethods => new()
+    {
+        // String manipulation commands
+        { "APPEND", c => c.AppendAsync("key", "suffix") },
+        { "DELIFEQ", c => c.DeleteIfEqualAsync("key", "value") },
+        { "GETRANGE", c => c.GetRangeAsync("key", 0, 4) },
+        // TODO #318: Add LongestCommonSubsequenceAsync once it is available.
+        { "SET", c => c.GetSetAsync("key", "value", SetCondition.OnlyIfEqual("other")) },
+        { "SET", c => c.GetSetAsync("key", "value", SetCondition.OnlyIfNotEqual("other")) },
+        { "SET", c => c.SetAsync("key", "value", SetCondition.OnlyIfEqual("other")) },
+        { "SET", c => c.SetAsync("key", "value", SetCondition.OnlyIfNotEqual("other")) },
+        { "SET", c => c.SetAsync("key", "value", new SetOptions { Condition = SetCondition.OnlyIfEqual("other"), Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(10)) }) },
+        { "SETRANGE", c => c.SetRangeAsync("key", 0, "test") },
+        { "STRLEN", c => c.LengthAsync("key") },
+
+        // Numeric operations
+        { "DECR", c => c.DecrementAsync("key") },
+        { "DECRBY", c => c.DecrementAsync("key", 10) },
+        { "INCR", c => c.IncrementAsync("key") },
+        { "INCRBY", c => c.IncrementAsync("key", 10) },
+        { "INCRBYFLOAT", c => c.IncrementAsync("key", 1.5) },
+
+        // Bit operations
+        { "BITCOUNT", c => c.BitCountAsync("key") },
+        { "BITFIELD", c => c.BitFieldAsync("key", new BitFieldOptions.BitFieldSet("u8", new BitFieldOptions.BitOffset(0), 1)) },
+        { "BITFIELD_RO", c => c.BitFieldReadOnlyAsync("key", new BitFieldOptions.BitFieldGet("u8", new BitFieldOptions.BitOffset(0))) },
+        { "BITOP", c => c.BitOpAsync(Bitwise.And, "key", ["key"]) },
+        { "BITPOS", c => c.BitPosAsync("key", true) },
+        { "GETBIT", c => c.GetBitAsync("key", 0) },
+        { "SETBIT", c => c.SetBitAsync("key", 7, true) },
+    };
+
     private GlideClient ZstdClient => fixture.ZstdClient!;
     private GlideClient Lz4Client => fixture.Lz4Client!;
     private GlideClusterClient ZstdClusterClient => fixture.ZstdClusterClient!;
@@ -447,42 +483,6 @@ public class CompressionTests(CompressionFixture fixture)
     // ============================================================================
     // Incompatible Command Tests - These should error when compression is enabled
     // ============================================================================
-
-    /// <summary>
-    /// Test data for client methods that use commands incompatible with compression.
-    /// Each entry contains the expected command name and a call to the client method.
-    /// </summary>
-    public static TheoryData<string, Func<BaseClient, Task>> IncompatibleMethods => new()
-    {
-        // String manipulation commands
-        { "APPEND", c => c.AppendAsync("key", "suffix") },
-        { "DELIFEQ", c => c.DeleteIfEqualAsync("key", "value") },
-        { "GETRANGE", c => c.GetRangeAsync("key", 0, 4) },
-        // TODO #318: Add LongestCommonSubsequenceAsync once it is available.
-        { "SET", c => c.GetSetAsync("key", "value", SetCondition.OnlyIfEqual("other")) },
-        { "SET", c => c.GetSetAsync("key", "value", SetCondition.OnlyIfNotEqual("other")) },
-        { "SET", c => c.SetAsync("key", "value", SetCondition.OnlyIfEqual("other")) },
-        { "SET", c => c.SetAsync("key", "value", SetCondition.OnlyIfNotEqual("other")) },
-        { "SET", c => c.SetAsync("key", "value", new SetOptions { Condition = SetCondition.OnlyIfEqual("other"), Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(10)) }) },
-        { "SETRANGE", c => c.SetRangeAsync("key", 0, "test") },
-        { "STRLEN", c => c.LengthAsync("key") },
-
-        // Numeric operations
-        { "DECR", c => c.DecrementAsync("key") },
-        { "DECRBY", c => c.DecrementAsync("key", 10) },
-        { "INCR", c => c.IncrementAsync("key") },
-        { "INCRBY", c => c.IncrementAsync("key", 10) },
-        { "INCRBYFLOAT", c => c.IncrementAsync("key", 1.5) },
-
-        // Bit operations
-        { "BITCOUNT", c => c.BitCountAsync("key") },
-        { "BITFIELD", c => c.BitFieldAsync("key", new BitFieldOptions.BitFieldSet("u8", new BitFieldOptions.BitOffset(0), 1)) },
-        { "BITFIELD_RO", c => c.BitFieldReadOnlyAsync("key", new BitFieldOptions.BitFieldGet("u8", new BitFieldOptions.BitOffset(0))) },
-        { "BITOP", c => c.BitOpAsync(Bitwise.And, "key", ["key"]) },
-        { "BITPOS", c => c.BitPosAsync("key", true) },
-        { "GETBIT", c => c.GetBitAsync("key", 0) },
-        { "SETBIT", c => c.SetBitAsync("key", 7, true) },
-    };
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(IncompatibleMethods))]

@@ -10,17 +10,12 @@ namespace Valkey.Glide.Commands.Options;
 /// <seealso href="https://valkey.io/commands/xautoclaim/"/>
 public sealed class StreamAutoClaimOptions
 {
-    #region Public Methods
+    #region Constructors
 
-    /// <summary>
-    /// Sets the maximum number of entries to scan (<c>COUNT</c>).
-    /// </summary>
-    /// <param name="count">The maximum number of entries to scan (COUNT).</param>
-    /// <returns>The same <see cref="StreamAutoClaimOptions"/> instance, for chaining.</returns>
-    public StreamAutoClaimOptions WithCount(int count)
+    private StreamAutoClaimOptions(TimeSpan minIdleTime, ValkeyValue startAtId)
     {
-        Count = count;
-        return this;
+        MinIdleTime = minIdleTime;
+        StartAtId = startAtId;
     }
 
     #endregion
@@ -43,16 +38,7 @@ public sealed class StreamAutoClaimOptions
     public int? Count { get; private set; }
 
     #endregion
-    #region Constructors
-
-    private StreamAutoClaimOptions(TimeSpan minIdleTime, ValkeyValue startAtId)
-    {
-        MinIdleTime = minIdleTime;
-        StartAtId = startAtId;
-    }
-
-    #endregion
-    #region Builders
+    #region Public Methods
 
     /// <summary>
     /// Creates options that scan pending entries from the beginning of the pending entries list.
@@ -70,6 +56,17 @@ public sealed class StreamAutoClaimOptions
     /// <returns>Options that scan pending entries starting from the given stream ID.</returns>
     public static StreamAutoClaimOptions FromId(TimeSpan minIdleTime, ValkeyValue startAtId)
         => new(minIdleTime, startAtId);
+
+    /// <summary>
+    /// Sets the maximum number of entries to scan (<c>COUNT</c>).
+    /// </summary>
+    /// <param name="count">The maximum number of entries to scan (COUNT).</param>
+    /// <returns>The same <see cref="StreamAutoClaimOptions"/> instance, for chaining.</returns>
+    public StreamAutoClaimOptions WithCount(int count)
+    {
+        Count = count;
+        return this;
+    }
 
     #endregion
     #region Internal Methods

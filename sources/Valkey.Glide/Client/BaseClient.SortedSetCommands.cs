@@ -255,7 +255,7 @@ public abstract partial class BaseClient
         => SortedSetScanAsync(key, 0, options);
 
     #endregion
-    #region Protected Methods
+    #region Private Protected Methods
 
     /// <inheritdoc cref="IBaseClient.SortedSetScanAsync(ValkeyKey, ScanOptions?)"/>
     private protected async IAsyncEnumerable<SortedSetEntry> SortedSetScanAsync(

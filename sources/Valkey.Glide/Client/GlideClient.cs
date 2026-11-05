@@ -40,6 +40,9 @@ public partial class GlideClient :
     public async Task<object?[]?> Exec(Batch batch, bool raiseOnError, BatchOptions options)
         => await Batch(batch, raiseOnError, options);
 
+    #endregion
+    #region Protected Methods
+
     /// <inheritdoc cref="BaseClient.GetServerVersionAsync()"/>
     protected override async Task<Version> GetServerVersionAsync()
     {

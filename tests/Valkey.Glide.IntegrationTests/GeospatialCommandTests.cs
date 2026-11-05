@@ -6,8 +6,6 @@ namespace Valkey.Glide.IntegrationTests;
 
 public class GeospatialCommandTests(TestConfiguration config)
 {
-    public TestConfiguration Config { get; } = config;
-
     #region Constants
 
     private const string PalermoName = "Palermo";
@@ -26,6 +24,11 @@ public class GeospatialCommandTests(TestConfiguration config)
 
     private const double PalermoCataniaDistanceKm = 166.27;
 
+    // Tolerances for floating-point comparisons.
+    private const double CoordinateTolerance = 0.001;
+    private const double UnitConversionTolerance = 0.01;
+    private const double DistanceTolerance = 1.0;
+
     private static readonly GeoPosition PalermoPos = new(PalermoLng, PalermoLat);
     private static readonly GeoPosition CataniaPos = new(CataniaLng, CataniaLat);
     private static readonly GeoPosition TrapaniPos = new(TrapaniLng, TrapaniLat);
@@ -37,15 +40,15 @@ public class GeospatialCommandTests(TestConfiguration config)
         [CataniaName] = CataniaPos,
     };
 
-    // Tolerances for floating-point comparisons.
-    private const double CoordinateTolerance = 0.001;
-    private const double UnitConversionTolerance = 0.01;
-    private const double DistanceTolerance = 1.0;
-
     // Common search shapes.
     private static readonly GeoSearchCircle Circle200Km = new(200, GeoUnit.Kilometers);
     private static readonly GeoSearchCircle Circle100Km = new(100, GeoUnit.Kilometers);
     private static readonly GeoSearchBox Box400Km = new(400, 400, GeoUnit.Kilometers);
+
+    #endregion
+    #region Properties
+
+    public TestConfiguration Config { get; } = config;
 
     #endregion
     #region GeoAddAsync

@@ -22,14 +22,6 @@ public sealed class StreamIdBound
     public static readonly StreamIdBound Max = new(ValkeyLiterals.StreamMaxId);
 
     #endregion
-    #region Internal Properties
-
-    /// <summary>
-    /// The stream ID bound.
-    /// </summary>
-    internal ValkeyValue Value { get; init; }
-
-    #endregion
     #region Constructors
 
     private StreamIdBound(ValkeyValue id)
@@ -38,33 +30,15 @@ public sealed class StreamIdBound
     }
 
     #endregion
-    #region ValkeyValue Builders
+    #region Internal Properties
 
     /// <summary>
-    /// Creates an inclusive stream ID bound.
+    /// The stream ID bound.
     /// </summary>
-    /// <param name="id">The stream entry ID.</param>
-    /// <returns>An inclusive <see cref="StreamIdBound"/>.</returns>
-    public static StreamIdBound Inclusive(ValkeyValue id) => new(id);
-
-    /// <summary>
-    /// Creates an exclusive stream ID bound.
-    /// </summary>
-    /// <param name="id">The stream entry ID.</param>
-    /// <returns>An exclusive <see cref="StreamIdBound"/>.</returns>
-    public static StreamIdBound Exclusive(ValkeyValue id) => new(ValkeyLiterals.RangeExclusive.ToGlideString() + id.ToGlideString());
+    internal ValkeyValue Value { get; init; }
 
     #endregion
-    #region String Builders
-
-    /// <inheritdoc cref="Inclusive(ValkeyValue)"/>
-    public static StreamIdBound Inclusive(string id) => new(id);
-
-    /// <inheritdoc cref="Exclusive(ValkeyValue)"/>
-    public static StreamIdBound Exclusive(string id) => new(ValkeyLiterals.RangeExclusive.ToGlideString() + ((ValkeyValue)id).ToGlideString());
-
-    #endregion
-    #region Overloads
+    #region Operators
 
     /// <summary>
     /// Converts a <see cref="ValkeyValue"/> to an inclusive stream ID bound.
@@ -77,6 +51,29 @@ public sealed class StreamIdBound
     /// </summary>
     /// <param name="id">The stream entry ID to convert.</param>
     public static implicit operator StreamIdBound(string id) => new(id);
+
+    #endregion
+    #region Public Methods
+
+    /// <summary>
+    /// Creates an inclusive stream ID bound.
+    /// </summary>
+    /// <param name="id">The stream entry ID.</param>
+    /// <returns>An inclusive <see cref="StreamIdBound"/>.</returns>
+    public static StreamIdBound Inclusive(ValkeyValue id) => new(id);
+
+    /// <inheritdoc cref="Inclusive(ValkeyValue)"/>
+    public static StreamIdBound Inclusive(string id) => new(id);
+
+    /// <summary>
+    /// Creates an exclusive stream ID bound.
+    /// </summary>
+    /// <param name="id">The stream entry ID.</param>
+    /// <returns>An exclusive <see cref="StreamIdBound"/>.</returns>
+    public static StreamIdBound Exclusive(ValkeyValue id) => new(ValkeyLiterals.RangeExclusive.ToGlideString() + id.ToGlideString());
+
+    /// <inheritdoc cref="Exclusive(ValkeyValue)"/>
+    public static StreamIdBound Exclusive(string id) => new(ValkeyLiterals.RangeExclusive.ToGlideString() + ((ValkeyValue)id).ToGlideString());
 
     #endregion
 }
