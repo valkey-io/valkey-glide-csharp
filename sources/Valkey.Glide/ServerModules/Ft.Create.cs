@@ -49,6 +49,33 @@ public static partial class Ft
         Json,
     }
 
+    /// <summary>
+    /// The element type and encoding of a vector search index field.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/ft.create/">Valkey commands – FT.CREATE</seealso>
+    public enum VectorType
+    {
+        /// <summary>
+        /// 4 bytes per element, IEEE 754 single precision (<c>FLOAT32</c>).
+        /// </summary>
+        Float32,
+
+        /// <summary>
+        /// 2 bytes per element, IEEE 754 half precision (<c>FLOAT16</c>) (valkey-search 1.3.0).
+        /// Callers must pass already-encoded bytes; GLIDE does not encode vectors on the client's behalf.
+        /// </summary>
+        Float16,
+
+        /// <summary>
+        /// 2 bytes per element, truncated IEEE 754 single precision: the top 16 bits of a FLOAT32
+        /// (sign, 8-bit exponent, 7-bit mantissa) (<c>BFLOAT16</c>) (valkey-search 1.3.0).
+        /// Callers must pass already-encoded bytes; GLIDE does not encode vectors on the client's behalf.
+        /// The engine may refuse to create or load a BFLOAT16 index on a host whose CPU lacks a SIMD
+        /// BF16 code path; this is a server-side capability check, not a GLIDE-side restriction.
+        /// </summary>
+        Bfloat16,
+    }
+
     #endregion
     #region Public Methods
 
@@ -160,6 +187,19 @@ public static partial class Ft
         DataType.Hash => [ValkeyLiterals.HASH],
         DataType.Json => [ValkeyLiterals.JSON],
         _ => throw new ArgumentOutOfRangeException(nameof(dataType)),
+    };
+
+    /// <summary>
+    /// Converts to a command argument.
+    /// </summary>
+    /// <param name="type">The vector type to convert.</param>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="type"/> is not a supported <see cref="VectorType"/> value.</exception>
+    internal static GlideString ToArg(this VectorType type) => type switch
+    {
+        VectorType.Float32 => ValkeyLiterals.FLOAT32,
+        VectorType.Float16 => ValkeyLiterals.FLOAT16,
+        VectorType.Bfloat16 => ValkeyLiterals.BFLOAT16,
+        _ => throw new ArgumentOutOfRangeException(nameof(type)),
     };
 
     #endregion
@@ -407,33 +447,6 @@ public static partial class Ft
     }
 
     /// <summary>
-    /// The element type and encoding of a vector search index field.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/ft.create/">Valkey commands – FT.CREATE</seealso>
-    public enum VectorType
-    {
-        /// <summary>
-        /// 4 bytes per element, IEEE 754 single precision (<c>FLOAT32</c>).
-        /// </summary>
-        Float32,
-
-        /// <summary>
-        /// 2 bytes per element, IEEE 754 half precision (<c>FLOAT16</c>) (valkey-search 1.3.0).
-        /// Callers must pass already-encoded bytes; GLIDE does not encode vectors on the client's behalf.
-        /// </summary>
-        Float16,
-
-        /// <summary>
-        /// 2 bytes per element, truncated IEEE 754 single precision: the top 16 bits of a FLOAT32
-        /// (sign, 8-bit exponent, 7-bit mantissa) (<c>BFLOAT16</c>) (valkey-search 1.3.0).
-        /// Callers must pass already-encoded bytes; GLIDE does not encode vectors on the client's behalf.
-        /// The engine may refuse to create or load a BFLOAT16 index on a host whose CPU lacks a SIMD
-        /// BF16 code path; this is a server-side capability check, not a GLIDE-side restriction.
-        /// </summary>
-        Bfloat16,
-    }
-
-    /// <summary>
     /// A new vector search index field using the brute-force algorithm (<c>VECTOR FLAT</c>).
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ft.create/">Valkey commands – FT.CREATE</seealso>
@@ -463,19 +476,6 @@ public static partial class Ft
         /// </summary>
         public long? VectorsExaminedOnRuntime { get; init; }
     }
-
-    /// <summary>
-    /// Converts to a command argument.
-    /// </summary>
-    /// <param name="type">The vector type to convert.</param>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="type"/> is not a supported <see cref="VectorType"/> value.</exception>
-    internal static GlideString ToArg(this VectorType type) => type switch
-    {
-        VectorType.Float32 => ValkeyLiterals.FLOAT32,
-        VectorType.Float16 => ValkeyLiterals.FLOAT16,
-        VectorType.Bfloat16 => ValkeyLiterals.BFLOAT16,
-        _ => throw new ArgumentOutOfRangeException(nameof(type)),
-    };
 
     #endregion
 }

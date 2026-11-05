@@ -8,6 +8,30 @@ namespace Valkey.Glide.ServerModules;
 
 public static partial class Ft
 {
+    #region Nested Enums
+
+    /// <summary>
+    /// Controls how a VSIM pre-filter (see <see cref="HybridVsimFilter"/>) is applied against the
+    /// vector search. Only meaningful inside a counted VSIM FILTER block.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/ft.hybrid/">Valkey commands – FT.HYBRID</seealso>
+    public enum HybridFilterPolicy
+    {
+        /// <summary>
+        /// Evaluates the filter against every candidate as it is produced (brute-force), rather
+        /// than pre-restricting the vector index's own search space. <c>EF_RUNTIME</c> on the same
+        /// VSIM arm is rejected when this policy is set.
+        /// </summary>
+        Adhoc,
+
+        /// <summary>
+        /// Evaluates the filter in batches drawn from the vector index. Required for
+        /// <see cref="HybridVsimFilter.BatchSize"/> to be set.
+        /// </summary>
+        Batches,
+    }
+
+    #endregion
     #region Public Methods
 
     /// <summary>
@@ -47,9 +71,9 @@ public static partial class Ft
         => client.Command(Request.FtHybrid(index, searchArm, vsimArm, options));
 
     /// <summary>
-    /// Runs <see cref="HybridAsync"/> with <see cref="HybridOptions.WithCursorOptions"/> set,
+    /// Runs <see cref="HybridAsync(BaseClient, ValkeyKey, HybridSearchArm, HybridVsimArm, HybridOptions)"/> with <see cref="HybridOptions.WithCursorOptions"/> set,
     /// returning the first page of rows and the cursor id directly, rather than through the
-    /// plain-row shape <see cref="HybridAsync"/> returns.
+    /// plain-row shape <see cref="HybridAsync(BaseClient, ValkeyKey, HybridSearchArm, HybridVsimArm, HybridOptions)"/> returns.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ft.hybrid/">Valkey commands – FT.HYBRID</seealso>
     /// <param name="client">The client to execute the command.</param>
@@ -124,7 +148,7 @@ public static partial class Ft
             {
                 throw new ArgumentException(
                     $"{nameof(Query)} must not be a vector query (a '=>[KNN ...]' clause) -- the server rejects a vector " +
-                    $"query on the SEARCH arm. Use {nameof(HybridVsimArm)} for the vector half instead.");
+                        $"query on the SEARCH arm. Use {nameof(HybridVsimArm)} for the vector half instead.");
             }
 
             List<GlideString> args = [ValkeyLiterals.SEARCH, Query];
@@ -143,27 +167,6 @@ public static partial class Ft
 
             return [.. args];
         }
-    }
-
-    /// <summary>
-    /// Controls how a VSIM pre-filter (see <see cref="HybridVsimFilter"/>) is applied against the
-    /// vector search. Only meaningful inside a counted VSIM FILTER block.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/ft.hybrid/">Valkey commands – FT.HYBRID</seealso>
-    public enum HybridFilterPolicy
-    {
-        /// <summary>
-        /// Evaluates the filter against every candidate as it is produced (brute-force), rather
-        /// than pre-restricting the vector index's own search space. <c>EF_RUNTIME</c> on the same
-        /// VSIM arm is rejected when this policy is set.
-        /// </summary>
-        Adhoc,
-
-        /// <summary>
-        /// Evaluates the filter in batches drawn from the vector index. Required for
-        /// <see cref="HybridVsimFilter.BatchSize"/> to be set.
-        /// </summary>
-        Batches,
     }
 
     /// <summary>
@@ -300,7 +303,7 @@ public static partial class Ft
             {
                 throw new ArgumentException(
                     $"{nameof(EfRuntime)} is not supported with {nameof(Filter)}.{nameof(HybridVsimFilter.Policy)}={nameof(HybridFilterPolicy)}.{nameof(HybridFilterPolicy.Adhoc)} " +
-                    "(the server rejects this combination: \"EF_RUNTIME is irrelevant for POLICY ADHOC\").");
+                        "(the server rejects this combination: \"EF_RUNTIME is irrelevant for POLICY ADHOC\").");
             }
 
             GlideString fieldRef = $"@{Field}";

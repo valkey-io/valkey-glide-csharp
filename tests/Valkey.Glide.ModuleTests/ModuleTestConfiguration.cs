@@ -17,7 +17,7 @@ namespace Valkey.Glide.ModuleTests;
 /// </summary>
 /// <remarks>
 /// Deliberately does not fall back to starting its own server the way
-/// <see cref="IntegrationTests.TestConfiguration"/> does: running this project without the
+/// <c>Valkey.Glide.IntegrationTests.TestConfiguration</c> does: running this project without the
 /// harness's endpoints set must fail loudly, not silently exercise the main suite's modules-free
 /// server and report false negatives/positives for 1.3 features.
 /// </remarks>
@@ -26,7 +26,7 @@ public sealed class ModuleTestConfiguration : IDisposable
     private const string StandaloneEndpointEnvVar = "MODULES_STANDALONE_ENDPOINT";
     private const string ClusterEndpointsEnvVar = "MODULES_CLUSTER_ENDPOINTS";
 
-    public static Address StandaloneAddress { get; private set; }
+    public static Address? StandaloneAddress { get; private set; }
 
     public static IList<Address> ClusterAddresses { get; private set; } = [];
 
@@ -39,10 +39,10 @@ public sealed class ModuleTestConfiguration : IDisposable
         {
             throw new InvalidOperationException(
                 $"{StandaloneEndpointEnvVar} is not set. The module-test harness never starts its own " +
-                "server -- run via utils/run-modules-ci-locally.sh, which starts Docker containers with " +
-                "real valkey-search modules loaded and exports this variable. Running this test " +
-                "project directly without that harness would otherwise silently fail to prove anything " +
-                "about search 1.3 support.");
+                    "server -- run via utils/run-modules-ci-locally.sh, which starts Docker containers with " +
+                    "real valkey-search modules loaded and exports this variable. Running this test " +
+                    "project directly without that harness would otherwise silently fail to prove anything " +
+                    "about search 1.3 support.");
         }
 
         StandaloneAddress = Address.FromHosts(standaloneEndpoint).First();
@@ -55,14 +55,20 @@ public sealed class ModuleTestConfiguration : IDisposable
     }
 
     public static GlideClient CreateStandaloneClient()
-        => GlideClient.CreateClient(
+    {
+        // The assembly fixture constructor either sets this or throws before any test runs.
+        Address address = StandaloneAddress
+            ?? throw new InvalidOperationException($"{nameof(StandaloneAddress)} was never set; the fixture constructor should have thrown first.");
+
+        return GlideClient.CreateClient(
             new StandaloneClientConfigurationBuilder()
-                .WithAddress(StandaloneAddress.Host, StandaloneAddress.Port)
+                .WithAddress(address.Host, address.Port)
                 .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
                 .WithRequestTimeout(TimeSpan.FromSeconds(30))
                 .Build())
             .GetAwaiter()
             .GetResult();
+    }
 
     public static GlideClusterClient? CreateClusterClient()
     {
@@ -100,16 +106,14 @@ public sealed class ModuleTestConfiguration : IDisposable
                 }
 
                 field = [.. clients];
-                _testClientsWereCreated = true;
+                s_testClientsWereCreated = true;
             }
 
             return field;
         }
-
-        private set;
     } = [];
 
-    private static bool _testClientsWereCreated;
+    private static bool s_testClientsWereCreated;
 
     public void Dispose()
     {
@@ -118,7 +122,7 @@ public sealed class ModuleTestConfiguration : IDisposable
         // TestClients, and (b) if the cluster endpoint is unreachable, makes teardown itself
         // throw from inside CreateClusterClient() rather than cleanly disposing whatever was
         // already created. Only dispose what was actually created.
-        if (!_testClientsWereCreated)
+        if (!s_testClientsWereCreated)
         {
             return;
         }

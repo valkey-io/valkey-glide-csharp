@@ -185,7 +185,7 @@ internal static partial class Request
         {
             throw new ArgumentException(
                 $"{nameof(Ft.SearchOptions.Count)} and {nameof(Ft.SearchOptions.Limit)} are mutually exclusive -- " +
-                $"{nameof(Ft.SearchOptions.Count)} maps to LIMIT 0 0 internally, so an explicit limit would conflict with it.");
+                    $"{nameof(Ft.SearchOptions.Count)} maps to LIMIT 0 0 internally, so an explicit limit would conflict with it.");
         }
 
         List<GlideString> args = [];
@@ -400,6 +400,8 @@ internal static partial class Request
     /// budget, not an entry count -- each <see cref="Ft.LoadField"/> with an alias contributes 3
     /// tokens (field, AS, alias) rather than 1, matching the server's own accounting.
     /// </summary>
+    /// <param name="entries">The LOAD clause entries, supporting <c>AS</c> aliasing; takes priority over <paramref name="plainFields"/> when set.</param>
+    /// <param name="plainFields">The plain LOAD field list, used when <paramref name="entries"/> is not set.</param>
     private static GlideString[] ToLoadArgs(IEnumerable<Ft.LoadField>? entries, IEnumerable<ValkeyValue>? plainFields)
     {
         if (entries is not null)
@@ -670,6 +672,11 @@ internal static partial class Request
     /// <paramref name="withScores"/>/<paramref name="withSortKeys"/> per <see cref="ParseFtSearchResponse"/>'s
     /// comment.
     /// </summary>
+    /// <param name="key">The document's key.</param>
+    /// <param name="value">The raw reshaped value for the document, whose shape depends on <paramref name="withScores"/>/<paramref name="withSortKeys"/>.</param>
+    /// <param name="withScores">Whether <c>WITHSCORES</c> was requested.</param>
+    /// <param name="withSortKeys">Whether <c>WITHSORTKEYS</c> was requested.</param>
+    /// <exception cref="RequestException">Thrown if the document's shape doesn't match what <paramref name="withScores"/>/<paramref name="withSortKeys"/> predict.</exception>
     private static Ft.SearchDocument ParseFtSearchDocument(ValkeyKey key, object value, bool withScores, bool withSortKeys)
     {
         if (!withScores && !withSortKeys)
@@ -715,6 +722,9 @@ internal static partial class Request
     /// decimal text valkey-search returns (e.g. "0.287682086229"), not a float -- this is the one
     /// place that text is parsed into a <see cref="double"/>.
     /// </summary>
+    /// <param name="key">The document's key, used in the exception message if parsing fails.</param>
+    /// <param name="value">The raw score value from glide-core's reshaped reply.</param>
+    /// <exception cref="RequestException">Thrown if <paramref name="value"/> isn't a parseable decimal string.</exception>
     private static double ParseFtScore(ValkeyKey key, object value)
     {
         string? text = value switch
@@ -732,7 +742,7 @@ internal static partial class Request
     private static IDictionary<ValkeyValue, ValkeyValue> ToFieldMap(object value)
         => value is Dictionary<GlideString, object> map
             ? map.ToDictionary(f => (ValkeyValue)f.Key, f => (ValkeyValue)(GlideString)f.Value)
-            : new Dictionary<ValkeyValue, ValkeyValue>();
+            : [];
 
     private static IDictionary<ValkeyValue, ValkeyValue>[] ParseFtAggregateResponse(object[] data)
     {
@@ -760,6 +770,8 @@ internal static partial class Request
     /// <see cref="RequestException"/> for any array-valued reducer result, making TOLIST and
     /// RANDOM_SAMPLE entirely unusable through <c>Ft.AggregateAsync</c>/<c>Ft.HybridAsync</c>).
     /// </summary>
+    /// <param name="value">The raw row value from glide-core's reshaped reply.</param>
+    /// <exception cref="RequestException">Thrown if <paramref name="value"/> isn't one of the recognized value shapes.</exception>
     private static ValkeyValue ParseFtAggregateValue(object? value)
         => value switch
         {
@@ -779,6 +791,7 @@ internal static partial class Request
     /// applying recursively) fall back to the same quoted-string treatment as any other
     /// non-numeric, non-boolean scalar.
     /// </summary>
+    /// <param name="arr">The array-valued reducer result to render.</param>
     private static string ToJsonArrayLiteral(object[] arr)
     {
         var sb = new System.Text.StringBuilder("[");
@@ -786,33 +799,21 @@ internal static partial class Request
         {
             if (i > 0)
             {
-                sb.Append(',');
+                _ = sb.Append(',');
             }
 
-            switch (arr[i])
+            _ = arr[i] switch
             {
-                case null:
-                    sb.Append("null");
-                    break;
-                case long l:
-                    sb.Append(l);
-                    break;
-                case double d:
-                    sb.Append(d.ToString(System.Globalization.CultureInfo.InvariantCulture));
-                    break;
-                case bool b:
-                    sb.Append(b ? "true" : "false");
-                    break;
-                case GlideString gs:
-                    sb.Append('"').Append(gs.ToString().Replace("\"", "\\\"")).Append('"');
-                    break;
-                default:
-                    sb.Append('"').Append(arr[i]?.ToString()?.Replace("\"", "\\\"")).Append('"');
-                    break;
-            }
+                null => sb.Append("null"),
+                long l => sb.Append(l),
+                double d => sb.Append(d.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+                bool b => sb.Append(b ? "true" : "false"),
+                GlideString gs => sb.Append('"').Append(gs.ToString().Replace("\"", "\\\"")).Append('"'),
+                _ => sb.Append('"').Append(arr[i]?.ToString()?.Replace("\"", "\\\"")).Append('"'),
+            };
         }
 
-        sb.Append(']');
+        _ = sb.Append(']');
         return sb.ToString();
     }
 
@@ -822,6 +823,8 @@ internal static partial class Request
     /// <c>rows</c> is the same per-document mapping shape <see cref="ParseFtAggregateResponse"/>
     /// unwraps, and <c>cursorId</c> is <c>0</c> once the cursor is exhausted.
     /// </summary>
+    /// <param name="data">The raw WITHCURSOR reply, expected to be a two-element <c>[rows, cursorId]</c> array.</param>
+    /// <exception cref="RequestException">Thrown if <paramref name="data"/> isn't the expected two-element array shape.</exception>
     private static Ft.CursorResult ParseCursorWrappedAggregateResponse(object? data)
     {
         if (data is not object[] arr)
@@ -850,6 +853,10 @@ internal static partial class Request
     /// bytes rather than a <c>$name</c> reference, a <c>$</c>-prefixed parameter name is generated
     /// here and merged into the PARAMS list.
     /// </summary>
+    /// <param name="indexName">The index to run FT.HYBRID against.</param>
+    /// <param name="searchArm">The SEARCH arm's text/tag/numeric query and options.</param>
+    /// <param name="vsimArm">The VSIM arm's vector query and options.</param>
+    /// <param name="options">Additional FT.HYBRID options (COMBINE, LOAD, cursor, etc.).</param>
     /// <exception cref="ArgumentException">Thrown if the generated VSIM parameter name collides with an entry already present in <see cref="Ft.HybridOptions.Params"/>.</exception>
     private static GlideString[] BuildHybridArgs(ValkeyKey indexName, Ft.HybridSearchArm searchArm, Ft.HybridVsimArm vsimArm, Ft.HybridOptions? options)
     {
@@ -892,7 +899,7 @@ internal static partial class Request
             args.Add(ToULongMs(tailOptions.Timeout.Value, nameof(tailOptions.Timeout)).ToGlideString());
         }
 
-        Dictionary<ValkeyValue, ValkeyValue> mergedParams = new(tailOptions.Params);
+        Dictionary<ValkeyValue, ValkeyValue> mergedParams = [with(tailOptions.Params)];
         if (generatedParamName is not null)
         {
             // The PARAMS entry's own key never carries the leading '$' -- only the VSIM clause's
@@ -938,6 +945,10 @@ internal static partial class Request
     /// clause at all when neither <paramref name="loadAll"/> nor <paramref name="loadFields"/> is
     /// set (FT.HYBRID's default reply is just the document key and the fused score).
     /// </summary>
+    /// <param name="loadAll">Whether to emit <c>LOAD *</c>, loading all fields.</param>
+    /// <param name="loadFields">The specific fields to load, used when <paramref name="loadAll"/> is false.</param>
+    /// <param name="searchYieldScoreAs">The SEARCH arm's <c>YieldScoreAs</c> alias, checked against <paramref name="loadFields"/>.</param>
+    /// <param name="vsimYieldScoreAs">The VSIM arm's <c>YieldScoreAs</c> alias, checked against <paramref name="loadFields"/>.</param>
     /// <exception cref="ArgumentException">Thrown if <paramref name="loadFields"/> names either arm's <c>YieldScoreAs</c> alias (M3: the server rejects an arm alias named inside LOAD outright).</exception>
     private static GlideString[] ToHybridLoadArgs(bool loadAll, IEnumerable<Ft.LoadField>? loadFields, ValkeyValue searchYieldScoreAs, ValkeyValue vsimYieldScoreAs)
     {
@@ -955,7 +966,7 @@ internal static partial class Request
                 {
                     throw new ArgumentException(
                         $"LOAD must not name an arm's YieldScoreAs alias ('{entry.FieldIdentifier}') -- the server rejects it " +
-                        "outright, since it's already present in the default reply with no LOAD needed.");
+                            "outright, since it's already present in the default reply with no LOAD needed.");
                 }
             }
         }
@@ -1002,7 +1013,7 @@ internal static partial class Request
 
     /// <summary>
     /// Normalizes a nested FT.INFO LOCAL sub-structure to a map, accepting either an already
-    /// glide-core-reshaped <see cref="Dictionary{GlideString, object}"/> or a raw flat
+    /// glide-core-reshaped <c>Dictionary&lt;GlideString, object&gt;</c> or a raw flat
     /// <c>object[]</c> of alternating key/value pairs. glide-core's generic FT.INFO reshape
     /// (<c>value_conversion.rs</c>'s <c>FTInfoReturnType</c> arm) only recurses into the legacy
     /// RediSearch <c>fields</c>/<c>vector_params</c> keys it was written against -- it has no
@@ -1025,13 +1036,13 @@ internal static partial class Request
         {
             throw new RequestException(
                 $"Unexpected FT.INFO nested structure: expected a map or an even-length flat array, got {value?.GetType()}" +
-                (value is object[] odd ? $" (length {odd.Length})" : string.Empty));
+                    (value is object[] odd ? $" (length {odd.Length})" : string.Empty));
         }
 
         Dictionary<GlideString, object> result = [];
         for (int i = 0; i < flat.Length; i += 2)
         {
-            result[(GlideString)flat[i]!] = flat[i + 1]!;
+            result[(GlideString)flat[i]] = flat[i + 1];
         }
 
         return result;

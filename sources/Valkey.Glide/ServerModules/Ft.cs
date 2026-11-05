@@ -10,6 +10,16 @@ namespace Valkey.Glide.ServerModules;
 /// <seealso href="https://valkey.io/docs/topics/search/">Valkey Search – Overview</seealso>
 public static partial class Ft
 {
+    #region Private Fields
+
+    private static readonly HashSet<string> SupportedLanguages =
+    [
+        with(StringComparer.OrdinalIgnoreCase),
+        "arabic", "dutch", "english", "french", "german", "indonesian",
+        "italian", "portuguese", "russian", "spanish", "swedish", "turkish",
+    ];
+
+    #endregion
     #region Public Methods
 
     /// <summary>
@@ -91,19 +101,13 @@ public static partial class Ft
         }
 
         string value = language.ToString();
-        if (!_supportedLanguages.Contains(value))
+        if (!SupportedLanguages.Contains(value))
         {
             throw new ArgumentException(
                 $"Unsupported LANGUAGE '{value}' -- valkey-search 1.3.0-rc1 only registers: " +
-                $"{string.Join(", ", _supportedLanguages)}; the server rejects any other value.");
+                    $"{string.Join(", ", SupportedLanguages)}; the server rejects any other value.");
         }
     }
-
-    private static readonly HashSet<string> _supportedLanguages = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "arabic", "dutch", "english", "french", "german", "indonesian",
-        "italian", "portuguese", "russian", "spanish", "swedish", "turkish",
-    };
 
     #endregion
 }

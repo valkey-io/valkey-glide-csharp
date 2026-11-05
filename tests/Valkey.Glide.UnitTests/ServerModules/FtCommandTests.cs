@@ -320,15 +320,18 @@ public class FtCommandTests
         CmdAssert.Equal(
             RequestType.FtCreate,
             ["idx", "ON", "HASH", "SCORE", "0.5", "LANGUAGE", "english", "WITHOFFSETS", "FILTER", "@active:{true}", "SCORE_FIELD", "popularity", "NOHL", "SCHEMA", "f", "TEXT"],
-            Request.FtCreate("idx", [new Ft.CreateTextField("f")], new Ft.CreateOptions
-            {
-                Score = 0.5,
-                Language = "english",
-                WithOffsets = true,
-                Filter = "@active:{true}",
-                ScoreField = "popularity",
-                NoHighlight = true,
-            }));
+            Request.FtCreate(
+                "idx",
+                [new Ft.CreateTextField("f")],
+                new Ft.CreateOptions
+                {
+                    Score = 0.5,
+                    Language = "english",
+                    WithOffsets = true,
+                    Filter = "@active:{true}",
+                    ScoreField = "popularity",
+                    NoHighlight = true,
+                }));
 
         _ = Assert.Throws<ArgumentException>(() =>
             Request.FtCreate("idx", [new Ft.CreateTextField("f")], new Ft.CreateOptions { WithOffsets = true, NoOffsets = true }));
@@ -445,7 +448,9 @@ public class FtCommandTests
         var args1 = Request.FtHybrid(
             "idx",
             new Ft.HybridSearchArm { Query = "hello world" },
-            new Ft.HybridVsimArm { Field = "vec", Vector = "rawvectorbytes", K = 10 }).Args.ToStrings();
+            new Ft.HybridVsimArm { Field = "vec", Vector = "rawvectorbytes", K = 10 })
+            .Args
+            .ToStrings();
 
         Assert.Equal("FT.HYBRID", args1[0]);
         Assert.Equal("idx", args1[1]);
@@ -477,7 +482,9 @@ public class FtCommandTests
                 LoadFields = [new Ft.LoadField("title")],
                 WithCursorOptions = new Ft.WithCursor { Count = 10 },
                 Params = new Dictionary<ValkeyValue, ValkeyValue> { ["qv"] = "rawbytes" },
-            }).Args.ToStrings();
+            })
+            .Args
+            .ToStrings();
 
         Assert.Equal(
             [
@@ -515,7 +522,9 @@ public class FtCommandTests
                 Dialect = 2,
                 Params = new Dictionary<ValkeyValue, ValkeyValue> { ["qv"] = "unused" },
                 Clauses = [new Ft.AggregateFilter("@price > 10")],
-            }).Args.ToStrings();
+            })
+            .Args
+            .ToStrings();
 
         Assert.Equal(
             [

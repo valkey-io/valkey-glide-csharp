@@ -8,6 +8,72 @@ namespace Valkey.Glide.ServerModules;
 
 public static partial class Ft
 {
+    #region Nested Enums
+
+    /// <summary>
+    /// Reducer functions for an aggregate command.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/ft.aggregate/">Valkey commands – FT.AGGREGATE</seealso>
+    public enum ReducerFunction
+    {
+        /// <summary>
+        /// Counts the number of records in each group (<c>COUNT</c>).
+        /// </summary>
+        Count,
+
+        /// <summary>
+        /// Counts the number of distinct values of an expression (<c>COUNT_DISTINCT</c>).
+        /// </summary>
+        CountDistinct,
+
+        /// <summary>
+        /// Sums the values of an expression (<c>SUM</c>).
+        /// </summary>
+        Sum,
+
+        /// <summary>
+        /// Returns the minimum value of an expression (<c>MIN</c>).
+        /// </summary>
+        Min,
+
+        /// <summary>
+        /// Returns the maximum value of an expression (<c>MAX</c>).
+        /// </summary>
+        Max,
+
+        /// <summary>
+        /// Returns the average value of an expression (<c>AVG</c>).
+        /// </summary>
+        Avg,
+
+        /// <summary>
+        /// Returns the standard deviation of the values of an expression (<c>STDDEV</c>).
+        /// </summary>
+        Stddev,
+
+        /// <summary>
+        /// Collects all values into a single array (<c>TOLIST</c>) (valkey-search 1.3.0). Produced
+        /// by <see cref="AggregateReducer.ToList"/>; not constructible via the public
+        /// <see cref="AggregateReducer"/> object initializer directly, since the factory also sets
+        /// <see cref="AggregateReducer.Expressions"/> to the shape TOLIST requires.
+        /// </summary>
+        ToList,
+
+        /// <summary>
+        /// Returns a single record's value, optionally chosen by another property
+        /// (<c>FIRST_VALUE</c>) (valkey-search 1.3.0). Produced by
+        /// <see cref="AggregateReducer.FirstValue"/>.
+        /// </summary>
+        FirstValue,
+
+        /// <summary>
+        /// Returns a uniform random sample of values (<c>RANDOM_SAMPLE</c>) (valkey-search 1.3.0).
+        /// Produced by <see cref="AggregateReducer.RandomSample"/>.
+        /// </summary>
+        RandomSample,
+    }
+
+    #endregion
     #region Nested Interfaces
 
     /// <summary>
@@ -91,6 +157,25 @@ public static partial class Ft
     /// </remarks>
     public static Task<IDictionary<ValkeyValue, ValkeyValue>[]> AggregateAsync(BaseClient client, ValkeyKey index, ValkeyValue query, AggregateOptions options)
         => client.Command(Request.FtAggregate(index, query, options));
+
+    #endregion
+    #region Private Methods
+
+    private static GlideString ToLiteral(ReducerFunction function)
+        => function switch
+        {
+            ReducerFunction.Count => ValkeyLiterals.COUNT,
+            ReducerFunction.CountDistinct => ValkeyLiterals.COUNT_DISTINCT,
+            ReducerFunction.Sum => ValkeyLiterals.SUM,
+            ReducerFunction.Min => ValkeyLiterals.MIN,
+            ReducerFunction.Max => ValkeyLiterals.MAX,
+            ReducerFunction.Avg => ValkeyLiterals.AVG,
+            ReducerFunction.Stddev => ValkeyLiterals.STDDEV,
+            ReducerFunction.ToList => ValkeyLiterals.TOLIST,
+            ReducerFunction.FirstValue => ValkeyLiterals.FIRST_VALUE,
+            ReducerFunction.RandomSample => ValkeyLiterals.RANDOM_SAMPLE,
+            _ => throw new ArgumentOutOfRangeException(nameof(function)),
+        };
 
     #endregion
     #region Nested Classes
@@ -245,7 +330,7 @@ public static partial class Ft
         /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="size"/> is negative or greater than 1000.</exception>
         public static AggregateReducer RandomSample(ValkeyValue field, long size, ValkeyValue name = default)
         {
-            if (size < 0 || size > 1000)
+            if (size is < 0 or > 1000)
             {
                 throw new ArgumentOutOfRangeException(nameof(size), size, "RANDOM_SAMPLE's size must be a non-negative integer no greater than 1000; the server rejects values outside this range.");
             }
@@ -274,69 +359,6 @@ public static partial class Ft
 
             return [.. args];
         }
-    }
-
-    /// <summary>
-    /// Reducer functions for an aggregate command.
-    /// </summary>
-    /// <seealso href="https://valkey.io/commands/ft.aggregate/">Valkey commands – FT.AGGREGATE</seealso>
-    public enum ReducerFunction
-    {
-        /// <summary>
-        /// Counts the number of records in each group (<c>COUNT</c>).
-        /// </summary>
-        Count,
-
-        /// <summary>
-        /// Counts the number of distinct values of an expression (<c>COUNT_DISTINCT</c>).
-        /// </summary>
-        CountDistinct,
-
-        /// <summary>
-        /// Sums the values of an expression (<c>SUM</c>).
-        /// </summary>
-        Sum,
-
-        /// <summary>
-        /// Returns the minimum value of an expression (<c>MIN</c>).
-        /// </summary>
-        Min,
-
-        /// <summary>
-        /// Returns the maximum value of an expression (<c>MAX</c>).
-        /// </summary>
-        Max,
-
-        /// <summary>
-        /// Returns the average value of an expression (<c>AVG</c>).
-        /// </summary>
-        Avg,
-
-        /// <summary>
-        /// Returns the standard deviation of the values of an expression (<c>STDDEV</c>).
-        /// </summary>
-        Stddev,
-
-        /// <summary>
-        /// Collects all values into a single array (<c>TOLIST</c>) (valkey-search 1.3.0). Produced
-        /// by <see cref="AggregateReducer.ToList"/>; not constructible via the public
-        /// <see cref="AggregateReducer"/> object initializer directly, since the factory also sets
-        /// <see cref="AggregateReducer.Expressions"/> to the shape TOLIST requires.
-        /// </summary>
-        ToList,
-
-        /// <summary>
-        /// Returns a single record's value, optionally chosen by another property
-        /// (<c>FIRST_VALUE</c>) (valkey-search 1.3.0). Produced by
-        /// <see cref="AggregateReducer.FirstValue"/>.
-        /// </summary>
-        FirstValue,
-
-        /// <summary>
-        /// Returns a uniform random sample of values (<c>RANDOM_SAMPLE</c>) (valkey-search 1.3.0).
-        /// Produced by <see cref="AggregateReducer.RandomSample"/>.
-        /// </summary>
-        RandomSample,
     }
 
     /// <summary>
@@ -427,8 +449,8 @@ public static partial class Ft
     /// <remarks>
     /// For FT.HYBRID, a <see cref="AggregateFilter"/> placed as the first clause after the VSIM arm
     /// is claimed by the server's VSIM parser as a VSIM pre-filter instead of an aggregate FILTER
-    /// clause -- use <see cref="Ft.HybridOptions.Clauses"/> only after at least one other clause,
-    /// or see <see cref="Ft.HybridVsimFilter"/> for an explicit VSIM pre-filter.
+    /// clause -- use <see cref="HybridOptions.Clauses"/> only after at least one other clause,
+    /// or see <see cref="HybridVsimFilter"/> for an explicit VSIM pre-filter.
     /// </remarks>
     /// <param name="expression">The filter expression.</param>
     [method: SetsRequiredMembers]
@@ -481,29 +503,41 @@ public static partial class Ft
     /// to reject the whole command outright ("field AS does not exist") rather than silently
     /// ignoring the alias. Requires <c>search.emulate-release</c> &gt;= 1.3.0 to take effect.
     /// </remarks>
-    public sealed class LoadField
+    /// <remarks>
+    /// Creates a new <see cref="LoadField"/> with the specified field identifier and optional alias.
+    /// </remarks>
+    /// <param name="fieldIdentifier">The identifier for the field to load.</param>
+    /// <param name="alias">An optional alias to emit the field's column under.</param>
+    [method: SetsRequiredMembers]
+    /// <summary>
+    /// A single entry in the <c>LOAD</c> clause of FT.AGGREGATE (or FT.HYBRID), optionally renaming
+    /// the loaded field via <c>AS</c>. Modelled on <see cref="SearchReturnField"/> (the equivalent
+    /// concept for FT.SEARCH's <c>RETURN</c> option).
+    /// </summary>
+    /// <param name="fieldIdentifier">The identifier for the field to load.</param>
+    /// <param name="alias">The alias to emit the field's column under. Requires <c>search.emulate-release</c> &gt;= 1.3.0 to take effect.</param>
+    /// <seealso href="https://valkey.io/commands/ft.aggregate/">Valkey commands – FT.AGGREGATE</seealso>
+    /// <remarks>
+    /// <c>AS alias</c> in the <c>LOAD</c> clause is a compatibility fix introduced in valkey-search 1.3.0,
+    /// gated by the <c>ft_aggregate_load_as</c> compatibility flag. Below
+    /// <c>search.emulate-release 1.3.0</c>, the legacy branch does not recognize <c>AS</c> as a rename
+    /// keyword at all: it is consumed as just another LOAD field token (i.e. treated as the
+    /// identifier of a field literally named <c>AS</c>) rather than a rename directive. Since no
+    /// schema ever has a field actually named <c>AS</c>, this mechanism is what causes the server
+    /// to reject the whole command outright ("field AS does not exist") rather than silently
+    /// ignoring the alias. Requires <c>search.emulate-release</c> &gt;= 1.3.0 to take effect.
+    /// </remarks>
+    public sealed class LoadField(ValkeyValue fieldIdentifier, ValkeyValue alias = default)
     {
         /// <summary>
         /// The identifier for the field to load.
         /// </summary>
-        public required ValkeyValue FieldIdentifier { get; init; }
+        public required ValkeyValue FieldIdentifier { get; init; } = fieldIdentifier;
 
         /// <summary>
         /// The alias to emit the field's column under. Requires <c>search.emulate-release</c> &gt;= 1.3.0 to take effect.
         /// </summary>
-        public ValkeyValue Alias { get; init; }
-
-        /// <summary>
-        /// Creates a new <see cref="LoadField"/> with the specified field identifier and optional alias.
-        /// </summary>
-        /// <param name="fieldIdentifier">The identifier for the field to load.</param>
-        /// <param name="alias">An optional alias to emit the field's column under.</param>
-        [SetsRequiredMembers]
-        public LoadField(ValkeyValue fieldIdentifier, ValkeyValue alias = default)
-        {
-            FieldIdentifier = fieldIdentifier;
-            Alias = alias;
-        }
+        public ValkeyValue Alias { get; init; } = alias;
 
         /// <summary>
         /// Converts a <see cref="string"/> to a <see cref="LoadField"/>.
@@ -528,8 +562,8 @@ public static partial class Ft
 
     /// <summary>
     /// The <c>WITHCURSOR</c> option, requesting a paged reply instead of the whole result set at once.
-    /// Shared between FT.AGGREGATE and FT.HYBRID -- the option's grammar (<c>WITHCURSOR [COUNT n]
-    /// [MAXIDLE ms]</c>) and reply shape are identical regardless of which command opened the cursor.
+    /// Shared between FT.AGGREGATE and FT.HYBRID -- the option's grammar (<code>WITHCURSOR [COUNT n]
+    /// [MAXIDLE ms]</code>) and reply shape are identical regardless of which command opened the cursor.
     /// A paged query, and every subsequent <see cref="CursorReadAsync"/>/<see cref="CursorDelAsync"/>
     /// against the cursor it opens, is pinned to the PRIMARY of the index's slot regardless of the
     /// client's read-from configuration -- a cursor is a per-process, node-local resource, and this
@@ -667,25 +701,6 @@ public static partial class Ft
 
         #endregion
     }
-
-    #endregion
-    #region Private Methods
-
-    private static GlideString ToLiteral(ReducerFunction function)
-        => function switch
-        {
-            ReducerFunction.Count => ValkeyLiterals.COUNT,
-            ReducerFunction.CountDistinct => ValkeyLiterals.COUNT_DISTINCT,
-            ReducerFunction.Sum => ValkeyLiterals.SUM,
-            ReducerFunction.Min => ValkeyLiterals.MIN,
-            ReducerFunction.Max => ValkeyLiterals.MAX,
-            ReducerFunction.Avg => ValkeyLiterals.AVG,
-            ReducerFunction.Stddev => ValkeyLiterals.STDDEV,
-            ReducerFunction.ToList => ValkeyLiterals.TOLIST,
-            ReducerFunction.FirstValue => ValkeyLiterals.FIRST_VALUE,
-            ReducerFunction.RandomSample => ValkeyLiterals.RANDOM_SAMPLE,
-            _ => throw new ArgumentOutOfRangeException(nameof(function)),
-        };
 
     #endregion
 }

@@ -72,6 +72,33 @@ public static partial class Ft
         => client.Command(Request.FtCursorDel(index, cursorId), PrimaryRoute(index));
 
     #endregion
+    #region Private Methods
+
+    /// <summary>
+    /// A route pinning a command to the PRIMARY of <paramref name="index"/>'s slot, used for every
+    /// cursor-bearing command (FT.AGGREGATE/FT.HYBRID WITHCURSOR, FT.CURSOR READ/DEL) since a
+    /// cursor is a per-process, node-local resource. No-op (ignored) against a standalone client.
+    /// </summary>
+    /// <param name="index">The index whose slot the command should be routed to.</param>
+    /// <remarks>
+    /// L9 (deferred, see QA disposition): hashes <paramref name="index"/> via
+    /// <see cref="ValkeyKey.ToString"/> (UTF-8 text), not its raw bytes, so a binary (non-UTF-8)
+    /// index name would compute a different CRC16 slot than the one glide-core's own routing
+    /// layer computes from the raw bytes for the index's actual key traffic (FT.CREATE,
+    /// HSET/HSETNX documents under it, etc.) -- misrouting the cursor request to the wrong node's
+    /// primary. Not fixed in this PR: fixing it correctly requires either a byte-based
+    /// <c>Route.SlotKeyRoute</c> overload (a public API addition to <c>Route</c>, affecting every
+    /// command that takes a route, not just FT.*) or reimplementing glide-core's CRC16 hashtag
+    /// algorithm independently in C# -- the latter is a real correctness risk to introduce without
+    /// a reference implementation on hand to test it against, and the former is bigger than this
+    /// PR's scope. A binary index name is already an unusual choice (FT.CREATE's own <c>index</c>
+    /// argument is conventionally a readable name, unlike a document key), so the practical
+    /// exposure is narrow.
+    /// </remarks>
+    private static Route PrimaryRoute(ValkeyKey index)
+        => new Route.SlotKeyRoute(index.ToString() ?? string.Empty, Route.SlotType.Primary);
+
+    #endregion
     #region Nested Types
 
     /// <summary>
@@ -91,32 +118,6 @@ public static partial class Ft
         /// </summary>
         public required long CursorId { get; init; }
     }
-
-    #endregion
-    #region Private Methods
-
-    /// <summary>
-    /// A route pinning a command to the PRIMARY of <paramref name="index"/>'s slot, used for every
-    /// cursor-bearing command (FT.AGGREGATE/FT.HYBRID WITHCURSOR, FT.CURSOR READ/DEL) since a
-    /// cursor is a per-process, node-local resource. No-op (ignored) against a standalone client.
-    /// </summary>
-    /// <remarks>
-    /// L9 (deferred, see QA disposition): hashes <paramref name="index"/> via
-    /// <see cref="ValkeyKey.ToString"/> (UTF-8 text), not its raw bytes, so a binary (non-UTF-8)
-    /// index name would compute a different CRC16 slot than the one glide-core's own routing
-    /// layer computes from the raw bytes for the index's actual key traffic (FT.CREATE,
-    /// HSET/HSETNX documents under it, etc.) -- misrouting the cursor request to the wrong node's
-    /// primary. Not fixed in this PR: fixing it correctly requires either a byte-based
-    /// <c>Route.SlotKeyRoute</c> overload (a public API addition to <c>Route</c>, affecting every
-    /// command that takes a route, not just FT.*) or reimplementing glide-core's CRC16 hashtag
-    /// algorithm independently in C# -- the latter is a real correctness risk to introduce without
-    /// a reference implementation on hand to test it against, and the former is bigger than this
-    /// PR's scope. A binary index name is already an unusual choice (FT.CREATE's own <c>index</c>
-    /// argument is conventionally a readable name, unlike a document key), so the practical
-    /// exposure is narrow.
-    /// </remarks>
-    private static Route PrimaryRoute(ValkeyKey index)
-        => new Route.SlotKeyRoute(index.ToString() ?? string.Empty, Route.SlotType.Primary);
 
     #endregion
 }

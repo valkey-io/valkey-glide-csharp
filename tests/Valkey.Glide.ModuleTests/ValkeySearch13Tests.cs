@@ -179,9 +179,9 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
         // exact surviving key set each time -- not just a count.
         SkipUnless13();
         var index = await CreateBasicIndexAsync(client);
-        await client.HashSetAsync($"{index}:doc1", [new("title", "hello")]);
-        await client.HashSetAsync($"{index}:doc2", [new("title", "hello")]);
-        await client.HashSetAsync($"{index}:doc3", [new("title", "hello")]);
+        _ = await client.HashSetAsync($"{index}:doc1", [new("title", "hello")]);
+        _ = await client.HashSetAsync($"{index}:doc2", [new("title", "hello")]);
+        _ = await client.HashSetAsync($"{index}:doc3", [new("title", "hello")]);
         await FtUtils.WaitForIndexingAsync(client, index);
 
         var unrestricted = await Ft.SearchAsync(client, index, "hello");
@@ -192,7 +192,7 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
         Assert.Equal(2, restricted.TotalResults);
         Assert.Equal(
             new HashSet<string> { $"{index}:doc1", $"{index}:doc2" },
-            restricted.Documents.Select(d => d.Key.ToString()).ToHashSet());
+            [.. restricted.Documents.Select(d => d.Key.ToString())]);
 
         var empty = await Ft.SearchAsync(client, index, "hello", new Ft.SearchOptions { InKeys = [] });
         Assert.Equal(0, empty.TotalResults);
@@ -207,9 +207,9 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
         // to 1.3 it did not run as match-all at all, hence the gate.
         SkipUnless13();
         var index = await CreateBasicIndexAsync(client);
-        await client.HashSetAsync($"{index}:doc1", [new("title", "hello")]);
-        await client.HashSetAsync($"{index}:doc2", [new("title", "goodbye")]);
-        await client.HashSetAsync($"{index}:doc3", [new("title", "anything")]);
+        _ = await client.HashSetAsync($"{index}:doc1", [new("title", "hello")]);
+        _ = await client.HashSetAsync($"{index}:doc2", [new("title", "goodbye")]);
+        _ = await client.HashSetAsync($"{index}:doc3", [new("title", "anything")]);
         await FtUtils.WaitForIndexingAsync(client, index);
 
         var result = await Ft.SearchAsync(client, index, "*");
@@ -217,7 +217,7 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
         Assert.Equal(3, result.TotalResults);
         Assert.Equal(
             new HashSet<string> { $"{index}:doc1", $"{index}:doc2", $"{index}:doc3" },
-            result.Documents.Select(d => d.Key.ToString()).ToHashSet());
+            [.. result.Documents.Select(d => d.Key.ToString())]);
     }
 
     [Fact]
@@ -231,17 +231,20 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
         SkipUnless13();
         var index = $"idx_{Guid.NewGuid():N}";
         await Ft.CreateAsync(
-            client, index,
+            client,
+            index,
             [new Ft.CreateTextField("title"), new Ft.CreateNumericField("price")],
             new Ft.CreateOptions { Prefixes = [$"{index}:"] });
         _indexesToDrop.Add((client, index));
 
-        await client.HashSetAsync($"{index}:doc1", [new("title", "a"), new("price", "10")]);
-        await client.HashSetAsync($"{index}:doc2", [new("title", "b"), new("price", "30")]);
+        _ = await client.HashSetAsync($"{index}:doc1", [new("title", "a"), new("price", "10")]);
+        _ = await client.HashSetAsync($"{index}:doc2", [new("title", "b"), new("price", "30")]);
         await FtUtils.WaitForIndexingAsync(client, index);
 
         var rows = await Ft.AggregateAsync(
-            client, index, "*",
+            client,
+            index,
+            "*",
             new Ft.AggregateOptions
             {
                 Clauses =
@@ -254,7 +257,7 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
                 ],
             });
 
-        Assert.Equal(1, rows.Length);
+        _ = Assert.Single(rows);
         Assert.Equal((ValkeyValue)"40", rows[0][(ValkeyValue)"total"]);
     }
 
@@ -272,18 +275,21 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
         SkipUnless13();
         var index = $"idx_{Guid.NewGuid():N}";
         await Ft.CreateAsync(
-            client, index,
+            client,
+            index,
             [new Ft.CreateTagField("category"), new Ft.CreateNumericField("price")],
             new Ft.CreateOptions { Prefixes = [$"{index}:"] });
         _indexesToDrop.Add((client, index));
 
-        await client.HashSetAsync($"{index}:doc1", [new("category", "a"), new("price", "10")]);
-        await client.HashSetAsync($"{index}:doc2", [new("category", "a"), new("price", "30")]);
-        await client.HashSetAsync($"{index}:doc3", [new("category", "a"), new("price", "10")]); // duplicate price
+        _ = await client.HashSetAsync($"{index}:doc1", [new("category", "a"), new("price", "10")]);
+        _ = await client.HashSetAsync($"{index}:doc2", [new("category", "a"), new("price", "30")]);
+        _ = await client.HashSetAsync($"{index}:doc3", [new("category", "a"), new("price", "10")]); // duplicate price
         await FtUtils.WaitForIndexingAsync(client, index);
 
         var rows = await Ft.AggregateAsync(
-            client, index, "*",
+            client,
+            index,
+            "*",
             new Ft.AggregateOptions
             {
                 Clauses =
@@ -296,10 +302,10 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
                 ],
             });
 
-        Assert.Equal(1, rows.Length);
+        _ = Assert.Single(rows);
         var pricesJson = rows[0][(ValkeyValue)"prices"].ToString();
         var prices = System.Text.Json.JsonSerializer.Deserialize<string[]>(pricesJson!)!;
-        Assert.Equal(new HashSet<string> { "10", "30" }, prices.ToHashSet());
+        Assert.Equal(new HashSet<string> { "10", "30" }, [.. prices]);
     }
 
     [Fact]
@@ -313,7 +319,8 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
         SkipUnless13();
         var index = $"idx_{Guid.NewGuid():N}";
         await Ft.CreateAsync(
-            client, index,
+            client,
+            index,
             [new Ft.CreateTagField("category"), new Ft.CreateNumericField("price")],
             new Ft.CreateOptions { Prefixes = [$"{index}:"] });
         _indexesToDrop.Add((client, index));
@@ -322,13 +329,15 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
         int i = 0;
         foreach (var price in seededPrices)
         {
-            await client.HashSetAsync($"{index}:doc{i++}", [new("category", "a"), new("price", price)]);
+            _ = await client.HashSetAsync($"{index}:doc{i++}", [new("category", "a"), new("price", price)]);
         }
 
         await FtUtils.WaitForIndexingAsync(client, index);
 
         var rows = await Ft.AggregateAsync(
-            client, index, "*",
+            client,
+            index,
+            "*",
             new Ft.AggregateOptions
             {
                 Clauses =
@@ -341,7 +350,7 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
                 ],
             });
 
-        Assert.Equal(1, rows.Length);
+        _ = Assert.Single(rows);
         var sampleJson = rows[0][(ValkeyValue)"sample"].ToString();
         var sample = System.Text.Json.JsonSerializer.Deserialize<string[]>(sampleJson!)!;
         Assert.True(sample.Length <= 3, $"RANDOM_SAMPLE size 3 must cap the result; got {sample.Length}");
@@ -362,25 +371,28 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
         SkipUnless13();
         var index = $"idx_{Guid.NewGuid():N}";
         await Ft.CreateAsync(
-            client, index,
+            client,
+            index,
             new Ft.CreateVectorFieldFlat { Identifier = "vec", Dimensions = 1, DistanceMetric = Ft.DistanceMetric.Euclidean },
             new Ft.CreateOptions { Prefixes = [$"{index}:"] });
         _indexesToDrop.Add((client, index));
 
         // Points at known L2 distances from the origin: 0, 1, 4 (squared L2: 0, 1, 16).
-        await client.HashSetAsync($"{index}:origin", [new("vec", PackVector(0f))]);
-        await client.HashSetAsync($"{index}:near", [new("vec", PackVector(1f))]);
-        await client.HashSetAsync($"{index}:far", [new("vec", PackVector(4f))]);
+        _ = await client.HashSetAsync($"{index}:origin", [new("vec", PackVector(0f))]);
+        _ = await client.HashSetAsync($"{index}:near", [new("vec", PackVector(1f))]);
+        _ = await client.HashSetAsync($"{index}:far", [new("vec", PackVector(4f))]);
         await FtUtils.WaitForIndexingAsync(client, index);
 
         var result = await Ft.SearchAsync(
-            client, index, "@vec:[VECTOR_RANGE 1.5 $blob]=>{$YIELD_DISTANCE_AS: dist}",
+            client,
+            index,
+            "@vec:[VECTOR_RANGE 1.5 $blob]=>{$YIELD_DISTANCE_AS: dist}",
             new Ft.SearchOptions { Params = new Dictionary<ValkeyValue, ValkeyValue> { [(ValkeyValue)"blob"] = (ValkeyValue)PackVector(0f) } });
 
         Assert.Equal(2, result.TotalResults);
         Assert.Equal(
             new HashSet<string> { $"{index}:origin", $"{index}:near" },
-            result.Documents.Select(d => d.Key.ToString()).ToHashSet());
+            [.. result.Documents.Select(d => d.Key.ToString())]);
         var originDoc = result.Documents.Single(d => d.Key.ToString() == $"{index}:origin");
         Assert.Equal((ValkeyValue)"0", originDoc.Fields[(ValkeyValue)"dist"]);
     }
@@ -398,19 +410,23 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
         SkipUnless13();
         var index = $"idx_{Guid.NewGuid():N}";
         await Ft.CreateAsync(
-            client, index, new Ft.CreateNumericField("n") { Sortable = true },
+            client,
+            index,
+            new Ft.CreateNumericField("n") { Sortable = true },
             new Ft.CreateOptions { Prefixes = [$"{index}:"] });
         _indexesToDrop.Add((client, index));
 
         for (int i = 1; i <= 15; i++)
         {
-            await client.HashSetAsync($"{index}:d{i}", [new("n", i.ToString())]);
+            _ = await client.HashSetAsync($"{index}:d{i}", [new("n", i.ToString())]);
         }
 
         await FtUtils.WaitForIndexingAsync(client, index);
 
         var rows = await Ft.AggregateAsync(
-            client, index, "*",
+            client,
+            index,
+            "*",
             new Ft.AggregateOptions
             {
                 Clauses =
@@ -443,7 +459,9 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
         SkipUnless13();
         var index = $"idx_{Guid.NewGuid():N}";
         await Ft.CreateAsync(
-            client, index, new Ft.CreateNumericField("n") { Sortable = true },
+            client,
+            index,
+            new Ft.CreateNumericField("n") { Sortable = true },
             new Ft.CreateOptions { Prefixes = [$"{index}:"] });
         _indexesToDrop.Add((client, index));
 
@@ -451,8 +469,8 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
         for (int i = 1; i <= 7; i++)
         {
             string key = $"{index}:d{i}";
-            allKeys.Add(key);
-            await client.HashSetAsync(key, [new("n", i.ToString())]);
+            _ = allKeys.Add(key);
+            _ = await client.HashSetAsync(key, [new("n", i.ToString())]);
         }
 
         await FtUtils.WaitForIndexingAsync(client, index);
@@ -463,7 +481,7 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
 
         Assert.Equal(3, page1.Documents.Length);
         Assert.Equal(3, page2.Documents.Length);
-        Assert.Equal(1, page3.Documents.Length);
+        _ = Assert.Single(page3.Documents);
 
         var page1Keys = page1.Documents.Select(d => d.Key.ToString()).ToHashSet();
         var page2Keys = page2.Documents.Select(d => d.Key.ToString()).ToHashSet();
@@ -472,7 +490,7 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
         Assert.Empty(page1Keys.Intersect(page2Keys));
         Assert.Empty(page2Keys.Intersect(page3Keys));
         Assert.Empty(page1Keys.Intersect(page3Keys));
-        Assert.Equal(allKeys, page1Keys.Union(page2Keys).Union(page3Keys));
+        Assert.Equal(allKeys.Order(), page1Keys.Union(page2Keys).Union(page3Keys).Order());
     }
 
     #endregion
@@ -486,12 +504,14 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
         // non-null Score (M7's "counts not sets" complaint extends to "scores not compared" here).
         SkipUnless13();
         var index = await CreateBasicIndexAsync(client);
-        await client.HashSetAsync($"{index}:strong", [new("title", "hello hello hello world")]);
-        await client.HashSetAsync($"{index}:weak", [new("title", "hello")]);
+        _ = await client.HashSetAsync($"{index}:strong", [new("title", "hello hello hello world")]);
+        _ = await client.HashSetAsync($"{index}:weak", [new("title", "hello")]);
         await FtUtils.WaitForIndexingAsync(client, index);
 
         var result = await Ft.SearchAsync(
-            client, index, "hello",
+            client,
+            index,
+            "hello",
             new Ft.SearchOptions { WithScores = true, Scorer = "BM25STD" });
 
         Assert.Equal(2, result.TotalResults);
@@ -511,17 +531,20 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
         SkipUnless13();
         var index = $"idx_{Guid.NewGuid():N}";
         await Ft.CreateAsync(
-            client, index,
+            client,
+            index,
             [new Ft.CreateTextField("title") { Sortable = true }, new Ft.CreateNumericField("price") { Sortable = true }],
             new Ft.CreateOptions { Prefixes = [$"{index}:"] });
         _indexesToDrop.Add((client, index));
 
-        await client.HashSetAsync($"{index}:cheap", [new("title", "hello"), new("price", "10")]);
-        await client.HashSetAsync($"{index}:pricey", [new("title", "hello"), new("price", "20")]);
+        _ = await client.HashSetAsync($"{index}:cheap", [new("title", "hello"), new("price", "10")]);
+        _ = await client.HashSetAsync($"{index}:pricey", [new("title", "hello"), new("price", "20")]);
         await FtUtils.WaitForIndexingAsync(client, index);
 
         var result = await Ft.SearchAsync(
-            client, index, "*",
+            client,
+            index,
+            "*",
             new Ft.SearchOptions
             {
                 WithScores = true,
@@ -529,12 +552,14 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
             });
 
         Assert.Equal(2, result.TotalResults);
-        Assert.All(result.Documents, d =>
-        {
-            Assert.NotNull(d.Score);
-            Assert.False(d.SortKey.IsNull);
-            Assert.True(d.Fields.ContainsKey((ValkeyValue)"title"));
-        });
+        Assert.All(
+            result.Documents,
+            d =>
+            {
+                _ = Assert.NotNull(d.Score);
+                Assert.False(d.SortKey.IsNull);
+                Assert.True(d.Fields.ContainsKey((ValkeyValue)"title"));
+            });
 
         var cheapDoc = result.Documents.Single(d => d.Key.ToString() == $"{index}:cheap");
         var priceyDoc = result.Documents.Single(d => d.Key.ToString() == $"{index}:pricey");
@@ -551,8 +576,8 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
         BaseClient client = _standaloneForProbe;
         SkipUnless13();
         var index = await CreateBasicIndexAsync(client);
-        await client.HashSetAsync($"{index}:doc1", [new("title", "hello")]);
-        await client.HashSetAsync($"{index}:doc2", [new("title", "hello")]);
+        _ = await client.HashSetAsync($"{index}:doc1", [new("title", "hello")]);
+        _ = await client.HashSetAsync($"{index}:doc2", [new("title", "hello")]);
         await FtUtils.WaitForIndexingAsync(client, index);
 
         var result = await Ft.SearchAsync(client, index, "*", new Ft.SearchOptions { Count = true });
@@ -571,12 +596,14 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
         // field: SORTBY on __score descending must rank the stronger match first.
         SkipUnless13();
         var index = await CreateBasicIndexAsync(client);
-        await client.HashSetAsync($"{index}:strong", [new("title", "hello hello hello world")]);
-        await client.HashSetAsync($"{index}:weak", [new("title", "hello")]);
+        _ = await client.HashSetAsync($"{index}:strong", [new("title", "hello hello hello world")]);
+        _ = await client.HashSetAsync($"{index}:weak", [new("title", "hello")]);
         await FtUtils.WaitForIndexingAsync(client, index);
 
         var rows = await Ft.AggregateAsync(
-            client, index, "hello",
+            client,
+            index,
+            "hello",
             new Ft.AggregateOptions
             {
                 AddScores = true,
@@ -600,16 +627,18 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
         // consumed as a plain field token, so the literal field "AS" doesn't exist) below it.
         SkipUnless13();
         var index = await CreateBasicIndexAsync(client);
-        await client.HashSetAsync($"{index}:doc1", [new("title", "hello world")]);
+        _ = await client.HashSetAsync($"{index}:doc1", [new("title", "hello world")]);
         await FtUtils.WaitForIndexingAsync(client, index);
 
         if (SearchCapability.IsAtLeast130(_level))
         {
             var rows = await Ft.AggregateAsync(
-                client, index, "hello",
+                client,
+                index,
+                "hello",
                 new Ft.AggregateOptions { LoadFieldEntries = [new Ft.LoadField("title", "renamed_title")] });
 
-            Assert.Equal(1, rows.Length);
+            _ = Assert.Single(rows);
             Assert.Equal((ValkeyValue)"hello world", rows[0][(ValkeyValue)"renamed_title"]);
             Assert.False(rows[0].ContainsKey((ValkeyValue)"title"));
         }
@@ -619,7 +648,9 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
             // command outright (per LoadField's own doc comment: "the server rejects the command
             // outright" against a pre-1.3.0 emulate-release).
             _ = await Assert.ThrowsAsync<Errors.RequestException>(() => Ft.AggregateAsync(
-                client, index, "hello",
+                client,
+                index,
+                "hello",
                 new Ft.AggregateOptions { LoadFieldEntries = [new Ft.LoadField("title", "renamed_title")] }));
         }
     }
@@ -637,19 +668,21 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
         for (int i = 0; i < 5; i++)
         {
             string key = $"{index}:doc{i}";
-            allKeys.Add(key);
-            await client.HashSetAsync(key, [new("title", "hello")]);
+            _ = allKeys.Add(key);
+            _ = await client.HashSetAsync(key, [new("title", "hello")]);
         }
 
         await FtUtils.WaitForIndexingAsync(client, index);
 
         HashSet<string> seenKeys = [];
         var page = await Ft.AggregateWithCursorAsync(
-            client, index, "*",
+            client,
+            index,
+            "*",
             new Ft.AggregateOptions { LoadFields = ["__key"], WithCursorOptions = new Ft.WithCursor { Count = 2 } });
         foreach (var row in page.Rows)
         {
-            seenKeys.Add(row[(ValkeyValue)"__key"].ToString()!);
+            _ = seenKeys.Add(row[(ValkeyValue)"__key"].ToString()!);
         }
 
         while (page.CursorId != 0)
@@ -657,7 +690,7 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
             page = await Ft.CursorReadAsync(client, index, page.CursorId);
             foreach (var row in page.Rows)
             {
-                seenKeys.Add(row[(ValkeyValue)"__key"].ToString()!);
+                _ = seenKeys.Add(row[(ValkeyValue)"__key"].ToString()!);
             }
         }
 
@@ -675,13 +708,15 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
         var index = await CreateBasicIndexAsync(client);
         for (int i = 0; i < 5; i++)
         {
-            await client.HashSetAsync($"{index}:doc{i}", [new("title", "hello")]);
+            _ = await client.HashSetAsync($"{index}:doc{i}", [new("title", "hello")]);
         }
 
         await FtUtils.WaitForIndexingAsync(client, index);
 
         var page = await Ft.AggregateWithCursorAsync(
-            client, index, "*",
+            client,
+            index,
+            "*",
             new Ft.AggregateOptions { WithCursorOptions = new Ft.WithCursor { Count = 1 } });
         Assert.NotEqual(0, page.CursorId);
         long openCursorId = page.CursorId;
@@ -704,17 +739,20 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
         SkipUnless13();
         var index = $"idx_{Guid.NewGuid():N}";
         await Ft.CreateAsync(
-            client, index,
+            client,
+            index,
             new Ft.CreateVectorFieldFlat { Identifier = "vec", Dimensions = 2, DistanceMetric = Ft.DistanceMetric.Euclidean, Type = Ft.VectorType.Float16 },
             new Ft.CreateOptions { Prefixes = [$"{index}:"] });
         _indexesToDrop.Add((client, index));
 
-        await client.HashSetAsync($"{index}:near", [new("vec", PackHalfVector(1f, 1f))]);
-        await client.HashSetAsync($"{index}:far", [new("vec", PackHalfVector(100f, 100f))]);
+        _ = await client.HashSetAsync($"{index}:near", [new("vec", PackHalfVector(1f, 1f))]);
+        _ = await client.HashSetAsync($"{index}:far", [new("vec", PackHalfVector(100f, 100f))]);
         await FtUtils.WaitForIndexingAsync(client, index);
 
         var result = await Ft.SearchAsync(
-            client, index, "*=>[KNN 1 @vec $blob]",
+            client,
+            index,
+            "*=>[KNN 1 @vec $blob]",
             new Ft.SearchOptions { Params = new Dictionary<ValkeyValue, ValkeyValue> { [(ValkeyValue)"blob"] = (ValkeyValue)PackHalfVector(1f, 1f) } });
 
         Assert.Equal(1, result.TotalResults);
@@ -728,17 +766,20 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
         SkipUnless13();
         var index = $"idx_{Guid.NewGuid():N}";
         await Ft.CreateAsync(
-            client, index,
+            client,
+            index,
             new Ft.CreateVectorFieldFlat { Identifier = "vec", Dimensions = 2, DistanceMetric = Ft.DistanceMetric.Euclidean, Type = Ft.VectorType.Bfloat16 },
             new Ft.CreateOptions { Prefixes = [$"{index}:"] });
         _indexesToDrop.Add((client, index));
 
-        await client.HashSetAsync($"{index}:near", [new("vec", PackBfloat16Vector(1f, 1f))]);
-        await client.HashSetAsync($"{index}:far", [new("vec", PackBfloat16Vector(100f, 100f))]);
+        _ = await client.HashSetAsync($"{index}:near", [new("vec", PackBfloat16Vector(1f, 1f))]);
+        _ = await client.HashSetAsync($"{index}:far", [new("vec", PackBfloat16Vector(100f, 100f))]);
         await FtUtils.WaitForIndexingAsync(client, index);
 
         var result = await Ft.SearchAsync(
-            client, index, "*=>[KNN 1 @vec $blob]",
+            client,
+            index,
+            "*=>[KNN 1 @vec $blob]",
             new Ft.SearchOptions { Params = new Dictionary<ValkeyValue, ValkeyValue> { [(ValkeyValue)"blob"] = (ValkeyValue)PackBfloat16Vector(1f, 1f) } });
 
         Assert.Equal(1, result.TotalResults);
@@ -754,12 +795,14 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
         SkipUnless13();
         var index = $"idx_{Guid.NewGuid():N}";
         await Ft.CreateAsync(
-            client, index, [new Ft.CreateTextField("title"), new Ft.CreateNumericField("price")],
+            client,
+            index,
+            [new Ft.CreateTextField("title"), new Ft.CreateNumericField("price")],
             new Ft.CreateOptions { Prefixes = [$"{index}:"], Filter = "@price > 0" });
         _indexesToDrop.Add((client, index));
 
-        await client.HashSetAsync($"{index}:included", [new("title", "hello"), new("price", "10")]);
-        await client.HashSetAsync($"{index}:excluded", [new("title", "hello"), new("price", "-5")]);
+        _ = await client.HashSetAsync($"{index}:included", [new("title", "hello"), new("price", "10")]);
+        _ = await client.HashSetAsync($"{index}:excluded", [new("title", "hello"), new("price", "-5")]);
         await FtUtils.WaitForIndexingAsync(client, index);
 
         var result = await Ft.SearchAsync(client, index, "*");
@@ -778,7 +821,9 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
         SkipUnless13();
         var index = $"idx_{Guid.NewGuid():N}";
         await Ft.CreateAsync(
-            client, index, new Ft.CreateTextField("title"),
+            client,
+            index,
+            new Ft.CreateTextField("title"),
             new Ft.CreateOptions { Prefixes = [$"{index}:"], ScoreField = "boost" });
         _indexesToDrop.Add((client, index));
 
@@ -787,7 +832,7 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
         if (SearchCapability.IsAtLeast130(_level))
         {
             Assert.Equal((ValkeyValue)"boost", info.ScoreField);
-            Assert.NotNull(info.DefaultScore);
+            _ = Assert.NotNull(info.DefaultScore);
         }
         else
         {
@@ -806,11 +851,13 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
         SkipUnless13();
         var index = $"idx_{Guid.NewGuid():N}";
         await Ft.CreateAsync(
-            client, index, new Ft.CreateTextField("title"),
+            client,
+            index,
+            new Ft.CreateTextField("title"),
             new Ft.CreateOptions { Prefixes = [$"{index}:"], NoHighlight = true });
         _indexesToDrop.Add((client, index));
 
-        await client.HashSetAsync($"{index}:doc1", [new("title", "hello")]);
+        _ = await client.HashSetAsync($"{index}:doc1", [new("title", "hello")]);
         await FtUtils.WaitForIndexingAsync(client, index);
 
         var result = await Ft.SearchAsync(client, index, "hello");
@@ -837,15 +884,19 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
         SkipUnless13();
         var index = $"idx_{Guid.NewGuid():N}";
         await Ft.CreateAsync(
-            client, index, new Ft.CreateTextField("title") { Sortable = true, Unf = true },
+            client,
+            index,
+            new Ft.CreateTextField("title") { Sortable = true, Unf = true },
             new Ft.CreateOptions { Prefixes = [$"{index}:"] });
         _indexesToDrop.Add((client, index));
 
-        await client.HashSetAsync($"{index}:doc1", [new("title", "HELLO World")]);
+        _ = await client.HashSetAsync($"{index}:doc1", [new("title", "HELLO World")]);
         await FtUtils.WaitForIndexingAsync(client, index);
 
         var result = await Ft.SearchAsync(
-            client, index, "*",
+            client,
+            index,
+            "*",
             new Ft.SearchOptions { SortBy = new Ft.SearchSortBy { Field = "title", WithSortKeys = true } });
 
         Assert.Equal(1, result.TotalResults);
@@ -866,12 +917,14 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
         SkipUnless13();
         var index = $"idx_{Guid.NewGuid():N}";
         await Ft.CreateAsync(
-            client, index, [new Ft.CreateTextField("title"), new Ft.CreateNumericField("boost")],
+            client,
+            index,
+            [new Ft.CreateTextField("title"), new Ft.CreateNumericField("boost")],
             new Ft.CreateOptions { Prefixes = [$"{index}:"], ScoreField = "boost" });
         _indexesToDrop.Add((client, index));
 
-        await client.HashSetAsync($"{index}:boosted", [new("title", "hello"), new("boost", "100")]);
-        await client.HashSetAsync($"{index}:plain", [new("title", "hello"), new("boost", "1")]);
+        _ = await client.HashSetAsync($"{index}:boosted", [new("title", "hello"), new("boost", "100")]);
+        _ = await client.HashSetAsync($"{index}:plain", [new("title", "hello"), new("boost", "1")]);
         await FtUtils.WaitForIndexingAsync(client, index);
 
         var result = await Ft.SearchAsync(client, index, "hello", new Ft.SearchOptions { WithScores = true });
@@ -893,15 +946,12 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
         // observes from the server directly.
         SkipUnless13();
         var index = await CreateBasicIndexAsync(client);
-        await client.HashSetAsync($"{index}:doc1", [new("title", "hello world")]);
+        _ = await client.HashSetAsync($"{index}:doc1", [new("title", "hello world")]);
         await FtUtils.WaitForIndexingAsync(client, index);
 
         // The typed API guard rejects this client-side, synchronously -- Ft.SearchAsync is not
         // itself an async method, so the ArgumentException throws before any Task is returned.
-        _ = Assert.Throws<ArgumentException>(() =>
-        {
-            _ = Ft.SearchAsync(client, index, "hello", new Ft.SearchOptions { WithScores = true, Scorer = "TFIDF" });
-        });
+        _ = Assert.Throws<ArgumentException>((Action)(() => _ = Ft.SearchAsync(client, index, "hello", new Ft.SearchOptions { WithScores = true, Scorer = "TFIDF" })));
 
         // Bypassing the guard via a raw custom command proves the server itself also rejects it.
         GlideString[] args = ["FT.SEARCH", index, "hello", "WITHSCORES", "SCORER", "TFIDF"];
@@ -923,12 +973,13 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
         BaseClient client = _standaloneForProbe;
         SkipUnless13();
         var index = await CreateVectorIndexAsync(client);
-        await client.HashSetAsync($"{index}:doc1", [new("title", "hello world"), new("price", "10"), new("vec", PackVector(0.1f, 0.2f, 0.3f, 0.4f))]);
-        await client.HashSetAsync($"{index}:doc2", [new("title", "nothing matches"), new("price", "20"), new("vec", PackVector(0.1f, 0.2f, 0.3f, 0.4f))]);
+        _ = await client.HashSetAsync($"{index}:doc1", [new("title", "hello world"), new("price", "10"), new("vec", PackVector(0.1f, 0.2f, 0.3f, 0.4f))]);
+        _ = await client.HashSetAsync($"{index}:doc2", [new("title", "nothing matches"), new("price", "20"), new("vec", PackVector(0.1f, 0.2f, 0.3f, 0.4f))]);
         await FtUtils.WaitForIndexingAsync(client, index);
 
         var rows = await Ft.HybridAsync(
-            client, index,
+            client,
+            index,
             new Ft.HybridSearchArm { Query = "hello world" },
             new Ft.HybridVsimArm { Field = "vec", Vector = PackVector(0.1f, 0.2f, 0.3f, 0.4f), K = 10 });
 
@@ -937,7 +988,7 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
         // assertion rather than a bare non-empty check.
         Assert.Equal(
             new HashSet<string> { $"{index}:doc1", $"{index}:doc2" },
-            rows.Select(r => r[(ValkeyValue)"__key"].ToString()).ToHashSet());
+            [.. rows.Select(r => r[(ValkeyValue)"__key"].ToString())]);
     }
 
     [Fact]
@@ -950,12 +1001,13 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
         // were ignored"). A doc that wins both arms must rank first under RRF.
         SkipUnless13();
         var index = await CreateVectorIndexAsync(client);
-        await client.HashSetAsync($"{index}:both", [new("title", "hello world"), new("price", "10"), new("vec", PackVector(0.1f, 0.2f, 0.3f, 0.4f))]);
-        await client.HashSetAsync($"{index}:neither", [new("title", "nothing"), new("price", "20"), new("vec", PackVector(0.1f, 0.2f, 0.3f, 0.4f))]);
+        _ = await client.HashSetAsync($"{index}:both", [new("title", "hello world"), new("price", "10"), new("vec", PackVector(0.1f, 0.2f, 0.3f, 0.4f))]);
+        _ = await client.HashSetAsync($"{index}:neither", [new("title", "nothing"), new("price", "20"), new("vec", PackVector(0.1f, 0.2f, 0.3f, 0.4f))]);
         await FtUtils.WaitForIndexingAsync(client, index);
 
         var rows = await Ft.HybridAsync(
-            client, index,
+            client,
+            index,
             new Ft.HybridSearchArm { Query = "hello world" },
             new Ft.HybridVsimArm { Field = "vec", Vector = PackVector(0.1f, 0.2f, 0.3f, 0.4f), K = 10 },
             new Ft.HybridOptions { Combine = new Ft.HybridRrf { Constant = 60 } });
@@ -984,12 +1036,13 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
         // filtering on an arm alias that needs no LOAD.
         SkipUnless13();
         var index = await CreateVectorIndexAsync(client);
-        await client.HashSetAsync($"{index}:positive", [new("title", "hello world"), new("price", "10"), new("vec", PackVector(0.1f, 0.2f, 0.3f, 0.4f))]);
-        await client.HashSetAsync($"{index}:negative", [new("title", "hello world"), new("price", "-5"), new("vec", PackVector(0.1f, 0.2f, 0.3f, 0.4f))]);
+        _ = await client.HashSetAsync($"{index}:positive", [new("title", "hello world"), new("price", "10"), new("vec", PackVector(0.1f, 0.2f, 0.3f, 0.4f))]);
+        _ = await client.HashSetAsync($"{index}:negative", [new("title", "hello world"), new("price", "-5"), new("vec", PackVector(0.1f, 0.2f, 0.3f, 0.4f))]);
         await FtUtils.WaitForIndexingAsync(client, index);
 
         var rows = await Ft.HybridAsync(
-            client, index,
+            client,
+            index,
             new Ft.HybridSearchArm { Query = "hello world", YieldScoreAs = "ss" },
             new Ft.HybridVsimArm { Field = "vec", Vector = PackVector(0.1f, 0.2f, 0.3f, 0.4f), K = 10 },
             new Ft.HybridOptions
@@ -999,7 +1052,7 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
                 Clauses = [new Ft.AggregateFilter("@price > 0")],
             });
 
-        Assert.Equal(1, rows.Length);
+        _ = Assert.Single(rows);
         Assert.Equal($"{index}:positive", rows[0][(ValkeyValue)"__key"].ToString());
     }
 
@@ -1009,12 +1062,13 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
         BaseClient client = _standaloneForProbe;
         SkipUnless13();
         var index = await CreateVectorIndexAsync(client);
-        await client.HashSetAsync($"{index}:both", [new("title", "hello world"), new("price", "10"), new("vec", PackVector(0.1f, 0.2f, 0.3f, 0.4f))]);
-        await client.HashSetAsync($"{index}:neither", [new("title", "nothing"), new("price", "20"), new("vec", PackVector(0.1f, 0.2f, 0.3f, 0.4f))]);
+        _ = await client.HashSetAsync($"{index}:both", [new("title", "hello world"), new("price", "10"), new("vec", PackVector(0.1f, 0.2f, 0.3f, 0.4f))]);
+        _ = await client.HashSetAsync($"{index}:neither", [new("title", "nothing"), new("price", "20"), new("vec", PackVector(0.1f, 0.2f, 0.3f, 0.4f))]);
         await FtUtils.WaitForIndexingAsync(client, index);
 
         var rows = await Ft.HybridAsync(
-            client, index,
+            client,
+            index,
             new Ft.HybridSearchArm { Query = "hello world" },
             new Ft.HybridVsimArm { Field = "vec", Vector = PackVector(0.1f, 0.2f, 0.3f, 0.4f), K = 10 },
             new Ft.HybridOptions { Combine = new Ft.HybridLinear { Alpha = 0.5, Beta = 0.5 } });
@@ -1032,11 +1086,12 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
         // the aliases but asserts no columns" (M7-adjacent).
         SkipUnless13();
         var index = await CreateVectorIndexAsync(client);
-        await client.HashSetAsync($"{index}:doc1", [new("title", "hello world"), new("price", "10"), new("vec", PackVector(0.1f, 0.2f, 0.3f, 0.4f))]);
+        _ = await client.HashSetAsync($"{index}:doc1", [new("title", "hello world"), new("price", "10"), new("vec", PackVector(0.1f, 0.2f, 0.3f, 0.4f))]);
         await FtUtils.WaitForIndexingAsync(client, index);
 
         var rows = await Ft.HybridAsync(
-            client, index,
+            client,
+            index,
             new Ft.HybridSearchArm { Query = "hello world", YieldScoreAs = "ss" },
             new Ft.HybridVsimArm { Field = "vec", Vector = PackVector(0.1f, 0.2f, 0.3f, 0.4f), K = 10, YieldScoreAs = "vs" },
             new Ft.HybridOptions
@@ -1045,7 +1100,7 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
                 Clauses = [new Ft.AggregateApply { Expression = "@ss", Name = "search_score_col" }],
             });
 
-        Assert.Equal(1, rows.Length);
+        _ = Assert.Single(rows);
         Assert.True(rows[0].ContainsKey((ValkeyValue)"fused"));
         Assert.True(rows[0].ContainsKey((ValkeyValue)"search_score_col"));
         // search_score_col (APPLY @ss) must be a real, non-negative numeric relevance score --
@@ -1068,15 +1123,16 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
         for (int i = 0; i < 5; i++)
         {
             string key = $"{index}:doc{i}";
-            allKeys.Add(key);
-            await client.HashSetAsync(key, [new("title", "hello world"), new("price", $"{i * 10}"), new("vec", PackVector(0.1f, 0.2f, 0.3f, 0.4f))]);
+            _ = allKeys.Add(key);
+            _ = await client.HashSetAsync(key, [new("title", "hello world"), new("price", $"{i * 10}"), new("vec", PackVector(0.1f, 0.2f, 0.3f, 0.4f))]);
         }
 
         await FtUtils.WaitForIndexingAsync(client, index);
 
         HashSet<string> seenKeys = [];
         var page = await Ft.HybridWithCursorAsync(
-            client, index,
+            client,
+            index,
             new Ft.HybridSearchArm { Query = "hello world" },
             new Ft.HybridVsimArm { Field = "vec", Vector = PackVector(0.1f, 0.2f, 0.3f, 0.4f), K = 10 },
             new Ft.HybridOptions
@@ -1087,7 +1143,7 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
             });
         foreach (var row in page.Rows)
         {
-            seenKeys.Add(row[(ValkeyValue)"__key"].ToString()!);
+            _ = seenKeys.Add(row[(ValkeyValue)"__key"].ToString()!);
         }
 
         while (page.CursorId != 0)
@@ -1095,7 +1151,7 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
             page = await Ft.CursorReadAsync(client, index, page.CursorId);
             foreach (var row in page.Rows)
             {
-                seenKeys.Add(row[(ValkeyValue)"__key"].ToString()!);
+                _ = seenKeys.Add(row[(ValkeyValue)"__key"].ToString()!);
             }
         }
 
@@ -1111,11 +1167,12 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
         // unrecognized token.
         SkipUnless13();
         var index = await CreateVectorIndexAsync(client);
-        await client.HashSetAsync($"{index}:doc1", [new("title", "hello world"), new("price", "10"), new("vec", PackVector(0.1f, 0.2f, 0.3f, 0.4f))]);
+        _ = await client.HashSetAsync($"{index}:doc1", [new("title", "hello world"), new("price", "10"), new("vec", PackVector(0.1f, 0.2f, 0.3f, 0.4f))]);
         await FtUtils.WaitForIndexingAsync(client, index);
 
         var rows = await Ft.HybridAsync(
-            client, index,
+            client,
+            index,
             new Ft.HybridSearchArm { Query = "hello world" },
             new Ft.HybridVsimArm { Field = "vec", Vector = PackVector(0.1f, 0.2f, 0.3f, 0.4f), K = 10 },
             new Ft.HybridOptions { LocalOnly = true });
@@ -1132,25 +1189,27 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
         // previously "every live call uses bytes", so the $param path never ran live.
         SkipUnless13();
         var index = await CreateVectorIndexAsync(client);
-        await client.HashSetAsync($"{index}:doc1", [new("title", "hello world"), new("price", "10"), new("vec", PackVector(0.1f, 0.2f, 0.3f, 0.4f))]);
+        _ = await client.HashSetAsync($"{index}:doc1", [new("title", "hello world"), new("price", "10"), new("vec", PackVector(0.1f, 0.2f, 0.3f, 0.4f))]);
         await FtUtils.WaitForIndexingAsync(client, index);
 
         byte[] vectorBytes = PackVector(0.1f, 0.2f, 0.3f, 0.4f);
 
         var inlineRows = await Ft.HybridAsync(
-            client, index,
+            client,
+            index,
             new Ft.HybridSearchArm { Query = "hello world" },
             new Ft.HybridVsimArm { Field = "vec", Vector = vectorBytes, K = 10 });
 
         var paramRows = await Ft.HybridAsync(
-            client, index,
+            client,
+            index,
             new Ft.HybridSearchArm { Query = "hello world" },
             new Ft.HybridVsimArm { Field = "vec", Vector = "$myvec", K = 10 },
             new Ft.HybridOptions { Params = new Dictionary<ValkeyValue, ValkeyValue> { [(ValkeyValue)"myvec"] = (ValkeyValue)vectorBytes } });
 
         Assert.Equal(
             inlineRows.Select(r => r[(ValkeyValue)"__key"].ToString()).ToHashSet(),
-            paramRows.Select(r => r[(ValkeyValue)"__key"].ToString()).ToHashSet());
+            [.. paramRows.Select(r => r[(ValkeyValue)"__key"].ToString())]);
     }
 
     [Fact]
@@ -1161,12 +1220,13 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
         // explicit POLICY actually restricts the VSIM arm's candidate set.
         SkipUnless13();
         var index = await CreateVectorIndexAsync(client);
-        await client.HashSetAsync($"{index}:included", [new("title", "hello world"), new("price", "10"), new("vec", PackVector(0.1f, 0.2f, 0.3f, 0.4f))]);
-        await client.HashSetAsync($"{index}:excluded", [new("title", "hello world"), new("price", "-5"), new("vec", PackVector(0.1f, 0.2f, 0.3f, 0.4f))]);
+        _ = await client.HashSetAsync($"{index}:included", [new("title", "hello world"), new("price", "10"), new("vec", PackVector(0.1f, 0.2f, 0.3f, 0.4f))]);
+        _ = await client.HashSetAsync($"{index}:excluded", [new("title", "hello world"), new("price", "-5"), new("vec", PackVector(0.1f, 0.2f, 0.3f, 0.4f))]);
         await FtUtils.WaitForIndexingAsync(client, index);
 
         var rows = await Ft.HybridAsync(
-            client, index,
+            client,
+            index,
             new Ft.HybridSearchArm { Query = "nonmatchingterm" },
             new Ft.HybridVsimArm
             {
@@ -1178,7 +1238,7 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
 
         Assert.Equal(
             new HashSet<string> { $"{index}:included" },
-            rows.Select(r => r[(ValkeyValue)"__key"].ToString()).ToHashSet());
+            [.. rows.Select(r => r[(ValkeyValue)"__key"].ToString())]);
     }
 
     [Fact]
@@ -1218,13 +1278,14 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
         var index = await CreateVectorIndexAsync(client);
         for (int i = 0; i < 15; i++)
         {
-            await client.HashSetAsync($"{index}:doc{i}", [new("title", "hello world"), new("price", $"{i}"), new("vec", PackVector(0.1f, 0.2f, 0.3f, 0.4f))]);
+            _ = await client.HashSetAsync($"{index}:doc{i}", [new("title", "hello world"), new("price", $"{i}"), new("vec", PackVector(0.1f, 0.2f, 0.3f, 0.4f))]);
         }
 
         await FtUtils.WaitForIndexingAsync(client, index);
 
         var rows = await Ft.HybridAsync(
-            client, index,
+            client,
+            index,
             new Ft.HybridSearchArm { Query = "termthatmatchesnothingatall" },
             new Ft.HybridVsimArm { Field = "vec", Vector = PackVector(0.1f, 0.2f, 0.3f, 0.4f) });
 
@@ -1283,7 +1344,9 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
         {
             index = $"idx_{Guid.NewGuid():N}";
             await Ft.CreateAsync(
-                client, index, new Ft.CreateTextField("title"),
+                client,
+                index,
+                new Ft.CreateTextField("title"),
                 new Ft.CreateOptions { Prefixes = [$"{index}:"] });
 
             const int seededCount = 30;
@@ -1291,7 +1354,7 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
             {
                 // No hashtag: each key's slot is effectively random across the cluster's shards.
                 string key = $"{index}:{Guid.NewGuid():N}";
-                await client.HashSetAsync(key, [new("title", "hello")]);
+                _ = await client.HashSetAsync(key, [new("title", "hello")]);
             }
 
             await FtUtils.WaitForIndexingAsync(client, index);
@@ -1304,9 +1367,9 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
             // this test for) and never zero (every key not landing elsewhere is highly unlikely
             // across 30 random keys on a real multi-primary cluster, short of a fixture bug).
             Assert.True(
-                result.TotalResults > 0 && result.TotalResults < seededCount,
+                result.TotalResults is > 0 and < seededCount,
                 $"expected a STRICT SUBSET of {seededCount} seeded documents (confirming FT.CREATE's " +
-                $"single-shard placement), got {result.TotalResults}");
+                    $"single-shard placement), got {result.TotalResults}");
         }
         finally
         {
@@ -1357,25 +1420,29 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
             string hashtag = Guid.NewGuid().ToString("N");
             index = $"idx_{{{hashtag}}}";
             await Ft.CreateAsync(
-                client, index, new Ft.CreateTextField("title") { Sortable = true },
+                client,
+                index,
+                new Ft.CreateTextField("title") { Sortable = true },
                 new Ft.CreateOptions { Prefixes = [$"{{{hashtag}}}:"] });
             HashSet<string> allKeys = [];
             for (int i = 0; i < 5; i++)
             {
                 string key = $"{{{hashtag}}}:doc{i}";
-                allKeys.Add(key);
-                await client.HashSetAsync(key, [new("title", "hello")]);
+                _ = allKeys.Add(key);
+                _ = await client.HashSetAsync(key, [new("title", "hello")]);
             }
 
             await FtUtils.WaitForIndexingAsync(client, index);
 
             HashSet<string> seenKeys = [];
             var page = await Ft.AggregateWithCursorAsync(
-                client, index, "*",
+                client,
+                index,
+                "*",
                 new Ft.AggregateOptions { LoadFields = ["__key"], WithCursorOptions = new Ft.WithCursor { Count = 2 } });
             foreach (var row in page.Rows)
             {
-                seenKeys.Add(row[(ValkeyValue)"__key"].ToString()!);
+                _ = seenKeys.Add(row[(ValkeyValue)"__key"].ToString()!);
             }
 
             while (page.CursorId != 0)
@@ -1383,7 +1450,7 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
                 page = await Ft.CursorReadAsync(client, index, page.CursorId);
                 foreach (var row in page.Rows)
                 {
-                    seenKeys.Add(row[(ValkeyValue)"__key"].ToString()!);
+                    _ = seenKeys.Add(row[(ValkeyValue)"__key"].ToString()!);
                 }
             }
 
@@ -1418,7 +1485,9 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
     {
         var index = $"idx_{Guid.NewGuid():N}";
         await Ft.CreateAsync(
-            client, index, new Ft.CreateTextField("title") { Sortable = true },
+            client,
+            index,
+            new Ft.CreateTextField("title") { Sortable = true },
             new Ft.CreateOptions { Prefixes = [$"{index}:"] });
         _indexesToDrop.Add((client, index));
         return index;
@@ -1428,7 +1497,8 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
     {
         var index = $"idx_{Guid.NewGuid():N}";
         await Ft.CreateAsync(
-            client, index,
+            client,
+            index,
             [
                 new Ft.CreateTextField("title"),
                 new Ft.CreateNumericField("price"),
@@ -1451,7 +1521,7 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
         byte[] bytes = new byte[values.Length * 2];
         for (int i = 0; i < values.Length; i++)
         {
-            BitConverter.TryWriteBytes(bytes.AsSpan(i * 2, 2), (System.Half)values[i]);
+            _ = BitConverter.TryWriteBytes(bytes.AsSpan(i * 2, 2), (Half)values[i]);
         }
 
         return bytes;
@@ -1465,7 +1535,7 @@ public class ValkeySearch13Tests(ModuleTestConfiguration config) : IAsyncLifetim
         {
             uint bits = BitConverter.SingleToUInt32Bits(values[i]);
             ushort truncated = (ushort)(bits >> 16);
-            BitConverter.TryWriteBytes(bytes.AsSpan(i * 2, 2), truncated);
+            _ = BitConverter.TryWriteBytes(bytes.AsSpan(i * 2, 2), truncated);
         }
 
         return bytes;

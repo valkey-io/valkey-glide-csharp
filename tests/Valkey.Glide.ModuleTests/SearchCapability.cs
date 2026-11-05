@@ -14,7 +14,7 @@ namespace Valkey.Glide.ModuleTests;
 /// compare: a version string alone conflates the module *binary's* capability with its *active*
 /// compatibility level, which are different questions. A 1.3 module left at its own default
 /// <c>search.emulate-release</c> (1.0.0, per COMPATIBILITY.md) still runs several legacy code
-/// paths -- <see cref="EmulateReleaseLevel"/> answers that second question, and the level fixture
+/// paths -- <see cref="EmulateReleaseLevelAsync"/> answers that second question, and the level fixture
 /// built on top of it is how tests branch their assertions on the actual behaviour rather than
 /// assuming "1.3-capable" implies "1.3 corrected behaviour everywhere".
 /// </remarks>
@@ -39,7 +39,7 @@ public static class SearchCapability
         }
         catch (Errors.RequestException ex) when (
             ex.Message.Contains("unknown command", StringComparison.OrdinalIgnoreCase) ||
-            ex.Message.Contains("not loaded", StringComparison.OrdinalIgnoreCase))
+                ex.Message.Contains("not loaded", StringComparison.OrdinalIgnoreCase))
         {
             // M2: fail loudly, matching Python's requires_search_1_3 fixture ("if the search
             // module is missing entirely, the probe fails instead of skipping"). This harness
@@ -52,10 +52,10 @@ public static class SearchCapability
             // intended, loud skip reason ("search module is pre-1.3") and mask it.
             throw new InvalidOperationException(
                 "The search module is not loaded on the module-test harness's server at all. " +
-                "This harness (ModuleTestConfiguration) never starts its own server, so a missing " +
-                "module here means the Docker-based deployment utils/start-valkey-docker-modules.sh " +
-                "started is misconfigured -- not a legitimate pre-1.3 server to skip against. Check " +
-                "the harness's MODULE LIST output and SEARCH_MODULE_PATH.",
+                    "This harness (ModuleTestConfiguration) never starts its own server, so a missing " +
+                    "module here means the Docker-based deployment utils/start-valkey-docker-modules.sh " +
+                    "started is misconfigured -- not a legitimate pre-1.3 server to skip against. Check " +
+                    "the harness's MODULE LIST output and SEARCH_MODULE_PATH.",
                 ex);
         }
 
@@ -68,7 +68,7 @@ public static class SearchCapability
             }
             catch (Errors.RequestException ex) when (
                 ex.Message.Contains("INKEYS", StringComparison.OrdinalIgnoreCase) ||
-                ex.Message.Contains("Unexpected argument", StringComparison.OrdinalIgnoreCase))
+                    ex.Message.Contains("Unexpected argument", StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
@@ -119,7 +119,7 @@ public static class SearchCapability
     /// </summary>
     /// <param name="level">The level string from <see cref="EmulateReleaseLevelAsync"/>.</param>
     public static bool IsAtLeast130(string? level)
-        => level is not null && System.Version.TryParse(level, out var parsed) && parsed >= new System.Version(1, 3, 0);
+        => level is not null && System.Version.TryParse(level, out var parsed) && parsed >= new Version(1, 3, 0);
 
     /// <summary>
     /// Cleans up loudly per the port rules: a failed DROPINDEX of the probe index retries once,
