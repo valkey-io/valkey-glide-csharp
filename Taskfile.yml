@@ -110,6 +110,13 @@ tasks:
 
     lint:actions:
         desc: "Run GitHub Actions linting"
+        preconditions:
+            - sh: command -v actionlint
+              msg: "actionlint not found - see https://github.com/rhysd/actionlint/blob/main/docs/install.md"
+            - sh: command -v shellcheck
+              msg: "shellcheck not found - see https://github.com/koalaman/shellcheck#installing"
+            - sh: command -v pyflakes
+              msg: "pyflakes not found - see https://pypi.org/project/pyflakes"
         cmd: actionlint
 
     lint:csharp:
