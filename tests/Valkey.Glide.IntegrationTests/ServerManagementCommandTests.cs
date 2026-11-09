@@ -862,10 +862,6 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
         Assert.True(stats.ClientsNormal >= 0);
         Assert.True(stats.ClientsSlaves >= 0);
         Assert.True(stats.DatasetBytes >= 0);
-
-        // Fragmentation bytes is negative when the fragmentation ration is less than 1.
-        Assert.Equal(Math.Sign(stats.FragmentationBytes), Math.Sign(stats.Fragmentation - 1));
-
         Assert.True(stats.KeysBytesPerKey >= 0);
         Assert.True(stats.KeysCount >= 0);
         Assert.True(stats.LuaCaches >= 0);
@@ -877,6 +873,11 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
         Assert.True(stats.Fragmentation >= 0);
         Assert.True(stats.PeakPercentage >= 0);
         Assert.True(stats.RssOverheadRatio >= 0);
+
+        // RSS byte fields are nagetive when the corresponding ratio is less than one.
+        Assert.Equal(Math.Sign(stats.AllocatorRssBytes), Math.Sign(stats.AllocatorRssRatio - 1));
+        Assert.Equal(Math.Sign(stats.FragmentationBytes), Math.Sign(stats.Fragmentation - 1));
+        Assert.Equal(Math.Sign(stats.RssOverheadBytes), Math.Sign(stats.RssOverheadRatio - 1));
 
         // Optional Valkey 7.0+ fields
         if (Version.IsAtLeast(Version.Valkey7_0))
