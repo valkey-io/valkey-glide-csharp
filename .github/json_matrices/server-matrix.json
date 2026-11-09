@@ -31,16 +31,6 @@
     },
     {
         "type": "redis",
-        "version": "7.2",
-        "profiles": ["full"]
-    },
-    {
-        "type": "redis",
-        "version": "7.1",
-        "profiles": ["full"]
-    },
-    {
-        "type": "redis",
         "version": "7.0",
         "profiles": ["full"]
     },

@@ -28,6 +28,8 @@ Usage:
     python dev/scripts/check_todos.py --fail-issues 123 456
 """
 
+from __future__ import annotations
+
 import argparse
 import os
 import re

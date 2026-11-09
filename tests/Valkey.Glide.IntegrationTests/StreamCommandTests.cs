@@ -668,6 +668,8 @@ public class StreamCommandTests
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StreamAutoClaimAsync_DeletedEntriesDetection(BaseClient client)
     {
+        Version.SkipIfLessThan(Version.Valkey7_0);
+
         string key = "{StreamAutoClaim}" + Guid.NewGuid();
         _ = await client.StreamAddAsync(key, "field", "value1");
         ValkeyValue id2 = await client.StreamAddAsync(key, "field", "value2");
@@ -709,7 +711,7 @@ public class StreamCommandTests
     [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task StreamReadAsync_WithPlusPosition(BaseClient client)
     {
-        Version.SkipIfLessThan(Version.Valkey7_0);
+        Version.SkipIfLessThan(Version.Valkey8_0);
 
         string key = "{StreamRead}" + Guid.NewGuid();
 

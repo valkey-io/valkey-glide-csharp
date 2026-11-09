@@ -231,6 +231,8 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     [Fact]
     public async Task ConfigGetAsync_Standalone_MultiplePatterns()
     {
+        Version.SkipIfLessThan(Version.Valkey7_0);
+
         var result = await StandaloneClient.ConfigGetAsync(
             ["maxmemory", "lfu-decay-time"]);
 
@@ -242,6 +244,8 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     [Fact]
     public async Task ConfigGetAsync_Cluster_MultiplePatterns()
     {
+        Version.SkipIfLessThan(Version.Valkey7_0);
+
         var result = await ClusterClient.ConfigGetAsync(
             ["maxmemory", "lfu-decay-time"]);
 
@@ -256,6 +260,8 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     [Fact]
     public async Task ConfigSetAsync_Standalone_MultipleParameters()
     {
+        Version.SkipIfLessThan(Version.Valkey7_0);
+
         var original = await StandaloneClient.ConfigGetAsync(
             ["lfu-decay-time", "maxmemory", "lfu-log-factor"]);
 
@@ -289,6 +295,8 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     [Fact]
     public async Task ConfigSetAsync_Cluster_MultipleParameters()
     {
+        Version.SkipIfLessThan(Version.Valkey7_0);
+
         var original = await ClusterClient.ConfigGetAsync(
             ["lfu-decay-time", "lfu-log-factor"], AllPrimaries);
 
@@ -385,6 +393,8 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
     [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
     public async Task WaitAofAsync_ReturnsResults(bool clusterMode)
     {
+        Version.SkipIfLessThan(Version.Valkey7_2);
+
         var client = fixture.GetClient(clusterMode);
 
         string key = $"waitaof-test-{Guid.NewGuid()}";
@@ -848,24 +858,20 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
         Assert.True(stats.TotalAllocated > 0);
 
         Assert.True(stats.AllocatorFragmentationBytes >= 0);
-        Assert.True(stats.AllocatorRssBytes >= 0);
         Assert.True(stats.AofBuffer >= 0);
         Assert.True(stats.ClientsNormal >= 0);
         Assert.True(stats.ClientsSlaves >= 0);
         Assert.True(stats.DatasetBytes >= 0);
-        Assert.True(stats.FragmentationBytes >= 0);
         Assert.True(stats.KeysBytesPerKey >= 0);
         Assert.True(stats.KeysCount >= 0);
         Assert.True(stats.LuaCaches >= 0);
         Assert.True(stats.ReplicationBacklog >= 0);
-        Assert.True(stats.RssOverheadBytes >= 0);
 
         Assert.True(stats.AllocatorFragmentationRatio >= 0);
-        Assert.True(stats.AllocatorRssRatio >= 0);
         Assert.True(stats.DatasetPercentage >= 0);
-        Assert.True(stats.Fragmentation >= 0);
         Assert.True(stats.PeakPercentage >= 0);
-        Assert.True(stats.RssOverheadRatio >= 0);
+
+        AssertMemoryStatsRss(stats);
 
         // Optional Valkey 7.0+ fields
         if (Version.IsAtLeast(Version.Valkey7_0))
@@ -894,6 +900,27 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
             Assert.Null(stats.OverheadDbHashtableLut);
             Assert.Null(stats.OverheadDbHashtableRehashing);
         }
+    }
+
+    /// <summary>
+    /// Validate the RSS-related fields of a MemoryStats instance.
+    /// See <see href="https://valkey.io/commands/info">Valkey commands – INFO</see> for more details on RSS-related fields.
+    /// </summary>
+    private static void AssertMemoryStatsRss(MemoryStats stats)
+    {
+        // The server computes ratios in single precision.
+        const double tolerance = 1e-4;
+
+        long rss = stats.AllocatorResident + stats.RssOverheadBytes;
+        Assert.True(rss > 0);
+
+        long allocated = rss - stats.FragmentationBytes;
+        Assert.True(allocated > 0);
+
+        Assert.Equal(stats.AllocatorResident - stats.AllocatorActive, stats.AllocatorRssBytes);
+        Assert.Equal((double)stats.AllocatorResident / stats.AllocatorActive, stats.AllocatorRssRatio, tolerance);
+        Assert.Equal((double)rss / stats.AllocatorResident, stats.RssOverheadRatio, tolerance);
+        Assert.Equal((double)rss / allocated, stats.Fragmentation, tolerance);
     }
 
     /// <summary>

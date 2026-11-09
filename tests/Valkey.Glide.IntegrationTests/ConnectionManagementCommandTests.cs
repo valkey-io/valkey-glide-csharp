@@ -35,6 +35,8 @@ public class ConnectionManagementCommandTests(ServerFixture fixture) : IClassFix
     [MemberData(nameof(Data.ClusterMode), MemberType = typeof(Data))]
     public async Task TestClientInfo_ReportsCorrectLibNameAndVersion(bool clusterMode)
     {
+        Version.SkipIfLessThan(Version.Valkey7_2);
+
         await using var client = await fixture.GetServer(clusterMode).CreateClientAsync();
 
         var result = client is GlideClusterClient clusterClient
