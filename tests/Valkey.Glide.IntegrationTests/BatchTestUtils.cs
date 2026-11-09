@@ -868,13 +868,16 @@ internal partial class BatchTestUtils
         _ = batch.SortedSetRank(newKey, "newMember1", Order.Descending);
         testData.Add(new(1L, "SortedSetRank(newKey, newMember1, Order.Descending)"));
 
-        // Test SortedSetRankWithScore
-        _ = batch.SortedSetRankWithScore(newKey, "newMember1");
-        testData.Add(new((1L, 10.5), "SortedSetRankWithScore(newKey, newMember1)", true));
+        if (Version.IsAtLeast(Version.Valkey7_2))
+        {
+            // Test SortedSetRankWithScore
+            _ = batch.SortedSetRankWithScore(newKey, "newMember1");
+            testData.Add(new((1L, 10.5), "SortedSetRankWithScore(newKey, newMember1)", true));
 
-        // Test SortedSetRankWithScore with descending order
-        _ = batch.SortedSetRankWithScore(newKey, "newMember1", Order.Descending);
-        testData.Add(new((1L, 10.5), "SortedSetRankWithScore(newKey, newMember1, Order.Descending)", true));
+            // Test SortedSetRankWithScore with descending order (reverse rank)
+            _ = batch.SortedSetRankWithScore(newKey, "newMember1", Order.Descending);
+            testData.Add(new((1L, 10.5), "SortedSetRankWithScore(newKey, newMember1, Order.Descending)", true));
+        }
 
         // Test SortedSetScore
         _ = batch.SortedSetScore(newKey, "newMember1");

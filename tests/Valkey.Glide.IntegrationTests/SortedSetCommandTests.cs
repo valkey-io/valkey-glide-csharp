@@ -1441,6 +1441,8 @@ public class SortedSetCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task TestSortedSetRankWithScore(BaseClient client)
     {
+        Version.SkipIfLessThan(Version.Valkey7_2);
+
         string key = Guid.NewGuid().ToString();
         _ = await client.SortedSetAddAsync(
             key,

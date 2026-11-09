@@ -83,6 +83,9 @@ public class DnsTests(DnsTestsFixture fixture) : IClassFixture<DnsTestsFixture>
     [MemberData(nameof(TlsMode))]
     public void GetServers_WithDnsHostname_ReturnsDnsEndPoints(bool useTls)
     {
+        // Cluster topology only reports hostnames when `cluster-announce-hostname` enabled (Redis 7.0+).
+        Version.SkipIfLessThan(Version.Valkey7_0);
+
         var server = GetServer(useCluster: true, useTls);
         var config = new ConfigurationOptions { Ssl = useTls };
         config.EndPoints.Add(server.Address.Host, server.Address.Port);
@@ -113,6 +116,9 @@ public class DnsTests(DnsTestsFixture fixture) : IClassFixture<DnsTestsFixture>
     [MemberData(nameof(TlsMode))]
     public void GetEndPoints_WithDnsHostname_ReturnsDnsEndPoints(bool useTls)
     {
+        // Cluster topology only reports hostnames when `cluster-announce-hostname` enabled (Redis 7.0+).
+        Version.SkipIfLessThan(Version.Valkey7_0);
+
         var server = GetServer(useCluster: true, useTls);
         var config = new ConfigurationOptions { Ssl = useTls };
         config.EndPoints.Add(server.Address.Host, server.Address.Port);
