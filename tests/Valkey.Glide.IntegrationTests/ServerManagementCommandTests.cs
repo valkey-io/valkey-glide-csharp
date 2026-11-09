@@ -874,7 +874,7 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
         Assert.True(stats.PeakPercentage >= 0);
         Assert.True(stats.RssOverheadRatio >= 0);
 
-        // RSS byte fields are nagetive when the corresponding ratio is less than one.
+        // RSS byte fields are negative when the corresponding ratio is less than one.
         Assert.Equal(Math.Sign(stats.AllocatorRssBytes), Math.Sign(stats.AllocatorRssRatio - 1));
         Assert.Equal(Math.Sign(stats.FragmentationBytes), Math.Sign(stats.Fragmentation - 1));
         Assert.Equal(Math.Sign(stats.RssOverheadBytes), Math.Sign(stats.RssOverheadRatio - 1));
