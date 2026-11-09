@@ -38,7 +38,7 @@ jobs:
                   restore-keys: rust-lint-
 
             - name: Install cargo-deny
-              uses: taiki-e/install-action@5488ac5a951645ce95062214902ac4b6bc1a1037 # v2.87.32
+              uses: taiki-e/install-action@682ce6c3c696a4cd5168a05f98e51aa02b877941 # v2.89.1
               with:
                   tool: cargo-deny@0.19
 
@@ -47,7 +47,7 @@ jobs:
                   curl -fsSL https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz | tar xz -C /usr/local/bin actionlint
 
             - name: Install dotnet
-              uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+              uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
               with:
                   dotnet-version: "10"
 
