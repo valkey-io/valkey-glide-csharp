@@ -1013,7 +1013,6 @@ dependencies = [
  "aws-config",
  "aws-credential-types",
  "aws-sigv4",
- "aws-smithy-types",
  "bytes",
  "dashmap",
  "futures",
