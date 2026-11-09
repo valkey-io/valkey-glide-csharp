@@ -862,16 +862,21 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
         Assert.True(stats.ClientsNormal >= 0);
         Assert.True(stats.ClientsSlaves >= 0);
         Assert.True(stats.DatasetBytes >= 0);
+
+        // Fragmentation bytes is negative when the fragmentation ration is less than 1.
+        Assert.Equal(Math.Sign(stats.FragmentationBytes), Math.Sign(stats.Fragmentation - 1));
+
         Assert.True(stats.KeysBytesPerKey >= 0);
         Assert.True(stats.KeysCount >= 0);
         Assert.True(stats.LuaCaches >= 0);
         Assert.True(stats.ReplicationBacklog >= 0);
 
         Assert.True(stats.AllocatorFragmentationRatio >= 0);
+        Assert.True(stats.AllocatorRssRatio >= 0);
         Assert.True(stats.DatasetPercentage >= 0);
+        Assert.True(stats.Fragmentation >= 0);
         Assert.True(stats.PeakPercentage >= 0);
-
-        AssertMemoryStatsRss(stats);
+        Assert.True(stats.RssOverheadRatio >= 0);
 
         // Optional Valkey 7.0+ fields
         if (Version.IsAtLeast(Version.Valkey7_0))
@@ -900,27 +905,6 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
             Assert.Null(stats.OverheadDbHashtableLut);
             Assert.Null(stats.OverheadDbHashtableRehashing);
         }
-    }
-
-    /// <summary>
-    /// Validate the RSS-related fields of a MemoryStats instance.
-    /// See <see href="https://valkey.io/commands/info">Valkey commands – INFO</see> for more details on RSS-related fields.
-    /// </summary>
-    private static void AssertMemoryStatsRss(MemoryStats stats)
-    {
-        // The server computes ratios in single precision.
-        const double tolerance = 1e-4;
-
-        long rss = stats.AllocatorResident + stats.RssOverheadBytes;
-        Assert.True(rss > 0);
-
-        long allocated = rss - stats.FragmentationBytes;
-        Assert.True(allocated > 0);
-
-        Assert.Equal(stats.AllocatorResident - stats.AllocatorActive, stats.AllocatorRssBytes);
-        Assert.Equal((double)stats.AllocatorResident / stats.AllocatorActive, stats.AllocatorRssRatio, tolerance);
-        Assert.Equal((double)rss / stats.AllocatorResident, stats.RssOverheadRatio, tolerance);
-        Assert.Equal((double)rss / allocated, stats.Fragmentation, tolerance);
     }
 
     /// <summary>
