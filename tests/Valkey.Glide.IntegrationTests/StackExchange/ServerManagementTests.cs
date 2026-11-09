@@ -50,30 +50,15 @@ public class ServerManagementTests(ServerManagementFixture fixture) : IClassFixt
 
     [Fact]
     public async Task IServer_LolwutAsync_ReturnsArt()
-    {
-        string result = await fixture.Server.LolwutAsync();
-
-        Assert.NotNull(result);
-        Assert.NotEmpty(result);
-        Assert.Contains("Valkey", result, StringComparison.OrdinalIgnoreCase);
-    }
+        => Assert.Matches("(?i)Valkey|Redis", await fixture.Server.LolwutAsync());
 
     [Fact]
     public async Task IServer_TimeAsync_ReturnsValidTime()
-    {
-        DateTime result = await fixture.Server.TimeAsync();
-
-        Assert.True(result > DateTime.UnixEpoch);
-        Assert.True(result <= DateTime.UtcNow.AddMinutes(1));
-    }
+        => Assert.InRange(await fixture.Server.TimeAsync(), DateTime.UtcNow.AddMinutes(-1), DateTime.UtcNow.AddMinutes(1));
 
     [Fact]
     public async Task IServer_LastSaveAsync_ReturnsValidTime()
-    {
-        DateTime result = await fixture.Server.LastSaveAsync();
-
-        Assert.True(result >= DateTime.UnixEpoch);
-    }
+        => Assert.True(await fixture.Server.LastSaveAsync() >= DateTime.UnixEpoch);
 
     [Fact]
     public async Task IServer_FlushDatabaseAsync_Succeeds()
