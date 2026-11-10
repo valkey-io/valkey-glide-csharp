@@ -154,7 +154,7 @@ jobs:
               if: ${{ inputs.package-version == '' }}
               with:
                   path: rust/target
-                  key: rust-${{ matrix.host.target }}
+                  key: rust-${{ matrix.host.target }}-v1-${{ hashFiles('rust/Cargo.lock') }}
 
             - name: Install Task
               uses: go-task/setup-task@a00fbb05ce67b35648be3c78cbc9fd85354c757e # v2.2.0
@@ -162,7 +162,6 @@ jobs:
             - name: Unit tests - dotnet ${{ matrix.dotnet }}
               run: >-
                   task test:unit
-                  configuration=Debug
                   verbosity=detailed
                   ${{ env.RUN_COVERAGE == 'true' && 'coverage=true' || '' }}
 
@@ -188,7 +187,6 @@ jobs:
                   AWS_SESSION_TOKEN: test_session_token
               run: >-
                   task test:integration
-                  configuration=Debug
                   verbosity=detailed
                   ${{ env.RUN_COVERAGE == 'true' && 'coverage=true' || '' }}
 
@@ -266,7 +264,7 @@ jobs:
             - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
               with:
                   path: rust/target
-                  key: rust-${{ matrix.host.image }}
+                  key: rust-${{ matrix.host.image }}-v1-${{ hashFiles('rust/Cargo.lock') }}
 
             - name: Install Task
               uses: go-task/setup-task@a00fbb05ce67b35648be3c78cbc9fd85354c757e # v2.2.0
@@ -315,7 +313,7 @@ jobs:
             - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
               with:
                   path: rust/target
-                  key: rust-x86_64-unknown-linux-gnu
+                  key: rust-x86_64-unknown-linux-gnu-v1-${{ hashFiles('rust/Cargo.lock') }}
 
             - name: Install Task
               uses: go-task/setup-task@a00fbb05ce67b35648be3c78cbc9fd85354c757e # v2.2.0
