@@ -104,6 +104,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `GETSET` custom command compresses its value when compression is enabled (#579)
 - `ConnectionMultiplexer.GetServers()` throwing `FormatException` when cluster nodes are addressed by DNS hostname (#419)
 - Race condition that could throw `ArgumentOutOfRangeException` on the thread pool when a response arrived after the client was disposed (#466)
+- Log level defaults to `Warn` instead of the level of the first message.
 
 ### Security
 

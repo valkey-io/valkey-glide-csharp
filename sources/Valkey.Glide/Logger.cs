@@ -52,14 +52,14 @@ public enum Level
 ///      new logs will not be saved with the logs that were sent before the call.
 ///   </item>
 /// </list>
-/// If none of these functions are called, the first log attempt will initialize a new logger with default configuration.
+/// If none of these functions are called, the logger uses the <see cref="Level.Warn"/> level.
 /// </summary>
 /// <seealso href="https://glide.valkey.io/how-to/monitoring/logging/">Valkey GLIDE – Logging</seealso>
 public static class Logger
 {
     #region Private Fields
 
-    private static Level? s_loggerLevel = null;
+    private static Level s_loggerLevel = Level.Warn;
 
     #endregion
     #region Public Methods
@@ -91,12 +91,7 @@ public static class Logger
     /// <param name="error">The exception or error to log.</param>
     public static void Log(Level logLevel, string logIdentifier, string message, Exception? error = null)
     {
-        if (s_loggerLevel is null)
-        {
-            SetLoggerConfig(logLevel);
-        }
-
-        if (!(logLevel <= s_loggerLevel))
+        if (logLevel > s_loggerLevel)
         {
             return;
         }
