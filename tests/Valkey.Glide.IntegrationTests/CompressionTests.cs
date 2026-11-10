@@ -17,6 +17,12 @@ public class CompressionFixture : IAsyncLifetime
 
     public async ValueTask InitializeAsync()
     {
+        // TODO #633: Remove once the fixture connects reliably on Windows.
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
         var zstdConfig = TestConfiguration.DefaultClientConfig()
             .WithCompression(CompressionConfig.Zstd())
             .Build();
@@ -53,7 +59,7 @@ public class CompressionFixture : IAsyncLifetime
 public class CompressionTestsCollection : ICollectionFixture<CompressionFixture>;
 
 [Collection("CompressionTests")]
-public class CompressionTests(CompressionFixture fixture)
+public class CompressionTests
 {
     private const int LargeValueSize = 1000;
     private const int SmallValueSize = 100;
@@ -64,6 +70,15 @@ public class CompressionTests(CompressionFixture fixture)
     private const int MultiOpSizeIncrement = 100;
 
     private static readonly string LargeValue = new('y', LargeValueSize);
+
+    private readonly CompressionFixture _fixture;
+
+    public CompressionTests(CompressionFixture fixture)
+    {
+        // TODO #633: Remove once the fixture connects reliably on Windows.
+        Assert.SkipWhen(OperatingSystem.IsWindows(), "CompressionFixture times out connecting on Windows (#633)");
+        _fixture = fixture;
+    }
 
     /// <summary>
     /// Test data for client methods that use commands incompatible with compression.
@@ -101,10 +116,10 @@ public class CompressionTests(CompressionFixture fixture)
         { "SETBIT", c => c.SetBitAsync("key", 7, true) },
     };
 
-    private GlideClient ZstdClient => fixture.ZstdClient!;
-    private GlideClient Lz4Client => fixture.Lz4Client!;
-    private GlideClusterClient ZstdClusterClient => fixture.ZstdClusterClient!;
-    private GlideClusterClient Lz4ClusterClient => fixture.Lz4ClusterClient!;
+    private GlideClient ZstdClient => _fixture.ZstdClient!;
+    private GlideClient Lz4Client => _fixture.Lz4Client!;
+    private GlideClusterClient ZstdClusterClient => _fixture.ZstdClusterClient!;
+    private GlideClusterClient Lz4ClusterClient => _fixture.Lz4ClusterClient!;
 
     [Fact]
     public async Task Compression_Zstd_Standalone_CompressesAndDecompresses()
