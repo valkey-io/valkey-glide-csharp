@@ -81,8 +81,6 @@ public class TestConfiguration : IDisposable
         TestConsoleWriteLine($"Server version = {SERVER_VERSION}");
     }
 
-    ~TestConfiguration() => Dispose();
-
     #endregion
     #region Public Properties
 
@@ -428,10 +426,13 @@ public class TestConfiguration : IDisposable
     {
         ResetTestClients();
         ResetTestConnections();
+
         if (_startedServer)
         {
             ServerManager.StopServer(DefaultServerGroupName, keepLogs: true);
         }
+
+        GC.SuppressFinalize(this);
     }
 
     #endregion
