@@ -2,6 +2,7 @@
 
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Valkey.Glide.Internals;
 
@@ -23,10 +24,13 @@ internal class Message(int index, MessageContainer container) : INotifyCompletio
     private int _completionState;
     private IntPtr _result = default;
     private Exception? _exception;
-    // Holding the client prevents it from being GC'd until all operations complete.
-#pragma warning disable IDE0052 // Remove unread private members
-    private object? _client;
-#pragma warning restore IDE0052 // Remove unread private members
+
+    /// <summary>
+    /// Handle that prevents the client from being disposed until the request completes.
+    /// The Rust core only stores this message's index, so the garbage collector could
+    /// otherwise dispose of the client while the request is still waiting for a response.
+    /// </summary>
+    private IntPtr _clientHandle;
 
     /// <summary>
     /// This is the index of the message in an external array, that allows the user to
@@ -39,10 +43,24 @@ internal class Message(int index, MessageContainer container) : INotifyCompletio
     private MessageContainer Container { get; } = container;
 
     /// <summary>
-    /// Triggers a succesful completion of the task returned from the latest call
-    /// to CreateTask.
+    /// Starts a new operation that completes when <see cref="SetResult(IntPtr)"/>
+    /// or <see cref="SetException(Exception)"/> is called.
     /// </summary>
-    /// <param name="result">The result value to complete the task with.</param>
+    /// <param name="client">The client associated with the operation.</param>
+    public void SetupTask(object client)
+    {
+        _continuation = null;
+        _completionState = COMPLETION_STAGE_STARTED;
+        _result = default;
+        _exception = null;
+        _clientHandle = GCHandle.ToIntPtr(GCHandle.Alloc(client));
+    }
+
+    /// <summary>
+    /// Completes the current operation successfully.
+    /// The awaiting code then receives <paramref name="result"/>.
+    /// </summary>
+    /// <param name="result">The result to complete the operation with.</param>
     public void SetResult(IntPtr result)
     {
         _result = result;
@@ -50,10 +68,10 @@ internal class Message(int index, MessageContainer container) : INotifyCompletio
     }
 
     /// <summary>
-    /// Triggers a failure completion of the task returned from the latest call to
-    /// CreateTask.
+    /// Completes the current operation with an error.
+    /// The awaiting code then throws <paramref name="exc"/>.
     /// </summary>
-    /// <param name="exc">The exception to fail the task with.</param>
+    /// <param name="exc">The exception to complete the operation with.</param>
     public void SetException(Exception exc)
     {
         _exception = exc;
@@ -61,21 +79,6 @@ internal class Message(int index, MessageContainer container) : INotifyCompletio
     }
 
     public Message GetAwaiter() => this;
-
-    /// <summary>
-    /// This returns a task that will complete once SetException / SetResult are called,
-    /// and ensures that the internal state of the message is set-up before the task is created,
-    /// and cleaned once it is complete.
-    /// </summary>
-    /// <param name="client">The client to associate with the operation; held to prevent it being garbage collected.</param>
-    public void SetupTask(object client)
-    {
-        _continuation = null;
-        _completionState = COMPLETION_STAGE_STARTED;
-        _result = default;
-        _exception = null;
-        _client = client;
-    }
 
     public void OnCompleted(Action continuation)
     {
@@ -88,7 +91,6 @@ internal class Message(int index, MessageContainer container) : INotifyCompletio
     private void FinishSet()
     {
         CleanUp();
-
         CheckRaceAndCallContinuation();
     }
 
@@ -109,5 +111,15 @@ internal class Message(int index, MessageContainer container) : INotifyCompletio
         }
     }
 
-    private void CleanUp() => _client = null;
+    /// <summary>
+    /// Frees the handle that keeps the client from being garbage collected.
+    /// </summary>
+    private void CleanUp()
+    {
+        IntPtr handle = Interlocked.Exchange(ref _clientHandle, IntPtr.Zero);
+        if (handle != IntPtr.Zero)
+        {
+            GCHandle.FromIntPtr(handle).Free();
+        }
+    }
 }
