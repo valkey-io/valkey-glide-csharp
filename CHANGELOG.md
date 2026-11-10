@@ -105,6 +105,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ConnectionMultiplexer.GetServers()` throwing `FormatException` when cluster nodes are addressed by DNS hostname (#419)
 - Race condition that could throw `ArgumentOutOfRangeException` on the thread pool when a response arrived after the client was disposed (#466)
 - Log level defaults to `Warn` instead of the level of the first message (#632)
+- Client could be disposed by the garbage collector while a request was pending (#632)
+- Client-side cache invalidations logged as invalid PubSub messages (#632)
 
 ### Security
 
