@@ -84,6 +84,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The Availability Zone (`ReadFrom.Az`) is trimmed of surrounding whitespace before it is used, so an AZ-affinity strategy configured with a padded value now engages AZ affinity instead of silently spreading reads across all nodes (#533)
 - `SET` with `IFEQ` or `IFNE` now throws a `RequestException` when compression is enabled (#579)
 - `CLIENT INFO` now reports `lib-name` and `lib-ver` correctly (#415)
+- Log level defaults to `Warn` instead being implicitly set to the level of the first message.
+  Use `Logger.SetLoggerConfig` or `Logger.Init` to set it explicitly (#632).
 
 ### Fixed
 
@@ -104,7 +106,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `GETSET` custom command compresses its value when compression is enabled (#579)
 - `ConnectionMultiplexer.GetServers()` throwing `FormatException` when cluster nodes are addressed by DNS hostname (#419)
 - Race condition that could throw `ArgumentOutOfRangeException` on the thread pool when a response arrived after the client was disposed (#466)
-- Log level defaults to `Warn` instead of the level of the first message (#632)
 - Client could be disposed by the garbage collector while a request was pending (#632)
 - Client-side cache invalidations logged as invalid PubSub messages (#632)
 
