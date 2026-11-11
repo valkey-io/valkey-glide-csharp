@@ -150,11 +150,12 @@ jobs:
                   target: ${{ matrix.host.target }}
                   server-version: ${{ matrix.server.version }}
 
-            - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+            - name: Cache Rust
               if: ${{ inputs.package-version == '' }}
+              uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
               with:
-                  path: rust/target
-                  key: rust-${{ matrix.host.target }}-v1-${{ hashFiles('rust/Cargo.lock') }}
+                  workspaces: rust
+                  key: ${{ matrix.host.target }}
 
             - name: Install Task
               uses: go-task/setup-task@a00fbb05ce67b35648be3c78cbc9fd85354c757e # v2.2.0
@@ -261,10 +262,11 @@ jobs:
                   ::1 valkey.glide.test.no_tls.com"
                   echo "$ENTRIES" | tee -a /etc/hosts
 
-            - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+            - name: Cache Rust
+              uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
               with:
-                  path: rust/target
-                  key: rust-${{ matrix.host.image }}-v1-${{ hashFiles('rust/Cargo.lock') }}
+                  workspaces: rust
+                  key: ${{ matrix.host.image }}
 
             - name: Install Task
               uses: go-task/setup-task@a00fbb05ce67b35648be3c78cbc9fd85354c757e # v2.2.0
@@ -310,10 +312,10 @@ jobs:
                   # TODO valkey-io/valkey-glide#7312: Bump to 9.2.0 once released.
                   server-version: "9.2.0-rc1"
 
-            - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+            - name: Cache Rust
+              uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
               with:
-                  path: rust/target
-                  key: rust-x86_64-unknown-linux-gnu-v1-${{ hashFiles('rust/Cargo.lock') }}
+                  workspaces: rust
 
             - name: Install Task
               uses: go-task/setup-task@a00fbb05ce67b35648be3c78cbc9fd85354c757e # v2.2.0

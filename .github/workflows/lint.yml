@@ -28,14 +28,9 @@ jobs:
                   target: x86_64-unknown-linux-gnu
 
             - name: Cache Rust
-              uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+              uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
               with:
-                  path: rust/target
-                  # Use 'Cargo.toml' hash so the cache invalidates when dependencies change.
-                  key: rust-lint-${{ hashFiles('rust/Cargo.toml') }}
-                  # On cache miss, restore the most recent cache with this prefix so cargo
-                  # only recompiles changed dependencies instead of building from scratch.
-                  restore-keys: rust-lint-
+                  workspaces: rust
 
             - name: Install cargo-deny
               uses: taiki-e/install-action@5488ac5a951645ce95062214902ac4b6bc1a1037 # v2.87.32
