@@ -9,7 +9,7 @@ using static Valkey.Glide.ConnectionConfiguration;
 
 namespace Valkey.Glide.IntegrationTests;
 
-public class TestConfiguration : IDisposable
+public sealed class TestConfiguration : IDisposable
 {
     #region Public Fields
 
@@ -437,8 +437,6 @@ public class TestConfiguration : IDisposable
         {
             ServerManager.StopServer(DefaultServerGroupName, keepLogs: true);
         }
-
-        GC.SuppressFinalize(this);
     }
 
     #endregion
