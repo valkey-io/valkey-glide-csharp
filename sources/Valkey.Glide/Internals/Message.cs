@@ -38,6 +38,7 @@ internal class Message(int index, MessageContainer container) : INotifyCompletio
     /// </summary>
     public int Index { get; } = index;
 
+    // TODO #635: Return true once the response has arrived, so that awaiting does not grow the stack.
     public bool IsCompleted => _completionState == COMPLETION_STAGE_CONTINUATION_EXECUTED;
 
     private MessageContainer Container { get; } = container;

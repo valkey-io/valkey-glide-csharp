@@ -278,6 +278,7 @@ pub unsafe extern "C-unwind" fn create_client(
     let (push_tx, mut push_rx) = tokio::sync::mpsc::unbounded_channel();
     let tx = if is_subscriber { Some(push_tx) } else { None };
 
+    // TODO #635: Connect on a runtime worker with an explicit stack size, not on the caller's thread.
     let res = runtime.block_on(GlideClient::new(request, tx));
     match res {
         Ok(client) => {
@@ -2145,6 +2146,7 @@ pub unsafe extern "C-unwind" fn create_monitor_client(
         }
     });
 
+    // TODO #635: Connect on a runtime worker with an explicit stack size, not on the caller's thread.
     let monitor_client = match runtime
         .block_on(async { MonitorClient::new(&address, redis_conn_info, tls_mode, on_line).await })
     {
