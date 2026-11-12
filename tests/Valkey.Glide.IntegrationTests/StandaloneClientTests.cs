@@ -403,25 +403,10 @@ public class StandaloneClientTests(TestConfiguration config)
     [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
     public async Task DatabaseSizeAsync_ReturnsSize(GlideClient client)
     {
-        string key = $"dbsize-test-{Guid.NewGuid()}";
+        Assert.True(await client.DatabaseSizeAsync() >= 0);
 
-        try
-        {
-            // Get initial size
-            long initialSize = await client.DatabaseSizeAsync();
-            Assert.True(initialSize >= 0);
-
-            // Add a key
-            await client.SetAsync(key, "test-value");
-
-            // Size should increase
-            long newSize = await client.DatabaseSizeAsync();
-            Assert.True(newSize >= initialSize);
-        }
-        finally
-        {
-            _ = await client.DeleteAsync(key);
-        }
+        await client.SetAsync(Guid.NewGuid().ToString(), "test-value");
+        Assert.True(await client.DatabaseSizeAsync() >= 1);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]

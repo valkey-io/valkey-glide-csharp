@@ -9,7 +9,7 @@ using static Valkey.Glide.ConnectionConfiguration;
 
 namespace Valkey.Glide.IntegrationTests;
 
-public class TestConfiguration : IDisposable
+public sealed class TestConfiguration : IDisposable
 {
     #region Public Fields
 
@@ -34,6 +34,12 @@ public class TestConfiguration : IDisposable
     #region Private Fields
 
     private static readonly object LockObject = new();
+
+    // Explicit backing fields for test clients and multiplexers.
+    private static TheoryData<GlideClient> s_testStandaloneClients = [];
+    private static TheoryData<GlideClusterClient> s_testClusterClients = [];
+    private static TheoryData<ConnectionMultiplexer> s_testStandaloneConnections = [];
+    private static TheoryData<ConnectionMultiplexer> s_testClusterConnections = [];
 
     private readonly bool _startedServer;
 
@@ -80,8 +86,6 @@ public class TestConfiguration : IDisposable
         TestConsoleWriteLine($"Standalone hosts = {string.Join(", ", STANDALONE_ADDRESSES)}");
         TestConsoleWriteLine($"Server version = {SERVER_VERSION}");
     }
-
-    ~TestConfiguration() => Dispose();
 
     #endregion
     #region Public Properties
@@ -133,10 +137,10 @@ public class TestConfiguration : IDisposable
                 // Return empty if no standalone endpoints available
                 if (!HasStandalone)
                 {
-                    return field;
+                    return s_testStandaloneClients;
                 }
 
-                if (field.Count == 0)
+                if (s_testStandaloneClients.Count == 0)
                 {
                     GlideClient resp2client = GlideClient.CreateClient(
                         DefaultClientConfig()
@@ -156,15 +160,13 @@ public class TestConfiguration : IDisposable
                         .GetAwaiter()
                         .GetResult();
                     resp3client.SetInfo("RESP3");
-                    field = [resp2client, resp3client];
+                    s_testStandaloneClients = [resp2client, resp3client];
                 }
             }
 
-            return field;
+            return s_testStandaloneClients;
         }
-
-        private set;
-    } = [];
+    }
 
     public static TheoryData<GlideClusterClient> TestClusterClients
     {
@@ -174,10 +176,10 @@ public class TestConfiguration : IDisposable
             {
                 if (!HasCluster)
                 {
-                    return field;
+                    return s_testClusterClients;
                 }
 
-                if (field.Count == 0)
+                if (s_testClusterClients.Count == 0)
                 {
                     GlideClusterClient resp2client = GlideClusterClient.CreateClient(
                         DefaultClusterClientConfig()
@@ -197,15 +199,13 @@ public class TestConfiguration : IDisposable
                         .GetAwaiter()
                         .GetResult();
                     resp3client.SetInfo("RESP3");
-                    field = [resp2client, resp3client];
+                    s_testClusterClients = [resp2client, resp3client];
                 }
             }
 
-            return field;
+            return s_testClusterClients;
         }
-
-        private set;
-    } = [];
+    }
 
     #endregion
     #region SER COMPAT Properties
@@ -219,10 +219,10 @@ public class TestConfiguration : IDisposable
                 // Return empty if no standalone endpoints available
                 if (!HasStandalone)
                 {
-                    return field;
+                    return s_testStandaloneConnections;
                 }
 
-                if (field.Count == 0)
+                if (s_testStandaloneConnections.Count == 0)
                 {
                     ConfigurationOptions resp2conf = DefaultCompatibleConfig();
                     resp2conf.Protocol = Protocol.Resp2;
@@ -233,15 +233,13 @@ public class TestConfiguration : IDisposable
                     ConnectionMultiplexer resp3Conn = ConnectionMultiplexer.Connect(resp3conf);
                     (resp3Conn.GetDatabase() as Database)!.SetInfo("RESP3");
 
-                    field = [resp2Conn, resp3Conn];
+                    s_testStandaloneConnections = [resp2Conn, resp3Conn];
                 }
             }
 
-            return field;
+            return s_testStandaloneConnections;
         }
-
-        private set;
-    } = [];
+    }
 
     public static TheoryData<ConnectionMultiplexer> TestClusterConnections
     {
@@ -252,10 +250,10 @@ public class TestConfiguration : IDisposable
                 // Return empty if no cluster endpoints available
                 if (!HasCluster)
                 {
-                    return field;
+                    return s_testClusterConnections;
                 }
 
-                if (field.Count == 0)
+                if (s_testClusterConnections.Count == 0)
                 {
                     ConfigurationOptions resp2conf = DefaultCompatibleClusterConfig();
                     resp2conf.Protocol = Protocol.Resp2;
@@ -266,15 +264,13 @@ public class TestConfiguration : IDisposable
                     ConnectionMultiplexer resp3Conn = ConnectionMultiplexer.Connect(resp3conf);
                     (resp3Conn.GetDatabase() as Database)!.SetInfo("RESP3");
 
-                    field = [resp2Conn, resp3Conn];
+                    s_testClusterConnections = [resp2Conn, resp3Conn];
                 }
             }
 
-            return field;
+            return s_testClusterConnections;
         }
-
-        private set;
-    } = [];
+    }
 
     public static List<TheoryDataRow<ConnectionMultiplexer, bool>> TestConnections
     {
@@ -374,14 +370,16 @@ public class TestConfiguration : IDisposable
 
     public static void ResetTestClients()
     {
-        foreach (TheoryDataRow<BaseClient> data in TestClients)
+        lock (LockObject)
         {
-            data.Data.Dispose();
-        }
+            s_testStandaloneClients.ToList().ForEach(d => d.Data.Dispose());
+            s_testClusterClients.ToList().ForEach(d => d.Data.Dispose());
 
-        TestClients = [];
-        TestClusterClients = [];
-        TestStandaloneClients = [];
+            s_testStandaloneClients = [];
+            s_testClusterClients = [];
+
+            TestClients = [];
+        }
     }
 
     #endregion
@@ -413,12 +411,18 @@ public class TestConfiguration : IDisposable
 
     public static void ResetTestConnections()
     {
-        TestConnections.ForEach(test => test.Data.Item1.Dispose());
-        TestConnections = [];
-        TestDatabases = [];
-        TestServers = [];
-        TestClusterConnections = [];
-        TestStandaloneConnections = [];
+        lock (LockObject)
+        {
+            s_testStandaloneConnections.ToList().ForEach(d => d.Data.Dispose());
+            s_testClusterConnections.ToList().ForEach(d => d.Data.Dispose());
+
+            s_testStandaloneConnections = [];
+            s_testClusterConnections = [];
+
+            TestConnections = [];
+            TestDatabases = [];
+            TestServers = [];
+        }
     }
 
     #endregion
@@ -428,6 +432,7 @@ public class TestConfiguration : IDisposable
     {
         ResetTestClients();
         ResetTestConnections();
+
         if (_startedServer)
         {
             ServerManager.StopServer(DefaultServerGroupName, keepLogs: true);

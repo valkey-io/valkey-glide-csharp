@@ -97,10 +97,11 @@ jobs:
                   os: ${{ matrix.host.os }}
                   target: ${{ matrix.host.target }}
 
-            - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+            - name: Cache Rust
+              uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
               with:
-                  path: rust/target
-                  key: rust-${{ matrix.host.target }}
+                  workspaces: rust
+                  key: ${{ matrix.host.target }}
 
             - name: Build native libs (linux gnu)
               if: ${{ contains(matrix.host.target, 'linux-gnu') }}
