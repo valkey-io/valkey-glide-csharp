@@ -15,7 +15,7 @@ use glide_core::{
     errors::{RequestErrorType, error_message, error_type},
     request_type::RequestType,
 };
-use redis::cluster_routing::Routable;
+use redis::{Value, cluster_routing::Routable};
 use std::{
     ffi::{CStr, CString, c_char, c_void},
     slice::from_raw_parts,
@@ -278,6 +278,7 @@ pub unsafe extern "C-unwind" fn create_client(
     let (push_tx, mut push_rx) = tokio::sync::mpsc::unbounded_channel();
     let tx = if is_subscriber { Some(push_tx) } else { None };
 
+    // TODO #635: Connect on a runtime worker with an explicit stack size, not on the caller's thread.
     let res = runtime.block_on(GlideClient::new(request, tx));
     match res {
         Ok(client) => {
@@ -379,7 +380,10 @@ pub unsafe extern "C-unwind" fn create_client(
 /// `Vec<u8>` instances are kept alive during callback execution and automatically cleaned up
 /// when the function exits, preventing memory leaks.
 unsafe fn process_push_notification(push_msg: redis::PushInfo, pubsub_callback: PubSubCallback) {
-    use redis::Value;
+    // All other pushes are handled by glide-core.
+    if !is_pubsub_message(&push_msg.kind) {
+        return;
+    }
 
     // Convert all values to Vec<u8>, handling both BulkString and Int types
     let strings: Vec<Vec<u8>> = push_msg
@@ -423,48 +427,6 @@ unsafe fn process_push_notification(push_msg: redis::PushInfo, pubsub_callback: 
             // Sharded message: [channel, message]
             (None, &strings[0], &strings[1], PushKind::SMessage)
         }
-        (redis::PushKind::Subscribe, 2) => {
-            // Subscribe confirmation: [channel, count]
-            (None, &strings[0], &strings[1], PushKind::Subscribe)
-        }
-        (redis::PushKind::PSubscribe, 3) => {
-            // Pattern subscribe confirmation: [pattern, channel, count]
-            (
-                Some(&strings[0]),
-                &strings[1],
-                &strings[2],
-                PushKind::PSubscribe,
-            )
-        }
-        (redis::PushKind::SSubscribe, 2) => {
-            // Sharded subscribe confirmation: [channel, count]
-            (None, &strings[0], &strings[1], PushKind::SSubscribe)
-        }
-        (redis::PushKind::Unsubscribe, 2) => {
-            // Unsubscribe confirmation: [channel, count]
-            (None, &strings[0], &strings[1], PushKind::Unsubscribe)
-        }
-        (redis::PushKind::PUnsubscribe, 3) => {
-            // Pattern unsubscribe confirmation: [pattern, channel, count]
-            (
-                Some(&strings[0]),
-                &strings[1],
-                &strings[2],
-                PushKind::PUnsubscribe,
-            )
-        }
-        (redis::PushKind::SUnsubscribe, 2) => {
-            // Sharded unsubscribe confirmation: [channel, count]
-            (None, &strings[0], &strings[1], PushKind::SUnsubscribe)
-        }
-        (redis::PushKind::Disconnection, _) => {
-            glide_logger::log(
-                glide_logger::Level::Info,
-                "pubsub",
-                "PubSub disconnection received",
-            );
-            return;
-        }
         (kind, len) => {
             glide_logger::log(
                 glide_logger::Level::Error,
@@ -501,6 +463,14 @@ unsafe fn process_push_notification(push_msg: redis::PushInfo, pubsub_callback: 
 
     // Vec<u8> instances are automatically cleaned up here
     // No memory leak, no use-after-free
+}
+
+/// Returns whether the given push kind is a PubSub message.
+fn is_pubsub_message(kind: &redis::PushKind) -> bool {
+    matches!(
+        kind,
+        redis::PushKind::Message | redis::PushKind::PMessage | redis::PushKind::SMessage
+    )
 }
 
 /// Closes the given client, deallocating it from the heap.
@@ -1551,7 +1521,7 @@ pub unsafe extern "C-unwind" fn refresh_iam_token(
 
         let result = core.client.clone().refresh_iam_token().await;
         match result {
-            Ok(()) => match ResponseValue::from_value(redis::Value::Okay) {
+            Ok(()) => match ResponseValue::from_value(Value::Okay) {
                 Ok(response) => {
                     let ptr = Box::into_raw(Box::new(response));
                     unsafe { (core.success_callback)(callback_index, ptr) };
@@ -2176,6 +2146,7 @@ pub unsafe extern "C-unwind" fn create_monitor_client(
         }
     });
 
+    // TODO #635: Connect on a runtime worker with an explicit stack size, not on the caller's thread.
     let monitor_client = match runtime
         .block_on(async { MonitorClient::new(&address, redis_conn_info, tls_mode, on_line).await })
     {
