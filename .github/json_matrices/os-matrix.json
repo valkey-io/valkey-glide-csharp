@@ -31,11 +31,10 @@
         "profiles": [ "full"]
     },
     {
-        "todo": "TODO #637: Add the 'full' profile back once the Windows connection failures are fixed.",
         "os": "windows",
         "runner": "windows-2025",
         "target": "x86_64-pc-windows-msvc",
-        "profiles": []
+        "profiles": ["full"]
     },
     {
         "os": "windows",
