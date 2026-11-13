@@ -166,8 +166,9 @@ jobs:
                   verbosity=detailed
                   ${{ env.RUN_COVERAGE == 'true' && 'coverage=true' || '' }}
 
+            # TODO #637: Run on Windows x64 again once the Windows connection failures are fixed.
             - name: Configure DNS for integration tests
-              if: ${{ matrix.host.target != 'aarch64-pc-windows-msvc' }}
+              if: ${{ matrix.host.target != 'aarch64-pc-windows-msvc' && matrix.host.target != 'x86_64-pc-windows-msvc' }}
               shell: bash
               run: |
                   ENTRIES="127.0.0.1 valkey.glide.test.tls.com
@@ -180,8 +181,9 @@ jobs:
                       echo "$ENTRIES" | sudo tee -a /etc/hosts
                   fi
 
+            # TODO #637: Run on Windows x64 again once the Windows connection failures are fixed.
             - name: Integration tests - dotnet ${{ matrix.dotnet }}
-              if: ${{ matrix.host.target != 'aarch64-pc-windows-msvc' }}
+              if: ${{ matrix.host.target != 'aarch64-pc-windows-msvc' && matrix.host.target != 'x86_64-pc-windows-msvc' }}
               env:
                   AWS_ACCESS_KEY_ID: test_secret_key
                   AWS_SECRET_ACCESS_KEY: test_access_key
