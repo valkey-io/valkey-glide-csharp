@@ -80,15 +80,22 @@ jobs:
 
             - name: Determine whether to run with coverage
               shell: bash
+              env:
+                  PACKAGE_VERSION: ${{ inputs.package-version }}
+                  MATRIX_DOTNET: ${{ matrix.dotnet }}
+                  MATRIX_SERVER_TYPE: ${{ matrix.server.type }}
+                  MATRIX_SERVER_VERSION: ${{ matrix.server.version }}
+                  MATRIX_RUNNER: ${{ matrix.host.runner }}
               run: |
                   SERVER_TYPE=$(jq -r '.server_type' dev/conf/coverage-baseline.json)
                   SERVER_VERSION=$(jq -r '.server_version' dev/conf/coverage-baseline.json)
 
                   RUN_COVERAGE=false
-                  if [[ "${{ matrix.dotnet }}" == "8.0" \
-                     && "${{ matrix.server.type }}" == "$SERVER_TYPE" \
-                     && "${{ matrix.server.version }}" == "$SERVER_VERSION" \
-                     && "${{ matrix.host.runner }}" == "ubuntu-24.04" ]]; then
+                  if [[ "$PACKAGE_VERSION" == "" \
+                     && "$MATRIX_DOTNET" == "8.0" \
+                     && "$MATRIX_SERVER_TYPE" == "$SERVER_TYPE" \
+                     && "$MATRIX_SERVER_VERSION" == "$SERVER_VERSION" \
+                     && "$MATRIX_RUNNER" == "ubuntu-24.04" ]]; then
                       RUN_COVERAGE=true
                   fi
 
