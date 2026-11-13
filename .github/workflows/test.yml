@@ -85,7 +85,8 @@ jobs:
                   SERVER_VERSION=$(jq -r '.server_version' dev/conf/coverage-baseline.json)
 
                   RUN_COVERAGE=false
-                  if [[ "${{ matrix.dotnet }}" == "8.0" \
+                  if [[ "${{ inputs.package-version }}" == "" \
+                     && "${{ matrix.dotnet }}" == "8.0" \
                      && "${{ matrix.server.type }}" == "$SERVER_TYPE" \
                      && "${{ matrix.server.version }}" == "$SERVER_VERSION" \
                      && "${{ matrix.host.runner }}" == "ubuntu-24.04" ]]; then
