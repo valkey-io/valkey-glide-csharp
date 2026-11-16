@@ -92,8 +92,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Marshalling of non-ASCII characters on Windows (#501)
 - Non-ASCII characters in (#649):
   - `UpdateConnectionPasswordAsync` passwords and native error messages on Windows
-  - `ScanAsync` for cluster client with `MATCH` patterns (#649)
-- Configured IAM authentication refresh interval (#649)
+  - `ScanAsync` for cluster client with `MATCH` patterns
+- Configured IAM authentication refresh interval being ignored (#649)
 - Possible use of freed memory when a client is disposed during a pending script invocation (#649)
 - `FailoverOptions` throws `ArgumentOutOfRangeException` for zero timeout (#488)
 - `StreamReadGroupAsync` returning only the first field-value pair per stream entry (#430)
