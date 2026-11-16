@@ -139,20 +139,20 @@ cargo install --locked cargo-zigbuild
 
 ### Windows
 
-```bash
+```powershell
 # 1. Install Chocolatey packages:
-choco install \
-    actionlint \
-    cmake \
-    dotnet-8.0-sdk \
-    dotnet-10.0-sdk \
-    git \
-    go-task \
-    mingw \
-    nodejs \
-    openssl \
-    pkgconfiglite \
-    python \
+choco install `
+    actionlint `
+    cmake `
+    dotnet-8.0-sdk `
+    dotnet-10.0-sdk `
+    git `
+    go-task `
+    mingw `
+    nodejs `
+    openssl `
+    pkgconfiglite `
+    python `
     shellcheck
 
 # 2. Install Rust:
