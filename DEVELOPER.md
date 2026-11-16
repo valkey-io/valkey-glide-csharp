@@ -161,6 +161,8 @@ cargo install --locked cargo-deny lychee
 
 # 3. Install uv and packages:
 choco install uv
+# Add the uv tool directory to PATH and open a new shell.
+uv tool update-shell
 uv tool install pyflakes
 
 # 4. Install protoc:
