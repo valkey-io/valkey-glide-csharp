@@ -519,8 +519,9 @@ internal partial class FFI
         /// <summary>
         /// The refresh interval in seconds for IAM authentication.
         /// </summary>
+        [MarshalAs(UnmanagedType.U1)]
         public readonly bool HasRefreshIntervalSeconds = refreshIntervalSeconds.HasValue;
-        public readonly uint? RefreshIntervalSeconds = refreshIntervalSeconds ?? default;
+        public readonly uint RefreshIntervalSeconds = refreshIntervalSeconds ?? default;
     }
 
     #region Monitor
