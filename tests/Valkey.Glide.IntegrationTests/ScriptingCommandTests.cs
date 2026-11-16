@@ -59,7 +59,6 @@ public class ScriptingCommandTests(TestConfiguration config)
     public async Task ScriptInvokeAsync_ScriptError_ThrowsException(BaseClient client)
     {
         // Include non-ASCII characters to verify that error messages are decoded as UTF-8.
-        // The client reports the "ERR" code separately, so only the text follows it in the message.
         var errorMsg = "pässwörd-日本";
         using var script = new Script($"return redis.error_reply('ERR {errorMsg}')");
 
