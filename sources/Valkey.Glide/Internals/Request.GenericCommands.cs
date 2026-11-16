@@ -58,7 +58,7 @@ internal static partial class Request
     public static Cmd<bool, bool> Expire(ValkeyKey key, TimeSpan? expiry, ExpireCondition condition = ExpireCondition.Always)
     {
         List<GlideString> args = [key];
-        args.Add(expiry.HasValue ? ToULongMs(expiry.Value, nameof(expiry)).ToGlideString() : InstantExpiry);
+        args.Add(expiry.HasValue ? ToLongMs(expiry.Value).ToGlideString() : InstantExpiry);
         args.AddRange(condition.ToArgs());
 
         return Simple<bool>(RequestType.PExpire, [.. args]);

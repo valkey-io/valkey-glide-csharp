@@ -169,6 +169,17 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
     }
 
     [Fact]
+    public async Task KeyExpireAsync_WithNegativeTimeSpan_DeletesKey()
+    {
+        var db = fixture.Database;
+        string key = $"ser-expire-negative-{Guid.NewGuid()}";
+
+        _ = await db.StringSetAsync(key, "value");
+        Assert.True(await db.KeyExpireAsync(key, TimeSpan.FromSeconds(-5)));
+        Assert.False(await db.KeyExistsAsync(key));
+    }
+
+    [Fact]
     public async Task KeyExpireAsync_WithTimeSpan_WithCommandFlagsNone_Succeeds()
     {
         var db = fixture.Database;

@@ -5,6 +5,7 @@ This document lists known differences that affect migration from StackExchange.R
 
 ## API Differences
 
-| StackExchange.Redis | Valkey GLIDE        | Notes                                                                             |
-| ------------------- | ------------------- | --------------------------------------------------------------------------------- |
-| `MigrateOptions`    | `KeyMigrateOptions` | Renamed to avoid conflicting with `Valkey.Glide.Commands.Options.MigrateOptions`. |
+| StackExchange.Redis | Valkey GLIDE         | Notes                                                                             |
+| ------------------- | -------------------- | --------------------------------------------------------------------------------- |
+| `ClientType.Slave`  | `ClientType.Replica` | Obsolete alias not supported.                                                     |
+| `MigrateOptions`    | `KeyMigrateOptions`  | Renamed to avoid conflicting with `Valkey.Glide.Commands.Options.MigrateOptions`. |
