@@ -1108,15 +1108,12 @@ pub unsafe extern "C-unwind" fn invoke_script(
         }
     };
 
-    // Convert keys
-    let keys_vec: Vec<&[u8]> = unsafe {
-        ffi::convert_byte_array_to_slices(keys as *const *const u8, keys_count, keys_len)
-    };
-
-    // Convert args
-    let args_vec: Vec<&[u8]> = unsafe {
-        ffi::convert_byte_array_to_slices(args as *const *const u8, args_count, args_len)
-    };
+    // Copy keys and args from unmanaged C# buffers to Rust vectors. The caller may free its
+    // buffers before the spawned task reads them, so the task must not borrow from them.
+    let keys_vec: Vec<Vec<u8>> =
+        unsafe { ffi::convert_byte_array_to_owned(keys as *const *const u8, keys_count, keys_len) };
+    let args_vec: Vec<Vec<u8>> =
+        unsafe { ffi::convert_byte_array_to_owned(args as *const *const u8, args_count, args_len) };
 
     client.runtime.spawn(async move {
         let mut panic_guard = PanicGuard {
@@ -1125,10 +1122,13 @@ pub unsafe extern "C-unwind" fn invoke_script(
             callback_index,
         };
 
+        let keys: Vec<&[u8]> = keys_vec.iter().map(Vec::as_slice).collect();
+        let args: Vec<&[u8]> = args_vec.iter().map(Vec::as_slice).collect();
+
         let result = core
             .client
             .clone()
-            .invoke_script(&hash_str, &keys_vec, &args_vec, None)
+            .invoke_script(&hash_str, &keys, &args, None)
             .await;
 
         match result {
