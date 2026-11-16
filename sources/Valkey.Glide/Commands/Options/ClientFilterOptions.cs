@@ -214,11 +214,15 @@ public class ClientFilterOptions
     /// <inheritdoc cref="Ids" />
     /// <remarks>Since Valkey 8.1.0.</remarks>
     /// <returns>This instance for method chaining.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="ids"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException">Thrown if <paramref name="ids"/> is empty.</exception>
     public ClientFilterOptions WithIds(IEnumerable<long> ids)
     {
+        ArgumentNullException.ThrowIfNull(ids);
+
         SortedSet<long> values = [.. ids];
         GuardClauses.ThrowIfEmpty(values, nameof(ids));
+
         _ids = values;
         return this;
     }
@@ -235,11 +239,15 @@ public class ClientFilterOptions
     /// <inheritdoc cref="NotIds" />
     /// <remarks>Since Valkey 9.0.0.</remarks>
     /// <returns>This instance for method chaining.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="ids"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException">Thrown if <paramref name="ids"/> is empty.</exception>
     public ClientFilterOptions WithoutIds(IEnumerable<long> ids)
     {
+        ArgumentNullException.ThrowIfNull(ids);
+
         SortedSet<long> values = [.. ids];
         GuardClauses.ThrowIfEmpty(values, nameof(ids));
+
         _notIds = values;
         return this;
     }
@@ -372,11 +380,15 @@ public class ClientFilterOptions
     /// <inheritdoc cref="Flags" />
     /// <remarks>Since Valkey 9.0.0.</remarks>
     /// <returns>This instance for method chaining.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="flags"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException">Thrown if <paramref name="flags"/> is empty.</exception>
     public ClientFilterOptions WithFlags(IEnumerable<ClientFlag> flags)
     {
+        ArgumentNullException.ThrowIfNull(flags);
+
         SortedSet<ClientFlag> values = [.. flags];
         GuardClauses.ThrowIfEmpty(values, nameof(flags));
+
         _flags = values;
         return this;
     }
@@ -413,11 +425,15 @@ public class ClientFilterOptions
     /// <inheritdoc cref="NotFlags" />
     /// <remarks>Since Valkey 9.0.0.</remarks>
     /// <returns>This instance for method chaining.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="flags"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException">Thrown if <paramref name="flags"/> is empty.</exception>
     public ClientFilterOptions WithoutFlags(IEnumerable<ClientFlag> flags)
     {
+        ArgumentNullException.ThrowIfNull(flags);
+
         SortedSet<ClientFlag> values = [.. flags];
         GuardClauses.ThrowIfEmpty(values, nameof(flags));
+
         _notFlags = values;
         return this;
     }

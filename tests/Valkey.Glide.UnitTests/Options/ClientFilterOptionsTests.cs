@@ -187,6 +187,12 @@ public class ClientFilterOptionsTests
         _ = Assert.Throws<ArgumentOutOfRangeException>(() => options.WithMaxAge(TimeSpan.Zero));
         _ = Assert.Throws<ArgumentOutOfRangeException>(() => options.WithMaxAge(TimeSpan.FromSeconds(-1)));
 
+        // Null collections
+        _ = Assert.Throws<ArgumentNullException>(() => options.WithIds(null!));
+        _ = Assert.Throws<ArgumentNullException>(() => options.WithoutIds(null!));
+        _ = Assert.Throws<ArgumentNullException>(() => options.WithFlags((IEnumerable<ClientFlag>)null!));
+        _ = Assert.Throws<ArgumentNullException>(() => options.WithoutFlags((IEnumerable<ClientFlag>)null!));
+
         // Empty collections
         _ = Assert.Throws<ArgumentException>(() => options.WithIds([]));
         _ = Assert.Throws<ArgumentException>(() => options.WithoutIds([]));
