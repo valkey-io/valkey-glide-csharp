@@ -94,8 +94,8 @@ public sealed partial class GlideClusterClient :
             {
                 // 1. Copy each argument's bytes to unmanaged memory, and get a pointer
                 // to the array of argument pointers.
-                // Example: if args = ["MATCH", "key*"], then argPtrs[0] points
-                // to "MATCH", argPtrs[1] points to "key*", and argsPtr points
+                // Example: if args = ["MATCH", "key*"], then argsPtrs[0] points
+                // to "MATCH", argsPtrs[1] points to "key*", and argsPtr points
                 // to the argsPtrs array.
                 argsPtrs = new IntPtr[args.Length];
                 for (int i = 0; i < args.Length; i++)
