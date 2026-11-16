@@ -43,7 +43,9 @@ Developer tools:
 - [cargo-deny](https://github.com/EmbarkStudios/cargo-deny)
 - [lychee](https://github.com/lycheeverse/lychee)
 - [Node.js](https://nodejs.org/)
+- [pyflakes](https://pypi.org/project/pyflakes/)
 - [Python 3](https://www.python.org/)
+- [shellcheck](https://github.com/koalaman/shellcheck)
 - [uv](https://github.com/astral-sh/uv)
 
 ### macOS
@@ -51,7 +53,22 @@ Developer tools:
 ```bash
 # 1. Install Homebrew packages:
 brew update
-brew install actionlint cmake coreutils dotnet@8 dotnet@10 git go-task/tap/go-task lychee node openssl python uv valkey
+brew install \
+    actionlint \
+    cmake \
+    coreutils \
+    dotnet@8 \
+    dotnet@10 \
+    git \
+    go-task/tap/go-task \
+    lychee \
+    node \
+    openssl \
+    pyflakes \
+    python \
+    shellcheck \
+    uv \
+    valkey
 
 # 2. Install Rust:
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
@@ -67,16 +84,31 @@ cargo install --locked cargo-deny
 ```bash
 # 1. Install apt packages:
 sudo apt-get update -y
-sudo apt install -y cmake dotnet-sdk-8.0 dotnet-sdk-10.0 gcc git libssl-dev nodejs npm openssl pkg-config python3 valkey
+sudo apt install -y \
+    cmake \
+    dotnet-sdk-8.0 \
+    dotnet-sdk-10.0 \
+    gcc \
+    git \
+    libssl-dev \
+    nodejs \
+    npm \
+    openssl \
+    pkg-config \
+    python3 \
+    shellcheck \
+    valkey
 
 # 2. Install Rust:
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 source "$HOME/.cargo/env"
 cargo install --locked cargo-deny lychee
 
-# 3. Install uv:
+# 3. Install uv and packages:
 # See https://github.com/astral-sh/uv for other install methods.
 curl -LsSf https://astral.sh/uv/install.sh | sh
+source "$HOME/.local/bin/env"
+uv tool install pyflakes
 
 # 4. Install actionlint (x64):
 # See https://github.com/rhysd/actionlint/releases for other architectures.
@@ -107,15 +139,33 @@ cargo install --locked cargo-zigbuild
 
 ### Windows
 
-```bash
+```powershell
 # 1. Install Chocolatey packages:
-choco install actionlint cmake dotnet-8.0-sdk dotnet-10.0-sdk git go-task mingw nodejs openssl pkgconfiglite python uv
+choco install `
+    actionlint `
+    cmake `
+    dotnet-8.0-sdk `
+    dotnet-10.0-sdk `
+    git `
+    go-task `
+    mingw `
+    nodejs `
+    openssl `
+    pkgconfiglite `
+    python `
+    shellcheck
 
 # 2. Install Rust:
 # Install from https://rust-lang.org/tools/install/, then:
 cargo install --locked cargo-deny lychee
 
-# 3. Install protoc:
+# 3. Install uv and packages:
+choco install uv
+# Add the uv tool directory to PATH and open a new shell.
+uv tool update-shell
+uv tool install pyflakes
+
+# 4. Install protoc:
 # Download a binary from https://github.com/protocolbuffers/protobuf/releases/tag/v25.1 and put it on your PATH.
 ```
 
