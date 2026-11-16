@@ -38,11 +38,11 @@ public abstract class ConnectionConfiguration
     /// The resolver must be thread-safe and should avoid blocking operations, as it is
     /// called synchronously during the connection process.
     /// <para/>
-    /// If the resolver throws an exception, the client falls back to the original
-    /// (unresolved) address and logs the exception at <see cref="Level.Error"/>.
+    /// If the resolver throws an exception or returns an invalid value, the client falls back
+    /// to the original (unresolved) address and logs the exception at <see cref="Level.Error"/>.
     /// <para/>
-    /// The resolver is invoked once per address at initial connection time. It is not
-    /// invoked on subsequent reconnection attempts.
+    /// The resolver is invoked for each configured address during connection establishment
+    /// and during cluster topology refreshes.
     /// </remarks>
     public delegate (string host, ushort port) AddressResolverDelegate(string host, ushort port);
 
@@ -649,7 +649,8 @@ public abstract class ConnectionConfiguration
 
         /// <summary>
         /// Optional callback for resolving server addresses before connection.
-        /// When set, the callback is invoked for each server address and can return a different host/port.
+        /// When set, the callback is invoked for each configured address during connection establishment
+        /// and during cluster topology refreshes, and can return a different host/port.
         /// </summary>
         /// <seealso cref="AddressResolverDelegate"/>
         public AddressResolverDelegate? AddressResolver
