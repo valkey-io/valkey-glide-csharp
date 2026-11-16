@@ -43,14 +43,23 @@ public sealed class MonitorClient : IAsyncDisposable, IDisposable
     private readonly MonitorMessageCallback _callbackDelegate;
 
     #endregion
-    #region Constructors
+    #region Constructors & Finalizer
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MonitorClient"/> class.
+    /// </summary>
+    /// <param name="clientPtr">Pointer to the native monitor client.</param>
     private MonitorClient(IntPtr clientPtr)
     {
         _clientPtr = clientPtr;
         _channel = Channel.CreateUnbounded<MonitorMessage>(new UnboundedChannelOptions { SingleWriter = true });
         _callbackDelegate = OnMonitorMessage;
     }
+
+    /// <summary>
+    /// Closes the monitor client.
+    /// </summary>
+    ~MonitorClient() => Dispose();
 
     #endregion
     #region Public Methods
