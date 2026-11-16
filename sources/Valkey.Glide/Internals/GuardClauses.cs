@@ -60,6 +60,21 @@ internal static class GuardClauses
         ThrowIfCertificateLengthNotSupported(new FileInfo(path).Length, paramName);
     }
 
+    /// <summary>
+    /// Throws an <see cref="ArgumentException"/> if the collection is empty.
+    /// </summary>
+    /// <typeparam name="T">The type of the collection elements.</typeparam>
+    /// <param name="values">The collection to validate.</param>
+    /// <param name="paramName">The parameter name for the exception.</param>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="values"/> is empty.</exception>
+    internal static void ThrowIfEmpty<T>(IReadOnlyCollection<T> values, string paramName)
+    {
+        if (values.Count == 0)
+        {
+            throw new ArgumentException("Collection must not be empty.", paramName);
+        }
+    }
+
     #endregion
     #region Private Methods
 
