@@ -31,18 +31,18 @@ public abstract class ConnectionConfiguration
     /// <summary>
     /// A callback for resolving server addresses before connection.
     /// </summary>
-    /// <param name="host">The configured host name or IP address.</param>
-    /// <param name="port">The configured port number.</param>
+    /// <param name="host">The host name or IP address to connect to.</param>
+    /// <param name="port">The port number to connect to.</param>
     /// <returns>The resolved (host, port) to use for the actual connection.</returns>
     /// <remarks>
     /// The resolver must be thread-safe and should avoid blocking operations, as it is
     /// called synchronously during the connection process.
     /// <para/>
     /// If the resolver throws an exception or returns an invalid value, the client falls back
-    /// to the original (unresolved) address and logs the exception at <see cref="Level.Error"/>.
+    /// to the original (unresolved) address and logs an error at <see cref="Level.Error"/>.
     /// <para/>
-    /// The resolver is invoked for each configured address during connection establishment
-    /// and during cluster topology refreshes.
+    /// The resolver is invoked for every node address the client connects to, including configured
+    /// addresses, nodes discovered during topology refreshes, and redirect targets.
     /// </remarks>
     public delegate (string host, ushort port) AddressResolverDelegate(string host, ushort port);
 
@@ -649,8 +649,9 @@ public abstract class ConnectionConfiguration
 
         /// <summary>
         /// Optional callback for resolving server addresses before connection.
-        /// When set, the callback is invoked for each configured address during connection establishment
-        /// and during cluster topology refreshes, and can return a different host/port.
+        /// When set, the callback is invoked for every node address the client connects to, including
+        /// configured addresses, nodes discovered during topology refreshes, and redirect targets,
+        /// and can return a different host/port.
         /// </summary>
         /// <seealso cref="AddressResolverDelegate"/>
         public AddressResolverDelegate? AddressResolver
