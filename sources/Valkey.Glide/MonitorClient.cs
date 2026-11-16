@@ -98,10 +98,8 @@ public sealed class MonitorClient : IAsyncDisposable, IDisposable
 
                 if (response.ConnPtr == IntPtr.Zero)
                 {
-                    string errorMessage = response.ConnectionErrorMessage != IntPtr.Zero
-                        ? Marshal.PtrToStringAnsi(response.ConnectionErrorMessage) ?? "Unknown error"
-                        : "Failed to create monitor client";
-                    throw new ConnectionException(errorMessage);
+                    var errorMsg = Marshal.PtrToStringUTF8(response.ConnectionErrorMessage) ?? "Failed to create monitor client";
+                    throw new ConnectionException(errorMsg);
                 }
 
                 client._clientPtr = response.ConnPtr;

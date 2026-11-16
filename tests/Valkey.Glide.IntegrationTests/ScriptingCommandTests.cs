@@ -58,11 +58,15 @@ public class ScriptingCommandTests(TestConfiguration config)
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task ScriptInvokeAsync_ScriptError_ThrowsException(BaseClient client)
     {
-        // Test script execution error
-        using var script = new Script("return redis.call('INVALID_COMMAND')");
+        // Include non-ASCII characters to verify that error messages are decoded as UTF-8.
+        // The client reports the "ERR" code separately, so only the text follows it in the message.
+        var errorMsg = "pässwörd-日本";
+        using var script = new Script($"return redis.error_reply('ERR {errorMsg}')");
 
-        _ = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
+        var ex = await Assert.ThrowsAsync<Errors.RequestException>(async () =>
             await client.ScriptInvokeAsync(script, CancellationToken));
+
+        Assert.Contains(errorMsg, ex.Message);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
