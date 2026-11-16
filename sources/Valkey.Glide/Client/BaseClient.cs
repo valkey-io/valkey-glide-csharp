@@ -268,7 +268,7 @@ public abstract partial class BaseClient : IBaseClient
         }
 
         Message message = MessageContainer.GetMessageForCall();
-        IntPtr passwordPtr = Marshal.StringToHGlobalAnsi(password);
+        IntPtr passwordPtr = Marshal.StringToCoTaskMemUTF8(password);
         try
         {
             UpdateConnectionPasswordFfi(ClientPointer, (ulong)message.Index, passwordPtr, immediateAuth);
@@ -284,7 +284,7 @@ public abstract partial class BaseClient : IBaseClient
         }
         finally
         {
-            Marshal.FreeHGlobal(passwordPtr);
+            Marshal.ZeroFreeCoTaskMemUTF8(passwordPtr);
         }
     }
 

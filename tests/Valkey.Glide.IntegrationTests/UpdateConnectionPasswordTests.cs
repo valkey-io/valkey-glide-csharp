@@ -14,7 +14,8 @@ public class UpdateConnectionPasswordTests(ServerFixture fixture) : IClassFixtur
 {
     #region Constants
 
-    private const string Password = "PASSWORD";
+    // Includes non-ASCII characters to verify that passwords are encoded as UTF-8.
+    private const string Password = "pässwörd-日本";
 
     #endregion
     #region Tests
