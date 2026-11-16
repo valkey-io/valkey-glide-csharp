@@ -8,8 +8,9 @@ use std::{
 
 use glide_core::{
     client::{
-        AuthenticationInfo as CoreAuthenticationInfo, ConnectionRequest, ConnectionRetryStrategy,
-        NodeAddress, ReadFrom as coreReadFrom, TlsMode,
+        AuthenticationInfo as CoreAuthenticationInfo, ConnectionRequest,
+        ConnectionRetryStrategy as CoreConnectionRetryStrategy, NodeAddress,
+        ReadFrom as coreReadFrom, TlsMode,
     },
     request_type::RequestType,
 };
@@ -355,9 +356,17 @@ pub(crate) unsafe fn create_connection_request(
         connection_timeout: config
             .has_connection_timeout
             .then_some(config.connection_timeout),
-        connection_retry_strategy: config
-            .has_connection_retry_strategy
-            .then_some(config.connection_retry_strategy),
+        connection_retry_strategy: config.has_connection_retry_strategy.then(|| {
+            let strategy = config.connection_retry_strategy;
+            CoreConnectionRetryStrategy {
+                exponent_base: strategy.exponent_base,
+                factor: strategy.factor,
+                number_of_retries: strategy.number_of_retries,
+                jitter_percent: strategy
+                    .has_jitter_percent
+                    .then_some(strategy.jitter_percent),
+            }
+        }),
         lazy_connect: config.lazy_connect,
         refresh_topology_from_initial_nodes: config.refresh_topology_from_initial_nodes,
         pubsub_subscriptions: Some(unsafe { convert_pubsub_config(&config.pubsub_config) }),
@@ -519,6 +528,17 @@ unsafe fn convert_node_addresses(
 pub struct ReadFrom {
     pub strategy: ReadFromStrategy,
     pub az: *const c_char,
+}
+
+/// A mirror of [`CoreConnectionRetryStrategy`] adopted for FFI.
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct ConnectionRetryStrategy {
+    pub exponent_base: u32,
+    pub factor: u32,
+    pub number_of_retries: u32,
+    pub has_jitter_percent: bool,
+    pub jitter_percent: u32,
 }
 
 /// A mirror of [`AuthenticationInfo`] adopted for FFI.

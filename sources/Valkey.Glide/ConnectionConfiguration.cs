@@ -139,11 +139,9 @@ public abstract class ConnectionConfiguration
     public struct RetryStrategy(uint numberOfRetries, uint factor, uint exponentBase, uint? jitterPercent = null)
     {
         /// <summary>
-        /// Number of retry attempts that the client should perform when disconnected from the server,
-        /// where the time between retries increases. Once the retries have reached the maximum value, the
-        /// time between retries will remain constant until a reconnect attempt is successful.
+        /// The exponent base configured for the strategy.
         /// </summary>
-        public uint NumberOfRetries = numberOfRetries;
+        public uint ExponentBase = exponentBase;
 
         /// <summary>
         /// The multiplier that will be applied to the waiting time between each retry.
@@ -151,9 +149,11 @@ public abstract class ConnectionConfiguration
         public uint Factor = factor;
 
         /// <summary>
-        /// The exponent base configured for the strategy.
+        /// Number of retry attempts that the client should perform when disconnected from the server,
+        /// where the time between retries increases. Once the retries have reached the maximum value, the
+        /// time between retries will remain constant until a reconnect attempt is successful.
         /// </summary>
-        public uint ExponentBase = exponentBase;
+        public uint NumberOfRetries = numberOfRetries;
 
         // TODO #246: Remove this suppression once RetryStrategy is separated from its FFI struct.
 #pragma warning disable SA1202 // Field order must match the native layout

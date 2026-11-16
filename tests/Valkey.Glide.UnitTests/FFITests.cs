@@ -35,6 +35,33 @@ public class FFITests
         Assert.Equal(0, withoutInterval[20]);
     }
 
+    [Fact]
+    public void RetryStrategy_MatchesRustLayout()
+    {
+        // Rust `ConnectionRetryStrategy` struct in `rust/src/ffi.rs`:
+        // - exponent_base: u32 (0)
+        // - factor: u32 (4)
+        // - number_of_retries: u32 (8)
+        // - has_jitter_percent: bool (12)
+        // - jitter_percent: u32 (16)
+
+        // With jitter.
+        var withJitter = ToBytes(new ConnectionConfiguration.RetryStrategy(numberOfRetries: 7, factor: 100, exponentBase: 2, jitterPercent: 20));
+
+        Assert.Equal(20, withJitter.Length);
+        Assert.Equal(2u, BitConverter.ToUInt32(withJitter, 0));
+        Assert.Equal(100u, BitConverter.ToUInt32(withJitter, 4));
+        Assert.Equal(7u, BitConverter.ToUInt32(withJitter, 8));
+        Assert.Equal(1, withJitter[12]);
+        Assert.Equal(20u, BitConverter.ToUInt32(withJitter, 16));
+
+        // Without jitter.
+        var withoutJitter = ToBytes(new ConnectionConfiguration.RetryStrategy(numberOfRetries: 7, factor: 100, exponentBase: 2));
+
+        Assert.Equal(20, withoutJitter.Length);
+        Assert.Equal(0, withoutJitter[12]);
+    }
+
     #endregion
     #region Helpers
 
