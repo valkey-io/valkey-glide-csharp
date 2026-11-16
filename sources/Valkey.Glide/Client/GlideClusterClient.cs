@@ -79,12 +79,12 @@ public sealed partial class GlideClusterClient :
     /// <param name="cursor">The cursor for the scan iteration.</param>
     /// <param name="args">Additional arguments for the scan command.</param>
     /// <returns>A tuple containing the next cursor and the keys found in this iteration.</returns>
-    private async Task<(ClusterScanCursor cursor, ValkeyKey[] keys)> ClusterScanCommand(ClusterScanCursor cursor, string[] args)
+    private async Task<(ClusterScanCursor cursor, ValkeyKey[] keys)> ClusterScanCommand(ClusterScanCursor cursor, GlideString[] args)
     {
         var message = MessageContainer.GetMessageForCall();
-        IntPtr cursorPtr = Marshal.StringToHGlobalAnsi(cursor.CursorId);
+        IntPtr cursorPtr = Marshal.StringToCoTaskMemUTF8(cursor.CursorId);
 
-        IntPtr[]? argPtrs = null;
+        IntPtr[]? argsPtrs = null;
         IntPtr argsPtr = IntPtr.Zero;
         IntPtr argLengthsPtr = IntPtr.Zero;
 
@@ -92,21 +92,29 @@ public sealed partial class GlideClusterClient :
         {
             if (args.Length > 0)
             {
-                // 1. Get a pointer to the array of argument string pointers.
+                // 1. Copy each argument's bytes to unmanaged memory, and get a pointer
+                // to the array of argument pointers.
                 // Example: if args = ["MATCH", "key*"], then argPtrs[0] points
                 // to "MATCH", argPtrs[1] points to "key*", and argsPtr points
                 // to the argsPtrs array.
-                argPtrs = [.. args.Select(Marshal.StringToHGlobalAnsi)];
-                argsPtr = Marshal.AllocHGlobal(IntPtr.Size * args.Length);
-                Marshal.Copy(argPtrs, 0, argsPtr, args.Length);
+                argsPtrs = new IntPtr[args.Length];
+                for (int i = 0; i < args.Length; i++)
+                {
+                    byte[] bytes = args[i].Bytes;
+                    argsPtrs[i] = Marshal.AllocHGlobal(bytes.Length);
+                    Marshal.Copy(bytes, 0, argsPtrs[i], bytes.Length);
+                }
 
-                // 2. Get a pointer to an array of argument string lengths.
+                argsPtr = Marshal.AllocHGlobal(IntPtr.Size * args.Length);
+                Marshal.Copy(argsPtrs, 0, argsPtr, args.Length);
+
+                // 2. Get a pointer to an array of argument byte lengths.
                 // Example: if args = ["MATCH", "key*"], then argLengths[0] = 5
                 // (length of "MATCH"), argLengths[1] = 4 (length of "key*"),
                 // and argLengthsPtr points to the argLengths array.
-                var argLengths = args.Select(arg => (ulong)arg.Length).ToArray();
+                long[] argLengths = [.. args.Select(arg => (long)arg.Bytes.Length)];
                 argLengthsPtr = Marshal.AllocHGlobal(sizeof(ulong) * args.Length);
-                Marshal.Copy(argLengths.Select(l => (long)l).ToArray(), 0, argLengthsPtr, args.Length);
+                Marshal.Copy(argLengths, 0, argLengthsPtr, args.Length);
             }
 
             // Submit request to Rust and wait for response.
@@ -139,14 +147,14 @@ public sealed partial class GlideClusterClient :
                 Marshal.FreeHGlobal(argsPtr);
             }
 
-            if (argPtrs != null)
+            if (argsPtrs != null)
             {
-                Array.ForEach(argPtrs, Marshal.FreeHGlobal);
+                Array.ForEach(argsPtrs, Marshal.FreeHGlobal);
             }
 
             // Clean up cursor in Rust
             RemoveClusterScanCursorFfi(cursorPtr);
-            Marshal.FreeHGlobal(cursorPtr);
+            Marshal.FreeCoTaskMem(cursorPtr);
         }
     }
 }
