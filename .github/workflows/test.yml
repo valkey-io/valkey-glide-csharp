@@ -106,7 +106,7 @@ jobs:
                   echo "Package version: $PACKAGE_VERSION"
 
             - name: Set up dotnet ${{ matrix.dotnet }}
-              uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+              uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
               with:
                   # .NET 10 SDK to build project
                   # matrix.dotnet SDK for test execution
@@ -239,7 +239,7 @@ jobs:
                   echo "Package version: $PACKAGE_VERSION"
 
             - name: Set up dotnet ${{ matrix.dotnet }}
-              uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+              uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
               with:
                   # .NET 10 SDK to build project
                   # matrix.dotnet SDK for test execution
@@ -290,7 +290,7 @@ jobs:
                   submodules: true
 
             - name: Set up dotnet ${{ matrix.dotnet }}
-              uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+              uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
               with:
                   # .NET 10 SDK to build project
                   # matrix.dotnet SDK for test execution
