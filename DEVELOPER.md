@@ -107,6 +107,7 @@ cargo install --locked cargo-deny lychee
 # 3. Install uv and packages:
 # See https://github.com/astral-sh/uv for other install methods.
 curl -LsSf https://astral.sh/uv/install.sh | sh
+source "$HOME/.local/bin/env"
 uv tool install pyflakes
 
 # 4. Install actionlint (x64):
