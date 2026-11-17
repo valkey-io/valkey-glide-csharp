@@ -99,7 +99,7 @@ public class MonitorClientTests(StandaloneClientFixture fixture) : IClassFixture
     [Fact]
     public async Task Finalizer_ClosesUndisposedClient()
     {
-        var monitorRef = new Task<WeakReference>(await BuildMonitorClientAsync());
+        var monitorRef = await BuildMonitorClientWeakReferenceAsync();
         await PollMonitorConnectionAsync(expected: true);
 
         // Collect the undisposed client and run its finalizer.
@@ -130,6 +130,9 @@ public class MonitorClientTests(StandaloneClientFixture fixture) : IClassFixture
     #endregion
     #region Helpers
 
+    /// <summary>
+    /// Builds and returns a new monitor client.
+    /// </summary>
     private async Task<MonitorClient> BuildMonitorClientAsync()
     {
         var addr = fixture.Server.Address;
@@ -138,21 +141,35 @@ public class MonitorClientTests(StandaloneClientFixture fixture) : IClassFixture
     }
 
     /// <summary>
+    /// Builds a new monitor client and returns a weak reference to it.
+    /// </summary>
+    private async Task<WeakReference> BuildMonitorClientWeakReferenceAsync()
+        => new(await BuildMonitorClientAsync());
+
+    /// <summary>
+    /// Returns the <c>CLIENT LIST</c> fields of the MONITOR connection (flag <c>O</c>),
+    /// or <see langword="null"/> if there is none.
+    /// </summary>
+    private async Task<Dictionary<string, string>?> GetMonitorConnectionAsync()
+    {
+        GlideString[] clientListCommand = ["CLIENT", "LIST"];
+        object? result = await Client.CustomCommand(clientListCommand);
+        return result!.ToString()!
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries)
+            .Select(line => line.Split(' ')
+                .Select(field => field.Split('=', 2))
+                .Where(pair => pair.Length == 2)
+                .ToDictionary(pair => pair[0], pair => pair[1]))
+            .FirstOrDefault(fields => fields.TryGetValue("flags", out string? flags) && flags.Contains('O'));
+    }
+
+    /// <summary>
     /// Polls <c>CLIENT LIST</c> (via a normal client) until a MONITOR connection (flag <c>O</c>)
     /// is present or absent, as given by <paramref name="expected"/>.
     /// </summary>
     private async Task PollMonitorConnectionAsync(bool expected)
         => await Polling.WaitForAsync(
-            async () =>
-            {
-                GlideString[] clientListCommand = ["CLIENT", "LIST"];
-                object? result = await Client.CustomCommand(clientListCommand);
-                bool found = result!.ToString()!
-                    .Split('\n', StringSplitOptions.RemoveEmptyEntries)
-                    .SelectMany(line => line.Split(' '))
-                    .Any(f => f.StartsWith("flags=", StringComparison.Ordinal) && f["flags=".Length..].Contains('O'));
-                return found == expected;
-            },
+            async () => (await GetMonitorConnectionAsync() is not null) == expected,
             expected
                 ? "MONITOR connection did not appear in CLIENT LIST in time."
                 : "MONITOR connection was not closed in time.");
@@ -167,23 +184,14 @@ public class MonitorClientTests(StandaloneClientFixture fixture) : IClassFixture
         await Polling.WaitForAsync(
             async () =>
             {
-                GlideString[] clientListCommand = ["CLIENT", "LIST"];
-                object? result = await Client.CustomCommand(clientListCommand);
-                foreach (string line in result!.ToString()!.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+                Dictionary<string, string>? connection = await GetMonitorConnectionAsync();
+                if (connection is null)
                 {
-                    string[] fields = line.Split(' ');
-                    string? flags = fields.FirstOrDefault(f => f.StartsWith("flags=", StringComparison.Ordinal));
-                    if (flags is null || !flags["flags=".Length..].Contains('O'))
-                    {
-                        continue;
-                    }
-
-                    string? found = fields.FirstOrDefault(f => f.StartsWith("lib-name=", StringComparison.Ordinal));
-                    libName = found?["lib-name=".Length..];
-                    return true;
+                    return false;
                 }
 
-                return false;
+                libName = connection.GetValueOrDefault("lib-name");
+                return true;
             },
             "MONITOR connection did not appear in CLIENT LIST in time.");
 
