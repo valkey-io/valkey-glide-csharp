@@ -13,6 +13,7 @@ internal static partial class Request
         List<GlideString> cmdArgs = [script];
 
         int numKeys = keys?.Length ?? 0;
+        // TODO #651: Use invariant culture.
         cmdArgs.Add(numKeys.ToString());
 
         AddKeysAndArgs(cmdArgs, keys, args);
@@ -25,6 +26,7 @@ internal static partial class Request
         List<GlideString> cmdArgs = [hash];
 
         int numKeys = keys?.Length ?? 0;
+        // TODO #651: Use invariant culture.
         cmdArgs.Add(numKeys.ToString());
 
         AddKeysAndArgs(cmdArgs, keys, args);
@@ -37,6 +39,7 @@ internal static partial class Request
         List<GlideString> cmdArgs = [function];
 
         int numKeys = keys?.Length ?? 0;
+        // TODO #651: Use invariant culture.
         cmdArgs.Add(numKeys.ToString());
 
         AddKeysAndArgs(cmdArgs, keys, args);
@@ -49,6 +52,7 @@ internal static partial class Request
         List<GlideString> cmdArgs = [function];
 
         int numKeys = keys?.Length ?? 0;
+        // TODO #651: Use invariant culture.
         cmdArgs.Add(numKeys.ToString());
 
         AddKeysAndArgs(cmdArgs, keys, args);
@@ -144,6 +148,7 @@ internal static partial class Request
     public static Cmd<object[], bool[]> ScriptExists(string[] sha1Hashes)
     {
         var cmdArgs = sha1Hashes.Select(h => (GlideString)h).ToArray();
+        // TODO #651: Use invariant culture.
         return new(RequestType.ScriptExists, cmdArgs, false, arr => [.. arr.Select(o => Convert.ToInt64(o) == 1)]);
     }
 
@@ -404,9 +409,11 @@ internal static partial class Request
         switch (engineKey)
         {
             case "libraries_count":
+                // TODO #651: Use invariant culture.
                 libraryCount = Convert.ToInt64(engineValue);
                 break;
             case "functions_count":
+                // TODO #651: Use invariant culture.
                 functionCount = Convert.ToInt64(engineValue);
                 break;
             default:
@@ -473,6 +480,7 @@ internal static partial class Request
                 args.AddRange(cmdArray.Skip(1).Select(a => ((GlideString)a).ToString()));
                 break;
             case "duration_ms":
+                // TODO #651: Use invariant culture.
                 durationMs = Convert.ToInt64(scriptValue);
                 break;
             default:

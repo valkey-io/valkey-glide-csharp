@@ -12,7 +12,7 @@ public readonly struct StreamPendingEntry
 
     internal StreamPendingEntry(
         ValkeyValue entryId,
-        string consumer,
+        ValkeyValue consumer,
         DateTimeOffset deliveryTime,
         int deliveryCount)
     {
@@ -36,7 +36,7 @@ public readonly struct StreamPendingEntry
     /// <remarks>
     /// For a consumer's PEL the name is not carried on the wire and is taken from the owning consumer.
     /// </remarks>
-    public string Consumer { get; }
+    public ValkeyValue Consumer { get; }
 
     /// <summary>
     /// The time the entry was last delivered to a consumer.

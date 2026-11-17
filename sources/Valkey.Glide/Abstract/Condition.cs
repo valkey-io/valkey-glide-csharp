@@ -461,7 +461,9 @@ public abstract class Condition
         internal override List<ICmd> CreateCommands()
             => [
                 Request.Watch([key]),
-                Request.CustomCommand([cmd.ToString(), key, expectedValue]),
+                Request.CustomCommand(expectedValue.IsNull
+                    ? [cmd.ToString(), key]
+                    : [cmd.ToString(), key, expectedValue]),
             ];
 
         protected override bool ValidateImpl(object? result)
@@ -547,6 +549,7 @@ public abstract class Condition
         public override string ToString()
             => ((string?)key)
                 + "["
+                // TODO #651: Use invariant culture.
                 + index.ToString()
                 + "]"
                 + (expectedValue.HasValue ? (expectedResult ? " == " : " != ")

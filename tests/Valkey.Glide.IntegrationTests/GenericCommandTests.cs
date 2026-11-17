@@ -144,6 +144,10 @@ public class GenericCommandTests(TestConfiguration config)
 
         ttl = await client.TimeToLiveAsync(key);
         Assert.True(ttl.TimeToLive!.Value.TotalMilliseconds > 10000);
+
+        // Test with negative time span (should delete key)
+        Assert.True(await client.ExpireAsync(key, TimeSpan.FromSeconds(-5)));
+        Assert.False(await client.ExistsAsync(key));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]

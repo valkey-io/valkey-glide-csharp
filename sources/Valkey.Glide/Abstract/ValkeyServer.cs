@@ -45,7 +45,7 @@ internal partial class ValkeyServer(Database conn, EndPoint endpoint) : IServer
     public async Task<ValkeyResult> ExecuteAsync(string command, ICollection<object> args, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        object? res = await _conn.Command(Request.CustomCommand([command, .. args?.Select(static a => a.ToString()!) ?? []]), MakeRoute());
+        var res = await _conn.Command(Request.CustomCommand(Database.ToExecuteArgs(command, args)), MakeRoute());
         return ValkeyResult.Create(res);
     }
 
@@ -251,12 +251,14 @@ internal partial class ValkeyServer(Database conn, EndPoint endpoint) : IServer
     public async Task SaveAsync(SaveType type, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        _ = type switch
+        Task command = type switch
         {
-            SaveType.BackgroundSave => await _conn.Command(Request.BackgroundSave(), MakeRoute()),
-            SaveType.BackgroundRewriteAppendOnlyFile => await _conn.Command(Request.BgRewriteAof(), MakeRoute()),
+            SaveType.BackgroundSave => _conn.Command(Request.BackgroundSave(), MakeRoute()),
+            SaveType.BackgroundRewriteAppendOnlyFile => _conn.Command(Request.BgRewriteAof(), MakeRoute()),
+            SaveType.ForegroundSave => _conn.Command(Request.Save(), MakeRoute()),
             _ => throw new ArgumentOutOfRangeException(nameof(type), type, $"Unknown SaveType value '{type}'."),
         };
+        await command;
     }
 
     /// <inheritdoc/>
@@ -363,6 +365,7 @@ internal partial class ValkeyServer(Database conn, EndPoint endpoint) : IServer
         ArgumentOutOfRangeException.ThrowIfLessThan(pageSize, 0, nameof(pageSize));
 
         var options = new ScanOptions { MatchPattern = pattern, Count = pageSize };
+        // TODO #651: Use invariant culture.
         return ScanAsync(cursor.ToString(), options).SkipAsync(pageOffset);
     }
 

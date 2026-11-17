@@ -42,7 +42,10 @@ public abstract partial class BaseClient
             throw new ArgumentNullException(nameof(options));
         }
 
-        return await ScriptInvokeInternalAsync(script.Hash, options.Keys, options.Args);
+        return await ScriptInvokeInternalAsync(
+            script.Hash,
+            options.Keys?.ToGlideStrings(),
+            options.Args?.ToGlideStrings());
     }
 
     /// <inheritdoc cref="IBaseClient.ScriptExistsAsync(string, CancellationToken)"/>
@@ -174,12 +177,11 @@ public abstract partial class BaseClient
         // Script constructor will validate the script parameter
         using Script scriptObj = new(script);
 
-        // Convert keys and values to string arrays
-        string[]? keyStrings = keys?.Select(k => k.ToString()).ToArray();
-        string[]? valueStrings = values?.Select(v => v.ToString()).ToArray();
-
         // Use ScriptInvokeInternalAsync for automatic EVALSHA→EVAL optimization
-        return await ScriptInvokeInternalAsync(scriptObj.Hash, keyStrings, valueStrings);
+        return await ScriptInvokeInternalAsync(
+            scriptObj.Hash,
+            keys?.ToGlideStrings(),
+            values?.ToGlideStrings());
     }
 
     /// <inheritdoc cref="IScriptingAndFunctionBaseCommands.ScriptEvaluateAsync(byte[], IEnumerable{ValkeyKey}, IEnumerable{ValkeyValue})"/>
@@ -191,12 +193,11 @@ public abstract partial class BaseClient
         // Convert hash to hex string (lowercase)
         string hashString = BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
 
-        // Convert keys and values to string arrays
-        string[]? keyStrings = keys?.Select(k => k.ToString()).ToArray();
-        string[]? valueStrings = values?.Select(v => v.ToString()).ToArray();
-
         // Use ScriptInvokeInternalAsync (will use EVALSHA directly, no fallback since we don't have source)
-        return await ScriptInvokeInternalAsync(hashString, keyStrings, valueStrings);
+        return await ScriptInvokeInternalAsync(
+            hashString,
+            keys?.ToGlideStrings(),
+            values?.ToGlideStrings());
     }
 
     /// <inheritdoc cref="IScriptingAndFunctionBaseCommands.ScriptEvaluateAsync(LuaScript, object)"/>
@@ -215,14 +216,14 @@ public abstract partial class BaseClient
         // Extract parameters from the object
         (ValkeyKey[] keys, ValkeyValue[] args) = script.ExtractParametersInternal(parameters, null);
 
-        // Convert to string arrays
-        string[]? keyStrings = keys.Length > 0 ? [.. keys.Select(k => k.ToString())] : null;
-        string[]? valueStrings = args.Length > 0 ? [.. args.Select(v => v.ToString())] : null;
-
         // Create a Script object from the executable script and use ScriptInvoke
         // This will automatically load the script if needed (EVALSHA with fallback to EVAL)
         using Script scriptObj = new(executableScript);
-        return await ScriptInvokeInternalAsync(scriptObj.Hash, keyStrings, valueStrings);
+
+        return await ScriptInvokeInternalAsync(
+            scriptObj.Hash,
+            keys.ToGlideStrings(),
+            args.ToGlideStrings());
     }
 
     /// <inheritdoc cref="IScriptingAndFunctionBaseCommands.ScriptEvaluateAsync(LoadedLuaScript, object)"/>
@@ -236,17 +237,16 @@ public abstract partial class BaseClient
         // Extract parameters from the object using the internal LuaScript
         (ValkeyKey[] keys, ValkeyValue[] args) = script.Script.ExtractParametersInternal(parameters, null);
 
-        // Convert to string arrays
-        string[]? keyStrings = keys.Length > 0 ? [.. keys.Select(k => k.ToString())] : null;
-        string[]? valueStrings = args.Length > 0 ? [.. args.Select(v => v.ToString())] : null;
-
         // Convert the hash from byte[] to hex string
         // The hash in LoadedLuaScript is the hash of the script that was actually loaded on the server
         string hashString = BitConverter.ToString(script.Hash).Replace("-", "").ToLowerInvariant();
 
         // Use ScriptInvokeInternalAsync with the hash from LoadedLuaScript
         // The script was already loaded on the server, so EVALSHA will work
-        return await ScriptInvokeInternalAsync(hashString, keyStrings, valueStrings);
+        return await ScriptInvokeInternalAsync(
+            hashString,
+            keys.ToGlideStrings(),
+            args.ToGlideStrings());
     }
 
     /// <inheritdoc cref="IScriptingAndFunctionBaseCommands.ScriptEvaluateAsync(string, IEnumerable{ValkeyKey}, IEnumerable{ValkeyValue})"/>
@@ -275,45 +275,45 @@ public abstract partial class BaseClient
     #region Private Methods
 
     /// <summary>
-    /// Prepares string array for FFI by allocating unmanaged memory and marshalling data.
+    /// Prepares an argument array for FFI by allocating unmanaged memory and copying each argument's bytes.
     /// </summary>
-    /// <param name="items">Array of strings to prepare.</param>
-    /// <param name="itemPtrs">Output array of pointers to individual string data.</param>
-    /// <param name="itemsPtr">Output pointer to array of string pointers.</param>
-    /// <param name="itemsLenPtr">Output pointer to array of string lengths.</param>
+    /// <param name="args">Array of arguments to prepare.</param>
+    /// <param name="argPtrs">Output array of pointers to individual argument data.</param>
+    /// <param name="argsPtr">Output pointer to array of argument pointers.</param>
+    /// <param name="argsLenPtr">Output pointer to array of argument lengths.</param>
     /// <returns>Count of items prepared.</returns>
-    private static ulong PrepareStringArrayForFFI(
-        string[]? items,
-        out IntPtr[]? itemPtrs,
-        out IntPtr itemsPtr,
-        out IntPtr itemsLenPtr)
+    private static ulong PrepareArgsForFFI(
+        GlideString[]? args,
+        out IntPtr[]? argPtrs,
+        out IntPtr argsPtr,
+        out IntPtr argsLenPtr)
     {
-        itemPtrs = null;
-        itemsPtr = IntPtr.Zero;
-        itemsLenPtr = IntPtr.Zero;
+        argPtrs = null;
+        argsPtr = IntPtr.Zero;
+        argsLenPtr = IntPtr.Zero;
 
-        if (items == null || items.Length == 0)
+        if (args == null || args.Length == 0)
         {
             return 0;
         }
 
-        ulong count = (ulong)items.Length;
-        itemPtrs = new IntPtr[items.Length];
-        ulong[] itemLens = new ulong[items.Length];
+        ulong count = (ulong)args.Length;
+        argPtrs = new IntPtr[args.Length];
+        ulong[] itemLens = new ulong[args.Length];
 
-        for (int i = 0; i < items.Length; i++)
+        for (int i = 0; i < args.Length; i++)
         {
-            byte[] itemBytes = System.Text.Encoding.UTF8.GetBytes(items[i]);
-            itemPtrs[i] = Marshal.AllocHGlobal(itemBytes.Length);
-            Marshal.Copy(itemBytes, 0, itemPtrs[i], itemBytes.Length);
+            byte[] itemBytes = args[i].Bytes;
+            argPtrs[i] = Marshal.AllocHGlobal(itemBytes.Length);
+            Marshal.Copy(itemBytes, 0, argPtrs[i], itemBytes.Length);
             itemLens[i] = (ulong)itemBytes.Length;
         }
 
-        itemsPtr = Marshal.AllocHGlobal(IntPtr.Size * items.Length);
-        Marshal.Copy(itemPtrs, 0, itemsPtr, items.Length);
+        argsPtr = Marshal.AllocHGlobal(IntPtr.Size * args.Length);
+        Marshal.Copy(argPtrs, 0, argsPtr, args.Length);
 
-        itemsLenPtr = Marshal.AllocHGlobal(sizeof(ulong) * items.Length);
-        Marshal.Copy(itemLens.Select(l => (long)l).ToArray(), 0, itemsLenPtr, items.Length);
+        argsLenPtr = Marshal.AllocHGlobal(sizeof(ulong) * args.Length);
+        Marshal.Copy(itemLens.Select(l => (long)l).ToArray(), 0, argsLenPtr, args.Length);
 
         return count;
     }
@@ -392,8 +392,8 @@ public abstract partial class BaseClient
 
     private async Task<ValkeyResult> ScriptInvokeInternalAsync(
         string hash,
-        string[]? keys,
-        string[]? args,
+        GlideString[]? keys,
+        GlideString[]? args,
         Route? route = null)
     {
         // Convert hash to C string
@@ -410,10 +410,10 @@ public abstract partial class BaseClient
         try
         {
             // Prepare keys
-            ulong keysCount = PrepareStringArrayForFFI(keys, out keyPtrs, out keysPtr, out keysLenPtr);
+            ulong keysCount = PrepareArgsForFFI(keys, out keyPtrs, out keysPtr, out keysLenPtr);
 
             // Prepare args
-            ulong argsCount = PrepareStringArrayForFFI(args, out argPtrs, out argsPtr, out argsLenPtr);
+            ulong argsCount = PrepareArgsForFFI(args, out argPtrs, out argsPtr, out argsLenPtr);
 
             // Prepare route
             using FFI.Route? ffiRoute = route?.ToFfi();

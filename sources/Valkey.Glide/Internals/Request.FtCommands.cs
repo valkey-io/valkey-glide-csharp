@@ -435,6 +435,7 @@ internal static partial class Request
             return new Ft.SearchResult(0, []);
         }
 
+        // TODO #651: Use invariant culture.
         long count = Convert.ToInt64(data[0]);
         List<Ft.SearchDocument> docs = [];
 

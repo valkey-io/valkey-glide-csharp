@@ -11,7 +11,7 @@ public readonly struct StreamGroupInfoFull
     #region Constructors
 
     internal StreamGroupInfoFull(
-        string name,
+        ValkeyValue name,
         ValkeyValue lastDeliveredId,
         long? entriesRead,
         long? lag,
@@ -34,7 +34,7 @@ public readonly struct StreamGroupInfoFull
     /// <summary>
     /// The name of the consumer group (<c>name</c>).
     /// </summary>
-    public string Name { get; }
+    public ValkeyValue Name { get; }
 
     /// <summary>
     /// The ID of the last entry delivered to the group (<c>last-delivered-id</c>).
