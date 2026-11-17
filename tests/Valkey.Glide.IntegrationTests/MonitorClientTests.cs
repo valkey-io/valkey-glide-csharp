@@ -97,6 +97,23 @@ public class MonitorClientTests(StandaloneClientFixture fixture) : IClassFixture
     }
 
     [Fact]
+    public async Task Finalizer_ClosesUndisposedClient()
+    {
+        var monitorRef = new Task<WeakReference>(await BuildMonitorClientAsync());
+        await PollMonitorConnectionAsync(expected: true);
+
+        // Collect the undisposed client and run its finalizer.
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+        Assert.False(monitorRef.IsAlive);
+
+        // Commands must not invoke the collected callback delegate.
+        await Client.SetAsync($"monitor-test-{Guid.NewGuid()}", "hello");
+        await PollMonitorConnectionAsync(expected: false);
+    }
+
+    [Fact]
     public async Task Monitor_ReportsConfiguredLibNameAndTag()
     {
         Version.SkipIfLessThan(Version.Valkey7_2);
@@ -119,6 +136,26 @@ public class MonitorClientTests(StandaloneClientFixture fixture) : IClassFixture
         using var config = BuildMonitorConfig(addr.Host, addr.Port);
         return await MonitorClient.CreateClient(config);
     }
+
+    /// <summary>
+    /// Polls <c>CLIENT LIST</c> (via a normal client) until a MONITOR connection (flag <c>O</c>)
+    /// is present or absent, as given by <paramref name="expected"/>.
+    /// </summary>
+    private async Task PollMonitorConnectionAsync(bool expected)
+        => await Polling.WaitForAsync(
+            async () =>
+            {
+                GlideString[] clientListCommand = ["CLIENT", "LIST"];
+                object? result = await Client.CustomCommand(clientListCommand);
+                bool found = result!.ToString()!
+                    .Split('\n', StringSplitOptions.RemoveEmptyEntries)
+                    .SelectMany(line => line.Split(' '))
+                    .Any(f => f.StartsWith("flags=", StringComparison.Ordinal) && f["flags=".Length..].Contains('O'));
+                return found == expected;
+            },
+            expected
+                ? "MONITOR connection did not appear in CLIENT LIST in time."
+                : "MONITOR connection was not closed in time.");
 
     /// <summary>
     /// Polls <c>CLIENT LIST</c> (via a normal client) for the MONITOR connection (flag <c>O</c>)
