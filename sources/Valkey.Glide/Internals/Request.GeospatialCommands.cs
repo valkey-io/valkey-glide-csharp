@@ -100,15 +100,15 @@ internal static partial class Request
         {
             if (!hasExtras)
             {
-                return new GeoSearchResult(new ValkeyValue(item?.ToString() ?? ""));
+                return new GeoSearchResult(ToValkeyValue(item));
             }
 
             if (item is not object[] itemArray || itemArray.Length == 0)
             {
-                return new GeoSearchResult(new ValkeyValue(item?.ToString() ?? ""));
+                return new GeoSearchResult(ToValkeyValue(item));
             }
 
-            var member = new ValkeyValue(itemArray[0]?.ToString() ?? "");
+            var member = ToValkeyValue(itemArray[0]);
             double? distance = null;
             long? hash = null;
             GeoPosition? position = null;

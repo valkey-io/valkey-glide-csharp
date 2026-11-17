@@ -98,7 +98,7 @@ internal static partial class Request
         => Simple<bool>(RequestType.Persist, [key]);
 
     public static Cmd<GlideString, ValkeyKey?> RandomKey()
-        => new(RequestType.RandomKey, [], true, response => response is null ? (ValkeyKey?)null : new ValkeyKey(response.ToString()));
+        => new(RequestType.RandomKey, [], true, response => response is null ? (ValkeyKey?)null : ToValkeyKey(response));
 
     // TODO #454: Should return ValkeyValue.Ok instead of bool.
     public static Cmd<string, bool> Rename(ValkeyKey key, ValkeyKey newKey)
@@ -147,7 +147,7 @@ internal static partial class Request
             arr =>
             {
                 string nextCursor = arr[0].ToString() ?? "0";
-                ValkeyKey[] keys = [.. ((object[])arr[1]).Select(item => new ValkeyKey(item.ToString()))];
+                ValkeyKey[] keys = [.. ((object[])arr[1]).Cast<GlideString>().Select(ToValkeyKey)];
                 return (nextCursor, keys);
             });
     }
