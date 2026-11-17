@@ -100,7 +100,7 @@ public class MonitorClientTests(StandaloneClientFixture fixture) : IClassFixture
     public async Task Finalizer_ClosesUndisposedClient()
     {
         var monitorRef = await BuildMonitorClientWeakReferenceAsync();
-        await PollMonitorConnectionAsync(expected: true);
+        await WaitForMonitorOpenAsync();
 
         // Collect the undisposed client and run its finalizer.
         GC.Collect();
@@ -110,7 +110,7 @@ public class MonitorClientTests(StandaloneClientFixture fixture) : IClassFixture
 
         // Commands must not invoke the collected callback delegate.
         await Client.SetAsync($"monitor-test-{Guid.NewGuid()}", "hello");
-        await PollMonitorConnectionAsync(expected: false);
+        await WaitForMonitorCloseAsync();
     }
 
     [Fact]
@@ -123,8 +123,7 @@ public class MonitorClientTests(StandaloneClientFixture fixture) : IClassFixture
         using var config = BuildMonitorConfig(addr.Host, addr.Port).WithClientInfoTag(tag);
         await using var monitor = await MonitorClient.CreateClient(config);
 
-        string? monitorLibName = await PollMonitorLibNameAsync();
-        Assert.Equal($"GlideC#({tag})", monitorLibName);
+        await WaitForLibNameAsync($"GlideC#({tag})");
     }
 
     #endregion
@@ -152,51 +151,58 @@ public class MonitorClientTests(StandaloneClientFixture fixture) : IClassFixture
     /// </summary>
     private async Task<Dictionary<string, string>?> GetMonitorConnectionAsync()
     {
+        // Get one line per client connection.
         GlideString[] clientListCommand = ["CLIENT", "LIST"];
         object? result = await Client.CustomCommand(clientListCommand);
-        return result!.ToString()!
-            .Split('\n', StringSplitOptions.RemoveEmptyEntries)
-            .Select(line => line.Split(' ')
-                .Select(field => field.Split('=', 2))
-                .Where(pair => pair.Length == 2)
-                .ToDictionary(pair => pair[0], pair => pair[1]))
-            .FirstOrDefault(fields => fields.TryGetValue("flags", out string? flags) && flags.Contains('O'));
-    }
+        string[] lines = result!.ToString()!.Split('\n', StringSplitOptions.RemoveEmptyEntries);
 
-    /// <summary>
-    /// Polls <c>CLIENT LIST</c> (via a normal client) until a MONITOR connection (flag <c>O</c>)
-    /// is present or absent, as given by <paramref name="expected"/>.
-    /// </summary>
-    private async Task PollMonitorConnectionAsync(bool expected)
-        => await Polling.WaitForAsync(
-            async () => (await GetMonitorConnectionAsync() is not null) == expected,
-            expected
-                ? "MONITOR connection did not appear in CLIENT LIST in time."
-                : "MONITOR connection was not closed in time.");
-
-    /// <summary>
-    /// Polls <c>CLIENT LIST</c> (via a normal client) for the MONITOR connection (flag <c>O</c>)
-    /// and returns its reported <c>lib-name</c>.
-    /// </summary>
-    private async Task<string?> PollMonitorLibNameAsync()
-    {
-        string? libName = null;
-        await Polling.WaitForAsync(
-            async () =>
+        foreach (string line in lines)
+        {
+            // Parse line (e.g. <c>id=7 addr=127.0.0.1:51234 flags=O</c>)
+            // into a dictionary mapping each field name to its value.
+            Dictionary<string, string> fields = [];
+            foreach (string field in line.Split(' '))
             {
-                Dictionary<string, string>? connection = await GetMonitorConnectionAsync();
-                if (connection is null)
+                string[] pair = field.Split('=', 2);
+                if (pair.Length == 2)
                 {
-                    return false;
+                    fields[pair[0]] = pair[1];
                 }
+            }
 
-                libName = connection.GetValueOrDefault("lib-name");
-                return true;
-            },
-            "MONITOR connection did not appear in CLIENT LIST in time.");
+            // Return the results if the connection is in MONITOR mode ('O' flag);
+            if (fields.TryGetValue("flags", out string? flags) && flags.Contains('O'))
+            {
+                return fields;
+            }
+        }
 
-        return libName;
+        return null;
     }
+
+    /// <summary>
+    /// Polls until a monitor connection is open.
+    /// </summary>
+    private async Task WaitForMonitorOpenAsync()
+        => await Polling.WaitForAsync(
+            async () => await GetMonitorConnectionAsync() is not null,
+            "Monitor connection did not open in time.");
+
+    /// <summary>
+    /// Polls until no monitor connections are open.
+    /// </summary>
+    private async Task WaitForMonitorCloseAsync()
+        => await Polling.WaitForAsync(
+            async () => await GetMonitorConnectionAsync() is null,
+            "Monitor connection did not close in time.");
+
+    /// <summary>
+    /// Polls until the monitor connection reports the specified library name.
+    /// </summary>
+    private async Task WaitForLibNameAsync(string expected)
+        => await Polling.WaitForAsync(
+            async () => (await GetMonitorConnectionAsync())?.GetValueOrDefault("lib-name") == expected,
+            $"Monitor connection did not report lib-name '{expected}' in time.");
 
     #endregion
 }
