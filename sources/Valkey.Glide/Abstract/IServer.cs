@@ -196,7 +196,6 @@ public partial interface IServer : IRedisAsync
     /// <param name="type">The method of the save (e.g. background or foreground).</param>
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
-    /// <exception cref="NotSupportedException">Thrown for unsupported save types.</exception>
     /// <example>
     /// <code>
     /// await server.SaveAsync(SaveType.BackgroundSave);
