@@ -45,6 +45,17 @@ internal static class TimeUtils
     }
 
     #endregion
+    #region To Long
+
+    /// <summary>
+    /// Converts a <see cref="TimeSpan"/> to <see cref="long"/> milliseconds.
+    /// </summary>
+    /// <param name="timeSpan">The time span to convert.</param>
+    public static long ToLongMs(TimeSpan timeSpan)
+        // Use tick-based arithmetic to avoid floating-point precision loss.
+        => timeSpan.Ticks / TimeSpan.TicksPerMillisecond;
+
+    #endregion
     #region To ULong
 
     /// <summary>

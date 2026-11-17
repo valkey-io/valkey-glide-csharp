@@ -82,6 +82,13 @@ public class ServerManagementTests(ServerManagementFixture fixture) : IClassFixt
         await fixture.Server.SaveAsync(SaveType.BackgroundRewriteAppendOnlyFile);
     }
 
+    [Fact]
+    public async Task IServer_SaveAsync_ForegroundSave_Succeeds()
+    {
+        await WaitForSaveNotInProgressAsync();
+        await fixture.Server.SaveAsync(SaveType.ForegroundSave);
+    }
+
     #endregion
     #region ReplicaOf Tests
 

@@ -283,21 +283,6 @@ public class SetCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SetScanAsync_WithCommandFlags_ThrowsOnNonNone(IDatabaseAsync db)
-    {
-        string key = $"ser-sscan-flags-{Guid.NewGuid()}";
-
-        _ = await Assert.ThrowsAsync<NotImplementedException>(async () =>
-        {
-            await foreach (ValkeyValue _ in db.SetScanAsync(key, flags: CommandFlags.DemandMaster))
-            {
-                // Should not reach here
-            }
-        });
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task SetContainsAsync_MultiValue_ReturnsMembershipArray(IDatabaseAsync db)
     {
         string key = $"ser-smismember-{Guid.NewGuid()}";

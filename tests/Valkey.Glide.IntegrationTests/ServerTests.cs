@@ -130,6 +130,45 @@ public class ServerTests(TestConfiguration config)
     }
 
     #endregion
+    #region ExecuteAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestConnections), MemberType = typeof(TestConfiguration))]
+    public async Task ExecuteAsync_WithKeyAndValue_ReturnsResult(ConnectionMultiplexer conn, bool _)
+    {
+        ValkeyKey key = "key";
+        ValkeyValue value = "value";
+
+        foreach (IServer server in conn.GetServers())
+        {
+            Assert.Equal(key, (ValkeyKey)await server.ExecuteAsync("ECHO", key));
+            Assert.Equal(value, (ValkeyValue)await server.ExecuteAsync("ECHO", value));
+        }
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestConnections), MemberType = typeof(TestConfiguration))]
+    public async Task ExecuteAsync_WithChannel_ReturnsResult(ConnectionMultiplexer conn, bool _)
+    {
+        var channel = ValkeyChannel.Literal($"channel-{Guid.NewGuid()}");
+        foreach (IServer server in conn.GetServers())
+        {
+            Assert.Equal(0L, (long)await server.ExecuteAsync("PUBLISH", channel, "message"));
+        }
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(Config.TestConnections), MemberType = typeof(TestConfiguration))]
+    public async Task ExecuteAsync_UnsupportedArg_ThrowsInvalidCastException(ConnectionMultiplexer conn, bool _)
+    {
+        foreach (IServer server in conn.GetServers())
+        {
+            var ex = await Assert.ThrowsAsync<InvalidCastException>(() => server.ExecuteAsync("ECHO", DateTime.UtcNow));
+            Assert.StartsWith("Unable to parse value", ex.Message);
+        }
+    }
+
+    #endregion
     #region GetServers
 
     [Theory(DisableDiscoveryEnumeration = true)]

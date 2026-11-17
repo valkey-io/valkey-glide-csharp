@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Net;
+
 namespace Valkey.Glide.IntegrationTests.StackExchange;
 
 /// <summary>
@@ -130,6 +132,12 @@ public class CommandFlagsTests(TestConfiguration config)
     public async Task KeyIdleTimeAsync_ThrowsOnCommandFlags(IDatabaseAsync db)
         => _ = await Assert.ThrowsAsync<NotImplementedException>(
             () => db.KeyIdleTimeAsync("key", UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
+    public async Task KeyMigrateAsync_ThrowsOnCommandFlags(IDatabaseAsync db)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => db.KeyMigrateAsync("key", new DnsEndPoint("localhost", 6379), flags: UnsupportedFlag));
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
@@ -1294,6 +1302,12 @@ public class CommandFlagsTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task IServer_SaveAsync_UnsupportedFlags_Throws(IServer server)
+        => _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => server.SaveAsync(SaveType.BackgroundSave, UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
     public async Task IServer_FlushDatabaseAsync_UnsupportedFlags_Throws(IServer server)
         => _ = await Assert.ThrowsAsync<NotImplementedException>(
             () => server.FlushDatabaseAsync(UnsupportedFlag));
@@ -1357,6 +1371,18 @@ public class CommandFlagsTests(TestConfiguration config)
     public async Task IServer_ClientIdAsync_UnsupportedFlags_Throws(IServer server)
         => _ = await Assert.ThrowsAsync<NotImplementedException>(
             () => server.ClientIdAsync(UnsupportedFlag));
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]
+    public async Task IServer_ClientKillAsync_UnsupportedFlags_Throws(IServer server)
+    {
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => server.ClientKillAsync(new DnsEndPoint("localhost", 6379), UnsupportedFlag));
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => server.ClientKillAsync(id: 1, flags: UnsupportedFlag));
+        _ = await Assert.ThrowsAsync<NotImplementedException>(
+            () => server.ClientKillAsync(new ClientKillFilter().WithId(1), UnsupportedFlag));
+    }
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestServers), MemberType = typeof(TestConfiguration))]

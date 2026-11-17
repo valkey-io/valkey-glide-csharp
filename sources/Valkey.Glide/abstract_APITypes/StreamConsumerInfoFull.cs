@@ -11,7 +11,7 @@ public readonly struct StreamConsumerInfoFull
     #region Constructors
 
     internal StreamConsumerInfoFull(
-        string name,
+        ValkeyValue name,
         DateTimeOffset seenTime,
         DateTimeOffset? activeTime,
         long pelCount,
@@ -30,7 +30,7 @@ public readonly struct StreamConsumerInfoFull
     /// <summary>
     /// The name of the consumer (<c>name</c>).
     /// </summary>
-    public string Name { get; }
+    public ValkeyValue Name { get; }
 
     /// <summary>
     /// The last time the consumer was seen (<c>seen-time</c>).

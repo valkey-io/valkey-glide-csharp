@@ -195,7 +195,7 @@ internal static partial class Request
         // - key is the list name that was popped from
         // - value is an array of the popped elements
         KeyValuePair<GlideString, object> kvp = dict.First();
-        ValkeyKey key = kvp.Key.ToString();
+        ValkeyKey key = ToValkeyKey(kvp.Key);
         object[] valuesArray = (object[])kvp.Value;
         ValkeyValue[] values = valuesArray?.Cast<GlideString>().Select(gs => (ValkeyValue)gs).ToArray() ?? [];
 

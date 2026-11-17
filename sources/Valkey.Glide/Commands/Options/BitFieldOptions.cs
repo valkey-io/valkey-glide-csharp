@@ -84,6 +84,7 @@ public static class BitFieldOptions
     public class BitOffset(long offset) : IBitOffset
     {
         /// <inheritdoc/>
+        // TODO #651: Use invariant culture.
         public string GetOffset() => offset.ToString();
     }
 
@@ -117,6 +118,7 @@ public static class BitFieldOptions
     public class BitFieldSet(string encoding, IBitOffset offset, long value) : IBitFieldSubCommand
     {
         /// <inheritdoc/>
+        // TODO #651: Use invariant culture.
         public string[] ToArgs() => ["SET", encoding, offset.GetOffset(), value.ToString()];
     }
 
@@ -129,6 +131,7 @@ public static class BitFieldOptions
     public class BitFieldIncrBy(string encoding, IBitOffset offset, long increment) : IBitFieldSubCommand
     {
         /// <inheritdoc/>
+        // TODO #651: Use invariant culture.
         public string[] ToArgs() => ["INCRBY", encoding, offset.GetOffset(), increment.ToString()];
     }
 

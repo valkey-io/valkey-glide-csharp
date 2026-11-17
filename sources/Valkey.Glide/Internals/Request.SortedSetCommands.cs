@@ -302,7 +302,7 @@ internal static partial class Request
             throw new InvalidOperationException("Unexpected response format for sorted set pop operation");
         }
 
-        ValkeyKey key = ((GlideString)responseArray[0]).ToString();
+        ValkeyKey key = ToValkeyKey((GlideString)responseArray[0]);
 
         if (responseArray[1] is not Dictionary<GlideString, object> membersAndScores)
         {

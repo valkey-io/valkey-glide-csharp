@@ -227,6 +227,7 @@ public class CommandTests
         () => CmdAssert.Equal(RequestType.Persist, ["key"], Request.Persist("key")),
         () => CmdAssert.Equal(RequestType.PExpire, ["key", "60000", "NX"], Request.Expire("key", TimeSpan.FromSeconds(60), ExpireCondition.OnlyIfNotExists)),
         () => CmdAssert.Equal(RequestType.PExpire, ["key", "60000"], Request.Expire("key", TimeSpan.FromSeconds(60))),
+        () => CmdAssert.Equal(RequestType.PExpire, ["key", "-5000"], Request.Expire("key", TimeSpan.FromSeconds(-5))),
         () => CmdAssert.Equal(RequestType.PExpireAt, ["key", "1609459200000"], Request.Expire("key", new DateTimeOffset(2021, 1, 1, 0, 0, 0, TimeSpan.Zero))),
         () => CmdAssert.Equal(RequestType.PExpireTime, ["key"], Request.ExpireTime("key")),
         () => CmdAssert.Equal(RequestType.PTTL, ["key"], Request.TimeToLive("key")),

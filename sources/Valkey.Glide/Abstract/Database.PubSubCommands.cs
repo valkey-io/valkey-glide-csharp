@@ -31,6 +31,7 @@ internal partial class Database
 
             // TODO #205: Refactor to use GlideClusterClient instead of custom command.
             var result = await Command(Request.CustomCommand(["SPUBLISH", channelKey, message]), Route.Random);
+            // TODO #651: Use invariant culture.
             return Convert.ToInt64(result);
         }
 
