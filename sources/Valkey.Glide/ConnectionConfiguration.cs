@@ -31,18 +31,18 @@ public abstract class ConnectionConfiguration
     /// <summary>
     /// A callback for resolving server addresses before connection.
     /// </summary>
-    /// <param name="host">The configured host name or IP address.</param>
-    /// <param name="port">The configured port number.</param>
+    /// <param name="host">The host name or IP address to connect to.</param>
+    /// <param name="port">The port number to connect to.</param>
     /// <returns>The resolved (host, port) to use for the actual connection.</returns>
     /// <remarks>
     /// The resolver must be thread-safe and should avoid blocking operations, as it is
     /// called synchronously during the connection process.
     /// <para/>
-    /// If the resolver throws an exception, the client falls back to the original
-    /// (unresolved) address and logs the exception at <see cref="Level.Error"/>.
+    /// If the resolver throws an exception or returns an invalid value, the client falls back
+    /// to the original (unresolved) address and logs an error at <see cref="Level.Error"/>.
     /// <para/>
-    /// The resolver is invoked once per address at initial connection time. It is not
-    /// invoked on subsequent reconnection attempts.
+    /// The resolver is invoked for every node address the client connects to, including configured
+    /// addresses, nodes discovered during topology refreshes, and redirect targets.
     /// </remarks>
     public delegate (string host, ushort port) AddressResolverDelegate(string host, ushort port);
 
@@ -139,11 +139,9 @@ public abstract class ConnectionConfiguration
     public struct RetryStrategy(uint numberOfRetries, uint factor, uint exponentBase, uint? jitterPercent = null)
     {
         /// <summary>
-        /// Number of retry attempts that the client should perform when disconnected from the server,
-        /// where the time between retries increases. Once the retries have reached the maximum value, the
-        /// time between retries will remain constant until a reconnect attempt is successful.
+        /// The exponent base configured for the strategy.
         /// </summary>
-        public uint NumberOfRetries = numberOfRetries;
+        public uint ExponentBase = exponentBase;
 
         /// <summary>
         /// The multiplier that will be applied to the waiting time between each retry.
@@ -151,9 +149,11 @@ public abstract class ConnectionConfiguration
         public uint Factor = factor;
 
         /// <summary>
-        /// The exponent base configured for the strategy.
+        /// Number of retry attempts that the client should perform when disconnected from the server,
+        /// where the time between retries increases. Once the retries have reached the maximum value, the
+        /// time between retries will remain constant until a reconnect attempt is successful.
         /// </summary>
-        public uint ExponentBase = exponentBase;
+        public uint NumberOfRetries = numberOfRetries;
 
         // TODO #246: Remove this suppression once RetryStrategy is separated from its FFI struct.
 #pragma warning disable SA1202 // Field order must match the native layout
@@ -649,7 +649,9 @@ public abstract class ConnectionConfiguration
 
         /// <summary>
         /// Optional callback for resolving server addresses before connection.
-        /// When set, the callback is invoked for each server address and can return a different host/port.
+        /// When set, the callback is invoked for every node address the client connects to, including
+        /// configured addresses, nodes discovered during topology refreshes, and redirect targets,
+        /// and can return a different host/port.
         /// </summary>
         /// <seealso cref="AddressResolverDelegate"/>
         public AddressResolverDelegate? AddressResolver

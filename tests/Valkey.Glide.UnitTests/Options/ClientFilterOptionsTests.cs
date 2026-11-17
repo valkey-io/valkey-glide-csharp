@@ -6,6 +6,8 @@ namespace Valkey.Glide.UnitTests;
 
 public class ClientFilterOptionsTests
 {
+    #region Tests
+
     [Fact]
     public void ToArgs_Success()
     {
@@ -154,27 +156,70 @@ public class ClientFilterOptionsTests
     [Fact]
     public void ToArgs_Failure()
     {
-        _ = Assert.Throws<ArgumentException>(() => new ClientFilterOptions().WithUser(""));
-        _ = Assert.Throws<ArgumentException>(() => new ClientFilterOptions().WithAddress("", 6379));
-        _ = Assert.Throws<ArgumentException>(() => new ClientFilterOptions().WithLocalAddress("", 6379));
-        _ = Assert.Throws<ArgumentOutOfRangeException>(() => new ClientFilterOptions().WithMaxAge(TimeSpan.Zero));
-        _ = Assert.Throws<ArgumentOutOfRangeException>(() => new ClientFilterOptions().WithMaxAge(TimeSpan.FromSeconds(-1)));
+        // Set every option so that we can verify that no failed call modifies them.
+        var options = new ClientFilterOptions()
+            .WithIds([1, 2])
+            .WithoutIds([3])
+            .WithUser("user")
+            .WithoutUser("guest")
+            .WithAddress("host", 1234)
+            .WithoutAddress("badhost", 6379)
+            .WithLocalAddress("local", 4321)
+            .WithoutLocalAddress("badlocal", 6380)
+            .WithMaxAge(TimeSpan.FromSeconds(1))
+            .WithName("conn1")
+            .WithoutName("old")
+            .WithIdle(TimeSpan.FromSeconds(5))
+            .WithFlags([ClientFlag.PubSub])
+            .WithoutFlags([ClientFlag.Replica])
+            .WithLibraryName("mylib")
+            .WithoutLibraryName("oldlib")
+            .WithLibraryVersion("2.0")
+            .WithoutLibraryVersion("1.0")
+            .WithIpAddress("10.0.0.1")
+            .WithoutIpAddress("192.168.0.1");
+
+        var expected = options.ToArgs();
+
+        _ = Assert.Throws<ArgumentException>(() => options.WithUser(""));
+        _ = Assert.Throws<ArgumentException>(() => options.WithAddress("", 6379));
+        _ = Assert.Throws<ArgumentException>(() => options.WithLocalAddress("", 6379));
+        _ = Assert.Throws<ArgumentOutOfRangeException>(() => options.WithMaxAge(TimeSpan.Zero));
+        _ = Assert.Throws<ArgumentOutOfRangeException>(() => options.WithMaxAge(TimeSpan.FromSeconds(-1)));
+
+        // Null collections
+        _ = Assert.Throws<ArgumentNullException>(() => options.WithIds(null!));
+        _ = Assert.Throws<ArgumentNullException>(() => options.WithoutIds(null!));
+        _ = Assert.Throws<ArgumentNullException>(() => options.WithFlags((IEnumerable<ClientFlag>)null!));
+        _ = Assert.Throws<ArgumentNullException>(() => options.WithoutFlags((IEnumerable<ClientFlag>)null!));
+
+        // Empty collections
+        _ = Assert.Throws<ArgumentException>(() => options.WithIds([]));
+        _ = Assert.Throws<ArgumentException>(() => options.WithoutIds([]));
+        _ = Assert.Throws<ArgumentException>(() => options.WithFlags([]));
+        _ = Assert.Throws<ArgumentException>(() => options.WithFlags(""));
+        _ = Assert.Throws<ArgumentException>(() => options.WithoutFlags([]));
+        _ = Assert.Throws<ArgumentException>(() => options.WithoutFlags(""));
 
         // Positive filters (Since Valkey 9.0.0)
-        _ = Assert.Throws<ArgumentException>(() => new ClientFilterOptions().WithName(""));
-        _ = Assert.Throws<ArgumentOutOfRangeException>(() => new ClientFilterOptions().WithIdle(TimeSpan.Zero));
-        _ = Assert.Throws<ArgumentOutOfRangeException>(() => new ClientFilterOptions().WithIdle(TimeSpan.FromMilliseconds(-1)));
-        _ = Assert.Throws<ArgumentException>(() => new ClientFilterOptions().WithLibraryName(""));
-        _ = Assert.Throws<ArgumentException>(() => new ClientFilterOptions().WithLibraryVersion(""));
-        _ = Assert.Throws<ArgumentException>(() => new ClientFilterOptions().WithIpAddress(""));
+        _ = Assert.Throws<ArgumentException>(() => options.WithName(""));
+        _ = Assert.Throws<ArgumentOutOfRangeException>(() => options.WithIdle(TimeSpan.Zero));
+        _ = Assert.Throws<ArgumentOutOfRangeException>(() => options.WithIdle(TimeSpan.FromMilliseconds(-1)));
+        _ = Assert.Throws<ArgumentException>(() => options.WithLibraryName(""));
+        _ = Assert.Throws<ArgumentException>(() => options.WithLibraryVersion(""));
+        _ = Assert.Throws<ArgumentException>(() => options.WithIpAddress(""));
 
         // Negative filters (Since Valkey 9.0.0)
-        _ = Assert.Throws<ArgumentException>(() => new ClientFilterOptions().WithoutAddress("", 6379));
-        _ = Assert.Throws<ArgumentException>(() => new ClientFilterOptions().WithoutLocalAddress("", 6379));
-        _ = Assert.Throws<ArgumentException>(() => new ClientFilterOptions().WithoutUser(""));
-        _ = Assert.Throws<ArgumentException>(() => new ClientFilterOptions().WithoutName(""));
-        _ = Assert.Throws<ArgumentException>(() => new ClientFilterOptions().WithoutLibraryName(""));
-        _ = Assert.Throws<ArgumentException>(() => new ClientFilterOptions().WithoutLibraryVersion(""));
-        _ = Assert.Throws<ArgumentException>(() => new ClientFilterOptions().WithoutIpAddress(""));
+        _ = Assert.Throws<ArgumentException>(() => options.WithoutAddress("", 6379));
+        _ = Assert.Throws<ArgumentException>(() => options.WithoutLocalAddress("", 6379));
+        _ = Assert.Throws<ArgumentException>(() => options.WithoutUser(""));
+        _ = Assert.Throws<ArgumentException>(() => options.WithoutName(""));
+        _ = Assert.Throws<ArgumentException>(() => options.WithoutLibraryName(""));
+        _ = Assert.Throws<ArgumentException>(() => options.WithoutLibraryVersion(""));
+        _ = Assert.Throws<ArgumentException>(() => options.WithoutIpAddress(""));
+
+        Assert.Equal(expected, options.ToArgs());
     }
+
+    #endregion
 }
