@@ -157,9 +157,9 @@ public static class OpenTelemetry
 
             if (errorPtr != IntPtr.Zero)
             {
-                var errorMessage = Marshal.PtrToStringAnsi(errorPtr);
+                var errorMsg = Marshal.PtrToStringUTF8(errorPtr);
                 FFI.FreeString(errorPtr);
-                throw new InvalidOperationException($"Failed to initialize OpenTelemetry: {errorMessage}");
+                throw new InvalidOperationException($"Failed to initialize OpenTelemetry: {errorMsg}");
             }
         }
         finally
