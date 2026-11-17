@@ -18,6 +18,11 @@ public partial class GlideClient :
     BaseClient,
     IGlideClient
 {
+    #region Constructors
+
+    internal GlideClient() { }
+
+    #endregion
     #region Public Methods
 
     /// <summary>
