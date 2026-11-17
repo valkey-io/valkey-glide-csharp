@@ -75,6 +75,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - For compatibility with StackExchange.Redis:
   - `IDatabaseAsync.StreamReadAsync` parameter renamed to `count` (#326)
   - `IDatabaseAsync.StreamAutoClaimIdsOnlyAsync` returns `StreamAutoClaimIdsOnlyResult` (#326)
+  - `IDatabaseAsync.ExecuteAsync` and `IServer.ExecuteAsync` updated to match argument conversion logic.
+    Unsupported argument types now throw `InvalidCastException` (#653)
 - Updated released but previously unused stream types (#326):
   - Rename `StreamGroupFullInfo` to `StreamGroupInfoFull`
   - Rename `StreamConsumerFullInfo` to `StreamConsumerInfoFull`

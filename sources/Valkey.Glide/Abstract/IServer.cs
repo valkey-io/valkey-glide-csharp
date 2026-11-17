@@ -45,6 +45,7 @@ public partial interface IServer : IRedisAsync
     /// <param name="command">The command to run.</param>
     /// <param name="args">The arguments to pass for the command.</param>
     /// <returns>A dynamic representation of the command's result.</returns>
+    /// <exception cref="InvalidCastException">Thrown if an argument is not a supported type.</exception>
     /// <remarks>This API should be considered an advanced feature; inappropriate use can be harmful.</remarks>
     Task<ValkeyResult> ExecuteAsync(string command, params object[] args);
 
@@ -58,6 +59,7 @@ public partial interface IServer : IRedisAsync
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
     /// <returns>A dynamic representation of the command's result.</returns>
+    /// <exception cref="InvalidCastException">Thrown if an argument is not a supported type.</exception>
     /// <remarks>This API should be considered an advanced feature; inappropriate use can be harmful.</remarks>
     Task<ValkeyResult> ExecuteAsync(string command, ICollection<object> args, CommandFlags flags = CommandFlags.None);
 
