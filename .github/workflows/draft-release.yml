@@ -1,0 +1,17 @@
+name: Draft Release
+
+# Triggers must match valkey-glide's draft-release.yml, which this calls.
+on:
+    push:
+        branches: ["release-[0-9]+.[0-9]+"]
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+jobs:
+    draft-release:
+        permissions:
+            contents: write
+            pull-requests: read
+        uses: valkey-io/valkey-glide/.github/workflows/draft-release.yml@main

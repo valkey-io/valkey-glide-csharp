@@ -54,9 +54,9 @@ requests are checked for proper signoffs, and commits without them are rejected.
 
 ### Conventional Commit Format
 
-Use [Conventional Commits](https://www.conventionalcommits.org/) for commit messages
-(this applies to commit messages only — use clear, descriptive English for pull request and
-issue titles).
+Use [Conventional Commits](https://www.conventionalcommits.org/) for commit messages and pull
+request titles (use clear, descriptive English for issue titles). The PR title needs a
+lowercase type: it is checked, becomes the squash commit, and becomes the release notes entry.
 
 Example:
 
