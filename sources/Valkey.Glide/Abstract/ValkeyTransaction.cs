@@ -42,11 +42,14 @@ internal class ValkeyTransaction : ValkeyBatch, ITransaction
             conditionBatch._commands.AddRange(condition.Condition.CreateCommands());
             await conditionBatch.ExecuteImpl();
 
+            // At least one condition failed — cancel the transaction without
+            // submitting the MULTI/EXEC block.
             condition.WasSatisfied = condition.Condition.Validate(conditionBatch._tcs.Task.Result);
             if (!condition.WasSatisfied)
             {
-                // At least one condition failed — cancel the transaction without
-                // submitting the MULTI/EXEC block.
+                // Clear the WATCH set by the condition commands.
+                _ = await _client.Command(Request.Unwatch());
+
                 _tcs.SetResult(null);
                 return false;
             }

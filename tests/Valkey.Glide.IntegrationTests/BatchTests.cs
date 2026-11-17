@@ -132,14 +132,22 @@ public class BatchTests(TestConfiguration config)
     [MemberData(nameof(PermuteTestConnectionsAndBool), 1)]
     public async Task TransactionWithMultipleConditions(ConnectionMultiplexer conn, bool conditionPass)
     {
-        ITransaction transaction = conn.GetDatabase().CreateTransaction();
+        var db = conn.GetDatabase();
+        var transaction = db.CreateTransaction();
 
-        Task<ValkeyValue> t1 = transaction.StringGetAsync(Guid.NewGuid().ToString());
-        // conditions which always pass/fail
-        ConditionResult c1 = transaction.AddCondition(Condition.KeyNotExists(Guid.NewGuid().ToString()));
-        ConditionResult c2 = transaction.AddCondition(conditionPass
-            ? Condition.KeyNotExists(Guid.NewGuid().ToString())
-            : Condition.KeyExists(Guid.NewGuid().ToString()));
+        // Use a shared hash tag so that all keys map to the same cluster node.
+        var tag = Guid.NewGuid().ToString();
+        var key = $"{{{tag}}}key";
+        var conditionKey1 = $"{{{tag}}}condition1";
+        var conditionKey2 = $"{{{tag}}}condition2";
+
+        var t1 = transaction.StringGetAsync(key);
+
+        // Conditions which always pass/fail
+        var c1 = transaction.AddCondition(Condition.KeyNotExists(conditionKey1));
+        var c2 = transaction.AddCondition(conditionPass
+            ? Condition.KeyNotExists(conditionKey2)
+            : Condition.KeyExists(conditionKey2));
 
         Assert.Equal(conditionPass, transaction.Execute());
         if (conditionPass)
@@ -149,6 +157,15 @@ public class BatchTests(TestConfiguration config)
         else
         {
             _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t1);
+
+            // Modify a key watched by the failed transaction and verify that it passes.
+            // This verifies that any WATCH commands started by the transaction were cancelled.
+            Assert.True(await db.StringSetAsync(conditionKey1, "value"));
+
+            var next = db.CreateTransaction();
+            var set = next.StringSetAsync(key, "value");
+            Assert.True(await next.ExecuteAsync());
+            Assert.True(await set);
         }
 
         Assert.True(c1.WasSatisfied);
