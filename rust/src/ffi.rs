@@ -69,6 +69,8 @@ unsafe fn ptr_to_bytes(ptr: *const u8, len: usize) -> Vec<u8> {
     }
 }
 
+// TODO #650: Add layout assertions for the remaining FFI structs.
+
 /// A mirror of [`ConnectionRequest`] adopted for FFI.
 #[repr(C)]
 #[derive(Clone, Copy)]
