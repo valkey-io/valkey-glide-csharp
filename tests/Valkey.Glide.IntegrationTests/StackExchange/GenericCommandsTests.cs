@@ -8,16 +8,10 @@ namespace Valkey.Glide.IntegrationTests.StackExchange;
 
 /// <summary>
 /// SER compatibility tests for generic commands.
-/// Tests verify that Key-prefixed methods work identically to SER equivalents
-/// and that CommandFlags validation works correctly.
+/// Tests verify that Key-prefixed methods work identically to SER equivalents.
 /// </summary>
 public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixture<GenericCommandsFixture>
 {
-    #region Constants
-
-    private const CommandFlags UnsupportedCommandFlag = CommandFlags.DemandMaster;
-
-    #endregion
     #region KeyDeleteAsync Tests
 
     [Fact]
@@ -34,22 +28,6 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
     }
 
     [Fact]
-    public async Task KeyDeleteAsync_SingleKey_WithCommandFlagsNone_Succeeds()
-    {
-        var db = fixture.Database;
-        string key = $"ser-delete-flags-{Guid.NewGuid()}";
-
-        _ = await db.StringSetAsync(key, "value");
-        bool result = await db.KeyDeleteAsync(key, CommandFlags.None);
-        Assert.True(result);
-    }
-
-    [Fact]
-    public async Task KeyDeleteAsync_SingleKey_WithNonNoneCommandFlags_ThrowsNotImplementedException()
-        => _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => fixture.Database.KeyDeleteAsync("key", UnsupportedCommandFlag));
-
-    [Fact]
     public async Task KeyDeleteAsync_MultipleKeys_DeletesKeys()
     {
         var db = fixture.Database;
@@ -62,26 +40,6 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         ValkeyKey[] keys = [key1, key2];
         long deleted = await db.KeyDeleteAsync(keys);
         Assert.Equal(2, deleted);
-    }
-
-    [Fact]
-    public async Task KeyDeleteAsync_MultipleKeys_WithCommandFlagsNone_Succeeds()
-    {
-        var db = fixture.Database;
-        string key1 = $"ser-delete-multi-flags-{Guid.NewGuid()}";
-
-        _ = await db.StringSetAsync(key1, "value1");
-        ValkeyKey[] keys = [key1];
-        long deleted = await db.KeyDeleteAsync(keys, CommandFlags.None);
-        Assert.Equal(1, deleted);
-    }
-
-    [Fact]
-    public async Task KeyDeleteAsync_MultipleKeys_WithNonNoneCommandFlags_ThrowsNotImplementedException()
-    {
-        ValkeyKey[] keys = ["key1", "key2"];
-        _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => fixture.Database.KeyDeleteAsync(keys, UnsupportedCommandFlag));
     }
 
     #endregion
@@ -100,22 +58,6 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
     }
 
     [Fact]
-    public async Task KeyExistsAsync_SingleKey_WithCommandFlagsNone_Succeeds()
-    {
-        var db = fixture.Database;
-        string key = $"ser-exists-flags-{Guid.NewGuid()}";
-
-        _ = await db.StringSetAsync(key, "value");
-        bool exists = await db.KeyExistsAsync(key, CommandFlags.None);
-        Assert.True(exists);
-    }
-
-    [Fact]
-    public async Task KeyExistsAsync_SingleKey_WithNonNoneCommandFlags_ThrowsNotImplementedException()
-        => _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => fixture.Database.KeyExistsAsync("key", UnsupportedCommandFlag));
-
-    [Fact]
     public async Task KeyExistsAsync_MultipleKeys_ReturnsCount()
     {
         var db = fixture.Database;
@@ -129,26 +71,6 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         ValkeyKey[] keys = [key1, key2, key3];
         long count = await db.KeyExistsAsync(keys);
         Assert.Equal(2, count);
-    }
-
-    [Fact]
-    public async Task KeyExistsAsync_MultipleKeys_WithCommandFlagsNone_Succeeds()
-    {
-        var db = fixture.Database;
-        string key1 = $"ser-exists-multi-flags-{Guid.NewGuid()}";
-
-        _ = await db.StringSetAsync(key1, "value1");
-        ValkeyKey[] keys = [key1];
-        long count = await db.KeyExistsAsync(keys, CommandFlags.None);
-        Assert.Equal(1, count);
-    }
-
-    [Fact]
-    public async Task KeyExistsAsync_MultipleKeys_WithNonNoneCommandFlags_ThrowsNotImplementedException()
-    {
-        ValkeyKey[] keys = ["key1", "key2"];
-        _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => fixture.Database.KeyExistsAsync(keys, UnsupportedCommandFlag));
     }
 
     #endregion
@@ -180,22 +102,6 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
     }
 
     [Fact]
-    public async Task KeyExpireAsync_WithTimeSpan_WithCommandFlagsNone_Succeeds()
-    {
-        var db = fixture.Database;
-        string key = $"ser-expire-flags-{Guid.NewGuid()}";
-
-        _ = await db.StringSetAsync(key, "value");
-        bool result = await db.KeyExpireAsync(key, TimeSpan.FromSeconds(10), CommandFlags.None);
-        Assert.True(result);
-    }
-
-    [Fact]
-    public async Task KeyExpireAsync_WithTimeSpan_WithNonNoneCommandFlags_ThrowsNotImplementedException()
-        => _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => fixture.Database.KeyExpireAsync("key", TimeSpan.FromSeconds(10), UnsupportedCommandFlag));
-
-    [Fact]
     public async Task KeyExpireAsync_WithDateTime_SetsExpiry()
     {
         var db = fixture.Database;
@@ -209,23 +115,6 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         _ = Assert.NotNull(ttl);
         Assert.True(ttl.Value.TotalSeconds > 0);
     }
-
-    [Fact]
-    public async Task KeyExpireAsync_WithDateTime_WithCommandFlagsNone_Succeeds()
-    {
-        var db = fixture.Database;
-        string key = $"ser-expireat-flags-{Guid.NewGuid()}";
-
-        _ = await db.StringSetAsync(key, "value");
-        DateTime expiry = DateTime.UtcNow.AddSeconds(10);
-        bool result = await db.KeyExpireAsync(key, expiry, CommandFlags.None);
-        Assert.True(result);
-    }
-
-    [Fact]
-    public async Task KeyExpireAsync_WithDateTime_WithNonNoneCommandFlags_ThrowsNotImplementedException()
-        => _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => fixture.Database.KeyExpireAsync("key", DateTime.UtcNow.AddSeconds(10), UnsupportedCommandFlag));
 
     #endregion
     #region KeyTimeToLiveAsync Tests
@@ -267,23 +156,6 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         Assert.Null(await db.KeyTimeToLiveAsync(key));
     }
 
-    [Fact]
-    public async Task KeyTimeToLiveAsync_WithCommandFlagsNone_Succeeds()
-    {
-        var db = fixture.Database;
-        string key = $"ser-ttl-flags-{Guid.NewGuid()}";
-
-        _ = await db.StringSetAsync(key, "value");
-        _ = await db.KeyExpireAsync(key, TimeSpan.FromSeconds(10));
-        TimeSpan? ttl = await db.KeyTimeToLiveAsync(key, CommandFlags.None);
-        _ = Assert.NotNull(ttl);
-    }
-
-    [Fact]
-    public async Task KeyTimeToLiveAsync_WithNonNoneCommandFlags_ThrowsNotImplementedException()
-        => _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => fixture.Database.KeyTimeToLiveAsync("key", UnsupportedCommandFlag));
-
     #endregion
     #region KeyTypeAsync Tests
 
@@ -300,22 +172,6 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         _ = await fixture.Client.ListLeftPushAsync(listKey, "item");
         Assert.Equal(ValkeyType.List, await db.KeyTypeAsync(listKey));
     }
-
-    [Fact]
-    public async Task KeyTypeAsync_WithCommandFlagsNone_Succeeds()
-    {
-        var db = fixture.Database;
-        string key = $"ser-type-flags-{Guid.NewGuid()}";
-
-        _ = await db.StringSetAsync(key, "value");
-        ValkeyType type = await db.KeyTypeAsync(key, CommandFlags.None);
-        Assert.Equal(ValkeyType.String, type);
-    }
-
-    [Fact]
-    public async Task KeyTypeAsync_WithNonNoneCommandFlags_ThrowsNotImplementedException()
-        => _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => fixture.Database.KeyTypeAsync("key", UnsupportedCommandFlag));
 
     #endregion
     #region KeyRenameAsync Tests
@@ -383,23 +239,6 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         => _ = await Assert.ThrowsAsync<ArgumentException>(
             () => fixture.Database.KeyRenameAsync("oldKey", "newKey", When.Exists));
 
-    [Fact]
-    public async Task KeyRenameAsync_WithCommandFlagsNone_Succeeds()
-    {
-        var db = fixture.Database;
-        string oldKey = $"ser-rename-flags-old-{Guid.NewGuid()}";
-        string newKey = $"ser-rename-flags-new-{Guid.NewGuid()}";
-
-        _ = await db.StringSetAsync(oldKey, "value");
-        bool result = await db.KeyRenameAsync(oldKey, newKey, When.Always, CommandFlags.None);
-        Assert.True(result);
-    }
-
-    [Fact]
-    public async Task KeyRenameAsync_WithNonNoneCommandFlags_ThrowsNotImplementedException()
-        => _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => fixture.Database.KeyRenameAsync("oldKey", "newKey", When.Always, UnsupportedCommandFlag));
-
     #endregion
     #region KeyPersistAsync Tests
 
@@ -417,23 +256,6 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         Assert.Null(await db.KeyTimeToLiveAsync(key));
     }
 
-    [Fact]
-    public async Task KeyPersistAsync_WithCommandFlagsNone_Succeeds()
-    {
-        var db = fixture.Database;
-        string key = $"ser-persist-flags-{Guid.NewGuid()}";
-
-        _ = await db.StringSetAsync(key, "value");
-        _ = await db.KeyExpireAsync(key, TimeSpan.FromSeconds(10));
-        bool result = await db.KeyPersistAsync(key, CommandFlags.None);
-        Assert.True(result);
-    }
-
-    [Fact]
-    public async Task KeyPersistAsync_WithNonNoneCommandFlags_ThrowsNotImplementedException()
-        => _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => fixture.Database.KeyPersistAsync("key", UnsupportedCommandFlag));
-
     #endregion
     #region KeyDumpAsync Tests
 
@@ -448,22 +270,6 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         Assert.NotNull(dump);
         Assert.NotEmpty(dump);
     }
-
-    [Fact]
-    public async Task KeyDumpAsync_WithCommandFlagsNone_Succeeds()
-    {
-        var db = fixture.Database;
-        string key = $"ser-dump-flags-{Guid.NewGuid()}";
-
-        _ = await db.StringSetAsync(key, "value");
-        byte[]? dump = await db.KeyDumpAsync(key, CommandFlags.None);
-        Assert.NotNull(dump);
-    }
-
-    [Fact]
-    public async Task KeyDumpAsync_WithNonNoneCommandFlags_ThrowsNotImplementedException()
-        => _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => fixture.Database.KeyDumpAsync("key", UnsupportedCommandFlag));
 
     #endregion
     #region KeyRestoreAsync Tests
@@ -485,26 +291,6 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
     }
 
     [Fact]
-    public async Task KeyRestoreAsync_WithTimeSpan_WithCommandFlagsNone_Succeeds()
-    {
-        var db = fixture.Database;
-        string sourceKey = $"ser-restore-flags-src-{Guid.NewGuid()}";
-        string destKey = $"ser-restore-flags-dst-{Guid.NewGuid()}";
-
-        _ = await db.StringSetAsync(sourceKey, "value");
-        byte[]? dump = await db.KeyDumpAsync(sourceKey);
-        Assert.NotNull(dump);
-
-        await db.KeyRestoreAsync(destKey, dump, TimeSpan.FromSeconds(10), CommandFlags.None);
-        Assert.True(await db.KeyExistsAsync(destKey));
-    }
-
-    [Fact]
-    public async Task KeyRestoreAsync_WithTimeSpan_WithNonNoneCommandFlags_ThrowsNotImplementedException()
-        => _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => fixture.Database.KeyRestoreAsync("key", [], TimeSpan.FromSeconds(10), UnsupportedCommandFlag));
-
-    [Fact]
     public async Task KeyRestoreAsync_WithDateTime_RestoresKey()
     {
         var db = fixture.Database;
@@ -521,30 +307,6 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         Assert.Equal("value", (await db.StringGetAsync(destKey)).ToString());
     }
 
-    [Fact]
-    public async Task KeyRestoreAsync_WithDateTime_WithCommandFlagsNone_Succeeds()
-    {
-        var db = fixture.Database;
-        string sourceKey = $"ser-restore-dt-flags-src-{Guid.NewGuid()}";
-        string destKey = $"ser-restore-dt-flags-dst-{Guid.NewGuid()}";
-
-        _ = await db.StringSetAsync(sourceKey, "value");
-        byte[]? dump = await db.KeyDumpAsync(sourceKey);
-        Assert.NotNull(dump);
-
-        DateTime expiry = DateTime.UtcNow.AddSeconds(10);
-        await db.KeyRestoreAsync(destKey, dump, expiry, CommandFlags.None);
-        Assert.True(await db.KeyExistsAsync(destKey));
-    }
-
-    [Fact]
-    public async Task KeyRestoreAsync_WithDateTime_WithNonNoneCommandFlags_ThrowsNotImplementedException()
-    {
-        DateTime expiry = DateTime.UtcNow.AddSeconds(10);
-        _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => fixture.Database.KeyRestoreAsync("key", [], expiry, UnsupportedCommandFlag));
-    }
-
     #endregion
     #region KeyTouchAsync Tests
 
@@ -559,22 +321,6 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
     }
 
     [Fact]
-    public async Task KeyTouchAsync_SingleKey_WithCommandFlagsNone_Succeeds()
-    {
-        var db = fixture.Database;
-        string key = $"ser-touch-flags-{Guid.NewGuid()}";
-
-        _ = await db.StringSetAsync(key, "value");
-        bool result = await db.KeyTouchAsync(key, CommandFlags.None);
-        Assert.True(result);
-    }
-
-    [Fact]
-    public async Task KeyTouchAsync_SingleKey_WithNonNoneCommandFlags_ThrowsNotImplementedException()
-        => _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => fixture.Database.KeyTouchAsync("key", UnsupportedCommandFlag));
-
-    [Fact]
     public async Task KeyTouchAsync_MultipleKeys_TouchesKeys()
     {
         var db = fixture.Database;
@@ -587,26 +333,6 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         ValkeyKey[] keys = [key1, key2];
         long touched = await db.KeyTouchAsync(keys);
         Assert.Equal(2, touched);
-    }
-
-    [Fact]
-    public async Task KeyTouchAsync_MultipleKeys_WithCommandFlagsNone_Succeeds()
-    {
-        var db = fixture.Database;
-        string key1 = $"ser-touch-multi-flags-{Guid.NewGuid()}";
-
-        _ = await db.StringSetAsync(key1, "value1");
-        ValkeyKey[] keys = [key1];
-        long touched = await db.KeyTouchAsync(keys, CommandFlags.None);
-        Assert.Equal(1, touched);
-    }
-
-    [Fact]
-    public async Task KeyTouchAsync_MultipleKeys_WithNonNoneCommandFlags_ThrowsNotImplementedException()
-    {
-        ValkeyKey[] keys = ["key1", "key2"];
-        _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => fixture.Database.KeyTouchAsync(keys, UnsupportedCommandFlag));
     }
 
     #endregion
@@ -626,23 +352,6 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         Assert.True(await db.KeyExistsAsync(destKey));
         Assert.Equal("value", (await db.StringGetAsync(destKey)).ToString());
     }
-
-    [Fact]
-    public async Task KeyCopyAsync_WithCommandFlagsNone_Succeeds()
-    {
-        var db = fixture.Database;
-        string sourceKey = $"ser-copy-flags-src-{Guid.NewGuid()}";
-        string destKey = $"ser-copy-flags-dst-{Guid.NewGuid()}";
-
-        _ = await db.StringSetAsync(sourceKey, "value");
-        bool result = await db.KeyCopyAsync(sourceKey, destKey, -1, false, CommandFlags.None);
-        Assert.True(result);
-    }
-
-    [Fact]
-    public async Task KeyCopyAsync_WithNonNoneCommandFlags_ThrowsNotImplementedException()
-        => _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => fixture.Database.KeyCopyAsync("src", "dst", -1, false, UnsupportedCommandFlag));
 
     #endregion
     #region KeyIdleTimeAsync Tests
@@ -669,22 +378,6 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         Assert.Null(idleTime);
     }
 
-    [Fact]
-    public async Task KeyIdleTimeAsync_WithCommandFlagsNone_Succeeds()
-    {
-        var db = fixture.Database;
-        string key = $"ser-idletime-flags-{Guid.NewGuid()}";
-
-        _ = await db.StringSetAsync(key, "value");
-        TimeSpan? idleTime = await db.KeyIdleTimeAsync(key, CommandFlags.None);
-        _ = Assert.NotNull(idleTime);
-    }
-
-    [Fact]
-    public async Task KeyIdleTimeAsync_WithNonNoneCommandFlags_ThrowsNotImplementedException()
-        => _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => fixture.Database.KeyIdleTimeAsync("key", UnsupportedCommandFlag));
-
     #endregion
     #region KeyRandomAsync Tests
 
@@ -699,22 +392,6 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         Assert.False(randomKey.IsNull);
     }
 
-    [Fact]
-    public async Task KeyRandomAsync_WithCommandFlagsNone_Succeeds()
-    {
-        var db = fixture.Database;
-        string key = $"ser-random-flags-{Guid.NewGuid()}";
-
-        _ = await db.StringSetAsync(key, "value");
-        ValkeyKey randomKey = await db.KeyRandomAsync(CommandFlags.None);
-        Assert.False(randomKey.IsNull);
-    }
-
-    [Fact]
-    public async Task KeyRandomAsync_WithNonNoneCommandFlags_ThrowsNotImplementedException()
-        => _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => fixture.Database.KeyRandomAsync(UnsupportedCommandFlag));
-
     #endregion
     #region SortAsync Tests
 
@@ -728,22 +405,6 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         ValkeyValue[] result = await db.SortAsync(key);
         Assert.Equal(new[] { "1", "2", "3" }, result.Select(v => v.ToString()).ToArray());
     }
-
-    [Fact]
-    public async Task SortAsync_WithCommandFlagsNone_Succeeds()
-    {
-        var db = fixture.Database;
-        string key = $"ser-sort-flags-{Guid.NewGuid()}";
-
-        _ = await fixture.Client.ListLeftPushAsync(key, ["3", "1", "2"]);
-        ValkeyValue[] result = await db.SortAsync(key, 0, -1, Order.Ascending, SortType.Numeric, default, null, CommandFlags.None);
-        Assert.Equal(3, result.Length);
-    }
-
-    [Fact]
-    public async Task SortAsync_WithNonNoneCommandFlags_ThrowsNotImplementedException()
-        => _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => fixture.Database.SortAsync("key", 0, -1, Order.Ascending, SortType.Numeric, default, null, UnsupportedCommandFlag));
 
     #endregion
     #region SortAndStoreAsync Tests
@@ -762,23 +423,6 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         ValkeyValue[] result = await fixture.Client.ListRangeAsync(destKey);
         Assert.Equal(new[] { "1", "2", "3" }, result.Select(v => v.ToString()).ToArray());
     }
-
-    [Fact]
-    public async Task SortAndStoreAsync_WithCommandFlagsNone_Succeeds()
-    {
-        var db = fixture.Database;
-        string sourceKey = $"ser-sortstore-flags-src-{Guid.NewGuid()}";
-        string destKey = $"ser-sortstore-flags-dst-{Guid.NewGuid()}";
-
-        _ = await fixture.Client.ListLeftPushAsync(sourceKey, ["3", "1", "2"]);
-        long count = await db.SortAndStoreAsync(destKey, sourceKey, 0, -1, Order.Ascending, SortType.Numeric, default, null, CommandFlags.None);
-        Assert.Equal(3, count);
-    }
-
-    [Fact]
-    public async Task SortAndStoreAsync_WithNonNoneCommandFlags_ThrowsNotImplementedException()
-        => _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => fixture.Database.SortAndStoreAsync("dst", "src", 0, -1, Order.Ascending, SortType.Numeric, default, null, UnsupportedCommandFlag));
 
     #endregion
 }

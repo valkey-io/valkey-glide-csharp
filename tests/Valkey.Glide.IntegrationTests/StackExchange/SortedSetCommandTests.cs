@@ -191,7 +191,7 @@ public class SortedSetCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetCombineAsync_Union_WithCommandFlags(IDatabaseAsync db)
+    public async Task SortedSetCombineAsync_Union(IDatabaseAsync db)
     {
         string key1 = $"{{ser-zunion}}-1-{Guid.NewGuid()}";
         string key2 = $"{{ser-zunion}}-2-{Guid.NewGuid()}";
@@ -207,7 +207,7 @@ public class SortedSetCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetCombineAsync_Intersect_WithCommandFlags(IDatabaseAsync db)
+    public async Task SortedSetCombineAsync_Intersect(IDatabaseAsync db)
     {
         string key1 = $"{{ser-zinter}}-1-{Guid.NewGuid()}";
         string key2 = $"{{ser-zinter}}-2-{Guid.NewGuid()}";
@@ -224,7 +224,7 @@ public class SortedSetCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetCombineAsync_Difference_WithCommandFlags(IDatabaseAsync db)
+    public async Task SortedSetCombineAsync_Difference(IDatabaseAsync db)
     {
         string key1 = $"{{ser-zdiff}}-1-{Guid.NewGuid()}";
         string key2 = $"{{ser-zdiff}}-2-{Guid.NewGuid()}";
@@ -244,7 +244,7 @@ public class SortedSetCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetCombineWithScoresAsync_WithCommandFlags(IDatabaseAsync db)
+    public async Task SortedSetCombineWithScoresAsync(IDatabaseAsync db)
     {
         string key1 = $"{{ser-zunion-ws}}-1-{Guid.NewGuid()}";
         string key2 = $"{{ser-zunion-ws}}-2-{Guid.NewGuid()}";
@@ -263,7 +263,7 @@ public class SortedSetCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetDecrementAsync_WithCommandFlags(IDatabaseAsync db)
+    public async Task SortedSetDecrementAsync(IDatabaseAsync db)
     {
         string key = $"ser-zdecr-{Guid.NewGuid()}";
 
@@ -285,7 +285,7 @@ public class SortedSetCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetIncrementAsync_WithCommandFlags(IDatabaseAsync db)
+    public async Task SortedSetIncrementAsync(IDatabaseAsync db)
     {
         string key = $"ser-zincrby-{Guid.NewGuid()}";
 
@@ -307,7 +307,7 @@ public class SortedSetCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetIntersectionLengthAsync_WithCommandFlags(IDatabaseAsync db)
+    public async Task SortedSetIntersectionLengthAsync(IDatabaseAsync db)
     {
         Version.SkipIfLessThan(Version.Valkey7_0);
 
@@ -366,7 +366,7 @@ public class SortedSetCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetLengthAsync_WithCommandFlags(IDatabaseAsync db)
+    public async Task SortedSetLengthAsync(IDatabaseAsync db)
     {
         string key = $"ser-zcount-{Guid.NewGuid()}";
 
@@ -388,7 +388,7 @@ public class SortedSetCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetLengthByValueAsync_WithCommandFlags(IDatabaseAsync db)
+    public async Task SortedSetLengthByValueAsync(IDatabaseAsync db)
     {
         string key = $"ser-zlexcount-{Guid.NewGuid()}";
 
@@ -416,7 +416,7 @@ public class SortedSetCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetPopAsync_SingleElement_WithCommandFlags(IDatabaseAsync db)
+    public async Task SortedSetPopAsync_SingleElement(IDatabaseAsync db)
     {
         string key = $"ser-zpop-{Guid.NewGuid()}";
 
@@ -449,7 +449,7 @@ public class SortedSetCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetPopAsync_MultipleElements_WithCommandFlags(IDatabaseAsync db)
+    public async Task SortedSetPopAsync_MultipleElements(IDatabaseAsync db)
     {
         string key = $"ser-zpop-multi-{Guid.NewGuid()}";
 
@@ -483,7 +483,7 @@ public class SortedSetCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetPopAsync_MultiKey_WithCommandFlags(IDatabaseAsync db)
+    public async Task SortedSetPopAsync_MultiKey(IDatabaseAsync db)
     {
         Version.SkipIfLessThan(Version.Valkey7_0);
 
@@ -509,7 +509,7 @@ public class SortedSetCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetRandomMemberAsync_WithCommandFlags(IDatabaseAsync db)
+    public async Task SortedSetRandomMemberAsync(IDatabaseAsync db)
     {
         string key = $"ser-zrandmember-{Guid.NewGuid()}";
 
@@ -532,7 +532,7 @@ public class SortedSetCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetRandomMembersAsync_WithCommandFlags(IDatabaseAsync db)
+    public async Task SortedSetRandomMembersAsync(IDatabaseAsync db)
     {
         string key = $"ser-zrandmember-multi-{Guid.NewGuid()}";
 
@@ -551,7 +551,7 @@ public class SortedSetCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetRandomMembersWithScoresAsync_WithCommandFlags(IDatabaseAsync db)
+    public async Task SortedSetRandomMembersWithScoresAsync(IDatabaseAsync db)
     {
         string key = $"ser-zrandmember-scores-{Guid.NewGuid()}";
 
@@ -577,7 +577,7 @@ public class SortedSetCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetRangeAndStoreAsync_WithCommandFlags(IDatabaseAsync db)
+    public async Task SortedSetRangeAndStoreAsync(IDatabaseAsync db)
     {
         string srcKey = $"{{ser-zrangestore}}-src-{Guid.NewGuid()}";
         string destKey = $"{{ser-zrangestore}}-dest-{Guid.NewGuid()}";
@@ -596,7 +596,7 @@ public class SortedSetCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetRangeByRankAsync_WithCommandFlags(IDatabaseAsync db)
+    public async Task SortedSetRangeByRankAsync(IDatabaseAsync db)
     {
         string key = $"ser-zrange-rank-{Guid.NewGuid()}";
 
@@ -629,7 +629,7 @@ public class SortedSetCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetRangeByRankWithScoresAsync_WithCommandFlags(IDatabaseAsync db)
+    public async Task SortedSetRangeByRankWithScoresAsync(IDatabaseAsync db)
     {
         string key = $"ser-zrange-rank-scores-{Guid.NewGuid()}";
 
@@ -650,7 +650,7 @@ public class SortedSetCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetRangeByScoreAsync_WithCommandFlags(IDatabaseAsync db)
+    public async Task SortedSetRangeByScoreAsync(IDatabaseAsync db)
     {
         string key = $"ser-zrange-score-{Guid.NewGuid()}";
 
@@ -675,7 +675,7 @@ public class SortedSetCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetRangeByScoreWithScoresAsync_WithCommandFlags(IDatabaseAsync db)
+    public async Task SortedSetRangeByScoreWithScoresAsync(IDatabaseAsync db)
     {
         string key = $"ser-zrange-score-ws-{Guid.NewGuid()}";
 
@@ -694,7 +694,7 @@ public class SortedSetCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetRangeByValueAsync_WithCommandFlags(IDatabaseAsync db)
+    public async Task SortedSetRangeByValueAsync(IDatabaseAsync db)
     {
         string key = $"ser-zrange-value-{Guid.NewGuid()}";
 
@@ -714,7 +714,7 @@ public class SortedSetCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetRankAsync_WithCommandFlags(IDatabaseAsync db)
+    public async Task SortedSetRankAsync(IDatabaseAsync db)
     {
         string key = $"ser-zrank-{Guid.NewGuid()}";
 
@@ -746,7 +746,7 @@ public class SortedSetCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetRemoveAsync_SingleMember_WithCommandFlags(IDatabaseAsync db)
+    public async Task SortedSetRemoveAsync_SingleMember(IDatabaseAsync db)
     {
         string key = $"ser-zrem-{Guid.NewGuid()}";
 
@@ -759,7 +759,7 @@ public class SortedSetCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetRemoveAsync_MultiMember_WithCommandFlags(IDatabaseAsync db)
+    public async Task SortedSetRemoveAsync_MultiMember(IDatabaseAsync db)
     {
         string key = $"ser-zrem-multi-{Guid.NewGuid()}";
 
@@ -778,7 +778,7 @@ public class SortedSetCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetRemoveRangeByRankAsync_WithCommandFlags(IDatabaseAsync db)
+    public async Task SortedSetRemoveRangeByRankAsync(IDatabaseAsync db)
     {
         string key = $"ser-zremrangebyrank-{Guid.NewGuid()}";
 
@@ -798,7 +798,7 @@ public class SortedSetCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetRemoveRangeByScoreAsync_WithCommandFlags(IDatabaseAsync db)
+    public async Task SortedSetRemoveRangeByScoreAsync(IDatabaseAsync db)
     {
         string key = $"ser-zremrangebyscore-{Guid.NewGuid()}";
 
@@ -832,7 +832,7 @@ public class SortedSetCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetRemoveRangeByValueAsync_WithCommandFlags(IDatabaseAsync db)
+    public async Task SortedSetRemoveRangeByValueAsync(IDatabaseAsync db)
     {
         string key = $"ser-zremrangebylex-{Guid.NewGuid()}";
 
@@ -996,7 +996,7 @@ public class SortedSetCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetScoreAsync_WithCommandFlags(IDatabaseAsync db)
+    public async Task SortedSetScoreAsync(IDatabaseAsync db)
     {
         string key = $"ser-zscore-{Guid.NewGuid()}";
 
@@ -1021,7 +1021,7 @@ public class SortedSetCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task SortedSetScoresAsync_WithCommandFlags(IDatabaseAsync db)
+    public async Task SortedSetScoresAsync(IDatabaseAsync db)
     {
         string key = $"ser-zmscore-{Guid.NewGuid()}";
 
