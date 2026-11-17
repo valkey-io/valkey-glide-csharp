@@ -188,9 +188,8 @@ internal partial class FFI
 
             if (errorBuffer != IntPtr.Zero)
             {
-                string error = Marshal.PtrToStringAnsi(errorBuffer)
-                    ?? "Unknown error dropping script";
-                throw new InvalidOperationException($"Failed to drop script: {error}");
+                var errorMsg = Marshal.PtrToStringUTF8(errorBuffer);
+                throw new InvalidOperationException($"Failed to drop script: {errorMsg}");
             }
         }
         finally
@@ -519,8 +518,9 @@ internal partial class FFI
         /// <summary>
         /// The refresh interval in seconds for IAM authentication.
         /// </summary>
+        [MarshalAs(UnmanagedType.U1)]
         public readonly bool HasRefreshIntervalSeconds = refreshIntervalSeconds.HasValue;
-        public readonly uint? RefreshIntervalSeconds = refreshIntervalSeconds ?? default;
+        public readonly uint RefreshIntervalSeconds = refreshIntervalSeconds ?? default;
     }
 
     #region Monitor
