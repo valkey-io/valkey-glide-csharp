@@ -6,7 +6,7 @@ namespace Valkey.Glide;
 
 internal class ValkeyTransaction : ValkeyBatch, ITransaction
 {
-    private readonly List<ConditionResult> _conditions = [];
+    private readonly List<ConditionResult> _conditionResults = [];
 
     public ValkeyTransaction(BaseClient client) : base(client)
     {
@@ -16,7 +16,7 @@ internal class ValkeyTransaction : ValkeyBatch, ITransaction
     public ConditionResult AddCondition(Condition condition)
     {
         ConditionResult res = new(condition);
-        _conditions.Add(res);
+        _conditionResults.Add(res);
         return res;
     }
 
@@ -31,28 +31,39 @@ internal class ValkeyTransaction : ValkeyBatch, ITransaction
         // This replaces the former sync-over-async PreExecCheck() override in the
         // base class, keeping transaction-specific logic here rather than leaking
         // it into ValkeyBatch.
-        foreach (ConditionResult condition in _conditions)
+        foreach (var conditionResult in _conditionResults)
         {
+            var condition = conditionResult.Condition;
+
             // Execute the condition commands in a non-atomic batch to check the
             // current state of the watched keys.
-            ValkeyTransaction conditionBatch = new(_client)
-            {
-                _isAtomic = false
-            };
-            conditionBatch._commands.AddRange(condition.Condition.CreateCommands());
-            await conditionBatch.ExecuteImpl();
+            var batch = new ValkeyTransaction(_client) { _isAtomic = false };
+            batch._commands.AddRange(condition.CreateCommands());
+            await batch.ExecuteImpl();
 
             // At least one condition failed — cancel the transaction without
             // submitting the MULTI/EXEC block.
-            condition.WasSatisfied = condition.Condition.Validate(conditionBatch._tcs.Task.Result);
-            if (!condition.WasSatisfied)
+            conditionResult.WasSatisfied = condition.Validate(batch._tcs.Task.Result);
+
+            if (!conditionResult.WasSatisfied)
             {
-                // Clear the WATCH set by the condition commands.
+                // Complete the transaction before clearing the WATCH set by the condition commands.
+                // This ensures that the transacrion result is set even if the WATCH command throws.
+                _ = _tcs.TrySetResult(null);
                 _ = await _client.Command(Request.Unwatch());
 
-                _tcs.SetResult(null);
                 return false;
             }
+        }
+
+        // If there are conditions but no queued commands, no EXEC is sent (GLIDE
+        // rejects an empty transaction), so clear the WATCH set by the conditions.
+        if (_conditionResults.Count > 0 && _commands.Count == 0)
+        {
+            _ = _tcs.TrySetResult([]);
+            _ = await _client.Command(Request.Unwatch());
+
+            return true;
         }
 
         await ExecuteImpl();

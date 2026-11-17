@@ -174,6 +174,36 @@ public class BatchTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(PermuteTestConnectionsAndBool), 1)]
+    public async Task TransactionWithConditionAndNoCommands(ConnectionMultiplexer conn, bool conditionPass)
+    {
+        var db = conn.GetDatabase();
+        var transaction = db.CreateTransaction();
+
+        // Use a shared hash tag so that all keys map to the same cluster node.
+        var tag = Guid.NewGuid().ToString();
+        var key = $"{{{tag}}}key";
+        var conditionKey = $"{{{tag}}}condition";
+
+        // Condition which always passes/fails, with no queued commands.
+        var c = transaction.AddCondition(conditionPass
+            ? Condition.KeyNotExists(conditionKey)
+            : Condition.KeyExists(conditionKey));
+
+        Assert.Equal(conditionPass, await transaction.ExecuteAsync());
+        Assert.Equal(conditionPass, c.WasSatisfied);
+
+        // Modify the key watched by the transaction and verify that the next transaction passes.
+        // This verifies that any WATCH commands started by the transaction were cancelled.
+        Assert.True(await db.StringSetAsync(conditionKey, "value"));
+
+        var next = db.CreateTransaction();
+        var set = next.StringSetAsync(key, "value");
+        Assert.True(await next.ExecuteAsync());
+        Assert.True(await set);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(PermuteTestConnectionsAndBool), 1)]
     public async Task ReusedBatchIsntSubmitted(ConnectionMultiplexer conn, bool isBatch)
     {
         IDatabase db = conn.GetDatabase();
