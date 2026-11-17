@@ -88,6 +88,7 @@ internal static partial class Request
             return null;
         }
 
+        // TODO #651: Use invariant culture.
         return new GeoPosition(double.Parse(posArray[0].ToString()!), double.Parse(posArray[1].ToString()!));
     }
 

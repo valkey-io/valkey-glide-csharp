@@ -133,6 +133,7 @@ internal static partial class Request
             false,
             arr =>
             {
+                // TODO #651: Use invariant culture.
                 long seconds = long.Parse(arr[0] is GlideString gs1 ? gs1.ToString() : arr[0].ToString()!);
                 long microseconds = long.Parse(arr[1] is GlideString gs2 ? gs2.ToString() : arr[1].ToString()!);
                 return DateTimeOffset.FromUnixTimeSeconds(seconds)
@@ -267,6 +268,7 @@ internal static partial class Request
             object[] entry = (object[])array[i];
             entries[i] = new()
             {
+                // TODO #651: Use invariant culture.
                 Time = DateTimeOffset.FromUnixTimeSeconds(Convert.ToInt64(entry[0])),
                 Duration = TimeSpan.FromMilliseconds(Convert.ToInt64(entry[1])),
             };
@@ -286,6 +288,7 @@ internal static partial class Request
             entries[i] = new()
             {
                 EventName = ((GlideString)entry[0]).ToString(),
+                // TODO #651: Use invariant culture.
                 LatestTime = DateTimeOffset.FromUnixTimeSeconds(Convert.ToInt64(entry[1])),
                 LatestDuration = TimeSpan.FromMilliseconds(Convert.ToInt64(entry[2])),
                 MaxDuration = TimeSpan.FromMilliseconds(Convert.ToInt64(entry[3])),

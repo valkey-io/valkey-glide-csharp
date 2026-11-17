@@ -365,6 +365,7 @@ internal partial class ValkeyServer(Database conn, EndPoint endpoint) : IServer
         ArgumentOutOfRangeException.ThrowIfLessThan(pageSize, 0, nameof(pageSize));
 
         var options = new ScanOptions { MatchPattern = pattern, Count = pageSize };
+        // TODO #651: Use invariant culture.
         return ScanAsync(cursor.ToString(), options).SkipAsync(pageOffset);
     }
 

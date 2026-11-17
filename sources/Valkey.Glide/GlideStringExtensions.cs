@@ -21,6 +21,7 @@ public static class GlideStringExtensions
     /// </summary>
     /// <param name="int">A <see langword="int" /> to convert.</param>
     /// <returns>A <see cref="GlideString" />.</returns>
+    // TODO #651: Use invariant culture.
     public static GlideString ToGlideString(this int @int) => new(@int.ToString());
 
     /// <summary>
@@ -28,6 +29,7 @@ public static class GlideStringExtensions
     /// </summary>
     /// <param name="ushort">A <see langword="ushort" /> to convert.</param>
     /// <returns>A <see cref="GlideString" />.</returns>
+    // TODO #651: Use invariant culture.
     public static GlideString ToGlideString(this ushort @ushort) => new(@ushort.ToString());
 
     /// <summary>
@@ -35,6 +37,7 @@ public static class GlideStringExtensions
     /// </summary>
     /// <param name="long">A <see langword="long" /> to convert.</param>
     /// <returns>A <see cref="GlideString" />.</returns>
+    // TODO #651: Use invariant culture.
     public static GlideString ToGlideString(this long @long) => new(@long.ToString());
 
     /// <summary>
@@ -42,6 +45,7 @@ public static class GlideStringExtensions
     /// </summary>
     /// <param name="ulong">A <see langword="ulong" /> to convert.</param>
     /// <returns>A <see cref="GlideString" />.</returns>
+    // TODO #651: Use invariant culture.
     public static GlideString ToGlideString(this ulong @ulong) => new(@ulong.ToString());
 
     /// <summary>

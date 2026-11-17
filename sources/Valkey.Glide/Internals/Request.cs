@@ -45,6 +45,7 @@ internal static partial class Request
     /// <param name="args">The command arguments</param>
     /// <returns>A command that converts the response to a boolean value (true if response equals 1)</returns>
     private static Cmd<T, bool> Boolean<T>(RequestType request, GlideString[] args)
+        // TODO #651: Use invariant culture.
         => new(request, args, false, response => Convert.ToInt64(response) == 1);
 
     /// <summary>
@@ -124,6 +125,7 @@ internal static partial class Request
 
         foreach (var kvp in dict)
         {
+            // TODO #651: Use invariant culture.
             result[(ValkeyKey)kvp.Key.Bytes] = Convert.ToInt64(kvp.Value);
         }
 
@@ -410,6 +412,7 @@ internal static partial class Request
     /// </summary>
     /// <param name="map">The response dictionary.</param>
     /// <param name="key">The field key to read.</param>
+        // TODO #651: Use invariant culture.
     /// <exception cref="RequestException">Thrown if <paramref name="key"/> is missing from <paramref name="map"/>.</exception>
     private static ValkeyValue GetValkeyValue(Dictionary<GlideString, object> map, string key)
     {

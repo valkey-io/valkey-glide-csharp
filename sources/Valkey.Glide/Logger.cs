@@ -101,6 +101,7 @@ public static class Logger
             message += $": {error}";
         }
 
+        // TODO #651: Use invariant culture.
         log(Convert.ToInt32(logLevel), logIdentifier, message);
     }
 
@@ -119,6 +120,7 @@ public static class Logger
     /// <exception cref="InvalidOperationException">Thrown if the native logger fails to initialize.</exception>
     public static void SetLoggerConfig(Level level, string? filename = null)
     {
+        // TODO #651: Use invariant culture.
         IntPtr errorPtr = InitInternalLogger(Convert.ToInt32(level), filename, out Level resolvedLevel);
         if (errorPtr != IntPtr.Zero)
         {

@@ -181,6 +181,7 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer
         {
             if (line.Contains("tcp_port:"))
             {
+                // TODO #651: Use invariant culture.
                 port = int.Parse(line.Split(':')[1]);
             }
         }

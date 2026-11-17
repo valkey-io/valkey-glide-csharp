@@ -547,6 +547,7 @@ public abstract class Condition
         public override string ToString()
             => ((string?)key)
                 + "["
+                // TODO #651: Use invariant culture.
                 + index.ToString()
                 + "]"
                 + (expectedValue.HasValue ? (expectedResult ? " == " : " != ")
