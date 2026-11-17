@@ -45,7 +45,7 @@ internal partial class ValkeyServer(Database conn, EndPoint endpoint) : IServer
     public async Task<ValkeyResult> ExecuteAsync(string command, ICollection<object> args, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-        object? res = await _conn.Command(Request.CustomCommand([command, .. args?.Select(static a => a.ToString()!) ?? []]), MakeRoute());
+        var res = await _conn.Command(Request.CustomCommand(Database.ToExecuteArgs(command, args)), MakeRoute());
         return ValkeyResult.Create(res);
     }
 

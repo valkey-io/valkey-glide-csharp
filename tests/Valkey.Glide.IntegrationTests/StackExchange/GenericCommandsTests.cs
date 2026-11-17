@@ -425,6 +425,34 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
     }
 
     #endregion
+    #region ExecuteAsync Tests
+
+    [Fact]
+    public async Task ExecuteAsync_WithKeyAndValue_ReturnsResult()
+    {
+        var db = fixture.Database;
+        ValkeyKey key = $"ser-execute-{Guid.NewGuid()}";
+        ValkeyValue value = "value";
+
+        Assert.Equal("OK", (string?)await db.ExecuteAsync("SET", key, value));
+        Assert.Equal(value, (ValkeyValue)await db.ExecuteAsync("GET", key));
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithChannel_ReturnsResult()
+    {
+        var db = fixture.Database;
+        var channel = ValkeyChannel.Literal($"ser-execute-channel-{Guid.NewGuid()}");
+
+        // No subscribers, so PUBLISH reports zero receivers.
+        Assert.Equal(0L, (long)await db.ExecuteAsync("PUBLISH", channel, "message"));
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_UnsupportedArg_ThrowsInvalidCastException()
+        => await Assert.ThrowsAsync<InvalidCastException>(() => fixture.Database.ExecuteAsync("ECHO", DateTime.UtcNow));
+
+    #endregion
 }
 
 /// <summary>
