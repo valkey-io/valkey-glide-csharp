@@ -541,6 +541,17 @@ pub struct ConnectionRetryStrategy {
     pub jitter_percent: u32,
 }
 
+// Layout checked by `FFITests.RetryStrategy_MatchesRustLayout` in the C# unit tests.
+const _: () = {
+    use std::mem::{offset_of, size_of};
+    assert!(size_of::<ConnectionRetryStrategy>() == 20);
+    assert!(offset_of!(ConnectionRetryStrategy, exponent_base) == 0);
+    assert!(offset_of!(ConnectionRetryStrategy, factor) == 4);
+    assert!(offset_of!(ConnectionRetryStrategy, number_of_retries) == 8);
+    assert!(offset_of!(ConnectionRetryStrategy, has_jitter_percent) == 12);
+    assert!(offset_of!(ConnectionRetryStrategy, jitter_percent) == 16);
+};
+
 /// A mirror of [`AuthenticationInfo`] adopted for FFI.
 #[repr(C)]
 #[derive(Clone, Copy)]
@@ -561,6 +572,17 @@ pub struct IamCredentials {
     pub has_refresh_interval_seconds: bool,
     pub refresh_interval_seconds: u32,
 }
+
+// Layout checked by `FFITests.IamCredentials_MatchesRustLayout` in the C# unit tests.
+const _: () = {
+    use std::mem::{offset_of, size_of};
+    assert!(size_of::<IamCredentials>() == 32);
+    assert!(offset_of!(IamCredentials, cluster_name) == 0);
+    assert!(offset_of!(IamCredentials, region) == 8);
+    assert!(offset_of!(IamCredentials, service_type) == 16);
+    assert!(offset_of!(IamCredentials, has_refresh_interval_seconds) == 20);
+    assert!(offset_of!(IamCredentials, refresh_interval_seconds) == 24);
+};
 
 /// A mirror of [`SlotAddr`]
 #[repr(C)]
