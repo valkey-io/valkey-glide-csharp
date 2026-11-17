@@ -16,8 +16,7 @@
             "RedisKey": "ValkeyKey",
             "RedisResult": "ValkeyResult",
             "RedisStream": "ValkeyStream",
-            "RedisLiterals": "ValkeyLiterals",
-            "RedisValueWithExpiry": "ValkeyValueWithExpiry"
+            "RedisLiterals": "ValkeyLiterals"
         },
         "autoMapSameNameTypes": true,
         "ignoreCase": false
