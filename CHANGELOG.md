@@ -45,6 +45,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `DELIFEQ` (#575)
   - `FAILOVER` (#446)
   - `HGETDEL` (#285)
+  - `LATENCY HISTORY` (#438)
+  - `LATENCY LATEST` (#438)
+  - `LATENCY RESET` (#438)
   - `MEMORY DOCTOR` (#443)
   - `MEMORY MALLOC-STATS` (#443)
   - `MEMORY PURGE` (#443)
@@ -54,9 +57,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `REPLICAOF` (#446)
   - `RESET` (#435)
   - `SAVE` (#440)
-- Support new Valkey 9.1 commands:
+- Support new Valkey 9.x commands:
   - `HSETEX` with `NX` and `XX` options (#582)
-- Support new Valkey 9.2 commands:
   - `INFO` with `cluster_info` section (#590)
   - `SET` with `IFNE` option (#579)
   - `SISMEMBER` with `XX` option (#581)
@@ -73,6 +75,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - For compatibility with StackExchange.Redis:
   - `IDatabaseAsync.StreamReadAsync` parameter renamed to `count` (#326)
   - `IDatabaseAsync.StreamAutoClaimIdsOnlyAsync` returns `StreamAutoClaimIdsOnlyResult` (#326)
+  - `IDatabaseAsync.ExecuteAsync` and `IServer.ExecuteAsync` updated to match argument conversion logic.
+    Unsupported argument types now throw `InvalidCastException` (#653)
 - Updated released but previously unused stream types (#326):
   - Rename `StreamGroupFullInfo` to `StreamGroupInfoFull`
   - Rename `StreamConsumerFullInfo` to `StreamConsumerInfoFull`
@@ -81,10 +85,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Logger`, `InfoOptions`, and `Options` are now `static` classes.
 - The Availability Zone (`ReadFrom.Az`) is trimmed of surrounding whitespace before it is used, so an AZ-affinity strategy configured with a padded value now engages AZ affinity instead of silently spreading reads across all nodes (#533)
 - `SET` with `IFEQ` or `IFNE` now throws a `RequestException` when compression is enabled (#579)
+- `CLIENT INFO` now reports `lib-name` and `lib-ver` correctly (#415)
+- Log level defaults to `Warn` instead being implicitly set to the level of the first message.
+  Use `Logger.SetLoggerConfig` or `Logger.Init` to set it explicitly (#632).
 
 ### Fixed
 
 - Marshalling of non-ASCII characters on Windows (#501)
+- Corrupted non-ASCII characters (#649):
+  - `UpdateConnectionPasswordAsync` passwords and native error messages on Windows
+  - `ScanAsync` for cluster client with `MATCH` patterns
+- Configured IAM authentication refresh interval being ignored (#649)
+- `RetryStrategy` number of retries and exponent base were swapped (#649)
+- Possible use of freed memory when a client is disposed during a pending script invocation (#649)
 - `FailoverOptions` throws `ArgumentOutOfRangeException` for zero timeout (#488)
 - `StreamReadGroupAsync` returning only the first field-value pair per stream entry (#430)
 - Incorrect default routes:
@@ -99,6 +112,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Culture-invariant parsing of numeric string responses (#557)
 - `ISubscriber` corrupting binary (non-UTF-8) channel names and messages (#594)
 - `GETSET` custom command compresses its value when compression is enabled (#579)
+- `ConnectionMultiplexer.GetServers()` throwing `FormatException` when cluster nodes are addressed by DNS hostname (#419)
+- Race condition that could throw `ArgumentOutOfRangeException` on the thread pool when a response arrived after the client was disposed (#466)
+- Client could be disposed by the garbage collector while a request was pending (#632)
+- Client-side cache invalidations logged as invalid PubSub messages (#632)
 
 ### Security
 

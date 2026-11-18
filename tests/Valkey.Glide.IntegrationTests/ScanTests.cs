@@ -13,7 +13,7 @@ public class ScanTests(TestConfiguration config)
     public async Task TestScanAsync_PrefixFiltering(BaseClient client)
     {
         // Add keys.
-        string prefix = Guid.NewGuid().ToString();
+        string prefix = BuildPrefix();
         var key1 = new ValkeyKey($"{prefix}:key1");
         var key2 = new ValkeyKey($"{prefix}:key2");
 
@@ -39,7 +39,7 @@ public class ScanTests(TestConfiguration config)
     public async Task TestScanAsync_BasicIteration(BaseClient client)
     {
         // Add keys with different types.
-        string prefix = Guid.NewGuid().ToString();
+        string prefix = BuildPrefix();
         var stringKey = new ValkeyKey($"{prefix}:string");
         var listKey = new ValkeyKey($"{prefix}:list");
         var setKey = new ValkeyKey($"{prefix}:set");
@@ -62,7 +62,7 @@ public class ScanTests(TestConfiguration config)
     public async Task TestScanAsync_WithPageSize(BaseClient client)
     {
         // Add keys with different prefixes.
-        string prefix = Guid.NewGuid().ToString();
+        string prefix = BuildPrefix();
         var matchStringKey = new ValkeyKey($"{prefix}:match:string");
         var matchListKey = new ValkeyKey($"{prefix}:match:list");
         var otherStringKey = new ValkeyKey($"{prefix}:other:string");
@@ -79,6 +79,13 @@ public class ScanTests(TestConfiguration config)
         // Remove keys.
         _ = await client.DeleteAsync([matchStringKey, matchListKey, otherStringKey]);
     }
+
+    /// <summary>
+    /// Returns a unique key prefix for a test.
+    /// </summary>
+    private static string BuildPrefix()
+        // Include non-ASCII characters to verify arguments are encoded as UTF-8.
+        => $"{Guid.NewGuid()}:日本";
 
     private static async Task<ValkeyKey[]> ExecuteScanAsync(BaseClient client, ValkeyValue pattern = default, int pageSize = 250)
     {

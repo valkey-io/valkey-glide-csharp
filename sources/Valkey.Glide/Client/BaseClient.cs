@@ -268,7 +268,7 @@ public abstract partial class BaseClient : IBaseClient
         }
 
         Message message = MessageContainer.GetMessageForCall();
-        IntPtr passwordPtr = Marshal.StringToHGlobalAnsi(password);
+        IntPtr passwordPtr = Marshal.StringToCoTaskMemUTF8(password);
         try
         {
             UpdateConnectionPasswordFfi(ClientPointer, (ulong)message.Index, passwordPtr, immediateAuth);
@@ -284,7 +284,7 @@ public abstract partial class BaseClient : IBaseClient
         }
         finally
         {
-            Marshal.FreeHGlobal(passwordPtr);
+            Marshal.ZeroFreeCoTaskMemUTF8(passwordPtr);
         }
     }
 
@@ -580,8 +580,8 @@ public abstract partial class BaseClient : IBaseClient
 
     private void FailureCallback(ulong index, IntPtr strPtr, RequestErrorType errType)
     {
-        string str = Marshal.PtrToStringAnsi(strPtr)!;
-        _ = ThreadPool.UnsafeQueueUserWorkItem(_ => MessageContainer.GetMessage((int)index).SetException(Create(errType, str)), null);
+        string errorMsg = Marshal.PtrToStringUTF8(strPtr)!;
+        _ = ThreadPool.UnsafeQueueUserWorkItem(_ => MessageContainer.GetMessage((int)index).SetException(Create(errType, errorMsg)), null);
     }
 
     private void PubSubCallback(

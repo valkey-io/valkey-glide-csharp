@@ -36,6 +36,7 @@ public class LolwutOptions
         if (Version is not null)
         {
             args.Add(ValkeyLiterals.VERSION.ToString());
+            // TODO #651: Use invariant culture.
             args.Add(Version.Value.ToString());
         }
 
@@ -43,6 +44,7 @@ public class LolwutOptions
         {
             foreach (int param in Parameters)
             {
+                // TODO #651: Use invariant culture.
                 args.Add(param.ToString());
             }
         }

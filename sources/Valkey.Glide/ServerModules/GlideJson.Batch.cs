@@ -369,6 +369,7 @@ public static class GlideJsonBatch
     public static T ArrInsert<T>(T batch, GlideString key, GlideString path, long index, IEnumerable<GlideString> values)
         where T : BaseBatch<T>
     {
+        // TODO #651: Use invariant culture.
         List<GlideString> args = [GlideJson.JsonArrInsert, key, path, index.ToString()];
         args.AddRange(values);
         return batch.CustomCommand(args);
@@ -435,6 +436,7 @@ public static class GlideJsonBatch
     /// <returns>The batch for chaining.</returns>
     public static T ArrPop<T>(T batch, GlideString key, GlideString path, long index)
         where T : BaseBatch<T>
+        // TODO #651: Use invariant culture.
         => batch.CustomCommand([GlideJson.JsonArrPop, key, path, index.ToString()]);
 
     #endregion
@@ -453,6 +455,7 @@ public static class GlideJsonBatch
     /// <returns>The batch for chaining.</returns>
     public static T ArrTrim<T>(T batch, GlideString key, GlideString path, long start, long stop)
         where T : BaseBatch<T>
+        // TODO #651: Use invariant culture.
         => batch.CustomCommand([GlideJson.JsonArrTrim, key, path, start.ToString(), stop.ToString()]);
 
     #endregion

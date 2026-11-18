@@ -219,6 +219,7 @@ public static partial class GlideJson
     /// </example>
     public static async Task<ValkeyValue?[]?> ArrPopAsync(BaseClient client, ValkeyKey key, ValkeyValue path, long index = -1)
     {
+        // TODO #651: Use invariant culture.
         GlideString[] args = [JsonArrPop, ToGlideString(key), ToGlideString(path), index.ToString()];
         object? result = await ExecuteCommandAsync(client, args);
         return ConvertToNullableValkeyValueArray(result);
@@ -250,6 +251,7 @@ public static partial class GlideJson
     /// </example>
     public static async Task<long?[]> ArrTrimAsync(BaseClient client, ValkeyKey key, ValkeyValue path, long start, long end)
     {
+        // TODO #651: Use invariant culture.
         GlideString[] args = [JsonArrTrim, ToGlideString(key), ToGlideString(path), start.ToString(), end.ToString()];
         object? result = await ExecuteCommandAsync(client, args);
         return ConvertToNullableLongArrayNonNull(result);
@@ -267,6 +269,7 @@ public static partial class GlideJson
 
     private static GlideString[] BuildArrInsertArgs(GlideString key, GlideString path, long index, GlideString[] values)
     {
+        // TODO #651: Use invariant culture.
         List<GlideString> args = [JsonArrInsert, key, path, index.ToString()];
         args.AddRange(values);
         return [.. args];

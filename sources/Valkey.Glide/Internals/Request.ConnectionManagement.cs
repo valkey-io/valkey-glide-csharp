@@ -54,6 +54,7 @@ internal static partial class Request
             : EmptyStringSet;
 
         long redirect = map.TryGetValue("redirect", out object? redirectObj)
+            // TODO #651: Use invariant culture.
             ? Convert.ToInt64(redirectObj)
             : -1;
 

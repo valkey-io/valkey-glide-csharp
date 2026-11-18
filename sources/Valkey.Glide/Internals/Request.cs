@@ -45,6 +45,7 @@ internal static partial class Request
     /// <param name="args">The command arguments</param>
     /// <returns>A command that converts the response to a boolean value (true if response equals 1)</returns>
     private static Cmd<T, bool> Boolean<T>(RequestType request, GlideString[] args)
+        // TODO #651: Use invariant culture.
         => new(request, args, false, response => Convert.ToInt64(response) == 1);
 
     /// <summary>
@@ -124,6 +125,7 @@ internal static partial class Request
 
         foreach (var kvp in dict)
         {
+            // TODO #651: Use invariant culture.
             result[(ValkeyKey)kvp.Key.Bytes] = Convert.ToInt64(kvp.Value);
         }
 
@@ -143,11 +145,18 @@ internal static partial class Request
     #region ValkeyKey Converters
 
     /// <summary>
+    /// Converts the given <see cref="GlideString"/> to a <see cref="ValkeyKey"/>.
+    /// </summary>
+    /// <param name="value">The value to convert.</param>
+    private static ValkeyKey ToValkeyKey(GlideString value)
+        => (ValkeyKey)value.Bytes;
+
+    /// <summary>
     /// Converts the given objects to a <see cref="ValkeyKey"/> set.
     /// </summary>
     /// <param name="items">The objects to convert.</param>
     private static ISet<ValkeyKey> ToValkeyKeySet(IEnumerable<object> items)
-        => new HashSet<ValkeyKey>(items.Cast<GlideString>().Select(gs => (ValkeyKey)gs.Bytes));
+        => new HashSet<ValkeyKey>(items.Cast<GlideString>().Select(ToValkeyKey));
 
     #endregion
     #region ValkeyValue Converters
@@ -403,6 +412,7 @@ internal static partial class Request
     /// <param name="key">The field key to read.</param>
     private static TimeSpan GetTimeSpan(Dictionary<GlideString, object> map, string key)
         // Expects a server duration string (e.g. "0.123 sec").
+        // TODO #651: Use invariant culture.
         => TimeSpan.FromSeconds(double.Parse(GetString(map, key).Replace(" sec", "")));
 
     /// <summary>

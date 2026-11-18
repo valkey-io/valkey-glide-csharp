@@ -25,6 +25,8 @@ Options:
     --configuration CFG     Build configuration (e.g. Debug, Release). Default: Release.
 """
 
+from __future__ import annotations
+
 import argparse
 import json
 import os

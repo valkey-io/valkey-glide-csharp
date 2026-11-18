@@ -12,20 +12,20 @@ public enum ClientType
     /// <summary>
     /// Normal client connection.
     /// </summary>
-    Normal,
-
-    /// <summary>
-    /// Primary connection.
-    /// </summary>
-    Primary,
+    Normal = 0,
 
     /// <summary>
     /// Replica node connection.
     /// </summary>
-    Replica,
+    Replica = 1,
 
     /// <summary>
     /// Pub/sub subscriber connection.
     /// </summary>
-    PubSub,
+    PubSub = 2,
+
+    /// <summary>
+    /// Primary connection.
+    /// </summary>
+    Primary = 3,
 }
