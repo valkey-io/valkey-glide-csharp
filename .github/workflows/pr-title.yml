@@ -1,0 +1,22 @@
+name: PR Title
+
+# Triggers must match valkey-glide's pr-title.yml, which this calls.
+on:
+    pull_request:
+        types: [opened, edited, reopened, synchronize, labeled, unlabeled]
+    workflow_run:
+        workflows: ["The OSS Review Toolkit (ORT)"]
+        types: [completed]
+
+permissions:
+    contents: read
+
+jobs:
+    pr-title:
+        permissions:
+            contents: read
+            pull-requests: read
+            statuses: write
+        uses: valkey-io/valkey-glide/.github/workflows/pr-title.yml@main
+        with:
+            check-name: pr-title / Validate PR title
