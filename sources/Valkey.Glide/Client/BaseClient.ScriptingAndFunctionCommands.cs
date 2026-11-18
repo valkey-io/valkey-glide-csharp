@@ -80,7 +80,7 @@ public abstract partial class BaseClient
         {
             return await Command(Request.ScriptShow(sha1Hash));
         }
-        catch (Errors.RequestException ex) when (ex.Message.Contains("NoScriptError"))
+        catch (Errors.RequestException ex) when (ex.Message.Contains("NOSCRIPT"))
         {
             // Return null when script doesn't exist
             return null;
