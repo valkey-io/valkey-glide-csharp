@@ -201,16 +201,10 @@ jobs:
               with:
                   name: package
 
-            # Login to NuGet to get a short-lived API key for Trusted Publishing.
-            - name: Log in to NuGet
-              id: nuget-login
-              uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
-              with:
-                  user: valkey
-
+            # TODO #656: Publish with Trusted Publishing and a NuGet service account instead of an API key.
             - name: Publish to NuGet
               env:
-                  NUGET_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
+                  NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
               run: |
                   ls -lh
                   dotnet nuget push "Valkey.Glide.$RELEASE_VERSION.nupkg" \
