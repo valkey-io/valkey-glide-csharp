@@ -4,6 +4,9 @@ name: PR Title
 on:
     pull_request:
         types: [opened, edited, reopened, synchronize, labeled, unlabeled]
+    workflow_run:
+        workflows: ["The OSS Review Toolkit (ORT)"]
+        types: [completed]
 
 permissions:
     contents: read
@@ -13,4 +16,7 @@ jobs:
         permissions:
             contents: read
             pull-requests: read
+            statuses: write
         uses: valkey-io/valkey-glide/.github/workflows/pr-title.yml@main
+        with:
+            check-name: pr-title / Validate PR title
