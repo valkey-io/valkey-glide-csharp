@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Globalization;
+
 using static Valkey.Glide.Commands.Options.InfoOptions;
 
 namespace Valkey.Glide;
@@ -21,32 +23,32 @@ public static class GlideStringExtensions
     /// </summary>
     /// <param name="int">A <see langword="int" /> to convert.</param>
     /// <returns>A <see cref="GlideString" />.</returns>
-    // TODO #651: Use invariant culture.
-    public static GlideString ToGlideString(this int @int) => new(@int.ToString());
+    public static GlideString ToGlideString(this int @int)
+        => new(@int.ToString(CultureInfo.InvariantCulture));
 
     /// <summary>
     /// Convert a <paramref name="ushort"/> to a <see cref="GlideString" />.
     /// </summary>
     /// <param name="ushort">A <see langword="ushort" /> to convert.</param>
     /// <returns>A <see cref="GlideString" />.</returns>
-    // TODO #651: Use invariant culture.
-    public static GlideString ToGlideString(this ushort @ushort) => new(@ushort.ToString());
+    public static GlideString ToGlideString(this ushort @ushort)
+        => new(@ushort.ToString(CultureInfo.InvariantCulture));
 
     /// <summary>
     /// Convert a <paramref name="long"/> to a <see cref="GlideString" />.
     /// </summary>
     /// <param name="long">A <see langword="long" /> to convert.</param>
     /// <returns>A <see cref="GlideString" />.</returns>
-    // TODO #651: Use invariant culture.
-    public static GlideString ToGlideString(this long @long) => new(@long.ToString());
+    public static GlideString ToGlideString(this long @long)
+        => new(@long.ToString(CultureInfo.InvariantCulture));
 
     /// <summary>
     /// Convert a <paramref name="ulong"/> to a <see cref="GlideString" />.
     /// </summary>
     /// <param name="ulong">A <see langword="ulong" /> to convert.</param>
     /// <returns>A <see cref="GlideString" />.</returns>
-    // TODO #651: Use invariant culture.
-    public static GlideString ToGlideString(this ulong @ulong) => new(@ulong.ToString());
+    public static GlideString ToGlideString(this ulong @ulong)
+        => new(@ulong.ToString(CultureInfo.InvariantCulture));
 
     /// <summary>
     /// Convert a <paramref name="double"/> to a <see cref="GlideString" />.

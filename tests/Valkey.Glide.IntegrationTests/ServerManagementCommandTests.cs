@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Globalization;
+
 using Valkey.Glide.Commands.Options;
 using Valkey.Glide.TestUtils;
 
@@ -523,12 +525,12 @@ public class ServerManagementCommandTests(ClientFixture fixture) : IClassFixture
             info = await Client.GetInfo(client, Section.PERSISTENCE);
             Assert.Contains(Assert.Contains("rdb_current_bgsave_type", info), BgSaveTypes);
             Assert.Contains(Assert.Contains("rdb_last_bgsave_type", info), BgSaveTypes);
-            Assert.True(long.Parse(Assert.Contains("forkless_estimated_seconds_remaining", info)) >= -1);
+            Assert.True(long.Parse(Assert.Contains("forkless_estimated_seconds_remaining", info), CultureInfo.InvariantCulture) >= -1);
 
             if (clusterMode)
             {
                 info = await Client.GetInfo(client, Section.CLUSTER_INFO);
-                Assert.True(long.Parse(Assert.Contains("cluster_io_main_thread_fallbacks", info)) >= 0);
+                Assert.True(long.Parse(Assert.Contains("cluster_io_main_thread_fallbacks", info), CultureInfo.InvariantCulture) >= 0);
             }
         }
     }

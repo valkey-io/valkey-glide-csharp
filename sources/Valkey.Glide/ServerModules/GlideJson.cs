@@ -744,13 +744,11 @@ public static partial class GlideJson
 
         if (result is object?[] arr)
         {
-            // TODO #651: Use invariant culture.
-            return [.. arr.Select(o => o is null ? (bool?)null : Convert.ToBoolean(o))];
+            return [.. arr.Select(o => o is null ? (bool?)null : Convert.ToBoolean(o, CultureInfo.InvariantCulture))];
         }
 
         // Single value (legacy path) - wrap in array for consistent return type
-        // TODO #651: Use invariant culture.
-        return [Convert.ToBoolean(result)];
+        return [Convert.ToBoolean(result, CultureInfo.InvariantCulture)];
     }
 
     #endregion

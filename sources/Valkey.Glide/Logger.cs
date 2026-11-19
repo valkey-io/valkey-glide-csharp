@@ -1,5 +1,6 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Globalization;
 using System.Runtime.InteropServices;
 
 namespace Valkey.Glide;
@@ -101,8 +102,7 @@ public static class Logger
             message += $": {error}";
         }
 
-        // TODO #651: Use invariant culture.
-        log(Convert.ToInt32(logLevel), logIdentifier, message);
+        log(Convert.ToInt32(logLevel, CultureInfo.InvariantCulture), logIdentifier, message);
     }
 
     /// <summary>
@@ -120,8 +120,7 @@ public static class Logger
     /// <exception cref="InvalidOperationException">Thrown if the native logger fails to initialize.</exception>
     public static void SetLoggerConfig(Level level, string? filename = null)
     {
-        // TODO #651: Use invariant culture.
-        IntPtr errorPtr = InitInternalLogger(Convert.ToInt32(level), filename, out Level resolvedLevel);
+        IntPtr errorPtr = InitInternalLogger(Convert.ToInt32(level, CultureInfo.InvariantCulture), filename, out Level resolvedLevel);
         if (errorPtr != IntPtr.Zero)
         {
             string? errorMessage = Marshal.PtrToStringUTF8(errorPtr);

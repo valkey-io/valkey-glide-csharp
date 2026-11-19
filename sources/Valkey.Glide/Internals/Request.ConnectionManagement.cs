@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Globalization;
+
 using Valkey.Glide.Commands.Options;
 
 using static Valkey.Glide.Internals.FFI;
@@ -54,8 +56,7 @@ internal static partial class Request
             : EmptyStringSet;
 
         long redirect = map.TryGetValue("redirect", out object? redirectObj)
-            // TODO #651: Use invariant culture.
-            ? Convert.ToInt64(redirectObj)
+            ? Convert.ToInt64(redirectObj, CultureInfo.InvariantCulture)
             : -1;
 
         IReadOnlySet<string> prefixes =

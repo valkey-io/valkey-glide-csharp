@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Globalization;
+
 using static Valkey.Glide.TestUtils.Builders;
 
 namespace Valkey.Glide.UnitTests;
@@ -58,7 +60,7 @@ public class IamAuthConfigTests
 
         Assert.DoesNotContain(ClusterName, result);
         Assert.DoesNotContain(Region, result);
-        Assert.DoesNotContain(RefreshInterval.ToString(), result);
+        Assert.DoesNotContain(RefreshInterval.ToString(CultureInfo.InvariantCulture), result);
     }
 
     [Fact]

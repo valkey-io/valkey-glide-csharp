@@ -1,6 +1,7 @@
 ﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using System.ComponentModel;
+using System.Globalization;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -11,9 +12,6 @@ using static Valkey.Glide.ConnectionConfiguration;
 
 namespace Valkey.Glide;
 
-// (Add braces to if statement) | (Convert to conditional expression) | (Naming rule: missing '_')
-#pragma warning disable IDE0011, IDE0046, IDE1006
-
 /// <summary>
 /// The options relevant to a set of server connections.
 /// </summary>
@@ -21,9 +19,9 @@ public sealed class ConfigurationOptions : ICloneable
 {
     #region Internal Fields
 
-    internal readonly List<byte[]> _trustedIssuers = [];
-    internal byte[]? _clientCertificate;
-    internal byte[]? _clientKey;
+    internal readonly List<byte[]> TrustedIssuers = [];
+    internal byte[]? ClientCertificate;
+    internal byte[]? ClientKey;
 
     #endregion
     #region Private Fields
@@ -245,7 +243,7 @@ public sealed class ConfigurationOptions : ICloneable
     public void TrustIssuer(string certificatePath)
     {
         GuardClauses.ThrowIfCertificateNotSupported(certificatePath, nameof(certificatePath));
-        _trustedIssuers.Add(File.ReadAllBytes(certificatePath));
+        TrustedIssuers.Add(File.ReadAllBytes(certificatePath));
     }
 
     /// <summary>
@@ -256,7 +254,7 @@ public sealed class ConfigurationOptions : ICloneable
     public void TrustIssuer(X509Certificate2 certificate)
     {
         ArgumentNullException.ThrowIfNull(certificate, nameof(certificate));
-        _trustedIssuers.Add(certificate.Export(X509ContentType.Cert));
+        TrustedIssuers.Add(certificate.Export(X509ContentType.Cert));
     }
 
     /// <summary>
@@ -269,7 +267,7 @@ public sealed class ConfigurationOptions : ICloneable
     public void SetUserPemCertificate(string userCertificatePath, string? userKeyPath = null)
     {
         GuardClauses.ThrowIfCertificateNotSupported(userCertificatePath, nameof(userCertificatePath));
-        _clientCertificate = File.ReadAllBytes(userCertificatePath);
+        ClientCertificate = File.ReadAllBytes(userCertificatePath);
 
         // When keyPath is null, pass the same blob for both cert and key.
         // glide-core extracts certificates and private keys independently by scanning for
@@ -277,11 +275,11 @@ public sealed class ConfigurationOptions : ICloneable
         if (userKeyPath is not null)
         {
             GuardClauses.ThrowIfCertificateNotSupported(userKeyPath, nameof(userKeyPath));
-            _clientKey = File.ReadAllBytes(userKeyPath);
+            ClientKey = File.ReadAllBytes(userKeyPath);
         }
         else
         {
-            _clientKey = _clientCertificate;
+            ClientKey = ClientCertificate;
         }
 
         Ssl = true;
@@ -308,9 +306,9 @@ public sealed class ConfigurationOptions : ICloneable
             ReadFrom = ReadFrom
         };
 
-        clone._trustedIssuers.AddRange(_trustedIssuers);
-        clone._clientCertificate = _clientCertificate;
-        clone._clientKey = _clientKey;
+        clone.TrustedIssuers.AddRange(TrustedIssuers);
+        clone.ClientCertificate = ClientCertificate;
+        clone.ClientKey = ClientKey;
 
         return clone;
     }
@@ -421,11 +419,19 @@ public sealed class ConfigurationOptions : ICloneable
 
     private static void Append(StringBuilder sb, object value)
     {
-        if (value == null) return;
+        if (value == null)
+        {
+            return;
+        }
+
         string s = Format.ToString(value);
         if (!string.IsNullOrWhiteSpace(s))
         {
-            if (sb.Length != 0) _ = sb.Append(',');
+            if (sb.Length != 0)
+            {
+                _ = sb.Append(',');
+            }
+
             _ = sb.Append(s);
         }
     }
@@ -435,7 +441,11 @@ public sealed class ConfigurationOptions : ICloneable
         string? s = value?.ToString();
         if (!string.IsNullOrWhiteSpace(s))
         {
-            if (sb.Length != 0) _ = sb.Append(',');
+            if (sb.Length != 0)
+            {
+                _ = sb.Append(',');
+            }
+
             if (!string.IsNullOrEmpty(prefix))
             {
                 _ = sb.Append(prefix).Append('=');
@@ -466,9 +476,9 @@ public sealed class ConfigurationOptions : ICloneable
         _ssl = null;
         ReadFrom = null;
         ReconnectRetryPolicy = null;
-        _trustedIssuers.Clear();
-        _clientCertificate = null;
-        _clientKey = null;
+        TrustedIssuers.Clear();
+        ClientCertificate = null;
+        ClientKey = null;
         EndPoints.Clear();
     }
 
@@ -495,7 +505,10 @@ public sealed class ConfigurationOptions : ICloneable
         {
             string option = paddedOption.Trim();
 
-            if (string.IsNullOrWhiteSpace(option)) continue;
+            if (string.IsNullOrWhiteSpace(option))
+            {
+                continue;
+            }
 
             // check for special tokens
             int idx = option.IndexOf('=');
@@ -537,7 +550,11 @@ public sealed class ConfigurationOptions : ICloneable
                         tempAz = CheckAzValue(value);
                         break;
                     default:
-                        if (!ignoreUnknown) throw new ArgumentException($"Keyword '{key}' is not supported.", key);
+                        if (!ignoreUnknown)
+                        {
+                            throw new ArgumentException($"Keyword '{key}' is not supported.", key);
+                        }
+
                         break;
                 }
             }
@@ -620,7 +637,7 @@ public sealed class ConfigurationOptions : ICloneable
             Az = "az"
             ;
 
-        private static readonly Dictionary<string, string> normalizedOptions = new[]
+        private static readonly Dictionary<string, string> NormalizedOptions = new[]
         {
             AbortOnConnectFail,
             AllowAdmin,
@@ -643,15 +660,27 @@ public sealed class ConfigurationOptions : ICloneable
 
         public static int ParseInt32(string key, string value, int minValue = int.MinValue, int maxValue = int.MaxValue)
         {
-            if (!Format.TryParseInt32(value, out int tmp)) throw new ArgumentOutOfRangeException(key, $"Keyword '{key}' requires an integer value; the value '{value}' is not recognised.");
-            if (tmp < minValue) throw new ArgumentOutOfRangeException(key, $"Keyword '{key}' has a minimum value of '{minValue}'; the value '{tmp}' is not permitted.");
-            if (tmp > maxValue) throw new ArgumentOutOfRangeException(key, $"Keyword '{key}' has a maximum value of '{maxValue}'; the value '{tmp}' is not permitted.");
+            if (!Format.TryParseInt32(value, out int tmp))
+            {
+                throw new ArgumentOutOfRangeException(key, $"Keyword '{key}' requires an integer value; the value '{value}' is not recognised.");
+            }
+
+            if (tmp < minValue)
+            {
+                throw new ArgumentOutOfRangeException(key, string.Create(CultureInfo.InvariantCulture, $"Keyword '{key}' has a minimum value of '{minValue}'; the value '{tmp}' is not permitted."));
+            }
+
+            if (tmp > maxValue)
+            {
+                throw new ArgumentOutOfRangeException(key, string.Create(CultureInfo.InvariantCulture, $"Keyword '{key}' has a maximum value of '{maxValue}'; the value '{tmp}' is not permitted."));
+            }
+
             return tmp;
         }
 
         public static string TryNormalize(string value)
         {
-            if (value != null && normalizedOptions.TryGetValue(value, out string? tmp))
+            if (value != null && NormalizedOptions.TryGetValue(value, out string? tmp))
             {
                 return tmp ?? "";
             }
@@ -661,13 +690,21 @@ public sealed class ConfigurationOptions : ICloneable
 
         internal static bool ParseBoolean(string key, string value)
         {
-            if (!Format.TryParseBoolean(value, out bool tmp)) throw new ArgumentOutOfRangeException(key, $"Keyword '{key}' requires a boolean value; the value '{value}' is not recognised.");
+            if (!Format.TryParseBoolean(value, out bool tmp))
+            {
+                throw new ArgumentOutOfRangeException(key, $"Keyword '{key}' requires a boolean value; the value '{value}' is not recognised.");
+            }
+
             return tmp;
         }
 
         internal static Protocol ParseProtocol(string key, string value)
         {
-            if (TryParseProtocol(value, out Protocol protocol)) return protocol;
+            if (TryParseProtocol(value, out Protocol protocol))
+            {
+                return protocol;
+            }
+
             throw new ArgumentOutOfRangeException(key, $"Keyword '{key}' requires a Protocol value or a known protocol version number; the value '{value}' is not recognised.");
         }
     }

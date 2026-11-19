@@ -88,8 +88,9 @@ internal static partial class Request
             return null;
         }
 
-        // TODO #651: Use invariant culture.
-        return new GeoPosition(double.Parse(posArray[0].ToString()!), double.Parse(posArray[1].ToString()!));
+        return new GeoPosition(
+            longitude: ToDouble(posArray[0]),
+            latitude: ToDouble(posArray[1]));
     }
 
     private static GeoSearchResult[] ProcessGeoSearchResponse(object[] response, GeoSearchOptions options)
@@ -124,7 +125,7 @@ internal static partial class Request
             {
                 if (itemArray[index] is object[] distArray
                     && distArray.Length > 0
-                    && double.TryParse(distArray[0]?.ToString(), out var dist))
+                    && TryToDouble(distArray[0]) is double dist)
                 {
                     distance = dist;
                 }
@@ -136,7 +137,7 @@ internal static partial class Request
             {
                 if (itemArray[index] is object[] hashArray
                     && hashArray.Length > 0
-                    && long.TryParse(hashArray[0]?.ToString(), out var h))
+                    && TryToLong(hashArray[0]) is long h)
                 {
                     hash = h;
                 }
@@ -150,8 +151,8 @@ internal static partial class Request
                 && coordOuterArray.Length > 0
                 && coordOuterArray[0] is object[] coordMiddleArray
                 && coordMiddleArray.Length >= 2
-                && double.TryParse(coordMiddleArray[0]?.ToString(), out var lon)
-                && double.TryParse(coordMiddleArray[1]?.ToString(), out var lat))
+                && TryToDouble(coordMiddleArray[0]) is double lon
+                && TryToDouble(coordMiddleArray[1]) is double lat)
             {
                 position = new GeoPosition(lon, lat);
             }

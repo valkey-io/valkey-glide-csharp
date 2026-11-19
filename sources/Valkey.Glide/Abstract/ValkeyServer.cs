@@ -1,6 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using System.Diagnostics;
+using System.Globalization;
 using System.Net;
 
 using Valkey.Glide.Commands.Options;
@@ -365,8 +366,7 @@ internal partial class ValkeyServer(Database conn, EndPoint endpoint) : IServer
         ArgumentOutOfRangeException.ThrowIfLessThan(pageSize, 0, nameof(pageSize));
 
         var options = new ScanOptions { MatchPattern = pattern, Count = pageSize };
-        // TODO #651: Use invariant culture.
-        return ScanAsync(cursor.ToString(), options).SkipAsync(pageOffset);
+        return ScanAsync(cursor.ToString(CultureInfo.InvariantCulture), options).SkipAsync(pageOffset);
     }
 
     /// <inheritdoc/>

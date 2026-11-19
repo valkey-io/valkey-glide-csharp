@@ -595,7 +595,7 @@ internal static class Format
 
         for (int i = 0; i < y.Length; i++)
         {
-            if (char.ToLower((char)y[i]) != xLowerCase[i])
+            if (char.ToLowerInvariant((char)y[i]) != xLowerCase[i])
             {
                 return false;
             }

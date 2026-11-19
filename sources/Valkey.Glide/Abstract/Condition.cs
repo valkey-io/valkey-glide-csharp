@@ -1,6 +1,7 @@
 ﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using System.Diagnostics;
+using System.Globalization;
 
 using Valkey.Glide.Internals;
 
@@ -549,8 +550,7 @@ public abstract class Condition
         public override string ToString()
             => ((string?)key)
                 + "["
-                // TODO #651: Use invariant culture.
-                + index.ToString()
+                + index.ToString(CultureInfo.InvariantCulture)
                 + "]"
                 + (expectedValue.HasValue ? (expectedResult ? " == " : " != ")
                     + expectedValue.Value : (expectedResult ? " exists" : " does not exist"));

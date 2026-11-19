@@ -1,5 +1,6 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Globalization;
 using System.Text.RegularExpressions;
 
 using Valkey.Glide.TestUtils;
@@ -359,7 +360,7 @@ public class AzAffinityTests(TestConfiguration config)
             string[] parts = line.Split(':', 2);
             if (parts.Length == 2 && parts[0].Trim() == "connected_slaves")
             {
-                return int.Parse(parts[1].Trim());
+                return int.Parse(parts[1].Trim(), CultureInfo.InvariantCulture);
             }
         }
 
@@ -370,6 +371,6 @@ public class AzAffinityTests(TestConfiguration config)
     private static int GetCalls(string infoValue)
     {
         Match m = GetCallsRegex.Match(infoValue);
-        return m.Success ? int.Parse(m.Groups[1].Value) : 0;
+        return m.Success ? int.Parse(m.Groups[1].Value, CultureInfo.InvariantCulture) : 0;
     }
 }

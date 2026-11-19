@@ -1,5 +1,7 @@
 ﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Globalization;
+
 namespace Valkey.Glide;
 
 /// <summary>
@@ -39,7 +41,9 @@ public readonly struct GeoPosition(double longitude, double latitude) : IEquatab
     /// <summary>
     /// A "{long} {lat}" string representation of this position.
     /// </summary>
-    public override string ToString() => string.Format("{0} {1}", Longitude, Latitude);
+    public override string ToString()
+        // Use current culture for StackExchange.Redis compatibility.
+        => string.Format(CultureInfo.CurrentCulture, "{0} {1}", Longitude, Latitude);
 
     /// <summary>
     /// See <see cref="object.GetHashCode"/>.

@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Globalization;
+
 using Valkey.Glide.Internals;
 
 namespace Valkey.Glide;
@@ -31,8 +33,7 @@ internal partial class Database
 
             // TODO #205: Refactor to use GlideClusterClient instead of custom command.
             var result = await Command(Request.CustomCommand(["SPUBLISH", channelKey, message]), Route.Random);
-            // TODO #651: Use invariant culture.
-            return Convert.ToInt64(result);
+            return Convert.ToInt64(result, CultureInfo.InvariantCulture);
         }
 
         return await PublishAsync(channelKey, message);

@@ -59,7 +59,7 @@ public class ConfigurationOptionsTests
         var options = new ConfigurationOptions();
         options.TrustIssuer(tempFile.Path);
 
-        Assert.Equal(new[] { CertificateData }, options._trustedIssuers);
+        Assert.Equal(new[] { CertificateData }, options.TrustedIssuers);
     }
 
     [Fact]
@@ -75,7 +75,7 @@ public class ConfigurationOptionsTests
         var options = new ConfigurationOptions();
         options.TrustIssuer(traversalPath);
 
-        Assert.Equal(new[] { CertificateData }, options._trustedIssuers);
+        Assert.Equal(new[] { CertificateData }, options.TrustedIssuers);
     }
 
     [Fact]
@@ -91,7 +91,7 @@ public class ConfigurationOptionsTests
         var options = new ConfigurationOptions();
         options.TrustIssuer(Certificate);
 
-        Assert.Equal(new[] { CertificateData }, options._trustedIssuers);
+        Assert.Equal(new[] { CertificateData }, options.TrustedIssuers);
     }
 
     #endregion
@@ -106,9 +106,9 @@ public class ConfigurationOptionsTests
         var options = new ConfigurationOptions();
         options.SetUserPemCertificate(certFile.Path, keyFile.Path);
 
-        Assert.NotNull(options._clientCertificate);
-        Assert.Equal(CertificateData, options._clientCertificate);
-        Assert.Equal(CertificateData, options._clientKey);
+        Assert.NotNull(options.ClientCertificate);
+        Assert.Equal(CertificateData, options.ClientCertificate);
+        Assert.Equal(CertificateData, options.ClientKey);
         Assert.True(options.Ssl);
     }
 
@@ -120,9 +120,9 @@ public class ConfigurationOptionsTests
         var options = new ConfigurationOptions();
         options.SetUserPemCertificate(certFile.Path);
 
-        Assert.NotNull(options._clientCertificate);
-        Assert.Equal(CertificateData, options._clientCertificate);
-        Assert.Equal(CertificateData, options._clientKey);
+        Assert.NotNull(options.ClientCertificate);
+        Assert.Equal(CertificateData, options.ClientCertificate);
+        Assert.Equal(CertificateData, options.ClientKey);
         Assert.True(options.Ssl);
     }
 

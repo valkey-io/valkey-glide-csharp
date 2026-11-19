@@ -45,8 +45,7 @@ internal static partial class Request
     /// <param name="args">The command arguments</param>
     /// <returns>A command that converts the response to a boolean value (true if response equals 1)</returns>
     private static Cmd<T, bool> Boolean<T>(RequestType request, GlideString[] args)
-        // TODO #651: Use invariant culture.
-        => new(request, args, false, response => Convert.ToInt64(response) == 1);
+        => new(request, args, false, response => Convert.ToInt64(response, CultureInfo.InvariantCulture) == 1);
 
     /// <summary>
     /// Create a Cmd which returns an optional Boolean value based on the response being 1, 0, or not.
@@ -83,6 +82,15 @@ internal static partial class Request
     /// <returns>A command that returns <see cref="ValkeyValue.Ok"/></returns>
     private static Cmd<string, ValkeyValue> Ok(RequestType request, GlideString[]? args = null)
         => new(request, args ?? [], false, ToOkConverter);
+
+    /// <summary>
+    /// Create a Cmd which converts the response to a string.
+    /// </summary>
+    /// <param name="request">The request type</param>
+    /// <param name="args">The command arguments, or <see langword="null"/> for none</param>
+    /// <returns>A command that converts the response to a string</returns>
+    private static Cmd<GlideString, string> ToString(RequestType request, GlideString[]? args = null)
+        => new(request, args ?? [], false, response => response.ToString());
 
     /// <summary>
     /// Create a Cmd which converts the response to a ValkeyValue.
@@ -125,8 +133,7 @@ internal static partial class Request
 
         foreach (var kvp in dict)
         {
-            // TODO #651: Use invariant culture.
-            result[(ValkeyKey)kvp.Key.Bytes] = Convert.ToInt64(kvp.Value);
+            result[(ValkeyKey)kvp.Key.Bytes] = Convert.ToInt64(kvp.Value, CultureInfo.InvariantCulture);
         }
 
         return result;
@@ -412,8 +419,7 @@ internal static partial class Request
     /// <param name="key">The field key to read.</param>
     private static TimeSpan GetTimeSpan(Dictionary<GlideString, object> map, string key)
         // Expects a server duration string (e.g. "0.123 sec").
-        // TODO #651: Use invariant culture.
-        => TimeSpan.FromSeconds(double.Parse(GetString(map, key).Replace(" sec", "")));
+        => TimeSpan.FromSeconds(double.Parse(GetString(map, key).Replace(" sec", ""), CultureInfo.InvariantCulture));
 
     /// <summary>
     /// Returns a required <see cref="ValkeyValue"/> from the given response dictionary.
