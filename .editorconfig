@@ -867,7 +867,6 @@ dotnet_diagnostic.MA0076.severity = error
 # MA0023: Use RegexOptions.ExplicitCapture or named groups
 # MA0024: Use an explicit StringComparer when possible
 # MA0025: Implement the functionality instead of throwing NotImplementedException
-# MA0026: Fix TODO comment
 # MA0027: Prefer rethrowing an exception implicitly
 # MA0028: Optimize StringBuilder usage
 # MA0029: Combine LINQ methods
