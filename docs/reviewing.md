@@ -7,14 +7,14 @@
 
 When a maintainer picks up your pull request for review, they evaluate it against several criteria:
 
-| Area                        | What's checked                                                                                             | Reference                            |
-| --------------------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------ |
-| **Code quality**            | Readability, structure, naming conventions, and adherence to the project's coding style                    |                                      |
-| **Test coverage**           | New or changed functionality has corresponding tests that pass                                             | [coverage.md](coverage.md)           |
-| **Documentation**           | All public and protected members have XML doc comments (`CS1591` produces zero warnings)                   | [documentation.md](documentation.md) |
-| **API compatibility**       | Public API surface maintains compatibility with StackExchange.Redis (target version 2.8.58) where possible |                                      |
-| **Contribution guidelines** | DCO signoff is present, conventional commit format is used, pull request template is filled out            | [DEVELOPER.md](../DEVELOPER.md)      |
-| **CI status**               | All automated checks (build, lint, tests) are passing                                                      |                                      |
+| Area                        | What's checked                                                                                                                         | Reference                            |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| **Code quality**            | Readability, structure, naming conventions, and adherence to the project's coding style                                                |                                      |
+| **Test coverage**           | New or changed functionality has corresponding tests that pass                                                                         | [coverage.md](coverage.md)           |
+| **Documentation**           | All public and protected members have XML doc comments (`CS1591` produces zero warnings)                                               | [documentation.md](documentation.md) |
+| **API compatibility**       | Public API surface maintains compatibility with StackExchange.Redis (target version 2.8.58) where possible                             |                                      |
+| **Contribution guidelines** | DCO signoff is present, conventional commit format is used for commits and the pull request title, pull request template is filled out | [DEVELOPER.md](../DEVELOPER.md)      |
+| **CI status**               | All automated checks (build, lint, tests) are passing                                                                                  |                                      |
 
 Maintainers may request changes, ask clarifying questions, or suggest alternative approaches. This is a normal part of the process — it's collaborative, not adversarial.
 

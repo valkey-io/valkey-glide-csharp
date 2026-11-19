@@ -60,6 +60,7 @@ Not applicable items should be crossed out, not removed.
 
 - [ ] This Pull Request is related to one issue.
 - [ ] Commit message has a detailed description of what changed and why.
+- [ ] PR title follows `type(scope): description` with a lowercase type; it becomes the release notes entry.
 - [ ] Tests are added or updated and all checks pass.
 - [ ] `CHANGELOG.md`, `README.md`, `DEVELOPER.md`, and other documentation files are updated.
 - [ ] Destination branch is correct - `main` or release
