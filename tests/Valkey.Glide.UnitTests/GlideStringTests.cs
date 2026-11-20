@@ -209,7 +209,7 @@ public class GlideStringTests
     public void ToGlideString_UsesInvariantCulture()
     {
         // sv-SE uses a Unicode minus sign (U+2212) instead of ASCII '-',
-        // so we can use to it verify that the invariant culture is used.
+        // so we can use it to verify that the invariant culture is used.
         using var scope = new CultureScope(CultureInfo.GetCultureInfo("sv-SE"));
 
         Assert.Equal("-1", (-1).ToGlideString().ToString());
