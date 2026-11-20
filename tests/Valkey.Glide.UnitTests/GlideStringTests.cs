@@ -1,5 +1,9 @@
 ﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Globalization;
+
+using Valkey.Glide.TestUtils;
+
 namespace Valkey.Glide.UnitTests;
 
 public class GlideStringTests
@@ -199,5 +203,17 @@ public class GlideStringTests
         Assert.Equal("nan", double.NaN.ToGlideString());
         Assert.Equal("0", 0.0.ToGlideString());
         Assert.Equal("10.5", 10.5.ToGlideString());
+    }
+
+    [Fact]
+    public void ToGlideString_UsesInvariantCulture()
+    {
+        // sv-SE uses a Unicode minus sign (U+2212) instead of ASCII '-',
+        // so we can use it to verify that the invariant culture is used.
+        using var scope = new CultureScope(CultureInfo.GetCultureInfo("sv-SE"));
+
+        Assert.Equal("-1", (-1).ToGlideString().ToString());
+        Assert.Equal("-1", (-1L).ToGlideString().ToString());
+        Assert.Equal("-1.5", (-1.5).ToGlideString().ToString());
     }
 }

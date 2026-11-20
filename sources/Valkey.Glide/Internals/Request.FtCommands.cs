@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Globalization;
+
 using Valkey.Glide.ServerModules;
 
 using static Valkey.Glide.Errors;
@@ -435,8 +437,7 @@ internal static partial class Request
             return new Ft.SearchResult(0, []);
         }
 
-        // TODO #651: Use invariant culture.
-        long count = Convert.ToInt64(data[0]);
+        long count = Convert.ToInt64(data[0], CultureInfo.InvariantCulture);
         List<Ft.SearchDocument> docs = [];
 
         if (data[1] is Dictionary<GlideString, object> map)

@@ -1,5 +1,7 @@
 ﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Internals;
+
 using static Valkey.Glide.Errors;
 
 namespace Valkey.Glide.IntegrationTests;
@@ -1067,11 +1069,6 @@ public class BatchTests(TestConfiguration config)
     }
 #pragma warning restore xUnit1042 // https://xunit.net/xunit.analyzers/rules/xUnit1042
 
-    private DateTime ParseTimeResponse(object? res)
-    {
-        var arr = (object[])res!;
-        var secs = double.Parse((arr[0] as GlideString)!);
-        var micros = double.Parse((arr[1] as GlideString)!);
-        return DateTime.UnixEpoch.AddSeconds(secs).AddMicroseconds(micros);
-    }
+    private static DateTime ParseTimeResponse(object? res)
+        => Request.Time().Converter((object[])res!).UtcDateTime;
 }

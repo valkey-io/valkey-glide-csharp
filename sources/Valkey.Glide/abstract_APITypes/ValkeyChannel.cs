@@ -1,5 +1,6 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Globalization;
 using System.Text;
 
 namespace Valkey.Glide;
@@ -423,8 +424,7 @@ public readonly struct ValkeyChannel : IEquatable<ValkeyChannel>
 
     private static ValkeyChannel BuildKeySpaceChannel(in ValkeyKey key, int? database, bool isPattern, bool appendStar)
     {
-        // TODO #651: Use invariant culture.
-        byte[] dbBytes = Encoding.UTF8.GetBytes(database?.ToString() ?? "*");
+        byte[] dbBytes = Encoding.UTF8.GetBytes(database?.ToString(CultureInfo.InvariantCulture) ?? "*");
         int keyLen = key.IsNull ? 0 : key.TotalLength();
         byte[] arr = new byte[11 + dbBytes.Length + 3 + keyLen + (appendStar ? 1 : 0)];
         var span = arr.AsSpan();
@@ -448,8 +448,7 @@ public readonly struct ValkeyChannel : IEquatable<ValkeyChannel>
         int? database,
         bool appendStar)
     {
-        // TODO #651: Use invariant culture.
-        byte[] dbBytes = Encoding.UTF8.GetBytes(database?.ToString() ?? "*");
+        byte[] dbBytes = Encoding.UTF8.GetBytes(database?.ToString(CultureInfo.InvariantCulture) ?? "*");
         byte[] arr = new byte[header.Length + dbBytes.Length + 3 + payload.Length + (appendStar ? 1 : 0)];
         var span = arr.AsSpan();
 
@@ -467,8 +466,7 @@ public readonly struct ValkeyChannel : IEquatable<ValkeyChannel>
 
     private static ValkeyChannel BuildKeyEventChannel(ReadOnlySpan<byte> type, int? database)
     {
-        // TODO #651: Use invariant culture.
-        byte[] dbBytes = Encoding.UTF8.GetBytes(database?.ToString() ?? "*");
+        byte[] dbBytes = Encoding.UTF8.GetBytes(database?.ToString(CultureInfo.InvariantCulture) ?? "*");
         byte[] arr = new byte[11 + dbBytes.Length + 3 + type.Length];
         var span = arr.AsSpan();
 

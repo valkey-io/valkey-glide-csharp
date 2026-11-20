@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Globalization;
+
 using Valkey.Glide.Commands.Options;
 
 using static Valkey.Glide.Internals.FFI;
@@ -119,10 +121,9 @@ internal static partial class Request
 
                     if (firstRange?.Length >= 2 && secondRange?.Length >= 2)
                     {
-                        // TODO #651: Use invariant culture.
-                        long firstStart = Convert.ToInt64(firstRange[0]);
-                        long secondStart = Convert.ToInt64(secondRange[0]);
-                        long length = Convert.ToInt64(matchLength);
+                        long firstStart = Convert.ToInt64(firstRange[0], CultureInfo.InvariantCulture);
+                        long secondStart = Convert.ToInt64(secondRange[0], CultureInfo.InvariantCulture);
+                        long length = Convert.ToInt64(matchLength, CultureInfo.InvariantCulture);
 
                         matches.Add(new LCSMatchResult.LCSMatch(firstStart, secondStart, length));
                     }

@@ -177,12 +177,12 @@ public static partial class GlideJson
         {
             if (End.HasValue)
             {
-                // TODO #651: Use invariant culture.
-                return [Start.ToString(), End.Value.ToString()];
+                return [
+                    Start.ToGlideString(),
+                    End.Value.ToGlideString()];
             }
 
-            // TODO #651: Use invariant culture.
-            return [Start.ToString()];
+            return [Start.ToGlideString()];
         }
     }
 }

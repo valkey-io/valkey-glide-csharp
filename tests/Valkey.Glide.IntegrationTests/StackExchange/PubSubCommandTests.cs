@@ -1,6 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using System.Collections.Concurrent;
+using System.Globalization;
 using System.Text;
 
 using Valkey.Glide.TestUtils;
@@ -633,7 +634,7 @@ public class PubSubCommandTests(TestConfiguration config)
     {
         Assert.True(pattern.IsPattern);
         var patternStr = pattern.ToString();
-        var literalStr = patternStr.Replace("*", Random.Shared.Next(1000, 9999).ToString());
+        var literalStr = patternStr.Replace("*", Random.Shared.Next(1000, 9999).ToString(CultureInfo.InvariantCulture));
         return ValkeyChannel.Literal(literalStr);
     }
 

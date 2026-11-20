@@ -1,6 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using System.Diagnostics;
+using System.Globalization;
 
 namespace Valkey.Glide.TestUtils;
 
@@ -82,7 +83,7 @@ public static class ServerManager
 
         args.Add("start");
         args.AddRange(["--prefix", name]);
-        args.AddRange(["-r", (replicaCount ?? DefaultReplicaCount).ToString()]);
+        args.AddRange(["-r", (replicaCount ?? DefaultReplicaCount).ToString(CultureInfo.InvariantCulture)]);
         args.AddRange(["--folder-path", ServerDirectoryPath]);
 
         if (useClusterMode)

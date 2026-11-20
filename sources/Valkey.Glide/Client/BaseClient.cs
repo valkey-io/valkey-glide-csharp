@@ -1,5 +1,6 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading.Channels;
@@ -761,7 +762,7 @@ public abstract partial class BaseClient : IBaseClient
                     Logger.Log(
                         Level.Warn,
                         "BaseClient",
-                        $"PubSub processing task did not complete within timeout ({shutdownTimeout.TotalSeconds}s)");
+                        string.Create(CultureInfo.InvariantCulture, $"PubSub processing task did not complete within timeout ({shutdownTimeout.TotalSeconds}s)"));
                 }
             }
 

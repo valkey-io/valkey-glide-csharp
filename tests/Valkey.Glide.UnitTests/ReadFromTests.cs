@@ -72,7 +72,7 @@ public class ReadFromTests
     {
         // Act & Assert
         ArgumentException exception = Assert.Throws<ArgumentException>(() => ConfigurationOptions.Parse(connectionString));
-        Assert.Contains("cannot be empty or whitespace", exception.Message.ToLower());
+        Assert.Contains("cannot be empty or whitespace", exception.Message.ToLowerInvariant());
     }
 
     [Fact]
