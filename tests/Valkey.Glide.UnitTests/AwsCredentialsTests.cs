@@ -1,7 +1,12 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Globalization;
+
 namespace Valkey.Glide.UnitTests;
 
+/// <summary>
+/// Tests for <see cref="AwsCredentials"/> validation and string representation.
+/// </summary>
 public class AwsCredentialsTests
 {
     #region Constants
@@ -29,6 +34,18 @@ public class AwsCredentialsTests
     }
 
     [Fact]
+    public void RejectsNullRequiredKeys()
+    {
+        var accessKeyIdException = Assert.ThrowsAny<ArgumentException>(
+            () => new AwsCredentials(null!, SecretAccessKey));
+        Assert.Equal("accessKeyId", accessKeyIdException.ParamName);
+
+        var secretAccessKeyException = Assert.ThrowsAny<ArgumentException>(
+            () => new AwsCredentials(AccessKeyId, null!));
+        Assert.Equal("secretAccessKey", secretAccessKeyException.ParamName);
+    }
+
+    [Fact]
     public void StoresOptionalValuesAndOmitsSecretsFromToString()
     {
         var expiresAt = new DateTimeOffset(2030, 1, 2, 3, 4, 5, TimeSpan.FromHours(-8));
@@ -45,12 +62,15 @@ public class AwsCredentialsTests
         Assert.DoesNotContain(AccessKeyId, result);
         Assert.DoesNotContain(SecretAccessKey, result);
         Assert.DoesNotContain(SessionToken, result);
+        Assert.Contains("HasSessionToken = True", result);
+        Assert.Contains(expiresAt.ToString("O", CultureInfo.InvariantCulture), result);
 
         // Optional values default to null.
         var minimal = new AwsCredentials(AccessKeyId, SecretAccessKey);
 
         Assert.Null(minimal.SessionToken);
         Assert.Null(minimal.ExpiresAt);
+        Assert.Contains("HasSessionToken = False", minimal.ToString());
     }
 
     #endregion

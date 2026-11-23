@@ -8,6 +8,9 @@ using static Valkey.Glide.ConnectionConfiguration;
 
 namespace Valkey.Glide.UnitTests;
 
+/// <summary>
+/// Tests for <see cref="IamCredentialsBridge"/> invocation, deadline, and release behavior.
+/// </summary>
 public class IamCredentialsBridgeTests
 {
     #region Constants
@@ -27,7 +30,7 @@ public class IamCredentialsBridgeTests
     #region Delegates
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    private delegate void SuccessAction(ulong index, IntPtr ptr);
+    private delegate void SuccessAction(ulong index, IntPtr response);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     private delegate void FailureAction(ulong index, IntPtr message, uint errorType);
@@ -151,6 +154,40 @@ public class IamCredentialsBridgeTests
     }
 
     [Fact]
+    public async Task DeadlineReportsTimeoutWhenProviderHonorsCancellation()
+    {
+        var timeProvider = new FakeTimeProvider();
+        using var bodyEntered = new ManualResetEventSlim();
+
+        // The provider completes its task as cancelled as soon as its token is signaled.
+        var bridge = new IamCredentialsBridge(
+            cancellationToken =>
+            {
+                var pendingTask = new TaskCompletionSource<AwsCredentials>();
+                _ = cancellationToken.Register(() => pendingTask.TrySetCanceled(cancellationToken));
+                bodyEntered.Set();
+                return pendingTask.Task;
+            },
+            timeProvider);
+
+        var invocation = Task.Run(() => bridge.Invoke(_ => true), TestContext.Current.CancellationToken);
+        Assert.True(bodyEntered.Wait(WaitTimeout, TestContext.Current.CancellationToken));
+        await WaitUntilAsync(() => !bridge.IsBodyRunning);
+
+        timeProvider.Advance(IamCredentialsBridge.InvocationTimeout);
+
+        Assert.Equal(IamCredentialsStatus.TimedOut, await invocation.WaitAsync(WaitTimeout, TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
+    public void RejectedCopyReturnsInvalidCredentials()
+    {
+        var bridge = new IamCredentialsBridge(_ => Task.FromResult(Credentials));
+
+        Assert.Equal(IamCredentialsStatus.InvalidCredentials, bridge.Invoke(_ => false));
+    }
+
+    [Fact]
     public async Task RejectsBusyBodyAndRecovers()
     {
         var timeProvider = new FakeTimeProvider();
@@ -212,7 +249,11 @@ public class IamCredentialsBridgeTests
         string? error = CreateNativeClient(builder.Build().Request, bridge);
 
         Assert.NotNull(error);
-        if (!useIam)
+        if (useIam)
+        {
+            Assert.DoesNotContain("Credentials provider requires IAM authentication", error);
+        }
+        else
         {
             Assert.Contains("Credentials provider requires IAM authentication", error);
         }
@@ -226,7 +267,9 @@ public class IamCredentialsBridgeTests
     public async Task RegistrationReleasedOnce_OnDisposalDuringInvocation()
     {
         using var bodyEntered = new ManualResetEventSlim();
-        var pendingTask = new TaskCompletionSource<AwsCredentials>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        // Continuations run inline, so a late completion is fully processed when SetResult returns.
+        var pendingTask = new TaskCompletionSource<AwsCredentials>();
         CancellationToken providerToken = default;
         int sinkCalls = 0;
 
@@ -256,16 +299,14 @@ public class IamCredentialsBridgeTests
         // New invocations are rejected after disposal.
         Assert.Equal(IamCredentialsStatus.Cancelled, bridge.Invoke(_ => true));
 
-        // The registration is released exactly once, even if release is requested again.
+        // Releasing again has no effect.
         bridge.Release();
         bridge.Release();
 
         Assert.True(bridge.IsReleased);
-        Assert.Equal(2, bridge.ReleaseRequestCount);
 
         // A late provider completion never reaches the native sink.
         pendingTask.SetResult(Credentials);
-        await Task.Delay(TimeSpan.FromMilliseconds(100), TestContext.Current.CancellationToken);
 
         Assert.Equal(0, Volatile.Read(ref sinkCalls));
     }
@@ -282,15 +323,15 @@ public class IamCredentialsBridgeTests
         var bridge = new IamCredentialsBridge(_ => Task.FromResult(credentials));
         CapturedCredentials? captured = null;
 
-        var status = bridge.Invoke(ffi =>
+        var status = bridge.Invoke(ffiCredentials =>
         {
             captured = new CapturedCredentials(
-                ReadUtf8(ffi.AccessKeyId, ffi.AccessKeyIdLen),
-                ReadUtf8(ffi.SecretAccessKey, ffi.SecretAccessKeyLen),
-                ffi.HasSessionToken == 1,
-                ffi.HasSessionToken == 1 ? ReadUtf8(ffi.SessionToken, ffi.SessionTokenLen) : null,
-                ffi.HasExpiresAt == 1,
-                ffi.ExpiresAtUnixMs);
+                ReadUtf8(ffiCredentials.AccessKeyId, ffiCredentials.AccessKeyIdLen),
+                ReadUtf8(ffiCredentials.SecretAccessKey, ffiCredentials.SecretAccessKeyLen),
+                ffiCredentials.HasSessionToken == 1,
+                ffiCredentials.HasSessionToken == 1 ? ReadUtf8(ffiCredentials.SessionToken, ffiCredentials.SessionTokenLen) : null,
+                ffiCredentials.HasExpiresAt == 1,
+                ffiCredentials.ExpiresAtUnixMs);
             return true;
         });
 
@@ -298,12 +339,12 @@ public class IamCredentialsBridgeTests
         return captured!;
     }
 
-    private static string ReadUtf8(IntPtr ptr, nuint len)
+    private static string ReadUtf8(IntPtr pointer, nuint length)
     {
-        byte[] bytes = new byte[(int)len];
-        if (len > 0)
+        byte[] bytes = new byte[(int)length];
+        if (length > 0)
         {
-            Marshal.Copy(ptr, bytes, 0, (int)len);
+            Marshal.Copy(pointer, bytes, 0, (int)length);
         }
 
         return Encoding.UTF8.GetString(bytes);
@@ -348,6 +389,9 @@ public class IamCredentialsBridgeTests
         }
     }
 
+    /// <summary>
+    /// Credentials copied out of an <see cref="FFI.AwsCredentialsFfi"/>.
+    /// </summary>
     private sealed record CapturedCredentials(
         string AccessKeyId,
         string SecretAccessKey,

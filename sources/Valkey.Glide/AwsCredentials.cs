@@ -59,6 +59,10 @@ public sealed class AwsCredentials
     /// <summary>
     /// The optional time at which the credentials expire.
     /// </summary>
+    /// <remarks>
+    /// The expiry is passed to the AWS SDK as credential metadata. It does not change when IAM tokens are refreshed,
+    /// which follows <see cref="IamAuthConfig.RefreshIntervalSeconds"/>. Leave it <see langword="null"/> if unknown.
+    /// </remarks>
     public DateTimeOffset? ExpiresAt { get; }
 
     #endregion

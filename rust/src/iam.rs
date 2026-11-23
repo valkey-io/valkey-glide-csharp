@@ -138,11 +138,11 @@ impl CredentialsProviderRegistration {
     /// Invokes the managed provider and returns the copied credentials.
     fn call(&self) -> Result<ProvidedCredentials, GlideIAMError> {
         let mut sink: Option<ProvidedCredentials> = None;
-        let sink_ptr = &mut sink as *mut Option<ProvidedCredentials> as *mut c_void;
+        let sink_pointer = &mut sink as *mut Option<ProvidedCredentials> as *mut c_void;
 
         // SAFETY: `handle` is owned by this registration and is valid until `drop`.
-        // `sink_ptr` points to a local that outlives the callback.
-        let status = unsafe { (self.invoke)(self.handle, sink_ptr) };
+        // `sink_pointer` points to a local that outlives the callback.
+        let status = unsafe { (self.invoke)(self.handle, sink_pointer) };
 
         match (status, sink) {
             (STATUS_SUCCESS, Some(credentials)) => Ok(credentials),
@@ -185,16 +185,42 @@ fn credentials_error(message: &str) -> GlideIAMError {
 /// Copies length-delimited UTF-8 bytes into an owned string.
 ///
 /// # Safety
-/// If `len` is non-zero, `ptr` must point to `len` readable bytes.
-unsafe fn copy_utf8(ptr: *const u8, len: usize) -> Option<String> {
-    if len == 0 {
+/// If `length` is non-zero, `pointer` must point to `length` readable bytes.
+unsafe fn copy_utf8(pointer: *const u8, length: usize) -> Option<String> {
+    if length == 0 {
         return Some(String::new());
     }
-    if ptr.is_null() {
+    if pointer.is_null() {
         return None;
     }
-    let bytes = unsafe { from_raw_parts(ptr, len) };
+    let bytes = unsafe { from_raw_parts(pointer, length) };
     String::from_utf8(bytes.to_vec()).ok()
+}
+
+/// Copies an optional length-delimited UTF-8 field. Returns `None` if a present field is invalid.
+///
+/// # Safety
+/// See [`copy_utf8`].
+unsafe fn copy_optional_utf8(
+    present: bool,
+    pointer: *const u8,
+    length: usize,
+) -> Option<Option<String>> {
+    if !present {
+        return Some(None);
+    }
+    unsafe { copy_utf8(pointer, length) }.map(Some)
+}
+
+/// Converts an optional expiry in Unix milliseconds. Non-positive values are absent.
+/// Returns `None` if the expiry is out of range.
+fn expiry_from_unix_millis(present: bool, unix_millis: i64) -> Option<Option<SystemTime>> {
+    if !present || unix_millis <= 0 {
+        return Some(None);
+    }
+    SystemTime::UNIX_EPOCH
+        .checked_add(Duration::from_millis(unix_millis as u64))
+        .map(Some)
 }
 
 /// Copies credentials written by the managed provider into the invocation sink.
@@ -230,23 +256,19 @@ pub unsafe extern "C" fn set_iam_credentials(
     }) else {
         return false;
     };
-    let session_token = if credentials.has_session_token {
-        match unsafe { copy_utf8(credentials.session_token, credentials.session_token_len) } {
-            Some(token) => Some(token),
-            None => return false,
-        }
-    } else {
-        None
+    let Some(session_token) = (unsafe {
+        copy_optional_utf8(
+            credentials.has_session_token,
+            credentials.session_token,
+            credentials.session_token_len,
+        )
+    }) else {
+        return false;
     };
-    let expires_at = if credentials.has_expires_at && credentials.expires_at_unix_ms > 0 {
-        match SystemTime::UNIX_EPOCH
-            .checked_add(Duration::from_millis(credentials.expires_at_unix_ms as u64))
-        {
-            Some(expires_at) => Some(expires_at),
-            None => return false,
-        }
-    } else {
-        None
+    let Some(expires_at) =
+        expiry_from_unix_millis(credentials.has_expires_at, credentials.expires_at_unix_ms)
+    else {
+        return false;
     };
 
     let sink = unsafe { &mut *(sink as *mut Option<ProvidedCredentials>) };

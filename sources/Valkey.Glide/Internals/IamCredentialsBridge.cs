@@ -57,7 +57,7 @@ internal sealed class IamCredentialsBridge
 
     private readonly GlideCredentialProvider _provider;
     private readonly TimeProvider _timeProvider;
-    private readonly CancellationTokenSource _disposalCts = new();
+    private readonly CancellationTokenSource _disposalSource = new();
 
     private GCHandle _handle;
     private int _bodyRunning;
@@ -150,12 +150,10 @@ internal sealed class IamCredentialsBridge
             return IamCredentialsStatus.Busy;
         }
 
-        // Start the deadline before scheduling the provider, so that it covers scheduling, the synchronous
-        // provider body, and the returned task. Expiry of the deadline or disposal of the client cancels the
-        // token passed to the provider.
-        var deadlineCts = new CancellationTokenSource(InvocationTimeout, _timeProvider);
-        var invocationCts = CancellationTokenSource.CreateLinkedTokenSource(_disposalCts.Token, deadlineCts.Token);
-        CancellationToken invocationToken = invocationCts.Token;
+        // Start the deadline before scheduling so it also covers queueing.
+        var deadlineSource = new CancellationTokenSource(InvocationTimeout, _timeProvider);
+        var invocationSource = CancellationTokenSource.CreateLinkedTokenSource(_disposalSource.Token, deadlineSource.Token);
+        CancellationToken invocationToken = invocationSource.Token;
         Task<(IamCredentialsStatus Status, AwsCredentials? Credentials)> work = RunAsync(invocationToken);
 
         (IamCredentialsStatus Status, AwsCredentials? Credentials) result;
@@ -165,14 +163,11 @@ internal sealed class IamCredentialsBridge
         }
         catch (OperationCanceledException)
         {
-            return _disposalCts.IsCancellationRequested
-                ? IamCredentialsStatus.Cancelled
-                : IamCredentialsStatus.TimedOut;
+            result = (IamCredentialsStatus.Cancelled, null);
         }
         finally
         {
-            // Dispose the token sources once both the wait and the provider have completed, since a late
-            // provider task may still use them. Runs inline if the provider has already completed.
+            // A late provider task may still use the token sources.
             _ = work.ContinueWith(
                 static (_, state) =>
                 {
@@ -180,10 +175,17 @@ internal sealed class IamCredentialsBridge
                     invocation.Dispose();
                     deadline.Dispose();
                 },
-                (invocationCts, deadlineCts),
+                (invocationSource, deadlineSource),
                 CancellationToken.None,
                 TaskContinuationOptions.ExecuteSynchronously,
                 TaskScheduler.Default);
+        }
+
+        // A provider that honors the expired deadline token completes cancelled; report that as a timeout.
+        bool timedOut = deadlineSource.IsCancellationRequested && !_disposalSource.IsCancellationRequested;
+        if (result.Status == IamCredentialsStatus.Cancelled && timedOut)
+        {
+            return IamCredentialsStatus.TimedOut;
         }
 
         return result.Status == IamCredentialsStatus.Success
@@ -198,7 +200,7 @@ internal sealed class IamCredentialsBridge
     {
         if (Interlocked.Exchange(ref _cancelled, 1) == 0)
         {
-            TryCancel(_disposalCts);
+            TryCancel(_disposalSource);
         }
     }
 
@@ -298,17 +300,17 @@ internal sealed class IamCredentialsBridge
             sessionToken = credentials.SessionToken is null ? [] : StrictUtf8.GetBytes(credentials.SessionToken);
             long expiresAtUnixMs = credentials.ExpiresAt?.ToUnixTimeMilliseconds() ?? 0;
 
-            fixed (byte* accessKeyIdPtr = accessKeyId)
-            fixed (byte* secretAccessKeyPtr = secretAccessKey)
-            fixed (byte* sessionTokenPtr = sessionToken)
+            fixed (byte* accessKeyIdPointer = accessKeyId)
+            fixed (byte* secretAccessKeyPointer = secretAccessKey)
+            fixed (byte* sessionTokenPointer = sessionToken)
             {
                 FFI.AwsCredentialsFfi ffiCredentials = new(
-                    (IntPtr)accessKeyIdPtr,
+                    (IntPtr)accessKeyIdPointer,
                     (nuint)accessKeyId.Length,
-                    (IntPtr)secretAccessKeyPtr,
+                    (IntPtr)secretAccessKeyPointer,
                     (nuint)secretAccessKey.Length,
                     credentials.SessionToken is not null,
-                    (IntPtr)sessionTokenPtr,
+                    (IntPtr)sessionTokenPointer,
                     (nuint)sessionToken.Length,
                     expiresAtUnixMs > 0,
                     expiresAtUnixMs);

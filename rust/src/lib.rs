@@ -287,29 +287,24 @@ pub unsafe extern "C-unwind" fn create_client(
         }
     };
 
-    // Attach the custom credentials provider to the IAM configuration.
     if let Some(provider) = credentials_provider {
-        match request
+        let Some(iam_config) = request
             .authentication_info
             .as_mut()
             .and_then(|auth_info| auth_info.iam_config.as_mut())
-        {
-            Some(iam_config) => {
-                iam_config.credentials_provider = Some(iam::into_core_provider(provider));
+        else {
+            panic_guard.panicked = false;
+            unsafe {
+                report_error(
+                    failure_callback,
+                    0,
+                    "Credentials provider requires IAM authentication".into(),
+                    RequestErrorType::Unspecified,
+                );
             }
-            None => {
-                panic_guard.panicked = false;
-                unsafe {
-                    report_error(
-                        failure_callback,
-                        0,
-                        "Credentials provider requires IAM authentication".into(),
-                        RequestErrorType::Unspecified,
-                    );
-                }
-                return;
-            }
-        }
+            return;
+        };
+        iam_config.credentials_provider = Some(iam::into_core_provider(provider));
     }
 
     // Set address resolver if provided

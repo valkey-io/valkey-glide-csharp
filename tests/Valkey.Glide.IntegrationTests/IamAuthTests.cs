@@ -161,8 +161,9 @@ public class IamAuthTests(TlsServerFixture tlsServerFixture) : IClassFixture<Tls
         var credentials = CreateCredentials(LongRefreshIntervalSeconds, provider.GetCredentialsAsync);
         var config = CreateStandaloneConfig(tlsServerFixture.StandaloneServer, credentials);
 
-        _ = await Assert.ThrowsAsync<Errors.ConnectionException>(() => GlideClient.CreateClient(config));
+        var exception = await Assert.ThrowsAsync<Errors.ConnectionException>(() => GlideClient.CreateClient(config));
         Assert.Equal(1, provider.Calls);
+        AssertSanitizedProviderFailure(exception);
     }
 
     [Fact]
@@ -174,13 +175,36 @@ public class IamAuthTests(TlsServerFixture tlsServerFixture) : IClassFixture<Tls
         await using var client = await GlideClient.CreateClient(CreateStandaloneConfig(tlsServerFixture.StandaloneServer, credentials));
 
         provider.Fail = true;
-        _ = await Assert.ThrowsAsync<Errors.RequestException>(client.RefreshIamTokenAsync);
+        var exception = await Assert.ThrowsAsync<Errors.RequestException>(client.RefreshIamTokenAsync);
+        AssertSanitizedProviderFailure(exception);
 
-        // The previously cached token keeps the connection usable.
+        // The provider is invoked again on the next refresh.
+        provider.Fail = false;
+        Task nextCall = provider.ArmNextCall();
+        await client.RefreshIamTokenAsync();
+        await nextCall.WaitAsync(SignalTimeout, TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task CustomIamProviderWithoutSessionTokenAndWithExpiry()
+    {
+        var provider = new RecordingCredentialsProvider(
+            new AwsCredentials("test_access_key", "test_secret_key", sessionToken: null, DateTimeOffset.UtcNow.AddHours(1)));
+        var credentials = CreateCredentials(LongRefreshIntervalSeconds, provider.GetCredentialsAsync);
+
+        await using var client = await GlideClient.CreateClient(CreateStandaloneConfig(tlsServerFixture.StandaloneServer, credentials));
+
+        Assert.True(provider.Calls >= 1);
         await AssertConnected(client);
-        await client.SetAsync("iam_provider_failure_key", "iam_provider_failure_value");
-        var value = await client.GetAsync("iam_provider_failure_key");
-        Assert.Equal("iam_provider_failure_value", value.ToString());
+    }
+
+    /// <summary>
+    /// Asserts that a provider failure surfaces only the binding's fixed message.
+    /// </summary>
+    private static void AssertSanitizedProviderFailure(Exception exception)
+    {
+        Assert.Contains("Custom credentials provider failed", exception.Message);
+        Assert.DoesNotContain(RecordingCredentialsProvider.FailureMessage, exception.Message);
     }
 
     private static IamAuthConfig CreateIamConfig(uint refreshIntervalSeconds, GlideCredentialProvider? provider = null) =>
@@ -209,8 +233,16 @@ public class IamAuthTests(TlsServerFixture tlsServerFixture) : IClassFixture<Tls
     /// <summary>
     /// Credentials provider that records invocations and can be armed to signal the next one or to fail.
     /// </summary>
-    private sealed class RecordingCredentialsProvider
+    private sealed class RecordingCredentialsProvider(AwsCredentials? credentials = null)
     {
+        /// <summary>
+        /// Message of the exception thrown by a failing provider. It must not reach the client.
+        /// </summary>
+        public const string FailureMessage = "PROVIDER_FAILURE_SECRET";
+
+        private readonly AwsCredentials _credentials =
+            credentials ?? new AwsCredentials("test_access_key", "test_secret_key", "test_session_token");
+
         private int _calls;
         private TaskCompletionSource? _nextCall;
 
@@ -245,8 +277,8 @@ public class IamAuthTests(TlsServerFixture tlsServerFixture) : IClassFixture<Tls
             _ = (Interlocked.Exchange(ref _nextCall, null)?.TrySetResult());
 
             return Fail
-                ? Task.FromException<AwsCredentials>(new InvalidOperationException("Credentials provider failure"))
-                : Task.FromResult(new AwsCredentials("test_access_key", "test_secret_key", "test_session_token"));
+                ? Task.FromException<AwsCredentials>(new InvalidOperationException(FailureMessage))
+                : Task.FromResult(_credentials);
         }
     }
 }
