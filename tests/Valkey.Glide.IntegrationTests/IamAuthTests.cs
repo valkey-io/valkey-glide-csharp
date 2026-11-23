@@ -13,6 +13,16 @@ public class IamAuthTests(TlsServerFixture tlsServerFixture) : IClassFixture<Tls
     private const string TestRegion = "us-east-1";
     private const string DefaultUsername = "default";
 
+    /// <summary>
+    /// Refresh interval long enough that scheduled refreshes do not run during a test.
+    /// </summary>
+    private const uint LongRefreshIntervalSeconds = 3600;
+
+    /// <summary>
+    /// Bound on waiting for a provider invocation.
+    /// </summary>
+    private static readonly TimeSpan SignalTimeout = TimeSpan.FromSeconds(15);
+
     [Fact]
     public async Task IamAuthenticationWithMockCredentials_Standalone()
     {
@@ -104,11 +114,80 @@ public class IamAuthTests(TlsServerFixture tlsServerFixture) : IClassFixture<Tls
         Assert.Equal("iam_auto_refresh_value", value.ToString());
     }
 
-    private static IamAuthConfig CreateIamConfig(uint refreshIntervalSeconds) =>
-        new(TestClusterName, ServiceType.ElastiCache, TestRegion, refreshIntervalSeconds);
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CustomIamProviderOnStartupAndManualRefresh(bool clusterMode)
+    {
+        var provider = new RecordingCredentialsProvider();
+        var credentials = CreateCredentials(LongRefreshIntervalSeconds, provider.GetCredentialsAsync);
 
-    private static ServerCredentials CreateCredentials(uint refreshIntervalSeconds) =>
-        new(DefaultUsername, CreateIamConfig(refreshIntervalSeconds));
+        await using var client = await CreateClientAsync(clusterMode, credentials);
+
+        // The provider supplies the credentials for the initial token.
+        Assert.True(provider.Calls >= 1);
+        await AssertConnected(client);
+
+        // A manual refresh invokes the provider again.
+        Task nextCall = provider.ArmNextCall();
+        await client.RefreshIamTokenAsync();
+        await nextCall.WaitAsync(SignalTimeout, TestContext.Current.CancellationToken);
+
+        await AssertConnected(client);
+    }
+
+    [Fact]
+    public async Task CustomIamProviderOnScheduledRefresh()
+    {
+        var provider = new RecordingCredentialsProvider();
+        var credentials = CreateCredentials(refreshIntervalSeconds: 1, provider.GetCredentialsAsync);
+
+        await using var client = await GlideClient.CreateClient(CreateStandaloneConfig(tlsServerFixture.StandaloneServer, credentials));
+
+        // A scheduled refresh invokes the provider after startup.
+        Task nextCall = provider.ArmNextCall();
+        await nextCall.WaitAsync(SignalTimeout, TestContext.Current.CancellationToken);
+
+        await client.SetAsync("iam_provider_key", "iam_provider_value");
+        var value = await client.GetAsync("iam_provider_key");
+        Assert.Equal("iam_provider_value", value.ToString());
+    }
+
+    [Fact]
+    public async Task CustomIamProviderFailureOnStartup()
+    {
+        // Default-chain credentials are available from the environment, but must not be used.
+        var provider = new RecordingCredentialsProvider { Fail = true };
+        var credentials = CreateCredentials(LongRefreshIntervalSeconds, provider.GetCredentialsAsync);
+        var config = CreateStandaloneConfig(tlsServerFixture.StandaloneServer, credentials);
+
+        _ = await Assert.ThrowsAsync<Errors.ConnectionException>(() => GlideClient.CreateClient(config));
+        Assert.Equal(1, provider.Calls);
+    }
+
+    [Fact]
+    public async Task CustomIamProviderFailureOnManualRefresh()
+    {
+        var provider = new RecordingCredentialsProvider();
+        var credentials = CreateCredentials(LongRefreshIntervalSeconds, provider.GetCredentialsAsync);
+
+        await using var client = await GlideClient.CreateClient(CreateStandaloneConfig(tlsServerFixture.StandaloneServer, credentials));
+
+        provider.Fail = true;
+        _ = await Assert.ThrowsAsync<Errors.RequestException>(client.RefreshIamTokenAsync);
+
+        // The previously cached token keeps the connection usable.
+        await AssertConnected(client);
+        await client.SetAsync("iam_provider_failure_key", "iam_provider_failure_value");
+        var value = await client.GetAsync("iam_provider_failure_key");
+        Assert.Equal("iam_provider_failure_value", value.ToString());
+    }
+
+    private static IamAuthConfig CreateIamConfig(uint refreshIntervalSeconds, GlideCredentialProvider? provider = null) =>
+        new(TestClusterName, ServiceType.ElastiCache, TestRegion, refreshIntervalSeconds) { CredentialsProvider = provider };
+
+    private static ServerCredentials CreateCredentials(uint refreshIntervalSeconds, GlideCredentialProvider? provider = null) =>
+        new(DefaultUsername, CreateIamConfig(refreshIntervalSeconds, provider));
 
     private static ConnectionConfiguration.StandaloneClientConfiguration CreateStandaloneConfig(
         StandaloneServer server, ServerCredentials credentials) =>
@@ -121,4 +200,53 @@ public class IamAuthTests(TlsServerFixture tlsServerFixture) : IClassFixture<Tls
         server.CreateConfigBuilder()
             .WithCredentials(credentials)
             .Build();
+
+    private async Task<BaseClient> CreateClientAsync(bool clusterMode, ServerCredentials credentials) =>
+        clusterMode
+            ? await GlideClusterClient.CreateClient(CreateClusterConfig(tlsServerFixture.ClusterServer, credentials))
+            : await GlideClient.CreateClient(CreateStandaloneConfig(tlsServerFixture.StandaloneServer, credentials));
+
+    /// <summary>
+    /// Credentials provider that records invocations and can be armed to signal the next one or to fail.
+    /// </summary>
+    private sealed class RecordingCredentialsProvider
+    {
+        private int _calls;
+        private TaskCompletionSource? _nextCall;
+
+        /// <summary>
+        /// Number of provider invocations.
+        /// </summary>
+        public int Calls => Volatile.Read(ref _calls);
+
+        /// <summary>
+        /// Whether invocations fail.
+        /// </summary>
+        public bool Fail
+        {
+            get => Volatile.Read(ref field);
+            set => Volatile.Write(ref field, value);
+        }
+
+        /// <summary>
+        /// Returns a task that completes on the next provider invocation.
+        /// </summary>
+        public Task ArmNextCall()
+        {
+            var nextCall = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            Volatile.Write(ref _nextCall, nextCall);
+            return nextCall.Task;
+        }
+
+        public Task<AwsCredentials> GetCredentialsAsync(CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            _ = Interlocked.Increment(ref _calls);
+            _ = (Interlocked.Exchange(ref _nextCall, null)?.TrySetResult());
+
+            return Fail
+                ? Task.FromException<AwsCredentials>(new InvalidOperationException("Credentials provider failure"))
+                : Task.FromResult(new AwsCredentials("test_access_key", "test_secret_key", "test_session_token"));
+        }
+    }
 }

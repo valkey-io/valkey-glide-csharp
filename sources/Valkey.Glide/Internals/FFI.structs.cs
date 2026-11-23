@@ -523,6 +523,60 @@ internal partial class FFI
         public readonly uint RefreshIntervalSeconds = refreshIntervalSeconds ?? default;
     }
 
+    /// <summary>
+    /// AWS credentials returned by a custom IAM credentials provider.
+    /// All pointers reference UTF-8 bytes that are only valid for the duration of <see cref="SetIamCredentialsFfi"/>.
+    /// </summary>
+    /// <param name="accessKeyId">Pointer to the UTF-8 access key ID.</param>
+    /// <param name="accessKeyIdLen">Length of <paramref name="accessKeyId"/> in bytes.</param>
+    /// <param name="secretAccessKey">Pointer to the UTF-8 secret access key.</param>
+    /// <param name="secretAccessKeyLen">Length of <paramref name="secretAccessKey"/> in bytes.</param>
+    /// <param name="hasSessionToken">Whether a session token was supplied.</param>
+    /// <param name="sessionToken">Pointer to the UTF-8 session token.</param>
+    /// <param name="sessionTokenLen">Length of <paramref name="sessionToken"/> in bytes.</param>
+    /// <param name="hasExpiresAt">Whether an expiration time was supplied.</param>
+    /// <param name="expiresAtUnixMs">Expiration time in Unix milliseconds.</param>
+    /// <remarks>
+    /// Passed by pointer, so the struct must stay blittable: flags are stored as <see cref="byte"/> values.
+    /// </remarks>
+    [StructLayout(LayoutKind.Sequential)]
+    internal readonly struct AwsCredentialsFfi(
+        IntPtr accessKeyId,
+        nuint accessKeyIdLen,
+        IntPtr secretAccessKey,
+        nuint secretAccessKeyLen,
+        bool hasSessionToken,
+        IntPtr sessionToken,
+        nuint sessionTokenLen,
+        bool hasExpiresAt,
+        long expiresAtUnixMs)
+    {
+        /// <summary>
+        /// The AWS access key ID.
+        /// </summary>
+        public readonly IntPtr AccessKeyId = accessKeyId;
+        public readonly nuint AccessKeyIdLen = accessKeyIdLen;
+
+        /// <summary>
+        /// The AWS secret access key.
+        /// </summary>
+        public readonly IntPtr SecretAccessKey = secretAccessKey;
+        public readonly nuint SecretAccessKeyLen = secretAccessKeyLen;
+
+        /// <summary>
+        /// The optional AWS session token.
+        /// </summary>
+        public readonly byte HasSessionToken = hasSessionToken ? (byte)1 : (byte)0;
+        public readonly IntPtr SessionToken = sessionToken;
+        public readonly nuint SessionTokenLen = sessionTokenLen;
+
+        /// <summary>
+        /// The optional credentials expiration time, in Unix milliseconds.
+        /// </summary>
+        public readonly byte HasExpiresAt = hasExpiresAt ? (byte)1 : (byte)0;
+        public readonly long ExpiresAtUnixMs = expiresAtUnixMs;
+    }
+
     #region Monitor
 
     /// <summary>
