@@ -21,6 +21,9 @@ internal static partial class Request
     public static Cmd<long, long> DecrementBy(ValkeyKey key, long decrement)
         => Simple<long>(RequestType.DecrBy, [key, decrement.ToGlideString()]);
 
+    public static Cmd<bool, bool> Delete(ValkeyKey key, DeleteCondition condition)
+        => Boolean<bool>(RequestType.DelEx, [key, .. condition.ToArgs()]);
+
     public static Cmd<bool, bool> DeleteIfEqual(ValkeyKey key, ValkeyValue value)
         => Simple<bool>(RequestType.DelIfEq, [key, value]);
 

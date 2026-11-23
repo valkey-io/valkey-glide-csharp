@@ -88,6 +88,7 @@ public class CompressionTests
     {
         // String manipulation commands
         { "APPEND", c => c.AppendAsync("key", "suffix") },
+        { "DELEX", c => c.DeleteAsync("key", DeleteCondition.OnlyIfEqual("value")) },
         { "DELIFEQ", c => c.DeleteIfEqualAsync("key", "value") },
         { "GETRANGE", c => c.GetRangeAsync("key", 0, 4) },
         // TODO #318: Add LongestCommonSubsequenceAsync once it is available.

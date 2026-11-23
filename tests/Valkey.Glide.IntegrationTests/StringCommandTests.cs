@@ -184,6 +184,53 @@ public class StringCommandTests(TestConfiguration config)
     }
 
     #endregion
+    #region DeleteAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task DeleteAsync_OnlyIfEqual(BaseClient client)
+    {
+        Version.SkipIfLessThan(Version.Valkey9_2);
+        ValkeyKey key = Guid.NewGuid().ToString();
+        ValkeyValue value = Guid.NewGuid().ToString();
+
+        // Non-existent key
+        Assert.False(await client.DeleteAsync(key, DeleteCondition.OnlyIfEqual(value)));
+
+        await client.SetAsync(key, value);
+
+        // Value not equal
+        Assert.False(await client.DeleteAsync(key, DeleteCondition.OnlyIfEqual("other")));
+        Assert.Equal(value, await client.GetAsync(key));
+
+        // Value equal
+        Assert.True(await client.DeleteAsync(key, DeleteCondition.OnlyIfEqual(value)));
+        Assert.False(await client.ExistsAsync(key));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task DeleteAsync_OnlyIfNotEqual(BaseClient client)
+    {
+        Version.SkipIfLessThan(Version.Valkey9_2);
+        ValkeyKey key = Guid.NewGuid().ToString();
+        ValkeyValue value = Guid.NewGuid().ToString();
+
+        // Non-existent key
+        Assert.False(await client.DeleteAsync(key, DeleteCondition.OnlyIfNotEqual(value)));
+
+        await client.SetAsync(key, value);
+
+        // Value equal
+        Assert.False(await client.DeleteAsync(key, DeleteCondition.OnlyIfNotEqual(value)));
+        Assert.Equal(value, await client.GetAsync(key));
+
+        // Value not equal
+        Assert.True(await client.DeleteAsync(key, DeleteCondition.OnlyIfNotEqual("other")));
+        Assert.False(await client.ExistsAsync(key));
+    }
+
+    #endregion
     #region DeleteIfEqualAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]
