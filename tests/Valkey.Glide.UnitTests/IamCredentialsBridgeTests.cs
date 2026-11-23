@@ -143,10 +143,12 @@ public class IamCredentialsBridgeTests
         // The body returns an incomplete task, which only has the remaining three seconds.
         releaseBody.Set();
         await WaitUntilAsync(() => !bridge.IsBodyRunning);
+
+        timeProvider.Advance(TimeSpan.FromSeconds(3) - TimeSpan.FromMilliseconds(1));
         Assert.False(invocation.IsCompleted);
         Assert.False(providerToken.IsCancellationRequested);
 
-        timeProvider.Advance(TimeSpan.FromSeconds(3));
+        timeProvider.Advance(TimeSpan.FromMilliseconds(1));
 
         Assert.Equal(IamCredentialsStatus.TimedOut, await invocation.WaitAsync(WaitTimeout, TestContext.Current.CancellationToken));
         Assert.True(providerToken.IsCancellationRequested);
@@ -266,19 +268,25 @@ public class IamCredentialsBridgeTests
     [Fact]
     public async Task RegistrationReleasedOnce_OnDisposalDuringInvocation()
     {
+        // The fake clock is never advanced, so only disposal can end the invocation.
+        var timeProvider = new FakeTimeProvider();
         using var bodyEntered = new ManualResetEventSlim();
+        using var releaseBody = new ManualResetEventSlim();
 
         // Continuations run inline, so a late completion is fully processed when SetResult returns.
         var pendingTask = new TaskCompletionSource<AwsCredentials>();
         CancellationToken providerToken = default;
         int sinkCalls = 0;
 
-        var bridge = new IamCredentialsBridge(cancellationToken =>
-        {
-            providerToken = cancellationToken;
-            bodyEntered.Set();
-            return pendingTask.Task;
-        });
+        var bridge = new IamCredentialsBridge(
+            cancellationToken =>
+            {
+                providerToken = cancellationToken;
+                bodyEntered.Set();
+                _ = releaseBody.Wait(WaitTimeout, TestContext.Current.CancellationToken);
+                return pendingTask.Task;
+            },
+            timeProvider);
         _ = bridge.Register();
 
         var invocation = Task.Run(
@@ -290,7 +298,8 @@ public class IamCredentialsBridgeTests
             TestContext.Current.CancellationToken);
         Assert.True(bodyEntered.Wait(WaitTimeout, TestContext.Current.CancellationToken));
 
-        // Disposing the client cancels the in-flight invocation.
+        // Disposing the client cancels the in-flight invocation while the body is still running.
+        Assert.True(bridge.IsBodyRunning);
         bridge.Cancel();
 
         Assert.Equal(IamCredentialsStatus.Cancelled, await invocation.WaitAsync(WaitTimeout, TestContext.Current.CancellationToken));
@@ -306,6 +315,8 @@ public class IamCredentialsBridgeTests
         Assert.True(bridge.IsReleased);
 
         // A late provider completion never reaches the native sink.
+        releaseBody.Set();
+        await WaitUntilAsync(() => !bridge.IsBodyRunning);
         pendingTask.SetResult(Credentials);
 
         Assert.Equal(0, Volatile.Read(ref sinkCalls));

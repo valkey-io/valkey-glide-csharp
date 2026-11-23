@@ -168,17 +168,7 @@ internal sealed class IamCredentialsBridge
         finally
         {
             // A late provider task may still use the token sources.
-            _ = work.ContinueWith(
-                static (_, state) =>
-                {
-                    var (invocation, deadline) = ((CancellationTokenSource, CancellationTokenSource))state!;
-                    invocation.Dispose();
-                    deadline.Dispose();
-                },
-                (invocationSource, deadlineSource),
-                CancellationToken.None,
-                TaskContinuationOptions.ExecuteSynchronously,
-                TaskScheduler.Default);
+            DisposeOnCompletion(work, invocationSource, deadlineSource);
         }
 
         // A provider that honors the expired deadline token completes cancelled; report that as a timeout.
@@ -282,6 +272,25 @@ internal sealed class IamCredentialsBridge
             // A provider cancellation callback threw. Cancellation was still requested.
         }
     }
+
+    /// <summary>
+    /// Disposes the token sources once <paramref name="work"/> completes.
+    /// </summary>
+    /// <param name="work">The provider invocation.</param>
+    /// <param name="invocationSource">The token source passed to the provider.</param>
+    /// <param name="deadlineSource">The deadline token source.</param>
+    private static void DisposeOnCompletion(Task work, CancellationTokenSource invocationSource, CancellationTokenSource deadlineSource)
+        => _ = work.ContinueWith(
+            static (_, state) =>
+            {
+                var (invocation, deadline) = ((CancellationTokenSource, CancellationTokenSource))state!;
+                invocation.Dispose();
+                deadline.Dispose();
+            },
+            (invocationSource, deadlineSource),
+            CancellationToken.None,
+            TaskContinuationOptions.ExecuteSynchronously,
+            TaskScheduler.Default);
 
     /// <summary>
     /// Encodes the credentials as UTF-8 and passes them to <paramref name="sink"/> while pinned.
