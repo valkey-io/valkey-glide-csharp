@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.ComponentModel;
+
 namespace Valkey.Glide.ServerModules;
 
 /// <summary>
@@ -19,14 +21,20 @@ public static partial class GlideJson
         None,
 
         /// <summary>
-        /// Only set if the key/path does not already exist (NX).
-        /// </summary>
-        OnlyIfDoesNotExist,
-
-        /// <summary>
         /// Only set if the key/path already exists (XX).
         /// </summary>
-        OnlyIfExists
+        OnlyIfExists,
+
+        /// <summary>
+        /// Only set if the key/path does not already exist (NX).
+        /// </summary>
+        OnlyIfNotExists,
+
+        // TODO #671: Remove deprecated value.
+        /// <inheritdoc cref="OnlyIfNotExists"/>
+        [Obsolete("Use " + nameof(OnlyIfNotExists) + " instead. See https://github.com/valkey-io/valkey-glide-csharp/issues/671")]
+        [Browsable(false), EditorBrowsable(EditorBrowsableState.Never)]
+        OnlyIfDoesNotExist = OnlyIfNotExists,
     }
 
     /// <summary>

@@ -80,7 +80,7 @@ public class JsonCommandTests(TestConfiguration config)
         string key = GetUniqueKey();
         string jsonValue = /*lang=json,strict*/ "{\"name\":\"John\"}";
 
-        bool wasSet = await GlideJson.SetAsync(client, key, "$", jsonValue, GlideJson.SetCondition.OnlyIfDoesNotExist);
+        bool wasSet = await GlideJson.SetAsync(client, key, "$", jsonValue, GlideJson.SetCondition.OnlyIfNotExists);
 
         Assert.True(wasSet);
     }
@@ -97,7 +97,7 @@ public class JsonCommandTests(TestConfiguration config)
         await GlideJson.SetAsync(client, key, "$", initialValue);
 
         // Try to set with condition
-        bool wasSet = await GlideJson.SetAsync(client, key, "$", newValue, GlideJson.SetCondition.OnlyIfDoesNotExist);
+        bool wasSet = await GlideJson.SetAsync(client, key, "$", newValue, GlideJson.SetCondition.OnlyIfNotExists);
         Assert.False(wasSet);
     }
 

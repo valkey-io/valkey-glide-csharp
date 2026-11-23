@@ -304,7 +304,8 @@ public partial interface IBaseClient
     /// <returns><see langword="true"/> if the key was set, <see langword="false"/> if the condition was not met.</returns>
     /// <example>
     /// <code>
-    /// var wasSet = await client.SetAsync("key", "value", Valkey.Glide.Commands.Options.SetCondition.OnlyIfDoesNotExist);  // true
+    /// var condition = SetCondition.OnlyIfNotExists;
+    /// var wasSet = await client.SetAsync("key", "value", condition);  // true
     /// </code>
     /// </example>
     Task<bool> SetAsync(ValkeyKey key, ValkeyValue value, SetCondition condition);
@@ -319,8 +320,8 @@ public partial interface IBaseClient
     /// <returns><see langword="true"/> if the key was set, <see langword="false"/> if the condition was not met.</returns>
     /// <example>
     /// <code>
-    /// var setOptions = new SetOptions { Condition = Valkey.Glide.Commands.Options.SetCondition.OnlyIfDoesNotExist };
-    /// var wasSet = await client.SetAsync("key", "value", setOptions);  // true
+    /// var options = new SetOptions { Condition = SetCondition.OnlyIfNotExists };
+    /// var wasSet = await client.SetAsync("key", "value", options);  // true
     /// </code>
     /// </example>
     Task<bool> SetAsync(ValkeyKey key, ValkeyValue value, SetOptions options);
@@ -365,7 +366,8 @@ public partial interface IBaseClient
     /// <example>
     /// <code>
     /// await client.SetAsync("key", "oldValue");
-    /// var previous = await client.GetSetAsync("key", "newValue", Valkey.Glide.Commands.Options.SetCondition.OnlyIfExists);  // "oldValue"
+    /// var condition = SetCondition.OnlyIfExists;
+    /// var previous = await client.GetSetAsync("key", "newValue", condition);  // "oldValue"
     /// </code>
     /// </example>
     Task<ValkeyValue> GetSetAsync(ValkeyKey key, ValkeyValue value, SetCondition condition);
@@ -381,8 +383,8 @@ public partial interface IBaseClient
     /// <example>
     /// <code>
     /// await client.SetAsync("key", "oldValue");
-    /// var setOptions = new SetOptions { Condition = Valkey.Glide.Commands.Options.SetCondition.OnlyIfExists };
-    /// var previous = await client.GetSetAsync("key", "newValue", setOptions);  // "oldValue"
+    /// var options = new SetOptions { Condition = SetCondition.OnlyIfExists };
+    /// var previous = await client.GetSetAsync("key", "newValue", options);  // "oldValue"
     /// </code>
     /// </example>
     Task<ValkeyValue> GetSetAsync(ValkeyKey key, ValkeyValue value, SetOptions options);

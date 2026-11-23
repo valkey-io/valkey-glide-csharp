@@ -1503,10 +1503,10 @@ internal partial class BatchTestUtils
             _ = batch.HashSet(keyConditionKey, [new("xx_field", "xx_value")], new HashSetOptions { KeyCondition = HashSetKeyCondition.OnlyIfExists });
             testData.Add(new(false, "HashSet(keyConditionKey, {xx_field: xx_value}, XX)"));
 
-            _ = batch.HashSet(keyConditionKey, [new("nx_field", "nx_value")], new HashSetOptions { KeyCondition = HashSetKeyCondition.OnlyIfDoesNotExist });
+            _ = batch.HashSet(keyConditionKey, [new("nx_field", "nx_value")], new HashSetOptions { KeyCondition = HashSetKeyCondition.OnlyIfNotExists });
             testData.Add(new(true, "HashSet(keyConditionKey, {nx_field: nx_value}, NX)"));
 
-            _ = batch.HashSet(keyConditionKey, [new("nx_field2", "nx_value2")], new HashSetOptions { KeyCondition = HashSetKeyCondition.OnlyIfDoesNotExist });
+            _ = batch.HashSet(keyConditionKey, [new("nx_field2", "nx_value2")], new HashSetOptions { KeyCondition = HashSetKeyCondition.OnlyIfNotExists });
             testData.Add(new(false, "HashSet(keyConditionKey, {nx_field2: nx_value2}, NX)"));
 
             _ = batch.HashSet(keyConditionKey, [new("xx_field", "xx_value")], new HashSetOptions { KeyCondition = HashSetKeyCondition.OnlyIfExists });

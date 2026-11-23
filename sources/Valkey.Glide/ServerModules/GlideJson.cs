@@ -73,7 +73,8 @@ public static partial class GlideJson
     /// <example>
     /// <code>
     /// // Only set if key doesn't exist
-    /// var wasSet = await GlideJson.SetAsync(client, "mykey", "$", "{\"a\":1}", GlideJson.SetCondition.OnlyIfDoesNotExist);
+    /// var condition = GlideJson.SetCondition.OnlyIfNotExists;
+    /// var wasSet = await GlideJson.SetAsync(client, "mykey", "$", "{\"a\":1}", condition);
     /// // wasSet == true if key was new, false if key existed
     /// </code>
     /// </example>
@@ -632,8 +633,8 @@ public static partial class GlideJson
         => condition switch
         {
             SetCondition.None => [JsonSet, key, path, value],
-            SetCondition.OnlyIfDoesNotExist => [JsonSet, key, path, value, ValkeyLiterals.NX],
             SetCondition.OnlyIfExists => [JsonSet, key, path, value, ValkeyLiterals.XX],
+            SetCondition.OnlyIfNotExists => [JsonSet, key, path, value, ValkeyLiterals.NX],
             _ => throw new ArgumentOutOfRangeException(nameof(condition), condition, "Invalid SetCondition value")
         };
 

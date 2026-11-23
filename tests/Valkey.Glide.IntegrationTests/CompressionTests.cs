@@ -484,7 +484,7 @@ public class CompressionTests
 
         string key = $"setnx_test_{Guid.NewGuid()}";
 
-        bool result = await ZstdClient.SetAsync(key, LargeValue, SetCondition.OnlyIfDoesNotExist);
+        bool result = await ZstdClient.SetAsync(key, LargeValue, SetCondition.OnlyIfNotExists);
         Assert.True(result);
 
         var statsAfter = BaseClient.GetStatistics();

@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.ComponentModel;
+
 namespace Valkey.Glide;
 
 /// <summary>
@@ -21,7 +23,13 @@ public enum HashSetKeyCondition
     /// <summary>
     /// Only set the value and expiry if the hash key does not already exist (NX).
     /// </summary>
-    OnlyIfDoesNotExist,
+    OnlyIfNotExists,
+
+    // TODO #671: Remove deprecated value.
+    /// <inheritdoc cref="OnlyIfNotExists"/>
+    [Obsolete("Use " + nameof(OnlyIfNotExists) + " instead. See https://github.com/valkey-io/valkey-glide-csharp/issues/671")]
+    [Browsable(false), EditorBrowsable(EditorBrowsableState.Never)]
+    OnlyIfDoesNotExist = OnlyIfNotExists,
 }
 
 internal static class HashSetKeyConditionExtensions
@@ -36,7 +44,7 @@ internal static class HashSetKeyConditionExtensions
         {
             HashSetKeyCondition.Always => [],
             HashSetKeyCondition.OnlyIfExists => [ValkeyLiterals.XX],
-            HashSetKeyCondition.OnlyIfDoesNotExist => [ValkeyLiterals.NX],
+            HashSetKeyCondition.OnlyIfNotExists => [ValkeyLiterals.NX],
             _ => throw new ArgumentOutOfRangeException(nameof(condition)),
         };
 }
