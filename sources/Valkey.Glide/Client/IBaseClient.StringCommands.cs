@@ -108,13 +108,12 @@ public partial interface IBaseClient
     Task<double> DecrementAsync(ValkeyKey key, double value);
 
     /// <summary>
-    /// Deletes a key if its current value meets the given condition.
+    /// Deletes <paramref name="key"/> if its value meets the given condition.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/delex/">Valkey commands – DELEX</seealso>
     /// <param name="key">The key to delete.</param>
-    /// <param name="condition">The condition that the current value of <paramref name="key"/> must meet.</param>
-    /// <returns><see langword="true"/> if <paramref name="key"/> was deleted, <see langword="false"/> if
-    /// <paramref name="key"/> does not exist or its value does not meet <paramref name="condition"/>.</returns>
+    /// <param name="condition">The condition for deleting the key.</param>
+    /// <returns><see langword="true"/> if <paramref name="key"/> was deleted, <see langword="false"/> otherwise.</returns>
     /// <example>
     /// <code>
     /// await client.SetAsync("key", "value");
@@ -133,14 +132,13 @@ public partial interface IBaseClient
     Task<bool> DeleteAsync(ValkeyKey key, DeleteCondition condition);
 
     /// <summary>
-    /// Deletes a key if its current value is equal to the given value.
+    /// Deletes <paramref name="key"/> if its value equals <paramref name="value"/>.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/delifeq/">Valkey commands – DELIFEQ</seealso>
     /// <seealso cref="DeleteAsync(ValkeyKey, DeleteCondition)"/>
     /// <param name="key">The key to delete.</param>
-    /// <param name="value">The value to compare against the current value of <paramref name="key"/>.</param>
-    /// <returns><see langword="true"/> if <paramref name="key"/> was deleted, <see langword="false"/> if
-    /// <paramref name="key"/> does not exist or its value is not equal to <paramref name="value"/>.</returns>
+    /// <param name="value">The value to compare against the key.</param>
+    /// <returns><see langword="true"/> if <paramref name="key"/> was deleted, <see langword="false"/> otherwise.</returns>
     /// <example>
     /// <code>
     /// await client.SetAsync("key", "value");
