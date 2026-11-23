@@ -63,7 +63,6 @@ internal sealed class IamCredentialsBridge
     private int _bodyRunning;
     private int _cancelled;
     private int _released;
-    private int _releaseRequestCount;
 
     #endregion
     #region Constructors
@@ -100,11 +99,6 @@ internal sealed class IamCredentialsBridge
     /// Whether the registration has been released.
     /// </summary>
     internal bool IsReleased => Volatile.Read(ref _released) != 0;
-
-    /// <summary>
-    /// Number of times <see cref="Release"/> has been called, including duplicate calls.
-    /// </summary>
-    internal int ReleaseRequestCount => Volatile.Read(ref _releaseRequestCount);
 
     /// <summary>
     /// Whether a synchronous provider body is currently running.
@@ -199,7 +193,6 @@ internal sealed class IamCredentialsBridge
     /// </summary>
     internal void Release()
     {
-        _ = Interlocked.Increment(ref _releaseRequestCount);
         if (Interlocked.Exchange(ref _released, 1) != 0)
         {
             return;

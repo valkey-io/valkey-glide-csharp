@@ -121,18 +121,18 @@ impl CredentialsProviderRegistration {
             return Ok(None);
         }
 
-        match (invoke, release) {
-            (Some(invoke), Some(release)) => Ok(Some(Arc::new(Self {
-                handle,
-                invoke,
-                release,
-            }))),
-            (None, Some(release)) => {
-                unsafe { release(handle) };
-                Err("Credentials provider invoke callback is missing".to_string())
-            }
-            (_, None) => Err("Credentials provider release callback is missing".to_string()),
-        }
+        let Some(release) = release else {
+            return Err("Credentials provider release callback is missing".to_string());
+        };
+        let Some(invoke) = invoke else {
+            unsafe { release(handle) };
+            return Err("Credentials provider invoke callback is missing".to_string());
+        };
+        Ok(Some(Arc::new(Self {
+            handle,
+            invoke,
+            release,
+        })))
     }
 
     /// Invokes the managed provider and returns the copied credentials.

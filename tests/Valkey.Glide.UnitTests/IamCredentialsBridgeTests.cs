@@ -35,6 +35,9 @@ public class IamCredentialsBridgeTests
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     private delegate void FailureAction(ulong index, IntPtr message, uint errorType);
 
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate void ReleaseAction(IntPtr handle);
+
     #endregion
     #region Tests
 
@@ -248,7 +251,7 @@ public class IamCredentialsBridgeTests
             ? builder.WithAuthentication("username", iamConfig)
             : builder.WithAuthentication("username", "password");
 
-        string? error = CreateNativeClient(builder.Build().Request, bridge);
+        var (error, nativeReleases) = CreateNativeClient(builder.Build().Request, bridge);
 
         Assert.NotNull(error);
         if (useIam)
@@ -261,7 +264,7 @@ public class IamCredentialsBridgeTests
         }
 
         Assert.True(bridge.IsReleased);
-        Assert.Equal(1, bridge.ReleaseRequestCount);
+        Assert.Equal(1, nativeReleases);
         Assert.Equal(0, Volatile.Read(ref providerCalls));
     }
 
@@ -364,14 +367,24 @@ public class IamCredentialsBridgeTests
     /// <summary>
     /// Calls the native <c>create_client</c> entry point with the bridge's registration.
     /// </summary>
-    /// <returns>The error message reported by the failure callback, or <see langword="null"/> on success.</returns>
-    private static string? CreateNativeClient(ConnectionConfig config, IamCredentialsBridge bridge)
+    /// <returns>
+    /// The error message reported by the failure callback, and the number of native release calls.
+    /// </returns>
+    private static (string? Error, int NativeReleases) CreateNativeClient(ConnectionConfig config, IamCredentialsBridge bridge)
     {
         string? error = null;
         bool succeeded = false;
+        int nativeReleases = 0;
 
         SuccessAction onSuccess = (_, _) => succeeded = true;
         FailureAction onFailure = (_, message, _) => error = Marshal.PtrToStringUTF8(message);
+
+        // Count native release calls without dereferencing the handle, then release the bridge.
+        ReleaseAction onRelease = _ =>
+        {
+            _ = Interlocked.Increment(ref nativeReleases);
+            bridge.Release();
+        };
 
         using FFI.ConnectionConfig request = config.ToFfi();
         FFI.CreateClientFfi(
@@ -382,13 +395,14 @@ public class IamCredentialsBridgeTests
             IntPtr.Zero,
             bridge.Register(),
             IamCredentialsBridge.InvokePointer,
-            IamCredentialsBridge.ReleasePointer);
+            Marshal.GetFunctionPointerForDelegate(onRelease));
 
         GC.KeepAlive(onSuccess);
         GC.KeepAlive(onFailure);
+        GC.KeepAlive(onRelease);
 
         Assert.False(succeeded);
-        return error;
+        return (error, Volatile.Read(ref nativeReleases));
     }
 
     private static async Task WaitUntilAsync(Func<bool> condition)

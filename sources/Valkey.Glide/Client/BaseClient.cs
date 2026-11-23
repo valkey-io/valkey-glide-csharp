@@ -542,7 +542,6 @@ public abstract partial class BaseClient : IBaseClient
 
         try
         {
-            // Once the native call is entered, it owns the credentials provider handle and releases it exactly once.
             CreateClientFfi(
                 request.ToPtr(),
                 successCallbackPointer,

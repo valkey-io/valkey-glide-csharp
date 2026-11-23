@@ -551,28 +551,16 @@ internal partial class FFI
         bool hasExpiresAt,
         long expiresAtUnixMs)
     {
-        /// <summary>
-        /// The AWS access key ID.
-        /// </summary>
         public readonly IntPtr AccessKeyId = accessKeyId;
         public readonly nuint AccessKeyIdLen = accessKeyIdLen;
 
-        /// <summary>
-        /// The AWS secret access key.
-        /// </summary>
         public readonly IntPtr SecretAccessKey = secretAccessKey;
         public readonly nuint SecretAccessKeyLen = secretAccessKeyLen;
 
-        /// <summary>
-        /// The optional AWS session token.
-        /// </summary>
         public readonly byte HasSessionToken = hasSessionToken ? (byte)1 : (byte)0;
         public readonly IntPtr SessionToken = sessionToken;
         public readonly nuint SessionTokenLen = sessionTokenLen;
 
-        /// <summary>
-        /// The optional credentials expiration time, in Unix milliseconds.
-        /// </summary>
         public readonly byte HasExpiresAt = hasExpiresAt ? (byte)1 : (byte)0;
         public readonly long ExpiresAtUnixMs = expiresAtUnixMs;
     }
