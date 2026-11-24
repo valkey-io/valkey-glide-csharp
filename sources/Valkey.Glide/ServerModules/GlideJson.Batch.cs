@@ -64,8 +64,8 @@ public static class GlideJsonBatch
         GlideString[] args = condition switch
         {
             GlideJson.SetCondition.None => [GlideJson.JsonSet, key, path, value],
-            GlideJson.SetCondition.OnlyIfExists => [GlideJson.JsonSet, key, path, value, ValkeyLiterals.XX],
             GlideJson.SetCondition.OnlyIfNotExists => [GlideJson.JsonSet, key, path, value, ValkeyLiterals.NX],
+            GlideJson.SetCondition.OnlyIfExists => [GlideJson.JsonSet, key, path, value, ValkeyLiterals.XX],
             _ => throw new ArgumentOutOfRangeException(nameof(condition), condition, "Invalid SetCondition value")
         };
         return batch.CustomCommand(args);

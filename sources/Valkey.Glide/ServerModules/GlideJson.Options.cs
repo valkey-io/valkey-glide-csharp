@@ -21,14 +21,14 @@ public static partial class GlideJson
         None,
 
         /// <summary>
-        /// Only set if the key/path already exists (XX).
-        /// </summary>
-        OnlyIfExists,
-
-        /// <summary>
         /// Only set if the key/path does not already exist (NX).
         /// </summary>
         OnlyIfNotExists,
+
+        /// <summary>
+        /// Only set if the key/path already exists (XX).
+        /// </summary>
+        OnlyIfExists,
 
         // TODO #671: Remove deprecated value.
         /// <inheritdoc cref="OnlyIfNotExists"/>
