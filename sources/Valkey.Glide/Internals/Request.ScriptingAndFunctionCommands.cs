@@ -34,6 +34,7 @@ internal static partial class Request
         return new(RequestType.EvalSha, [.. cmdArgs], true, ValkeyResult.Create, allowConverterToHandleNull: true);
     }
 
+    // TODO #673: Accept `GlideString[]` keys and arguments to support binary data.
     public static Cmd<object?, ValkeyResult> FCall(string function, string[]? keys = null, string[]? args = null)
     {
         List<GlideString> cmdArgs = [function];
@@ -46,6 +47,7 @@ internal static partial class Request
         return new(RequestType.FCall, [.. cmdArgs], true, ValkeyResult.Create, allowConverterToHandleNull: true);
     }
 
+    // TODO #673: Accept `GlideString[]` keys and arguments to support binary data.
     public static Cmd<object?, ValkeyResult> FCallReadOnly(string function, string[]? keys = null, string[]? args = null)
     {
         List<GlideString> cmdArgs = [function];
