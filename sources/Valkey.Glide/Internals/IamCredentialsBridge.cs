@@ -151,10 +151,11 @@ internal sealed class IamCredentialsBridge
 
         // Start the deadline before scheduling so it also covers queueing.
         var deadlineSource = new CancellationTokenSource(InvocationTimeout, _timeProvider);
-        var invocationSource = CancellationTokenSource.CreateLinkedTokenSource(_disposalSource.Token);
+        var invocationSource = new CancellationTokenSource();
 
-        // Cancel through the guard so a throwing provider callback cannot crash the timer thread.
+        // Cancel through the guard so a throwing provider callback cannot crash the timer or disposal thread.
         _ = deadlineSource.Token.UnsafeRegister(static state => TryCancel((CancellationTokenSource)state!), invocationSource);
+        CancellationTokenRegistration disposalLink = _disposalSource.Token.UnsafeRegister(static state => TryCancel((CancellationTokenSource)state!), invocationSource);
         CancellationToken invocationToken = invocationSource.Token;
         Task<(IamCredentialsStatus Status, AwsCredentials? Credentials)> work = RunAsync(invocationToken);
 
@@ -169,6 +170,9 @@ internal sealed class IamCredentialsBridge
         }
         finally
         {
+            // Unlink from the bridge so a provider task that never completes is not kept alive by it.
+            _ = disposalLink.Unregister();
+
             // A late provider task may still use the token sources.
             DisposeOnCompletion(work, invocationSource, deadlineSource);
         }

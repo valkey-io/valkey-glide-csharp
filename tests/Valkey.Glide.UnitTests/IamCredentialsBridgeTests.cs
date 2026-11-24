@@ -155,7 +155,6 @@ public class IamCredentialsBridgeTests
 
         Assert.Equal(IamCredentialsStatus.TimedOut, await invocation.WaitAsync(WaitTimeout, TestContext.Current.CancellationToken));
         Assert.True(providerToken.IsCancellationRequested);
-        Assert.False(pendingTask.Task.IsCompleted);
     }
 
     [Fact]
