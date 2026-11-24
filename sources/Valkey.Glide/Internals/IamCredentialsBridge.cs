@@ -308,7 +308,7 @@ internal sealed class IamCredentialsBridge
             accessKeyId = StrictUtf8.GetBytes(credentials.AccessKeyId);
             secretAccessKey = StrictUtf8.GetBytes(credentials.SecretAccessKey);
             sessionToken = credentials.SessionToken is null ? [] : StrictUtf8.GetBytes(credentials.SessionToken);
-            long expiresAtUnixMs = credentials.ExpiresAt?.ToUnixTimeMilliseconds() ?? 0;
+            long expiresAtUnixMilliseconds = credentials.ExpiresAt?.ToUnixTimeMilliseconds() ?? 0;
 
             fixed (byte* accessKeyIdPointer = accessKeyId)
             fixed (byte* secretAccessKeyPointer = secretAccessKey)
@@ -322,8 +322,8 @@ internal sealed class IamCredentialsBridge
                     credentials.SessionToken is not null,
                     (IntPtr)sessionTokenPointer,
                     (nuint)sessionToken.Length,
-                    expiresAtUnixMs > 0,
-                    expiresAtUnixMs);
+                    expiresAtUnixMilliseconds > 0,
+                    expiresAtUnixMilliseconds);
 
                 return sink(ffiCredentials) ? IamCredentialsStatus.Success : IamCredentialsStatus.InvalidCredentials;
             }

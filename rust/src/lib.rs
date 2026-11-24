@@ -291,7 +291,7 @@ pub unsafe extern "C-unwind" fn create_client(
         let Some(iam_config) = request
             .authentication_info
             .as_mut()
-            .and_then(|auth_info| auth_info.iam_config.as_mut())
+            .and_then(|authentication_info| authentication_info.iam_config.as_mut())
         else {
             panic_guard.panicked = false;
             unsafe {

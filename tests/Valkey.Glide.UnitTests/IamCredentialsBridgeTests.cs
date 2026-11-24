@@ -48,13 +48,13 @@ public class IamCredentialsBridgeTests
         const string accessKeyId = " AKID-ключ-🔑 ";
         const string secretAccessKey = "secret/日本語+=";
         string sessionToken = string.Concat(Enumerable.Repeat("token-é-", 400));
-        const long expiresAtUnixMs = 1_900_000_000_123;
+        const long expiresAtUnixMilliseconds = 1_900_000_000_123;
 
         var captured = InvokeAndCapture(new AwsCredentials(
             accessKeyId,
             secretAccessKey,
             sessionToken,
-            DateTimeOffset.FromUnixTimeMilliseconds(expiresAtUnixMs).ToOffset(TimeSpan.FromHours(5))));
+            DateTimeOffset.FromUnixTimeMilliseconds(expiresAtUnixMilliseconds).ToOffset(TimeSpan.FromHours(5))));
 
         Assert.Equal(accessKeyId, captured.AccessKeyId);
         Assert.Equal(secretAccessKey, captured.SecretAccessKey);
@@ -62,7 +62,7 @@ public class IamCredentialsBridgeTests
         Assert.True(Encoding.UTF8.GetByteCount(sessionToken) > 2048);
         Assert.Equal(sessionToken, captured.SessionToken);
         Assert.True(captured.HasExpiresAt);
-        Assert.Equal(expiresAtUnixMs, captured.ExpiresAtUnixMs);
+        Assert.Equal(expiresAtUnixMilliseconds, captured.ExpiresAtUnixMs);
 
         // Absent session token and expiry.
         captured = InvokeAndCapture(new AwsCredentials(AccessKeyId, SecretAccessKey));
@@ -164,7 +164,6 @@ public class IamCredentialsBridgeTests
         var timeProvider = new FakeTimeProvider();
         using var bodyEntered = new ManualResetEventSlim();
 
-        // The provider completes its task as cancelled as soon as its token is signaled.
         var bridge = new IamCredentialsBridge(
             cancellationToken =>
             {
@@ -207,6 +206,31 @@ public class IamCredentialsBridgeTests
         timeProvider.Advance(IamCredentialsBridge.InvocationTimeout);
 
         Assert.Equal(IamCredentialsStatus.TimedOut, await invocation.WaitAsync(WaitTimeout, TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
+    public async Task DeadlineExpiredBeforeSchedulingSkipsProvider()
+    {
+        int providerCalls = 0;
+        int sinkCalls = 0;
+        var bridge = new IamCredentialsBridge(
+            cancellationToken =>
+            {
+                _ = Interlocked.Increment(ref providerCalls);
+                return Task.FromResult(Credentials);
+            },
+            new ExpiredTimeProvider());
+
+        var status = bridge.Invoke(credentials =>
+        {
+            _ = Interlocked.Increment(ref sinkCalls);
+            return true;
+        });
+        await WaitUntilAsync(() => !bridge.IsBodyRunning);
+
+        Assert.Equal(IamCredentialsStatus.TimedOut, status);
+        Assert.Equal(0, Volatile.Read(ref providerCalls));
+        Assert.Equal(0, Volatile.Read(ref sinkCalls));
     }
 
     [Fact]
@@ -440,6 +464,19 @@ public class IamCredentialsBridgeTests
         while (!condition())
         {
             await Task.Delay(TimeSpan.FromMilliseconds(10), timeout.Token);
+        }
+    }
+
+    /// <summary>
+    /// Fake clock that expires every timer as soon as it is created.
+    /// </summary>
+    private sealed class ExpiredTimeProvider : FakeTimeProvider
+    {
+        public override ITimer CreateTimer(TimerCallback callback, object? state, TimeSpan dueTime, TimeSpan period)
+        {
+            ITimer timer = base.CreateTimer(callback, state, dueTime, period);
+            Advance(dueTime);
+            return timer;
         }
     }
 
