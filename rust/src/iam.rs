@@ -214,12 +214,15 @@ unsafe fn copy_optional_utf8(
 
 /// Converts an optional expiry in Unix milliseconds. Non-positive values are absent.
 /// Returns `None` if the expiry is out of range.
-fn expiry_from_unix_millis(present: bool, unix_millis: i64) -> Option<Option<SystemTime>> {
-    if !present || unix_millis <= 0 {
+fn expiry_from_unix_milliseconds(
+    present: bool,
+    unix_milliseconds: i64,
+) -> Option<Option<SystemTime>> {
+    if !present || unix_milliseconds <= 0 {
         return Some(None);
     }
     SystemTime::UNIX_EPOCH
-        .checked_add(Duration::from_millis(unix_millis as u64))
+        .checked_add(Duration::from_millis(unix_milliseconds as u64))
         .map(Some)
 }
 
@@ -266,7 +269,7 @@ pub unsafe extern "C" fn set_iam_credentials(
         return false;
     };
     let Some(expires_at) =
-        expiry_from_unix_millis(credentials.has_expires_at, credentials.expires_at_unix_ms)
+        expiry_from_unix_milliseconds(credentials.has_expires_at, credentials.expires_at_unix_ms)
     else {
         return false;
     };

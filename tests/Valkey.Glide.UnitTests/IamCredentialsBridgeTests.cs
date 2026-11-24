@@ -185,6 +185,31 @@ public class IamCredentialsBridgeTests
     }
 
     [Fact]
+    public async Task DeadlineToleratesThrowingCancellationCallback()
+    {
+        var timeProvider = new FakeTimeProvider();
+        using var bodyEntered = new ManualResetEventSlim();
+
+        var bridge = new IamCredentialsBridge(
+            cancellationToken =>
+            {
+                _ = cancellationToken.Register(() => throw new InvalidOperationException(Secret));
+                bodyEntered.Set();
+                return new TaskCompletionSource<AwsCredentials>().Task;
+            },
+            timeProvider);
+
+        var invocation = Task.Run(() => bridge.Invoke(_ => true), TestContext.Current.CancellationToken);
+        Assert.True(bodyEntered.Wait(WaitTimeout, TestContext.Current.CancellationToken));
+        await WaitUntilAsync(() => !bridge.IsBodyRunning);
+
+        // The deadline timer must not surface the callback's exception.
+        timeProvider.Advance(IamCredentialsBridge.InvocationTimeout);
+
+        Assert.Equal(IamCredentialsStatus.TimedOut, await invocation.WaitAsync(WaitTimeout, TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
     public void RejectedCopyReturnsInvalidCredentials()
     {
         var bridge = new IamCredentialsBridge(_ => Task.FromResult(Credentials));
@@ -264,6 +289,7 @@ public class IamCredentialsBridgeTests
         }
 
         Assert.True(bridge.IsReleased);
+        Assert.False(bridge.IsHandleAllocated);
         Assert.Equal(1, nativeReleases);
         Assert.Equal(0, Volatile.Read(ref providerCalls));
     }
@@ -308,14 +334,16 @@ public class IamCredentialsBridgeTests
         Assert.Equal(IamCredentialsStatus.Cancelled, await invocation.WaitAsync(WaitTimeout, TestContext.Current.CancellationToken));
         Assert.True(providerToken.IsCancellationRequested);
 
-        // New invocations are rejected after disposal.
+        // New invocations are rejected after disposal, but the handle stays valid until released.
         Assert.Equal(IamCredentialsStatus.Cancelled, bridge.Invoke(_ => true));
+        Assert.True(bridge.IsHandleAllocated);
 
         // Releasing again has no effect.
         bridge.Release();
         bridge.Release();
 
         Assert.True(bridge.IsReleased);
+        Assert.False(bridge.IsHandleAllocated);
 
         // A late provider completion never reaches the native sink.
         releaseBody.Set();
@@ -379,11 +407,12 @@ public class IamCredentialsBridgeTests
         SuccessAction onSuccess = (_, _) => succeeded = true;
         FailureAction onFailure = (_, message, _) => error = Marshal.PtrToStringUTF8(message);
 
-        // Count native release calls without dereferencing the handle, then release the bridge.
-        ReleaseAction onRelease = _ =>
+        // Count native release calls, then forward to the production release entry point.
+        var productionRelease = Marshal.GetDelegateForFunctionPointer<ReleaseAction>(IamCredentialsBridge.ReleasePointer);
+        ReleaseAction onRelease = handle =>
         {
             _ = Interlocked.Increment(ref nativeReleases);
-            bridge.Release();
+            productionRelease(handle);
         };
 
         using FFI.ConnectionConfig request = config.ToFfi();

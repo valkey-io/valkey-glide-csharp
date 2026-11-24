@@ -105,6 +105,11 @@ internal sealed class IamCredentialsBridge
     /// </summary>
     internal bool IsBodyRunning => Volatile.Read(ref _bodyRunning) != 0;
 
+    /// <summary>
+    /// Whether the handle returned by <see cref="Register"/> is still allocated.
+    /// </summary>
+    internal bool IsHandleAllocated => _handle.IsAllocated;
+
     #endregion
     #region Internal Methods
 
@@ -146,7 +151,10 @@ internal sealed class IamCredentialsBridge
 
         // Start the deadline before scheduling so it also covers queueing.
         var deadlineSource = new CancellationTokenSource(InvocationTimeout, _timeProvider);
-        var invocationSource = CancellationTokenSource.CreateLinkedTokenSource(_disposalSource.Token, deadlineSource.Token);
+        var invocationSource = CancellationTokenSource.CreateLinkedTokenSource(_disposalSource.Token);
+
+        // Cancel through the guard so a throwing provider callback cannot crash the timer thread.
+        _ = deadlineSource.Token.UnsafeRegister(static state => TryCancel((CancellationTokenSource)state!), invocationSource);
         CancellationToken invocationToken = invocationSource.Token;
         Task<(IamCredentialsStatus Status, AwsCredentials? Credentials)> work = RunAsync(invocationToken);
 
