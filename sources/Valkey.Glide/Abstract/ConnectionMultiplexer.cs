@@ -1,6 +1,7 @@
 ﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using System.Collections.Concurrent;
+using System.Globalization;
 using System.Net;
 
 using Valkey.Glide.Internals;
@@ -181,7 +182,7 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer
         {
             if (line.Contains("tcp_port:"))
             {
-                port = int.Parse(line.Split(':')[1]);
+                port = int.Parse(line.Split(':')[1], CultureInfo.InvariantCulture);
             }
         }
 
@@ -248,7 +249,7 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer
         }
 
         config.UseTls = configuration.Ssl;
-        foreach (var cert in configuration._trustedIssuers)
+        foreach (var cert in configuration.TrustedIssuers)
         {
             _ = config.WithTrustedCertificate(cert);
         }
@@ -276,9 +277,9 @@ public sealed class ConnectionMultiplexer : IConnectionMultiplexer
         _ = configuration.ReadFrom.HasValue ? config.ReadFrom = configuration.ReadFrom.Value : new();
 
         // Mutual TLS configuration
-        if (configuration._clientCertificate is not null && configuration._clientKey is not null)
+        if (configuration.ClientCertificate is not null && configuration.ClientKey is not null)
         {
-            _ = config.WithClientCertificate(configuration._clientCertificate, configuration._clientKey);
+            _ = config.WithClientCertificate(configuration.ClientCertificate, configuration.ClientKey);
         }
 
         return config;

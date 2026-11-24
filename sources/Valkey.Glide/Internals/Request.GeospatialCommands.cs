@@ -88,7 +88,9 @@ internal static partial class Request
             return null;
         }
 
-        return new GeoPosition(double.Parse(posArray[0].ToString()!), double.Parse(posArray[1].ToString()!));
+        return new GeoPosition(
+            longitude: ToDouble(posArray[0]),
+            latitude: ToDouble(posArray[1]));
     }
 
     private static GeoSearchResult[] ProcessGeoSearchResponse(object[] response, GeoSearchOptions options)
@@ -99,15 +101,15 @@ internal static partial class Request
         {
             if (!hasExtras)
             {
-                return new GeoSearchResult(new ValkeyValue(item?.ToString() ?? ""));
+                return new GeoSearchResult(ToValkeyValue(item));
             }
 
             if (item is not object[] itemArray || itemArray.Length == 0)
             {
-                return new GeoSearchResult(new ValkeyValue(item?.ToString() ?? ""));
+                return new GeoSearchResult(ToValkeyValue(item));
             }
 
-            var member = new ValkeyValue(itemArray[0]?.ToString() ?? "");
+            var member = ToValkeyValue(itemArray[0]);
             double? distance = null;
             long? hash = null;
             GeoPosition? position = null;
@@ -123,7 +125,7 @@ internal static partial class Request
             {
                 if (itemArray[index] is object[] distArray
                     && distArray.Length > 0
-                    && double.TryParse(distArray[0]?.ToString(), out var dist))
+                    && TryToDouble(distArray[0]) is double dist)
                 {
                     distance = dist;
                 }
@@ -135,7 +137,7 @@ internal static partial class Request
             {
                 if (itemArray[index] is object[] hashArray
                     && hashArray.Length > 0
-                    && long.TryParse(hashArray[0]?.ToString(), out var h))
+                    && TryToLong(hashArray[0]) is long h)
                 {
                     hash = h;
                 }
@@ -149,8 +151,8 @@ internal static partial class Request
                 && coordOuterArray.Length > 0
                 && coordOuterArray[0] is object[] coordMiddleArray
                 && coordMiddleArray.Length >= 2
-                && double.TryParse(coordMiddleArray[0]?.ToString(), out var lon)
-                && double.TryParse(coordMiddleArray[1]?.ToString(), out var lat))
+                && TryToDouble(coordMiddleArray[0]) is double lon
+                && TryToDouble(coordMiddleArray[1]) is double lat)
             {
                 position = new GeoPosition(lon, lat);
             }

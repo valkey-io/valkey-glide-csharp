@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Globalization;
+
 using static Valkey.Glide.Internals.FFI;
 
 namespace Valkey.Glide.Internals;
@@ -13,7 +15,7 @@ internal static partial class Request
         List<GlideString> cmdArgs = [script];
 
         int numKeys = keys?.Length ?? 0;
-        cmdArgs.Add(numKeys.ToString());
+        cmdArgs.Add(numKeys.ToGlideString());
 
         AddKeysAndArgs(cmdArgs, keys, args);
 
@@ -25,7 +27,7 @@ internal static partial class Request
         List<GlideString> cmdArgs = [hash];
 
         int numKeys = keys?.Length ?? 0;
-        cmdArgs.Add(numKeys.ToString());
+        cmdArgs.Add(numKeys.ToGlideString());
 
         AddKeysAndArgs(cmdArgs, keys, args);
 
@@ -37,7 +39,7 @@ internal static partial class Request
         List<GlideString> cmdArgs = [function];
 
         int numKeys = keys?.Length ?? 0;
-        cmdArgs.Add(numKeys.ToString());
+        cmdArgs.Add(numKeys.ToGlideString());
 
         AddKeysAndArgs(cmdArgs, keys, args);
 
@@ -49,7 +51,7 @@ internal static partial class Request
         List<GlideString> cmdArgs = [function];
 
         int numKeys = keys?.Length ?? 0;
-        cmdArgs.Add(numKeys.ToString());
+        cmdArgs.Add(numKeys.ToGlideString());
 
         AddKeysAndArgs(cmdArgs, keys, args);
 
@@ -104,7 +106,7 @@ internal static partial class Request
 
         cmdArgs.Add(libraryCode);
 
-        return new(RequestType.FunctionLoad, [.. cmdArgs], false, gs => gs.ToString());
+        return ToString(RequestType.FunctionLoad, [.. cmdArgs]);
     }
 
     /// <summary>
@@ -144,7 +146,7 @@ internal static partial class Request
     public static Cmd<object[], bool[]> ScriptExists(string[] sha1Hashes)
     {
         var cmdArgs = sha1Hashes.Select(h => (GlideString)h).ToArray();
-        return new(RequestType.ScriptExists, cmdArgs, false, arr => [.. arr.Select(o => Convert.ToInt64(o) == 1)]);
+        return new(RequestType.ScriptExists, cmdArgs, false, arr => [.. arr.Select(o => Convert.ToInt64(o, CultureInfo.InvariantCulture) == 1)]);
     }
 
     /// <summary>
@@ -404,10 +406,10 @@ internal static partial class Request
         switch (engineKey)
         {
             case "libraries_count":
-                libraryCount = Convert.ToInt64(engineValue);
+                libraryCount = Convert.ToInt64(engineValue, CultureInfo.InvariantCulture);
                 break;
             case "functions_count":
-                functionCount = Convert.ToInt64(engineValue);
+                functionCount = Convert.ToInt64(engineValue, CultureInfo.InvariantCulture);
                 break;
             default:
                 // Ignore unknown engine properties
@@ -473,7 +475,7 @@ internal static partial class Request
                 args.AddRange(cmdArray.Skip(1).Select(a => ((GlideString)a).ToString()));
                 break;
             case "duration_ms":
-                durationMs = Convert.ToInt64(scriptValue);
+                durationMs = Convert.ToInt64(scriptValue, CultureInfo.InvariantCulture);
                 break;
             default:
                 // Ignore unknown script properties

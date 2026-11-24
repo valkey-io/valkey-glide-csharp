@@ -1,5 +1,7 @@
 ﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Globalization;
+
 using Valkey.Glide.Internals;
 
 using static Valkey.Glide.ConnectionConfiguration;
@@ -158,7 +160,7 @@ public abstract class Route
             }
 
             Host = parts[0];
-            Port = int.Parse(parts[1]);
+            Port = int.Parse(parts[1], CultureInfo.InvariantCulture);
         }
 
         /// <summary>

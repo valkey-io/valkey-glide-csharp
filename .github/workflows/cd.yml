@@ -97,10 +97,11 @@ jobs:
                   os: ${{ matrix.host.os }}
                   target: ${{ matrix.host.target }}
 
-            - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+            - name: Cache Rust
+              uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
               with:
-                  path: rust/target
-                  key: rust-${{ matrix.host.target }}
+                  workspaces: rust
+                  key: ${{ matrix.host.target }}
 
             - name: Build native libs (linux gnu)
               if: ${{ contains(matrix.host.target, 'linux-gnu') }}
@@ -149,7 +150,7 @@ jobs:
                   tree -h
 
             - name: Set up dotnet
-              uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+              uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
               with:
                   dotnet-version: "10"
               env:
@@ -200,9 +201,12 @@ jobs:
               with:
                   name: package
 
-            - name: Publish
+            # TODO #656: Publish with Trusted Publishing and a NuGet service account instead of an API key.
+            - name: Publish to NuGet
+              env:
+                  NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
               run: |
                   ls -lh
                   dotnet nuget push "Valkey.Glide.$RELEASE_VERSION.nupkg" \
-                    --api-key ${{ secrets.NUGET_API_KEY }} \
+                    --api-key "$NUGET_API_KEY" \
                     --source https://api.nuget.org/v3/index.json

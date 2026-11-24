@@ -43,14 +43,23 @@ public sealed class MonitorClient : IAsyncDisposable, IDisposable
     private readonly MonitorMessageCallback _callbackDelegate;
 
     #endregion
-    #region Constructors
+    #region Constructors & Finalizer
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MonitorClient"/> class.
+    /// </summary>
+    /// <param name="clientPtr">Pointer to the native monitor client.</param>
     private MonitorClient(IntPtr clientPtr)
     {
         _clientPtr = clientPtr;
         _channel = Channel.CreateUnbounded<MonitorMessage>(new UnboundedChannelOptions { SingleWriter = true });
         _callbackDelegate = OnMonitorMessage;
     }
+
+    /// <summary>
+    /// Closes the monitor client.
+    /// </summary>
+    ~MonitorClient() => Dispose();
 
     #endregion
     #region Public Methods
@@ -89,10 +98,8 @@ public sealed class MonitorClient : IAsyncDisposable, IDisposable
 
                 if (response.ConnPtr == IntPtr.Zero)
                 {
-                    string errorMessage = response.ConnectionErrorMessage != IntPtr.Zero
-                        ? Marshal.PtrToStringAnsi(response.ConnectionErrorMessage) ?? "Unknown error"
-                        : "Failed to create monitor client";
-                    throw new ConnectionException(errorMessage);
+                    var errorMsg = Marshal.PtrToStringUTF8(response.ConnectionErrorMessage) ?? "Failed to create monitor client";
+                    throw new ConnectionException(errorMsg);
                 }
 
                 client._clientPtr = response.ConnPtr;

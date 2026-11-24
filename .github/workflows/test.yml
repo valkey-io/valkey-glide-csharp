@@ -80,15 +80,22 @@ jobs:
 
             - name: Determine whether to run with coverage
               shell: bash
+              env:
+                  PACKAGE_VERSION: ${{ inputs.package-version }}
+                  MATRIX_DOTNET: ${{ matrix.dotnet }}
+                  MATRIX_SERVER_TYPE: ${{ matrix.server.type }}
+                  MATRIX_SERVER_VERSION: ${{ matrix.server.version }}
+                  MATRIX_RUNNER: ${{ matrix.host.runner }}
               run: |
                   SERVER_TYPE=$(jq -r '.server_type' dev/conf/coverage-baseline.json)
                   SERVER_VERSION=$(jq -r '.server_version' dev/conf/coverage-baseline.json)
 
                   RUN_COVERAGE=false
-                  if [[ "${{ matrix.dotnet }}" == "8.0" \
-                     && "${{ matrix.server.type }}" == "$SERVER_TYPE" \
-                     && "${{ matrix.server.version }}" == "$SERVER_VERSION" \
-                     && "${{ matrix.host.runner }}" == "ubuntu-24.04" ]]; then
+                  if [[ "$PACKAGE_VERSION" == "" \
+                     && "$MATRIX_DOTNET" == "8.0" \
+                     && "$MATRIX_SERVER_TYPE" == "$SERVER_TYPE" \
+                     && "$MATRIX_SERVER_VERSION" == "$SERVER_VERSION" \
+                     && "$MATRIX_RUNNER" == "ubuntu-24.04" ]]; then
                       RUN_COVERAGE=true
                   fi
 
@@ -106,7 +113,7 @@ jobs:
                   echo "Package version: $PACKAGE_VERSION"
 
             - name: Set up dotnet ${{ matrix.dotnet }}
-              uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+              uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
               with:
                   # .NET 10 SDK to build project
                   # matrix.dotnet SDK for test execution
@@ -150,11 +157,12 @@ jobs:
                   target: ${{ matrix.host.target }}
                   server-version: ${{ matrix.server.version }}
 
-            - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+            - name: Cache Rust
               if: ${{ inputs.package-version == '' }}
+              uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
               with:
-                  path: rust/target
-                  key: rust-${{ matrix.host.target }}
+                  workspaces: rust
+                  key: ${{ matrix.host.target }}
 
             - name: Install Task
               uses: go-task/setup-task@a00fbb05ce67b35648be3c78cbc9fd85354c757e # v2.2.0
@@ -162,12 +170,12 @@ jobs:
             - name: Unit tests - dotnet ${{ matrix.dotnet }}
               run: >-
                   task test:unit
-                  configuration=Debug
                   verbosity=detailed
                   ${{ env.RUN_COVERAGE == 'true' && 'coverage=true' || '' }}
 
+            # TODO #637: Run on Windows x64 again once the Windows connection failures are fixed.
             - name: Configure DNS for integration tests
-              if: ${{ matrix.host.target != 'aarch64-pc-windows-msvc' }}
+              if: ${{ matrix.host.target != 'aarch64-pc-windows-msvc' && matrix.host.target != 'x86_64-pc-windows-msvc' }}
               shell: bash
               run: |
                   ENTRIES="127.0.0.1 valkey.glide.test.tls.com
@@ -180,15 +188,15 @@ jobs:
                       echo "$ENTRIES" | sudo tee -a /etc/hosts
                   fi
 
+            # TODO #637: Run on Windows x64 again once the Windows connection failures are fixed.
             - name: Integration tests - dotnet ${{ matrix.dotnet }}
-              if: ${{ matrix.host.target != 'aarch64-pc-windows-msvc' }}
+              if: ${{ matrix.host.target != 'aarch64-pc-windows-msvc' && matrix.host.target != 'x86_64-pc-windows-msvc' }}
               env:
                   AWS_ACCESS_KEY_ID: test_secret_key
                   AWS_SECRET_ACCESS_KEY: test_access_key
                   AWS_SESSION_TOKEN: test_session_token
               run: >-
                   task test:integration
-                  configuration=Debug
                   verbosity=detailed
                   ${{ env.RUN_COVERAGE == 'true' && 'coverage=true' || '' }}
 
@@ -239,7 +247,7 @@ jobs:
                   echo "Package version: $PACKAGE_VERSION"
 
             - name: Set up dotnet ${{ matrix.dotnet }}
-              uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+              uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
               with:
                   # .NET 10 SDK to build project
                   # matrix.dotnet SDK for test execution
@@ -263,15 +271,20 @@ jobs:
                   ::1 valkey.glide.test.no_tls.com"
                   echo "$ENTRIES" | tee -a /etc/hosts
 
-            - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+            - name: Cache Rust
+              uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
               with:
-                  path: rust/target
-                  key: rust-${{ matrix.host.image }}
+                  workspaces: rust
+                  key: ${{ matrix.host.image }}
 
             - name: Install Task
               uses: go-task/setup-task@a00fbb05ce67b35648be3c78cbc9fd85354c757e # v2.2.0
 
             - name: Test dotnet ${{ matrix.dotnet }}
+              env:
+                  AWS_ACCESS_KEY_ID: test_secret_key
+                  AWS_SECRET_ACCESS_KEY: test_access_key
+                  AWS_SESSION_TOKEN: test_session_token
               run: task test verbosity=detailed
 
     # See: https://github.com/valkey-io/valkey-glide-csharp/issues/390
@@ -290,7 +303,7 @@ jobs:
                   submodules: true
 
             - name: Set up dotnet ${{ matrix.dotnet }}
-              uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+              uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
               with:
                   # .NET 10 SDK to build project
                   # matrix.dotnet SDK for test execution
@@ -305,13 +318,12 @@ jobs:
               with:
                   os: ubuntu
                   target: x86_64-unknown-linux-gnu
-                  # TODO valkey-io/valkey-glide#7312: Bump to 9.2.0 once released.
-                  server-version: "9.2.0-rc1"
+                  server-version: "9.2"
 
-            - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+            - name: Cache Rust
+              uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
               with:
-                  path: rust/target
-                  key: rust-x86_64-unknown-linux-gnu
+                  workspaces: rust
 
             - name: Install Task
               uses: go-task/setup-task@a00fbb05ce67b35648be3c78cbc9fd85354c757e # v2.2.0

@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Globalization;
+
 using Valkey.Glide.Internals;
 
 namespace Valkey.Glide;
@@ -118,7 +120,7 @@ internal sealed class Subscriber : ISubscriber
         if (_client.IsCluster)
         {
             // TODO #205: Refactor to use GlideClusterClient instead of custom command.
-            _ = await _client.Command(Request.CustomCommand(["SUNSUBSCRIBE_BLOCKING", GetTimeoutMs().ToString()]), Route.Random);
+            _ = await _client.Command(Request.CustomCommand(["SUNSUBSCRIBE_BLOCKING", GetTimeoutMs().ToGlideString()]), Route.Random);
         }
     }
 
@@ -175,7 +177,7 @@ internal sealed class Subscriber : ISubscriber
 
             // TODO #205: Refactor to use GlideClusterClient instead of custom command.
             var result = await _client.Command(Request.CustomCommand(["SPUBLISH", channel.ToValkeyKey(), message.ToGlideString()]), Route.Random);
-            return Convert.ToInt64(result);
+            return Convert.ToInt64(result, CultureInfo.InvariantCulture);
         }
 
         return await _client.PublishAsync(channel.ToValkeyKey(), message);
@@ -192,7 +194,7 @@ internal sealed class Subscriber : ISubscriber
             ThrowIfNotClusterMode();
 
             // TODO #205: Refactor to use GlideClusterClient instead of custom command.
-            _ = await _client.Command(Request.CustomCommand(["SSUBSCRIBE_BLOCKING", channel.ToValkeyKey(), GetTimeoutMs().ToString()]), Route.Random);
+            _ = await _client.Command(Request.CustomCommand(["SSUBSCRIBE_BLOCKING", channel.ToValkeyKey(), GetTimeoutMs().ToGlideString()]), Route.Random);
         }
         else if (channel.IsPattern)
         {
@@ -215,7 +217,7 @@ internal sealed class Subscriber : ISubscriber
             ThrowIfNotClusterMode();
 
             // TODO #205: Refactor to use GlideClusterClient instead of custom command.
-            _ = await _client.Command(Request.CustomCommand(["SUNSUBSCRIBE_BLOCKING", channel.ToValkeyKey(), GetTimeoutMs().ToString()]), Route.Random);
+            _ = await _client.Command(Request.CustomCommand(["SUNSUBSCRIBE_BLOCKING", channel.ToValkeyKey(), GetTimeoutMs().ToGlideString()]), Route.Random);
         }
         else if (channel.IsPattern)
         {

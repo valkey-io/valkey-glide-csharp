@@ -1,0 +1,2 @@
+# Release notes config, shared with valkey-glide. Keys set here override it.
+_extends: github:valkey-io/valkey-glide:/.github/release-drafter.yml@main

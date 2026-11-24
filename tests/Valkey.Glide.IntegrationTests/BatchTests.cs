@@ -1,5 +1,7 @@
 ﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.Internals;
+
 using static Valkey.Glide.Errors;
 
 namespace Valkey.Glide.IntegrationTests;
@@ -132,14 +134,22 @@ public class BatchTests(TestConfiguration config)
     [MemberData(nameof(PermuteTestConnectionsAndBool), 1)]
     public async Task TransactionWithMultipleConditions(ConnectionMultiplexer conn, bool conditionPass)
     {
-        ITransaction transaction = conn.GetDatabase().CreateTransaction();
+        var db = conn.GetDatabase();
+        var transaction = db.CreateTransaction();
 
-        Task<ValkeyValue> t1 = transaction.StringGetAsync(Guid.NewGuid().ToString());
-        // conditions which always pass/fail
-        ConditionResult c1 = transaction.AddCondition(Condition.KeyNotExists(Guid.NewGuid().ToString()));
-        ConditionResult c2 = transaction.AddCondition(conditionPass
-            ? Condition.KeyNotExists(Guid.NewGuid().ToString())
-            : Condition.KeyExists(Guid.NewGuid().ToString()));
+        // Use a shared hash tag so that all keys map to the same cluster node.
+        var tag = Guid.NewGuid().ToString();
+        var key = $"{{{tag}}}key";
+        var conditionKey1 = $"{{{tag}}}condition1";
+        var conditionKey2 = $"{{{tag}}}condition2";
+
+        var t1 = transaction.StringGetAsync(key);
+
+        // Conditions which always pass/fail
+        var c1 = transaction.AddCondition(Condition.KeyNotExists(conditionKey1));
+        var c2 = transaction.AddCondition(conditionPass
+            ? Condition.KeyNotExists(conditionKey2)
+            : Condition.KeyExists(conditionKey2));
 
         Assert.Equal(conditionPass, transaction.Execute());
         if (conditionPass)
@@ -149,10 +159,49 @@ public class BatchTests(TestConfiguration config)
         else
         {
             _ = await Assert.ThrowsAsync<TaskCanceledException>(async () => await t1);
+
+            // Modify a key watched by the failed transaction and verify that it passes.
+            // This verifies that any WATCH commands started by the transaction were cancelled.
+            Assert.True(await db.StringSetAsync(conditionKey1, "value"));
+
+            var next = db.CreateTransaction();
+            var set = next.StringSetAsync(key, "value");
+            Assert.True(await next.ExecuteAsync());
+            Assert.True(await set);
         }
 
         Assert.True(c1.WasSatisfied);
         Assert.Equal(conditionPass, c2.WasSatisfied);
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(PermuteTestConnectionsAndBool), 1)]
+    public async Task TransactionWithConditionAndNoCommands(ConnectionMultiplexer conn, bool conditionPass)
+    {
+        var db = conn.GetDatabase();
+        var transaction = db.CreateTransaction();
+
+        // Use a shared hash tag so that all keys map to the same cluster node.
+        var tag = Guid.NewGuid().ToString();
+        var key = $"{{{tag}}}key";
+        var conditionKey = $"{{{tag}}}condition";
+
+        // Condition which always passes/fails, with no queued commands.
+        var c = transaction.AddCondition(conditionPass
+            ? Condition.KeyNotExists(conditionKey)
+            : Condition.KeyExists(conditionKey));
+
+        Assert.Equal(conditionPass, await transaction.ExecuteAsync());
+        Assert.Equal(conditionPass, c.WasSatisfied);
+
+        // Modify the key watched by the transaction and verify that the next transaction passes.
+        // This verifies that any WATCH commands started by the transaction were cancelled.
+        Assert.True(await db.StringSetAsync(conditionKey, "value"));
+
+        var next = db.CreateTransaction();
+        var set = next.StringSetAsync(key, "value");
+        Assert.True(await next.ExecuteAsync());
+        Assert.True(await set);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1020,11 +1069,6 @@ public class BatchTests(TestConfiguration config)
     }
 #pragma warning restore xUnit1042 // https://xunit.net/xunit.analyzers/rules/xUnit1042
 
-    private DateTime ParseTimeResponse(object? res)
-    {
-        var arr = (object[])res!;
-        var secs = double.Parse((arr[0] as GlideString)!);
-        var micros = double.Parse((arr[1] as GlideString)!);
-        return DateTime.UnixEpoch.AddSeconds(secs).AddMicroseconds(micros);
-    }
+    private static DateTime ParseTimeResponse(object? res)
+        => Request.Time().Converter((object[])res!).UtcDateTime;
 }

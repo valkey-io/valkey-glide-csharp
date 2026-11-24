@@ -1,5 +1,7 @@
 ﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Globalization;
+
 namespace Valkey.Glide;
 
 /// <summary>
@@ -46,7 +48,8 @@ public readonly struct SortedSetEntry(ValkeyValue element, double score) : IEqua
 
     /// <inheritdoc/>
     public override string ToString()
-        => Element.ToString() + ": " + Score.ToString();
+        // Use current culture for StackExchange.Redis compatibility.
+        => Element.ToString() + ": " + Score.ToString(CultureInfo.CurrentCulture);
 
     /// <inheritdoc/>
     public override int GetHashCode()

@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Globalization;
+
 namespace Valkey.Glide.Commands.Options;
 
 /// <summary>
@@ -67,14 +69,16 @@ public static class BitFieldOptions
         /// </summary>
         /// <param name="bits">Number of bits (1-63).</param>
         /// <returns>Unsigned encoding string (e.g., "u8").</returns>
-        public static string Unsigned(int bits) => $"u{bits}";
+        public static string Unsigned(int bits)
+            => "u" + bits.ToString(CultureInfo.InvariantCulture);
 
         /// <summary>
         /// Creates a signed encoding string.
         /// </summary>
         /// <param name="bits">Number of bits (1-64).</param>
         /// <returns>Signed encoding string (e.g., "i8").</returns>
-        public static string Signed(int bits) => $"i{bits}";
+        public static string Signed(int bits)
+            => "i" + bits.ToString(CultureInfo.InvariantCulture);
     }
 
     /// <summary>
@@ -84,7 +88,8 @@ public static class BitFieldOptions
     public class BitOffset(long offset) : IBitOffset
     {
         /// <inheritdoc/>
-        public string GetOffset() => offset.ToString();
+        public string GetOffset()
+            => offset.ToString(CultureInfo.InvariantCulture);
     }
 
     /// <summary>
@@ -94,7 +99,8 @@ public static class BitFieldOptions
     public class BitOffsetMultiplier(long multiplier) : IBitOffset
     {
         /// <inheritdoc/>
-        public string GetOffset() => $"#{multiplier}";
+        public string GetOffset()
+            => "#" + multiplier.ToString(CultureInfo.InvariantCulture);
     }
 
     /// <summary>
@@ -105,7 +111,8 @@ public static class BitFieldOptions
     public class BitFieldGet(string encoding, IBitOffset offset) : IBitFieldReadOnlySubCommand
     {
         /// <inheritdoc/>
-        public string[] ToArgs() => ["GET", encoding, offset.GetOffset()];
+        public string[] ToArgs()
+            => ["GET", encoding, offset.GetOffset()];
     }
 
     /// <summary>
@@ -117,7 +124,8 @@ public static class BitFieldOptions
     public class BitFieldSet(string encoding, IBitOffset offset, long value) : IBitFieldSubCommand
     {
         /// <inheritdoc/>
-        public string[] ToArgs() => ["SET", encoding, offset.GetOffset(), value.ToString()];
+        public string[] ToArgs()
+            => ["SET", encoding, offset.GetOffset(), value.ToString(CultureInfo.InvariantCulture)];
     }
 
     /// <summary>
@@ -129,7 +137,8 @@ public static class BitFieldOptions
     public class BitFieldIncrBy(string encoding, IBitOffset offset, long increment) : IBitFieldSubCommand
     {
         /// <inheritdoc/>
-        public string[] ToArgs() => ["INCRBY", encoding, offset.GetOffset(), increment.ToString()];
+        public string[] ToArgs()
+            => ["INCRBY", encoding, offset.GetOffset(), increment.ToString(CultureInfo.InvariantCulture)];
     }
 
     /// <summary>
@@ -139,6 +148,7 @@ public static class BitFieldOptions
     public class BitFieldOverflow(OverflowType overflowType) : IBitFieldSubCommand
     {
         /// <inheritdoc/>
-        public string[] ToArgs() => ["OVERFLOW", overflowType.ToString().ToUpper()];
+        public string[] ToArgs()
+            => ["OVERFLOW", overflowType.ToString().ToUpperInvariant()];
     }
 }

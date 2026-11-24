@@ -1,5 +1,6 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Globalization;
 using System.Text;
 using System.Text.Json;
 
@@ -616,7 +617,7 @@ internal static partial class Request
             return new Ft.SearchResult(0, []);
         }
 
-        long count = Convert.ToInt64(data[0]);
+        long count = Convert.ToInt64(data[0], CultureInfo.InvariantCulture);
 
         // Format: [count, {key1: fields1, key2: fields2, ...}]
         // Without WITHSORTKEYS: fields is Dictionary<GlideString, object>

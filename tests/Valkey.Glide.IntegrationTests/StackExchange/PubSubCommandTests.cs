@@ -1,6 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using System.Collections.Concurrent;
+using System.Globalization;
 using System.Text;
 
 using Valkey.Glide.TestUtils;
@@ -90,7 +91,7 @@ public class PubSubCommandTests(TestConfiguration config)
         var subscriber = BuildSubscriber(isCluster);
         var publisher = BuildSubscriber(isCluster);
 
-        var received = new ConcurrentBag<MessageInfo>();
+        var received = new ConcurrentQueue<MessageInfo>();
         var handler = BuildHandler(received);
         await subscriber.SubscribeAsync(channel, handler);
 
@@ -109,7 +110,7 @@ public class PubSubCommandTests(TestConfiguration config)
         var subscriber = BuildSubscriber(isCluster);
         var publisher = BuildSubscriber(isCluster);
 
-        var received = new ConcurrentBag<MessageInfo>();
+        var received = new ConcurrentQueue<MessageInfo>();
         var handler = BuildHandler(received);
         await subscriber.SubscribeAsync(channel, handler);
 
@@ -132,7 +133,7 @@ public class PubSubCommandTests(TestConfiguration config)
         var subscriber = BuildSubscriber(isCluster);
         var publisher = BuildSubscriber(isCluster);
 
-        var received = new ConcurrentBag<MessageInfo>();
+        var received = new ConcurrentQueue<MessageInfo>();
         var handler = BuildHandler(received);
         await subscriber.SubscribeAsync(literal, handler);
 
@@ -173,7 +174,7 @@ public class PubSubCommandTests(TestConfiguration config)
         var subscriber = BuildSubscriber(isCluster);
         var publisher = BuildSubscriber(isCluster);
 
-        var received = new ConcurrentBag<MessageInfo>();
+        var received = new ConcurrentQueue<MessageInfo>();
         var handler = BuildHandler(received);
         await subscriber.SubscribeAsync(pattern, handler);
 
@@ -217,7 +218,7 @@ public class PubSubCommandTests(TestConfiguration config)
         var subscriber = BuildSubscriber(isCluster);
         var publisher = BuildSubscriber(isCluster);
 
-        var received = new ConcurrentBag<MessageInfo>();
+        var received = new ConcurrentQueue<MessageInfo>();
         var handler = BuildHandler(received);
         await subscriber.SubscribeAsync(channel, handler);
 
@@ -260,11 +261,11 @@ public class PubSubCommandTests(TestConfiguration config)
         var subscriber = BuildSubscriber(isCluster);
         var publisher = BuildSubscriber(isCluster);
 
-        var received1 = new ConcurrentBag<MessageInfo>();
+        var received1 = new ConcurrentQueue<MessageInfo>();
         var handler1 = BuildHandler(received1);
         await subscriber.SubscribeAsync(channel, handler1);
 
-        var received2 = new ConcurrentBag<MessageInfo>();
+        var received2 = new ConcurrentQueue<MessageInfo>();
         var handler2 = BuildHandler(received2);
         await subscriber.SubscribeAsync(channel, handler2);
 
@@ -324,7 +325,7 @@ public class PubSubCommandTests(TestConfiguration config)
         var subscriber = BuildSubscriber(isCluster);
         var publisher = BuildSubscriber(isCluster);
 
-        var received = new ConcurrentBag<MessageInfo>();
+        var received = new ConcurrentQueue<MessageInfo>();
         var handler = BuildHandler(received);
         await subscriber.SubscribeAsync(channel, handler);
         var queue = await subscriber.SubscribeAsync(channel);
@@ -354,7 +355,7 @@ public class PubSubCommandTests(TestConfiguration config)
         var subscriber = BuildSubscriber(isCluster);
         var publisher = BuildSubscriber(isCluster);
 
-        var received = new ConcurrentBag<MessageInfo>();
+        var received = new ConcurrentQueue<MessageInfo>();
         var handler = BuildHandler(received);
         await subscriber.SubscribeAsync(channel, handler);
         var queue = await subscriber.SubscribeAsync(channel);
@@ -384,7 +385,7 @@ public class PubSubCommandTests(TestConfiguration config)
         var subscriber = BuildSubscriber(isCluster);
         var publisher = BuildSubscriber(isCluster);
 
-        var received = new ConcurrentBag<MessageInfo>();
+        var received = new ConcurrentQueue<MessageInfo>();
         var handler = BuildHandler(received);
         await subscriber.SubscribeAsync(channel, handler);
         var queue = await subscriber.SubscribeAsync(channel);
@@ -409,7 +410,7 @@ public class PubSubCommandTests(TestConfiguration config)
         var subscriber = BuildSubscriber(isCluster);
         var publisher = BuildSubscriber(isCluster);
 
-        var received = new ConcurrentBag<MessageInfo>();
+        var received = new ConcurrentQueue<MessageInfo>();
         var handler = BuildHandler(received);
         await subscriber.SubscribeAsync(pattern, handler);
         var queue = await subscriber.SubscribeAsync(pattern);
@@ -436,7 +437,7 @@ public class PubSubCommandTests(TestConfiguration config)
         var subscriber = BuildSubscriber(isCluster);
         var publisher = BuildSubscriber(isCluster);
 
-        var received = new ConcurrentBag<MessageInfo>();
+        var received = new ConcurrentQueue<MessageInfo>();
         var handler = BuildHandler(received);
         await subscriber.SubscribeAsync(channel, handler);
         var queue = await subscriber.SubscribeAsync(channel);
@@ -465,17 +466,17 @@ public class PubSubCommandTests(TestConfiguration config)
         var subscriber = BuildSubscriber(isCluster);
         var publisher = BuildSubscriber(isCluster);
 
-        var literalReceived = new ConcurrentBag<MessageInfo>();
+        var literalReceived = new ConcurrentQueue<MessageInfo>();
         var literalHandler = BuildHandler(literalReceived);
         await subscriber.SubscribeAsync(literalChannel, literalHandler);
         var literalQueue = await subscriber.SubscribeAsync(literalChannel);
 
-        var patternReceived = new ConcurrentBag<MessageInfo>();
+        var patternReceived = new ConcurrentQueue<MessageInfo>();
         var patternHandler = BuildHandler(patternReceived);
         await subscriber.SubscribeAsync(pattern, patternHandler);
         var patternQueue = await subscriber.SubscribeAsync(pattern);
 
-        ConcurrentBag<MessageInfo> shardedReceived = [];
+        var shardedReceived = new ConcurrentQueue<MessageInfo>();
         var shardedHandler = BuildHandler(shardedReceived);
         ChannelMessageQueue? shardedQueue = null;
 
@@ -633,12 +634,12 @@ public class PubSubCommandTests(TestConfiguration config)
     {
         Assert.True(pattern.IsPattern);
         var patternStr = pattern.ToString();
-        var literalStr = patternStr.Replace("*", Random.Shared.Next(1000, 9999).ToString());
+        var literalStr = patternStr.Replace("*", Random.Shared.Next(1000, 9999).ToString(CultureInfo.InvariantCulture));
         return ValkeyChannel.Literal(literalStr);
     }
 
-    private static Action<ValkeyChannel, ValkeyValue> BuildHandler(ConcurrentBag<MessageInfo> bag)
-        => (channel, message) => bag.Add((channel, message));
+    private static Action<ValkeyChannel, ValkeyValue> BuildHandler(ConcurrentQueue<MessageInfo> queue)
+        => (channel, message) => queue.Enqueue((channel, message));
 
     private static async Task AssertQueueReceives(ChannelMessageQueue queue, List<MessageInfo> expected)
     {
@@ -669,7 +670,7 @@ public class PubSubCommandTests(TestConfiguration config)
         Assert.Fail("Expected messages not received within the timeout period.");
     }
 
-    private static async Task AssertHandlerReceives(ConcurrentBag<MessageInfo> actual, List<MessageInfo> expected)
+    private static async Task AssertHandlerReceives(ConcurrentQueue<MessageInfo> actual, List<MessageInfo> expected)
     {
         if (expected.Count == 0)
         {

@@ -9,6 +9,8 @@ Usage:
     python dev/scripts/check_examples.py
 """
 
+from __future__ import annotations
+
 import os
 import subprocess
 import sys

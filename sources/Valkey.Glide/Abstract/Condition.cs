@@ -1,6 +1,7 @@
 ﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using System.Diagnostics;
+using System.Globalization;
 
 using Valkey.Glide.Internals;
 
@@ -461,7 +462,9 @@ public abstract class Condition
         internal override List<ICmd> CreateCommands()
             => [
                 Request.Watch([key]),
-                Request.CustomCommand([cmd.ToString(), key, expectedValue]),
+                Request.CustomCommand(expectedValue.IsNull
+                    ? [cmd.ToString(), key]
+                    : [cmd.ToString(), key, expectedValue]),
             ];
 
         protected override bool ValidateImpl(object? result)
@@ -547,7 +550,7 @@ public abstract class Condition
         public override string ToString()
             => ((string?)key)
                 + "["
-                + index.ToString()
+                + index.ToString(CultureInfo.InvariantCulture)
                 + "]"
                 + (expectedValue.HasValue ? (expectedResult ? " == " : " != ")
                     + expectedValue.Value : (expectedResult ? " exists" : " does not exist"));

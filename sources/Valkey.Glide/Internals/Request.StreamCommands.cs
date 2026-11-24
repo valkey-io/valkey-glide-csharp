@@ -149,7 +149,7 @@ internal static partial class Request
         var result = new List<ValkeyStream>();
         foreach (var kvp in response)
         {
-            var key = new ValkeyKey(kvp.Key);
+            var key = ToValkeyKey(kvp.Key);
             var entries = ConvertStreamEntriesResponse((Dictionary<GlideString, object>)kvp.Value);
             result.Add(new ValkeyStream(key, entries));
         }
@@ -180,7 +180,7 @@ internal static partial class Request
 
     private static StreamConsumerInfoFull ConvertStreamConsumerInfoFullResponse(Dictionary<GlideString, object> map)
     {
-        var name = GetString(map, "name");
+        var name = GetValkeyValue(map, "name");
         var pending = GetObjects(map, "pending")
             .Select(entry => ConvertStreamPendingEntryResponse(entry, name))
             .ToArray();
@@ -262,12 +262,12 @@ internal static partial class Request
             .ToArray();
 
         return new(
-            name: GetString(map, "name"),
+            name: GetValkeyValue(map, "name"),
             lastDeliveredId: TryGetValkeyValue(map, "last-delivered-id"),
             entriesRead: TryGetLong(map, "entries-read"),
             lag: TryGetLong(map, "lag"),
             pelCount: GetLong(map, "pel-count"),
-            pendingEntries: [.. GetObjects(map, "pending").Select(ConvertStreamPendingEntryResponse)],
+            pendingEntries: [.. GetObjects(map, "pending").Select(entry => ConvertStreamPendingEntryResponse(entry))],
             consumers: consumers);
     }
 
@@ -320,7 +320,7 @@ internal static partial class Request
             firstEntry: ConvertStreamEntryResponse(GetObjects(map, "first-entry")),
             lastEntry: ConvertStreamEntryResponse(GetObjects(map, "last-entry")));
 
-    private static StreamPendingEntry ConvertStreamPendingEntryResponse(object response, string consumer)
+    private static StreamPendingEntry ConvertStreamPendingEntryResponse(object response, ValkeyValue consumer)
     {
         var arr = (object[])response;
         return new StreamPendingEntry(
@@ -335,7 +335,7 @@ internal static partial class Request
         var arr = (object[])response;
         return new StreamPendingEntry(
             ToValkeyValue(arr[0]),
-            ToValkeyValue(arr[1]).ToString(),
+            ToValkeyValue(arr[1]),
             ToDateTimeOffset(arr[2]),
             ToInt(arr[3]));
     }

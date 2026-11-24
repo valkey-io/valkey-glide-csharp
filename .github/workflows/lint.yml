@@ -28,17 +28,12 @@ jobs:
                   target: x86_64-unknown-linux-gnu
 
             - name: Cache Rust
-              uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+              uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
               with:
-                  path: rust/target
-                  # Use 'Cargo.toml' hash so the cache invalidates when dependencies change.
-                  key: rust-lint-${{ hashFiles('rust/Cargo.toml') }}
-                  # On cache miss, restore the most recent cache with this prefix so cargo
-                  # only recompiles changed dependencies instead of building from scratch.
-                  restore-keys: rust-lint-
+                  workspaces: rust
 
             - name: Install cargo-deny
-              uses: taiki-e/install-action@5488ac5a951645ce95062214902ac4b6bc1a1037 # v2.87.32
+              uses: taiki-e/install-action@ab49d3c64680143e184118bed66a46419fc15519 # v2.90.5
               with:
                   tool: cargo-deny@0.19
 
@@ -47,12 +42,15 @@ jobs:
                   curl -fsSL https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz | tar xz -C /usr/local/bin actionlint
 
             - name: Install dotnet
-              uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+              uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
               with:
                   dotnet-version: "10"
 
             - name: Install uv
-              uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+              uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+
+            - name: Install pyflakes
+              run: uv tool install pyflakes==4.1.0
 
             - name: Install Task
               uses: go-task/setup-task@a00fbb05ce67b35648be3c78cbc9fd85354c757e # v2.2.0

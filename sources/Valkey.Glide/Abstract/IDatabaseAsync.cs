@@ -34,6 +34,7 @@ public partial interface IDatabaseAsync :
     /// <param name="command">The command to run.</param>
     /// <param name="args">The arguments to pass for the command.</param>
     /// <returns>A dynamic representation of the command's result.</returns>
+    /// <exception cref="InvalidCastException">Thrown if an argument is not a supported type.</exception>
     Task<ValkeyResult> ExecuteAsync(string command, params object[] args);
 
     /// <summary>
@@ -45,5 +46,6 @@ public partial interface IDatabaseAsync :
     /// <param name="flags">Command flags (currently not supported by GLIDE).</param>
     /// <returns>A dynamic representation of the command's result.</returns>
     /// <exception cref="NotImplementedException">Thrown if <paramref name="flags"/> is not <see cref="CommandFlags.None"/>.</exception>
+    /// <exception cref="InvalidCastException">Thrown if an argument is not a supported type.</exception>
     Task<ValkeyResult> ExecuteAsync(string command, ICollection<object>? args, CommandFlags flags = CommandFlags.None);
 }

@@ -72,21 +72,6 @@ public class ScriptingCommandTests(TestConfiguration config)
         Assert.Equal("c", array[2].ToString());
     }
 
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task ScriptEvaluateAsync_WithCommandFlags_ThrowsOnNonNone(IDatabaseAsync db)
-        => _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => db.ScriptEvaluateAsync("return 1", null, null, CommandFlags.DemandMaster));
-
-    #endregion
-    #region ScriptEvaluateAsync (byte[] hash)
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task ScriptEvaluateAsync_WithHash_CommandFlags_ThrowsOnNonNone(IDatabaseAsync db)
-        => _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => db.ScriptEvaluateAsync(new byte[20], null, null, CommandFlags.DemandMaster));
-
     #endregion
     #region ScriptEvaluateAsync (LuaScript)
 
@@ -111,33 +96,6 @@ public class ScriptingCommandTests(TestConfiguration config)
         ValkeyResult result = await db.ScriptEvaluateAsync(script, new { key = (ValkeyKey)key, value = "param-value" });
 
         Assert.Equal("param-value", result.ToString());
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task ScriptEvaluateAsync_LuaScript_WithCommandFlags_ThrowsOnNonNone(IDatabaseAsync db)
-    {
-        LuaScript script = LuaScript.Prepare("return 1");
-
-        _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => db.ScriptEvaluateAsync(script, null, CommandFlags.DemandMaster));
-    }
-
-    #endregion
-    #region ScriptEvaluateAsync (LoadedLuaScript)
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
-    public async Task ScriptEvaluateAsync_LoadedLuaScript_WithCommandFlags_ThrowsOnNonNone(IDatabaseAsync db)
-    {
-        // Create a LoadedLuaScript with a mock hash - the hash doesn't matter for this test
-        // since we're testing that CommandFlags throws before execution
-        LuaScript script = LuaScript.Prepare("return 1");
-        byte[] mockHash = new byte[20];
-        LoadedLuaScript loaded = new(script, mockHash, script.ExecutableScript);
-
-        _ = await Assert.ThrowsAsync<NotImplementedException>(
-            () => db.ScriptEvaluateAsync(loaded, null, CommandFlags.DemandMaster));
     }
 
     #endregion

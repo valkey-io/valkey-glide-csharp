@@ -63,6 +63,16 @@ public class TimeUtilsTests
     }
 
     [Fact]
+    public void ToLongMs()
+    {
+        Assert.Equal(0L, TimeUtils.ToLongMs(Zero));
+        Assert.Equal(500L, TimeUtils.ToLongMs(HalfSecond));
+        Assert.Equal(60_000L, TimeUtils.ToLongMs(OneMinute));
+        Assert.Equal(-1L, TimeUtils.ToLongMs(Negative));
+        Assert.Equal(-60_000L, TimeUtils.ToLongMs(-OneMinute));
+    }
+
+    [Fact]
     public void ToULongMs()
     {
         Assert.Equal(0UL, TimeUtils.ToULongMs(Zero, "p"));

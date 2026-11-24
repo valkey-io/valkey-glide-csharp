@@ -8,6 +8,8 @@ namespace Valkey.Glide.Commands.Options;
 /// <seealso href="https://valkey.io/commands/lolwut/"/>
 public class LolwutOptions
 {
+    #region Public Properties
+
     /// <summary>
     /// The version of the generative computer art to display.
     /// </summary>
@@ -27,26 +29,31 @@ public class LolwutOptions
     /// </remarks>
     public int[]? Parameters { get; set; }
 
+    #endregion
+    #region Internal Methods
+
     /// <summary>
     /// Converts the options to command arguments.
     /// </summary>
-    internal string[] ToArgs()
+    internal GlideString[] ToArgs()
     {
-        List<string> args = [];
+        List<GlideString> args = [];
         if (Version is not null)
         {
-            args.Add(ValkeyLiterals.VERSION.ToString());
-            args.Add(Version.Value.ToString());
+            args.Add(ValkeyLiterals.VERSION);
+            args.Add(Version.Value.ToGlideString());
         }
 
         if (Parameters is not null)
         {
             foreach (int param in Parameters)
             {
-                args.Add(param.ToString());
+                args.Add(param.ToGlideString());
             }
         }
 
         return [.. args];
     }
+
+    #endregion
 }

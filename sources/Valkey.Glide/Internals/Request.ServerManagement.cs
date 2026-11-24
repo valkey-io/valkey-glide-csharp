@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Globalization;
+
 using Valkey.Glide.Commands.Options;
 
 using static Valkey.Glide.Internals.FFI;
@@ -16,16 +18,16 @@ internal static partial class Request
     #region Command Builders
 
     public static Cmd<GlideString, string> BackgroundSave()
-        => new(RequestType.BgSave, [], false, gs => gs.ToString());
+        => ToString(RequestType.BgSave);
 
     public static Cmd<GlideString, string> BackgroundSaveCancel()
-        => new(RequestType.BgSave, [ValkeyLiterals.CANCEL], false, gs => gs.ToString());
+        => ToString(RequestType.BgSave, [ValkeyLiterals.CANCEL]);
 
     public static Cmd<GlideString, string> BackgroundSaveSchedule()
-        => new(RequestType.BgSave, [ValkeyLiterals.SCHEDULE], false, gs => gs.ToString());
+        => ToString(RequestType.BgSave, [ValkeyLiterals.SCHEDULE]);
 
     public static Cmd<GlideString, string> BgRewriteAof()
-        => new(RequestType.BgRewriteAof, [], false, gs => gs.ToString());
+        => ToString(RequestType.BgRewriteAof);
 
     public static Cmd<object, KeyValuePair<string, string>[]> ConfigGet(ValkeyValue pattern = default)
         => ConfigGetAsyncInternal(pattern.IsNull ? ["*"] : [pattern]);
@@ -79,7 +81,7 @@ internal static partial class Request
         => Ok(RequestType.FlushDB, [mode == FlushMode.Sync ? ValkeyLiterals.SYNC : ValkeyLiterals.ASYNC]);
 
     public static Cmd<GlideString, string> Info(InfoOptions.Section[] sections)
-        => new(RequestType.Info, sections.ToGlideStrings(), false, gs => gs.ToString());
+        => ToString(RequestType.Info, sections.ToGlideStrings());
 
     public static Cmd<long, DateTimeOffset> LastSave()
         => new(RequestType.LastSave, [], false, DateTimeOffset.FromUnixTimeSeconds);
@@ -94,13 +96,13 @@ internal static partial class Request
         => new(RequestType.LatencyReset, events.ToGlideStrings(), false, l => l);
 
     public static Cmd<GlideString, string> Lolwut(LolwutOptions? options = null)
-        => new(RequestType.Lolwut, options is null ? [] : [.. options.ToArgs()], false, gs => gs.ToString());
+        => ToString(RequestType.Lolwut, options?.ToArgs());
 
     public static Cmd<GlideString, string> MemoryDoctor()
-        => new(RequestType.MemoryDoctor, [], false, gs => gs.ToString());
+        => ToString(RequestType.MemoryDoctor);
 
     public static Cmd<GlideString, string> MemoryMallocStats()
-        => new(RequestType.MemoryMallocStats, [], false, gs => gs.ToString());
+        => ToString(RequestType.MemoryMallocStats);
 
     public static Cmd<string, ValkeyValue> MemoryPurge()
         => Ok(RequestType.MemoryPurge, []);
@@ -131,13 +133,7 @@ internal static partial class Request
             RequestType.Time,
             [],
             false,
-            arr =>
-            {
-                long seconds = long.Parse(arr[0] is GlideString gs1 ? gs1.ToString() : arr[0].ToString()!);
-                long microseconds = long.Parse(arr[1] is GlideString gs2 ? gs2.ToString() : arr[1].ToString()!);
-                return DateTimeOffset.FromUnixTimeSeconds(seconds)
-                    .AddMicroseconds(microseconds);
-            });
+            arr => DateTimeOffset.FromUnixTimeSeconds(ToLong(arr[0])).AddMicroseconds(ToLong(arr[1])));
 
     #endregion
     #region Response Converters
@@ -151,7 +147,7 @@ internal static partial class Request
             if (key.StartsWith(MemoryStatsDbPrefix) && key != "db.dict.rehashing.count")
             {
                 string suffix = key[MemoryStatsDbPrefix.Length..];
-                if (int.TryParse(suffix, out int dbIndex))
+                if (Format.TryParseInt32(suffix, out int dbIndex))
                 {
                     db[dbIndex] = ParseMemoryStatsDb((Dictionary<GlideString, object>)kvp.Value);
                 }
@@ -267,8 +263,8 @@ internal static partial class Request
             object[] entry = (object[])array[i];
             entries[i] = new()
             {
-                Time = DateTimeOffset.FromUnixTimeSeconds(Convert.ToInt64(entry[0])),
-                Duration = TimeSpan.FromMilliseconds(Convert.ToInt64(entry[1])),
+                Time = DateTimeOffset.FromUnixTimeSeconds(Convert.ToInt64(entry[0], CultureInfo.InvariantCulture)),
+                Duration = TimeSpan.FromMilliseconds(Convert.ToInt64(entry[1], CultureInfo.InvariantCulture)),
             };
         }
 
@@ -286,11 +282,11 @@ internal static partial class Request
             entries[i] = new()
             {
                 EventName = ((GlideString)entry[0]).ToString(),
-                LatestTime = DateTimeOffset.FromUnixTimeSeconds(Convert.ToInt64(entry[1])),
-                LatestDuration = TimeSpan.FromMilliseconds(Convert.ToInt64(entry[2])),
-                MaxDuration = TimeSpan.FromMilliseconds(Convert.ToInt64(entry[3])),
-                Sum = entry.Length > 4 ? TimeSpan.FromMilliseconds(Convert.ToInt64(entry[4])) : null,
-                Count = entry.Length > 5 ? Convert.ToInt64(entry[5]) : null,
+                LatestTime = DateTimeOffset.FromUnixTimeSeconds(Convert.ToInt64(entry[1], CultureInfo.InvariantCulture)),
+                LatestDuration = TimeSpan.FromMilliseconds(Convert.ToInt64(entry[2], CultureInfo.InvariantCulture)),
+                MaxDuration = TimeSpan.FromMilliseconds(Convert.ToInt64(entry[3], CultureInfo.InvariantCulture)),
+                Sum = entry.Length > 4 ? TimeSpan.FromMilliseconds(Convert.ToInt64(entry[4], CultureInfo.InvariantCulture)) : null,
+                Count = entry.Length > 5 ? Convert.ToInt64(entry[5], CultureInfo.InvariantCulture) : null,
             };
         }
 

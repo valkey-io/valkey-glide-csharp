@@ -1,5 +1,6 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -49,7 +50,7 @@ internal static class ScriptParameterMapper
             {
                 string paramName = match.Groups[1].Value;
                 int index = parameterIndices[paramName];
-                return $"{{PARAM_{index}}}";
+                return string.Create(CultureInfo.InvariantCulture, $"{{PARAM_{index}}}");
             });
 
         return (script, executableScript, parameters.ToArray());
@@ -84,14 +85,14 @@ internal static class ScriptParameterMapper
 
             // Determine if this is a key or argument based on type
             replacements[i] = IsKeyType(memberType)
-                ? $"KEYS[{keyIndex++}]"
-                : $"ARGV[{argIndex++}]";
+                ? string.Create(CultureInfo.InvariantCulture, $"KEYS[{keyIndex++}]")
+                : string.Create(CultureInfo.InvariantCulture, $"ARGV[{argIndex++}]");
         }
 
         // Replace placeholders
         foreach (var kvp in replacements)
         {
-            executableScript = executableScript.Replace($"{{PARAM_{kvp.Key}}}", kvp.Value);
+            executableScript = executableScript.Replace(string.Create(CultureInfo.InvariantCulture, $"{{PARAM_{kvp.Key}}}"), kvp.Value);
         }
 
         return executableScript;
@@ -118,14 +119,14 @@ internal static class ScriptParameterMapper
             bool isKey = paramName == "key" || paramName == "keys" || paramName.StartsWith("key");
 
             replacements[i] = isKey
-                ? $"KEYS[{keyIndex++}]"
-                : $"ARGV[{argIndex++}]";
+                ? string.Create(CultureInfo.InvariantCulture, $"KEYS[{keyIndex++}]")
+                : string.Create(CultureInfo.InvariantCulture, $"ARGV[{argIndex++}]");
         }
 
         // Replace placeholders
         foreach (var kvp in replacements)
         {
-            executableScript = executableScript.Replace($"{{PARAM_{kvp.Key}}}", kvp.Value);
+            executableScript = executableScript.Replace(string.Create(CultureInfo.InvariantCulture, $"{{PARAM_{kvp.Key}}}"), kvp.Value);
         }
 
         return executableScript;

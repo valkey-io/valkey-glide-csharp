@@ -177,10 +177,12 @@ public static partial class GlideJson
         {
             if (End.HasValue)
             {
-                return [Start.ToString(), End.Value.ToString()];
+                return [
+                    Start.ToGlideString(),
+                    End.Value.ToGlideString()];
             }
 
-            return [Start.ToString()];
+            return [Start.ToGlideString()];
         }
     }
 }

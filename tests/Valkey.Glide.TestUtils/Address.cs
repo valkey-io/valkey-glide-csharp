@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Globalization;
+
 namespace Valkey.Glide.TestUtils;
 
 /// <summary>
@@ -7,8 +9,6 @@ namespace Valkey.Glide.TestUtils;
 /// </summary>
 public record class Address(string Host, ushort Port)
 {
-    public override string ToString() => $"{Host}:{Port}";
-
     /// <summary>
     /// Parses a comma-separated list of hosts (e.g. "localhost:6379,localhost:6380") to addresses.
     /// </summary>
@@ -18,9 +18,12 @@ public record class Address(string Host, ushort Port)
         foreach (var host in hosts.Split(','))
         {
             var parts = host.Split(':');
-            addresses.Add(new Address(parts[0], ushort.Parse(parts[1])));
+            var address = new Address(parts[0], ushort.Parse(parts[1], CultureInfo.InvariantCulture));
+            addresses.Add(address);
         }
 
         return addresses;
     }
+
+    public override string ToString() => $"{Host}:{Port}";
 }

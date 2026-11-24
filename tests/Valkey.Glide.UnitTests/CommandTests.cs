@@ -227,6 +227,7 @@ public class CommandTests
         () => CmdAssert.Equal(RequestType.Persist, ["key"], Request.Persist("key")),
         () => CmdAssert.Equal(RequestType.PExpire, ["key", "60000", "NX"], Request.Expire("key", TimeSpan.FromSeconds(60), ExpireCondition.OnlyIfNotExists)),
         () => CmdAssert.Equal(RequestType.PExpire, ["key", "60000"], Request.Expire("key", TimeSpan.FromSeconds(60))),
+        () => CmdAssert.Equal(RequestType.PExpire, ["key", "-5000"], Request.Expire("key", TimeSpan.FromSeconds(-5))),
         () => CmdAssert.Equal(RequestType.PExpireAt, ["key", "1609459200000"], Request.Expire("key", new DateTimeOffset(2021, 1, 1, 0, 0, 0, TimeSpan.Zero))),
         () => CmdAssert.Equal(RequestType.PExpireTime, ["key"], Request.ExpireTime("key")),
         () => CmdAssert.Equal(RequestType.PTTL, ["key"], Request.TimeToLive("key")),
@@ -517,7 +518,7 @@ public class CommandTests
         () => Assert.Equal("Sam, I have no memory problems", Request.MemoryDoctor().Converter("Sam, I have no memory problems")),
         () => Assert.Equal("jemalloc stats", Request.MemoryMallocStats().Converter("jemalloc stats")),
         () => Assert.Equal(ValkeyValue.Ok, Request.Save().Converter("OK")),
-        () => Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(1609459200).AddTicks(123456 * 10), Request.Time().Converter(["1609459200", "123456"])),
+        () => Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(1609459200).AddTicks(123456 * 10), Request.Time().Converter([(GlideString)"1609459200", (GlideString)"123456"])),
 
         () => Assert.Equal("common", Request.LongestCommonSubsequence("key1", "key2").Converter(new GlideString("common"))),
         () => Assert.Equal(5L, Request.LongestCommonSubsequenceLength("key1", "key2").Converter(5L)),
