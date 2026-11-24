@@ -125,7 +125,9 @@ public static partial class Ft
     /// <param name="index">The name of the index to aggregate.</param>
     /// <param name="query">The search query expression.</param>
     /// <param name="options">Additional options for the aggregation command.</param>
-    /// <returns>An array of result row dictionaries</returns>    /// <remarks>
+    /// <returns>An array of result row dictionaries</returns>
+    /// <exception cref="ArgumentException">Thrown if <see cref="AggregateOptions.WithCursorOptions"/> is set; use <see cref="AggregateWithCursorAsync"/> to page results.</exception>
+    /// <remarks>
     /// <example>
     /// <code>
     /// await Ft.CreateAsync(client, "index",
@@ -327,16 +329,7 @@ public static partial class Ft
         /// <param name="name">
         /// A user defined property name for the reducer. If not provided, the server generates a default name.
         /// </param>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="size"/> is negative or greater than 1000.</exception>
-        public static AggregateReducer RandomSample(ValkeyValue field, long size, ValkeyValue name = default)
-        {
-            if (size is < 0 or > 1000)
-            {
-                throw new ArgumentOutOfRangeException(nameof(size), size, "RANDOM_SAMPLE's size must be a non-negative integer no greater than 1000; the server rejects values outside this range.");
-            }
-
-            return new() { Function = ReducerFunction.RandomSample, Expressions = [field, size.ToGlideString()], Name = name };
-        }
+        public static AggregateReducer RandomSample(ValkeyValue field, long size, ValkeyValue name = default) => new() { Function = ReducerFunction.RandomSample, Expressions = [field, size.ToGlideString()], Name = name };
 
         /// <summary>
         /// Converts to command arguments.
@@ -553,9 +546,6 @@ public static partial class Ft
         public static implicit operator LoadField(ValkeyValue fieldIdentifier)
             => new(fieldIdentifier);
 
-        /// <summary>
-        /// Converts to command arguments for this LOAD clause entry.
-        /// </summary>
         internal GlideString[] ToArgs()
             => Alias.IsNull ? [FieldIdentifier] : [FieldIdentifier, ValkeyLiterals.AS, Alias];
     }
@@ -583,9 +573,6 @@ public static partial class Ft
         /// </summary>
         public long? MaxIdle { get; init; }
 
-        /// <summary>
-        /// Converts to command arguments for the WITHCURSOR option.
-        /// </summary>
         internal GlideString[] ToArgs()
         {
             List<GlideString> args = [ValkeyLiterals.WITHCURSOR];
@@ -693,9 +680,8 @@ public static partial class Ft
 
         /// <summary>
         /// Requests a paged reply instead of the whole result set at once. See <see cref="WithCursor"/>.
-        /// A paged query, and every subsequent FT.CURSOR READ/DEL against the cursor it opens, always
-        /// reads from the PRIMARY of the index's slot, regardless of the client's read-from
-        /// configuration.
+        /// Only <see cref="AggregateWithCursorAsync"/> accepts this option. <see cref="AggregateAsync(BaseClient, ValkeyKey, ValkeyValue, AggregateOptions)"/>
+        /// throws <see cref="ArgumentException"/> when it is set.
         /// </summary>
         public WithCursor? WithCursorOptions { get; init; }
 

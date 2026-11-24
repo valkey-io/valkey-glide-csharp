@@ -18,7 +18,6 @@
     <Configurations>Debug;Release;Lint</Configurations>
   </PropertyGroup>
 
-  <!-- Enable analysis and un-suppress warnings only in `Lint` configuration -->
   <PropertyGroup Condition="'$(Configuration)' == 'Lint'">
     <LangVersion>preview</LangVersion>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
@@ -30,10 +29,8 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
-  <!-- Workaround for https://github.com/dotnet/roslyn/issues/41640 -->
   <PropertyGroup>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <!--Disable AD0001: see https://github.com/xunit/xunit/issues/3474-->
     <NoWarn>$(NoWarn);CS1591;CS1573;CS1587;AD0001</NoWarn>
   </PropertyGroup>
 

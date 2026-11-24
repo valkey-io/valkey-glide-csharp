@@ -3,8 +3,6 @@
 using Valkey.Glide.ModuleTests;
 using Valkey.Glide.TestUtils;
 
-using static Valkey.Glide.ConnectionConfiguration;
-
 [assembly: AssemblyFixture(typeof(ModuleTestConfiguration))]
 
 namespace Valkey.Glide.ModuleTests;
@@ -56,15 +54,12 @@ public sealed class ModuleTestConfiguration : IDisposable
 
     public static GlideClient CreateStandaloneClient()
     {
-        // The assembly fixture constructor either sets this or throws before any test runs.
         Address address = StandaloneAddress
             ?? throw new InvalidOperationException($"{nameof(StandaloneAddress)} was never set; the fixture constructor should have thrown first.");
 
         return GlideClient.CreateClient(
-            new StandaloneClientConfigurationBuilder()
-                .WithAddress(address.Host, address.Port)
+            Config.BuildStandaloneConfig(address, requestTimeout: TimeSpan.FromSeconds(30))
                 .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
-                .WithRequestTimeout(TimeSpan.FromSeconds(30))
                 .Build())
             .GetAwaiter()
             .GetResult();
@@ -79,10 +74,8 @@ public sealed class ModuleTestConfiguration : IDisposable
 
         Address address = ClusterAddresses.First();
         return GlideClusterClient.CreateClient(
-            new ClusterClientConfigurationBuilder()
-                .WithAddress(address.Host, address.Port)
+            Config.BuildClusterConfig(address, requestTimeout: TimeSpan.FromSeconds(30))
                 .WithProtocolVersion(ConnectionConfiguration.Protocol.RESP3)
-                .WithRequestTimeout(TimeSpan.FromSeconds(30))
                 .Build())
             .GetAwaiter()
             .GetResult();
@@ -117,11 +110,6 @@ public sealed class ModuleTestConfiguration : IDisposable
 
     public void Dispose()
     {
-        // L6: Dispose previously read the lazy TestClients getter unconditionally, which (a)
-        // creates clients from scratch just to immediately dispose them if no test ever touched
-        // TestClients, and (b) if the cluster endpoint is unreachable, makes teardown itself
-        // throw from inside CreateClusterClient() rather than cleanly disposing whatever was
-        // already created. Only dispose what was actually created.
         if (!s_testClientsWereCreated)
         {
             return;

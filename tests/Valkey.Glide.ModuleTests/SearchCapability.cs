@@ -5,9 +5,8 @@ using Valkey.Glide.ServerModules;
 namespace Valkey.Glide.ModuleTests;
 
 /// <summary>
-/// Detects whether the connected valkey-search module actually has 1.3 features live, and reads
-/// its active <c>search.emulate-release</c> compatibility level -- mirroring Python's
-/// <c>requires_search_1_3</c> fixture, which this port and the other wave-3 ports copy.
+/// Detects whether the connected valkey-search module has 1.3 features live, and reads its active
+/// <c>search.emulate-release</c> compatibility level.
 /// </summary>
 /// <remarks>
 /// Probes with a real command (<c>FT.SEARCH ... INKEYS 0</c>) rather than a version-string
@@ -30,7 +29,7 @@ public static class SearchCapability
     /// </summary>
     /// <param name="client">The client to probe with.</param>
     /// <returns><see langword="true"/> if the 1.3 surface is live.</returns>
-    public static async Task<bool> Probe13CapabilityAsync(BaseClient client)
+    public static async Task<bool> ProbeCapabilityAsync(BaseClient client)
     {
         string index = ProbeIndexPrefix + Guid.NewGuid().ToString("N");
         try
@@ -41,15 +40,6 @@ public static class SearchCapability
             ex.Message.Contains("unknown command", StringComparison.OrdinalIgnoreCase) ||
                 ex.Message.Contains("not loaded", StringComparison.OrdinalIgnoreCase))
         {
-            // M2: fail loudly, matching Python's requires_search_1_3 fixture ("if the search
-            // module is missing entirely, the probe fails instead of skipping"). This harness
-            // (unlike the main suite's ModuleUtils.SkipIfSearchModuleNotAvailableAsync gate, which
-            // covers legitimately modules-free dev servers) never starts its own server --
-            // ModuleTestConfiguration requires MODULES_STANDALONE_ENDPOINT and the start script's
-            // own check_modules step is supposed to guarantee a module is loaded. A missing
-            // module here means the harness itself is misconfigured, not a legitimate pre-1.3
-            // server; silently returning false would make that failure indistinguishable from the
-            // intended, loud skip reason ("search module is pre-1.3") and mask it.
             throw new InvalidOperationException(
                 "The search module is not loaded on the module-test harness's server at all. " +
                     "This harness (ModuleTestConfiguration) never starts its own server, so a missing " +
@@ -81,7 +71,7 @@ public static class SearchCapability
 
     /// <summary>
     /// Reads the server's active <c>search.emulate-release</c> compatibility level via
-    /// <c>CONFIG GET</c>. Only meaningful when <see cref="Probe13CapabilityAsync"/> already
+    /// <c>CONFIG GET</c>. Only meaningful when <see cref="ProbeCapabilityAsync"/> already
     /// returned <see langword="true"/> -- a pre-1.3 module has no such config key at all.
     /// </summary>
     /// <param name="client">The client to read the config from.</param>
@@ -92,11 +82,6 @@ public static class SearchCapability
         object? raw = client switch
         {
             GlideClient standalone => await standalone.CustomCommand(args),
-            // L5 (fixed): an unrouted CONFIG GET on a cluster client fans out to every node by
-            // default and returns a multi-node value, which .SingleValue rejects outright
-            // ("No single value stored") -- confirmed live while adding this cluster-branch test
-            // coverage. search.emulate-release is a server-wide module config, identical on every
-            // node, so routing to any single one (Random) is representative.
             GlideClusterClient cluster => (await cluster.CustomCommand(args, Route.Random)).SingleValue,
             _ => throw new ArgumentException($"Unsupported client type: {client.GetType()}", nameof(client)),
         };
@@ -121,10 +106,6 @@ public static class SearchCapability
     public static bool IsAtLeast130(string? level)
         => level is not null && System.Version.TryParse(level, out var parsed) && parsed >= new Version(1, 3, 0);
 
-    /// <summary>
-    /// Cleans up loudly per the port rules: a failed DROPINDEX of the probe index retries once,
-    /// then rethrows rather than swallowing the error.
-    /// </summary>
     private static async Task DropProbeIndexAsync(BaseClient client, string index)
     {
         try
@@ -133,7 +114,6 @@ public static class SearchCapability
         }
         catch (Errors.RequestException)
         {
-            // One retry, matching the port rules' "never swallows the error" requirement.
             await Ft.DropIndexAsync(client, index);
         }
     }

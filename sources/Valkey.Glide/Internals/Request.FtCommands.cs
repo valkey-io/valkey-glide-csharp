@@ -1,5 +1,8 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Text;
+using System.Text.Json;
+
 using Valkey.Glide.ServerModules;
 
 using static Valkey.Glide.Errors;
@@ -25,10 +28,17 @@ internal static partial class Request
         => new(RequestType.FtSearch, [indexName, query, .. ToArgs(options)], false, data => ParseFtSearchResponse(data, options));
 
     public static Cmd<object[], IDictionary<ValkeyValue, ValkeyValue>[]> FtAggregate(ValkeyKey indexName, ValkeyValue query, Ft.AggregateOptions? options = null)
-        => new(RequestType.FtAggregate, [indexName, query, .. ToArgs(options)], false, ParseFtAggregateResponse);
+    {
+        if (options?.WithCursorOptions is not null)
+        {
+            throw new ArgumentException($"{nameof(Ft.AggregateOptions.WithCursorOptions)} is set; use {nameof(Ft.AggregateWithCursorAsync)} to page results.");
+        }
+
+        return new(RequestType.FtAggregate, [indexName, query, .. ToArgs(options)], false, ParseFtAggregateResponse);
+    }
 
     public static Cmd<object?, Ft.CursorResult> FtAggregateWithCursor(ValkeyKey indexName, ValkeyValue query, Ft.AggregateOptions options)
-        => new(RequestType.FtAggregate, [indexName, query, .. ToArgs(options)], true, ParseCursorWrappedAggregateResponse, true);
+        => new(RequestType.FtAggregate, [indexName, query, .. ToArgs(options), .. (options.WithCursorOptions ?? new Ft.WithCursor()).ToArgs()], true, ParseCursorWrappedAggregateResponse, true);
 
     public static Cmd<object?, Ft.CursorResult> FtCursorRead(ValkeyKey indexName, long cursorId, long? count)
     {
@@ -46,10 +56,17 @@ internal static partial class Request
         => Simple<string>(RequestType.CustomCommand, [ValkeyLiterals.CURSOR, ValkeyLiterals.DEL, indexName, cursorId.ToGlideString()]);
 
     public static Cmd<object?, IDictionary<ValkeyValue, ValkeyValue>[]> FtHybrid(ValkeyKey indexName, Ft.HybridSearchArm searchArm, Ft.HybridVsimArm vsimArm, Ft.HybridOptions? options = null)
-        => new(RequestType.CustomCommand, BuildHybridArgs(indexName, searchArm, vsimArm, options), true, data => data is null ? [] : ParseFtAggregateResponse((object[])data), true);
+    {
+        if (options?.WithCursorOptions is not null)
+        {
+            throw new ArgumentException($"{nameof(Ft.HybridOptions.WithCursorOptions)} is set; use {nameof(Ft.HybridWithCursorAsync)} to page results.");
+        }
+
+        return new(RequestType.CustomCommand, BuildHybridArgs(indexName, searchArm, vsimArm, options, withCursor: false), true, data => data is null ? [] : ParseFtAggregateResponse((object[])data), true);
+    }
 
     public static Cmd<object?, Ft.CursorResult> FtHybridWithCursor(ValkeyKey indexName, Ft.HybridSearchArm searchArm, Ft.HybridVsimArm vsimArm, Ft.HybridOptions options)
-        => new(RequestType.CustomCommand, BuildHybridArgs(indexName, searchArm, vsimArm, options), true, ParseCursorWrappedAggregateResponse, true);
+        => new(RequestType.CustomCommand, BuildHybridArgs(indexName, searchArm, vsimArm, options, withCursor: true), true, ParseCursorWrappedAggregateResponse, true);
 
     public static Cmd<object, Ft.InfoLocalResult> FtInfoLocal(ValkeyKey indexName, Ft.InfoOptions? options = null)
         => new(RequestType.FtInfo, [indexName, ValkeyLiterals.LOCAL, .. ToArgs(options)], false, ParseFtInfoLocalResponse);
@@ -61,7 +78,7 @@ internal static partial class Request
     /// Converts the given <see cref="Ft.CreateOptions"/> to command arguments.
     /// </summary>
     /// <param name="options">The index creation options to convert.</param>
-    /// <exception cref="ArgumentException">Thrown if mutually exclusive options are combined, or <see cref="Ft.CreateOptions.Filter"/> is empty.</exception>
+    /// <exception cref="ArgumentException"></exception>
     private static GlideString[] ToArgs(Ft.CreateOptions? options)
     {
         if (options is null)
@@ -97,7 +114,6 @@ internal static partial class Request
 
         if (!options.Language.IsNull)
         {
-            Ft.EnsureSupportedLanguage(options.Language);
             args.Add(ValkeyLiterals.LANGUAGE);
             args.Add((GlideString)options.Language);
         }
@@ -172,8 +188,7 @@ internal static partial class Request
     /// Converts the given <see cref="Ft.SearchOptions"/> to command arguments.
     /// </summary>
     /// <param name="options">The search options to convert.</param>
-    /// <exception cref="ArgumentException">Thrown if <see cref="Ft.SearchSortBy.WithSortKeys"/> is used together with <see cref="Ft.SearchOptions.NoContent"/>,
-    /// or if <see cref="Ft.SearchOptions.Count"/> and <see cref="Ft.SearchOptions.Limit"/> are both set.</exception>
+    /// <exception cref="ArgumentException"></exception>
     private static GlideString[] ToArgs(Ft.SearchOptions? options)
     {
         if (options is null)
@@ -195,12 +210,6 @@ internal static partial class Request
 
         if (isNoContent)
         {
-            if (options.SortBy is { WithSortKeys: true })
-            {
-                throw new ArgumentException(
-                    $"{nameof(Ft.SearchSortBy.WithSortKeys)} cannot be used with {nameof(Ft.SearchOptions.NoContent)}.");
-            }
-
             args.Add(ValkeyLiterals.NOCONTENT);
         }
 
@@ -251,8 +260,6 @@ internal static partial class Request
         }
         else if (options.Count)
         {
-            // COUNT is not a real FT.SEARCH keyword -- the server rejects a bare COUNT token
-            // outright. LIMIT 0 0 is the server's actual documented count-only form.
             args.Add(ValkeyLiterals.LIMIT);
             args.Add("0");
             args.Add("0");
@@ -312,7 +319,6 @@ internal static partial class Request
 
         if (!options.Scorer.IsNull)
         {
-            Ft.EnsureSupportedScorer(options.Scorer);
             args.Add(ValkeyLiterals.SCORER);
             args.Add((GlideString)options.Scorer);
         }
@@ -380,28 +386,13 @@ internal static partial class Request
 
         if (!options.Scorer.IsNull)
         {
-            Ft.EnsureSupportedScorer(options.Scorer);
             args.Add(ValkeyLiterals.SCORER);
             args.Add((GlideString)options.Scorer);
-        }
-
-        if (options.WithCursorOptions is not null)
-        {
-            args.AddRange(options.WithCursorOptions.ToArgs());
         }
 
         return [.. args];
     }
 
-    /// <summary>
-    /// Converts a LOAD clause's field list to command arguments, shared by FT.AGGREGATE and
-    /// FT.HYBRID. <paramref name="entries"/> (<see cref="Ft.LoadField"/>, which supports <c>AS</c>
-    /// aliasing) takes priority over <paramref name="plainFields"/> when set. The count is a token
-    /// budget, not an entry count -- each <see cref="Ft.LoadField"/> with an alias contributes 3
-    /// tokens (field, AS, alias) rather than 1, matching the server's own accounting.
-    /// </summary>
-    /// <param name="entries">The LOAD clause entries, supporting <c>AS</c> aliasing; takes priority over <paramref name="plainFields"/> when set.</param>
-    /// <param name="plainFields">The plain LOAD field list, used when <paramref name="entries"/> is not set.</param>
     private static GlideString[] ToLoadArgs(IEnumerable<Ft.LoadField>? entries, IEnumerable<ValkeyValue>? plainFields)
     {
         if (entries is not null)
@@ -588,14 +579,6 @@ internal static partial class Request
         return [.. args];
     }
 
-    /// <summary>
-    /// Appends <c>SORTABLE</c> and, immediately after it, <c>UNF</c> -- the only position
-    /// valkey-search recognizes <c>UNF</c> in. Shared by the TEXT/TAG/NUMERIC field serializers.
-    /// </summary>
-    /// <param name="args">The argument list to append to.</param>
-    /// <param name="sortable">Whether the field is sortable.</param>
-    /// <param name="unf">Whether to keep the sorted value un-normalized. Requires <paramref name="sortable"/>.</param>
-    /// <exception cref="ArgumentException">Thrown if <paramref name="unf"/> is set without <paramref name="sortable"/> (L1: Python raises <c>ValueError("unf requires sortable=True.")</c> for the same case; this previously silently dropped UNF instead).</exception>
     private static void AddSortableUnf(List<GlideString> args, bool sortable, bool unf)
     {
         if (unf && !sortable)
@@ -628,17 +611,6 @@ internal static partial class Request
 
     private static Ft.SearchResult ParseFtSearchResponse(object[] data, Ft.SearchOptions? options)
     {
-        // Format: [count, {key1: value1, key2: value2, ...}]
-        // (or just [count] under LIMIT 0 0 -- no documents map at all).
-        //
-        // Each document's value shape, per glide-core's value_conversion.rs reshaping (unwrapped
-        // here, never re-derived from a raw/un-reshaped reply):
-        //   - neither WithScores nor WithSortKeys:            plain field map
-        //   - WithSortKeys only:                              [sortKey, fieldMap]
-        //   - WithScores only:                                [score, fieldMap] (fieldMap empty under NoContent)
-        //   - both, with content:                             [score, sortKey, fieldMap]
-        //   - both, with NoContent:                           [score, fieldMap] -- the server drops
-        //     the sort key entirely in this specific combination, reverting to the WithScores-only shape.
         if (data.Length == 0)
         {
             return new Ft.SearchResult(0, []);
@@ -646,6 +618,9 @@ internal static partial class Request
 
         long count = Convert.ToInt64(data[0]);
 
+        // Format: [count, {key1: fields1, key2: fields2, ...}]
+        // Without WITHSORTKEYS: fields is Dictionary<GlideString, object>
+        // With WITHSORTKEYS: fields is object[] { sortKey, Dictionary<GlideString, object> }
         if (data.Length < 2)
         {
             return new Ft.SearchResult(count, []);
@@ -667,16 +642,6 @@ internal static partial class Request
         return new Ft.SearchResult(count, [.. docs]);
     }
 
-    /// <summary>
-    /// Unwraps a single FT.SEARCH document's value, whose shape depends on
-    /// <paramref name="withScores"/>/<paramref name="withSortKeys"/> per <see cref="ParseFtSearchResponse"/>'s
-    /// comment.
-    /// </summary>
-    /// <param name="key">The document's key.</param>
-    /// <param name="value">The raw reshaped value for the document, whose shape depends on <paramref name="withScores"/>/<paramref name="withSortKeys"/>.</param>
-    /// <param name="withScores">Whether <c>WITHSCORES</c> was requested.</param>
-    /// <param name="withSortKeys">Whether <c>WITHSORTKEYS</c> was requested.</param>
-    /// <exception cref="RequestException">Thrown if the document's shape doesn't match what <paramref name="withScores"/>/<paramref name="withSortKeys"/> predict.</exception>
     private static Ft.SearchDocument ParseFtSearchDocument(ValkeyKey key, object value, bool withScores, bool withSortKeys)
     {
         if (!withScores && !withSortKeys)
@@ -693,10 +658,6 @@ internal static partial class Request
         switch (tuple.Length)
         {
             case 2:
-                // [sortKey, fieldMap] (WithSortKeys only), or [score, fieldMap] (WithScores only,
-                // or both but NOCONTENT dropped the sort key -- indistinguishable on the wire from
-                // the WithScores-only shape, so WithScores takes priority, matching glide-core's own
-                // fallback in that specific combination).
                 if (withScores)
                 {
                     return new Ft.SearchDocument(key, ToFieldMap(tuple[1]), score: ParseFtScore(key, tuple[0]));
@@ -706,7 +667,6 @@ internal static partial class Request
                 return new Ft.SearchDocument(key, ToFieldMap(tuple[1]), sortKey: sortKey);
 
             case 3:
-                // [score, sortKey, fieldMap] (both, with content present)
                 double score = ParseFtScore(key, tuple[0]);
                 ValkeyValue sortKey3 = tuple[1] is GlideString gs3 ? (ValkeyValue)gs3 : ValkeyValue.Null;
                 return new Ft.SearchDocument(key, ToFieldMap(tuple[2]), sortKey: sortKey3, score: score);
@@ -717,14 +677,6 @@ internal static partial class Request
         }
     }
 
-    /// <summary>
-    /// Parses a WITHSCORES score value. glide-core passes the score through as the bulk-string
-    /// decimal text valkey-search returns (e.g. "0.287682086229"), not a float -- this is the one
-    /// place that text is parsed into a <see cref="double"/>.
-    /// </summary>
-    /// <param name="key">The document's key, used in the exception message if parsing fails.</param>
-    /// <param name="value">The raw score value from glide-core's reshaped reply.</param>
-    /// <exception cref="RequestException">Thrown if <paramref name="value"/> isn't a parseable decimal string.</exception>
     private static double ParseFtScore(ValkeyKey key, object value)
     {
         string? text = value switch
@@ -760,18 +712,6 @@ internal static partial class Request
         return [.. results];
     }
 
-    /// <summary>
-    /// Parses a single FT.AGGREGATE/FT.HYBRID row value. Most reducers return a scalar, but
-    /// TOLIST and RANDOM_SAMPLE return a per-group array of values (glide-core passes it through
-    /// as <c>object[]</c>, the same shape rows themselves arrive in) -- those array-valued cells
-    /// are reported back as a JSON-array-shaped <see cref="ValkeyValue"/> string (e.g.
-    /// <c>["10","30"]</c>), the same representation <see cref="ValkeyValue"/> has no dedicated
-    /// array variant for, rather than being rejected outright (C1: this previously threw
-    /// <see cref="RequestException"/> for any array-valued reducer result, making TOLIST and
-    /// RANDOM_SAMPLE entirely unusable through <c>Ft.AggregateAsync</c>/<c>Ft.HybridAsync</c>).
-    /// </summary>
-    /// <param name="value">The raw row value from glide-core's reshaped reply.</param>
-    /// <exception cref="RequestException">Thrown if <paramref name="value"/> isn't one of the recognized value shapes.</exception>
     private static ValkeyValue ParseFtAggregateValue(object? value)
         => value switch
         {
@@ -784,47 +724,51 @@ internal static partial class Request
             _ => throw new RequestException($"Unexpected FT.AGGREGATE value type: {value.GetType()}"),
         };
 
-    /// <summary>
-    /// Renders an array-valued reducer result (TOLIST/RANDOM_SAMPLE) as a JSON-array-shaped
-    /// string, e.g. <c>["10","30"]</c> for a list of two GlideStrings, or <c>[1,2,3]</c> for a
-    /// list of longs. Nested arrays (possible from TOLIST's one-level flattening note not
-    /// applying recursively) fall back to the same quoted-string treatment as any other
-    /// non-numeric, non-boolean scalar.
-    /// </summary>
-    /// <param name="arr">The array-valued reducer result to render.</param>
     private static string ToJsonArrayLiteral(object[] arr)
     {
-        var sb = new System.Text.StringBuilder("[");
-        for (int i = 0; i < arr.Length; i++)
+        using var stream = new MemoryStream();
+        using (var writer = new Utf8JsonWriter(stream))
         {
-            if (i > 0)
-            {
-                _ = sb.Append(',');
-            }
-
-            _ = arr[i] switch
-            {
-                null => sb.Append("null"),
-                long l => sb.Append(l),
-                double d => sb.Append(d.ToString(System.Globalization.CultureInfo.InvariantCulture)),
-                bool b => sb.Append(b ? "true" : "false"),
-                GlideString gs => sb.Append('"').Append(gs.ToString().Replace("\"", "\\\"")).Append('"'),
-                _ => sb.Append('"').Append(arr[i]?.ToString()?.Replace("\"", "\\\"")).Append('"'),
-            };
+            WriteJsonValue(writer, arr);
         }
 
-        _ = sb.Append(']');
-        return sb.ToString();
+        return Encoding.UTF8.GetString(stream.ToArray());
     }
 
-    /// <summary>
-    /// Parses the WITHCURSOR reply shape shared by FT.AGGREGATE/FT.HYBRID (when a cursor is
-    /// requested) and FT.CURSOR READ: a two-element array of <c>[rows, cursorId]</c>, where
-    /// <c>rows</c> is the same per-document mapping shape <see cref="ParseFtAggregateResponse"/>
-    /// unwraps, and <c>cursorId</c> is <c>0</c> once the cursor is exhausted.
-    /// </summary>
-    /// <param name="data">The raw WITHCURSOR reply, expected to be a two-element <c>[rows, cursorId]</c> array.</param>
-    /// <exception cref="RequestException">Thrown if <paramref name="data"/> isn't the expected two-element array shape.</exception>
+    private static void WriteJsonValue(Utf8JsonWriter writer, object? value)
+    {
+        switch (value)
+        {
+            case null:
+                writer.WriteNullValue();
+                break;
+            case object[] array:
+                writer.WriteStartArray();
+                foreach (var item in array)
+                {
+                    WriteJsonValue(writer, item);
+                }
+
+                writer.WriteEndArray();
+                break;
+            case long l:
+                writer.WriteNumberValue(l);
+                break;
+            case double d when double.IsFinite(d):
+                writer.WriteNumberValue(d);
+                break;
+            case bool b:
+                writer.WriteBooleanValue(b);
+                break;
+            case GlideString gs:
+                writer.WriteStringValue(gs.ToString());
+                break;
+            default:
+                writer.WriteStringValue(value.ToString());
+                break;
+        }
+    }
+
     private static Ft.CursorResult ParseCursorWrappedAggregateResponse(object? data)
     {
         if (data is not object[] arr)
@@ -846,19 +790,7 @@ internal static partial class Request
         return new Ft.CursorResult { Rows = ParseFtAggregateResponse(rows), CursorId = cursorId };
     }
 
-    /// <summary>
-    /// Assembles the FT.HYBRID argv in the server's required tail order: SEARCH arm, VSIM arm,
-    /// COMBINE (if any), then the <see cref="Ft.HybridOptions"/> tail (LOCALONLY, LOAD, TIMEOUT,
-    /// PARAMS, clauses, WITHCURSOR, DIALECT). If <paramref name="vsimArm"/> was given raw vector
-    /// bytes rather than a <c>$name</c> reference, a <c>$</c>-prefixed parameter name is generated
-    /// here and merged into the PARAMS list.
-    /// </summary>
-    /// <param name="indexName">The index to run FT.HYBRID against.</param>
-    /// <param name="searchArm">The SEARCH arm's text/tag/numeric query and options.</param>
-    /// <param name="vsimArm">The VSIM arm's vector query and options.</param>
-    /// <param name="options">Additional FT.HYBRID options (COMBINE, LOAD, cursor, etc.).</param>
-    /// <exception cref="ArgumentException">Thrown if the generated VSIM parameter name collides with an entry already present in <see cref="Ft.HybridOptions.Params"/>.</exception>
-    private static GlideString[] BuildHybridArgs(ValkeyKey indexName, Ft.HybridSearchArm searchArm, Ft.HybridVsimArm vsimArm, Ft.HybridOptions? options)
+    private static GlideString[] BuildHybridArgs(ValkeyKey indexName, Ft.HybridSearchArm searchArm, Ft.HybridVsimArm vsimArm, Ft.HybridOptions? options, bool withCursor)
     {
         List<GlideString> args = [ValkeyLiterals.HYBRID, indexName, .. searchArm.ToArgs()];
 
@@ -870,8 +802,6 @@ internal static partial class Request
         }
         else
         {
-            // Dashes stripped to match Go/Node/Python's UUID-derived PARAMS names -- the server
-            // rejects a PARAMS name containing a dash ("contains an invalid character").
             generatedParamName = "$" + Guid.NewGuid().ToString("N");
             generatedParamValue = vsimArm.Vector;
             args.AddRange(vsimArm.ToArgs(generatedParamName));
@@ -886,12 +816,10 @@ internal static partial class Request
 
         if (tailOptions.LocalOnly)
         {
-            // Must come before PARAMS -- the server rejects LOCALONLY once PARAMS has been
-            // parsed, regardless of what follows PARAMS.
             args.Add(ValkeyLiterals.LOCALONLY);
         }
 
-        args.AddRange(ToHybridLoadArgs(tailOptions.LoadAll, tailOptions.LoadFields, searchArm.YieldScoreAs, vsimArm.YieldScoreAs));
+        args.AddRange(ToHybridLoadArgs(tailOptions.LoadAll, tailOptions.LoadFields));
 
         if (tailOptions.Timeout.HasValue)
         {
@@ -902,8 +830,6 @@ internal static partial class Request
         Dictionary<ValkeyValue, ValkeyValue> mergedParams = [with(tailOptions.Params)];
         if (generatedParamName is not null)
         {
-            // The PARAMS entry's own key never carries the leading '$' -- only the VSIM clause's
-            // wire-level reference to it does. Strip it here, matching the other ports' convention.
             ValkeyValue key = (ValkeyValue)(GlideString)generatedParamName.ToString()[1..];
             if (mergedParams.ContainsKey(key))
             {
@@ -920,19 +846,16 @@ internal static partial class Request
 
         foreach (var clause in tailOptions.Clauses)
         {
-            // Must come after PARAMS -- a leading FILTER clause emitted right after the VSIM arm
-            // would otherwise be claimed by the server's VSIM parser as a VSIM pre-filter instead.
             args.AddRange(clause.ToArgs());
         }
 
-        if (tailOptions.WithCursorOptions is not null)
+        if (withCursor)
         {
-            args.AddRange(tailOptions.WithCursorOptions.ToArgs());
+            args.AddRange((tailOptions.WithCursorOptions ?? new Ft.WithCursor()).ToArgs());
         }
 
         if (tailOptions.Dialect.HasValue)
         {
-            Ft.EnsureSupportedHybridDialect(tailOptions.Dialect);
             args.Add(ValkeyLiterals.DIALECT);
             args.Add(tailOptions.Dialect.Value.ToGlideString());
         }
@@ -940,35 +863,11 @@ internal static partial class Request
         return [.. args];
     }
 
-    /// <summary>
-    /// Converts the LOAD clause for FT.HYBRID, which -- unlike FT.AGGREGATE -- emits no LOAD
-    /// clause at all when neither <paramref name="loadAll"/> nor <paramref name="loadFields"/> is
-    /// set (FT.HYBRID's default reply is just the document key and the fused score).
-    /// </summary>
-    /// <param name="loadAll">Whether to emit <c>LOAD *</c>, loading all fields.</param>
-    /// <param name="loadFields">The specific fields to load, used when <paramref name="loadAll"/> is false.</param>
-    /// <param name="searchYieldScoreAs">The SEARCH arm's <c>YieldScoreAs</c> alias, checked against <paramref name="loadFields"/>.</param>
-    /// <param name="vsimYieldScoreAs">The VSIM arm's <c>YieldScoreAs</c> alias, checked against <paramref name="loadFields"/>.</param>
-    /// <exception cref="ArgumentException">Thrown if <paramref name="loadFields"/> names either arm's <c>YieldScoreAs</c> alias (M3: the server rejects an arm alias named inside LOAD outright).</exception>
-    private static GlideString[] ToHybridLoadArgs(bool loadAll, IEnumerable<Ft.LoadField>? loadFields, ValkeyValue searchYieldScoreAs, ValkeyValue vsimYieldScoreAs)
+    private static GlideString[] ToHybridLoadArgs(bool loadAll, IEnumerable<Ft.LoadField>? loadFields)
     {
         if (loadAll)
         {
             return [ValkeyLiterals.LOAD, ValkeyLiterals.STAR];
-        }
-
-        if (loadFields is not null)
-        {
-            foreach (var entry in loadFields)
-            {
-                if ((!searchYieldScoreAs.IsNull && entry.FieldIdentifier == searchYieldScoreAs) ||
-                    (!vsimYieldScoreAs.IsNull && entry.FieldIdentifier == vsimYieldScoreAs))
-                {
-                    throw new ArgumentException(
-                        $"LOAD must not name an arm's YieldScoreAs alias ('{entry.FieldIdentifier}') -- the server rejects it " +
-                            "outright, since it's already present in the default reply with no LOAD needed.");
-                }
-            }
         }
 
         return loadFields is null ? [] : ToLoadArgs(loadFields, null);
@@ -1011,20 +910,6 @@ internal static partial class Request
         };
     }
 
-    /// <summary>
-    /// Normalizes a nested FT.INFO LOCAL sub-structure to a map, accepting either an already
-    /// glide-core-reshaped <c>Dictionary&lt;GlideString, object&gt;</c> or a raw flat
-    /// <c>object[]</c> of alternating key/value pairs. glide-core's generic FT.INFO reshape
-    /// (<c>value_conversion.rs</c>'s <c>FTInfoReturnType</c> arm) only recurses into the legacy
-    /// RediSearch <c>fields</c>/<c>vector_params</c> keys it was written against -- it has no
-    /// knowledge of valkey-search 1.3's own nested shape (<c>index_definition</c>,
-    /// <c>attributes</c>, and each attribute's own <c>index</c>/<c>algorithm</c> sub-maps), so
-    /// those arrive from glide-core as unconverted flat arrays rather than maps. This helper does
-    /// the flattening glide-core doesn't, on the C# side, rather than requiring an upstream
-    /// glide-core change for a GLIDE-internal, read-only reshape.
-    /// </summary>
-    /// <param name="value">The nested value to normalize: a map (passed through) or a flat array.</param>
-    /// <exception cref="RequestException">Thrown if <paramref name="value"/> is neither a map nor a flat array with an even length.</exception>
     private static Dictionary<GlideString, object> ToFlatMap(object value)
     {
         if (value is Dictionary<GlideString, object> alreadyMap)

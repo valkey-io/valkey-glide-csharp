@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Text.Json;
+
 using Valkey.Glide.ServerModules;
 
 using static Valkey.Glide.Internals.FFI;
@@ -128,7 +130,9 @@ public class FtCommandTests
             ["idx", "*", "WITHSORTKEYS", "SORTBY", "f", "ASC"],
             Request.FtSearch("idx", "*", new Ft.SearchOptions { SortBy = new Ft.SearchSortBy { Field = "f", Order = SortOrder.Ascending, WithSortKeys = true } }));
 
-        _ = Assert.Throws<ArgumentException>(() =>
+        CmdAssert.Equal(
+            RequestType.FtSearch,
+            ["idx", "*", "NOCONTENT", "WITHSORTKEYS", "SORTBY", "f"],
             Request.FtSearch("idx", "*", new Ft.SearchOptions { Return = Ft.SearchOptions.NoContent, SortBy = new Ft.SearchSortBy { Field = "f", WithSortKeys = true } }));
 
         CmdAssert.Equal(
@@ -276,9 +280,8 @@ public class FtCommandTests
     }
 
     [Fact]
-    public void FtCreateParity13()
+    public void FtCreateParity()
     {
-        // FLOAT16 / BFLOAT16 vector types
         CmdAssert.Equal(
             RequestType.FtCreate,
             ["idx", "SCHEMA", "v", "VECTOR", "FLAT", "6", "DIM", "4", "DISTANCE_METRIC", "L2", "TYPE", "FLOAT16"],
@@ -289,7 +292,6 @@ public class FtCommandTests
             ["idx", "SCHEMA", "v", "VECTOR", "HNSW", "6", "DIM", "4", "DISTANCE_METRIC", "L2", "TYPE", "BFLOAT16"],
             Request.FtCreate("idx", [new Ft.CreateVectorFieldHnsw { Identifier = "v", Dimensions = 4, DistanceMetric = Ft.DistanceMetric.Euclidean, Type = Ft.VectorType.Bfloat16 }]));
 
-        // SORTABLE / UNF, only directly after SORTABLE
         CmdAssert.Equal(
             RequestType.FtCreate,
             ["idx", "SCHEMA", "f", "TEXT", "SORTABLE", "UNF"],
@@ -305,18 +307,14 @@ public class FtCommandTests
             ["idx", "SCHEMA", "f", "NUMERIC", "SORTABLE", "UNF"],
             Request.FtCreate("idx", [new Ft.CreateNumericField("f") { Sortable = true, Unf = true }]));
 
-        // L1: Unf without Sortable raises, matching Python's ValueError("unf requires
-        // sortable=True.") -- previously silently dropped UNF (and SORTABLE) instead.
         _ = Assert.Throws<ArgumentException>(() =>
             Request.FtCreate("idx", [new Ft.CreateTextField("f") { Unf = true }]));
 
-        // WEIGHT on TEXT
         CmdAssert.Equal(
             RequestType.FtCreate,
             ["idx", "SCHEMA", "f", "TEXT", "WEIGHT", "2.5"],
             Request.FtCreate("idx", [new Ft.CreateTextField("f") { Weight = 2.5 }]));
 
-        // FT.CREATE-level: SCORE, LANGUAGE, WITHOFFSETS, FILTER, SCORE_FIELD, NOHL
         CmdAssert.Equal(
             RequestType.FtCreate,
             ["idx", "ON", "HASH", "SCORE", "0.5", "LANGUAGE", "english", "WITHOFFSETS", "FILTER", "@active:{true}", "SCORE_FIELD", "popularity", "NOHL", "SCHEMA", "f", "TEXT"],
@@ -341,7 +339,7 @@ public class FtCommandTests
     }
 
     [Fact]
-    public void FtSearchScoring13()
+    public void FtSearchScoring()
     {
         CmdAssert.Equal(
             RequestType.FtSearch,
@@ -373,7 +371,7 @@ public class FtCommandTests
     }
 
     [Fact]
-    public void FtAggregateScoringAndCursor13()
+    public void FtAggregateScoringAndCursor()
     {
         CmdAssert.Equal(
             RequestType.FtAggregate,
@@ -400,7 +398,6 @@ public class FtCommandTests
             ["idx", "*", "WITHCURSOR", "COUNT", "10", "MAXIDLE", "1000"],
             Request.FtAggregateWithCursor("idx", "*", new Ft.AggregateOptions { WithCursorOptions = new Ft.WithCursor { Count = 10, MaxIdle = 1000 } }));
 
-        // TOLIST / FIRST_VALUE / RANDOM_SAMPLE reducers
         CmdAssert.Equal(
             RequestType.FtAggregate,
             ["idx", "*", "GROUPBY", "1", "@c", "REDUCE", "TOLIST", "1", "@color", "AS", "colors"],
@@ -441,10 +438,6 @@ public class FtCommandTests
     [Fact]
     public void FtHybridArgvParity()
     {
-        // Case 1: minimal SEARCH + VSIM (raw vector bytes), no options -- mirrors Python's first
-        // doc example. The vector is given as a string here (not starting with '$') purely so the
-        // generated-param-name path is exercised deterministically in a unit test; the generated
-        // name itself is a random UUID, so this case asserts everything except that one token.
         var args1 = Request.FtHybrid(
             "idx",
             new Ft.HybridSearchArm { Query = "hello world" },
@@ -470,8 +463,6 @@ public class FtCommandTests
         Assert.Equal("rawvectorbytes", args1[14]);
         Assert.Equal(15, args1.Length);
 
-        // Case 2: explicit $name VSIM reference, RRF combine, LOAD fields, WITHCURSOR -- mirrors
-        // Python's second doc example exactly (same scorer/yield_score_as/combine/load/cursor shape).
         var args2 = Request.FtHybridWithCursor(
             "idx",
             new Ft.HybridSearchArm { Query = "hello world", YieldScoreAs = "ss" },
@@ -495,8 +486,6 @@ public class FtCommandTests
             ],
             args2[..20]);
 
-        // Order-sensitive suffix after COMBINE: LOAD, PARAMS, WITHCURSOR (COMBINE's own WINDOW arg
-        // omitted above deliberately isn't part of this call -- recheck full array instead).
         Assert.Equal("FT.HYBRID", args2[0]);
         Assert.Contains("LOAD", args2);
         Assert.Contains("PARAMS", args2);
@@ -507,11 +496,6 @@ public class FtCommandTests
         Assert.True(loadIdx < paramsIdx);
         Assert.True(paramsIdx < cursorIdx);
 
-        // Case 3: LOCALONLY + a FILTER clause placed after the VSIM arm with no COMBINE and no
-        // LOAD in between -- the regression test for the VSIM-parser FILTER-claiming bug.
-        // PARAMS must still appear before the clause (LOCALONLY before
-        // PARAMS, the aggregate FILTER clause after PARAMS), and the FILTER clause args here are
-        // the literal AggregateFilter tokens, not folded into the VSIM arm's own filter.
         var args3 = Request.FtHybrid(
             "idx",
             new Ft.HybridSearchArm { Query = "hello" },
@@ -571,61 +555,8 @@ public class FtCommandTests
     }
 
     [Fact]
-    public void M3_ClientSideGuards()
+    public void FtHybrid_RawVectorStartingWithDollarByte_IsNotTreatedAsParamReference()
     {
-        // HybridSearchArm.Query must not be a vector query.
-        _ = Assert.Throws<ArgumentException>(() =>
-            new Ft.HybridSearchArm { Query = "*=>[KNN 10 @vec $p]" }.ToArgs());
-
-        // HybridSearchArm/SearchOptions/AggregateOptions.Scorer: only BM25STD is registered.
-        _ = Assert.Throws<ArgumentException>(() =>
-            new Ft.HybridSearchArm { Query = "*", Scorer = "TFIDF" }.ToArgs());
-        _ = Assert.Throws<ArgumentException>(() =>
-            Request.FtSearch("idx", "*", new Ft.SearchOptions { Scorer = "TFIDF" }));
-        _ = Assert.Throws<ArgumentException>(() =>
-            Request.FtAggregate("idx", "*", new Ft.AggregateOptions { Scorer = "TFIDF" }));
-
-        // Valid scorer passes through unchanged.
-        Assert.Equal(
-            ["SEARCH", "*", "SCORER", "BM25STD"],
-            new Ft.HybridSearchArm { Query = "*", Scorer = "BM25STD" }.ToArgs());
-
-        // HybridOptions.Dialect: FT.HYBRID is fixed at dialect 2.
-        _ = Assert.Throws<ArgumentException>(() => Request.FtHybrid(
-            "idx",
-            new Ft.HybridSearchArm { Query = "*" },
-            new Ft.HybridVsimArm { Field = "vec", Vector = "rawbytes", K = 10 },
-            new Ft.HybridOptions { Dialect = 3 }).Args);
-
-        // HybridOptions.LoadFields must not name either arm's YieldScoreAs alias.
-        _ = Assert.Throws<ArgumentException>(() => Request.FtHybrid(
-            "idx",
-            new Ft.HybridSearchArm { Query = "*", YieldScoreAs = "ss" },
-            new Ft.HybridVsimArm { Field = "vec", Vector = "rawbytes", K = 10 },
-            new Ft.HybridOptions { LoadFields = ["ss"] }).Args);
-
-        // AggregateReducer.RandomSample size must be 0..1000.
-        _ = Assert.Throws<ArgumentOutOfRangeException>(() => Ft.AggregateReducer.RandomSample("@f", -1));
-        _ = Assert.Throws<ArgumentOutOfRangeException>(() => Ft.AggregateReducer.RandomSample("@f", 1001));
-        Assert.NotNull(Ft.AggregateReducer.RandomSample("@f", 1000));
-        Assert.NotNull(Ft.AggregateReducer.RandomSample("@f", 0));
-
-        // CreateOptions.Language: only the server's 12 registered stemmer languages.
-        _ = Assert.Throws<ArgumentException>(() =>
-            Request.FtCreate("idx", [new Ft.CreateTextField("f")], new Ft.CreateOptions { Language = "klingon" }));
-        CmdAssert.Equal(
-            RequestType.FtCreate,
-            ["idx", "ON", "HASH", "LANGUAGE", "english", "SCHEMA", "f", "TEXT"],
-            Request.FtCreate("idx", [new Ft.CreateTextField("f")], new Ft.CreateOptions { Language = "english" }));
-    }
-
-    [Fact]
-    public void L3_RawVectorBytesStartingWithDollarSignAreNeverTreatedAsAParamReference()
-    {
-        // L3: a raw vector's packed binary representation can legitimately start with the byte
-        // 0x24 ('$') by coincidence -- IsParamReference must check the ValkeyValue's storage type
-        // (String vs Raw/byte[]), never the first byte, or such a vector would be misinterpreted
-        // as a "$name" parameter reference and sent completely wrong on the wire.
         byte[] vectorStartingWithDollarByte = [0x24, 0x00, 0x00, 0x00];
         var vsimArm = new Ft.HybridVsimArm { Field = "vec", Vector = vectorStartingWithDollarByte, K = 10 };
         Assert.False(vsimArm.IsParamReference);
@@ -635,8 +566,6 @@ public class FtCommandTests
             new Ft.HybridSearchArm { Query = "*" },
             vsimArm).Args;
 
-        // The generated-$name-PARAMS path was taken (raw bytes, not a reference): PARAMS carries
-        // the exact raw bytes value, byte-for-byte, not a literal "$..." string mistaken for one.
         GlideString paramsLiteral = "PARAMS";
         int paramsIdx = Array.IndexOf(args, paramsLiteral);
         Assert.True(paramsIdx >= 0);
@@ -645,14 +574,90 @@ public class FtCommandTests
     }
 
     [Fact]
-    public void L2_ReducerFunction_ReportsFactoryProducedValue()
+    public void AggregateReducer_Factories_ReportTheirOwnFunction()
     {
-        // L2: ToList/FirstValue/RandomSample must report their own ReducerFunction value, not
-        // the enum's default (Count) -- previously these set Function = default and emitted the
-        // wire literal via a separate, non-public RawFunction field, so a caller inspecting
-        // reducer.Function on a TOLIST reducer incorrectly saw Count.
         Assert.Equal(Ft.ReducerFunction.ToList, Ft.AggregateReducer.ToList("@f").Function);
         Assert.Equal(Ft.ReducerFunction.FirstValue, Ft.AggregateReducer.FirstValue("@f").Function);
         Assert.Equal(Ft.ReducerFunction.RandomSample, Ft.AggregateReducer.RandomSample("@f", 10).Function);
+    }
+
+    [Fact]
+    public void FtScorerAndLanguage_AreSentToTheServerWithoutClientAllowlist()
+    {
+        CmdAssert.Equal(
+            RequestType.FtSearch,
+            ["idx", "*", "WITHSCORES", "SCORER", "TFIDF"],
+            Request.FtSearch("idx", "*", new Ft.SearchOptions { WithScores = true, Scorer = "TFIDF" }));
+
+        CmdAssert.Equal(
+            RequestType.FtAggregate,
+            ["idx", "*", "ADDSCORES", "SCORER", "BM25STD"],
+            Request.FtAggregate("idx", "*", new Ft.AggregateOptions { AddScores = true, Scorer = "BM25STD" }));
+
+        Assert.Equal(
+            ["SEARCH", "*", "SCORER", "TFIDF"],
+            new Ft.HybridSearchArm { Query = "*", Scorer = "TFIDF" }.ToArgs());
+
+        CmdAssert.Equal(
+            RequestType.FtCreate,
+            ["idx", "ON", "HASH", "LANGUAGE", "klingon", "SCHEMA", "f", "TEXT"],
+            Request.FtCreate("idx", [new Ft.CreateTextField("f")], new Ft.CreateOptions { Language = "klingon" }));
+    }
+
+    [Fact]
+    public void FtAggregate_WithCursorOptions_ThrowsArgumentException() => _ = Assert.Throws<ArgumentException>(() =>
+        Request.FtAggregate("idx", "*", new Ft.AggregateOptions { WithCursorOptions = new Ft.WithCursor { Count = 10 } }));
+
+    [Fact]
+    public void FtAggregateWithCursor_WithoutCursorOptions_EmitsBareWithCursor() => CmdAssert.Equal(
+        RequestType.FtAggregate,
+        ["idx", "*", "WITHCURSOR"],
+        Request.FtAggregateWithCursor("idx", "*", new Ft.AggregateOptions()));
+
+    [Fact]
+    public void FtHybrid_WithCursorOptions_ThrowsArgumentException() => _ = Assert.Throws<ArgumentException>(() => Request.FtHybrid(
+        "idx",
+        new Ft.HybridSearchArm { Query = "*" },
+        new Ft.HybridVsimArm { Field = "vec", Vector = "$qv" },
+        new Ft.HybridOptions { WithCursorOptions = new Ft.WithCursor() }));
+
+    [Fact]
+    public void FtHybridWithCursor_WithoutCursorOptions_EmitsBareWithCursor() => CmdAssert.Equal(
+        RequestType.CustomCommand,
+        ["FT.HYBRID", "idx", "SEARCH", "*", "VSIM", "@vec", "$qv", "WITHCURSOR"],
+        Request.FtHybridWithCursor(
+            "idx",
+            new Ft.HybridSearchArm { Query = "*" },
+            new Ft.HybridVsimArm { Field = "vec", Vector = "$qv" },
+            new Ft.HybridOptions()));
+
+    [Fact]
+    public void FtAggregate_ArrayValuedReducer_RendersValidJsonWithEscapesAndNesting()
+    {
+        object[] rows =
+        [
+            new Dictionary<GlideString, object>
+            {
+                [(GlideString)"values"] = new object[]
+                {
+                    (GlideString)"say \"hi\"",
+                    (GlideString)"back\\slash",
+                    (GlideString)"tab\tnew\nline\u0001",
+                    new object[] { 1L, (GlideString)"nested" },
+                },
+            },
+        ];
+
+        var row = Request.FtAggregate("idx", "*").Converter(rows)[0];
+
+        using JsonDocument document = JsonDocument.Parse(row["values"].ToString());
+        JsonElement array = document.RootElement;
+        Assert.Equal(4, array.GetArrayLength());
+        Assert.Equal("say \"hi\"", array[0].GetString());
+        Assert.Equal("back\\slash", array[1].GetString());
+        Assert.Equal("tab\tnew\nline\u0001", array[2].GetString());
+        Assert.Equal(2, array[3].GetArrayLength());
+        Assert.Equal(1, array[3][0].GetInt64());
+        Assert.Equal("nested", array[3][1].GetString());
     }
 }

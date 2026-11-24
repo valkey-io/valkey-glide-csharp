@@ -67,36 +67,39 @@ public static partial class Ft
     /// An array of result row dictionaries, after both arms' results have been fused and any
     /// clauses in <paramref name="options"/> applied.
     /// </returns>
+    /// <exception cref="ArgumentException">Thrown if <see cref="HybridOptions.WithCursorOptions"/> is set; use <see cref="HybridWithCursorAsync"/> to page results.</exception>
     public static Task<IDictionary<ValkeyValue, ValkeyValue>[]> HybridAsync(BaseClient client, ValkeyKey index, HybridSearchArm searchArm, HybridVsimArm vsimArm, HybridOptions options)
         => client.Command(Request.FtHybrid(index, searchArm, vsimArm, options));
 
     /// <summary>
-    /// Runs <see cref="HybridAsync(BaseClient, ValkeyKey, HybridSearchArm, HybridVsimArm, HybridOptions)"/> with <see cref="HybridOptions.WithCursorOptions"/> set,
-    /// returning the first page of rows and the cursor id directly, rather than through the
-    /// plain-row shape <see cref="HybridAsync(BaseClient, ValkeyKey, HybridSearchArm, HybridVsimArm, HybridOptions)"/> returns.
+    /// Runs <see cref="HybridAsync(BaseClient, ValkeyKey, HybridSearchArm, HybridVsimArm, HybridOptions)"/> with a paged reply
+    /// (<c>WITHCURSOR</c>) always requested, returning the first page of rows and the cursor id directly,
+    /// rather than through the plain-row shape <see cref="HybridAsync(BaseClient, ValkeyKey, HybridSearchArm, HybridVsimArm, HybridOptions)"/> returns.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ft.hybrid/">Valkey commands – FT.HYBRID</seealso>
     /// <param name="client">The client to execute the command.</param>
     /// <param name="index">The name of the index to query.</param>
     /// <param name="searchArm">The text/tag/numeric query arm. See <see cref="HybridSearchArm"/>.</param>
     /// <param name="vsimArm">The vector similarity search arm. See <see cref="HybridVsimArm"/>.</param>
-    /// <param name="options">Options; <see cref="HybridOptions.WithCursorOptions"/> must be set.</param>
+    /// <param name="options">
+    /// Options for the hybrid query. <see cref="HybridOptions.WithCursorOptions"/> is optional;
+    /// when it is null the cursor opens with server defaults.
+    /// </param>
     /// <returns>A <see cref="CursorResult"/> with the first page of rows and the cursor id.</returns>
     /// <remarks>
     /// Routed to the PRIMARY of <paramref name="index"/>'s slot in cluster mode, regardless of the
     /// client's read-from configuration -- a cursor is a per-process, node-local resource.
     /// </remarks>
     public static Task<CursorResult> HybridWithCursorAsync(BaseClient client, ValkeyKey index, HybridSearchArm searchArm, HybridVsimArm vsimArm, HybridOptions options)
-        => client.Command(Request.FtHybridWithCursor(index, searchArm, vsimArm, options), PrimaryRoute(index));
+        => client.Command(Request.FtHybridWithCursor(index, searchArm, vsimArm, options));
 
     #endregion
     #region Nested Types
 
     /// <summary>
     /// The SEARCH arm of an FT.HYBRID query: an ordinary (non-vector) FT.SEARCH-style text/tag/
-    /// numeric query, run alongside the VSIM arm and fused with it. A vector query (e.g. a
-    /// <c>=>[KNN ...]</c> clause) is rejected here -- use <see cref="HybridVsimArm"/> for the
-    /// vector half instead.
+    /// numeric query, run alongside the VSIM arm and fused with it. A vector query (a
+    /// <c>=>[KNN ...]</c> clause) belongs in <see cref="HybridVsimArm"/> instead; the server rejects it here.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/ft.hybrid/">Valkey commands – FT.HYBRID</seealso>
     public sealed class HybridSearchArm
@@ -138,23 +141,11 @@ public static partial class Ft
         public static implicit operator HybridSearchArm(ValkeyValue query)
             => new() { Query = query };
 
-        /// <summary>
-        /// Converts to command arguments for the SEARCH clause.
-        /// </summary>
-        /// <exception cref="ArgumentException">Thrown if <see cref="Query"/> contains a vector query clause (<c>=&gt;[KNN</c>), which the server rejects on the SEARCH arm.</exception>
         internal GlideString[] ToArgs()
         {
-            if (Query.Type == ValkeyValue.StorageType.String && Query.ToString().Contains("=>[KNN", StringComparison.OrdinalIgnoreCase))
-            {
-                throw new ArgumentException(
-                    $"{nameof(Query)} must not be a vector query (a '=>[KNN ...]' clause) -- the server rejects a vector " +
-                        $"query on the SEARCH arm. Use {nameof(HybridVsimArm)} for the vector half instead.");
-            }
-
             List<GlideString> args = [ValkeyLiterals.SEARCH, Query];
             if (!Scorer.IsNull)
             {
-                EnsureSupportedScorer(Scorer);
                 args.Add(ValkeyLiterals.SCORER);
                 args.Add((GlideString)Scorer);
             }
@@ -195,10 +186,6 @@ public static partial class Ft
         /// </summary>
         public long? BatchSize { get; init; }
 
-        /// <summary>
-        /// Converts to command arguments for the VSIM FILTER clause.
-        /// </summary>
-        /// <exception cref="ArgumentException">Thrown if <see cref="BatchSize"/> is set without <see cref="Policy"/> being <see cref="HybridFilterPolicy.Batches"/>.</exception>
         internal GlideString[] ToArgs()
         {
             if (BatchSize.HasValue && Policy != HybridFilterPolicy.Batches)
@@ -221,7 +208,6 @@ public static partial class Ft
 
             if (subArgs.Count == 0)
             {
-                // Uncounted extension: a bare expression, no POLICY/BATCH_SIZE possible in this form.
                 return [ValkeyLiterals.FILTER, Expression];
             }
 
@@ -282,21 +268,8 @@ public static partial class Ft
         /// </summary>
         public HybridVsimFilter? Filter { get; init; }
 
-        /// <summary>
-        /// <see langword="true"/> if <see cref="Vector"/> is a <c>$name</c> parameter reference
-        /// rather than raw vector bytes.
-        /// </summary>
         internal bool IsParamReference => Vector.Type == ValkeyValue.StorageType.String && Vector.ToString().StartsWith('$');
 
-        /// <summary>
-        /// Converts to command arguments for the VSIM clause.
-        /// </summary>
-        /// <param name="paramRef">
-        /// The <c>$</c>-prefixed parameter name to reference on the wire. Supplied by
-        /// <see cref="Request.FtHybrid"/>/<see cref="Request.FtHybridWithCursor"/> when
-        /// <see cref="Vector"/> was given as raw bytes rather than an explicit <c>$name</c> string.
-        /// </param>
-        /// <exception cref="ArgumentException">Thrown if <see cref="EfRuntime"/> is set while <see cref="Filter"/>'s policy is <see cref="HybridFilterPolicy.Adhoc"/>.</exception>
         internal GlideString[] ToArgs(GlideString paramRef)
         {
             if (EfRuntime.HasValue && Filter is { Policy: HybridFilterPolicy.Adhoc })
@@ -358,9 +331,6 @@ public static partial class Ft
     /// <seealso href="https://valkey.io/commands/ft.hybrid/">Valkey commands – FT.HYBRID</seealso>
     public abstract class HybridCombine
     {
-        /// <summary>
-        /// Converts to command arguments for the COMBINE clause.
-        /// </summary>
         internal abstract GlideString[] ToArgs();
     }
 
@@ -387,8 +357,6 @@ public static partial class Ft
         /// </summary>
         public ValkeyValue YieldScoreAs { get; init; }
 
-        /// <inheritdoc cref="HybridCombine.ToArgs"/>
-        /// <exception cref="ArgumentException">Thrown if <see cref="Constant"/> is negative.</exception>
         internal override GlideString[] ToArgs()
         {
             if (Constant is < 0)
@@ -449,8 +417,6 @@ public static partial class Ft
         /// </summary>
         public ValkeyValue YieldScoreAs { get; init; }
 
-        /// <inheritdoc cref="HybridCombine.ToArgs"/>
-        /// <exception cref="ArgumentException">Thrown if exactly one of <see cref="Alpha"/>/<see cref="Beta"/> is set without the other.</exception>
         internal override GlideString[] ToArgs()
         {
             if (Alpha.HasValue != Beta.HasValue)
@@ -516,7 +482,6 @@ public static partial class Ft
         /// </summary>
         public ValkeyValue YieldScoreAs { get; init; }
 
-        /// <inheritdoc cref="HybridCombine.ToArgs"/>
         internal override GlideString[] ToArgs()
         {
             List<GlideString> subArgs = [ValkeyLiterals.EXPR, (GlideString)Expr];
@@ -578,7 +543,9 @@ public static partial class Ft
         public IEnumerable<IAggregateClause> Clauses { get; init; } = [];
 
         /// <summary>
-        /// Requests a paged reply. See <see cref="WithCursor"/>.
+        /// Requests a paged reply. See <see cref="WithCursor"/>. Only <see cref="HybridWithCursorAsync"/> accepts
+        /// this option; <see cref="HybridAsync(BaseClient, ValkeyKey, HybridSearchArm, HybridVsimArm, HybridOptions)"/>
+        /// throws <see cref="ArgumentException"/> when it is set.
         /// </summary>
         public WithCursor? WithCursorOptions { get; init; }
 

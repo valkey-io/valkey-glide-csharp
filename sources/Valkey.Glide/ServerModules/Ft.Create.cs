@@ -189,11 +189,6 @@ public static partial class Ft
         _ => throw new ArgumentOutOfRangeException(nameof(dataType)),
     };
 
-    /// <summary>
-    /// Converts to a command argument.
-    /// </summary>
-    /// <param name="type">The vector type to convert.</param>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="type"/> is not a supported <see cref="VectorType"/> value.</exception>
     internal static GlideString ToArg(this VectorType type) => type switch
     {
         VectorType.Float32 => ValkeyLiterals.FLOAT32,
@@ -321,7 +316,8 @@ public static partial class Ft
 
         /// <summary>
         /// Whether the field value can be used for sorting (<c>SORTABLE</c>).
-        /// Applies to TEXT, TAG and NUMERIC fields.
+        /// Applies to TEXT, TAG and NUMERIC fields. For vector fields, <c>SORTABLE</c> is emitted and the
+        /// server accepts it as a no-op.
         /// </summary>
         public bool Sortable { get; init; }
 
@@ -329,7 +325,8 @@ public static partial class Ft
         /// Whether to keep the sorted value in its original (un-normalized) form, e.g. preserving case
         /// that would otherwise be lowercased for sorting (<c>UNF</c>) (valkey-search 1.3.0).
         /// Applies to TEXT, TAG and NUMERIC fields. Requires <see cref="Sortable"/> to be set;
-        /// otherwise <c>UNF</c> is omitted.
+        /// setting it without <see cref="Sortable"/> throws <see cref="ArgumentException"/>.
+        /// For vector fields, <c>UNF</c> is not emitted, so this property has no effect.
         /// </summary>
         public bool Unf { get; init; }
     }
@@ -421,6 +418,10 @@ public static partial class Ft
     /// <summary>
     /// Abstract base class for a new vector search index field (<c>VECTOR</c>).
     /// </summary>
+    /// <remarks>
+    /// <see cref="CreateField.Sortable"/> emits <c>SORTABLE</c> for vector fields, which the server accepts as a no-op.
+    /// <see cref="CreateField.Unf"/> is not emitted for vector fields, so setting it has no effect and does not throw.
+    /// </remarks>
     /// <seealso href="https://valkey.io/commands/ft.create/">Valkey commands – FT.CREATE</seealso>
     public abstract class CreateVectorField : CreateField
     {

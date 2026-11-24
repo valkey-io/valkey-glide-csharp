@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Starts standalone + cluster Valkey servers with modules (Search, JSON, Bloom, LDAP) via Docker,
-# on dedicated ports, and verifies MODULE LIST on every node. Adapted from valkey-glide's
-# utils/start-valkey-docker-modules.sh (the main repo's shared CI/local-reproduction script) for
-# this repo's module-test harness.
+# on dedicated ports, and verifies MODULE LIST on every node.
+# Cluster nodes start without --use-coordinator, so the module tests do not run with the
+# coordinator enabled.
 #
 # Every container runs with --network host, which Docker Desktop on macOS requires enabling
 # separately (Settings > Resources > Network > "Enable host networking") -- without it,
@@ -71,13 +71,6 @@ macos_host_network_hint() {
     fi
 }
 
-# Container-internal path for the search module .so: the image's own path, always --
-# SEARCH_MODULE_PATH (when set) bind-mounts a replacement file AT that same path rather than a
-# second path, since the bundle image's entrypoint auto-discovers and loads every .so under
-# /usr/lib/valkey/ not already named in the conf. Naming the override at a different path
-# (confirmed empirically) leaves the original /usr/lib/valkey/libsearch.so in place for
-# auto-discovery to find too, and the second load of the same module name aborts the server
-# ("Module name is busy").
 SEARCH_MODULE_CONTAINER_PATH="/usr/lib/valkey/libsearch.so"
 SEARCH_MODULE_MOUNT_ARGS=()
 if [ -n "$SEARCH_MODULE_PATH" ]; then
@@ -191,11 +184,6 @@ export_var MODULES_CLUSTER_ENDPOINTS "$ENDPOINTS"
 echo "Cluster with modules ready on ports ${PORT_START}-${PORT_END}"
 
 echo "=== Module server verification ==="
-# M6: previously checked only for 'search', unlike the submodule's shared script, which checks
-# the full set the bundle image ships (search, json, bf, ldap) -- a real functional drift from
-# the shared file, not just documentation wording. A conf-generation regression that silently
-# dropped json/bf/ldap (the exact failure mode the shared script's own comment warns about) would
-# have passed unnoticed here.
 check_modules() {
     local label="$1"
     local port="$2"
