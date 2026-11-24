@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Local-only guard, run by utils/run-modules-ci-locally.sh; no CI job consumes it.
 # Usage: utils/check-modules-harness-sync.sh
 # Exit 0: no drift in the tracked shared sections, or an expected/documented difference.
 # Exit 1: something in a shared section differs and needs a human to look at both files.

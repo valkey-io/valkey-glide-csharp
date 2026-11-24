@@ -782,7 +782,7 @@ internal static partial class Request
             throw new RequestException($"Unexpected WITHCURSOR response: expected a 2-element [rows, cursorId] array, got {arr.Length} elements");
         }
 
-        long cursorId = Convert.ToInt64(arr[1]);
+        long cursorId = Convert.ToInt64(arr[1], System.Globalization.CultureInfo.InvariantCulture);
         if (arr[0] is not object[] rows)
         {
             throw new RequestException($"Unexpected WITHCURSOR rows type: {arr[0]?.GetType()}, expected object[]");

@@ -3,13 +3,15 @@
 # deployments with valkey-search modules loaded.
 #
 # Usage:
-#   utils/run-modules-ci-locally.sh                                 # rc2 module, emulate-release 1.3.0
-#   EMULATE_RELEASE="" utils/run-modules-ci-locally.sh              # rc2 module, its own default level
+#   SEARCH_MODULE_PATH=/path/to/libsearch.so utils/run-modules-ci-locally.sh
+#                                                                   # that module, emulate-release 1.3.0
+#   SEARCH_MODULE_PATH=/path/to/libsearch.so EMULATE_RELEASE="" utils/run-modules-ci-locally.sh
+#                                                                   # that module, its own default level
 #   IMAGE=valkey/valkey-bundle:9.1.3 SEARCH_MODULE_PATH="" EMULATE_RELEASE="" \
 #     utils/run-modules-ci-locally.sh                               # bundled 1.2.1 module, 1.3 tests skip
 #
-# SEARCH_MODULE_PATH selects the search module .so bind-mounted into the containers.
-# An empty value uses the image's own module.
+# SEARCH_MODULE_PATH is required. It selects the search module .so bind-mounted into the
+# containers. An empty value uses the image's own module.
 # Requires docker, valkey-cli, and dotnet. Hold /tmp/glide-modules-ci.lock around any run,
 # because the container names are fixed.
 
@@ -23,19 +25,11 @@ IMAGE="${IMAGE:-valkey/valkey-bundle:9.2.0-rc2}"
 ENGINE_VERSION="${ENGINE_VERSION:-9.0}"
 CLUSTER_PORT_START="${CLUSTER_PORT_START:-8201}"
 STANDALONE_PORT="${STANDALONE_PORT:-6499}"
-DEFAULT_RC2_SO="$(cd "${REPO_ROOT}/.." && pwd)/tools/module-src/valkey-search/.build-release/libsearch.so"
-SEARCH_MODULE_PATH="${SEARCH_MODULE_PATH-${DEFAULT_RC2_SO}}"
+SEARCH_MODULE_PATH="${SEARCH_MODULE_PATH?set SEARCH_MODULE_PATH to a libsearch.so path, or to an empty string to use the image module}"
 EMULATE_RELEASE="${EMULATE_RELEASE-1.3.0}"
 
 if [ -n "$SEARCH_MODULE_PATH" ] && [ ! -f "$SEARCH_MODULE_PATH" ]; then
     echo "ERROR: SEARCH_MODULE_PATH (${SEARCH_MODULE_PATH}) does not exist." >&2
-    if [ "$SEARCH_MODULE_PATH" = "$DEFAULT_RC2_SO" ]; then
-        echo "This is the default path, which expects a valkey-search 1.3 .so built from source at" >&2
-        echo "../tools/module-src/valkey-search/.build-release/libsearch.so relative to this repo --" >&2
-        echo "a sibling checkout's build output this repo does not itself produce. Either build" >&2
-        echo "valkey-search there, or set SEARCH_MODULE_PATH to an existing .so (or to an empty" >&2
-        echo "string, to fall back to the chosen IMAGE's own bundled search module)." >&2
-    fi
     exit 1
 fi
 
@@ -79,11 +73,11 @@ for port in "$STANDALONE_PORT" $(seq "$CLUSTER_PORT_START" "$((CLUSTER_PORT_STAR
     valkey-cli -p "$port" CONFIG GET search.emulate-release
 done
 
-echo "=== Running module tests (dotnet test) ==="
+echo "=== Running module tests (task test:modules) ==="
 cd "$REPO_ROOT"
 MODULES_STANDALONE_ENDPOINT="$MODULES_STANDALONE_ENDPOINT" \
     MODULES_CLUSTER_ENDPOINTS="${MODULES_CLUSTER_ENDPOINTS:-}" \
-    dotnet test tests/Valkey.Glide.ModuleTests/Valkey.Glide.ModuleTests.csproj -c Debug
+    task test:modules configuration=Debug
 
 echo "=== Running the main suite's ServerModules FT integration tests against the module servers ==="
 env "standalone-endpoints=$MODULES_STANDALONE_ENDPOINT" \

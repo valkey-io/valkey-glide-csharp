@@ -339,5 +339,6 @@ jobs:
                   MODULES_STANDALONE_ENDPOINT: ${{ env.MODULES_STANDALONE_ENDPOINT }}
                   MODULES_CLUSTER_ENDPOINTS: ${{ env.MODULES_CLUSTER_ENDPOINTS }}
               run: >-
-                  dotnet test tests/Valkey.Glide.ModuleTests/Valkey.Glide.ModuleTests.csproj
-                  -c Debug --verbosity detailed
+                  task test:modules
+                  configuration=Debug
+                  verbosity=detailed
