@@ -117,6 +117,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ClusterValue<T>.HasSingleData` returns expected result for value-type `T` (#547)
 - Culture-invariant parsing of numeric string responses (#557)
 - `ISubscriber` corrupting binary (non-UTF-8) channel names and messages (#594)
+- Script invocation corrupting binary (non-UTF-8) keys and arguments (#653)
 - `GETSET` custom command compresses its value when compression is enabled (#579)
 - `ConnectionMultiplexer.GetServers()` throwing `FormatException` when cluster nodes are addressed by DNS hostname (#419)
 - Race condition that could throw `ArgumentOutOfRangeException` on the thread pool when a response arrived after the client was disposed (#466)

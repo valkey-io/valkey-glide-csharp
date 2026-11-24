@@ -1,15 +1,22 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using static Valkey.Glide.TestUtils.Data;
+
 namespace Valkey.Glide.IntegrationTests;
 
 [Collection(typeof(ScriptingCommandTests))]
 [CollectionDefinition(DisableParallelization = true)]
 public class ScriptingCommandTests(TestConfiguration config)
 {
+    #region Properties
+
     public TestConfiguration Config { get; } = config;
 
     // Store xUnit test cancellation token for convenience.
     private static CancellationToken CancellationToken => TestContext.Current.CancellationToken;
+
+    #endregion
+    #region Script Tests
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
@@ -293,17 +300,14 @@ public class ScriptingCommandTests(TestConfiguration config)
     {
         // Set up test data
         string key = Guid.NewGuid().ToString();
-        string value = "test value";
+        ValkeyValue value = BuildValue();
         await client.SetAsync(key, value);
 
         // Script that reads the data
         using var script = new Script("return redis.call('GET', KEYS[1])");
         var options = new ScriptOptions().WithKeys(key);
 
-        ValkeyResult result = await client.ScriptInvokeAsync(script, options, CancellationToken);
-
-        Assert.NotNull(result);
-        Assert.Equal(value, result.ToString());
+        Assert.Equal(value, (ValkeyValue)await client.ScriptInvokeAsync(script, options, CancellationToken));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -329,7 +333,8 @@ public class ScriptingCommandTests(TestConfiguration config)
         Assert.Equal(value, retrievedValue.ToString());
     }
 
-    // ===== Function Execution Tests =====
+    #endregion
+    #region Function Tests
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
@@ -938,7 +943,8 @@ redis.register_function('{funcName}', function(keys, args) return nil end)";
         Assert.True(result.IsNull);
     }
 
-    // ===== Standalone-Specific Function Tests =====
+    #endregion
+    #region Standalone Function Tests
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
@@ -1222,7 +1228,8 @@ redis.register_function('conflictfunc', function(keys, args) return 'result' end
             await client.FunctionRestoreAsync(backup, FunctionRestorePolicy.Append, CancellationToken));
     }
 
-    // ===== Cluster-Specific Function Tests =====
+    #endregion
+    #region Cluster Function Tests
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClusterClients), MemberType = typeof(TestConfiguration))]
@@ -1628,7 +1635,8 @@ redis.register_function('{funcName}', function(keys, args) return 'multi-node re
         }
     }
 
-    // StackExchange.Redis Compatibility Tests
+    #endregion
+    #region ScriptEvaluateAsync Tests
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
@@ -1648,34 +1656,29 @@ redis.register_function('{funcName}', function(keys, args) return 'multi-node re
     {
         // Test IDatabase.ScriptEvaluateAsync with keys and values
         string script = "return KEYS[1] .. ':' .. ARGV[1]";
-        ValkeyKey[] keys = [new ValkeyKey("testkey")];
-        ValkeyValue[] values = [new ValkeyValue("testvalue")];
+        ValkeyKey key = BuildKey();
+        ValkeyValue value = BuildValue();
 
-        ValkeyResult result = await client.ScriptEvaluateAsync(script, keys, values);
+        ValkeyResult result = await client.ScriptEvaluateAsync(script, [key], [value]);
 
-        Assert.NotNull(result);
-        Assert.Equal("testkey:testvalue", result.ToString());
+        ValkeyValue expected = (byte[])[.. (byte[])key!, (byte)':', .. (byte[])value!];
+        Assert.Equal(expected, (ValkeyValue)result);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
     public async Task ScriptEvaluateAsync_WithByteArrayHash_ReturnsExpectedResult(BaseClient client)
     {
-        // First, load a script to get its hash
-        string script = "return 'Hash test'";
-        using var scriptObj = new Script(script);
+        // Test IDatabase.ScriptEvaluateAsync with byte[] hash, keys and values
+        using var script = new Script("return KEYS[1] .. ':' .. ARGV[1]");
+        byte[] hash = Convert.FromHexString(script.Hash);
+        ValkeyKey key = BuildKey();
+        ValkeyValue value = BuildValue();
 
-        // Execute once to cache it
-        _ = await client.ScriptInvokeAsync(scriptObj, CancellationToken);
+        ValkeyResult result = await client.ScriptEvaluateAsync(hash, [key], [value]);
 
-        // Convert hash string to byte array
-        byte[] hash = Convert.FromHexString(scriptObj.Hash);
-
-        // Test IDatabase.ScriptEvaluateAsync with byte[] hash
-        ValkeyResult result = await client.ScriptEvaluateAsync(hash);
-
-        Assert.NotNull(result);
-        Assert.Equal("Hash test", result.ToString());
+        ValkeyValue expected = (byte[])[.. (byte[])key!, (byte)':', .. (byte[])value!];
+        Assert.Equal(expected, (ValkeyValue)result);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1684,7 +1687,7 @@ redis.register_function('{funcName}', function(keys, args) return 'multi-node re
     {
         // Test IDatabase.ScriptEvaluateAsync with LuaScript
         LuaScript script = LuaScript.Prepare("return redis.call('SET', @key, @value)");
-        var parameters = new { key = new ValkeyKey("luakey"), value = new ValkeyValue("luavalue") };
+        var parameters = new { key = BuildKey(), value = BuildValue() };
 
         ValkeyResult result = await client.ScriptEvaluateAsync(script, parameters);
 
@@ -1692,8 +1695,8 @@ redis.register_function('{funcName}', function(keys, args) return 'multi-node re
         Assert.Equal("OK", result.ToString());
 
         // Verify the key was set
-        ValkeyValue getValue = await client.GetAsync("luakey");
-        Assert.Equal("luavalue", getValue.ToString());
+        ValkeyValue getValue = await client.GetAsync(parameters.key);
+        Assert.Equal(parameters.value, getValue);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1711,14 +1714,16 @@ redis.register_function('{funcName}', function(keys, args) return 'multi-node re
             LoadedLuaScript loaded = await script.LoadAsync(server);
 
             // Set a test value first
-            await client.SetAsync("loadedkey", "loadedvalue");
+            ValkeyKey key = BuildKey();
+            ValkeyValue value = BuildValue();
+            await client.SetAsync(key, value);
 
             // Execute the loaded script
-            var parameters = new { key = new ValkeyKey("loadedkey") };
+            var parameters = new { key };
             ValkeyResult result = await client.ScriptEvaluateAsync(loaded, parameters);
 
             Assert.NotNull(result);
-            Assert.Equal("loadedvalue", result.ToString());
+            Assert.Equal(value, (ValkeyValue)result);
         }
         finally
         {
@@ -1885,8 +1890,8 @@ redis.register_function('{funcName}', function(keys, args) return 'multi-node re
         LuaScript script = LuaScript.Prepare("return redis.call('SET', @key, @value)");
         var parameters = new
         {
-            key = new ValkeyKey("paramkey"),
-            value = new ValkeyValue("paramvalue")
+            key = BuildKey(),
+            value = BuildValue()
         };
 
         ValkeyResult result = await client.ScriptEvaluateAsync(script, parameters);
@@ -1895,8 +1900,8 @@ redis.register_function('{funcName}', function(keys, args) return 'multi-node re
         Assert.Equal("OK", result.ToString());
 
         // Verify the key was set
-        ValkeyValue getValue = await client.GetAsync("paramkey");
-        Assert.Equal("paramvalue", getValue.ToString());
+        ValkeyValue getValue = await client.GetAsync(parameters.key);
+        Assert.Equal(parameters.value, getValue);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1909,16 +1914,18 @@ redis.register_function('{funcName}', function(keys, args) return 'multi-node re
         LuaScript script = LuaScript.Prepare("return redis.call('SET', KEYS[1], ARGV[1])");
 
         // Execute script with prefixed key
-        ValkeyKey[] keys = [new ValkeyKey("prefix:prefixkey")];
-        ValkeyValue[] values = [new ValkeyValue("prefixvalue")];
+        ValkeyKey key = BuildKey("prefix:");
+        ValkeyValue value = BuildValue();
 
-        ValkeyResult result = await client.ScriptEvaluateAsync(script.ExecutableScript, keys, values);
+        ValkeyResult result = await client.ScriptEvaluateAsync(script.ExecutableScript, [key], [value]);
 
         Assert.NotNull(result);
         Assert.Equal("OK", result.ToString());
 
         // Verify the key was set with prefix
-        ValkeyValue getValue = await client.GetAsync("prefix:prefixkey");
-        Assert.Equal("prefixvalue", getValue.ToString());
+        ValkeyValue getValue = await client.GetAsync(key);
+        Assert.Equal(value, getValue);
     }
+
+    #endregion
 }
