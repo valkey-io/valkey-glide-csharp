@@ -9,7 +9,7 @@ namespace Valkey.Glide.ModuleTests;
 
 /// <summary>
 /// Assembly fixture for the valkey-search 1.3 module-test harness. Connects to the Docker-based
-/// standalone + cluster deployments <c>utils/run-modules-ci-locally.sh</c> starts with real
+/// standalone + cluster deployments <c>utils/start-valkey-docker-modules.sh</c> starts with real
 /// valkey-search modules loaded, via <c>MODULES_STANDALONE_ENDPOINT</c>/<c>MODULES_CLUSTER_ENDPOINTS</c>
 /// -- never the main suite's own <c>ServerManager</c>-started servers, which don't load any module.
 /// </summary>
@@ -37,7 +37,7 @@ public sealed class ModuleTestConfiguration : IDisposable
         {
             throw new InvalidOperationException(
                 $"{StandaloneEndpointEnvVar} is not set. The module-test harness never starts its own " +
-                    "server -- run via utils/run-modules-ci-locally.sh, which starts Docker containers with " +
+                    "server -- start the servers with utils/start-valkey-docker-modules.sh, which starts Docker containers with " +
                     "real valkey-search modules loaded and exports this variable. Running this test " +
                     "project directly without that harness would otherwise silently fail to prove anything " +
                     "about search 1.3 support.");

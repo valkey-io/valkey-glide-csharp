@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `FLOAT16`/`BFLOAT16` vectors, `FILTER`, `SCORE_FIELD`, `NOHL`, `UNF`, and `LOAD ... AS` aliases.
   See the [Valkey Search documentation](https://valkey.io/docs/topics/search/) for command details.
 - Module test harness for valkey-search 1.3 (`tests/Valkey.Glide.ModuleTests`,
-  `utils/run-modules-ci-locally.sh`).
+  `utils/start-valkey-docker-modules.sh`).
 
 ### Fixed
 

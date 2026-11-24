@@ -7,7 +7,7 @@ namespace Valkey.Glide.ModuleTests;
 
 /// <summary>
 /// Exercises valkey-search FT.* commands through the typed client API against the search module
-/// loaded by <c>utils/run-modules-ci-locally.sh</c>.
+/// loaded by <c>utils/start-valkey-docker-modules.sh</c>.
 /// </summary>
 /// <remarks>
 /// Most tests run against the standalone client. The cluster tests and the cluster branch of the
