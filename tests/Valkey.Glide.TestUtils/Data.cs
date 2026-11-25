@@ -77,14 +77,21 @@ public static class Data
     #region Data Builders
 
     /// <summary>
-    /// Builds and returns a unique key for testing with the given prefix.
+    /// Returns a unique key for testing.
     /// The key includes bytes that are not valid UTF-8 to verify binary safety.
     /// </summary>
-    public static ValkeyKey BuildKey(string prefix = "")
+    public static ValkeyKey BuildKey()
+        => (byte[])[.. Encoding.UTF8.GetBytes($"{Guid.NewGuid()}:"), .. InvalidUtf8];
+
+    /// <summary>
+    /// Returns a unique key for testing with the given prefix.
+    /// The key includes bytes that are not valid UTF-8 to verify binary safety.
+    /// </summary>
+    public static ValkeyKey BuildKey(string prefix)
         => (byte[])[.. Encoding.UTF8.GetBytes($"{prefix}{Guid.NewGuid()}:"), .. InvalidUtf8];
 
     /// <summary>
-    /// Builds and returns a unique value for testing.
+    /// Returns a unique value for testing.
     /// The value includes bytes that are not valid UTF-8 to verify binary safety.
     /// </summary>
     public static ValkeyValue BuildValue()
