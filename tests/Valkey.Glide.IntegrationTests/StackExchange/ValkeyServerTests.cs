@@ -124,6 +124,102 @@ public class ValkeyServerTests(ValkeyServerFixture fixture) : IClassFixture<Valk
         Assert.Equal(0, await server.DatabaseSizeAsync());
     }
 
+    [Fact]
+    public async Task ScriptExistsAsync_WithString_ReturnsCorrectStatus()
+    {
+        var server = fixture.Server;
+        var db = fixture.Database;
+        string script = "return 'exists test'";
+
+        // Script should not exist initially
+        await server.ScriptFlushAsync();
+        bool existsBefore = await server.ScriptExistsAsync(script);
+        Assert.False(existsBefore);
+
+        // Load the script
+        _ = await db.ScriptEvaluateAsync(script);
+
+        // Script should exist now
+        bool existsAfter = await server.ScriptExistsAsync(script);
+        Assert.True(existsAfter);
+    }
+
+    [Fact]
+    public async Task ScriptExistsAsync_WithByteArray_ReturnsCorrectStatus()
+    {
+        var server = fixture.Server;
+        var db = fixture.Database;
+        string script = "return 'hash exists test'";
+        using var scriptObj = new Script(script);
+        byte[] hash = Convert.FromHexString(scriptObj.Hash);
+
+        // Script should not exist initially
+        await server.ScriptFlushAsync();
+        bool existsBefore = await server.ScriptExistsAsync(hash);
+        Assert.False(existsBefore);
+
+        // Load the script
+        _ = await db.ScriptEvaluateAsync(script);
+
+        // Script should exist now
+        bool existsAfter = await server.ScriptExistsAsync(hash);
+        Assert.True(existsAfter);
+    }
+
+    [Fact]
+    public async Task ScriptLoadAsync_WithString_ReturnsHash()
+    {
+        var server = fixture.Server;
+        var db = fixture.Database;
+
+        byte[] hash = await server.ScriptLoadAsync("return 'load test'");
+
+        Assert.NotNull(hash);
+        Assert.NotEmpty(hash);
+
+        // Verify the script can be executed with EVALSHA
+        ValkeyResult result = await db.ScriptEvaluateAsync(hash);
+        Assert.Equal("load test", result.ToString());
+    }
+
+    [Fact]
+    public async Task ScriptLoadAsync_WithLuaScript_ReturnsLoadedLuaScript()
+    {
+        var server = fixture.Server;
+        var db = fixture.Database;
+
+        LoadedLuaScript loaded = await server.ScriptLoadAsync(LuaScript.Prepare("return redis.call('PING')"));
+
+        Assert.NotNull(loaded);
+        Assert.NotNull(loaded.Hash);
+        Assert.NotEmpty(loaded.Hash);
+
+        // Verify the script can be executed
+        ValkeyResult result = await db.ScriptEvaluateAsync(loaded);
+        Assert.Equal("PONG", result.ToString());
+    }
+
+    [Fact]
+    public async Task ScriptFlushAsync_RemovesAllScripts()
+    {
+        var server = fixture.Server;
+        var db = fixture.Database;
+
+        // Load a script
+        string script = "return 'flush test'";
+        _ = await db.ScriptEvaluateAsync(script);
+
+        // Verify it exists
+        bool existsBefore = await server.ScriptExistsAsync(script);
+        Assert.True(existsBefore);
+
+        await server.ScriptFlushAsync();
+
+        // Verify it no longer exists
+        bool existsAfter = await server.ScriptExistsAsync(script);
+        Assert.False(existsAfter);
+    }
+
     #endregion
 }
 
