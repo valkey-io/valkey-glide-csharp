@@ -1,6 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using Valkey.Glide.ServerModules;
+using Valkey.Glide.TestUtils;
 
 using static Valkey.Glide.Errors;
 
@@ -57,7 +58,7 @@ public class FtInfoTests(TestConfiguration config)
             new("vec", (ValkeyValue)new byte[8])]);
 
         // Wait for indexing to complete
-        await FtUtils.WaitForIndexingAsync(client, index);
+        await SearchIndexing.WaitForIndexingAsync(client, index);
 
         var info = await Ft.InfoLocalAsync(client, index);
 
