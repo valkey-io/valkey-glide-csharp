@@ -36,6 +36,7 @@ public class ScriptingCommandTests(TestConfiguration config)
     {
         // Test script with keys and arguments
         using var script = new Script("return KEYS[1] .. ':' .. ARGV[1]");
+        // TODO #673: Use BuildKey and BuildValue once ScriptOptions accepts ValkeyKey and ValkeyValue.
         var options = new ScriptOptions()
             .WithKeys("mykey")
             .WithArgs("myvalue");
@@ -229,6 +230,7 @@ public class ScriptingCommandTests(TestConfiguration config)
         // Test script with multiple keys
         // Use hash tags to ensure keys hash to same slot in cluster mode
         using var script = new Script("return #KEYS");
+        // TODO #673: Use BuildKey and BuildValue once ScriptOptions accepts ValkeyKey and ValkeyValue.
         var options = new ScriptOptions()
             .WithKeys("{key}1", "{key}2", "{key}3");
 
@@ -244,6 +246,7 @@ public class ScriptingCommandTests(TestConfiguration config)
     {
         // Test script with multiple arguments
         using var script = new Script("return #ARGV");
+        // TODO #673: Use BuildKey and BuildValue once ScriptOptions accepts ValkeyKey and ValkeyValue.
         var options = new ScriptOptions()
             .WithArgs("arg1", "arg2", "arg3", "arg4");
 
@@ -299,6 +302,7 @@ public class ScriptingCommandTests(TestConfiguration config)
     public async Task ScriptInvokeAsync_AccessesRedisData_WorksCorrectly(BaseClient client)
     {
         // Set up test data
+        // TODO #673: Use BuildKey and BuildValue once ScriptOptions accepts ValkeyKey and ValkeyValue.
         string key = Guid.NewGuid().ToString();
         ValkeyValue value = BuildValue();
         await client.SetAsync(key, value);
@@ -315,6 +319,7 @@ public class ScriptingCommandTests(TestConfiguration config)
     public async Task ScriptInvokeAsync_ModifiesRedisData_WorksCorrectly(BaseClient client)
     {
         // Script that sets a value
+        // TODO #673: Use BuildKey and BuildValue once ScriptOptions accepts ValkeyKey and ValkeyValue.
         string key = Guid.NewGuid().ToString();
         string value = "script value";
 
@@ -527,6 +532,7 @@ end)";
         _ = await client.FunctionLoadAsync(libraryCode, false, CancellationToken);
 
         // Execute with keys and args
+        // TODO #673: Use BuildKey and BuildValue once FCallAsync accepts ValkeyKey and ValkeyValue.
         ValkeyResult result = await client.FCallAsync(funcName, ["mykey"], ["myvalue"], CancellationToken);
 
         Assert.NotNull(result);
@@ -603,6 +609,7 @@ redis.register_function{{
         _ = await client.FunctionLoadAsync(libraryCode, false, CancellationToken);
 
         // Execute with keys and args
+        // TODO #673: Use BuildKey and BuildValue once FCallReadOnlyAsync accepts ValkeyKey and ValkeyValue.
         ValkeyResult result = await client.FCallReadOnlyAsync(funcName, ["key1"], ["value1"], CancellationToken);
 
         Assert.NotNull(result);
@@ -762,6 +769,7 @@ end)";
         await client.FunctionFlushAsync(CancellationToken);
 
         // Set up test data
+        // TODO #673: Use BuildKey and BuildValue once FCallAsync accepts ValkeyKey and ValkeyValue.
         string key = Guid.NewGuid().ToString();
         string value = "function test value";
         await client.SetAsync(key, value);
@@ -805,6 +813,7 @@ end)";
         _ = await client.FunctionLoadAsync(libraryCode, false, CancellationToken);
 
         // Execute function to set value
+        // TODO #673: Use BuildKey and BuildValue once FCallAsync accepts ValkeyKey and ValkeyValue.
         string key = Guid.NewGuid().ToString();
         string value = "function set value";
         ValkeyResult result = await client.FCallAsync(funcName, [key], [value], CancellationToken);
