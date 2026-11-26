@@ -84,30 +84,34 @@ public abstract partial class BaseBatch<T> where T : BaseBatch<T>
 
 #pragma warning restore RCS1047
 
+    /// <inheritdoc cref="IBatchStringCommands.Delete(ValkeyKey, DeleteCondition)" />
+    public T Delete(ValkeyKey key, DeleteCondition condition) => AddCmd(Request.Delete(key, condition));
+
     /// <inheritdoc cref="IBatchStringCommands.DeleteIfEqual(ValkeyKey, ValkeyValue)" />
     public T DeleteIfEqual(ValkeyKey key, ValkeyValue value) => AddCmd(Request.DeleteIfEqual(key, value));
 
-    IBatch IBatchStringCommands.Get(ValkeyKey key) => GetAsync(key);
-    IBatch IBatchStringCommands.Get(IEnumerable<ValkeyKey> keys) => GetAsync(keys);
-    IBatch IBatchStringCommands.Set(ValkeyKey key, ValkeyValue value) => SetAsync(key, value);
-    IBatch IBatchStringCommands.Set(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values) => SetAsync(values);
-    IBatch IBatchStringCommands.SetIfNotExists(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values) => SetIfNotExistsAsync(values);
-    IBatch IBatchStringCommands.Set(ValkeyKey key, ValkeyValue value, SetCondition condition) => SetAsync(key, value, condition);
-    IBatch IBatchStringCommands.Set(ValkeyKey key, ValkeyValue value, SetOptions options) => SetAsync(key, value, options);
-    IBatch IBatchStringCommands.SetExpiry(ValkeyKey key, ValkeyValue value, SetExpiryOptions expiry) => SetExpiryAsync(key, value, expiry);
-    IBatch IBatchStringCommands.GetSet(ValkeyKey key, ValkeyValue value) => GetSetAsync(key, value);
-    IBatch IBatchStringCommands.GetSet(ValkeyKey key, ValkeyValue value, SetCondition condition) => GetSetAsync(key, value, condition);
-    IBatch IBatchStringCommands.GetSet(ValkeyKey key, ValkeyValue value, SetOptions options) => GetSetAsync(key, value, options);
-    IBatch IBatchStringCommands.GetSetExpiry(ValkeyKey key, ValkeyValue value, SetExpiryOptions expiry) => GetSetExpiryAsync(key, value, expiry);
-    IBatch IBatchStringCommands.GetRange(ValkeyKey key, long start, long end) => GetRangeAsync(key, start, end);
-    IBatch IBatchStringCommands.SetRange(ValkeyKey key, long offset, ValkeyValue value) => SetRangeAsync(key, offset, value);
-    IBatch IBatchStringCommands.Length(ValkeyKey key) => LengthAsync(key);
     IBatch IBatchStringCommands.Append(ValkeyKey key, ValkeyValue value) => AppendAsync(key, value);
-    IBatch IBatchStringCommands.Decrement(ValkeyKey key, long value) => DecrementAsync(key, value);
     IBatch IBatchStringCommands.Decrement(ValkeyKey key, double value) => DecrementAsync(key, value);
+    IBatch IBatchStringCommands.Decrement(ValkeyKey key, long value) => DecrementAsync(key, value);
+    IBatch IBatchStringCommands.Delete(ValkeyKey key, DeleteCondition condition) => Delete(key, condition);
     IBatch IBatchStringCommands.DeleteIfEqual(ValkeyKey key, ValkeyValue value) => DeleteIfEqual(key, value);
-    IBatch IBatchStringCommands.Increment(ValkeyKey key, long value) => IncrementAsync(key, value);
-    IBatch IBatchStringCommands.Increment(ValkeyKey key, double value) => IncrementAsync(key, value);
+    IBatch IBatchStringCommands.Get(IEnumerable<ValkeyKey> keys) => GetAsync(keys);
+    IBatch IBatchStringCommands.Get(ValkeyKey key) => GetAsync(key);
     IBatch IBatchStringCommands.GetDelete(ValkeyKey key) => GetDeleteAsync(key);
     IBatch IBatchStringCommands.GetExpiry(ValkeyKey key, GetExpiryOptions option) => GetExpiryAsync(key, option);
+    IBatch IBatchStringCommands.GetRange(ValkeyKey key, long start, long end) => GetRangeAsync(key, start, end);
+    IBatch IBatchStringCommands.GetSet(ValkeyKey key, ValkeyValue value, SetCondition condition) => GetSetAsync(key, value, condition);
+    IBatch IBatchStringCommands.GetSet(ValkeyKey key, ValkeyValue value, SetOptions options) => GetSetAsync(key, value, options);
+    IBatch IBatchStringCommands.GetSet(ValkeyKey key, ValkeyValue value) => GetSetAsync(key, value);
+    IBatch IBatchStringCommands.GetSetExpiry(ValkeyKey key, ValkeyValue value, SetExpiryOptions expiry) => GetSetExpiryAsync(key, value, expiry);
+    IBatch IBatchStringCommands.Increment(ValkeyKey key, double value) => IncrementAsync(key, value);
+    IBatch IBatchStringCommands.Increment(ValkeyKey key, long value) => IncrementAsync(key, value);
+    IBatch IBatchStringCommands.Length(ValkeyKey key) => LengthAsync(key);
+    IBatch IBatchStringCommands.Set(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values) => SetAsync(values);
+    IBatch IBatchStringCommands.Set(ValkeyKey key, ValkeyValue value, SetCondition condition) => SetAsync(key, value, condition);
+    IBatch IBatchStringCommands.Set(ValkeyKey key, ValkeyValue value, SetOptions options) => SetAsync(key, value, options);
+    IBatch IBatchStringCommands.Set(ValkeyKey key, ValkeyValue value) => SetAsync(key, value);
+    IBatch IBatchStringCommands.SetExpiry(ValkeyKey key, ValkeyValue value, SetExpiryOptions expiry) => SetExpiryAsync(key, value, expiry);
+    IBatch IBatchStringCommands.SetIfNotExists(IEnumerable<KeyValuePair<ValkeyKey, ValkeyValue>> values) => SetIfNotExistsAsync(values);
+    IBatch IBatchStringCommands.SetRange(ValkeyKey key, long offset, ValkeyValue value) => SetRangeAsync(key, offset, value);
 }

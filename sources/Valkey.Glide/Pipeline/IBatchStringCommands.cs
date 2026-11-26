@@ -81,6 +81,10 @@ internal interface IBatchStringCommands
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.DecrementAsync(ValkeyKey, double)" /></returns>
     IBatch Decrement(ValkeyKey key, double value);
 
+    /// <inheritdoc cref="IBaseClient.DeleteAsync(ValkeyKey, DeleteCondition)" path="/*[not(self::remarks) and not(self::returns)]" />
+    /// <returns>Command Response - <inheritdoc cref="IBaseClient.DeleteAsync(ValkeyKey, DeleteCondition)" /></returns>
+    IBatch Delete(ValkeyKey key, DeleteCondition condition);
+
     /// <inheritdoc cref="IBaseClient.DeleteIfEqualAsync(ValkeyKey, ValkeyValue)" path="/*[not(self::remarks) and not(self::returns)]" />
     /// <returns>Command Response - <inheritdoc cref="IBaseClient.DeleteIfEqualAsync(ValkeyKey, ValkeyValue)" /></returns>
     IBatch DeleteIfEqual(ValkeyKey key, ValkeyValue value);

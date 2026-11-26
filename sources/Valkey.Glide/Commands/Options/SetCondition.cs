@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.ComponentModel;
+
 namespace Valkey.Glide.Commands.Options;
 
 /// <summary>
@@ -23,7 +25,13 @@ public sealed class SetCondition
     /// <summary>
     /// Only set the value if the key does not already exist (NX).
     /// </summary>
-    public static readonly SetCondition OnlyIfDoesNotExist = new(SetConditionType.OnlyIfDoesNotExist);
+    public static readonly SetCondition OnlyIfNotExists = new(SetConditionType.OnlyIfNotExists);
+
+    // TODO #671: Remove deprecated value.
+    /// <inheritdoc cref="OnlyIfNotExists"/>
+    [Obsolete("Use " + nameof(OnlyIfNotExists) + " instead. See https://github.com/valkey-io/valkey-glide-csharp/issues/671")]
+    [Browsable(false), EditorBrowsable(EditorBrowsableState.Never)]
+    public static readonly SetCondition OnlyIfDoesNotExist = OnlyIfNotExists;
 
     #endregion
     #region Constructors
@@ -44,7 +52,7 @@ public sealed class SetCondition
     {
         Always,
         OnlyIfExists,
-        OnlyIfDoesNotExist,
+        OnlyIfNotExists,
         OnlyIfEqual,
         OnlyIfNotEqual,
     }
@@ -97,7 +105,7 @@ public sealed class SetCondition
     {
         SetConditionType.Always => [],
         SetConditionType.OnlyIfExists => [ValkeyLiterals.XX],
-        SetConditionType.OnlyIfDoesNotExist => [ValkeyLiterals.NX],
+        SetConditionType.OnlyIfNotExists => [ValkeyLiterals.NX],
         SetConditionType.OnlyIfEqual => [ValkeyLiterals.IFEQ, ComparisonValue!.Value],
         SetConditionType.OnlyIfNotEqual => [ValkeyLiterals.IFNE, ComparisonValue!.Value],
         _ => throw new InvalidOperationException($"Unknown condition type: {Type}"),

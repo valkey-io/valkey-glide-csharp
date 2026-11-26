@@ -184,6 +184,53 @@ public class StringCommandTests(TestConfiguration config)
     }
 
     #endregion
+    #region DeleteAsync
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task DeleteAsync_OnlyIfEqual(BaseClient client)
+    {
+        Version.SkipIfLessThan(Version.Valkey9_2);
+        ValkeyKey key = Guid.NewGuid().ToString();
+        ValkeyValue value = Guid.NewGuid().ToString();
+
+        // Non-existent key
+        Assert.False(await client.DeleteAsync(key, DeleteCondition.OnlyIfEqual(value)));
+
+        await client.SetAsync(key, value);
+
+        // Value not equal
+        Assert.False(await client.DeleteAsync(key, DeleteCondition.OnlyIfEqual("other")));
+        Assert.Equal(value, await client.GetAsync(key));
+
+        // Value equal
+        Assert.True(await client.DeleteAsync(key, DeleteCondition.OnlyIfEqual(value)));
+        Assert.False(await client.ExistsAsync(key));
+    }
+
+    [Theory(DisableDiscoveryEnumeration = true)]
+    [MemberData(nameof(TestConfiguration.TestClients), MemberType = typeof(TestConfiguration))]
+    public async Task DeleteAsync_OnlyIfNotEqual(BaseClient client)
+    {
+        Version.SkipIfLessThan(Version.Valkey9_2);
+        ValkeyKey key = Guid.NewGuid().ToString();
+        ValkeyValue value = Guid.NewGuid().ToString();
+
+        // Non-existent key
+        Assert.False(await client.DeleteAsync(key, DeleteCondition.OnlyIfNotEqual(value)));
+
+        await client.SetAsync(key, value);
+
+        // Value equal
+        Assert.False(await client.DeleteAsync(key, DeleteCondition.OnlyIfNotEqual(value)));
+        Assert.Equal(value, await client.GetAsync(key));
+
+        // Value not equal
+        Assert.True(await client.DeleteAsync(key, DeleteCondition.OnlyIfNotEqual("other")));
+        Assert.False(await client.ExistsAsync(key));
+    }
+
+    #endregion
     #region DeleteIfEqualAsync
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -701,18 +748,18 @@ public class StringCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task SetAsync_WithCondition_OnlyIfDoesNotExist_SetsNewKey(BaseClient client)
+    public async Task SetAsync_WithCondition_OnlyIfNotExists_SetsNewKey(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
 
-        bool result = await client.SetAsync(key, "value", SetCondition.OnlyIfDoesNotExist);
+        bool result = await client.SetAsync(key, "value", SetCondition.OnlyIfNotExists);
         Assert.True(result);
 
         ValkeyValue retrieved = await client.GetAsync(key);
         Assert.Equal("value", retrieved.ToString());
 
         // Second call should fail since key now exists
-        bool result2 = await client.SetAsync(key, "new_value", SetCondition.OnlyIfDoesNotExist);
+        bool result2 = await client.SetAsync(key, "new_value", SetCondition.OnlyIfNotExists);
         Assert.False(result2);
 
         ValkeyValue retrieved2 = await client.GetAsync(key);
@@ -724,7 +771,7 @@ public class StringCommandTests(TestConfiguration config)
     public async Task SetAsync_SingleKey_WhenNotExists_KeyDoesNotExist(BaseClient client)
     {
         string key = Guid.NewGuid().ToString();
-        bool result = await client.SetAsync(key, "value", SetCondition.OnlyIfDoesNotExist);
+        bool result = await client.SetAsync(key, "value", SetCondition.OnlyIfNotExists);
         Assert.True(result);
         ValkeyValue retrieved = await client.GetAsync(key);
         Assert.Equal("value", retrieved.ToString());
@@ -736,7 +783,7 @@ public class StringCommandTests(TestConfiguration config)
     {
         string key = Guid.NewGuid().ToString();
         await client.SetAsync(key, "existing");
-        bool result = await client.SetAsync(key, "new_value", SetCondition.OnlyIfDoesNotExist);
+        bool result = await client.SetAsync(key, "new_value", SetCondition.OnlyIfNotExists);
         Assert.False(result);
         ValkeyValue retrieved = await client.GetAsync(key);
         Assert.Equal("existing", retrieved.ToString());
@@ -843,7 +890,7 @@ public class StringCommandTests(TestConfiguration config)
 
         var options = new SetOptions
         {
-            Condition = SetCondition.OnlyIfDoesNotExist,
+            Condition = SetCondition.OnlyIfNotExists,
             Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60))
         };
 

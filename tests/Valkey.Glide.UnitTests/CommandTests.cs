@@ -23,19 +23,19 @@ public class CommandTests
 
         // String Commands
         () => CmdAssert.Equal(RequestType.Set, ["key", "value"], Request.Set("key", "value", new SetOptions())),
-        () => CmdAssert.Equal(RequestType.Set, ["key", "value", "NX"], Request.Set("key", "value", new SetOptions { Condition = SetCondition.OnlyIfDoesNotExist })),
+        () => CmdAssert.Equal(RequestType.Set, ["key", "value", "NX"], Request.Set("key", "value", new SetOptions { Condition = SetCondition.OnlyIfNotExists })),
         () => CmdAssert.Equal(RequestType.Set, ["key", "value", "XX"], Request.Set("key", "value", new SetOptions { Condition = SetCondition.OnlyIfExists })),
         () => CmdAssert.Equal(RequestType.Set, ["key", "value", "IFEQ", "other"], Request.Set("key", "value", new SetOptions { Condition = SetCondition.OnlyIfEqual("other") })),
         () => CmdAssert.Equal(RequestType.Set, ["key", "value", "IFNE", "other"], Request.Set("key", "value", new SetOptions { Condition = SetCondition.OnlyIfNotEqual("other") })),
-        () => CmdAssert.Equal(RequestType.Set, ["key", "value", "NX", "PX", "5000"], Request.Set("key", "value", new SetOptions { Condition = SetCondition.OnlyIfDoesNotExist, Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(5)) })),
+        () => CmdAssert.Equal(RequestType.Set, ["key", "value", "NX", "PX", "5000"], Request.Set("key", "value", new SetOptions { Condition = SetCondition.OnlyIfNotExists, Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(5)) })),
         () => CmdAssert.Equal(RequestType.Set, ["key", "value", "PX", "10000"], Request.Set("key", "value", new SetOptions { Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(10)) })),
         () => CmdAssert.Equal(RequestType.Set, ["key", "value", "KEEPTTL"], Request.Set("key", "value", new SetOptions { Expiry = SetExpiryOptions.KeepTimeToLive() })),
         () => CmdAssert.Equal(RequestType.Set, ["key", "value", "GET"], Request.GetSet("key", "value", new SetOptions())),
-        () => CmdAssert.Equal(RequestType.Set, ["key", "value", "NX", "GET"], Request.GetSet("key", "value", new SetOptions { Condition = SetCondition.OnlyIfDoesNotExist })),
+        () => CmdAssert.Equal(RequestType.Set, ["key", "value", "NX", "GET"], Request.GetSet("key", "value", new SetOptions { Condition = SetCondition.OnlyIfNotExists })),
         () => CmdAssert.Equal(RequestType.Set, ["key", "value", "XX", "GET"], Request.GetSet("key", "value", new SetOptions { Condition = SetCondition.OnlyIfExists })),
         () => CmdAssert.Equal(RequestType.Set, ["key", "value", "IFEQ", "other", "GET"], Request.GetSet("key", "value", new SetOptions { Condition = SetCondition.OnlyIfEqual("other") })),
         () => CmdAssert.Equal(RequestType.Set, ["key", "value", "IFNE", "other", "GET"], Request.GetSet("key", "value", new SetOptions { Condition = SetCondition.OnlyIfNotEqual("other") })),
-        () => CmdAssert.Equal(RequestType.Set, ["key", "value", "NX", "PX", "5000", "GET"], Request.GetSet("key", "value", new SetOptions { Condition = SetCondition.OnlyIfDoesNotExist, Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(5)) })),
+        () => CmdAssert.Equal(RequestType.Set, ["key", "value", "NX", "PX", "5000", "GET"], Request.GetSet("key", "value", new SetOptions { Condition = SetCondition.OnlyIfNotExists, Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(5)) })),
         () => CmdAssert.Equal(RequestType.Set, ["key", "value", "PX", "10000", "GET"], Request.GetSet("key", "value", new SetOptions { Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(10)) })),
         () => CmdAssert.Equal(RequestType.Get, ["key"], Request.Get("key")),
         () => CmdAssert.Equal(RequestType.MGet, ["key1", "key2", "key3"], Request.Get(["key1", "key2", "key3"])),
@@ -47,6 +47,8 @@ public class CommandTests
         () => Assert.Equal(11L, Request.Append("key", "value").Converter(11L)),
         () => CmdAssert.Equal(RequestType.Decr, ["key"], Request.Decrement("key")),
         () => CmdAssert.Equal(RequestType.DecrBy, ["key", "5"], Request.DecrementBy("key", 5)),
+        () => CmdAssert.Equal(RequestType.DelEx, ["key", "IFEQ", "value"], Request.Delete("key", DeleteCondition.OnlyIfEqual("value"))),
+        () => CmdAssert.Equal(RequestType.DelEx, ["key", "IFNE", "value"], Request.Delete("key", DeleteCondition.OnlyIfNotEqual("value"))),
         () => CmdAssert.Equal(RequestType.DelIfEq, ["key", "value"], Request.DeleteIfEqual("key", "value")),
         () => CmdAssert.Equal(RequestType.Incr, ["key"], Request.Increment("key")),
         () => CmdAssert.Equal(RequestType.IncrBy, ["key", "5"], Request.IncrementBy("key", 5)),
@@ -388,7 +390,7 @@ public class CommandTests
         () => CmdAssert.Equal(RequestType.HGetDel, ["key", "FIELDS", "0"], Request.HashGetDelete("key", [])),
 
         // Hash HSETEX Command with Key Condition (Valkey 9.1+)
-        () => CmdAssert.Equal(RequestType.HSetEx, ["key", "NX", "FIELDS", "1", "field1", "value1"], Request.HashSet("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1")], new HashSetOptions { KeyCondition = HashSetKeyCondition.OnlyIfDoesNotExist })),
+        () => CmdAssert.Equal(RequestType.HSetEx, ["key", "NX", "FIELDS", "1", "field1", "value1"], Request.HashSet("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1")], new HashSetOptions { KeyCondition = HashSetKeyCondition.OnlyIfNotExists })),
         () => CmdAssert.Equal(RequestType.HSetEx, ["key", "XX", "FIELDS", "1", "field1", "value1"], Request.HashSet("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1")], new HashSetOptions { KeyCondition = HashSetKeyCondition.OnlyIfExists })),
         () => CmdAssert.Equal(RequestType.HSetEx, ["key", "XX", "FNX", "PX", "60000", "FIELDS", "1", "field1", "value1"], Request.HashSet("key", [new KeyValuePair<ValkeyValue, ValkeyValue>("field1", "value1")], new HashSetOptions { KeyCondition = HashSetKeyCondition.OnlyIfExists, Condition = HashSetCondition.OnlyIfNoneExist, Expiry = SetExpiryOptions.ExpireIn(TimeSpan.FromSeconds(60)) })),
 
@@ -453,8 +455,8 @@ public class CommandTests
 
         // String Commands
         () => Assert.True(Request.Set("key", "value", new SetOptions()).Converter("OK")),
-        () => Assert.True(Request.Set("key", "value", new SetOptions { Condition = SetCondition.OnlyIfDoesNotExist }).Converter("OK")),
-        () => Assert.False(Request.Set("key", "value", new SetOptions { Condition = SetCondition.OnlyIfDoesNotExist }).Converter(null)),
+        () => Assert.True(Request.Set("key", "value", new SetOptions { Condition = SetCondition.OnlyIfNotExists }).Converter("OK")),
+        () => Assert.False(Request.Set("key", "value", new SetOptions { Condition = SetCondition.OnlyIfNotExists }).Converter(null)),
         () => Assert.Equal<GlideString>("value", Request.Get("key").Converter("value")),
         () => Assert.Equal(ValkeyValue.Null, Request.Get("key").Converter(null!)),
         () => Assert.Equal(5L, Request.Length("key").Converter(5L)),
@@ -466,6 +468,8 @@ public class CommandTests
         () => Assert.Equal(11L, Request.Append("key", "value").Converter(11L)),
         () => Assert.Equal(9L, Request.Decrement("key").Converter(9L)),
         () => Assert.Equal(5L, Request.DecrementBy("key", 5).Converter(5L)),
+        () => Assert.True(Request.Delete("key", DeleteCondition.OnlyIfEqual("value")).Converter(true)),
+        () => Assert.False(Request.Delete("key", DeleteCondition.OnlyIfNotEqual("value")).Converter(false)),
         () => Assert.True(Request.DeleteIfEqual("key", "value").Converter(true)),
         () => Assert.False(Request.DeleteIfEqual("key", "value").Converter(false)),
         () => Assert.Equal(11L, Request.Increment("key").Converter(11L)),

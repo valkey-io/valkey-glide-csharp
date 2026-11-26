@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 1.3.0
 
+### Added
+
+- Support new Valkey 9.x commands:
+  - `DELEX` (#578)
+
+### Deprecated
+
+- `GlideJson.SetCondition.OnlyIfDoesNotExist` (#671)
+- `HashSetKeyCondition.OnlyIfDoesNotExist` (#671)
+- `SetCondition.OnlyIfDoesNotExist` (#671)
+
 ### Fixed
 
 - Culture-sensitive formatting and parsing of command arguments and replies (#651)
