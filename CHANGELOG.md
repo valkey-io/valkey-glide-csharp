@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Culture-sensitive formatting and parsing of command arguments and replies (#651)
+- `IServer.ScriptLoadAsync(LuaScript)` loading parameterized scripts that fail when evaluated (#674)
 
 ## 1.2.0
 
