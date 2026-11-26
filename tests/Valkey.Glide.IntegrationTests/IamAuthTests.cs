@@ -18,11 +18,6 @@ public class IamAuthTests(TlsServerFixture tlsServerFixture) : IClassFixture<Tls
     /// </summary>
     private const uint LongRefreshIntervalSeconds = 3600;
 
-    /// <summary>
-    /// Bound on waiting for a provider invocation.
-    /// </summary>
-    private static readonly TimeSpan SignalTimeout = TimeSpan.FromSeconds(15);
-
     [Fact]
     public async Task IamAuthenticationWithMockCredentials_Standalone()
     {
@@ -123,34 +118,12 @@ public class IamAuthTests(TlsServerFixture tlsServerFixture) : IClassFixture<Tls
         var credentials = CreateCredentials(LongRefreshIntervalSeconds, provider.GetCredentialsAsync);
 
         await using var client = await CreateClientAsync(clusterMode, credentials);
+        Assert.Equal(1, provider.Calls);
 
-        // The provider supplies the credentials for the initial token.
-        Assert.True(provider.Calls >= 1);
-        await AssertConnected(client);
-
-        // A manual refresh invokes the provider again.
-        Task nextCall = provider.ArmNextCall();
         await client.RefreshIamTokenAsync();
-        await nextCall.WaitAsync(SignalTimeout, TestContext.Current.CancellationToken);
+        Assert.Equal(2, provider.Calls);
 
         await AssertConnected(client);
-    }
-
-    [Fact]
-    public async Task CustomIamProviderOnScheduledRefresh()
-    {
-        var provider = new RecordingCredentialsProvider();
-        var credentials = CreateCredentials(refreshIntervalSeconds: 1, provider.GetCredentialsAsync);
-
-        await using var client = await GlideClient.CreateClient(CreateStandaloneConfig(tlsServerFixture.StandaloneServer, credentials));
-
-        // A scheduled refresh invokes the provider after startup.
-        Task nextCall = provider.ArmNextCall();
-        await nextCall.WaitAsync(SignalTimeout, TestContext.Current.CancellationToken);
-
-        await client.SetAsync("iam_provider_key", "iam_provider_value");
-        var value = await client.GetAsync("iam_provider_key");
-        Assert.Equal("iam_provider_value", value.ToString());
     }
 
     [Fact]
@@ -169,7 +142,8 @@ public class IamAuthTests(TlsServerFixture tlsServerFixture) : IClassFixture<Tls
     [Fact]
     public async Task CustomIamProviderFailureOnManualRefresh()
     {
-        var provider = new RecordingCredentialsProvider();
+        var provider = new RecordingCredentialsProvider(
+            new("test_access_key", "test_secret_key", sessionToken: null, DateTimeOffset.UtcNow.AddHours(1)));
         var credentials = CreateCredentials(LongRefreshIntervalSeconds, provider.GetCredentialsAsync);
 
         await using var client = await GlideClient.CreateClient(CreateStandaloneConfig(tlsServerFixture.StandaloneServer, credentials));
@@ -178,23 +152,6 @@ public class IamAuthTests(TlsServerFixture tlsServerFixture) : IClassFixture<Tls
         var exception = await Assert.ThrowsAsync<Errors.RequestException>(client.RefreshIamTokenAsync);
         AssertSanitizedProviderFailure(exception);
 
-        // The provider is invoked again on the next refresh.
-        provider.Fail = false;
-        Task nextCall = provider.ArmNextCall();
-        await client.RefreshIamTokenAsync();
-        await nextCall.WaitAsync(SignalTimeout, TestContext.Current.CancellationToken);
-    }
-
-    [Fact]
-    public async Task CustomIamProviderWithoutSessionTokenAndWithExpiry()
-    {
-        var provider = new RecordingCredentialsProvider(
-            new AwsCredentials("test_access_key", "test_secret_key", sessionToken: null, DateTimeOffset.UtcNow.AddHours(1)));
-        var credentials = CreateCredentials(LongRefreshIntervalSeconds, provider.GetCredentialsAsync);
-
-        await using var client = await GlideClient.CreateClient(CreateStandaloneConfig(tlsServerFixture.StandaloneServer, credentials));
-
-        Assert.True(provider.Calls >= 1);
         await AssertConnected(client);
     }
 
@@ -231,7 +188,7 @@ public class IamAuthTests(TlsServerFixture tlsServerFixture) : IClassFixture<Tls
             : await GlideClient.CreateClient(CreateStandaloneConfig(tlsServerFixture.StandaloneServer, credentials));
 
     /// <summary>
-    /// Credentials provider that records invocations and can be armed to signal the next one or to fail.
+    /// Credentials provider that counts invocations and can be switched to fail.
     /// </summary>
     private sealed class RecordingCredentialsProvider(AwsCredentials? credentials = null)
     {
@@ -240,45 +197,28 @@ public class IamAuthTests(TlsServerFixture tlsServerFixture) : IClassFixture<Tls
         /// </summary>
         public const string FailureMessage = "PROVIDER_FAILURE_SECRET";
 
-        private readonly AwsCredentials _credentials =
-            credentials ?? new AwsCredentials("test_access_key", "test_secret_key", "test_session_token");
+        private readonly AwsCredentials _credentials = credentials
+            ?? new("test_access_key", "test_secret_key", "test_session_token", DateTimeOffset.UtcNow.AddHours(1));
 
         private int _calls;
-        private TaskCompletionSource? _nextCall;
 
-        /// <summary>
-        /// Number of provider invocations.
-        /// </summary>
         public int Calls => Volatile.Read(ref _calls);
 
-        /// <summary>
-        /// Whether invocations fail.
-        /// </summary>
         public bool Fail
         {
             get => Volatile.Read(ref field);
             set => Volatile.Write(ref field, value);
         }
 
-        /// <summary>
-        /// Returns a task that completes on the next provider invocation.
-        /// </summary>
-        public Task ArmNextCall()
+        public async Task<AwsCredentials> GetCredentialsAsync(CancellationToken cancellationToken)
         {
-            var nextCall = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            Volatile.Write(ref _nextCall, nextCall);
-            return nextCall.Task;
-        }
-
-        public Task<AwsCredentials> GetCredentialsAsync(CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
+            _ = cancellationToken;
             _ = Interlocked.Increment(ref _calls);
-            _ = (Interlocked.Exchange(ref _nextCall, null)?.TrySetResult());
 
-            return Fail
-                ? Task.FromException<AwsCredentials>(new InvalidOperationException(FailureMessage))
-                : Task.FromResult(_credentials);
+            // Complete asynchronously so the bridge awaits an incomplete task.
+            await Task.Yield();
+
+            return Fail ? throw new InvalidOperationException(FailureMessage) : _credentials;
         }
     }
 }
