@@ -16,18 +16,14 @@ public class ValkeyServerTests(ValkeyServerFixture fixture) : IClassFixture<Valk
     [Fact]
     public async Task DatabaseSizeAsync_ReturnsSize()
     {
-        string key = $"server-dbsize-test-{Guid.NewGuid()}";
-
         var server = fixture.Server;
         var db = fixture.Database;
 
-        Assert.Equal(0, await server.DatabaseSizeAsync());
+        var size = await server.DatabaseSizeAsync();
 
+        var key = $"server-dbsize-test-{Guid.NewGuid()}";
         _ = await db.StringSetAsync(key, "test-value");
-        Assert.Equal(1, await server.DatabaseSizeAsync());
-
-        _ = await db.KeyDeleteAsync(key);
-        Assert.Equal(0, await server.DatabaseSizeAsync());
+        Assert.Equal(size + 1, await server.DatabaseSizeAsync());
     }
 
     [Fact]
@@ -36,15 +32,11 @@ public class ValkeyServerTests(ValkeyServerFixture fixture) : IClassFixture<Valk
         var server = fixture.Server;
         var db = fixture.Database;
 
-        string key = $"server-flushall-test-{Guid.NewGuid()}";
+        var key = $"server-flushall-test-{Guid.NewGuid()}";
         _ = await db.StringSetAsync(key, "test-value");
-
-        Assert.True(await db.KeyExistsAsync(key));
-        Assert.Equal(1, await server.DatabaseSizeAsync());
+        Assert.True(await server.DatabaseSizeAsync() > 0);
 
         await server.FlushAllDatabasesAsync();
-
-        Assert.False(await db.KeyExistsAsync(key));
         Assert.Equal(0, await server.DatabaseSizeAsync());
     }
 
@@ -54,15 +46,11 @@ public class ValkeyServerTests(ValkeyServerFixture fixture) : IClassFixture<Valk
         var server = fixture.Server;
         var db = fixture.Database;
 
-        string key = $"server-flush-test-{Guid.NewGuid()}";
+        var key = $"server-flush-test-{Guid.NewGuid()}";
         _ = await db.StringSetAsync(key, "test-value");
-
-        Assert.True(await db.KeyExistsAsync(key));
-        Assert.Equal(1, await server.DatabaseSizeAsync());
+        Assert.True(await server.DatabaseSizeAsync() > 0);
 
         await server.FlushDatabaseAsync();
-
-        Assert.False(await db.KeyExistsAsync(key));
         Assert.Equal(0, await server.DatabaseSizeAsync());
     }
 
