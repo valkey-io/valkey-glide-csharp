@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Text;
+
 namespace Valkey.Glide.TestUtils;
 
 /// <summary>
@@ -7,6 +9,17 @@ namespace Valkey.Glide.TestUtils;
 /// </summary>
 public static class Data
 {
+    #region Private Fields
+
+    /// <summary>
+    /// Bytes that are not valid UTF-8.
+    /// Used to verify binary safety.
+    /// </summary>
+    private static readonly byte[] InvalidUtf8 = [0xFF, 0x00, 0x80, 0xC3, 0x28, 0xFE];
+
+    #endregion
+    #region Theory Data
+
     /// <summary>
     /// RESP protocol versions for testing.
     /// </summary>
@@ -59,4 +72,30 @@ public static class Data
             "://missing-scheme",  // malformed scheme
             "just some text",     // plain text
         ];
+
+    #endregion
+    #region Data Builders
+
+    /// <summary>
+    /// Returns a unique key for testing.
+    /// The key includes bytes that are not valid UTF-8 to verify binary safety.
+    /// </summary>
+    public static ValkeyKey BuildKey()
+        => (byte[])[.. Encoding.UTF8.GetBytes($"{Guid.NewGuid()}:"), .. InvalidUtf8];
+
+    /// <summary>
+    /// Returns a unique key for testing with the given prefix.
+    /// The key includes bytes that are not valid UTF-8 to verify binary safety.
+    /// </summary>
+    public static ValkeyKey BuildKey(string prefix)
+        => (byte[])[.. Encoding.UTF8.GetBytes($"{prefix}{Guid.NewGuid()}:"), .. InvalidUtf8];
+
+    /// <summary>
+    /// Returns a unique value for testing.
+    /// The value includes bytes that are not valid UTF-8 to verify binary safety.
+    /// </summary>
+    public static ValkeyValue BuildValue()
+        => (byte[])[.. Encoding.UTF8.GetBytes($"{Guid.NewGuid()}:"), .. InvalidUtf8];
+
+    #endregion
 }

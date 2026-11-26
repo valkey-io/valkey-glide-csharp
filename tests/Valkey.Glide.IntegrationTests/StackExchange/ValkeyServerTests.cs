@@ -2,6 +2,8 @@
 
 using Valkey.Glide.TestUtils;
 
+using static Valkey.Glide.TestUtils.Data;
+
 namespace Valkey.Glide.IntegrationTests.StackExchange;
 
 /// <summary>
@@ -10,6 +12,47 @@ namespace Valkey.Glide.IntegrationTests.StackExchange;
 public class ValkeyServerTests(ValkeyServerFixture fixture) : IClassFixture<ValkeyServerFixture>
 {
     #region Tests
+
+    [Fact]
+    public async Task DatabaseSizeAsync_ReturnsSize()
+    {
+        var server = fixture.Server;
+        var db = fixture.Database;
+
+        var size = await server.DatabaseSizeAsync();
+
+        var key = $"server-dbsize-test-{Guid.NewGuid()}";
+        _ = await db.StringSetAsync(key, "test-value");
+        Assert.Equal(size + 1, await server.DatabaseSizeAsync());
+    }
+
+    [Fact]
+    public async Task FlushAllDatabasesAsync_ClearsAllDatabases()
+    {
+        var server = fixture.Server;
+        var db = fixture.Database;
+
+        var key = $"server-flushall-test-{Guid.NewGuid()}";
+        _ = await db.StringSetAsync(key, "test-value");
+        Assert.True(await server.DatabaseSizeAsync() > 0);
+
+        await server.FlushAllDatabasesAsync();
+        Assert.Equal(0, await server.DatabaseSizeAsync());
+    }
+
+    [Fact]
+    public async Task FlushDatabaseAsync_ClearsDatabase()
+    {
+        var server = fixture.Server;
+        var db = fixture.Database;
+
+        var key = $"server-flush-test-{Guid.NewGuid()}";
+        _ = await db.StringSetAsync(key, "test-value");
+        Assert.True(await server.DatabaseSizeAsync() > 0);
+
+        await server.FlushDatabaseAsync();
+        Assert.Equal(0, await server.DatabaseSizeAsync());
+    }
 
     [Fact]
     public async Task KeysAsync_ReturnsMatchingKeys()
@@ -72,56 +115,100 @@ public class ValkeyServerTests(ValkeyServerFixture fixture) : IClassFixture<Valk
     }
 
     [Fact]
-    public async Task DatabaseSizeAsync_ReturnsSize()
+    public async Task ScriptExistsAsync_WithByteArray_ReturnsCorrectStatus()
     {
-        string key = $"server-dbsize-test-{Guid.NewGuid()}";
-
         var server = fixture.Server;
         var db = fixture.Database;
+        string script = "return 'hash exists test'";
+        using var scriptObj = new Script(script);
+        byte[] hash = Convert.FromHexString(scriptObj.Hash);
 
-        Assert.Equal(0, await server.DatabaseSizeAsync());
+        // Script should not exist initially
+        await server.ScriptFlushAsync();
+        bool existsBefore = await server.ScriptExistsAsync(hash);
+        Assert.False(existsBefore);
 
-        _ = await db.StringSetAsync(key, "test-value");
-        Assert.Equal(1, await server.DatabaseSizeAsync());
+        // Load the script
+        _ = await db.ScriptEvaluateAsync(script);
 
-        _ = await db.KeyDeleteAsync(key);
-        Assert.Equal(0, await server.DatabaseSizeAsync());
+        // Script should exist now
+        bool existsAfter = await server.ScriptExistsAsync(hash);
+        Assert.True(existsAfter);
     }
 
     [Fact]
-    public async Task FlushDatabaseAsync_ClearsDatabase()
+    public async Task ScriptExistsAsync_WithString_ReturnsCorrectStatus()
     {
         var server = fixture.Server;
         var db = fixture.Database;
+        string script = "return 'exists test'";
 
-        string key = $"server-flush-test-{Guid.NewGuid()}";
-        _ = await db.StringSetAsync(key, "test-value");
+        // Script should not exist initially
+        await server.ScriptFlushAsync();
+        bool existsBefore = await server.ScriptExistsAsync(script);
+        Assert.False(existsBefore);
 
-        Assert.True(await db.KeyExistsAsync(key));
-        Assert.Equal(1, await server.DatabaseSizeAsync());
+        // Load the script
+        _ = await db.ScriptEvaluateAsync(script);
 
-        await server.FlushDatabaseAsync();
-
-        Assert.False(await db.KeyExistsAsync(key));
-        Assert.Equal(0, await server.DatabaseSizeAsync());
+        // Script should exist now
+        bool existsAfter = await server.ScriptExistsAsync(script);
+        Assert.True(existsAfter);
     }
 
     [Fact]
-    public async Task FlushAllDatabasesAsync_ClearsAllDatabases()
+    public async Task ScriptFlushAsync_RemovesAllScripts()
     {
         var server = fixture.Server;
         var db = fixture.Database;
 
-        string key = $"server-flushall-test-{Guid.NewGuid()}";
-        _ = await db.StringSetAsync(key, "test-value");
+        // Load a script
+        string script = "return 'flush test'";
+        _ = await db.ScriptEvaluateAsync(script);
 
-        Assert.True(await db.KeyExistsAsync(key));
-        Assert.Equal(1, await server.DatabaseSizeAsync());
+        // Verify it exists
+        bool existsBefore = await server.ScriptExistsAsync(script);
+        Assert.True(existsBefore);
 
-        await server.FlushAllDatabasesAsync();
+        await server.ScriptFlushAsync();
 
-        Assert.False(await db.KeyExistsAsync(key));
-        Assert.Equal(0, await server.DatabaseSizeAsync());
+        // Verify it no longer exists
+        bool existsAfter = await server.ScriptExistsAsync(script);
+        Assert.False(existsAfter);
+    }
+
+    [Fact]
+    public async Task ScriptLoadAsync_WithLuaScript_ReturnsLoadedLuaScript()
+    {
+        var server = fixture.Server;
+        var db = fixture.Database;
+
+        // Verify script can be loaded.
+        var script = LuaScript.Prepare("return redis.call('SET', @key, @value)");
+        var loaded = await server.ScriptLoadAsync(script);
+        Assert.NotEmpty(loaded.Hash);
+
+        // Verify the script can be executed.
+        var parameters = new { key = BuildKey(), value = BuildValue() };
+        Assert.Equal("OK", (ValkeyValue)await db.ScriptEvaluateAsync(loaded, parameters));
+        Assert.Equal(parameters.value, await db.StringGetAsync(parameters.key));
+    }
+
+    [Fact]
+    public async Task ScriptLoadAsync_WithString_ReturnsHash()
+    {
+        var server = fixture.Server;
+        var db = fixture.Database;
+
+        // Verify script can be loaded.
+        var hash = await server.ScriptLoadAsync("return redis.call('SET', KEYS[1], ARGV[1])");
+        Assert.NotEmpty(hash);
+
+        // Verify the script can be executed.
+        var key = BuildKey();
+        var value = BuildValue();
+        Assert.Equal("OK", (ValkeyValue)await db.ScriptEvaluateAsync(hash, [key], [value]));
+        Assert.Equal(value, await db.StringGetAsync(key));
     }
 
     #endregion

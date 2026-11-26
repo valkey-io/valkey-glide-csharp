@@ -252,6 +252,7 @@ internal partial class ValkeyServer(Database conn, EndPoint endpoint) : IServer
     public async Task SaveAsync(SaveType type, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
+
         Task command = type switch
         {
             SaveType.BackgroundSave => _conn.Command(Request.BackgroundSave(), MakeRoute()),
@@ -259,6 +260,7 @@ internal partial class ValkeyServer(Database conn, EndPoint endpoint) : IServer
             SaveType.ForegroundSave => _conn.Command(Request.Save(), MakeRoute()),
             _ => throw new ArgumentOutOfRangeException(nameof(type), type, $"Unknown SaveType value '{type}'."),
         };
+
         await command;
     }
 
@@ -280,11 +282,7 @@ internal partial class ValkeyServer(Database conn, EndPoint endpoint) : IServer
     public async Task<bool> ScriptExistsAsync(string script, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-
-        if (string.IsNullOrEmpty(script))
-        {
-            throw new ArgumentException("Script cannot be null or empty", nameof(script));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(script, nameof(script));
 
         // Calculate SHA1 hash of the script
         using Script scriptObj = new(script);
@@ -313,11 +311,7 @@ internal partial class ValkeyServer(Database conn, EndPoint endpoint) : IServer
     public async Task<byte[]> ScriptLoadAsync(string script, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
-
-        if (string.IsNullOrEmpty(script))
-        {
-            throw new ArgumentException("Script cannot be null or empty", nameof(script));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(script, nameof(script));
 
         // Use custom command to call SCRIPT LOAD
         ValkeyResult result = await ExecuteAsync("SCRIPT", ["LOAD", script], flags);
@@ -336,15 +330,9 @@ internal partial class ValkeyServer(Database conn, EndPoint endpoint) : IServer
     public async Task<LoadedLuaScript> ScriptLoadAsync(LuaScript script, CommandFlags flags = CommandFlags.None)
     {
         GuardClauses.ThrowIfCommandFlags(flags);
+        ArgumentNullException.ThrowIfNull(script, nameof(script));
 
-        if (script == null)
-        {
-            throw new ArgumentNullException(nameof(script));
-        }
-
-        // Load the executable script
-        byte[] hash = await ScriptLoadAsync(script.ExecutableScript, flags);
-        return new LoadedLuaScript(script, hash, script.ExecutableScript);
+        return await script.LoadAsync(this, flags);
     }
 
     /// <inheritdoc/>
