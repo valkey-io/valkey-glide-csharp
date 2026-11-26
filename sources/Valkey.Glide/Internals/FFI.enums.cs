@@ -476,6 +476,7 @@ internal partial class FFI
         Strlen = 1521,
         Substr = 1522,
         DelIfEq = 1523,
+        DelEx = 1524,
 
         #endregion
         #region Transaction commands

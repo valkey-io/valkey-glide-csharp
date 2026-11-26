@@ -108,13 +108,37 @@ public partial interface IBaseClient
     Task<double> DecrementAsync(ValkeyKey key, double value);
 
     /// <summary>
-    /// Deletes a key if its current value is equal to the given value.
+    /// Deletes <paramref name="key"/> if its value meets the given condition.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/delex/">Valkey commands – DELEX</seealso>
+    /// <param name="key">The key to delete.</param>
+    /// <param name="condition">The condition for deleting the key.</param>
+    /// <returns><see langword="true"/> if <paramref name="key"/> was deleted, <see langword="false"/> otherwise.</returns>
+    /// <example>
+    /// <code>
+    /// await client.SetAsync("key", "value");
+    /// var deleted = await client.DeleteAsync("key", DeleteCondition.OnlyIfEqual("other"));  // false
+    /// deleted = await client.DeleteAsync("key", DeleteCondition.OnlyIfNotEqual("value"));   // false
+    /// deleted = await client.DeleteAsync("key", DeleteCondition.OnlyIfEqual("value"));      // true
+    /// </code>
+    /// </example>
+    /// <remarks>
+    /// <para>Since Valkey 9.2.0.</para>
+    /// <para>
+    /// Not supported when compression is enabled.
+    /// See <see href="https://glide.valkey.io/concepts/client-features/compression/#incompatible-commands">Valkey GLIDE – Data Compression</see>.
+    /// </para>
+    /// </remarks>
+    Task<bool> DeleteAsync(ValkeyKey key, DeleteCondition condition);
+
+    /// <summary>
+    /// Deletes <paramref name="key"/> if its value equals <paramref name="value"/>.
     /// </summary>
     /// <seealso href="https://valkey.io/commands/delifeq/">Valkey commands – DELIFEQ</seealso>
+    /// <seealso cref="DeleteAsync(ValkeyKey, DeleteCondition)"/>
     /// <param name="key">The key to delete.</param>
-    /// <param name="value">The value to compare against the current value of <paramref name="key"/>.</param>
-    /// <returns><see langword="true"/> if <paramref name="key"/> was deleted, <see langword="false"/> if
-    /// <paramref name="key"/> does not exist or its value is not equal to <paramref name="value"/>.</returns>
+    /// <param name="value">The value to compare against the key.</param>
+    /// <returns><see langword="true"/> if <paramref name="key"/> was deleted, <see langword="false"/> otherwise.</returns>
     /// <example>
     /// <code>
     /// await client.SetAsync("key", "value");
@@ -278,7 +302,8 @@ public partial interface IBaseClient
     /// <returns><see langword="true"/> if the key was set, <see langword="false"/> if the condition was not met.</returns>
     /// <example>
     /// <code>
-    /// var wasSet = await client.SetAsync("key", "value", Valkey.Glide.Commands.Options.SetCondition.OnlyIfDoesNotExist);  // true
+    /// var condition = SetCondition.OnlyIfNotExists;
+    /// var wasSet = await client.SetAsync("key", "value", condition);  // true
     /// </code>
     /// </example>
     Task<bool> SetAsync(ValkeyKey key, ValkeyValue value, SetCondition condition);
@@ -293,8 +318,8 @@ public partial interface IBaseClient
     /// <returns><see langword="true"/> if the key was set, <see langword="false"/> if the condition was not met.</returns>
     /// <example>
     /// <code>
-    /// var setOptions = new SetOptions { Condition = Valkey.Glide.Commands.Options.SetCondition.OnlyIfDoesNotExist };
-    /// var wasSet = await client.SetAsync("key", "value", setOptions);  // true
+    /// var options = new SetOptions { Condition = SetCondition.OnlyIfNotExists };
+    /// var wasSet = await client.SetAsync("key", "value", options);  // true
     /// </code>
     /// </example>
     Task<bool> SetAsync(ValkeyKey key, ValkeyValue value, SetOptions options);
@@ -339,7 +364,8 @@ public partial interface IBaseClient
     /// <example>
     /// <code>
     /// await client.SetAsync("key", "oldValue");
-    /// var previous = await client.GetSetAsync("key", "newValue", Valkey.Glide.Commands.Options.SetCondition.OnlyIfExists);  // "oldValue"
+    /// var condition = SetCondition.OnlyIfExists;
+    /// var previous = await client.GetSetAsync("key", "newValue", condition);  // "oldValue"
     /// </code>
     /// </example>
     Task<ValkeyValue> GetSetAsync(ValkeyKey key, ValkeyValue value, SetCondition condition);
@@ -355,8 +381,8 @@ public partial interface IBaseClient
     /// <example>
     /// <code>
     /// await client.SetAsync("key", "oldValue");
-    /// var setOptions = new SetOptions { Condition = Valkey.Glide.Commands.Options.SetCondition.OnlyIfExists };
-    /// var previous = await client.GetSetAsync("key", "newValue", setOptions);  // "oldValue"
+    /// var options = new SetOptions { Condition = SetCondition.OnlyIfExists };
+    /// var previous = await client.GetSetAsync("key", "newValue", options);  // "oldValue"
     /// </code>
     /// </example>
     Task<ValkeyValue> GetSetAsync(ValkeyKey key, ValkeyValue value, SetOptions options);

@@ -599,12 +599,12 @@ public class HashCommandTests(TestConfiguration config)
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestClients), MemberType = typeof(TestConfiguration))]
-    public async Task TestHashSetExpiry_KeyOnlyIfDoesNotExist(BaseClient client)
+    public async Task TestHashSetExpiry_KeyOnlyIfNotExists(BaseClient client)
     {
         Version.SkipIfLessThan(Version.Valkey9_1);
 
         string key = Guid.NewGuid().ToString();
-        var options = new HashSetOptions { KeyCondition = HashSetKeyCondition.OnlyIfDoesNotExist };
+        var options = new HashSetOptions { KeyCondition = HashSetKeyCondition.OnlyIfNotExists };
 
         // Key does not exist
         Assert.True(await client.HashSetAsync(key, "field1", "value1", options));

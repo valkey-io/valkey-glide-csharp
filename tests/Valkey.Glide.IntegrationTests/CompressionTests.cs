@@ -88,6 +88,7 @@ public class CompressionTests
     {
         // String manipulation commands
         { "APPEND", c => c.AppendAsync("key", "suffix") },
+        { "DELEX", c => c.DeleteAsync("key", DeleteCondition.OnlyIfEqual("value")) },
         { "DELIFEQ", c => c.DeleteIfEqualAsync("key", "value") },
         { "GETRANGE", c => c.GetRangeAsync("key", 0, 4) },
         // TODO #318: Add LongestCommonSubsequenceAsync once it is available.
@@ -483,7 +484,7 @@ public class CompressionTests
 
         string key = $"setnx_test_{Guid.NewGuid()}";
 
-        bool result = await ZstdClient.SetAsync(key, LargeValue, SetCondition.OnlyIfDoesNotExist);
+        bool result = await ZstdClient.SetAsync(key, LargeValue, SetCondition.OnlyIfNotExists);
         Assert.True(result);
 
         var statsAfter = BaseClient.GetStatistics();

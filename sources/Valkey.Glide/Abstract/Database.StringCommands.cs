@@ -196,8 +196,8 @@ internal partial class Database
     private static SetCondition ToSetCondition(When when) => when switch
     {
         When.Always => SetCondition.Always,
-        When.NotExists => SetCondition.OnlyIfDoesNotExist,
         When.Exists => SetCondition.OnlyIfExists,
+        When.NotExists => SetCondition.OnlyIfNotExists,
         _ => throw new ArgumentException($"{when} is not valid in this context; the permitted values are: Always, NotExists, Exists"),
     };
 
