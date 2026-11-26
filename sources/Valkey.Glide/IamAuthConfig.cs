@@ -92,12 +92,9 @@ public sealed class IamAuthConfig : IDisposable
     /// <code>
     /// var iamConfig = new IamAuthConfig("my-cache", ServiceType.ElastiCache, "us-east-1")
     /// {
-    ///     CredentialsProvider = async cancellationToken =>
-    ///     {
-    ///         // Retrieve credentials from a secrets store or identity broker.
-    ///         await Task.Delay(TimeSpan.FromMilliseconds(10), cancellationToken);
-    ///         return new AwsCredentials("access-key-id", "secret-access-key", "session-token", DateTimeOffset.UtcNow.AddHours(1));
-    ///     },
+    ///     CredentialsProvider = _ => Task.FromResult(
+    ///         new AwsCredentials(
+    ///             "access-key-id", "secret-access-key", "session-token", DateTimeOffset.UtcNow.AddHours(1))),
     /// };
     /// </code>
     /// </example>

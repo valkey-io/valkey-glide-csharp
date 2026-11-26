@@ -27,17 +27,6 @@ internal enum IamCredentialsStatus
 /// <summary>
 /// Bridges native IAM credentials requests to a managed <see cref="GlideCredentialProvider"/>.
 /// </summary>
-/// <remarks>
-/// <para>
-/// One bridge is registered per client. The native client owns the registered handle and releases it
-/// exactly once through <see cref="ReleasePointer"/> when its last reference to the provider is dropped.
-/// </para>
-/// <para>
-/// Each invocation runs the provider on the thread pool and allows <see cref="InvocationTimeout"/> in total
-/// for scheduling, the synchronous provider body, and its returned task. A new invocation is rejected while
-/// a previous synchronous provider body is still running.
-/// </para>
-/// </remarks>
 internal sealed class IamCredentialsBridge
 {
     #region Constants
@@ -70,7 +59,7 @@ internal sealed class IamCredentialsBridge
     /// <summary>
     /// Creates a new bridge for the given provider.
     /// </summary>
-    /// <param name="provider">The managed credentials provider.</param>
+    /// <param name="provider">The provider to invoke.</param>
     /// <param name="timeProvider">The time provider used for the invocation deadline. Defaults to <see cref="TimeProvider.System"/>.</param>
     internal IamCredentialsBridge(GlideCredentialProvider provider, TimeProvider? timeProvider = null)
     {
@@ -83,31 +72,16 @@ internal sealed class IamCredentialsBridge
     #endregion
     #region Internal Properties
 
-    /// <summary>
-    /// Native function pointer for <see cref="InvokeFromNative"/>.
-    /// </summary>
     internal static IntPtr InvokePointer
         => (IntPtr)(delegate* unmanaged[Cdecl]<IntPtr, IntPtr, int>)&InvokeFromNative;
 
-    /// <summary>
-    /// Native function pointer for <see cref="ReleaseFromNative"/>.
-    /// </summary>
     internal static IntPtr ReleasePointer
         => (IntPtr)(delegate* unmanaged[Cdecl]<IntPtr, void>)&ReleaseFromNative;
 
-    /// <summary>
-    /// Whether the registration has been released.
-    /// </summary>
     internal bool IsReleased => Volatile.Read(ref _released) != 0;
 
-    /// <summary>
-    /// Whether a synchronous provider body is currently running.
-    /// </summary>
     internal bool IsBodyRunning => Volatile.Read(ref _bodyRunning) != 0;
 
-    /// <summary>
-    /// Whether the handle returned by <see cref="Register"/> is still allocated.
-    /// </summary>
     internal bool IsHandleAllocated => _handle.IsAllocated;
 
     #endregion
@@ -153,7 +127,6 @@ internal sealed class IamCredentialsBridge
         var deadlineSource = new CancellationTokenSource(InvocationTimeout, _timeProvider);
         var invocationSource = new CancellationTokenSource();
 
-        // Cancel through the guard so a throwing provider callback cannot crash the timer or disposal thread.
         _ = deadlineSource.Token.UnsafeRegister(static state => TryCancel((CancellationTokenSource)state!), invocationSource);
         CancellationTokenRegistration disposalLink = _disposalSource.Token.UnsafeRegister(static state => TryCancel((CancellationTokenSource)state!), invocationSource);
         CancellationToken invocationToken = invocationSource.Token;
@@ -177,7 +150,7 @@ internal sealed class IamCredentialsBridge
             DisposeOnCompletion(work, invocationSource, deadlineSource);
         }
 
-        // A provider that honors the expired deadline token completes cancelled; report that as a timeout.
+        // A deadline that fires during disposal is reported as Cancelled, not TimedOut.
         bool timedOut = deadlineSource.IsCancellationRequested && !_disposalSource.IsCancellationRequested;
         if (result.Status == IamCredentialsStatus.Cancelled && timedOut)
         {
@@ -223,8 +196,8 @@ internal sealed class IamCredentialsBridge
     /// <summary>
     /// Native entry point that invokes the provider for the bridge identified by <paramref name="handle"/>.
     /// </summary>
-    /// <param name="handle">The handle returned by <see cref="Register"/>.</param>
-    /// <param name="sink">The native sink to pass to <see cref="FFI.SetIamCredentialsFfi"/>.</param>
+    /// <param name="handle">Handle of the bridge to invoke.</param>
+    /// <param name="sink">Native sink that receives the credentials.</param>
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     private static unsafe int InvokeFromNative(IntPtr handle, IntPtr sink)
     {
@@ -244,7 +217,7 @@ internal sealed class IamCredentialsBridge
     /// <summary>
     /// Native entry point that releases the bridge identified by <paramref name="handle"/>.
     /// </summary>
-    /// <param name="handle">The handle returned by <see cref="Register"/>.</param>
+    /// <param name="handle">Handle of the bridge to release.</param>
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     private static void ReleaseFromNative(IntPtr handle)
     {
@@ -261,7 +234,7 @@ internal sealed class IamCredentialsBridge
     /// <summary>
     /// Requests cancellation without letting exceptions from cancellation callbacks escape.
     /// </summary>
-    /// <param name="source">The token source to cancel.</param>
+    /// <param name="source">The source to cancel.</param>
     private static void TryCancel(CancellationTokenSource source)
     {
         try
@@ -281,9 +254,9 @@ internal sealed class IamCredentialsBridge
     /// <summary>
     /// Disposes the token sources once <paramref name="work"/> completes.
     /// </summary>
-    /// <param name="work">The provider invocation.</param>
-    /// <param name="invocationSource">The token source passed to the provider.</param>
-    /// <param name="deadlineSource">The deadline token source.</param>
+    /// <param name="work">The task to wait for.</param>
+    /// <param name="invocationSource">The invocation token source to dispose.</param>
+    /// <param name="deadlineSource">The deadline token source to dispose.</param>
     private static void DisposeOnCompletion(Task work, CancellationTokenSource invocationSource, CancellationTokenSource deadlineSource)
         => _ = work.ContinueWith(
             static (_, state) =>
@@ -300,8 +273,8 @@ internal sealed class IamCredentialsBridge
     /// <summary>
     /// Encodes the credentials as UTF-8 and passes them to <paramref name="sink"/> while pinned.
     /// </summary>
-    /// <param name="credentials">The credentials returned by the provider.</param>
-    /// <param name="sink">Copies the encoded credentials.</param>
+    /// <param name="credentials">The credentials to encode.</param>
+    /// <param name="sink">Receives the pinned FFI struct and returns whether it was accepted.</param>
     private static IamCredentialsStatus CopyCredentials(AwsCredentials credentials, Func<FFI.AwsCredentialsFfi, bool> sink)
     {
         byte[] accessKeyId = [];
@@ -312,7 +285,6 @@ internal sealed class IamCredentialsBridge
             accessKeyId = StrictUtf8.GetBytes(credentials.AccessKeyId);
             secretAccessKey = StrictUtf8.GetBytes(credentials.SecretAccessKey);
             sessionToken = credentials.SessionToken is null ? [] : StrictUtf8.GetBytes(credentials.SessionToken);
-            long expiresAtUnixMilliseconds = credentials.ExpiresAt?.ToUnixTimeMilliseconds() ?? 0;
 
             fixed (byte* accessKeyIdPointer = accessKeyId)
             fixed (byte* secretAccessKeyPointer = secretAccessKey)
@@ -326,8 +298,7 @@ internal sealed class IamCredentialsBridge
                     credentials.SessionToken is not null,
                     (IntPtr)sessionTokenPointer,
                     (nuint)sessionToken.Length,
-                    expiresAtUnixMilliseconds > 0,
-                    expiresAtUnixMilliseconds);
+                    credentials.ExpiresAt?.ToUnixTimeMilliseconds() ?? 0);
 
                 return sink(ffiCredentials) ? IamCredentialsStatus.Success : IamCredentialsStatus.InvalidCredentials;
             }
@@ -347,7 +318,7 @@ internal sealed class IamCredentialsBridge
     /// <summary>
     /// Runs the provider body on the thread pool and awaits its task.
     /// </summary>
-    /// <param name="cancellationToken">The token passed to the provider.</param>
+    /// <param name="cancellationToken">Token cancelled on timeout or disposal.</param>
     private async Task<(IamCredentialsStatus Status, AwsCredentials? Credentials)> RunAsync(CancellationToken cancellationToken)
     {
         Task<AwsCredentials>? providerTask;
@@ -395,12 +366,12 @@ internal sealed class IamCredentialsBridge
     /// <summary>
     /// Runs the synchronous provider body and releases the busy slot as soon as it returns or throws.
     /// </summary>
-    /// <param name="cancellationToken">The token passed to the provider.</param>
+    /// <param name="cancellationToken">Token cancelled on timeout or disposal.</param>
     private Task<AwsCredentials>? RunBody(CancellationToken cancellationToken)
     {
         try
         {
-            // Skip the provider if the invocation timed out or was cancelled before it was scheduled.
+            // StartNew uses CancellationToken.None, so this body always runs and always resets the busy slot.
             cancellationToken.ThrowIfCancellationRequested();
             return _provider(cancellationToken);
         }

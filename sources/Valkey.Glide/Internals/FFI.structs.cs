@@ -525,44 +525,40 @@ internal partial class FFI
 
     /// <summary>
     /// AWS credentials returned by a custom IAM credentials provider.
-    /// All pointers reference UTF-8 bytes that are only valid for the duration of <see cref="SetIamCredentialsFfi"/>.
     /// </summary>
-    /// <param name="accessKeyId">Pointer to the UTF-8 access key ID.</param>
-    /// <param name="accessKeyIdLen">Length of <paramref name="accessKeyId"/> in bytes.</param>
-    /// <param name="secretAccessKey">Pointer to the UTF-8 secret access key.</param>
-    /// <param name="secretAccessKeyLen">Length of <paramref name="secretAccessKey"/> in bytes.</param>
-    /// <param name="hasSessionToken">Whether a session token was supplied.</param>
-    /// <param name="sessionToken">Pointer to the UTF-8 session token.</param>
-    /// <param name="sessionTokenLen">Length of <paramref name="sessionToken"/> in bytes.</param>
-    /// <param name="hasExpiresAt">Whether an expiration time was supplied.</param>
-    /// <param name="expiresAtUnixMs">Expiration time in Unix milliseconds.</param>
     /// <remarks>
-    /// Passed by pointer, so the struct must stay blittable: flags are stored as <see cref="byte"/> values.
+    /// Passed by pointer, so the struct must stay blittable: <c>HasSessionToken</c> is stored as a <see cref="byte"/>.
     /// </remarks>
+    /// <param name="accessKeyId">Pointer to the UTF-8 access key ID.</param>
+    /// <param name="accessKeyIdLength">Access key ID length in bytes.</param>
+    /// <param name="secretAccessKey">Pointer to the UTF-8 secret access key.</param>
+    /// <param name="secretAccessKeyLength">Secret access key length in bytes.</param>
+    /// <param name="hasSessionToken">Whether a session token is present.</param>
+    /// <param name="sessionToken">Pointer to the UTF-8 session token.</param>
+    /// <param name="sessionTokenLength">Session token length in bytes.</param>
+    /// <param name="expiresAtUnixMilliseconds">Expiry as Unix milliseconds.</param>
     [StructLayout(LayoutKind.Sequential)]
     internal readonly struct AwsCredentialsFfi(
         IntPtr accessKeyId,
-        nuint accessKeyIdLen,
+        nuint accessKeyIdLength,
         IntPtr secretAccessKey,
-        nuint secretAccessKeyLen,
+        nuint secretAccessKeyLength,
         bool hasSessionToken,
         IntPtr sessionToken,
-        nuint sessionTokenLen,
-        bool hasExpiresAt,
-        long expiresAtUnixMs)
+        nuint sessionTokenLength,
+        long expiresAtUnixMilliseconds)
     {
         public readonly IntPtr AccessKeyId = accessKeyId;
-        public readonly nuint AccessKeyIdLen = accessKeyIdLen;
+        public readonly nuint AccessKeyIdLength = accessKeyIdLength;
 
         public readonly IntPtr SecretAccessKey = secretAccessKey;
-        public readonly nuint SecretAccessKeyLen = secretAccessKeyLen;
+        public readonly nuint SecretAccessKeyLength = secretAccessKeyLength;
 
         public readonly byte HasSessionToken = hasSessionToken ? (byte)1 : (byte)0;
         public readonly IntPtr SessionToken = sessionToken;
-        public readonly nuint SessionTokenLen = sessionTokenLen;
+        public readonly nuint SessionTokenLength = sessionTokenLength;
 
-        public readonly byte HasExpiresAt = hasExpiresAt ? (byte)1 : (byte)0;
-        public readonly long ExpiresAtUnixMs = expiresAtUnixMs;
+        public readonly long ExpiresAtUnixMilliseconds = expiresAtUnixMilliseconds;
     }
 
     #region Monitor

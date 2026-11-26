@@ -250,7 +250,6 @@ pub unsafe extern "C-unwind" fn create_client(
     iam_credentials_invoke: Option<iam::IamCredentialsInvokeCallback>,
     iam_credentials_release: Option<iam::IamCredentialsReleaseCallback>,
 ) {
-    // Take ownership first so that every exit path below releases the managed handle exactly once.
     let credentials_provider = unsafe {
         iam::CredentialsProviderRegistration::take(
             iam_credentials_provider,
@@ -287,24 +286,14 @@ pub unsafe extern "C-unwind" fn create_client(
         }
     };
 
-    if let Some(provider) = credentials_provider {
-        let Some(iam_config) = request
-            .authentication_info
-            .as_mut()
-            .and_then(|authentication_info| authentication_info.iam_config.as_mut())
-        else {
-            panic_guard.panicked = false;
-            unsafe {
-                report_error(
-                    failure_callback,
-                    0,
-                    "Credentials provider requires IAM authentication".into(),
-                    RequestErrorType::Unspecified,
-                );
-            }
-            return;
-        };
-        iam_config.credentials_provider = Some(iam::into_core_provider(provider));
+    if let Some(provider) = credentials_provider
+        && let Err(err) = iam::attach_provider(&mut request, provider)
+    {
+        panic_guard.panicked = false;
+        unsafe {
+            report_error(failure_callback, 0, err, RequestErrorType::Unspecified);
+        }
+        return;
     }
 
     // Set address resolver if provided

@@ -61,25 +61,24 @@ public class IamCredentialsBridgeTests
         Assert.True(captured.HasSessionToken);
         Assert.True(Encoding.UTF8.GetByteCount(sessionToken) > 2048);
         Assert.Equal(sessionToken, captured.SessionToken);
-        Assert.True(captured.HasExpiresAt);
-        Assert.Equal(expiresAtUnixMilliseconds, captured.ExpiresAtUnixMs);
+        Assert.Equal(expiresAtUnixMilliseconds, captured.ExpiresAtUnixMilliseconds);
 
-        // Absent session token and expiry.
+        // Absent session token and expiry (expiry is passed as 0).
         captured = InvokeAndCapture(new AwsCredentials(AccessKeyId, SecretAccessKey));
 
         Assert.False(captured.HasSessionToken);
-        Assert.False(captured.HasExpiresAt);
+        Assert.Equal(0, captured.ExpiresAtUnixMilliseconds);
 
-        // Empty session token is preserved, and non-positive expiry is absent.
+        // Empty session token is preserved, and a non-positive expiry is passed through unchanged.
         captured = InvokeAndCapture(new AwsCredentials(AccessKeyId, SecretAccessKey, string.Empty, DateTimeOffset.UnixEpoch));
 
         Assert.True(captured.HasSessionToken);
         Assert.Equal(string.Empty, captured.SessionToken);
-        Assert.False(captured.HasExpiresAt);
+        Assert.Equal(0, captured.ExpiresAtUnixMilliseconds);
 
         captured = InvokeAndCapture(new AwsCredentials(AccessKeyId, SecretAccessKey, null, DateTimeOffset.UnixEpoch.AddDays(-1)));
 
-        Assert.False(captured.HasExpiresAt);
+        Assert.Equal(-86_400_000, captured.ExpiresAtUnixMilliseconds);
     }
 
     [Theory]
@@ -391,12 +390,11 @@ public class IamCredentialsBridgeTests
         var status = bridge.Invoke(ffiCredentials =>
         {
             captured = new CapturedCredentials(
-                ReadUtf8(ffiCredentials.AccessKeyId, ffiCredentials.AccessKeyIdLen),
-                ReadUtf8(ffiCredentials.SecretAccessKey, ffiCredentials.SecretAccessKeyLen),
+                ReadUtf8(ffiCredentials.AccessKeyId, ffiCredentials.AccessKeyIdLength),
+                ReadUtf8(ffiCredentials.SecretAccessKey, ffiCredentials.SecretAccessKeyLength),
                 ffiCredentials.HasSessionToken == 1,
-                ffiCredentials.HasSessionToken == 1 ? ReadUtf8(ffiCredentials.SessionToken, ffiCredentials.SessionTokenLen) : null,
-                ffiCredentials.HasExpiresAt == 1,
-                ffiCredentials.ExpiresAtUnixMs);
+                ffiCredentials.HasSessionToken == 1 ? ReadUtf8(ffiCredentials.SessionToken, ffiCredentials.SessionTokenLength) : null,
+                ffiCredentials.ExpiresAtUnixMilliseconds);
             return true;
         });
 
@@ -487,8 +485,7 @@ public class IamCredentialsBridgeTests
         string SecretAccessKey,
         bool HasSessionToken,
         string? SessionToken,
-        bool HasExpiresAt,
-        long ExpiresAtUnixMs);
+        long ExpiresAtUnixMilliseconds);
 
     #endregion
 }

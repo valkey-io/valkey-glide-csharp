@@ -69,30 +69,28 @@ public class FFITests
     {
         // Rust `AwsCredentialsFfi` struct in `rust/src/iam.rs` on 64-bit platforms:
         // - access_key_id: *const u8 (0)
-        // - access_key_id_len: usize (8)
+        // - access_key_id_length: usize (8)
         // - secret_access_key: *const u8 (16)
-        // - secret_access_key_len: usize (24)
+        // - secret_access_key_length: usize (24)
         // - has_session_token: bool (32)
         // - session_token: *const u8 (40)
-        // - session_token_len: usize (48)
-        // - has_expires_at: bool (56)
-        // - expires_at_unix_ms: i64 (64)
+        // - session_token_length: usize (48)
+        // - expires_at_unix_milliseconds: i64 (56)
 
         // The struct is passed by pointer, so its managed layout must match too.
-        Assert.Equal(72, Unsafe.SizeOf<FFI.AwsCredentialsFfi>());
+        Assert.Equal(64, Unsafe.SizeOf<FFI.AwsCredentialsFfi>());
 
         var bytes = ToBytes(new FFI.AwsCredentialsFfi(
             accessKeyId: 1,
-            accessKeyIdLen: 2,
+            accessKeyIdLength: 2,
             secretAccessKey: 3,
-            secretAccessKeyLen: 4,
+            secretAccessKeyLength: 4,
             hasSessionToken: true,
             sessionToken: 5,
-            sessionTokenLen: 6,
-            hasExpiresAt: false,
-            expiresAtUnixMs: 7));
+            sessionTokenLength: 6,
+            expiresAtUnixMilliseconds: 7));
 
-        Assert.Equal(72, bytes.Length);
+        Assert.Equal(64, bytes.Length);
         Assert.Equal(1L, BitConverter.ToInt64(bytes, 0));
         Assert.Equal(2UL, BitConverter.ToUInt64(bytes, 8));
         Assert.Equal(3L, BitConverter.ToInt64(bytes, 16));
@@ -100,8 +98,7 @@ public class FFITests
         Assert.Equal(1, bytes[32]);
         Assert.Equal(5L, BitConverter.ToInt64(bytes, 40));
         Assert.Equal(6UL, BitConverter.ToUInt64(bytes, 48));
-        Assert.Equal(0, bytes[56]);
-        Assert.Equal(7L, BitConverter.ToInt64(bytes, 64));
+        Assert.Equal(7L, BitConverter.ToInt64(bytes, 56));
     }
 
     #endregion

@@ -1,10 +1,6 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 //! Bridge between glide-core's synchronous IAM credentials provider and a managed C# provider.
-//!
-//! The C# binding passes an opaque handle together with two static entry points. Rust owns the
-//! handle from the moment [`CredentialsProviderRegistration::take`] runs and releases it exactly once
-//! when the last reference to the registration is dropped.
 
 use std::{
     ffi::c_void,
@@ -13,7 +9,10 @@ use std::{
     time::{Duration, SystemTime},
 };
 
-use glide_core::iam::{CredentialsProvider, GlideIAMError};
+use glide_core::{
+    client::ConnectionRequest,
+    iam::{CredentialsProvider, GlideIAMError},
+};
 
 /// Callback that invokes the managed credentials provider.
 ///
@@ -26,7 +25,7 @@ use glide_core::iam::{CredentialsProvider, GlideIAMError};
 /// One of the `STATUS_*` constants defined in this module.
 ///
 /// # Safety
-/// The callback must not unwind and must not retain `sink` after it returns.
+/// The callback must not unwind.
 pub type IamCredentialsInvokeCallback =
     unsafe extern "C" fn(handle: *mut c_void, sink: *mut c_void) -> i32;
 
@@ -52,36 +51,31 @@ const STATUS_INTERNAL: i32 = 8;
 type ProvidedCredentials = (String, String, Option<String>, Option<SystemTime>);
 
 /// FFI view of AWS credentials written by the managed provider.
-///
-/// All pointers reference UTF-8 bytes that are only valid for the duration of the
-/// [`set_iam_credentials`] call.
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct AwsCredentialsFfi {
     pub access_key_id: *const u8,
-    pub access_key_id_len: usize,
+    pub access_key_id_length: usize,
     pub secret_access_key: *const u8,
-    pub secret_access_key_len: usize,
+    pub secret_access_key_length: usize,
     pub has_session_token: bool,
     pub session_token: *const u8,
-    pub session_token_len: usize,
-    pub has_expires_at: bool,
-    pub expires_at_unix_ms: i64,
+    pub session_token_length: usize,
+    pub expires_at_unix_milliseconds: i64,
 }
 
 // Layout checked by `FFITests.AwsCredentialsFfi_MatchesRustLayout` in the C# unit tests.
 const _: () = {
     use std::mem::{offset_of, size_of};
-    assert!(size_of::<AwsCredentialsFfi>() == 72);
+    assert!(size_of::<AwsCredentialsFfi>() == 64);
     assert!(offset_of!(AwsCredentialsFfi, access_key_id) == 0);
-    assert!(offset_of!(AwsCredentialsFfi, access_key_id_len) == 8);
+    assert!(offset_of!(AwsCredentialsFfi, access_key_id_length) == 8);
     assert!(offset_of!(AwsCredentialsFfi, secret_access_key) == 16);
-    assert!(offset_of!(AwsCredentialsFfi, secret_access_key_len) == 24);
+    assert!(offset_of!(AwsCredentialsFfi, secret_access_key_length) == 24);
     assert!(offset_of!(AwsCredentialsFfi, has_session_token) == 32);
     assert!(offset_of!(AwsCredentialsFfi, session_token) == 40);
-    assert!(offset_of!(AwsCredentialsFfi, session_token_len) == 48);
-    assert!(offset_of!(AwsCredentialsFfi, has_expires_at) == 56);
-    assert!(offset_of!(AwsCredentialsFfi, expires_at_unix_ms) == 64);
+    assert!(offset_of!(AwsCredentialsFfi, session_token_length) == 48);
+    assert!(offset_of!(AwsCredentialsFfi, expires_at_unix_milliseconds) == 56);
 };
 
 /// Owns a managed credentials provider handle and the callbacks used to invoke and release it.
@@ -154,10 +148,25 @@ impl CredentialsProviderRegistration {
     }
 }
 
-/// Wraps a registration in a glide-core credentials provider.
-pub fn into_core_provider(
+/// Attaches a managed credentials provider to the request's IAM configuration.
+///
+/// Returns an error if the request does not use IAM authentication; the registration is then
+/// dropped, which releases the managed handle.
+pub fn attach_provider(
+    request: &mut ConnectionRequest,
     registration: Arc<CredentialsProviderRegistration>,
-) -> CredentialsProvider {
+) -> Result<(), String> {
+    let iam_config = request
+        .authentication_info
+        .as_mut()
+        .and_then(|authentication_info| authentication_info.iam_config.as_mut())
+        .ok_or("Credentials provider requires IAM authentication")?;
+    iam_config.credentials_provider = Some(into_core_provider(registration));
+    Ok(())
+}
+
+/// Wraps a registration in a glide-core credentials provider.
+fn into_core_provider(registration: Arc<CredentialsProviderRegistration>) -> CredentialsProvider {
     Arc::new(move || registration.call())
 }
 
@@ -214,11 +223,8 @@ unsafe fn copy_optional_utf8(
 
 /// Converts an optional expiry in Unix milliseconds. Non-positive values are absent.
 /// Returns `None` if the expiry is out of range.
-fn expiry_from_unix_milliseconds(
-    present: bool,
-    unix_milliseconds: i64,
-) -> Option<Option<SystemTime>> {
-    if !present || unix_milliseconds <= 0 {
+fn expiry_from_unix_milliseconds(unix_milliseconds: i64) -> Option<Option<SystemTime>> {
+    if unix_milliseconds <= 0 {
         return Some(None);
     }
     SystemTime::UNIX_EPOCH
@@ -235,7 +241,7 @@ fn expiry_from_unix_milliseconds(
 /// * `sink` must be the pointer passed to the current [`IamCredentialsInvokeCallback`] call, and
 ///   this function must only be called before that callback returns.
 /// * `credentials` must point to a valid [`AwsCredentialsFfi`] whose byte pointers reference
-///   their declared lengths of readable memory.
+///   their declared lengths of readable memory, valid only for the duration of the call.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn set_iam_credentials(
     sink: *mut c_void,
@@ -247,14 +253,14 @@ pub unsafe extern "C" fn set_iam_credentials(
     let credentials = unsafe { *credentials };
 
     let Some(access_key_id) =
-        (unsafe { copy_utf8(credentials.access_key_id, credentials.access_key_id_len) })
+        (unsafe { copy_utf8(credentials.access_key_id, credentials.access_key_id_length) })
     else {
         return false;
     };
     let Some(secret_access_key) = (unsafe {
         copy_utf8(
             credentials.secret_access_key,
-            credentials.secret_access_key_len,
+            credentials.secret_access_key_length,
         )
     }) else {
         return false;
@@ -263,13 +269,12 @@ pub unsafe extern "C" fn set_iam_credentials(
         copy_optional_utf8(
             credentials.has_session_token,
             credentials.session_token,
-            credentials.session_token_len,
+            credentials.session_token_length,
         )
     }) else {
         return false;
     };
-    let Some(expires_at) =
-        expiry_from_unix_milliseconds(credentials.has_expires_at, credentials.expires_at_unix_ms)
+    let Some(expires_at) = expiry_from_unix_milliseconds(credentials.expires_at_unix_milliseconds)
     else {
         return false;
     };
