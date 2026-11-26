@@ -69,6 +69,11 @@ public abstract partial class BaseClient : IBaseClient
     /// </summary>
     private AddressResolverAction? _addressResolverDelegate;
 
+    /// <summary>
+    /// Bridge to the custom IAM credentials provider, if configured.
+    /// </summary>
+    private IamCredentialsBridge? _iamCredentialsBridge;
+
     private readonly object _lock = new();
     private string _clientInfo = ""; // used to distinguish and identify clients during tests
 
@@ -213,6 +218,9 @@ public abstract partial class BaseClient : IBaseClient
 
             // Clean up PubSub resources
             CleanupPubSubResources();
+
+            // Cancel any in-flight IAM credentials provider invocation so closing does not wait on it.
+            _iamCredentialsBridge?.Cancel();
 
             MessageContainer.Dispose();
             CloseClientFfi(ClientPointer);
@@ -521,7 +529,36 @@ public abstract partial class BaseClient : IBaseClient
             addressResolverPointer = Marshal.GetFunctionPointerForDelegate(client._addressResolverDelegate);
         }
 
-        CreateClientFfi(request.ToPtr(), successCallbackPointer, failureCallbackPointer, pubsubCallbackPointer, addressResolverPointer);
+        IntPtr iamCredentialsProvider = IntPtr.Zero;
+        IntPtr iamCredentialsInvokePointer = IntPtr.Zero;
+        IntPtr iamCredentialsReleasePointer = IntPtr.Zero;
+        if (config.Request.CredentialsProvider != null)
+        {
+            client._iamCredentialsBridge = new IamCredentialsBridge(config.Request.CredentialsProvider);
+            iamCredentialsProvider = client._iamCredentialsBridge.Register();
+            iamCredentialsInvokePointer = IamCredentialsBridge.InvokePointer;
+            iamCredentialsReleasePointer = IamCredentialsBridge.ReleasePointer;
+        }
+
+        try
+        {
+            CreateClientFfi(
+                request.ToPtr(),
+                successCallbackPointer,
+                failureCallbackPointer,
+                pubsubCallbackPointer,
+                addressResolverPointer,
+                iamCredentialsProvider,
+                iamCredentialsInvokePointer,
+                iamCredentialsReleasePointer);
+        }
+        catch
+        {
+            // The native call failed before taking ownership of the handle (e.g. the library failed to load).
+            client._iamCredentialsBridge?.Release();
+            throw;
+        }
+
         client.ClientPointer = await message; // This will throw an error thru failure callback if any
 
         if (client.ClientPointer == IntPtr.Zero)

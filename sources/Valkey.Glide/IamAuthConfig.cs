@@ -11,6 +11,7 @@ public sealed class IamAuthConfig : IDisposable
     #region Private Fields
 
     private bool _disposed;
+    private GlideCredentialProvider? _credentialsProvider;
 
     #endregion
     #region Constructors
@@ -72,6 +73,37 @@ public sealed class IamAuthConfig : IDisposable
         private set;
     }
 
+    /// <summary>
+    /// Optional provider of the AWS credentials used to sign IAM tokens.
+    /// If <see langword="null"/>, credentials are resolved from the default AWS credential chain.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The client configuration captures the provider when it is built, so disposing this instance
+    /// afterwards does not affect clients created from that configuration.
+    /// </para>
+    /// <para>
+    /// If the provider fails, client creation throws <see cref="Errors.ConnectionException"/> and
+    /// <see cref="BaseClient.RefreshIamTokenAsync"/> throws <see cref="Errors.RequestException"/>.
+    /// See <see cref="GlideCredentialProvider"/> for invocation, timeout, and concurrency behavior.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var iamConfig = new IamAuthConfig("my-cache", ServiceType.ElastiCache, "us-east-1")
+    /// {
+    ///     CredentialsProvider = _ => Task.FromResult(
+    ///         new AwsCredentials(
+    ///             "access-key-id", "secret-access-key", "session-token", DateTimeOffset.UtcNow.AddHours(1))),
+    /// };
+    /// </code>
+    /// </example>
+    public GlideCredentialProvider? CredentialsProvider
+    {
+        get { ThrowIfDisposed(); return _credentialsProvider; }
+        init => _credentialsProvider = value;
+    }
+
     #endregion
     #region Public Methods
 
@@ -91,6 +123,7 @@ public sealed class IamAuthConfig : IDisposable
             ClusterName = string.Empty;
             Region = string.Empty;
             RefreshIntervalSeconds = null;
+            _credentialsProvider = null;
 
             _disposed = true;
         }

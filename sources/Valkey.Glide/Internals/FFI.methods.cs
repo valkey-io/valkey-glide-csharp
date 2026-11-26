@@ -69,7 +69,15 @@ internal partial class FFI
 
     [LibraryImport("libglide_rs", EntryPoint = "create_client")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-    public static partial void CreateClientFfi(IntPtr config, IntPtr successCallback, IntPtr failureCallback, IntPtr pubsubCallback, IntPtr addressResolverCallback);
+    public static partial void CreateClientFfi(
+        IntPtr config,
+        IntPtr successCallback,
+        IntPtr failureCallback,
+        IntPtr pubsubCallback,
+        IntPtr addressResolverCallback,
+        IntPtr iamCredentialsProvider,
+        IntPtr iamCredentialsInvokeCallback,
+        IntPtr iamCredentialsReleaseCallback);
 
     [LibraryImport("libglide_rs", EntryPoint = "close_client")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
@@ -117,6 +125,11 @@ internal partial class FFI
     [LibraryImport("libglide_rs", EntryPoint = "refresh_iam_token")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
     public static partial void RefreshIamTokenFfi(IntPtr client, ulong index);
+
+    [LibraryImport("libglide_rs", EntryPoint = "set_iam_credentials")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    [return: MarshalAs(UnmanagedType.U1)]
+    public static partial bool SetIamCredentialsFfi(IntPtr sink, AwsCredentialsFfi* credentials);
 
     [LibraryImport("libglide_rs", EntryPoint = "get_statistics")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]

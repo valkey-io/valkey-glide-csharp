@@ -878,6 +878,7 @@ public abstract class ConnectionConfiguration
                 credentials.Password != null ? new string(credentials.Password) : null,
                 iamCredentials
             );
+            Config.CredentialsProvider = credentials.IamAuthConfig?.CredentialsProvider;
 
             return (T)this;
         }
@@ -1232,6 +1233,7 @@ public abstract class ConnectionConfiguration
         public ClientSideCacheConfig? ClientSideCacheConfig;
         public CircuitBreakerConfig? CircuitBreakerConfig;
         public AddressResolverDelegate? AddressResolver;
+        public GlideCredentialProvider? CredentialsProvider;
 
         // TLS
         public TlsMode TlsMode = TlsMode.NoTls;

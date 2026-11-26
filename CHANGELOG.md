@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 1.3.0
 
+### Added
+
+- Custom AWS credentials provider for IAM authentication (#665)
+
 ### Fixed
 
 - Culture-sensitive formatting and parsing of command arguments and replies (#651)

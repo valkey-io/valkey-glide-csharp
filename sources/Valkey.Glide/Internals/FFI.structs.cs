@@ -523,6 +523,44 @@ internal partial class FFI
         public readonly uint RefreshIntervalSeconds = refreshIntervalSeconds ?? default;
     }
 
+    /// <summary>
+    /// AWS credentials returned by a custom IAM credentials provider.
+    /// </summary>
+    /// <remarks>
+    /// Passed by pointer, so the struct must stay blittable: <c>HasSessionToken</c> is stored as a <see cref="byte"/>.
+    /// </remarks>
+    /// <param name="accessKeyId">Pointer to the UTF-8 access key ID.</param>
+    /// <param name="accessKeyIdLength">Access key ID length in bytes.</param>
+    /// <param name="secretAccessKey">Pointer to the UTF-8 secret access key.</param>
+    /// <param name="secretAccessKeyLength">Secret access key length in bytes.</param>
+    /// <param name="hasSessionToken">Whether a session token is present.</param>
+    /// <param name="sessionToken">Pointer to the UTF-8 session token.</param>
+    /// <param name="sessionTokenLength">Session token length in bytes.</param>
+    /// <param name="expiresAtUnixMilliseconds">Expiry as Unix milliseconds.</param>
+    [StructLayout(LayoutKind.Sequential)]
+    internal readonly struct AwsCredentialsFfi(
+        IntPtr accessKeyId,
+        nuint accessKeyIdLength,
+        IntPtr secretAccessKey,
+        nuint secretAccessKeyLength,
+        bool hasSessionToken,
+        IntPtr sessionToken,
+        nuint sessionTokenLength,
+        long expiresAtUnixMilliseconds)
+    {
+        public readonly IntPtr AccessKeyId = accessKeyId;
+        public readonly nuint AccessKeyIdLength = accessKeyIdLength;
+
+        public readonly IntPtr SecretAccessKey = secretAccessKey;
+        public readonly nuint SecretAccessKeyLength = secretAccessKeyLength;
+
+        public readonly byte HasSessionToken = hasSessionToken ? (byte)1 : (byte)0;
+        public readonly IntPtr SessionToken = sessionToken;
+        public readonly nuint SessionTokenLength = sessionTokenLength;
+
+        public readonly long ExpiresAtUnixMilliseconds = expiresAtUnixMilliseconds;
+    }
+
     #region Monitor
 
     /// <summary>

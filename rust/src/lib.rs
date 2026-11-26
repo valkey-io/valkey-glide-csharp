@@ -3,6 +3,7 @@
 mod enums;
 use enums::{CacheMetricsType, PushKind};
 mod ffi;
+mod iam;
 use ffi::{
     BatchInfo, BatchOptionsInfo, CmdInfo, ConnectionConfig, PubSubCallback, ResponseValue,
     RouteInfo, create_cmd, create_connection_request, create_pipeline, create_route,
@@ -231,6 +232,12 @@ impl Drop for PanicGuard {
 /// * `pubsub_callback` is an optional callback. When provided, it must be a valid function pointer.
 ///   See the safety documentation in the FFI module for PubSubCallback.
 /// * `address_resolver` is an optional callback. When provided, it must be a valid function pointer.
+/// * `iam_credentials_provider` is an optional managed handle for a custom IAM credentials provider.
+///   When non-null, Rust takes ownership of it immediately and releases it exactly once through
+///   `iam_credentials_release`, including when client creation fails. When provided,
+///   `iam_credentials_invoke` and `iam_credentials_release` must be valid function pointers.
+///   See the safety documentation of [`iam::IamCredentialsInvokeCallback`] and
+///   [`iam::IamCredentialsReleaseCallback`].
 #[allow(rustdoc::private_intra_doc_links)]
 #[unsafe(no_mangle)]
 pub unsafe extern "C-unwind" fn create_client(
@@ -239,11 +246,33 @@ pub unsafe extern "C-unwind" fn create_client(
     failure_callback: FailureCallback,
     #[allow(unused_variables)] pubsub_callback: Option<PubSubCallback>,
     address_resolver: Option<AddressResolverCallback>,
+    iam_credentials_provider: *mut c_void,
+    iam_credentials_invoke: Option<iam::IamCredentialsInvokeCallback>,
+    iam_credentials_release: Option<iam::IamCredentialsReleaseCallback>,
 ) {
+    let credentials_provider = unsafe {
+        iam::CredentialsProviderRegistration::take(
+            iam_credentials_provider,
+            iam_credentials_invoke,
+            iam_credentials_release,
+        )
+    };
+
     let mut panic_guard = PanicGuard {
         panicked: true,
         failure_callback,
         callback_index: 0,
+    };
+
+    let credentials_provider = match credentials_provider {
+        Ok(provider) => provider,
+        Err(err) => {
+            panic_guard.panicked = false;
+            unsafe {
+                report_error(failure_callback, 0, err, RequestErrorType::Unspecified);
+            }
+            return;
+        }
     };
 
     let mut request = match unsafe { create_connection_request(config) } {
@@ -256,6 +285,16 @@ pub unsafe extern "C-unwind" fn create_client(
             return;
         }
     };
+
+    if let Some(provider) = credentials_provider
+        && let Err(err) = iam::attach_provider(&mut request, provider)
+    {
+        panic_guard.panicked = false;
+        unsafe {
+            report_error(failure_callback, 0, err, RequestErrorType::Unspecified);
+        }
+        return;
+    }
 
     // Set address resolver if provided
     if let Some(cb) = address_resolver {
