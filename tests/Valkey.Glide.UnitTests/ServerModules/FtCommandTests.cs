@@ -660,4 +660,93 @@ public class FtCommandTests
         Assert.Equal(1, array[3][0].GetInt64());
         Assert.Equal("nested", array[3][1].GetString());
     }
+
+    [Fact]
+    public void FtAggregate_ScalarReplyTypes_AreConvertedToValkeyValues()
+    {
+        object[] rows =
+        [
+            new Dictionary<GlideString, object?>
+            {
+                [(GlideString)"text"] = (GlideString)"abc",
+                [(GlideString)"count"] = 7L,
+                [(GlideString)"ratio"] = 1.5,
+                [(GlideString)"flag"] = true,
+                [(GlideString)"missing"] = null,
+            }
+                .ToDictionary(kvp => kvp.Key, kvp => kvp.Value!),
+        ];
+
+        var row = Request.FtAggregate("idx", "*").Converter(rows)[0];
+
+        Assert.Equal("abc", row["text"].ToString());
+        Assert.Equal(7L, (long)row["count"]);
+        Assert.Equal(1.5, (double)row["ratio"]);
+        Assert.True((bool)row["flag"]);
+    }
+
+    [Fact]
+    public void FtAggregate_UnexpectedValueType_Throws()
+    {
+        object[] rows = [new Dictionary<GlideString, object> { [(GlideString)"bad"] = new object() }];
+
+        _ = Assert.Throws<Errors.RequestException>(() => Request.FtAggregate("idx", "*").Converter(rows));
+    }
+
+    [Fact]
+    public void FtAggregate_NonMapRows_AreSkipped()
+    {
+        object[] rows = [(GlideString)"1", new Dictionary<GlideString, object> { [(GlideString)"k"] = (GlideString)"v" }];
+
+        var result = Request.FtAggregate("idx", "*").Converter(rows);
+
+        _ = Assert.Single(result);
+        Assert.Equal("v", result[0]["k"].ToString());
+    }
+
+    [Fact]
+    public void FtAggregateWithCursor_ConvertsRowsAndCursorId()
+    {
+        object[] reply =
+        [
+            new object[] { new Dictionary<GlideString, object> { [(GlideString)"k"] = (GlideString)"v" } },
+            42L,
+        ];
+
+        var result = Request.FtAggregateWithCursor("idx", "*", new Ft.AggregateOptions { WithCursorOptions = new Ft.WithCursor() }).Converter(reply)!;
+
+        Assert.Equal(42L, result.CursorId);
+        _ = Assert.Single(result.Rows);
+        Assert.Equal("v", result.Rows[0]["k"].ToString());
+    }
+
+    [Fact]
+    public void FtCursorRead_ExhaustedCursor_ReturnsZeroCursorId()
+    {
+        object[] reply = [Array.Empty<object>(), 0L];
+
+        var result = Request.FtCursorRead("idx", 42, null).Converter(reply)!;
+
+        Assert.Equal(0L, result.CursorId);
+        Assert.Empty(result.Rows);
+    }
+
+    [Fact]
+    public void FtCursorRead_NotAnArray_Throws() => Assert.Throws<Errors.RequestException>(() => Request.FtCursorRead("idx", 42, null).Converter((GlideString)"oops"));
+
+    [Fact]
+    public void FtCursorRead_WrongLength_Throws()
+    {
+        object[] reply = [Array.Empty<object>()];
+
+        _ = Assert.Throws<Errors.RequestException>(() => Request.FtCursorRead("idx", 42, null).Converter(reply));
+    }
+
+    [Fact]
+    public void FtCursorRead_RowsNotAnArray_Throws()
+    {
+        object[] reply = [(GlideString)"rows", 1L];
+
+        _ = Assert.Throws<Errors.RequestException>(() => Request.FtCursorRead("idx", 42, null).Converter(reply));
+    }
 }
