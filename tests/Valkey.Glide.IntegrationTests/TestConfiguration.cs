@@ -27,8 +27,6 @@ public sealed class TestConfiguration : IDisposable
     // Environment variable names for providing server endpoints.
     private const string StandaloneEndpointsEnvVar = "standalone-endpoints";
     private const string ClusterEndpointsEnvVar = "cluster-endpoints";
-    private const string ModulesStandaloneEndpointEnvVar = "MODULES_STANDALONE_ENDPOINT";
-    private const string ModulesClusterEndpointsEnvVar = "MODULES_CLUSTER_ENDPOINTS";
 
     private const string DefaultServerGroupName = "cluster";
 
@@ -52,10 +50,8 @@ public sealed class TestConfiguration : IDisposable
     {
         TLS = Environment.GetEnvironmentVariable("tls") == "true";
 
-        var standaloneEndpoints = Environment.GetEnvironmentVariable(StandaloneEndpointsEnvVar)
-            ?? Environment.GetEnvironmentVariable(ModulesStandaloneEndpointEnvVar);
-        var clusterEndpoints = Environment.GetEnvironmentVariable(ClusterEndpointsEnvVar)
-            ?? Environment.GetEnvironmentVariable(ModulesClusterEndpointsEnvVar);
+        var standaloneEndpoints = Environment.GetEnvironmentVariable(StandaloneEndpointsEnvVar);
+        var clusterEndpoints = Environment.GetEnvironmentVariable(ClusterEndpointsEnvVar);
 
         if (standaloneEndpoints is not null || clusterEndpoints is not null)
         {
