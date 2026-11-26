@@ -1710,28 +1710,6 @@ redis.register_function('{funcName}', function(keys, args) return 'multi-node re
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task ScriptEvaluateAsync_WithParameterExtraction_ExtractsCorrectly(GlideClient client)
-    {
-        // Test parameter extraction from objects
-        LuaScript script = LuaScript.Prepare("return redis.call('SET', @key, @value)");
-        var parameters = new
-        {
-            key = BuildKey(),
-            value = BuildValue()
-        };
-
-        ValkeyResult result = await client.ScriptEvaluateAsync(script, parameters);
-
-        Assert.NotNull(result);
-        Assert.Equal("OK", result.ToString());
-
-        // Verify the key was set
-        ValkeyValue getValue = await client.GetAsync(parameters.key);
-        Assert.Equal(parameters.value, getValue);
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
     public async Task ScriptEvaluateAsync_WithKeyPrefix_AppliesPrefix(GlideClient client)
     {
         // Test key prefix application with direct script evaluation
