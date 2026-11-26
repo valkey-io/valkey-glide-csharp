@@ -1710,38 +1710,6 @@ redis.register_function('{funcName}', function(keys, args) return 'multi-node re
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
-    public async Task ScriptEvaluateAsync_WithLoadedLuaScript_ReturnsExpectedResult(GlideClient client)
-    {
-        // Get a server instance
-        var multiplexer = await ConnectionMultiplexer.ConnectAsync(TestConfiguration.DefaultCompatibleConfig());
-        try
-        {
-            IServer server = multiplexer.GetServer(multiplexer.GetEndPoints(true)[0]);
-
-            // Test IDatabase.ScriptEvaluateAsync with LoadedLuaScript
-            LuaScript script = LuaScript.Prepare("return redis.call('GET', @key)");
-            LoadedLuaScript loaded = await script.LoadAsync(server);
-
-            // Set a test value first
-            ValkeyKey key = BuildKey();
-            ValkeyValue value = BuildValue();
-            await client.SetAsync(key, value);
-
-            // Execute the loaded script
-            var parameters = new { key };
-            ValkeyResult result = await client.ScriptEvaluateAsync(loaded, parameters);
-
-            Assert.NotNull(result);
-            Assert.Equal(value, (ValkeyValue)result);
-        }
-        finally
-        {
-            await multiplexer.DisposeAsync();
-        }
-    }
-
-    [Theory(DisableDiscoveryEnumeration = true)]
-    [MemberData(nameof(Config.TestStandaloneClients), MemberType = typeof(TestConfiguration))]
     public async Task ScriptEvaluateAsync_WithParameterExtraction_ExtractsCorrectly(GlideClient client)
     {
         // Test parameter extraction from objects

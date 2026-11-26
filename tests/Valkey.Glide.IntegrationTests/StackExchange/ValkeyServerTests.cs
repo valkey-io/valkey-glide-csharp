@@ -2,6 +2,8 @@
 
 using Valkey.Glide.TestUtils;
 
+using static Valkey.Glide.TestUtils.Data;
+
 namespace Valkey.Glide.IntegrationTests.StackExchange;
 
 /// <summary>
@@ -193,15 +195,15 @@ public class ValkeyServerTests(ValkeyServerFixture fixture) : IClassFixture<Valk
         var server = fixture.Server;
         var db = fixture.Database;
 
-        LoadedLuaScript loaded = await server.ScriptLoadAsync(LuaScript.Prepare("return redis.call('PING')"));
-
-        Assert.NotNull(loaded);
-        Assert.NotNull(loaded.Hash);
+        // Verify script can be loaded.
+        var script = LuaScript.Prepare("return redis.call('SET', @key, @value)");
+        var loaded = await server.ScriptLoadAsync(script);
         Assert.NotEmpty(loaded.Hash);
 
-        // Verify the script can be executed
-        ValkeyResult result = await db.ScriptEvaluateAsync(loaded);
-        Assert.Equal("PONG", result.ToString());
+        // Verify the script can be executed.
+        var parameters = new { key = BuildKey(), value = BuildValue() };
+        Assert.Equal("OK", (ValkeyValue)await db.ScriptEvaluateAsync(loaded, parameters));
+        Assert.Equal(parameters.value, await db.StringGetAsync(parameters.key));
     }
 
     [Fact]
@@ -210,14 +212,15 @@ public class ValkeyServerTests(ValkeyServerFixture fixture) : IClassFixture<Valk
         var server = fixture.Server;
         var db = fixture.Database;
 
-        byte[] hash = await server.ScriptLoadAsync("return 'load test'");
-
-        Assert.NotNull(hash);
+        // Verify script can be loaded.
+        var hash = await server.ScriptLoadAsync("return redis.call('SET', KEYS[1], ARGV[1])");
         Assert.NotEmpty(hash);
 
-        // Verify the script can be executed with EVALSHA
-        ValkeyResult result = await db.ScriptEvaluateAsync(hash);
-        Assert.Equal("load test", result.ToString());
+        // Verify the script can be executed.
+        var key = BuildKey();
+        var value = BuildValue();
+        Assert.Equal("OK", (ValkeyValue)await db.ScriptEvaluateAsync(hash, [key], [value]));
+        Assert.Equal(value, await db.StringGetAsync(key));
     }
 
     #endregion
