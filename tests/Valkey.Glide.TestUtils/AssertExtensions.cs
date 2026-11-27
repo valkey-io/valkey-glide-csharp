@@ -10,11 +10,35 @@ public static class AssertExtensions
     extension(Assert)
     {
         /// <summary>
-        /// Asserts that the given result is a single value equal to the expected value.
+        /// Asserts that the given result is equal to the expected key.
+        /// </summary>
+        /// <param name="expected">The expected key.</param>
+        /// <param name="actual">The actual result.</param>
+        public static void Equal(ValkeyKey expected, ValkeyResult actual)
+            => Assert.Equal(expected, (ValkeyKey)actual);
+
+        /// <summary>
+        /// Asserts that the given result is equal to the   expected value.
         /// </summary>
         /// <param name="expected">The expected value.</param>
         /// <param name="actual">The actual result.</param>
         public static void Equal(ValkeyValue expected, ValkeyResult actual)
             => Assert.Equal(expected, (ValkeyValue)actual);
+
+        /// <summary>
+        /// Asserts that the given result is equal to the expected bytes.
+        /// </summary>
+        /// <param name="expected">The expected bytes.</param>
+        /// <param name="actual">The actual result.</param>
+        public static void Equal(byte[] expected, ValkeyResult actual)
+            => Assert.Equal(expected, (byte[]?)actual);
+
+        /// <summary>
+        /// Asserts that the given result is equal to the expected string.
+        /// </summary>
+        /// <param name="expected">The expected string.</param>
+        /// <param name="actual">The actual result.</param>
+        public static void Equal(string expected, ValkeyResult actual)
+            => Assert.Equal(expected, (string?)actual);
     }
 }
