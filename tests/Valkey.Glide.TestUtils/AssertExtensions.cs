@@ -10,7 +10,7 @@ public static class AssertExtensions
     extension(Assert)
     {
         /// <summary>
-        /// Asserts that the given result is equal to the expected key.
+        /// Asserts that the given result is a single value that is equal to the expected key.
         /// </summary>
         /// <param name="expected">The expected key.</param>
         /// <param name="actual">The actual result.</param>
@@ -18,7 +18,7 @@ public static class AssertExtensions
             => Assert.Equal(expected, (ValkeyKey)actual);
 
         /// <summary>
-        /// Asserts that the given result is equal to the   expected value.
+        /// Asserts that the given result is a single value that is equal to the   expected value.
         /// </summary>
         /// <param name="expected">The expected value.</param>
         /// <param name="actual">The actual result.</param>
@@ -26,7 +26,7 @@ public static class AssertExtensions
             => Assert.Equal(expected, (ValkeyValue)actual);
 
         /// <summary>
-        /// Asserts that the given result is equal to the expected bytes.
+        /// Asserts that the given result is a single value that is equal to the expected bytes.
         /// </summary>
         /// <param name="expected">The expected bytes.</param>
         /// <param name="actual">The actual result.</param>
@@ -34,11 +34,19 @@ public static class AssertExtensions
             => Assert.Equal(expected, (byte[]?)actual);
 
         /// <summary>
-        /// Asserts that the given result is equal to the expected string.
+        /// Asserts that the given result is a single value that is equal to the expected string.
         /// </summary>
         /// <param name="expected">The expected string.</param>
         /// <param name="actual">The actual result.</param>
         public static void Equal(string expected, ValkeyResult actual)
             => Assert.Equal(expected, (string?)actual);
+
+        /// <summary>
+        /// Asserts that the given result is an array equal to the expected strings.
+        /// </summary>
+        /// <param name="expected">The expected strings.</param>
+        /// <param name="actual">The actual result.</param>
+        public static void Equal(string?[] expected, ValkeyResult actual)
+            => Assert.Equal(expected, (string?[]?)actual);
     }
 }
