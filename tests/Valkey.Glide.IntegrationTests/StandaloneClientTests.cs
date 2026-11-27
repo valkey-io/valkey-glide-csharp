@@ -114,8 +114,7 @@ public class StandaloneClientTests(TestConfiguration config)
         string key2 = Guid.NewGuid().ToString();
         Assert.Equal(3L, await db.ExecuteAsync("sadd", [key2, "a", "b", "c"]));
         Assert.False((await db.ExecuteAsync("smembers", [key2])).AsStringArray()!.Except(["a", "b", "c"]).Any());
-        ValkeyResult smismemberResult = await db.ExecuteAsync("smismember", [key2, "a", "b", "d"]);
-        Assert.Equal([true, true, false], smismemberResult.AsBooleanArray()!);
+        Assert.Equal([true, true, false], await db.ExecuteAsync("smismember", [key2, "a", "b", "d"]));
 
         string key3 = Guid.NewGuid().ToString();
         _ = await db.ExecuteAsync("xadd", [key3, "0-1", "str-1-id-1-field-1", "str-1-id-1-value-1", "str-1-id-1-field-2", "str-1-id-1-value-2"]);
