@@ -109,10 +109,7 @@ public class StandaloneClientTests(TestConfiguration config)
             new Dictionary<string, string> { { "f1", "v1" }, { "f2", "v2" } },
             (await db.ExecuteAsync("hgetall", [key1])).ToDictionary().ToDictionary(k => k.Key, v => v.Value.AsString()!)
         );
-        Assert.Equal(
-            new string?[] { "v1", "v2", null },
-            (await db.ExecuteAsync("hmget", [key1, "f1", "f2", "f3"])).AsStringArray()
-        );
+        Assert.Equal(["v1", "v2", null], await db.ExecuteAsync("hmget", [key1, "f1", "f2", "f3"]));
 
         string key2 = Guid.NewGuid().ToString();
         Assert.Equal(3L, await db.ExecuteAsync("sadd", [key2, "a", "b", "c"]));

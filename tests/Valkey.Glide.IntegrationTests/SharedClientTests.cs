@@ -58,9 +58,7 @@ public class SharedClientTests(TestConfiguration config)
             .WithKeys(LargeString)
             .WithArgs(LargeString);
 
-        var result = await client.ScriptInvokeAsync(script, options, TestContext.Current.CancellationToken);
-
-        Assert.Equal((string[])[LargeString, LargeString], result.AsStringArray());
+        Assert.Equal([LargeString, LargeString], await client.ScriptInvokeAsync(script, options, TestContext.Current.CancellationToken));
     }
 
     // This test is slow, but it caught timing and releasing issues in the past,

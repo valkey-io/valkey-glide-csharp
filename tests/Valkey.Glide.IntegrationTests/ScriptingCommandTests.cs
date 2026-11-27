@@ -259,15 +259,7 @@ public class ScriptingCommandTests(TestConfiguration config)
     {
         // Test script returning array
         using var script = new Script("return {'a', 'b', 'c'}");
-        ValkeyResult result = await client.ScriptInvokeAsync(script, CancellationToken);
-
-        Assert.NotNull(result);
-        string?[]? arr = (string?[]?)result;
-        Assert.NotNull(arr);
-        Assert.Equal(3, arr.Length);
-        Assert.Equal("a", arr[0]);
-        Assert.Equal("b", arr[1]);
-        Assert.Equal("c", arr[2]);
+        Assert.Equal(["a", "b", "c"], await client.ScriptInvokeAsync(script, CancellationToken));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -876,13 +868,7 @@ redis.register_function('{funcName}', function(keys, args) return {{'a', 'b', 'c
             result = await client.FCallAsync(funcName, CancellationToken);
         }
 
-        Assert.NotNull(result);
-        string?[]? arr = (string?[]?)result;
-        Assert.NotNull(arr);
-        Assert.Equal(3, arr.Length);
-        Assert.Equal("a", arr[0]);
-        Assert.Equal("b", arr[1]);
-        Assert.Equal("c", arr[2]);
+        Assert.Equal(["a", "b", "c"], result);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]

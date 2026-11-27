@@ -62,16 +62,7 @@ public class ScriptingCommandTests(TestConfiguration config)
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task ScriptEvaluateAsync_ReturnsArray(IDatabaseAsync db)
-    {
-        ValkeyResult result = await db.ScriptEvaluateAsync("return {'a', 'b', 'c'}");
-
-        ValkeyResult[]? array = (ValkeyResult[]?)result;
-        Assert.NotNull(array);
-        Assert.Equal(3, array.Length);
-        Assert.Equal("a", array[0]);
-        Assert.Equal("b", array[1]);
-        Assert.Equal("c", array[2]);
-    }
+        => Assert.Equal(["a", "b", "c"], await db.ScriptEvaluateAsync("return {'a', 'b', 'c'}"));
 
     #endregion
     #region ScriptEvaluateAsync (LuaScript)
