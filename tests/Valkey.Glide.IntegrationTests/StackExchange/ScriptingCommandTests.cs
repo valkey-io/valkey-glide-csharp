@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.TestUtils;
+
 using static Valkey.Glide.TestUtils.Data;
 
 namespace Valkey.Glide.IntegrationTests.StackExchange;
@@ -20,64 +22,47 @@ public class ScriptingCommandTests(TestConfiguration config)
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task ScriptEvaluateAsync_SimpleScript_ReturnsResult(IDatabaseAsync db)
-    {
-        ValkeyResult result = await db.ScriptEvaluateAsync("return 'Hello, World!'");
-
-        Assert.Equal("Hello, World!", result.ToString());
-    }
+        => Assert.Equal("Hello, World!", await db.ScriptEvaluateAsync("return 'Hello, World!'"));
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task ScriptEvaluateAsync_WithKeys_AccessesKeys(IDatabaseAsync db)
     {
-        ValkeyKey key = BuildKey("ser-script-key-");
-        ValkeyValue value = BuildValue();
+        var key = BuildKey("ser-script-key-");
+        var value = BuildValue();
         _ = await db.StringSetAsync(key, value);
 
-        ValkeyResult result = await db.ScriptEvaluateAsync(
-            "return redis.call('GET', KEYS[1])",
-            keys: [key]);
-
-        Assert.Equal(value, (ValkeyValue)result);
+        Assert.Equal(
+            value,
+            await db.ScriptEvaluateAsync(
+                "return redis.call('GET', KEYS[1])",
+                keys: [key]));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task ScriptEvaluateAsync_WithKeysAndValues_UsesArguments(IDatabaseAsync db)
     {
-        ValkeyKey key = BuildKey("ser-script-kv-");
-        ValkeyValue value = BuildValue();
+        var key = BuildKey("ser-script-kv-");
+        var value = BuildValue();
 
-        ValkeyResult result = await db.ScriptEvaluateAsync(
-            "redis.call('SET', KEYS[1], ARGV[1]); return redis.call('GET', KEYS[1])",
-            keys: [key],
-            values: [value]);
-
-        Assert.Equal(value, (ValkeyValue)result);
+        Assert.Equal(
+            value,
+            await db.ScriptEvaluateAsync(
+                "redis.call('SET', KEYS[1], ARGV[1]); return redis.call('GET', KEYS[1])",
+                keys: [key],
+                values: [value]));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task ScriptEvaluateAsync_ReturnsNumber(IDatabaseAsync db)
-    {
-        ValkeyResult result = await db.ScriptEvaluateAsync("return 42");
-
-        Assert.Equal(42, (int)result);
-    }
+        => Assert.Equal(42, await db.ScriptEvaluateAsync("return 42"));
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task ScriptEvaluateAsync_ReturnsArray(IDatabaseAsync db)
-    {
-        ValkeyResult result = await db.ScriptEvaluateAsync("return {'a', 'b', 'c'}");
-
-        ValkeyResult[]? array = (ValkeyResult[]?)result;
-        Assert.NotNull(array);
-        Assert.Equal(3, array.Length);
-        Assert.Equal("a", array[0].ToString());
-        Assert.Equal("b", array[1].ToString());
-        Assert.Equal("c", array[2].ToString());
-    }
+        => Assert.Equal(["a", "b", "c"], await db.ScriptEvaluateAsync("return {'a', 'b', 'c'}"));
 
     #endregion
     #region ScriptEvaluateAsync (LuaScript)
@@ -86,11 +71,8 @@ public class ScriptingCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task ScriptEvaluateAsync_LuaScript_SimpleScript(IDatabaseAsync db)
     {
-        LuaScript script = LuaScript.Prepare("return 'lua-script'");
-
-        ValkeyResult result = await db.ScriptEvaluateAsync(script);
-
-        Assert.Equal("lua-script", result.ToString());
+        var script = LuaScript.Prepare("return 'lua-script'");
+        Assert.Equal("lua-script", await db.ScriptEvaluateAsync(script));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -101,9 +83,7 @@ public class ScriptingCommandTests(TestConfiguration config)
         ValkeyValue value = BuildValue();
         LuaScript script = LuaScript.Prepare("redis.call('SET', @key, @value); return redis.call('GET', @key)");
 
-        ValkeyResult result = await db.ScriptEvaluateAsync(script, new { key, value });
-
-        Assert.Equal(value, (ValkeyValue)result);
+        Assert.Equal(value, await db.ScriptEvaluateAsync(script, new { key, value }));
     }
 
     #endregion

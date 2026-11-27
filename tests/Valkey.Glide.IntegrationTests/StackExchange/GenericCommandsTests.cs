@@ -434,8 +434,8 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         ValkeyKey key = $"ser-execute-{Guid.NewGuid()}";
         ValkeyValue value = "value";
 
-        Assert.Equal("OK", (string?)await db.ExecuteAsync("SET", key, value));
-        Assert.Equal(value, (ValkeyValue)await db.ExecuteAsync("GET", key));
+        Assert.Equal("OK", await db.ExecuteAsync("SET", key, value));
+        Assert.Equal(value, await db.ExecuteAsync("GET", key));
     }
 
     [Fact]
@@ -445,7 +445,7 @@ public class GenericCommandsTests(GenericCommandsFixture fixture) : IClassFixtur
         var channel = ValkeyChannel.Literal($"ser-execute-channel-{Guid.NewGuid()}");
 
         // No subscribers, so PUBLISH reports zero receivers.
-        Assert.Equal(0L, (long)await db.ExecuteAsync("PUBLISH", channel, "message"));
+        Assert.Equal(0L, await db.ExecuteAsync("PUBLISH", channel, "message"));
     }
 
     [Fact]

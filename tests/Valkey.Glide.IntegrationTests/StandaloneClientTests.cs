@@ -104,21 +104,14 @@ public class StandaloneClientTests(TestConfiguration config)
     {
         IDatabase db = conn.GetDatabase();
         string key1 = Guid.NewGuid().ToString();
-        Assert.Equal(2L, (await db.ExecuteAsync("hset", [key1, "f1", "v1", "f2", "v2"])).AsInt64());
-        Assert.Equal(
-            new Dictionary<string, string> { { "f1", "v1" }, { "f2", "v2" } },
-            (await db.ExecuteAsync("hgetall", [key1])).ToDictionary().ToDictionary(k => k.Key, v => v.Value.AsString()!)
-        );
-        Assert.Equal(
-            new string?[] { "v1", "v2", null },
-            (await db.ExecuteAsync("hmget", [key1, "f1", "f2", "f3"])).AsStringArray()
-        );
+        Assert.Equal(2L, await db.ExecuteAsync("hset", [key1, "f1", "v1", "f2", "v2"]));
+        Assert.Equal(new Dictionary<string, string> { { "f1", "v1" }, { "f2", "v2" } }, await db.ExecuteAsync("hgetall", [key1]));
+        Assert.Equal(["v1", "v2", null], await db.ExecuteAsync("hmget", [key1, "f1", "f2", "f3"]));
 
         string key2 = Guid.NewGuid().ToString();
-        Assert.Equal(3L, (await db.ExecuteAsync("sadd", [key2, "a", "b", "c"])).AsInt64());
-        Assert.False((await db.ExecuteAsync("smembers", [key2])).AsStringArray()!.Except(["a", "b", "c"]).Any());
-        ValkeyResult smismemberResult = await db.ExecuteAsync("smismember", [key2, "a", "b", "d"]);
-        Assert.Equal([true, true, false], smismemberResult.AsBooleanArray()!);
+        Assert.Equal(3L, await db.ExecuteAsync("sadd", [key2, "a", "b", "c"]));
+        Assert.Equal(new HashSet<string> { "a", "b", "c" }, await db.ExecuteAsync("smembers", [key2]));
+        Assert.Equal([true, true, false], await db.ExecuteAsync("smismember", [key2, "a", "b", "d"]));
 
         string key3 = Guid.NewGuid().ToString();
         _ = await db.ExecuteAsync("xadd", [key3, "0-1", "str-1-id-1-field-1", "str-1-id-1-value-1", "str-1-id-1-field-2", "str-1-id-1-value-2"]);

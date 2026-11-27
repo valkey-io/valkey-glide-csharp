@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.TestUtils;
+
 using static Valkey.Glide.TestUtils.Data;
 
 namespace Valkey.Glide.IntegrationTests;
@@ -24,10 +26,7 @@ public class ScriptingCommandTests(TestConfiguration config)
     {
         // Test simple script execution
         using var script = new Script("return 'Hello, World!'");
-        ValkeyResult result = await client.ScriptInvokeAsync(script, CancellationToken);
-
-        Assert.NotNull(result);
-        Assert.Equal("Hello, World!", result.ToString());
+        Assert.Equal("Hello, World!", await client.ScriptInvokeAsync(script, CancellationToken));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -41,10 +40,7 @@ public class ScriptingCommandTests(TestConfiguration config)
             .WithKeys("mykey")
             .WithArgs("myvalue");
 
-        ValkeyResult result = await client.ScriptInvokeAsync(script, options, CancellationToken);
-
-        Assert.NotNull(result);
-        Assert.Equal("mykey:myvalue", result.ToString());
+        Assert.Equal("mykey:myvalue", await client.ScriptInvokeAsync(script, options, CancellationToken));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -56,10 +52,7 @@ public class ScriptingCommandTests(TestConfiguration config)
 
         // This should trigger NOSCRIPT and automatically fallback to EVAL
         using var script = new Script("return 'fallback test'");
-        ValkeyResult result = await client.ScriptInvokeAsync(script, CancellationToken);
-
-        Assert.NotNull(result);
-        Assert.Equal("fallback test", result.ToString());
+        Assert.Equal("fallback test", await client.ScriptInvokeAsync(script, CancellationToken));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -234,10 +227,7 @@ public class ScriptingCommandTests(TestConfiguration config)
         var options = new ScriptOptions()
             .WithKeys("{key}1", "{key}2", "{key}3");
 
-        ValkeyResult result = await client.ScriptInvokeAsync(script, options, CancellationToken);
-
-        Assert.NotNull(result);
-        Assert.Equal(3, (long)result);
+        Assert.Equal(3, await client.ScriptInvokeAsync(script, options, CancellationToken));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -250,10 +240,7 @@ public class ScriptingCommandTests(TestConfiguration config)
         var options = new ScriptOptions()
             .WithArgs("arg1", "arg2", "arg3", "arg4");
 
-        ValkeyResult result = await client.ScriptInvokeAsync(script, options, CancellationToken);
-
-        Assert.NotNull(result);
-        Assert.Equal(4, (long)result);
+        Assert.Equal(4, await client.ScriptInvokeAsync(script, options, CancellationToken));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -262,10 +249,8 @@ public class ScriptingCommandTests(TestConfiguration config)
     {
         // Test script returning integer
         using var script = new Script("return 42");
-        ValkeyResult result = await client.ScriptInvokeAsync(script, CancellationToken);
 
-        Assert.NotNull(result);
-        Assert.Equal(42, (long)result);
+        Assert.Equal(42, await client.ScriptInvokeAsync(script, CancellationToken));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -274,15 +259,7 @@ public class ScriptingCommandTests(TestConfiguration config)
     {
         // Test script returning array
         using var script = new Script("return {'a', 'b', 'c'}");
-        ValkeyResult result = await client.ScriptInvokeAsync(script, CancellationToken);
-
-        Assert.NotNull(result);
-        string?[]? arr = (string?[]?)result;
-        Assert.NotNull(arr);
-        Assert.Equal(3, arr.Length);
-        Assert.Equal("a", arr[0]);
-        Assert.Equal("b", arr[1]);
-        Assert.Equal("c", arr[2]);
+        Assert.Equal(["a", "b", "c"], await client.ScriptInvokeAsync(script, CancellationToken));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -291,10 +268,7 @@ public class ScriptingCommandTests(TestConfiguration config)
     {
         // Test script returning nil
         using var script = new Script("return nil");
-        ValkeyResult result = await client.ScriptInvokeAsync(script, CancellationToken);
-
-        Assert.NotNull(result);
-        Assert.True(result.IsNull);
+        Assert.Equal(ValkeyValue.Null, await client.ScriptInvokeAsync(script, CancellationToken));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -311,7 +285,7 @@ public class ScriptingCommandTests(TestConfiguration config)
         using var script = new Script("return redis.call('GET', KEYS[1])");
         var options = new ScriptOptions().WithKeys(key);
 
-        Assert.Equal(value, (ValkeyValue)await client.ScriptInvokeAsync(script, options, CancellationToken));
+        Assert.Equal(value, await client.ScriptInvokeAsync(script, options, CancellationToken));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -328,14 +302,8 @@ public class ScriptingCommandTests(TestConfiguration config)
             .WithKeys(key)
             .WithArgs(value);
 
-        ValkeyResult result = await client.ScriptInvokeAsync(script, options, CancellationToken);
-
-        Assert.NotNull(result);
-        Assert.Equal("OK", result.ToString());
-
-        // Verify the value was set
-        ValkeyValue retrievedValue = await client.GetAsync(key);
-        Assert.Equal(value, retrievedValue.ToString());
+        Assert.Equal("OK", await client.ScriptInvokeAsync(script, options, CancellationToken));
+        Assert.Equal(value, await client.GetAsync(key));
     }
 
     #endregion
@@ -410,20 +378,7 @@ redis.register_function('{funcName}', function(keys, args) return 'version 2' en
         }
 
         Assert.Equal(libName, libraryName);
-
-        // Verify the new version is loaded (use routing for cluster clients)
-        ValkeyResult result;
-        if (client is GlideClusterClient clusterClient3)
-        {
-            ClusterValue<ValkeyResult> callResult = await clusterClient3.FCallAsync(funcName, Route.Random, CancellationToken);
-            result = callResult.HasSingleData ? callResult.SingleValue : callResult.MultiValue.Values.First();
-        }
-        else
-        {
-            result = await client.FCallAsync(funcName, CancellationToken);
-        }
-
-        Assert.Equal("version 2", result.ToString());
+        Assert.Equal("version 2", await FCallAsync(client, funcName));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -496,19 +451,7 @@ redis.register_function('{funcName}', function(keys, args) return 'Hello, World!
         }
 
         // Execute the function (use routing for cluster clients)
-        ValkeyResult result;
-        if (client is GlideClusterClient clusterClient3)
-        {
-            ClusterValue<ValkeyResult> callResult = await clusterClient3.FCallAsync(funcName, Route.Random, CancellationToken);
-            result = callResult.HasSingleData ? callResult.SingleValue : callResult.MultiValue.Values.First();
-        }
-        else
-        {
-            result = await client.FCallAsync(funcName, CancellationToken);
-        }
-
-        Assert.NotNull(result);
-        Assert.Equal("Hello, World!", result.ToString());
+        Assert.Equal("Hello, World!", await FCallAsync(client, funcName));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -533,10 +476,7 @@ end)";
 
         // Execute with keys and args
         // TODO #673: Use BuildKey and BuildValue once FCallAsync accepts ValkeyKey and ValkeyValue.
-        ValkeyResult result = await client.FCallAsync(funcName, ["mykey"], ["myvalue"], CancellationToken);
-
-        Assert.NotNull(result);
-        Assert.Equal("mykey:myvalue", result.ToString());
+        Assert.Equal("mykey:myvalue", await client.FCallAsync(funcName, ["mykey"], ["myvalue"], CancellationToken));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -578,10 +518,7 @@ redis.register_function{{
         _ = await client.FunctionLoadAsync(libraryCode, false, CancellationToken);
 
         // Execute in read-only mode
-        ValkeyResult result = await client.FCallReadOnlyAsync(funcName, CancellationToken);
-
-        Assert.NotNull(result);
-        Assert.Equal("Read-only result", result.ToString());
+        Assert.Equal("Read-only result", await client.FCallReadOnlyAsync(funcName, CancellationToken));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -610,10 +547,7 @@ redis.register_function{{
 
         // Execute with keys and args
         // TODO #673: Use BuildKey and BuildValue once FCallReadOnlyAsync accepts ValkeyKey and ValkeyValue.
-        ValkeyResult result = await client.FCallReadOnlyAsync(funcName, ["key1"], ["value1"], CancellationToken);
-
-        Assert.NotNull(result);
-        Assert.Equal("key1:value1", result.ToString());
+        Assert.Equal("key1:value1", await client.FCallReadOnlyAsync(funcName, ["key1"], ["value1"], CancellationToken));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -649,18 +583,7 @@ redis.register_function('{funcName}', function(keys, args) return 'test' end)";
         }
 
         // Verify function exists by calling it (use routing for cluster clients)
-        ValkeyResult resultBefore;
-        if (client is GlideClusterClient clusterClient3)
-        {
-            ClusterValue<ValkeyResult> callResult = await clusterClient3.FCallAsync(funcName, Route.Random, CancellationToken);
-            resultBefore = callResult.HasSingleData ? callResult.SingleValue : callResult.MultiValue.Values.First();
-        }
-        else
-        {
-            resultBefore = await client.FCallAsync(funcName, CancellationToken);
-        }
-
-        Assert.Equal("test", resultBefore.ToString());
+        Assert.Equal("test", await FCallAsync(client, funcName));
 
         // Flush all functions (use routing for cluster clients)
         if (client is GlideClusterClient clusterClient4)
@@ -786,10 +709,7 @@ end)";
         _ = await client.FunctionLoadAsync(libraryCode, false, CancellationToken);
 
         // Execute function
-        ValkeyResult result = await client.FCallAsync(funcName, [key], [], CancellationToken);
-
-        Assert.NotNull(result);
-        Assert.Equal(value, result.ToString());
+        Assert.Equal(value, await client.FCallAsync(funcName, [key], [], CancellationToken));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -816,14 +736,9 @@ end)";
         // TODO #673: Use BuildKey and BuildValue once FCallAsync accepts ValkeyKey and ValkeyValue.
         string key = Guid.NewGuid().ToString();
         string value = "function set value";
-        ValkeyResult result = await client.FCallAsync(funcName, [key], [value], CancellationToken);
 
-        Assert.NotNull(result);
-        Assert.Equal("OK", result.ToString());
-
-        // Verify the value was set
-        ValkeyValue retrievedValue = await client.GetAsync(key);
-        Assert.Equal(value, retrievedValue.ToString());
+        Assert.Equal("OK", await client.FCallAsync(funcName, [key], [value], CancellationToken));
+        Assert.Equal(value, await client.GetAsync(key));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -858,19 +773,7 @@ redis.register_function('{funcName}', function(keys, args) return 42 end)";
             _ = await client.FunctionLoadAsync(libraryCode, false, CancellationToken);
         }
 
-        ValkeyResult result;
-        if (client is GlideClusterClient clusterClient3)
-        {
-            ClusterValue<ValkeyResult> callResult = await clusterClient3.FCallAsync(funcName, Route.Random, CancellationToken);
-            result = callResult.HasSingleData ? callResult.SingleValue : callResult.MultiValue.Values.First();
-        }
-        else
-        {
-            result = await client.FCallAsync(funcName, CancellationToken);
-        }
-
-        Assert.NotNull(result);
-        Assert.Equal(42, (long)result);
+        Assert.Equal(42, await FCallAsync(client, funcName));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -905,24 +808,7 @@ redis.register_function('{funcName}', function(keys, args) return {{'a', 'b', 'c
             _ = await client.FunctionLoadAsync(libraryCode, false, CancellationToken);
         }
 
-        ValkeyResult result;
-        if (client is GlideClusterClient clusterClient3)
-        {
-            ClusterValue<ValkeyResult> callResult = await clusterClient3.FCallAsync(funcName, Route.Random, CancellationToken);
-            result = callResult.HasSingleData ? callResult.SingleValue : callResult.MultiValue.Values.First();
-        }
-        else
-        {
-            result = await client.FCallAsync(funcName, CancellationToken);
-        }
-
-        Assert.NotNull(result);
-        string?[]? arr = (string?[]?)result;
-        Assert.NotNull(arr);
-        Assert.Equal(3, arr.Length);
-        Assert.Equal("a", arr[0]);
-        Assert.Equal("b", arr[1]);
-        Assert.Equal("c", arr[2]);
+        Assert.Equal(["a", "b", "c"], await FCallAsync(client, funcName));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -946,10 +832,7 @@ redis.register_function('{funcName}', function(keys, args) return {{'a', 'b', 'c
 redis.register_function('{funcName}', function(keys, args) return nil end)";
         _ = await client.FunctionLoadAsync(libraryCode, false, CancellationToken);
 
-        ValkeyResult result = await client.FCallAsync(funcName, CancellationToken);
-
-        Assert.NotNull(result);
-        Assert.True(result.IsNull);
+        Assert.Equal(ValkeyValue.Null, await client.FCallAsync(funcName, CancellationToken));
     }
 
     #endregion
@@ -1213,8 +1096,7 @@ redis.register_function('replacefunc', function(keys, args) return 'version2' en
         await client.FunctionRestoreAsync(backup, FunctionRestorePolicy.Replace, CancellationToken);
 
         // Verify the function was replaced (should return version1)
-        ValkeyResult funcResult = await client.FCallAsync("replacefunc", CancellationToken);
-        Assert.Equal("version1", funcResult.ToString());
+        Assert.Equal("version1", await client.FCallAsync("replacefunc", CancellationToken));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1276,11 +1158,11 @@ redis.register_function('{funcName}', function(keys, args) return 'Hello from pr
         if (result.HasMultiData)
         {
             Assert.NotEmpty(result.MultiValue);
-            Assert.All(result.MultiValue.Values, r => Assert.Equal("Hello from primary", r.ToString()));
+            Assert.All(result.MultiValue.Values, r => Assert.Equal("Hello from primary", r));
         }
         else
         {
-            Assert.Equal("Hello from primary", result.SingleValue.ToString());
+            Assert.Equal("Hello from primary", result.SingleValue);
         }
     }
 
@@ -1323,11 +1205,11 @@ redis.register_function{{
         if (result.HasMultiData)
         {
             Assert.NotEmpty(result.MultiValue);
-            Assert.All(result.MultiValue.Values, r => Assert.Equal("Hello from node", r.ToString()));
+            Assert.All(result.MultiValue.Values, r => Assert.Equal("Hello from node", r));
         }
         else
         {
-            Assert.Equal("Hello from node", result.SingleValue.ToString());
+            Assert.Equal("Hello from node", result.SingleValue);
         }
     }
 
@@ -1354,7 +1236,7 @@ redis.register_function('{funcName}', function(keys, args) return 'Random node r
 
         // Verify execution on single node
         Assert.True(result.HasSingleData);
-        Assert.Equal("Random node result", result.SingleValue.ToString());
+        Assert.Equal("Random node result", result.SingleValue);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1405,8 +1287,7 @@ redis.register_function('{funcName}', function(keys, args) return 'test' end)";
         _ = await client.FunctionLoadAsync(libraryCode, false, Route.AllPrimaries, CancellationToken);
 
         // Verify function exists by calling it
-        ClusterValue<ValkeyResult> callResult = await client.FCallAsync(funcName, Route.Random, CancellationToken);
-        Assert.Equal("test", callResult.SingleValue.ToString());
+        Assert.Equal("test", (await client.FCallAsync(funcName, Route.Random, CancellationToken)).SingleValue);
 
         // Delete function from all primaries
         await client.FunctionDeleteAsync(libName, Route.AllPrimaries, CancellationToken);
@@ -1560,8 +1441,7 @@ redis.register_function('{funcName}', function(keys, args) return 'restored' end
         await client.FunctionRestoreAsync(backup, Route.AllPrimaries, CancellationToken);
 
         // Verify function is restored by calling it
-        ClusterValue<ValkeyResult> callResult = await client.FCallAsync(funcName, Route.Random, CancellationToken);
-        Assert.Equal("restored", callResult.SingleValue.ToString());
+        Assert.Equal("restored", (await client.FCallAsync(funcName, Route.Random, CancellationToken)).SingleValue);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1599,8 +1479,7 @@ redis.register_function('{funcName}', function(keys, args) return 'version 2' en
             CancellationToken);
 
         // Verify original version is restored
-        ClusterValue<ValkeyResult> callResult = await client.FCallAsync(funcName, Route.Random, CancellationToken);
-        Assert.Equal("version 1", callResult.SingleValue.ToString());
+        Assert.Equal("version 1", (await client.FCallAsync(funcName, Route.Random, CancellationToken)).SingleValue);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1653,10 +1532,7 @@ redis.register_function('{funcName}', function(keys, args) return 'multi-node re
     {
         // Test IDatabase.ScriptEvaluateAsync with string script
         string script = "return 'Hello from EVAL'";
-        ValkeyResult result = await client.ScriptEvaluateAsync(script);
-
-        Assert.NotNull(result);
-        Assert.Equal("Hello from EVAL", result.ToString());
+        Assert.Equal("Hello from EVAL", await client.ScriptEvaluateAsync(script));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1668,10 +1544,8 @@ redis.register_function('{funcName}', function(keys, args) return 'multi-node re
         ValkeyKey key = BuildKey();
         ValkeyValue value = BuildValue();
 
-        ValkeyResult result = await client.ScriptEvaluateAsync(script, [key], [value]);
-
         ValkeyValue expected = (byte[])[.. (byte[])key!, (byte)':', .. (byte[])value!];
-        Assert.Equal(expected, (ValkeyValue)result);
+        Assert.Equal(expected, await client.ScriptEvaluateAsync(script, [key], [value]));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1684,10 +1558,8 @@ redis.register_function('{funcName}', function(keys, args) return 'multi-node re
         ValkeyKey key = BuildKey();
         ValkeyValue value = BuildValue();
 
-        ValkeyResult result = await client.ScriptEvaluateAsync(hash, [key], [value]);
-
         ValkeyValue expected = (byte[])[.. (byte[])key!, (byte)':', .. (byte[])value!];
-        Assert.Equal(expected, (ValkeyValue)result);
+        Assert.Equal(expected, await client.ScriptEvaluateAsync(hash, [key], [value]));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1698,10 +1570,7 @@ redis.register_function('{funcName}', function(keys, args) return 'multi-node re
         LuaScript script = LuaScript.Prepare("return redis.call('SET', @key, @value)");
         var parameters = new { key = BuildKey(), value = BuildValue() };
 
-        ValkeyResult result = await client.ScriptEvaluateAsync(script, parameters);
-
-        Assert.NotNull(result);
-        Assert.Equal("OK", result.ToString());
+        Assert.Equal("OK", await client.ScriptEvaluateAsync(script, parameters));
 
         // Verify the key was set
         ValkeyValue getValue = await client.GetAsync(parameters.key);
@@ -1721,14 +1590,28 @@ redis.register_function('{funcName}', function(keys, args) return 'multi-node re
         ValkeyKey key = BuildKey("prefix:");
         ValkeyValue value = BuildValue();
 
-        ValkeyResult result = await client.ScriptEvaluateAsync(script.ExecutableScript, [key], [value]);
-
-        Assert.NotNull(result);
-        Assert.Equal("OK", result.ToString());
+        Assert.Equal("OK", await client.ScriptEvaluateAsync(script.ExecutableScript, [key], [value]));
 
         // Verify the key was set with prefix
         ValkeyValue getValue = await client.GetAsync(key);
         Assert.Equal(value, getValue);
+    }
+
+    #endregion
+    #region Helpers
+
+    /// <summary>
+    /// Calls the given function, routing to a random node for cluster clients.
+    /// </summary>
+    private static async Task<ValkeyResult> FCallAsync(BaseClient client, string funcName)
+    {
+        if (client is GlideClusterClient clusterClient)
+        {
+            var result = await clusterClient.FCallAsync(funcName, Route.Random, CancellationToken);
+            return result.HasSingleData ? result.SingleValue : result.MultiValue.Values.First();
+        }
+
+        return await client.FCallAsync(funcName, CancellationToken);
     }
 
     #endregion
