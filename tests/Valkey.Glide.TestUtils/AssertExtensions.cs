@@ -10,12 +10,6 @@ public static class AssertExtensions
     extension(Assert)
     {
         /// <summary>
-        /// Asserts that the given result is a single value that is equal to the expected bytes.
-        /// </summary>
-        public static void Equal(byte[] expected, ValkeyResult actual)
-            => Assert.Equal(expected, (byte[]?)actual);
-
-        /// <summary>
         /// Asserts that the given result is a single value that is equal to the expected string.
         /// </summary>
         public static void Equal(string expected, ValkeyResult actual)
@@ -31,6 +25,12 @@ public static class AssertExtensions
         /// </summary>
         public static void Equal(ValkeyValue expected, ValkeyResult actual)
             => Assert.Equal(expected, (ValkeyValue)actual);
+
+        /// <summary>
+        /// Asserts that the given result is an array equal to the expected booleans.
+        /// </summary>
+        public static void Equal(bool[] expected, ValkeyResult actual)
+            => Assert.Equal(expected, (bool[]?)actual);
 
         /// <summary>
         /// Asserts that the given result is an array equal to the expected strings.
@@ -51,11 +51,5 @@ public static class AssertExtensions
         /// </summary>
         public static void Equal(Dictionary<string, string> expected, ValkeyResult actual)
             => Assert.Equal(expected, actual.ToDictionary().ToDictionary(kv => kv.Key, kv => (string)kv.Value!));
-
-        /// <summary>
-        /// Asserts that the given result is an array equal to the expected booleans.
-        /// </summary>
-        public static void Equal(bool[] expected, ValkeyResult actual)
-            => Assert.Equal(expected, (bool[]?)actual);
     }
 }
