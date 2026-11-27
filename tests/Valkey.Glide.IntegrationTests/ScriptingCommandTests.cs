@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.TestUtils;
+
 using static Valkey.Glide.TestUtils.Data;
 
 namespace Valkey.Glide.IntegrationTests;
@@ -234,10 +236,7 @@ public class ScriptingCommandTests(TestConfiguration config)
         var options = new ScriptOptions()
             .WithKeys("{key}1", "{key}2", "{key}3");
 
-        ValkeyResult result = await client.ScriptInvokeAsync(script, options, CancellationToken);
-
-        Assert.NotNull(result);
-        Assert.Equal(3, (long)result);
+        Assert.Equal(3, await client.ScriptInvokeAsync(script, options, CancellationToken));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -250,10 +249,7 @@ public class ScriptingCommandTests(TestConfiguration config)
         var options = new ScriptOptions()
             .WithArgs("arg1", "arg2", "arg3", "arg4");
 
-        ValkeyResult result = await client.ScriptInvokeAsync(script, options, CancellationToken);
-
-        Assert.NotNull(result);
-        Assert.Equal(4, (long)result);
+        Assert.Equal(4, await client.ScriptInvokeAsync(script, options, CancellationToken));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -262,10 +258,8 @@ public class ScriptingCommandTests(TestConfiguration config)
     {
         // Test script returning integer
         using var script = new Script("return 42");
-        ValkeyResult result = await client.ScriptInvokeAsync(script, CancellationToken);
 
-        Assert.NotNull(result);
-        Assert.Equal(42, (long)result);
+        Assert.Equal(42, await client.ScriptInvokeAsync(script, CancellationToken));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -311,7 +305,7 @@ public class ScriptingCommandTests(TestConfiguration config)
         using var script = new Script("return redis.call('GET', KEYS[1])");
         var options = new ScriptOptions().WithKeys(key);
 
-        Assert.Equal(value, (ValkeyValue)await client.ScriptInvokeAsync(script, options, CancellationToken));
+        Assert.Equal(value, await client.ScriptInvokeAsync(script, options, CancellationToken));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -869,8 +863,7 @@ redis.register_function('{funcName}', function(keys, args) return 42 end)";
             result = await client.FCallAsync(funcName, CancellationToken);
         }
 
-        Assert.NotNull(result);
-        Assert.Equal(42, (long)result);
+        Assert.Equal(42, result);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1668,10 +1661,8 @@ redis.register_function('{funcName}', function(keys, args) return 'multi-node re
         ValkeyKey key = BuildKey();
         ValkeyValue value = BuildValue();
 
-        ValkeyResult result = await client.ScriptEvaluateAsync(script, [key], [value]);
-
         ValkeyValue expected = (byte[])[.. (byte[])key!, (byte)':', .. (byte[])value!];
-        Assert.Equal(expected, (ValkeyValue)result);
+        Assert.Equal(expected, await client.ScriptEvaluateAsync(script, [key], [value]));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1684,10 +1675,8 @@ redis.register_function('{funcName}', function(keys, args) return 'multi-node re
         ValkeyKey key = BuildKey();
         ValkeyValue value = BuildValue();
 
-        ValkeyResult result = await client.ScriptEvaluateAsync(hash, [key], [value]);
-
         ValkeyValue expected = (byte[])[.. (byte[])key!, (byte)':', .. (byte[])value!];
-        Assert.Equal(expected, (ValkeyValue)result);
+        Assert.Equal(expected, await client.ScriptEvaluateAsync(hash, [key], [value]));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]

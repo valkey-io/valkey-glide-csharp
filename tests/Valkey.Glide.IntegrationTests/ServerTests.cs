@@ -142,7 +142,7 @@ public class ServerTests(TestConfiguration config)
         foreach (IServer server in conn.GetServers())
         {
             Assert.Equal(key, (ValkeyKey)await server.ExecuteAsync("ECHO", key));
-            Assert.Equal(value, (ValkeyValue)await server.ExecuteAsync("ECHO", value));
+            Assert.Equal(value, await server.ExecuteAsync("ECHO", value));
         }
     }
 
@@ -153,7 +153,7 @@ public class ServerTests(TestConfiguration config)
         var channel = ValkeyChannel.Literal($"channel-{Guid.NewGuid()}");
         foreach (IServer server in conn.GetServers())
         {
-            Assert.Equal(0L, (long)await server.ExecuteAsync("PUBLISH", channel, "message"));
+            Assert.Equal(0L, await server.ExecuteAsync("PUBLISH", channel, "message"));
         }
     }
 

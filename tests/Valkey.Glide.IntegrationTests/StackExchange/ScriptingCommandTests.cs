@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.TestUtils;
+
 using static Valkey.Glide.TestUtils.Data;
 
 namespace Valkey.Glide.IntegrationTests.StackExchange;
@@ -38,7 +40,7 @@ public class ScriptingCommandTests(TestConfiguration config)
             "return redis.call('GET', KEYS[1])",
             keys: [key]);
 
-        Assert.Equal(value, (ValkeyValue)result);
+        Assert.Equal(value, result);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -53,17 +55,13 @@ public class ScriptingCommandTests(TestConfiguration config)
             keys: [key],
             values: [value]);
 
-        Assert.Equal(value, (ValkeyValue)result);
+        Assert.Equal(value, result);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task ScriptEvaluateAsync_ReturnsNumber(IDatabaseAsync db)
-    {
-        ValkeyResult result = await db.ScriptEvaluateAsync("return 42");
-
-        Assert.Equal(42, (int)result);
-    }
+        => Assert.Equal(42, await db.ScriptEvaluateAsync("return 42"));
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
@@ -101,9 +99,7 @@ public class ScriptingCommandTests(TestConfiguration config)
         ValkeyValue value = BuildValue();
         LuaScript script = LuaScript.Prepare("redis.call('SET', @key, @value); return redis.call('GET', @key)");
 
-        ValkeyResult result = await db.ScriptEvaluateAsync(script, new { key, value });
-
-        Assert.Equal(value, (ValkeyValue)result);
+        Assert.Equal(value, await db.ScriptEvaluateAsync(script, new { key, value }));
     }
 
     #endregion

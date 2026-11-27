@@ -190,7 +190,7 @@ public class ValkeyServerTests(ValkeyServerFixture fixture) : IClassFixture<Valk
 
         // Verify the script can be executed.
         var parameters = new { key = BuildKey(), value = BuildValue() };
-        Assert.Equal("OK", (ValkeyValue)await db.ScriptEvaluateAsync(loaded, parameters));
+        Assert.Equal("OK", await db.ScriptEvaluateAsync(loaded, parameters));
         Assert.Equal(parameters.value, await db.StringGetAsync(parameters.key));
     }
 
@@ -207,7 +207,7 @@ public class ValkeyServerTests(ValkeyServerFixture fixture) : IClassFixture<Valk
         // Verify the script can be executed.
         var key = BuildKey();
         var value = BuildValue();
-        Assert.Equal("OK", (ValkeyValue)await db.ScriptEvaluateAsync(hash, [key], [value]));
+        Assert.Equal("OK", await db.ScriptEvaluateAsync(hash, [key], [value]));
         Assert.Equal(value, await db.StringGetAsync(key));
     }
 
