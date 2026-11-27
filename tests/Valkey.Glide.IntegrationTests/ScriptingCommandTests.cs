@@ -268,10 +268,7 @@ public class ScriptingCommandTests(TestConfiguration config)
     {
         // Test script returning nil
         using var script = new Script("return nil");
-        ValkeyResult result = await client.ScriptInvokeAsync(script, CancellationToken);
-
-        Assert.NotNull(result);
-        Assert.True(result.IsNull);
+        Assert.Equal(ValkeyValue.Null, await client.ScriptInvokeAsync(script, CancellationToken));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -381,20 +378,7 @@ redis.register_function('{funcName}', function(keys, args) return 'version 2' en
         }
 
         Assert.Equal(libName, libraryName);
-
-        // Verify the new version is loaded (use routing for cluster clients)
-        ValkeyResult result;
-        if (client is GlideClusterClient clusterClient3)
-        {
-            ClusterValue<ValkeyResult> callResult = await clusterClient3.FCallAsync(funcName, Route.Random, CancellationToken);
-            result = callResult.HasSingleData ? callResult.SingleValue : callResult.MultiValue.Values.First();
-        }
-        else
-        {
-            result = await client.FCallAsync(funcName, CancellationToken);
-        }
-
-        Assert.Equal("version 2", result);
+        Assert.Equal("version 2", await FCallAsync(client, funcName));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -467,18 +451,7 @@ redis.register_function('{funcName}', function(keys, args) return 'Hello, World!
         }
 
         // Execute the function (use routing for cluster clients)
-        ValkeyResult result;
-        if (client is GlideClusterClient clusterClient3)
-        {
-            ClusterValue<ValkeyResult> callResult = await clusterClient3.FCallAsync(funcName, Route.Random, CancellationToken);
-            result = callResult.HasSingleData ? callResult.SingleValue : callResult.MultiValue.Values.First();
-        }
-        else
-        {
-            result = await client.FCallAsync(funcName, CancellationToken);
-        }
-
-        Assert.Equal("Hello, World!", result);
+        Assert.Equal("Hello, World!", await FCallAsync(client, funcName));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -610,18 +583,7 @@ redis.register_function('{funcName}', function(keys, args) return 'test' end)";
         }
 
         // Verify function exists by calling it (use routing for cluster clients)
-        ValkeyResult resultBefore;
-        if (client is GlideClusterClient clusterClient3)
-        {
-            ClusterValue<ValkeyResult> callResult = await clusterClient3.FCallAsync(funcName, Route.Random, CancellationToken);
-            resultBefore = callResult.HasSingleData ? callResult.SingleValue : callResult.MultiValue.Values.First();
-        }
-        else
-        {
-            resultBefore = await client.FCallAsync(funcName, CancellationToken);
-        }
-
-        Assert.Equal("test", resultBefore);
+        Assert.Equal("test", await FCallAsync(client, funcName));
 
         // Flush all functions (use routing for cluster clients)
         if (client is GlideClusterClient clusterClient4)
@@ -811,18 +773,7 @@ redis.register_function('{funcName}', function(keys, args) return 42 end)";
             _ = await client.FunctionLoadAsync(libraryCode, false, CancellationToken);
         }
 
-        ValkeyResult result;
-        if (client is GlideClusterClient clusterClient3)
-        {
-            ClusterValue<ValkeyResult> callResult = await clusterClient3.FCallAsync(funcName, Route.Random, CancellationToken);
-            result = callResult.HasSingleData ? callResult.SingleValue : callResult.MultiValue.Values.First();
-        }
-        else
-        {
-            result = await client.FCallAsync(funcName, CancellationToken);
-        }
-
-        Assert.Equal(42, result);
+        Assert.Equal(42, await FCallAsync(client, funcName));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -857,18 +808,7 @@ redis.register_function('{funcName}', function(keys, args) return {{'a', 'b', 'c
             _ = await client.FunctionLoadAsync(libraryCode, false, CancellationToken);
         }
 
-        ValkeyResult result;
-        if (client is GlideClusterClient clusterClient3)
-        {
-            ClusterValue<ValkeyResult> callResult = await clusterClient3.FCallAsync(funcName, Route.Random, CancellationToken);
-            result = callResult.HasSingleData ? callResult.SingleValue : callResult.MultiValue.Values.First();
-        }
-        else
-        {
-            result = await client.FCallAsync(funcName, CancellationToken);
-        }
-
-        Assert.Equal(["a", "b", "c"], result);
+        Assert.Equal(["a", "b", "c"], await FCallAsync(client, funcName));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -892,10 +832,7 @@ redis.register_function('{funcName}', function(keys, args) return {{'a', 'b', 'c
 redis.register_function('{funcName}', function(keys, args) return nil end)";
         _ = await client.FunctionLoadAsync(libraryCode, false, CancellationToken);
 
-        ValkeyResult result = await client.FCallAsync(funcName, CancellationToken);
-
-        Assert.NotNull(result);
-        Assert.True(result.IsNull);
+        Assert.Equal(ValkeyValue.Null, await client.FCallAsync(funcName, CancellationToken));
     }
 
     #endregion
@@ -1658,6 +1595,23 @@ redis.register_function('{funcName}', function(keys, args) return 'multi-node re
         // Verify the key was set with prefix
         ValkeyValue getValue = await client.GetAsync(key);
         Assert.Equal(value, getValue);
+    }
+
+    #endregion
+    #region Helpers
+
+    /// <summary>
+    /// Calls the given function, routing to a random node for cluster clients.
+    /// </summary>
+    private static async Task<ValkeyResult> FCallAsync(BaseClient client, string funcName)
+    {
+        if (client is GlideClusterClient clusterClient)
+        {
+            var result = await clusterClient.FCallAsync(funcName, Route.Random, CancellationToken);
+            return result.HasSingleData ? result.SingleValue : result.MultiValue.Values.First();
+        }
+
+        return await client.FCallAsync(funcName, CancellationToken);
     }
 
     #endregion

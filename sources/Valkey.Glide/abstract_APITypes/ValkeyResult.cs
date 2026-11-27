@@ -322,6 +322,7 @@ public abstract class ValkeyResult
     #endregion
     #region Internal Methods
 
+    // TODO #678: Preserve RESP3 collection reply types (e.g. Set, Map).
     internal static ValkeyResult Create(object? obj) => obj switch
     {
         IEnumerable<object?> arr => Create(arr.Select(Create).ToArray()),
@@ -589,6 +590,7 @@ public abstract class ValkeyResult
             : Array.ConvertAll(_value!, x => x.AsString());
     }
 
+    // TODO #678: Preserve RESP3 scalar reply types (e.g. SimpleString, Double, Boolean).
     private sealed class SingleResult(ValkeyValue value, ResultType? resultType) : ValkeyResult(value.IsNull ? ResultType.Null : resultType ?? (value.IsInteger ? ResultType.Integer : ResultType.BulkString)), IConvertible
     {
         private readonly ValkeyValue _value = value;
