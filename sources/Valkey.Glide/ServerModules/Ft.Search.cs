@@ -97,8 +97,16 @@ public static partial class Ft
 
         /// <summary>
         /// Pagination offset and count, or <see langword="null"/> for server default (<c>LIMIT</c>).
+        /// Mutually exclusive with <see cref="Count"/>.
         /// </summary>
         public SearchLimit? Limit { get; init; }
+
+        /// <summary>
+        /// Returns only the total number of matching documents, with no document rows at all
+        /// (<c>LIMIT 0 0</c>). Mutually exclusive with <see cref="Limit"/>, since both control the
+        /// same <c>LIMIT</c> clause.
+        /// </summary>
+        public bool Count { get; init; }
 
         /// <summary>
         /// Fields to return, <see cref="NoContent"/> for IDs only,
@@ -131,6 +139,30 @@ public static partial class Ft
         /// Whether to disable stemming on query terms (<c>VERBATIM</c>).
         /// </summary>
         public bool Verbatim { get; init; }
+
+        /// <summary>
+        /// Restricts the search to only this set of keys, filtering out any matching result whose
+        /// key is not in the list (<c>INKEYS count key...</c>). The result count is adjusted to
+        /// reflect the filtered set. An empty (non-<see langword="null"/>) sequence sends
+        /// <c>INKEYS 0</c> and excludes every result; <see langword="null"/> omits <c>INKEYS</c>
+        /// entirely (no restriction).
+        /// </summary>
+        public IEnumerable<ValkeyValue>? InKeys { get; init; }
+
+        /// <summary>
+        /// Whether to augment each document with its relevance score (<c>WITHSCORES</c>) (valkey-search 1.3.0).
+        /// This changes the result shape: <see cref="SearchDocument.Score"/> is populated instead of being
+        /// <see langword="null"/>.
+        /// </summary>
+        public bool WithScores { get; init; }
+
+        /// <summary>
+        /// The scoring function used to rank results, or <see langword="null"/> for server default
+        /// (valkey-search 1.3.0). <c>"BM25STD"</c> is the only value currently registered and selectable
+        /// by the server; any other value is rejected. Has no visible effect unless combined with
+        /// <see cref="WithScores"/> (or inspected indirectly via <see cref="SortBy"/>).
+        /// </summary>
+        public ValkeyValue Scorer { get; init; }
 
         #endregion
     }
@@ -251,11 +283,13 @@ public static partial class Ft
         internal SearchDocument(
             ValkeyKey key,
             IDictionary<ValkeyValue, ValkeyValue> fields,
-            ValkeyValue sortKey = default)
+            ValkeyValue sortKey = default,
+            double? score = null)
         {
             Key = key;
             Fields = fields;
             SortKey = sortKey;
+            Score = score;
         }
 
         /// <summary>
@@ -273,6 +307,12 @@ public static partial class Ft
         /// or <see cref="ValkeyValue.Null"/>.
         /// </summary>
         public ValkeyValue SortKey { get; }
+
+        /// <summary>
+        /// The document's relevance score, returned when <c>WITHSCORES</c> is specified (valkey-search 1.3.0),
+        /// or <see langword="null"/>.
+        /// </summary>
+        public double? Score { get; }
     }
 
     #endregion

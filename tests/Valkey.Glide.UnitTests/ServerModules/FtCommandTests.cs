@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using System.Text.Json;
+
 using Valkey.Glide.ServerModules;
 
 using static Valkey.Glide.Internals.FFI;
@@ -128,7 +130,9 @@ public class FtCommandTests
             ["idx", "*", "WITHSORTKEYS", "SORTBY", "f", "ASC"],
             Request.FtSearch("idx", "*", new Ft.SearchOptions { SortBy = new Ft.SearchSortBy { Field = "f", Order = SortOrder.Ascending, WithSortKeys = true } }));
 
-        _ = Assert.Throws<ArgumentException>(() =>
+        CmdAssert.Equal(
+            RequestType.FtSearch,
+            ["idx", "*", "NOCONTENT", "WITHSORTKEYS", "SORTBY", "f"],
             Request.FtSearch("idx", "*", new Ft.SearchOptions { Return = Ft.SearchOptions.NoContent, SortBy = new Ft.SearchSortBy { Field = "f", WithSortKeys = true } }));
 
         CmdAssert.Equal(
@@ -273,5 +277,476 @@ public class FtCommandTests
             RequestType.FtInfo,
             ["idx", "LOCAL", "SOMESHARDS", "INCONSISTENT"],
             Request.FtInfoLocal("idx", new Ft.InfoOptions { SomeShards = true, Inconsistent = true }));
+    }
+
+    [Fact]
+    public void FtCreateParity()
+    {
+        CmdAssert.Equal(
+            RequestType.FtCreate,
+            ["idx", "SCHEMA", "v", "VECTOR", "FLAT", "6", "DIM", "4", "DISTANCE_METRIC", "L2", "TYPE", "FLOAT16"],
+            Request.FtCreate("idx", [new Ft.CreateVectorFieldFlat { Identifier = "v", Dimensions = 4, DistanceMetric = Ft.DistanceMetric.Euclidean, Type = Ft.VectorType.Float16 }]));
+
+        CmdAssert.Equal(
+            RequestType.FtCreate,
+            ["idx", "SCHEMA", "v", "VECTOR", "HNSW", "6", "DIM", "4", "DISTANCE_METRIC", "L2", "TYPE", "BFLOAT16"],
+            Request.FtCreate("idx", [new Ft.CreateVectorFieldHnsw { Identifier = "v", Dimensions = 4, DistanceMetric = Ft.DistanceMetric.Euclidean, Type = Ft.VectorType.Bfloat16 }]));
+
+        CmdAssert.Equal(
+            RequestType.FtCreate,
+            ["idx", "SCHEMA", "f", "TEXT", "SORTABLE", "UNF"],
+            Request.FtCreate("idx", [new Ft.CreateTextField("f") { Sortable = true, Unf = true }]));
+
+        CmdAssert.Equal(
+            RequestType.FtCreate,
+            ["idx", "SCHEMA", "f", "TAG", "SORTABLE"],
+            Request.FtCreate("idx", [new Ft.CreateTagField("f") { Sortable = true }]));
+
+        CmdAssert.Equal(
+            RequestType.FtCreate,
+            ["idx", "SCHEMA", "f", "NUMERIC", "SORTABLE", "UNF"],
+            Request.FtCreate("idx", [new Ft.CreateNumericField("f") { Sortable = true, Unf = true }]));
+
+        _ = Assert.Throws<ArgumentException>(() =>
+            Request.FtCreate("idx", [new Ft.CreateTextField("f") { Unf = true }]));
+
+        CmdAssert.Equal(
+            RequestType.FtCreate,
+            ["idx", "SCHEMA", "f", "TEXT", "WEIGHT", "2.5"],
+            Request.FtCreate("idx", [new Ft.CreateTextField("f") { Weight = 2.5 }]));
+
+        CmdAssert.Equal(
+            RequestType.FtCreate,
+            ["idx", "ON", "HASH", "SCORE", "0.5", "LANGUAGE", "english", "WITHOFFSETS", "FILTER", "@active:{true}", "SCORE_FIELD", "popularity", "NOHL", "SCHEMA", "f", "TEXT"],
+            Request.FtCreate(
+                "idx",
+                [new Ft.CreateTextField("f")],
+                new Ft.CreateOptions
+                {
+                    Score = 0.5,
+                    Language = "english",
+                    WithOffsets = true,
+                    Filter = "@active:{true}",
+                    ScoreField = "popularity",
+                    NoHighlight = true,
+                }));
+
+        _ = Assert.Throws<ArgumentException>(() =>
+            Request.FtCreate("idx", [new Ft.CreateTextField("f")], new Ft.CreateOptions { WithOffsets = true, NoOffsets = true }));
+
+        _ = Assert.Throws<ArgumentException>(() =>
+            Request.FtCreate("idx", [new Ft.CreateTextField("f")], new Ft.CreateOptions { Filter = string.Empty }));
+    }
+
+    [Fact]
+    public void FtSearchScoring()
+    {
+        CmdAssert.Equal(
+            RequestType.FtSearch,
+            ["idx", "*", "WITHSCORES"],
+            Request.FtSearch("idx", "*", new Ft.SearchOptions { WithScores = true }));
+
+        CmdAssert.Equal(
+            RequestType.FtSearch,
+            ["idx", "*", "SCORER", "BM25STD"],
+            Request.FtSearch("idx", "*", new Ft.SearchOptions { Scorer = "BM25STD" }));
+
+        CmdAssert.Equal(
+            RequestType.FtSearch,
+            ["idx", "*", "INKEYS", "2", "k1", "k2"],
+            Request.FtSearch("idx", "*", new Ft.SearchOptions { InKeys = ["k1", "k2"] }));
+
+        CmdAssert.Equal(
+            RequestType.FtSearch,
+            ["idx", "*", "INKEYS", "0"],
+            Request.FtSearch("idx", "*", new Ft.SearchOptions { InKeys = [] }));
+
+        CmdAssert.Equal(
+            RequestType.FtSearch,
+            ["idx", "*", "LIMIT", "0", "0"],
+            Request.FtSearch("idx", "*", new Ft.SearchOptions { Count = true }));
+
+        _ = Assert.Throws<ArgumentException>(() =>
+            Request.FtSearch("idx", "*", new Ft.SearchOptions { Count = true, Limit = new Ft.SearchLimit { Count = 1 } }));
+    }
+
+    [Fact]
+    public void FtAggregateScoringAndCursor()
+    {
+        CmdAssert.Equal(
+            RequestType.FtAggregate,
+            ["idx", "*", "ADDSCORES"],
+            Request.FtAggregate("idx", "*", new Ft.AggregateOptions { AddScores = true }));
+
+        CmdAssert.Equal(
+            RequestType.FtAggregate,
+            ["idx", "*", "SCORER", "BM25STD"],
+            Request.FtAggregate("idx", "*", new Ft.AggregateOptions { Scorer = "BM25STD" }));
+
+        CmdAssert.Equal(
+            RequestType.FtAggregate,
+            ["idx", "*", "DIALECT", "2"],
+            Request.FtAggregate("idx", "*", new Ft.AggregateOptions { Dialect = 2 }));
+
+        CmdAssert.Equal(
+            RequestType.FtAggregate,
+            ["idx", "*", "LOAD", "3", "f", "AS", "alias"],
+            Request.FtAggregate("idx", "*", new Ft.AggregateOptions { LoadFieldEntries = [new Ft.LoadField("f", "alias")] }));
+
+        CmdAssert.Equal(
+            RequestType.FtAggregate,
+            ["idx", "*", "WITHCURSOR", "COUNT", "10", "MAXIDLE", "1000"],
+            Request.FtAggregateWithCursor("idx", "*", new Ft.AggregateOptions { WithCursorOptions = new Ft.WithCursor { Count = 10, MaxIdle = 1000 } }));
+
+        CmdAssert.Equal(
+            RequestType.FtAggregate,
+            ["idx", "*", "GROUPBY", "1", "@c", "REDUCE", "TOLIST", "1", "@color", "AS", "colors"],
+            Request.FtAggregate("idx", "*", new Ft.AggregateOptions { Clauses = [new Ft.AggregateGroupBy { Fields = ["@c"], Reducers = [Ft.AggregateReducer.ToList("@color", "colors")] }] }));
+
+        CmdAssert.Equal(
+            RequestType.FtAggregate,
+            ["idx", "*", "GROUPBY", "1", "@c", "REDUCE", "FIRST_VALUE", "4", "@title", "BY", "@price", "DESC", "AS", "most_expensive"],
+            Request.FtAggregate("idx", "*", new Ft.AggregateOptions { Clauses = [new Ft.AggregateGroupBy { Fields = ["@c"], Reducers = [Ft.AggregateReducer.FirstValue("@title", by: "@price", order: SortOrder.Descending, name: "most_expensive")] }] }));
+
+        CmdAssert.Equal(
+            RequestType.FtAggregate,
+            ["idx", "*", "GROUPBY", "1", "@c", "REDUCE", "RANDOM_SAMPLE", "2", "@score", "5", "AS", "sample"],
+            Request.FtAggregate("idx", "*", new Ft.AggregateOptions { Clauses = [new Ft.AggregateGroupBy { Fields = ["@c"], Reducers = [Ft.AggregateReducer.RandomSample("@score", 5, "sample")] }] }));
+
+        _ = Assert.Throws<ArgumentException>(() => Ft.AggregateReducer.FirstValue("@title", order: SortOrder.Descending));
+    }
+
+    [Fact]
+    public void FtCursor()
+    {
+        CmdAssert.Equal(
+            RequestType.CustomCommand,
+            ["FT.CURSOR", "READ", "idx", "42"],
+            Request.FtCursorRead("idx", 42, null));
+
+        CmdAssert.Equal(
+            RequestType.CustomCommand,
+            ["FT.CURSOR", "READ", "idx", "42", "COUNT", "5"],
+            Request.FtCursorRead("idx", 42, 5));
+
+        CmdAssert.Equal(
+            RequestType.CustomCommand,
+            ["FT.CURSOR", "DEL", "idx", "42"],
+            Request.FtCursorDel("idx", 42));
+    }
+
+    [Fact]
+    public void FtHybridArgvParity()
+    {
+        var args1 = Request.FtHybrid(
+            "idx",
+            new Ft.HybridSearchArm { Query = "hello world" },
+            new Ft.HybridVsimArm { Field = "vec", Vector = "rawvectorbytes", K = 10 })
+            .Args
+            .ToStrings();
+
+        Assert.Equal("FT.HYBRID", args1[0]);
+        Assert.Equal("idx", args1[1]);
+        Assert.Equal("SEARCH", args1[2]);
+        Assert.Equal("hello world", args1[3]);
+        Assert.Equal("VSIM", args1[4]);
+        Assert.Equal("@vec", args1[5]);
+        Assert.StartsWith("$", args1[6]);
+        Assert.DoesNotContain("-", args1[6]);
+        Assert.Equal("KNN", args1[7]);
+        Assert.Equal("2", args1[8]);
+        Assert.Equal("K", args1[9]);
+        Assert.Equal("10", args1[10]);
+        Assert.Equal("PARAMS", args1[11]);
+        Assert.Equal("2", args1[12]);
+        Assert.Equal(args1[6][1..], args1[13]);
+        Assert.Equal("rawvectorbytes", args1[14]);
+        Assert.Equal(15, args1.Length);
+
+        var args2 = Request.FtHybridWithCursor(
+            "idx",
+            new Ft.HybridSearchArm { Query = "hello world", YieldScoreAs = "ss" },
+            new Ft.HybridVsimArm { Field = "vec", Vector = "$qv", K = 10, YieldScoreAs = "vs" },
+            new Ft.HybridOptions
+            {
+                Combine = new Ft.HybridRrf { Constant = 60 },
+                LoadFields = [new Ft.LoadField("title")],
+                WithCursorOptions = new Ft.WithCursor { Count = 10 },
+                Params = new Dictionary<ValkeyValue, ValkeyValue> { ["qv"] = "rawbytes" },
+            })
+            .Args
+            .ToStrings();
+
+        Assert.Equal(
+            [
+                "FT.HYBRID", "idx",
+                "SEARCH", "hello world", "YIELD_SCORE_AS", "ss",
+                "VSIM", "@vec", "$qv", "KNN", "2", "K", "10", "YIELD_SCORE_AS", "vs",
+                "COMBINE", "RRF", "2", "CONSTANT", "60",
+            ],
+            args2[..20]);
+
+        Assert.Equal("FT.HYBRID", args2[0]);
+        Assert.Contains("LOAD", args2);
+        Assert.Contains("PARAMS", args2);
+        Assert.Contains("WITHCURSOR", args2);
+        int loadIdx = Array.IndexOf(args2, "LOAD");
+        int paramsIdx = Array.IndexOf(args2, "PARAMS");
+        int cursorIdx = Array.IndexOf(args2, "WITHCURSOR");
+        Assert.True(loadIdx < paramsIdx);
+        Assert.True(paramsIdx < cursorIdx);
+
+        var args3 = Request.FtHybrid(
+            "idx",
+            new Ft.HybridSearchArm { Query = "hello" },
+            new Ft.HybridVsimArm { Field = "vec", Vector = "$qv" },
+            new Ft.HybridOptions
+            {
+                LocalOnly = true,
+                Dialect = 2,
+                Params = new Dictionary<ValkeyValue, ValkeyValue> { ["qv"] = "unused" },
+                Clauses = [new Ft.AggregateFilter("@price > 10")],
+            })
+            .Args
+            .ToStrings();
+
+        Assert.Equal(
+            [
+                "FT.HYBRID", "idx",
+                "SEARCH", "hello",
+                "VSIM", "@vec", "$qv",
+                "LOCALONLY",
+                "PARAMS", "2", "qv", "unused",
+                "FILTER", "@price > 10",
+                "DIALECT", "2",
+            ],
+            args3);
+    }
+
+    [Fact]
+    public void FtHybridVsimFilterAndCombineVariants()
+    {
+        Assert.Equal(
+            ["FILTER", "@tag:{a}"],
+            new Ft.HybridVsimFilter("@tag:{a}").ToArgs());
+
+        Assert.Equal(
+            ["FILTER", "3", "@tag:{a}", "POLICY", "ADHOC"],
+            new Ft.HybridVsimFilter("@tag:{a}") { Policy = Ft.HybridFilterPolicy.Adhoc }.ToArgs());
+
+        Assert.Equal(
+            ["FILTER", "5", "@tag:{a}", "POLICY", "BATCHES", "BATCH_SIZE", "100"],
+            new Ft.HybridVsimFilter("@tag:{a}") { Policy = Ft.HybridFilterPolicy.Batches, BatchSize = 100 }.ToArgs());
+
+        _ = Assert.Throws<ArgumentException>(() =>
+            new Ft.HybridVsimFilter("@tag:{a}") { BatchSize = 100 }.ToArgs());
+
+        Assert.Equal(
+            ["COMBINE", "LINEAR", "4", "ALPHA", "0.3", "BETA", "0.7"],
+            new Ft.HybridLinear { Alpha = 0.3, Beta = 0.7 }.ToArgs());
+
+        _ = Assert.Throws<ArgumentException>(() => new Ft.HybridLinear { Alpha = 0.3 }.ToArgs());
+
+        Assert.Equal(
+            ["COMBINE", "FUNCTION", "2", "EXPR", "@ss + @vs"],
+            new Ft.HybridFunction { Expr = "@ss + @vs" }.ToArgs());
+
+        _ = Assert.Throws<ArgumentException>(() => new Ft.HybridRrf { Constant = -1 }.ToArgs());
+    }
+
+    [Fact]
+    public void FtHybrid_RawVectorStartingWithDollarByte_IsNotTreatedAsParamReference()
+    {
+        byte[] vectorStartingWithDollarByte = [0x24, 0x00, 0x00, 0x00];
+        var vsimArm = new Ft.HybridVsimArm { Field = "vec", Vector = vectorStartingWithDollarByte, K = 10 };
+        Assert.False(vsimArm.IsParamReference);
+
+        var args = Request.FtHybrid(
+            "idx",
+            new Ft.HybridSearchArm { Query = "*" },
+            vsimArm).Args;
+
+        GlideString paramsLiteral = "PARAMS";
+        int paramsIdx = Array.IndexOf(args, paramsLiteral);
+        Assert.True(paramsIdx >= 0);
+        GlideString paramValue = args[paramsIdx + 3];
+        Assert.Equal((GlideString)vectorStartingWithDollarByte, paramValue);
+    }
+
+    [Fact]
+    public void AggregateReducer_Factories_ReportTheirOwnFunction()
+    {
+        Assert.Equal(Ft.ReducerFunction.ToList, Ft.AggregateReducer.ToList("@f").Function);
+        Assert.Equal(Ft.ReducerFunction.FirstValue, Ft.AggregateReducer.FirstValue("@f").Function);
+        Assert.Equal(Ft.ReducerFunction.RandomSample, Ft.AggregateReducer.RandomSample("@f", 10).Function);
+    }
+
+    [Fact]
+    public void FtScorerAndLanguage_AreSentToTheServerWithoutClientAllowlist()
+    {
+        CmdAssert.Equal(
+            RequestType.FtSearch,
+            ["idx", "*", "WITHSCORES", "SCORER", "TFIDF"],
+            Request.FtSearch("idx", "*", new Ft.SearchOptions { WithScores = true, Scorer = "TFIDF" }));
+
+        CmdAssert.Equal(
+            RequestType.FtAggregate,
+            ["idx", "*", "ADDSCORES", "SCORER", "BM25STD"],
+            Request.FtAggregate("idx", "*", new Ft.AggregateOptions { AddScores = true, Scorer = "BM25STD" }));
+
+        Assert.Equal(
+            ["SEARCH", "*", "SCORER", "TFIDF"],
+            new Ft.HybridSearchArm { Query = "*", Scorer = "TFIDF" }.ToArgs());
+
+        CmdAssert.Equal(
+            RequestType.FtCreate,
+            ["idx", "ON", "HASH", "LANGUAGE", "klingon", "SCHEMA", "f", "TEXT"],
+            Request.FtCreate("idx", [new Ft.CreateTextField("f")], new Ft.CreateOptions { Language = "klingon" }));
+    }
+
+    [Fact]
+    public void FtAggregate_WithCursorOptions_ThrowsArgumentException() => _ = Assert.Throws<ArgumentException>(() =>
+        Request.FtAggregate("idx", "*", new Ft.AggregateOptions { WithCursorOptions = new Ft.WithCursor { Count = 10 } }));
+
+    [Fact]
+    public void FtAggregateWithCursor_WithoutCursorOptions_EmitsBareWithCursor() => CmdAssert.Equal(
+        RequestType.FtAggregate,
+        ["idx", "*", "WITHCURSOR"],
+        Request.FtAggregateWithCursor("idx", "*", new Ft.AggregateOptions()));
+
+    [Fact]
+    public void FtHybrid_WithCursorOptions_ThrowsArgumentException() => _ = Assert.Throws<ArgumentException>(() => Request.FtHybrid(
+        "idx",
+        new Ft.HybridSearchArm { Query = "*" },
+        new Ft.HybridVsimArm { Field = "vec", Vector = "$qv" },
+        new Ft.HybridOptions { WithCursorOptions = new Ft.WithCursor() }));
+
+    [Fact]
+    public void FtHybridWithCursor_WithoutCursorOptions_EmitsBareWithCursor() => CmdAssert.Equal(
+        RequestType.CustomCommand,
+        ["FT.HYBRID", "idx", "SEARCH", "*", "VSIM", "@vec", "$qv", "WITHCURSOR"],
+        Request.FtHybridWithCursor(
+            "idx",
+            new Ft.HybridSearchArm { Query = "*" },
+            new Ft.HybridVsimArm { Field = "vec", Vector = "$qv" },
+            new Ft.HybridOptions()));
+
+    [Fact]
+    public void FtAggregate_ArrayValuedReducer_RendersValidJsonWithEscapesAndNesting()
+    {
+        object[] rows =
+        [
+            new Dictionary<GlideString, object>
+            {
+                [(GlideString)"values"] = new object[]
+                {
+                    (GlideString)"say \"hi\"",
+                    (GlideString)"back\\slash",
+                    (GlideString)"tab\tnew\nline\u0001",
+                    new object[] { 1L, (GlideString)"nested" },
+                },
+            },
+        ];
+
+        var row = Request.FtAggregate("idx", "*").Converter(rows)[0];
+
+        using JsonDocument document = JsonDocument.Parse(row["values"].ToString());
+        JsonElement array = document.RootElement;
+        Assert.Equal(4, array.GetArrayLength());
+        Assert.Equal("say \"hi\"", array[0].GetString());
+        Assert.Equal("back\\slash", array[1].GetString());
+        Assert.Equal("tab\tnew\nline\u0001", array[2].GetString());
+        Assert.Equal(2, array[3].GetArrayLength());
+        Assert.Equal(1, array[3][0].GetInt64());
+        Assert.Equal("nested", array[3][1].GetString());
+    }
+
+    [Fact]
+    public void FtAggregate_ScalarReplyTypes_AreConvertedToValkeyValues()
+    {
+        object[] rows =
+        [
+            new Dictionary<GlideString, object?>
+            {
+                [(GlideString)"text"] = (GlideString)"abc",
+                [(GlideString)"count"] = 7L,
+                [(GlideString)"ratio"] = 1.5,
+                [(GlideString)"flag"] = true,
+                [(GlideString)"missing"] = null,
+            }
+                .ToDictionary(kvp => kvp.Key, kvp => kvp.Value!),
+        ];
+
+        var row = Request.FtAggregate("idx", "*").Converter(rows)[0];
+
+        Assert.Equal("abc", row["text"].ToString());
+        Assert.Equal(7L, (long)row["count"]);
+        Assert.Equal(1.5, (double)row["ratio"]);
+        Assert.True((bool)row["flag"]);
+    }
+
+    [Fact]
+    public void FtAggregate_UnexpectedValueType_Throws()
+    {
+        object[] rows = [new Dictionary<GlideString, object> { [(GlideString)"bad"] = new object() }];
+
+        _ = Assert.Throws<Errors.RequestException>(() => Request.FtAggregate("idx", "*").Converter(rows));
+    }
+
+    [Fact]
+    public void FtAggregate_NonMapRows_AreSkipped()
+    {
+        object[] rows = [(GlideString)"1", new Dictionary<GlideString, object> { [(GlideString)"k"] = (GlideString)"v" }];
+
+        var result = Request.FtAggregate("idx", "*").Converter(rows);
+
+        _ = Assert.Single(result);
+        Assert.Equal("v", result[0]["k"].ToString());
+    }
+
+    [Fact]
+    public void FtAggregateWithCursor_ConvertsRowsAndCursorId()
+    {
+        object[] reply =
+        [
+            new object[] { new Dictionary<GlideString, object> { [(GlideString)"k"] = (GlideString)"v" } },
+            42L,
+        ];
+
+        var result = Request.FtAggregateWithCursor("idx", "*", new Ft.AggregateOptions { WithCursorOptions = new Ft.WithCursor() }).Converter(reply)!;
+
+        Assert.Equal(42L, result.CursorId);
+        _ = Assert.Single(result.Rows);
+        Assert.Equal("v", result.Rows[0]["k"].ToString());
+    }
+
+    [Fact]
+    public void FtCursorRead_ExhaustedCursor_ReturnsZeroCursorId()
+    {
+        object[] reply = [Array.Empty<object>(), 0L];
+
+        var result = Request.FtCursorRead("idx", 42, null).Converter(reply)!;
+
+        Assert.Equal(0L, result.CursorId);
+        Assert.Empty(result.Rows);
+    }
+
+    [Fact]
+    public void FtCursorRead_NotAnArray_Throws() => Assert.Throws<Errors.RequestException>(() => Request.FtCursorRead("idx", 42, null).Converter((GlideString)"oops"));
+
+    [Fact]
+    public void FtCursorRead_WrongLength_Throws()
+    {
+        object[] reply = [Array.Empty<object>()];
+
+        _ = Assert.Throws<Errors.RequestException>(() => Request.FtCursorRead("idx", 42, null).Converter(reply));
+    }
+
+    [Fact]
+    public void FtCursorRead_RowsNotAnArray_Throws()
+    {
+        object[] reply = [(GlideString)"rows", 1L];
+
+        _ = Assert.Throws<Errors.RequestException>(() => Request.FtCursorRead("idx", 42, null).Converter(reply));
     }
 }

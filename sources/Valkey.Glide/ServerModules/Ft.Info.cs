@@ -122,6 +122,27 @@ public static partial class Ft
         public required ValkeyValue[] Prefixes { get; init; }
 
         /// <summary>
+        /// The document field whose value is multiplied into the final relevance score
+        /// (<c>index_definition.score_field</c>, set via <see cref="CreateOptions.ScoreField"/>),
+        /// or <see cref="ValkeyValue.Null"/> if none was configured. Only reported when
+        /// <c>search.emulate-release</c> is at least 1.3.0 (the <c>ft_info_score_field</c>
+        /// compatibility gate); below that level this is always <see cref="ValkeyValue.Null"/>
+        /// even if <see cref="CreateOptions.ScoreField"/> was set at creation time, because the
+        /// legacy branch never emits the <c>score_field</c> pair in <c>index_definition</c> at all.
+        /// </summary>
+        public ValkeyValue ScoreField { get; init; }
+
+        /// <summary>
+        /// The index's configured default relevance score (<c>index_definition.default_score</c>,
+        /// set via <see cref="CreateOptions.Score"/>), or <see langword="null"/> if not reported.
+        /// Below <c>search.emulate-release</c> 1.3.0 this is always the literal <c>1.0</c> (the
+        /// legacy branch always reports the string <c>"1"</c>, since SCORE only ever accepted 1.0
+        /// at the time) regardless of what was actually configured; at or above 1.3.0 it reflects
+        /// the real configured value.
+        /// </summary>
+        public double? DefaultScore { get; init; }
+
+        /// <summary>
         /// The field attributes defined in the index schema (<c>attributes</c>).
         /// </summary>
         public required InfoField[] Attributes { get; init; }

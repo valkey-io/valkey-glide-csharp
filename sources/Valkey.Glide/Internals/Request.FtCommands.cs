@@ -1,6 +1,8 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
 using System.Globalization;
+using System.Text;
+using System.Text.Json;
 
 using Valkey.Glide.ServerModules;
 
@@ -24,10 +26,48 @@ internal static partial class Request
         => new(RequestType.FtList, [], false, ToValkeyValueSet);
 
     public static Cmd<object[], Ft.SearchResult> FtSearch(ValkeyKey indexName, ValkeyValue query, Ft.SearchOptions? options = null)
-        => new(RequestType.FtSearch, [indexName, query, .. ToArgs(options)], false, ParseFtSearchResponse);
+        => new(RequestType.FtSearch, [indexName, query, .. ToArgs(options)], false, data => ParseFtSearchResponse(data, options));
 
     public static Cmd<object[], IDictionary<ValkeyValue, ValkeyValue>[]> FtAggregate(ValkeyKey indexName, ValkeyValue query, Ft.AggregateOptions? options = null)
-        => new(RequestType.FtAggregate, [indexName, query, .. ToArgs(options)], false, ParseFtAggregateResponse);
+    {
+        if (options?.WithCursorOptions is not null)
+        {
+            throw new ArgumentException($"{nameof(Ft.AggregateOptions.WithCursorOptions)} is set; use {nameof(Ft.AggregateWithCursorAsync)} to page results.");
+        }
+
+        return new(RequestType.FtAggregate, [indexName, query, .. ToArgs(options)], false, ParseFtAggregateResponse);
+    }
+
+    public static Cmd<object?, Ft.CursorResult> FtAggregateWithCursor(ValkeyKey indexName, ValkeyValue query, Ft.AggregateOptions options)
+        => new(RequestType.FtAggregate, [indexName, query, .. ToArgs(options), .. (options.WithCursorOptions ?? new Ft.WithCursor()).ToArgs()], true, ParseCursorWrappedAggregateResponse, true);
+
+    public static Cmd<object?, Ft.CursorResult> FtCursorRead(ValkeyKey indexName, long cursorId, long? count)
+    {
+        List<GlideString> args = [ValkeyLiterals.CURSOR, ValkeyLiterals.READ, indexName, cursorId.ToGlideString()];
+        if (count.HasValue)
+        {
+            args.Add(ValkeyLiterals.COUNT);
+            args.Add(count.Value.ToGlideString());
+        }
+
+        return new(RequestType.CustomCommand, [.. args], true, ParseCursorWrappedAggregateResponse, true);
+    }
+
+    public static Cmd<string, string> FtCursorDel(ValkeyKey indexName, long cursorId)
+        => Simple<string>(RequestType.CustomCommand, [ValkeyLiterals.CURSOR, ValkeyLiterals.DEL, indexName, cursorId.ToGlideString()]);
+
+    public static Cmd<object?, IDictionary<ValkeyValue, ValkeyValue>[]> FtHybrid(ValkeyKey indexName, Ft.HybridSearchArm searchArm, Ft.HybridVsimArm vsimArm, Ft.HybridOptions? options = null)
+    {
+        if (options?.WithCursorOptions is not null)
+        {
+            throw new ArgumentException($"{nameof(Ft.HybridOptions.WithCursorOptions)} is set; use {nameof(Ft.HybridWithCursorAsync)} to page results.");
+        }
+
+        return new(RequestType.CustomCommand, BuildHybridArgs(indexName, searchArm, vsimArm, options, withCursor: false), true, data => data is null ? [] : ParseFtAggregateResponse((object[])data), true);
+    }
+
+    public static Cmd<object?, Ft.CursorResult> FtHybridWithCursor(ValkeyKey indexName, Ft.HybridSearchArm searchArm, Ft.HybridVsimArm vsimArm, Ft.HybridOptions options)
+        => new(RequestType.CustomCommand, BuildHybridArgs(indexName, searchArm, vsimArm, options, withCursor: true), true, ParseCursorWrappedAggregateResponse, true);
 
     public static Cmd<object, Ft.InfoLocalResult> FtInfoLocal(ValkeyKey indexName, Ft.InfoOptions? options = null)
         => new(RequestType.FtInfo, [indexName, ValkeyLiterals.LOCAL, .. ToArgs(options)], false, ParseFtInfoLocalResponse);
@@ -39,11 +79,22 @@ internal static partial class Request
     /// Converts the given <see cref="Ft.CreateOptions"/> to command arguments.
     /// </summary>
     /// <param name="options">The index creation options to convert.</param>
+    /// <exception cref="ArgumentException"></exception>
     private static GlideString[] ToArgs(Ft.CreateOptions? options)
     {
         if (options is null)
         {
             return [];
+        }
+
+        if (options.WithOffsets && options.NoOffsets)
+        {
+            throw new ArgumentException($"{nameof(Ft.CreateOptions.WithOffsets)} and {nameof(Ft.CreateOptions.NoOffsets)} are mutually exclusive.");
+        }
+
+        if (!options.Filter.IsNull && options.Filter.IsNullOrEmpty)
+        {
+            throw new ArgumentException($"{nameof(Ft.CreateOptions.Filter)} cannot be empty.");
         }
 
         List<GlideString> args = [
@@ -54,6 +105,18 @@ internal static partial class Request
         if (prefixes.Any())
         {
             args.AddRange(ToArgs(ValkeyLiterals.PREFIX, prefixes));
+        }
+
+        if (options.Score.HasValue)
+        {
+            args.Add(ValkeyLiterals.SCORE);
+            args.Add(options.Score.Value.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        }
+
+        if (!options.Language.IsNull)
+        {
+            args.Add(ValkeyLiterals.LANGUAGE);
+            args.Add((GlideString)options.Language);
         }
 
         if (options.SkipInitialScan)
@@ -67,7 +130,11 @@ internal static partial class Request
             args.Add(options.MinStemSize.Value.ToGlideString());
         }
 
-        if (options.NoOffsets)
+        if (options.WithOffsets)
+        {
+            args.Add(ValkeyLiterals.WITHOFFSETS);
+        }
+        else if (options.NoOffsets)
         {
             args.Add(ValkeyLiterals.NOOFFSETS);
         }
@@ -81,6 +148,23 @@ internal static partial class Request
         {
             args.Add(ValkeyLiterals.PUNCTUATION);
             args.Add((GlideString)options.Punctuation);
+        }
+
+        if (!options.Filter.IsNull)
+        {
+            args.Add(ValkeyLiterals.FILTER);
+            args.Add((GlideString)options.Filter);
+        }
+
+        if (!options.ScoreField.IsNull)
+        {
+            args.Add(ValkeyLiterals.SCORE_FIELD);
+            args.Add((GlideString)options.ScoreField);
+        }
+
+        if (options.NoHighlight)
+        {
+            args.Add(ValkeyLiterals.NOHL);
         }
 
         return [.. args];
@@ -105,12 +189,19 @@ internal static partial class Request
     /// Converts the given <see cref="Ft.SearchOptions"/> to command arguments.
     /// </summary>
     /// <param name="options">The search options to convert.</param>
-    /// <exception cref="ArgumentException">Thrown if <see cref="Ft.SearchSortBy.WithSortKeys"/> is used together with <see cref="Ft.SearchOptions.NoContent"/>.</exception>
+    /// <exception cref="ArgumentException"></exception>
     private static GlideString[] ToArgs(Ft.SearchOptions? options)
     {
         if (options is null)
         {
             return [];
+        }
+
+        if (options.Count && options.Limit is not null)
+        {
+            throw new ArgumentException(
+                $"{nameof(Ft.SearchOptions.Count)} and {nameof(Ft.SearchOptions.Limit)} are mutually exclusive -- " +
+                    $"{nameof(Ft.SearchOptions.Count)} maps to LIMIT 0 0 internally, so an explicit limit would conflict with it.");
         }
 
         List<GlideString> args = [];
@@ -120,12 +211,6 @@ internal static partial class Request
 
         if (isNoContent)
         {
-            if (options.SortBy is { WithSortKeys: true })
-            {
-                throw new ArgumentException(
-                    $"{nameof(Ft.SearchSortBy.WithSortKeys)} cannot be used with {nameof(Ft.SearchOptions.NoContent)}.");
-            }
-
             args.Add(ValkeyLiterals.NOCONTENT);
         }
 
@@ -160,11 +245,25 @@ internal static partial class Request
             args.Add(options.Slop.Value.ToGlideString());
         }
 
+        if (options.InKeys is not null)
+        {
+            var inKeys = options.InKeys.ToArray();
+            args.Add(ValkeyLiterals.INKEYS);
+            args.Add(inKeys.Length.ToGlideString());
+            args.AddRange(inKeys.Select(k => (GlideString)k));
+        }
+
         if (options.Limit is not null)
         {
             args.Add(ValkeyLiterals.LIMIT);
             args.Add(options.Limit.Offset.ToGlideString());
             args.Add(options.Limit.Count.ToGlideString());
+        }
+        else if (options.Count)
+        {
+            args.Add(ValkeyLiterals.LIMIT);
+            args.Add("0");
+            args.Add("0");
         }
 
         if (options.SortBy is not null)
@@ -214,6 +313,17 @@ internal static partial class Request
             args.Add(ToULongMs(options.Timeout.Value, nameof(options.Timeout)).ToGlideString());
         }
 
+        if (options.WithScores)
+        {
+            args.Add(ValkeyLiterals.WITHSCORES);
+        }
+
+        if (!options.Scorer.IsNull)
+        {
+            args.Add(ValkeyLiterals.SCORER);
+            args.Add((GlideString)options.Scorer);
+        }
+
         return [.. args];
     }
 
@@ -246,15 +356,7 @@ internal static partial class Request
             args.Add(options.Slop.Value.ToGlideString());
         }
 
-        if (options.LoadFields is null)
-        {
-            args.Add(ValkeyLiterals.LOAD);
-            args.Add(ValkeyLiterals.STAR);
-        }
-        else if (options.LoadFields.Any())
-        {
-            args.AddRange(ToArgs(ValkeyLiterals.LOAD, options.LoadFields));
-        }
+        args.AddRange(ToLoadArgs(options.LoadFieldEntries, options.LoadFields));
 
         if (options.Params.Count > 0)
         {
@@ -272,7 +374,52 @@ internal static partial class Request
             args.AddRange(clause.ToArgs());
         }
 
+        if (options.Dialect.HasValue)
+        {
+            args.Add(ValkeyLiterals.DIALECT);
+            args.Add(options.Dialect.Value.ToGlideString());
+        }
+
+        if (options.AddScores)
+        {
+            args.Add(ValkeyLiterals.ADDSCORES);
+        }
+
+        if (!options.Scorer.IsNull)
+        {
+            args.Add(ValkeyLiterals.SCORER);
+            args.Add((GlideString)options.Scorer);
+        }
+
         return [.. args];
+    }
+
+    private static GlideString[] ToLoadArgs(IEnumerable<Ft.LoadField>? entries, IEnumerable<ValkeyValue>? plainFields)
+    {
+        if (entries is not null)
+        {
+            var entryArray = entries.ToArray();
+            if (entryArray.Length == 0)
+            {
+                return [];
+            }
+
+            List<GlideString> fieldArgs = [];
+            foreach (var entry in entryArray)
+            {
+                fieldArgs.AddRange(entry.ToArgs());
+            }
+
+            return [ValkeyLiterals.LOAD, fieldArgs.Count.ToGlideString(), .. fieldArgs];
+        }
+
+        if (plainFields is null)
+        {
+            return [ValkeyLiterals.LOAD, ValkeyLiterals.STAR];
+        }
+
+        var fields = plainFields.ToArray();
+        return fields.Length == 0 ? [] : ToArgs(ValkeyLiterals.LOAD, fields);
     }
 
     /// <summary>
@@ -325,11 +472,18 @@ internal static partial class Request
                     args.Add(ValkeyLiterals.NOSTEM);
                 }
 
+                if (text.Weight.HasValue)
+                {
+                    args.Add(ValkeyLiterals.WEIGHT);
+                    args.Add(text.Weight.Value.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                }
+
                 if (!text.WithSuffixTrie)
                 {
                     args.Add(ValkeyLiterals.NOSUFFIXTRIE);
                 }
 
+                AddSortableUnf(args, text.Sortable, text.Unf);
                 break;
 
             case Ft.CreateTagField tag:
@@ -345,10 +499,12 @@ internal static partial class Request
                     args.Add(ValkeyLiterals.CASESENSITIVE);
                 }
 
+                AddSortableUnf(args, tag.Sortable, tag.Unf);
                 break;
 
-            case Ft.CreateNumericField:
+            case Ft.CreateNumericField numeric:
                 args.Add(ValkeyLiterals.NUMERIC);
+                AddSortableUnf(args, numeric.Sortable, numeric.Unf);
                 break;
 
             case Ft.CreateVectorFieldFlat flat:
@@ -358,7 +514,7 @@ internal static partial class Request
                 [
                     ValkeyLiterals.DIM, flat.Dimensions.ToGlideString(),
                     ValkeyLiterals.DISTANCE_METRIC, .. flat.DistanceMetric.ToArgs(),
-                    ValkeyLiterals.TYPE, ValkeyLiterals.FLOAT32,
+                    ValkeyLiterals.TYPE, flat.Type.ToArg(),
                 ];
                 if (flat.InitialCap.HasValue)
                 {
@@ -368,6 +524,11 @@ internal static partial class Request
 
                 args.Add(flatAttrs.Count.ToGlideString());
                 args.AddRange(flatAttrs);
+                if (flat.Sortable)
+                {
+                    args.Add(ValkeyLiterals.SORTABLE);
+                }
+
                 break;
 
             case Ft.CreateVectorFieldHnsw hnsw:
@@ -377,7 +538,7 @@ internal static partial class Request
                 [
                     ValkeyLiterals.DIM, hnsw.Dimensions.ToGlideString(),
                     ValkeyLiterals.DISTANCE_METRIC, .. hnsw.DistanceMetric.ToArgs(),
-                    ValkeyLiterals.TYPE, ValkeyLiterals.FLOAT32,
+                    ValkeyLiterals.TYPE, hnsw.Type.ToArg(),
                 ];
                 if (hnsw.InitialCap.HasValue)
                 {
@@ -405,6 +566,11 @@ internal static partial class Request
 
                 args.Add(hnswAttrs.Count.ToGlideString());
                 args.AddRange(hnswAttrs);
+                if (hnsw.Sortable)
+                {
+                    args.Add(ValkeyLiterals.SORTABLE);
+                }
+
                 break;
 
             default:
@@ -412,6 +578,23 @@ internal static partial class Request
         }
 
         return [.. args];
+    }
+
+    private static void AddSortableUnf(List<GlideString> args, bool sortable, bool unf)
+    {
+        if (unf && !sortable)
+        {
+            throw new ArgumentException("Unf requires Sortable to be set.");
+        }
+
+        if (sortable)
+        {
+            args.Add(ValkeyLiterals.SORTABLE);
+            if (unf)
+            {
+                args.Add(ValkeyLiterals.UNF);
+            }
+        }
     }
 
     /// <summary>
@@ -427,47 +610,92 @@ internal static partial class Request
     #endregion
     #region Response Converters
 
-    private static Ft.SearchResult ParseFtSearchResponse(object[] data)
+    private static Ft.SearchResult ParseFtSearchResponse(object[] data, Ft.SearchOptions? options)
     {
-        // Format: [count, {key1: fields1, key2: fields2, ...}]
-        // Without WITHSORTKEYS: fields is Dictionary<GlideString, object>
-        // With WITHSORTKEYS: fields is object[] { sortKey, Dictionary<GlideString, object> }
-        if (data.Length < 2)
+        if (data.Length == 0)
         {
             return new Ft.SearchResult(0, []);
         }
 
         long count = Convert.ToInt64(data[0], CultureInfo.InvariantCulture);
-        List<Ft.SearchDocument> docs = [];
 
+        // Format: [count, {key1: fields1, key2: fields2, ...}]
+        // Without WITHSORTKEYS: fields is Dictionary<GlideString, object>
+        // With WITHSORTKEYS: fields is object[] { sortKey, Dictionary<GlideString, object> }
+        if (data.Length < 2)
+        {
+            return new Ft.SearchResult(count, []);
+        }
+
+        bool withScores = options?.WithScores ?? false;
+        bool withSortKeys = options?.SortBy is { WithSortKeys: true };
+
+        List<Ft.SearchDocument> docs = [];
         if (data[1] is Dictionary<GlideString, object> map)
         {
             foreach (var kvp in map)
             {
                 ValkeyKey key = (ValkeyKey)kvp.Key.Bytes;
-                ValkeyValue sortKey = default;
-                IDictionary<ValkeyValue, ValkeyValue> fields = new Dictionary<ValkeyValue, ValkeyValue>();
-
-                if (kvp.Value is object[] pair && pair.Length == 2 && pair[1] is Dictionary<GlideString, object> sortedFieldMap)
-                {
-                    sortKey = pair[0] is GlideString gs ? (ValkeyValue)gs : ValkeyValue.Null;
-                    fields = sortedFieldMap.ToDictionary(
-                        f => (ValkeyValue)f.Key,
-                        f => (ValkeyValue)(GlideString)f.Value);
-                }
-                else if (kvp.Value is Dictionary<GlideString, object> directFieldMap)
-                {
-                    fields = directFieldMap.ToDictionary(
-                        f => (ValkeyValue)f.Key,
-                        f => (ValkeyValue)(GlideString)f.Value);
-                }
-
-                docs.Add(new Ft.SearchDocument(key, fields, sortKey));
+                docs.Add(ParseFtSearchDocument(key, kvp.Value, withScores, withSortKeys));
             }
         }
 
         return new Ft.SearchResult(count, [.. docs]);
     }
+
+    private static Ft.SearchDocument ParseFtSearchDocument(ValkeyKey key, object value, bool withScores, bool withSortKeys)
+    {
+        if (!withScores && !withSortKeys)
+        {
+            return new Ft.SearchDocument(key, ToFieldMap(value));
+        }
+
+        if (value is not object[] tuple)
+        {
+            throw new RequestException(
+                $"Unexpected FT.SEARCH document shape for key '{key}' (WithScores={withScores}, WithSortKeys={withSortKeys}): expected a tuple, got {value?.GetType()}");
+        }
+
+        switch (tuple.Length)
+        {
+            case 2:
+                if (withScores)
+                {
+                    return new Ft.SearchDocument(key, ToFieldMap(tuple[1]), score: ParseFtScore(key, tuple[0]));
+                }
+
+                ValkeyValue sortKey = tuple[0] is GlideString gs ? (ValkeyValue)gs : ValkeyValue.Null;
+                return new Ft.SearchDocument(key, ToFieldMap(tuple[1]), sortKey: sortKey);
+
+            case 3:
+                double score = ParseFtScore(key, tuple[0]);
+                ValkeyValue sortKey3 = tuple[1] is GlideString gs3 ? (ValkeyValue)gs3 : ValkeyValue.Null;
+                return new Ft.SearchDocument(key, ToFieldMap(tuple[2]), sortKey: sortKey3, score: score);
+
+            default:
+                throw new RequestException(
+                    $"Unexpected FT.SEARCH tuple length {tuple.Length} for key '{key}' (WithScores={withScores}, WithSortKeys={withSortKeys})");
+        }
+    }
+
+    private static double ParseFtScore(ValkeyKey key, object value)
+    {
+        string? text = value switch
+        {
+            GlideString gs => gs.ToString(),
+            string s => s,
+            _ => null,
+        };
+
+        return text is not null && double.TryParse(text, System.Globalization.CultureInfo.InvariantCulture, out double score)
+            ? score
+            : throw new RequestException($"Unparseable FT.SEARCH score '{value}' for key '{key}'");
+    }
+
+    private static IDictionary<ValkeyValue, ValkeyValue> ToFieldMap(object value)
+        => value is Dictionary<GlideString, object> map
+            ? map.ToDictionary(f => (ValkeyValue)f.Key, f => (ValkeyValue)(GlideString)f.Value)
+            : [];
 
     private static IDictionary<ValkeyValue, ValkeyValue>[] ParseFtAggregateResponse(object[] data)
     {
@@ -478,26 +706,179 @@ internal static partial class Request
             {
                 results.Add(map.ToDictionary(
                     kvp => (ValkeyValue)kvp.Key,
-                    kvp => kvp.Value switch
-                    {
-                        null => ValkeyValue.Null,
-                        GlideString gs => (ValkeyValue)gs,
-                        long l => (ValkeyValue)l,
-                        double d => (ValkeyValue)d,
-                        bool b => (ValkeyValue)b,
-                        _ => throw new RequestException($"Unexpected FT.AGGREGATE value type: {kvp.Value.GetType()}"),
-                    }));
+                    kvp => ParseFtAggregateValue(kvp.Value)));
             }
         }
 
         return [.. results];
     }
 
+    private static ValkeyValue ParseFtAggregateValue(object? value)
+        => value switch
+        {
+            null => ValkeyValue.Null,
+            GlideString gs => (ValkeyValue)gs,
+            long l => (ValkeyValue)l,
+            double d => (ValkeyValue)d,
+            bool b => (ValkeyValue)b,
+            object[] arr => (ValkeyValue)ToJsonArrayLiteral(arr),
+            _ => throw new RequestException($"Unexpected FT.AGGREGATE value type: {value.GetType()}"),
+        };
+
+    private static string ToJsonArrayLiteral(object[] arr)
+    {
+        using var stream = new MemoryStream();
+        using (var writer = new Utf8JsonWriter(stream))
+        {
+            WriteJsonValue(writer, arr);
+        }
+
+        return Encoding.UTF8.GetString(stream.ToArray());
+    }
+
+    private static void WriteJsonValue(Utf8JsonWriter writer, object? value)
+    {
+        switch (value)
+        {
+            case null:
+                writer.WriteNullValue();
+                break;
+            case object[] array:
+                writer.WriteStartArray();
+                foreach (var item in array)
+                {
+                    WriteJsonValue(writer, item);
+                }
+
+                writer.WriteEndArray();
+                break;
+            case long l:
+                writer.WriteNumberValue(l);
+                break;
+            case double d when double.IsFinite(d):
+                writer.WriteNumberValue(d);
+                break;
+            case bool b:
+                writer.WriteBooleanValue(b);
+                break;
+            case GlideString gs:
+                writer.WriteStringValue(gs.ToString());
+                break;
+            default:
+                writer.WriteStringValue(value.ToString());
+                break;
+        }
+    }
+
+    private static Ft.CursorResult ParseCursorWrappedAggregateResponse(object? data)
+    {
+        if (data is not object[] arr)
+        {
+            throw new RequestException($"Unexpected WITHCURSOR response type: {data?.GetType()}, expected object[]");
+        }
+
+        if (arr.Length != 2)
+        {
+            throw new RequestException($"Unexpected WITHCURSOR response: expected a 2-element [rows, cursorId] array, got {arr.Length} elements");
+        }
+
+        long cursorId = Convert.ToInt64(arr[1], System.Globalization.CultureInfo.InvariantCulture);
+        if (arr[0] is not object[] rows)
+        {
+            throw new RequestException($"Unexpected WITHCURSOR rows type: {arr[0]?.GetType()}, expected object[]");
+        }
+
+        return new Ft.CursorResult { Rows = ParseFtAggregateResponse(rows), CursorId = cursorId };
+    }
+
+    private static GlideString[] BuildHybridArgs(ValkeyKey indexName, Ft.HybridSearchArm searchArm, Ft.HybridVsimArm vsimArm, Ft.HybridOptions? options, bool withCursor)
+    {
+        List<GlideString> args = [ValkeyLiterals.HYBRID, indexName, .. searchArm.ToArgs()];
+
+        GlideString? generatedParamName = null;
+        ValkeyValue generatedParamValue = default;
+        if (vsimArm.IsParamReference)
+        {
+            args.AddRange(vsimArm.ToArgs((GlideString)vsimArm.Vector));
+        }
+        else
+        {
+            generatedParamName = "$" + Guid.NewGuid().ToString("N");
+            generatedParamValue = vsimArm.Vector;
+            args.AddRange(vsimArm.ToArgs(generatedParamName));
+        }
+
+        if (options?.Combine is not null)
+        {
+            args.AddRange(options.Combine.ToArgs());
+        }
+
+        Ft.HybridOptions tailOptions = options ?? new();
+
+        if (tailOptions.LocalOnly)
+        {
+            args.Add(ValkeyLiterals.LOCALONLY);
+        }
+
+        args.AddRange(ToHybridLoadArgs(tailOptions.LoadAll, tailOptions.LoadFields));
+
+        if (tailOptions.Timeout.HasValue)
+        {
+            args.Add(ValkeyLiterals.TIMEOUT);
+            args.Add(ToULongMs(tailOptions.Timeout.Value, nameof(tailOptions.Timeout)).ToGlideString());
+        }
+
+        Dictionary<ValkeyValue, ValkeyValue> mergedParams = [with(tailOptions.Params)];
+        if (generatedParamName is not null)
+        {
+            ValkeyValue key = (ValkeyValue)(GlideString)generatedParamName.ToString()[1..];
+            if (mergedParams.ContainsKey(key))
+            {
+                throw new ArgumentException($"Generated VSIM parameter name '{generatedParamName}' collides with an entry already present in {nameof(Ft.HybridOptions.Params)}; rename the caller-supplied entry.");
+            }
+
+            mergedParams[key] = generatedParamValue;
+        }
+
+        if (mergedParams.Count > 0)
+        {
+            args.AddRange(ToParams(mergedParams));
+        }
+
+        foreach (var clause in tailOptions.Clauses)
+        {
+            args.AddRange(clause.ToArgs());
+        }
+
+        if (withCursor)
+        {
+            args.AddRange((tailOptions.WithCursorOptions ?? new Ft.WithCursor()).ToArgs());
+        }
+
+        if (tailOptions.Dialect.HasValue)
+        {
+            args.Add(ValkeyLiterals.DIALECT);
+            args.Add(tailOptions.Dialect.Value.ToGlideString());
+        }
+
+        return [.. args];
+    }
+
+    private static GlideString[] ToHybridLoadArgs(bool loadAll, IEnumerable<Ft.LoadField>? loadFields)
+    {
+        if (loadAll)
+        {
+            return [ValkeyLiterals.LOAD, ValkeyLiterals.STAR];
+        }
+
+        return loadFields is null ? [] : ToLoadArgs(loadFields, null);
+    }
+
     private static Ft.InfoLocalResult ParseFtInfoLocalResponse(object data)
     {
         var map = (Dictionary<GlideString, object>)data;
         var indexDefinition = map.TryGetValue("index_definition", out var definitionObj)
-            ? (Dictionary<GlideString, object>)definitionObj
+            ? ToFlatMap(definitionObj)
             : throw new RequestException("FT.INFO LOCAL response missing 'index_definition'");
 
         return new Ft.InfoLocalResult
@@ -525,7 +906,32 @@ internal static partial class Request
             StopWords = TryGetValkeyValues(map, "stop_words"),
             WithOffsets = TryGetBool(map, "with_offsets"),
             MinStemSize = TryGetLong(map, "min_stem_size"),
+            ScoreField = TryGetValkeyValue(indexDefinition, "score_field"),
+            DefaultScore = TryGetDouble(indexDefinition, "default_score"),
         };
+    }
+
+    private static Dictionary<GlideString, object> ToFlatMap(object value)
+    {
+        if (value is Dictionary<GlideString, object> alreadyMap)
+        {
+            return alreadyMap;
+        }
+
+        if (value is not object[] flat || flat.Length % 2 != 0)
+        {
+            throw new RequestException(
+                $"Unexpected FT.INFO nested structure: expected a map or an even-length flat array, got {value?.GetType()}" +
+                    (value is object[] odd ? $" (length {odd.Length})" : string.Empty));
+        }
+
+        Dictionary<GlideString, object> result = [];
+        for (int i = 0; i < flat.Length; i += 2)
+        {
+            result[(GlideString)flat[i]] = flat[i + 1];
+        }
+
+        return result;
     }
 
     private static Ft.InfoState ParseInfoState(string state) => state switch
@@ -546,7 +952,7 @@ internal static partial class Request
         var fields = new List<Ft.InfoField>();
         foreach (var attr in attrs)
         {
-            var fieldMap = (Dictionary<GlideString, object>)attr;
+            var fieldMap = ToFlatMap(attr);
             var type = GetString(fieldMap, "type");
             var identifier = GetValkeyValue(fieldMap, "identifier");
             var attribute = GetValkeyValue(fieldMap, "attribute");
@@ -594,11 +1000,11 @@ internal static partial class Request
         Dictionary<GlideString, object> fieldMap)
     {
         var indexMap = fieldMap.TryGetValue("index", out var indexObj)
-            ? (Dictionary<GlideString, object>)indexObj
+            ? ToFlatMap(indexObj)
             : [];
 
         var algoMap = indexMap.TryGetValue("algorithm", out var algoObj)
-            ? (Dictionary<GlideString, object>)algoObj
+            ? ToFlatMap(algoObj)
             : [];
 
         var algoName = GetString(algoMap, "name");

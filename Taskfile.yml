@@ -38,6 +38,24 @@ tasks:
             {{if (default "" .verbosity)}}--verbosity {{.verbosity}}{{end}}
             {{if (default "" .configuration)}}--configuration {{.configuration}}{{end}}
 
+    test:modules:
+        desc: Run module tests
+        summary: |
+            Run module tests against servers with valkey-search loaded.
+
+            Requires MODULES_STANDALONE_ENDPOINT and, for cluster tests, MODULES_CLUSTER_ENDPOINTS.
+
+            Options:
+              filter=MyClass       Filter tests by class or method name
+              verbosity=detailed   Set verbosity (quiet|minimal|normal|detailed|diagnostic)
+              configuration=Debug  Set build configuration
+        cmd: >-
+            dotnet test tests/Valkey.Glide.ModuleTests/Valkey.Glide.ModuleTests.csproj
+            --framework net8.0
+            --configuration {{default "Release" .configuration}}
+            --verbosity {{default "normal" .verbosity}}
+            {{if (default "" .filter)}}--filter FullyQualifiedName~{{.filter}}{{end}}
+
     test:unit:
         desc: Run unit tests
         summary: |

@@ -5,6 +5,24 @@ All notable changes to the Valkey GLIDE C# client will be documented in this fil
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
+## Unreleased
+
+### Added
+
+- Valkey Search 1.3 support: `Ft.HybridAsync`/`Ft.HybridWithCursorAsync` (FT.HYBRID), cursor paging
+  (`Ft.AggregateWithCursorAsync`, `Ft.CursorReadAsync`, `Ft.CursorDelAsync`), scoring (`WITHSCORES`,
+  `SCORER`, `ADDSCORES`), `INKEYS`, `COUNT`, `TOLIST`/`FIRST_VALUE`/`RANDOM_SAMPLE` reducers,
+  `FLOAT16`/`BFLOAT16` vectors, `FILTER`, `SCORE_FIELD`, `NOHL`, `UNF`, and `LOAD ... AS` aliases.
+  See the [Valkey Search documentation](https://valkey.io/docs/topics/search/) for command details.
+- Module test harness for valkey-search 1.3 (`tests/Valkey.Glide.ModuleTests`,
+  `utils/start-valkey-docker-modules.sh`).
+
+### Fixed
+
+- `Ft.InfoLocalAsync` reads the nested sections of a valkey-search 1.3 `FT.INFO` reply.
+- Array-valued reducer results (`TOLIST`, `RANDOM_SAMPLE`) are returned as JSON array strings
+  instead of failing the call.
+
 ## 1.3.0
 
 ### Added

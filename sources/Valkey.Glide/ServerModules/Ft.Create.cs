@@ -49,6 +49,33 @@ public static partial class Ft
         Json,
     }
 
+    /// <summary>
+    /// The element type and encoding of a vector search index field.
+    /// </summary>
+    /// <seealso href="https://valkey.io/commands/ft.create/">Valkey commands – FT.CREATE</seealso>
+    public enum VectorType
+    {
+        /// <summary>
+        /// 4 bytes per element, IEEE 754 single precision (<c>FLOAT32</c>).
+        /// </summary>
+        Float32,
+
+        /// <summary>
+        /// 2 bytes per element, IEEE 754 half precision (<c>FLOAT16</c>) (valkey-search 1.3.0).
+        /// Callers must pass already-encoded bytes; GLIDE does not encode vectors on the client's behalf.
+        /// </summary>
+        Float16,
+
+        /// <summary>
+        /// 2 bytes per element, truncated IEEE 754 single precision: the top 16 bits of a FLOAT32
+        /// (sign, 8-bit exponent, 7-bit mantissa) (<c>BFLOAT16</c>) (valkey-search 1.3.0).
+        /// Callers must pass already-encoded bytes; GLIDE does not encode vectors on the client's behalf.
+        /// The engine may refuse to create or load a BFLOAT16 index on a host whose CPU lacks a SIMD
+        /// BF16 code path; this is a server-side capability check, not a GLIDE-side restriction.
+        /// </summary>
+        Bfloat16,
+    }
+
     #endregion
     #region Public Methods
 
@@ -162,6 +189,14 @@ public static partial class Ft
         _ => throw new ArgumentOutOfRangeException(nameof(dataType)),
     };
 
+    internal static GlideString ToArg(this VectorType type) => type switch
+    {
+        VectorType.Float32 => ValkeyLiterals.FLOAT32,
+        VectorType.Float16 => ValkeyLiterals.FLOAT16,
+        VectorType.Bfloat16 => ValkeyLiterals.BFLOAT16,
+        _ => throw new ArgumentOutOfRangeException(nameof(type)),
+    };
+
     #endregion
     #region Nested Classes
 
@@ -219,6 +254,47 @@ public static partial class Ft
         /// </summary>
         public ValkeyValue Punctuation { get; init; }
 
+        /// <summary>
+        /// The default relevance score for documents in the index,
+        /// or <see langword="null"/> for server default (1.0) (<c>SCORE score</c>).
+        /// </summary>
+        public double? Score { get; init; }
+
+        /// <summary>
+        /// The default stemming language for documents in the index,
+        /// or <see langword="null"/> for server default (<c>LANGUAGE language</c>).
+        /// Passed through verbatim; the server rejects an unrecognized value.
+        /// </summary>
+        public ValkeyValue Language { get; init; }
+
+        /// <summary>
+        /// Whether to explicitly store term offsets (<c>WITHOFFSETS</c>).
+        /// Mutually exclusive with <see cref="NoOffsets"/>.
+        /// </summary>
+        public bool WithOffsets { get; init; }
+
+        /// <summary>
+        /// A filter expression limiting which documents the index applies to (<c>FILTER expression</c>).
+        /// A document that doesn't match this expression is excluded from the index even if its key
+        /// matches a configured prefix (valkey-search 1.3.0). The expression must not be empty.
+        /// </summary>
+        public ValkeyValue Filter { get; init; }
+
+        /// <summary>
+        /// The name of a document field whose numeric value is used as the document's custom score,
+        /// multiplying into the final relevance score (<c>SCORE_FIELD field</c>) (valkey-search 1.3.0).
+        /// The field must already exist in the document; it is not itself a schema definition.
+        /// <c>FT.INFO</c> only reports this option back under <c>index_definition.score_field</c> when
+        /// <c>search.emulate-release</c> is at least 1.3.0.
+        /// </summary>
+        public ValkeyValue ScoreField { get; init; }
+
+        /// <summary>
+        /// Emits <c>NOHL</c> for wire compatibility with RediSearch clients. valkey-search does not
+        /// support highlighting, so this is a no-op on this engine.
+        /// </summary>
+        public bool NoHighlight { get; init; }
+
         #endregion
     }
 
@@ -237,6 +313,22 @@ public static partial class Ft
         /// An optional alias used as the field name in query results (<c>AS field-alias</c>).
         /// </summary>
         public ValkeyValue Alias { get; init; }
+
+        /// <summary>
+        /// Whether the field value can be used for sorting (<c>SORTABLE</c>).
+        /// Applies to TEXT, TAG and NUMERIC fields. For vector fields, <c>SORTABLE</c> is emitted and the
+        /// server accepts it as a no-op.
+        /// </summary>
+        public bool Sortable { get; init; }
+
+        /// <summary>
+        /// Whether to keep the sorted value in its original (un-normalized) form, e.g. preserving case
+        /// that would otherwise be lowercased for sorting (<c>UNF</c>) (valkey-search 1.3.0).
+        /// Applies to TEXT, TAG and NUMERIC fields. Requires <see cref="Sortable"/> to be set;
+        /// setting it without <see cref="Sortable"/> throws <see cref="ArgumentException"/>.
+        /// For vector fields, <c>UNF</c> is not emitted, so this property has no effect.
+        /// </summary>
+        public bool Unf { get; init; }
     }
 
     /// <summary>
@@ -266,6 +358,12 @@ public static partial class Ft
         /// Whether to enable the suffix trie optimization for this field (<c>WITHSUFFIXTRIE</c>/<c>NOSUFFIXTRIE</c>).
         /// </summary>
         public bool WithSuffixTrie { get; init; } = true;
+
+        /// <summary>
+        /// Declares the importance of this field when calculating result accuracy,
+        /// or <see langword="null"/> for server default (1.0) (<c>WEIGHT weight</c>).
+        /// </summary>
+        public double? Weight { get; init; }
     }
 
     /// <summary>
@@ -320,6 +418,10 @@ public static partial class Ft
     /// <summary>
     /// Abstract base class for a new vector search index field (<c>VECTOR</c>).
     /// </summary>
+    /// <remarks>
+    /// <see cref="CreateField.Sortable"/> emits <c>SORTABLE</c> for vector fields, which the server accepts as a no-op.
+    /// <see cref="CreateField.Unf"/> is not emitted for vector fields, so setting it has no effect and does not throw.
+    /// </remarks>
     /// <seealso href="https://valkey.io/commands/ft.create/">Valkey commands – FT.CREATE</seealso>
     public abstract class CreateVectorField : CreateField
     {
@@ -337,6 +439,12 @@ public static partial class Ft
         /// Initial vector capacity, or <see langword="null"/> for server default (<c>INITIAL_CAP size</c>).
         /// </summary>
         public long? InitialCap { get; init; }
+
+        /// <summary>
+        /// The element type and encoding of the vector (<c>TYPE</c>).
+        /// Defaults to <see cref="VectorType.Float32"/>.
+        /// </summary>
+        public VectorType Type { get; init; } = VectorType.Float32;
     }
 
     /// <summary>
