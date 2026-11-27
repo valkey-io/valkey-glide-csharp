@@ -163,6 +163,7 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <para>Since Valkey 7.0.0.</para>
     /// </remarks>
+    // TODO #673: Add `IEnumerable<ValkeyValue>` overload.
     Task<ClusterValue<ValkeyResult>> FCallAsync(
         string function,
         IEnumerable<string> args,
@@ -214,6 +215,7 @@ public partial interface IGlideClusterClient
     /// <remarks>
     /// <para>Since Valkey 7.0.0.</para>
     /// </remarks>
+    // TODO #673: Add `IEnumerable<ValkeyValue>` overload.
     Task<ClusterValue<ValkeyResult>> FCallReadOnlyAsync(
         string function,
         IEnumerable<string> args,

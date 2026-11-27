@@ -5,6 +5,7 @@ namespace Valkey.Glide;
 /// <summary>
 /// Options for parameterized script execution.
 /// </summary>
+// TODO #673: Add `ValkeyKey` and `ValkeyValue` overloads.
 public sealed class ScriptOptions
 {
     /// <summary>

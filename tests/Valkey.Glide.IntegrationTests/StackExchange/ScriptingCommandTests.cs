@@ -1,5 +1,7 @@
 // Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using static Valkey.Glide.TestUtils.Data;
+
 namespace Valkey.Glide.IntegrationTests.StackExchange;
 
 /// <summary>
@@ -8,8 +10,11 @@ namespace Valkey.Glide.IntegrationTests.StackExchange;
 /// </summary>
 public class ScriptingCommandTests(TestConfiguration config)
 {
+    #region Properties
+
     public TestConfiguration Config { get; } = config;
 
+    #endregion
     #region ScriptEvaluateAsync (string script)
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -25,28 +30,30 @@ public class ScriptingCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task ScriptEvaluateAsync_WithKeys_AccessesKeys(IDatabaseAsync db)
     {
-        string key = $"ser-script-key-{Guid.NewGuid()}";
-        _ = await db.StringSetAsync(key, "test-value");
+        ValkeyKey key = BuildKey("ser-script-key-");
+        ValkeyValue value = BuildValue();
+        _ = await db.StringSetAsync(key, value);
 
         ValkeyResult result = await db.ScriptEvaluateAsync(
             "return redis.call('GET', KEYS[1])",
-            keys: [(ValkeyKey)key]);
+            keys: [key]);
 
-        Assert.Equal("test-value", result.ToString());
+        Assert.Equal(value, (ValkeyValue)result);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task ScriptEvaluateAsync_WithKeysAndValues_UsesArguments(IDatabaseAsync db)
     {
-        string key = $"ser-script-kv-{Guid.NewGuid()}";
+        ValkeyKey key = BuildKey("ser-script-kv-");
+        ValkeyValue value = BuildValue();
 
         ValkeyResult result = await db.ScriptEvaluateAsync(
             "redis.call('SET', KEYS[1], ARGV[1]); return redis.call('GET', KEYS[1])",
-            keys: [(ValkeyKey)key],
-            values: [(ValkeyValue)"script-value"]);
+            keys: [key],
+            values: [value]);
 
-        Assert.Equal("script-value", result.ToString());
+        Assert.Equal(value, (ValkeyValue)result);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -90,12 +97,13 @@ public class ScriptingCommandTests(TestConfiguration config)
     [MemberData(nameof(TestConfiguration.TestDatabases), MemberType = typeof(TestConfiguration))]
     public async Task ScriptEvaluateAsync_LuaScript_WithParameters(IDatabaseAsync db)
     {
-        string key = $"ser-lua-param-{Guid.NewGuid()}";
+        ValkeyKey key = BuildKey("ser-lua-param-");
+        ValkeyValue value = BuildValue();
         LuaScript script = LuaScript.Prepare("redis.call('SET', @key, @value); return redis.call('GET', @key)");
 
-        ValkeyResult result = await db.ScriptEvaluateAsync(script, new { key = (ValkeyKey)key, value = "param-value" });
+        ValkeyResult result = await db.ScriptEvaluateAsync(script, new { key, value });
 
-        Assert.Equal("param-value", result.ToString());
+        Assert.Equal(value, (ValkeyValue)result);
     }
 
     #endregion

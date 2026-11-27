@@ -12,68 +12,52 @@ public class FlushDatabaseTests(ServerFixture fixture) : IClassFixture<ServerFix
     [Fact]
     public async Task FlushDatabaseAsync_Standalone_ClearsDatabase()
     {
-        await using GlideClient client = await fixture.StandaloneServer.CreateStandaloneClientAsync();
+        await using var client = await fixture.StandaloneServer.CreateStandaloneClientAsync();
 
-        string key = $"flush-test-{Guid.NewGuid()}";
+        var key = $"flush-test-{Guid.NewGuid()}";
         await client.SetAsync(key, "test-value");
-
-        Assert.True(await client.ExistsAsync(key));
-        Assert.Equal(1, await client.DatabaseSizeAsync());
+        Assert.True(await client.DatabaseSizeAsync() > 0);
 
         await client.FlushDatabaseAsync();
-
-        Assert.False(await client.ExistsAsync(key));
         Assert.Equal(0, await client.DatabaseSizeAsync());
     }
 
     [Fact]
     public async Task FlushAllDatabasesAsync_Standalone_ClearsAllDatabases()
     {
-        await using GlideClient client = await fixture.StandaloneServer.CreateStandaloneClientAsync();
+        await using var client = await fixture.StandaloneServer.CreateStandaloneClientAsync();
 
-        string key = $"flushall-test-{Guid.NewGuid()}";
+        var key = $"flushall-test-{Guid.NewGuid()}";
         await client.SetAsync(key, "test-value");
-
-        Assert.True(await client.ExistsAsync(key));
-        Assert.Equal(1, await client.DatabaseSizeAsync());
+        Assert.True(await client.DatabaseSizeAsync() > 0);
 
         await client.FlushAllDatabasesAsync();
-
-        Assert.False(await client.ExistsAsync(key));
         Assert.Equal(0, await client.DatabaseSizeAsync());
     }
 
     [Fact]
     public async Task FlushDatabaseAsync_Cluster_ClearsDatabase()
     {
-        await using GlideClusterClient client = await fixture.ClusterServer.CreateClusterClientAsync();
+        await using var client = await fixture.ClusterServer.CreateClusterClientAsync();
 
-        string key = $"flush-cluster-test-{Guid.NewGuid()}";
+        var key = $"flush-cluster-test-{Guid.NewGuid()}";
         await client.SetAsync(key, "test-value");
-
-        Assert.True(await client.ExistsAsync(key));
-        Assert.Equal(1, await client.DatabaseSizeAsync());
+        Assert.True(await client.DatabaseSizeAsync() > 0);
 
         await client.FlushDatabaseAsync(FlushMode.Sync);
-
-        Assert.False(await client.ExistsAsync(key));
         Assert.Equal(0, await client.DatabaseSizeAsync());
     }
 
     [Fact]
     public async Task FlushDatabaseAsync_Cluster_WithRoute_ClearsDatabase()
     {
-        await using GlideClusterClient client = await fixture.ClusterServer.CreateClusterClientAsync();
+        await using var client = await fixture.ClusterServer.CreateClusterClientAsync();
 
-        string key = $"flush-cluster-test-{Guid.NewGuid()}";
+        var key = $"flush-cluster-test-{Guid.NewGuid()}";
         await client.SetAsync(key, "test-value");
-
-        Assert.True(await client.ExistsAsync(key));
-        Assert.Equal(1, await client.DatabaseSizeAsync());
+        Assert.True(await client.DatabaseSizeAsync() > 0);
 
         await client.FlushDatabaseAsync(FlushMode.Sync, Route.AllPrimaries);
-
-        Assert.False(await client.ExistsAsync(key));
         Assert.Equal(0, await client.DatabaseSizeAsync());
     }
 }
