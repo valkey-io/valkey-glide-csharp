@@ -26,10 +26,7 @@ public class ScriptingCommandTests(TestConfiguration config)
     {
         // Test simple script execution
         using var script = new Script("return 'Hello, World!'");
-        ValkeyResult result = await client.ScriptInvokeAsync(script, CancellationToken);
-
-        Assert.NotNull(result);
-        Assert.Equal("Hello, World!", result.ToString());
+        Assert.Equal("Hello, World!", await client.ScriptInvokeAsync(script, CancellationToken));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -43,10 +40,7 @@ public class ScriptingCommandTests(TestConfiguration config)
             .WithKeys("mykey")
             .WithArgs("myvalue");
 
-        ValkeyResult result = await client.ScriptInvokeAsync(script, options, CancellationToken);
-
-        Assert.NotNull(result);
-        Assert.Equal("mykey:myvalue", result.ToString());
+        Assert.Equal("mykey:myvalue", await client.ScriptInvokeAsync(script, options, CancellationToken));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -58,10 +52,7 @@ public class ScriptingCommandTests(TestConfiguration config)
 
         // This should trigger NOSCRIPT and automatically fallback to EVAL
         using var script = new Script("return 'fallback test'");
-        ValkeyResult result = await client.ScriptInvokeAsync(script, CancellationToken);
-
-        Assert.NotNull(result);
-        Assert.Equal("fallback test", result.ToString());
+        Assert.Equal("fallback test", await client.ScriptInvokeAsync(script, CancellationToken));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -322,14 +313,8 @@ public class ScriptingCommandTests(TestConfiguration config)
             .WithKeys(key)
             .WithArgs(value);
 
-        ValkeyResult result = await client.ScriptInvokeAsync(script, options, CancellationToken);
-
-        Assert.NotNull(result);
-        Assert.Equal("OK", result.ToString());
-
-        // Verify the value was set
-        ValkeyValue retrievedValue = await client.GetAsync(key);
-        Assert.Equal(value, retrievedValue.ToString());
+        Assert.Equal("OK", await client.ScriptInvokeAsync(script, options, CancellationToken));
+        Assert.Equal(value, await client.GetAsync(key));
     }
 
     #endregion
@@ -417,7 +402,7 @@ redis.register_function('{funcName}', function(keys, args) return 'version 2' en
             result = await client.FCallAsync(funcName, CancellationToken);
         }
 
-        Assert.Equal("version 2", result.ToString());
+        Assert.Equal("version 2", result);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -501,8 +486,7 @@ redis.register_function('{funcName}', function(keys, args) return 'Hello, World!
             result = await client.FCallAsync(funcName, CancellationToken);
         }
 
-        Assert.NotNull(result);
-        Assert.Equal("Hello, World!", result.ToString());
+        Assert.Equal("Hello, World!", result);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -527,10 +511,7 @@ end)";
 
         // Execute with keys and args
         // TODO #673: Use BuildKey and BuildValue once FCallAsync accepts ValkeyKey and ValkeyValue.
-        ValkeyResult result = await client.FCallAsync(funcName, ["mykey"], ["myvalue"], CancellationToken);
-
-        Assert.NotNull(result);
-        Assert.Equal("mykey:myvalue", result.ToString());
+        Assert.Equal("mykey:myvalue", await client.FCallAsync(funcName, ["mykey"], ["myvalue"], CancellationToken));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -572,10 +553,7 @@ redis.register_function{{
         _ = await client.FunctionLoadAsync(libraryCode, false, CancellationToken);
 
         // Execute in read-only mode
-        ValkeyResult result = await client.FCallReadOnlyAsync(funcName, CancellationToken);
-
-        Assert.NotNull(result);
-        Assert.Equal("Read-only result", result.ToString());
+        Assert.Equal("Read-only result", await client.FCallReadOnlyAsync(funcName, CancellationToken));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -604,10 +582,7 @@ redis.register_function{{
 
         // Execute with keys and args
         // TODO #673: Use BuildKey and BuildValue once FCallReadOnlyAsync accepts ValkeyKey and ValkeyValue.
-        ValkeyResult result = await client.FCallReadOnlyAsync(funcName, ["key1"], ["value1"], CancellationToken);
-
-        Assert.NotNull(result);
-        Assert.Equal("key1:value1", result.ToString());
+        Assert.Equal("key1:value1", await client.FCallReadOnlyAsync(funcName, ["key1"], ["value1"], CancellationToken));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -654,7 +629,7 @@ redis.register_function('{funcName}', function(keys, args) return 'test' end)";
             resultBefore = await client.FCallAsync(funcName, CancellationToken);
         }
 
-        Assert.Equal("test", resultBefore.ToString());
+        Assert.Equal("test", resultBefore);
 
         // Flush all functions (use routing for cluster clients)
         if (client is GlideClusterClient clusterClient4)
@@ -780,10 +755,7 @@ end)";
         _ = await client.FunctionLoadAsync(libraryCode, false, CancellationToken);
 
         // Execute function
-        ValkeyResult result = await client.FCallAsync(funcName, [key], [], CancellationToken);
-
-        Assert.NotNull(result);
-        Assert.Equal(value, result.ToString());
+        Assert.Equal(value, await client.FCallAsync(funcName, [key], [], CancellationToken));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -810,14 +782,9 @@ end)";
         // TODO #673: Use BuildKey and BuildValue once FCallAsync accepts ValkeyKey and ValkeyValue.
         string key = Guid.NewGuid().ToString();
         string value = "function set value";
-        ValkeyResult result = await client.FCallAsync(funcName, [key], [value], CancellationToken);
 
-        Assert.NotNull(result);
-        Assert.Equal("OK", result.ToString());
-
-        // Verify the value was set
-        ValkeyValue retrievedValue = await client.GetAsync(key);
-        Assert.Equal(value, retrievedValue.ToString());
+        Assert.Equal("OK", await client.FCallAsync(funcName, [key], [value], CancellationToken));
+        Assert.Equal(value, await client.GetAsync(key));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1206,8 +1173,7 @@ redis.register_function('replacefunc', function(keys, args) return 'version2' en
         await client.FunctionRestoreAsync(backup, FunctionRestorePolicy.Replace, CancellationToken);
 
         // Verify the function was replaced (should return version1)
-        ValkeyResult funcResult = await client.FCallAsync("replacefunc", CancellationToken);
-        Assert.Equal("version1", funcResult.ToString());
+        Assert.Equal("version1", await client.FCallAsync("replacefunc", CancellationToken));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1269,11 +1235,11 @@ redis.register_function('{funcName}', function(keys, args) return 'Hello from pr
         if (result.HasMultiData)
         {
             Assert.NotEmpty(result.MultiValue);
-            Assert.All(result.MultiValue.Values, r => Assert.Equal("Hello from primary", r.ToString()));
+            Assert.All(result.MultiValue.Values, r => Assert.Equal("Hello from primary", r));
         }
         else
         {
-            Assert.Equal("Hello from primary", result.SingleValue.ToString());
+            Assert.Equal("Hello from primary", result.SingleValue);
         }
     }
 
@@ -1316,11 +1282,11 @@ redis.register_function{{
         if (result.HasMultiData)
         {
             Assert.NotEmpty(result.MultiValue);
-            Assert.All(result.MultiValue.Values, r => Assert.Equal("Hello from node", r.ToString()));
+            Assert.All(result.MultiValue.Values, r => Assert.Equal("Hello from node", r));
         }
         else
         {
-            Assert.Equal("Hello from node", result.SingleValue.ToString());
+            Assert.Equal("Hello from node", result.SingleValue);
         }
     }
 
@@ -1347,7 +1313,7 @@ redis.register_function('{funcName}', function(keys, args) return 'Random node r
 
         // Verify execution on single node
         Assert.True(result.HasSingleData);
-        Assert.Equal("Random node result", result.SingleValue.ToString());
+        Assert.Equal("Random node result", result.SingleValue);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1398,8 +1364,7 @@ redis.register_function('{funcName}', function(keys, args) return 'test' end)";
         _ = await client.FunctionLoadAsync(libraryCode, false, Route.AllPrimaries, CancellationToken);
 
         // Verify function exists by calling it
-        ClusterValue<ValkeyResult> callResult = await client.FCallAsync(funcName, Route.Random, CancellationToken);
-        Assert.Equal("test", callResult.SingleValue.ToString());
+        Assert.Equal("test", (await client.FCallAsync(funcName, Route.Random, CancellationToken)).SingleValue);
 
         // Delete function from all primaries
         await client.FunctionDeleteAsync(libName, Route.AllPrimaries, CancellationToken);
@@ -1553,8 +1518,7 @@ redis.register_function('{funcName}', function(keys, args) return 'restored' end
         await client.FunctionRestoreAsync(backup, Route.AllPrimaries, CancellationToken);
 
         // Verify function is restored by calling it
-        ClusterValue<ValkeyResult> callResult = await client.FCallAsync(funcName, Route.Random, CancellationToken);
-        Assert.Equal("restored", callResult.SingleValue.ToString());
+        Assert.Equal("restored", (await client.FCallAsync(funcName, Route.Random, CancellationToken)).SingleValue);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1592,8 +1556,7 @@ redis.register_function('{funcName}', function(keys, args) return 'version 2' en
             CancellationToken);
 
         // Verify original version is restored
-        ClusterValue<ValkeyResult> callResult = await client.FCallAsync(funcName, Route.Random, CancellationToken);
-        Assert.Equal("version 1", callResult.SingleValue.ToString());
+        Assert.Equal("version 1", (await client.FCallAsync(funcName, Route.Random, CancellationToken)).SingleValue);
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1646,10 +1609,7 @@ redis.register_function('{funcName}', function(keys, args) return 'multi-node re
     {
         // Test IDatabase.ScriptEvaluateAsync with string script
         string script = "return 'Hello from EVAL'";
-        ValkeyResult result = await client.ScriptEvaluateAsync(script);
-
-        Assert.NotNull(result);
-        Assert.Equal("Hello from EVAL", result.ToString());
+        Assert.Equal("Hello from EVAL", await client.ScriptEvaluateAsync(script));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -1687,10 +1647,7 @@ redis.register_function('{funcName}', function(keys, args) return 'multi-node re
         LuaScript script = LuaScript.Prepare("return redis.call('SET', @key, @value)");
         var parameters = new { key = BuildKey(), value = BuildValue() };
 
-        ValkeyResult result = await client.ScriptEvaluateAsync(script, parameters);
-
-        Assert.NotNull(result);
-        Assert.Equal("OK", result.ToString());
+        Assert.Equal("OK", await client.ScriptEvaluateAsync(script, parameters));
 
         // Verify the key was set
         ValkeyValue getValue = await client.GetAsync(parameters.key);
@@ -1710,10 +1667,7 @@ redis.register_function('{funcName}', function(keys, args) return 'multi-node re
         ValkeyKey key = BuildKey("prefix:");
         ValkeyValue value = BuildValue();
 
-        ValkeyResult result = await client.ScriptEvaluateAsync(script.ExecutableScript, [key], [value]);
-
-        Assert.NotNull(result);
-        Assert.Equal("OK", result.ToString());
+        Assert.Equal("OK", await client.ScriptEvaluateAsync(script.ExecutableScript, [key], [value]));
 
         // Verify the key was set with prefix
         ValkeyValue getValue = await client.GetAsync(key);

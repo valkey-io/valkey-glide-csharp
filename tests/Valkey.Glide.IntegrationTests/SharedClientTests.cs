@@ -1,5 +1,7 @@
 ﻿// Copyright Valkey GLIDE Project Contributors - SPDX Identifier: Apache-2.0
 
+using Valkey.Glide.TestUtils;
+
 namespace Valkey.Glide.IntegrationTests;
 
 [Collection(typeof(SharedClientTests))]
@@ -34,9 +36,7 @@ public class SharedClientTests(TestConfiguration config)
         using var script = new Script("return KEYS[1]");
         var options = new ScriptOptions().WithKeys(LargeString);
 
-        var result = await client.ScriptInvokeAsync(script, options, TestContext.Current.CancellationToken);
-
-        Assert.Equal(LargeString, result.ToString());
+        Assert.Equal(LargeString, await client.ScriptInvokeAsync(script, options, TestContext.Current.CancellationToken));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]
@@ -46,9 +46,7 @@ public class SharedClientTests(TestConfiguration config)
         using var script = new Script("return ARGV[1]");
         var options = new ScriptOptions().WithArgs(LargeString);
 
-        ValkeyResult result = await client.ScriptInvokeAsync(script, options, TestContext.Current.CancellationToken);
-
-        Assert.Equal(LargeString, result.ToString());
+        Assert.Equal(LargeString, await client.ScriptInvokeAsync(script, options, TestContext.Current.CancellationToken));
     }
 
     [Theory(DisableDiscoveryEnumeration = true)]

@@ -141,7 +141,7 @@ public class ServerTests(TestConfiguration config)
 
         foreach (IServer server in conn.GetServers())
         {
-            Assert.Equal(key, (ValkeyKey)await server.ExecuteAsync("ECHO", key));
+            Assert.Equal(key, await server.ExecuteAsync("ECHO", key));
             Assert.Equal(value, await server.ExecuteAsync("ECHO", value));
         }
     }
